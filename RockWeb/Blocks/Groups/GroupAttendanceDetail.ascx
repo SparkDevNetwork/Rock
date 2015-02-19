@@ -3,23 +3,23 @@
 <asp:UpdatePanel ID="pnlContent" runat="server">
     <ContentTemplate>
 
-        <Rock:NotificationBox ID="nbNotice" runat="server" />
+        <div class="panel panel-block">
 
-        <asp:Panel id="pnlDetails" runat="server">
+            <div class="panel-heading clearfix">
+                <h1 class="panel-title pull-left">
+                    <i class="fa fa-check-square-o"></i>
+                    <asp:Literal ID="lHeading" runat="server" Text="Group Attendance" />
+                </h1>
+            </div>
+            
+            <div class="panel-body">
 
-            <h3><asp:Literal ID="lGroupName" runat="server"></asp:Literal></h3>
+                <Rock:NotificationBox ID="nbNotice" runat="server" />
 
+                <asp:Panel id="pnlDetails" runat="server">
 
-
-            <div class="row">
-                <div class="col-md-6">
-
-                    <h4>Attendance For: <asp:Literal ID="lOccurrenceDate" runat="server" /></h4>
-
-                    <div class="actions">
-                        <asp:HyperLink ID="aPrev" runat="server" Text="Previous" CssClass="btn btn-default" />
-                        <asp:HyperLink ID="aNext" runat="server" Text="Next" CssClass="btn btn-default" />
-                    </div>                        
+                    <Rock:RockLiteral ID="lOccurrenceDate" runat="server" Label="Attendance For" />
+                    <Rock:DatePicker ID="dpOccurrenceDate" runat="server" Label="Attendance For" Required="true" />
 
                     <div class="row">
                         <div class="col-sm-12">
@@ -27,42 +27,47 @@
                         </div>
                     </div>
 
-                    <div class="row group-attendance-roster">
-                        <div class="col-sm-12">
-                            <asp:ListView ID="lvMembers" runat="server">
-                                <ItemTemplate>
-                                    <asp:HiddenField ID="hfMember" runat="server" Value='<%# Eval("Id") %>' />
-                                    <Rock:RockCheckBox ID="cbMember" runat="server" Checked='<%# Eval("Attended") %>' Text='<%# Eval("FullName") %>' />
-                                </ItemTemplate>
-                            </asp:ListView>
+                    <div class="row">
+                        <div class="col-md-6">
+
+                            <div class="js-roster">
+                                <h4><asp:Literal ID="lMembers" runat="server" /></h4>
+                                <asp:ListView ID="lvMembers" runat="server">
+                                    <ItemTemplate>
+                                        <asp:HiddenField ID="hfMember" runat="server" Value='<%# Eval("Id") %>' />
+                                        <Rock:RockCheckBox ID="cbMember" runat="server" Checked='<%# Eval("Attended") %>' Text='<%# Eval("FullName") %>' />
+                                    </ItemTemplate>
+                                </asp:ListView>
+                            </div>
+
+                            <div class="actions">
+                                <asp:LinkButton ID="lbSave" runat="server" Text="Save Attendance" CssClass="btn btn-primary" OnClick="lbSave_Click" CausesValidation="false" />
+                            </div>
+
+                        </div>
+                        <div class="col-md-6">
+
+                            <asp:panel id="pnlPendingMembers" runat="server" visible="false">
+                                <h4><asp:Literal ID="lPendingMembers" runat="server" /></h4>
+                                <asp:ListView ID="lvPendingMembers" runat="server" OnItemCommand="lvPendingMembers_ItemCommand">
+                                    <ItemTemplate>
+                                        <div class="form-group">
+                                            <asp:HiddenField ID="hfMember" runat="server" Value='<%# Eval("Id") %>' />
+                                            <asp:Label ID="lName" runat="server" Text='<%# Eval("FullName") %>' />
+                                            <asp:LinkButton ID="lbAdd" runat="server" ToolTip="Add Person to Group" CausesValidation="false" CommandName="Add" CommandArgument='<%# Eval("Id") %>' CssClass="js-add-member" ><i class="fa fa-plus"></i></asp:LinkButton>
+                                        </div>
+                                    </ItemTemplate>
+                                </asp:ListView>
+                            </asp:panel>
+
                         </div>
                     </div>
 
-                    <div class="actions">
-                        <asp:LinkButton ID="lbSave" runat="server" Text="Save Attendance" CssClass="btn btn-primary" OnClick="lbSave_Click" CausesValidation="false" />
-                    </div>
+                </asp:Panel>
 
-                </div>
-
-                <div class="col-md-6">
-
-                    <asp:panel id="pnlPendingMembers" runat="server" visible="false">
-                        <h4>Pending Members</h4>
-                        <asp:ListView ID="lvPendingMembers" runat="server" OnItemCommand="lvPendingMembers_ItemCommand">
-                            <ItemTemplate>
-                                <div class="form-group">
-                                    <asp:HiddenField ID="hfMember" runat="server" Value='<%# Eval("Id") %>' />
-                                    <asp:Label ID="lName" runat="server" Text='<%# Eval("FullName") %>' />
-                                    <asp:LinkButton ID="lbAdd" runat="server" ToolTip="Add Person to Group" CausesValidation="false" CommandName="Add" CommandArgument='<%# Eval("Id") %>' CssClass="js-add-member" ><i class="fa fa-plus"></i></asp:LinkButton>
-                                </div>
-                            </ItemTemplate>
-                        </asp:ListView>
-                    </asp:panel>
-
-                </div>
             </div>
 
-        </asp:Panel>
+        </div>
 
     </ContentTemplate>
 </asp:UpdatePanel>
