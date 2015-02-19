@@ -152,14 +152,8 @@ namespace RockWeb.Plugins.church_ccv.Residency
         protected void btnSave_Click( object sender, EventArgs e )
         {
             var residencyContext = new ResidencyContext();
-
-            Period period;
             ResidencyService<Period> periodService = new ResidencyService<Period>( residencyContext );
-            ResidencyService<Track> trackService = new ResidencyService<Track>( residencyContext );
-            ResidencyService<Competency> competencyService = new ResidencyService<Competency>( residencyContext );
-            ResidencyService<Project> projectService = new ResidencyService<Project>( residencyContext );
-            ResidencyService<ProjectPointOfAssessment> projectPointOfAssessmentService = new ResidencyService<ProjectPointOfAssessment>( residencyContext );
-
+            Period period;
             int periodId = int.Parse( hfPeriodId.Value );
 
             if ( periodId == 0 )
@@ -183,16 +177,20 @@ namespace RockWeb.Plugins.church_ccv.Residency
                 return;
             }
 
-            residencyContext.WrapTransaction( () =>
-            {
-                residencyContext.SaveChanges();
+            residencyContext.SaveChanges( true );
 
-                if ( hfCloneFromPeriodId.ValueAsInt() > 0 )
+            if ( hfCloneFromPeriodId.ValueAsInt() > 0 )
+            {
+                var clonePeriod = periodService.Get( hfCloneFromPeriodId.ValueAsInt() );
+                foreach ( var track in clonePeriod.Tracks )
                 {
-                    var clonePeriod = periodService.Get( hfCloneFromPeriodId.ValueAsInt() );
-                    foreach ( var track in clonePeriod.Tracks )
-                    {
-                        var newTrack = new Track
+                    // create fresh context per track so that changetracking doesn't slow us down
+                    residencyContext = new ResidencyContext();
+                    ResidencyService<Track> trackService = new ResidencyService<Track>( residencyContext );
+                    ResidencyService<Competency> competencyService = new ResidencyService<Competency>( residencyContext );
+                    ResidencyService<Project> projectService = new ResidencyService<Project>( residencyContext );
+                    ResidencyService<ProjectPointOfAssessment> projectPointOfAssessmentService = new ResidencyService<ProjectPointOfAssessment>( residencyContext );
+                    var newTrack = new Track
                         {
                             PeriodId = period.Id,
                             Name = track.Name,
@@ -200,59 +198,61 @@ namespace RockWeb.Plugins.church_ccv.Residency
                             DisplayOrder = track.DisplayOrder
                         };
 
-                        trackService.Add( newTrack );
-                        residencyContext.SaveChanges();
+                    trackService.Add( newTrack );
+                    residencyContext.SaveChanges( true );
 
-                        foreach ( var competency in track.Competencies )
+                    foreach ( var competency in track.Competencies )
+                    {
+                        var newCompetency = new Competency
                         {
-                            var newCompetency = new Competency
+                            TrackId = newTrack.Id,
+                            Goals = competency.Goals,
+                            CreditHours = competency.CreditHours,
+                            SupervisionHours = competency.SupervisionHours,
+                            ImplementationHours = competency.ImplementationHours,
+                            Name = competency.Name,
+                            Description = competency.Description
+                        };
+
+                        competencyService.Add( newCompetency );
+                        residencyContext.SaveChanges( true );
+
+                        foreach ( var project in competency.Projects )
+                        {
+                            var newProject = new Project
                             {
-                                TrackId = newTrack.Id,
-                                Goals = competency.Goals,
-                                CreditHours = competency.CreditHours,
-                                SupervisionHours = competency.SupervisionHours,
-                                ImplementationHours = competency.ImplementationHours,
-                                Name = competency.Name,
-                                Description = competency.Description
+                                CompetencyId = newCompetency.Id,
+                                MinAssessmentCountDefault = project.MinAssessmentCountDefault,
+                                Name = project.Name,
+                                Description = project.Description
                             };
 
-                            competencyService.Add( newCompetency );
-                            residencyContext.SaveChanges();
+                            projectService.Add( newProject );
+                            residencyContext.SaveChanges( true );
 
-                            foreach ( var project in competency.Projects )
+                            List<ProjectPointOfAssessment> projectPointOfAssessmentList = new List<ProjectPointOfAssessment>();
+
+                            foreach ( var projectPointOfAssessment in project.ProjectPointOfAssessments )
                             {
-                                var newProject = new Project
+                                var newProjectPointOfAssessment = new ProjectPointOfAssessment
                                 {
-                                    CompetencyId = newCompetency.Id,
-                                    MinAssessmentCountDefault = project.MinAssessmentCountDefault,
-                                    Name = project.Name,
-                                    Description = project.Description
+                                    ProjectId = newProject.Id,
+                                    PointOfAssessmentTypeValueId = projectPointOfAssessment.PointOfAssessmentTypeValueId,
+                                    AssessmentOrder = projectPointOfAssessment.AssessmentOrder,
+                                    AssessmentText = projectPointOfAssessment.AssessmentText,
+                                    IsPassFail = projectPointOfAssessment.IsPassFail
                                 };
 
-                                projectService.Add( newProject );
-                                residencyContext.SaveChanges();
-                                
-                                foreach ( var projectPointOfAssessment in project.ProjectPointOfAssessments )
-                                {
-                                    var newProjectPointOfAssessment = new ProjectPointOfAssessment
-                                    {
-                                        ProjectId = newProject.Id,
-                                        PointOfAssessmentTypeValueId = projectPointOfAssessment.PointOfAssessmentTypeValueId,
-                                        AssessmentOrder = projectPointOfAssessment.AssessmentOrder,
-                                        AssessmentText = projectPointOfAssessment.AssessmentText,
-                                        IsPassFail = projectPointOfAssessment.IsPassFail
-                                    };
-
-                                    projectPointOfAssessmentService.Add( newProjectPointOfAssessment );
-                                    residencyContext.SaveChanges();
-                                }
+                                projectPointOfAssessmentList.Add( newProjectPointOfAssessment );
                             }
+
+                            projectPointOfAssessmentService.AddRange( projectPointOfAssessmentList );
+
+                            residencyContext.SaveChanges( true );
                         }
                     }
                 }
-            } );
-
-
+            }
 
             var qryParams = new Dictionary<string, string>();
             qryParams["PeriodId"] = period.Id.ToString();
@@ -274,7 +274,7 @@ namespace RockWeb.Plugins.church_ccv.Residency
             {
                 period = new ResidencyService<Period>( new ResidencyContext() ).Get( periodId );
             }
-            
+
             if ( period == null )
             {
                 period = new Period { Id = 0 };
