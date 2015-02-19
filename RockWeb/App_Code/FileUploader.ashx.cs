@@ -187,7 +187,9 @@ namespace RockWeb
             var binaryFileService = new BinaryFileService( rockContext );
             var binaryFile = new BinaryFile();
             binaryFileService.Add( binaryFile );
-            binaryFile.IsTemporary = true;
+
+            // assume file is temporary unless specified otherwise so that files that don't end up getting used will get cleaned up
+            binaryFile.IsTemporary = context.Request.QueryString["IsTemporary"].AsBooleanOrNull() ?? true;
             binaryFile.BinaryFileTypeId = binaryFileType.Id;
             binaryFile.MimeType = uploadedFile.ContentType;
             binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );

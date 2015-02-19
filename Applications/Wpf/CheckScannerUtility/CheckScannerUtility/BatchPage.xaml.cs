@@ -701,40 +701,16 @@ namespace Rock.Apps.CheckScannerUtility
             foreach ( ScannedDocInfo scannedDocInfo in ScannedDocList.Where( a => !a.Uploaded ) )
             {
                 // upload image of front of doc
-                BinaryFile binaryFileFront = new BinaryFile();
-                binaryFileFront.Guid = Guid.NewGuid();
-                binaryFileFront.FileName = string.Format( "image1_{0}.png", RockDateTime.Now.ToString( "o" ).RemoveSpecialCharacters() );
-                binaryFileFront.BinaryFileTypeId = binaryFileTypeContribution.Id;
-                binaryFileFront.IsSystem = false;
-                binaryFileFront.MimeType = "image/png";
-                client.PostData<BinaryFile>( "api/BinaryFiles/", binaryFileFront );
-
-                // upload image data content of front of doc
-                binaryFileFront.DatabaseData = new BinaryFileData();
-                binaryFileFront.DatabaseData.Content = scannedDocInfo.FrontImagePngBytes;
-                binaryFileFront.DatabaseData.Id = client.GetIdFromGuid( "api/BinaryFiles/", binaryFileFront.Guid );
-                client.PutData<BinaryFileData>( "api/BinaryFileDatas/", binaryFileFront.DatabaseData );
+                string frontImageFileName = string.Format( "image1_{0}.png", RockDateTime.Now.ToString( "o" ).RemoveSpecialCharacters() );
+                int frontImageBinaryFileId = client.UploadBinaryFile( frontImageFileName, Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid(), scannedDocInfo.FrontImagePngBytes, false );
 
                 // upload image of back of doc (if it exists)
-                BinaryFile binaryFileBack = null;
-
+                int? backImageBinaryFileId = null;
                 if ( scannedDocInfo.BackImageData != null )
                 {
-                    binaryFileBack = new BinaryFile();
-                    binaryFileBack.Guid = Guid.NewGuid();
-                    binaryFileBack.FileName = string.Format( "image2_{0}.png", RockDateTime.Now.ToString( "o" ).RemoveSpecialCharacters() );
-
                     // upload image of back of doc
-                    binaryFileBack.BinaryFileTypeId = binaryFileTypeContribution.Id;
-                    binaryFileBack.IsSystem = false;
-                    binaryFileBack.MimeType = "image/png";
-                    client.PostData<BinaryFile>( "api/BinaryFiles/", binaryFileBack );
-
-                    // upload image data content of back of doc
-                    binaryFileBack.DatabaseData = new BinaryFileData();
-                    binaryFileBack.DatabaseData.Content = scannedDocInfo.BackImagePngBytes;
-                    binaryFileBack.DatabaseData.Id = client.GetIdFromGuid( "api/BinaryFiles/", binaryFileBack.Guid );
-                    client.PutData<BinaryFileData>( "api/BinaryFileDatas/", binaryFileBack.DatabaseData );
+                    string backImageFileName = string.Format( "image2_{0}.png", RockDateTime.Now.ToString( "o" ).RemoveSpecialCharacters() );
+                    backImageBinaryFileId = client.UploadBinaryFile( backImageFileName, Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid(), scannedDocInfo.BackImagePngBytes, false );
                 }
 
                 int percentComplete = position++ * 100 / totalCount;
@@ -773,23 +749,19 @@ namespace Rock.Apps.CheckScannerUtility
 
                 // get the FinancialTransaction back from server so that we can get it's Id
                 int transactionId = client.GetIdFromGuid( "api/FinancialTransactions/", transactionGuid );
-
-                // get the BinaryFiles back so that we can get their Ids
-                binaryFileFront.Id = client.GetIdFromGuid( "api/BinaryFiles/", binaryFileFront.Guid );
+                
 
                 // upload FinancialTransactionImage records for front/back
                 FinancialTransactionImage financialTransactionImageFront = new FinancialTransactionImage();
-                financialTransactionImageFront.BinaryFileId = binaryFileFront.Id;
+                financialTransactionImageFront.BinaryFileId = frontImageBinaryFileId;
                 financialTransactionImageFront.TransactionId = transactionId;
                 financialTransactionImageFront.Order = 0;
                 client.PostData<FinancialTransactionImage>( "api/FinancialTransactionImages", financialTransactionImageFront );
 
-                if ( binaryFileBack != null )
+                if ( backImageBinaryFileId.HasValue )
                 {
-                    // get the BinaryFiles back so that we can get their Ids
-                    binaryFileBack.Id = client.GetIdFromGuid( "api/BinaryFiles/", binaryFileBack.Guid );
                     FinancialTransactionImage financialTransactionImageBack = new FinancialTransactionImage();
-                    financialTransactionImageBack.BinaryFileId = binaryFileBack.Id;
+                    financialTransactionImageBack.BinaryFileId = backImageBinaryFileId.Value;
                     financialTransactionImageBack.TransactionId = transactionId;
                     financialTransactionImageBack.Order = 1;
                     client.PostData<FinancialTransactionImage>( "api/FinancialTransactionImages", financialTransactionImageBack );
