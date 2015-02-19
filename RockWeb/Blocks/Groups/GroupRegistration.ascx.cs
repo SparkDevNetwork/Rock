@@ -211,8 +211,6 @@ namespace RockWeb.Blocks.Groups
                 if ( person == null )
                 {
                     // If so, create the person and family record for the new person
-                    var groupMembers = new List<GroupMember>();
-
                     person = new Person();
                     person.FirstName = tbFirstName.Text.Trim();
                     person.LastName = tbLastName.Text.Trim();
@@ -221,7 +219,7 @@ namespace RockWeb.Blocks.Groups
                     person.RecordStatusValueId = _dvcRecordStatus.Id;
                     person.Gender = Gender.Unknown;
 
-                    family = GroupService.SaveNewFamily( rockContext, person, _group.CampusId, false );
+                    family = PersonService.SaveNewPerson( person, rockContext, _group.CampusId, false );
                 }
                 else
                 {

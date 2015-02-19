@@ -259,7 +259,6 @@ namespace RockWeb.Blocks.Finance
 
             if ( TargetPerson == null )
             {
-                
                 TargetPerson = CurrentPerson;
             }
 
@@ -519,6 +518,14 @@ namespace RockWeb.Blocks.Finance
                         if ( bool.TryParse( GetAttributeValue( "DisplayPhone" ), out displayPhone ) && displayPhone )
                         {
                             var phoneNumber = personService.GetPhoneNumber( person, DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ) );
+
+                            // If person did not have a home phone number, read the cell phone number (which would then 
+                            // get saved as a home number also if they don't change it, which is ok ).
+                            if ( phoneNumber == null || string.IsNullOrWhiteSpace( phoneNumber.Number ) )
+                            {
+                                phoneNumber = personService.GetPhoneNumber( person, DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) ) );
+                            }
+
                             if ( phoneNumber != null )
                             {
                                 pnbPhone.CountryCode = phoneNumber.CountryCode;
@@ -919,16 +926,17 @@ namespace RockWeb.Blocks.Finance
             int personId = ViewState["PersonId"] as int? ?? 0;
             if ( personId == 0 && TargetPerson != null )
             {
-                person = TargetPerson;
+                personId = TargetPerson.Id;
             }
-            else
-            {
-                if ( personId != 0 )
-                {
-                    person = personService.Get( personId );
-                }
 
-                if ( person == null && create )
+            if ( personId != 0 )
+            {
+                person = personService.Get( personId );
+            }
+
+            if ( create )
+            {
+                if ( person == null )
                 {
                     // Check to see if there's only one person with same email, first name, and last name
                     if ( !string.IsNullOrWhiteSpace( txtEmail.Text ) &&
@@ -953,20 +961,10 @@ namespace RockWeb.Blocks.Finance
                         person = new Person();
                         person.FirstName = txtFirstName.Text;
                         person.LastName = txtLastName.Text;
-                        person.Email = txtEmail.Text;
                         person.EmailPreference = EmailPreference.EmailAllowed;
 
-                        if ( GetAttributeValue( "DisplayPhone" ).AsBooleanOrNull() ?? false )
-                        {
-                            var phone = new PhoneNumber();
-                            phone.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
-                            phone.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
-                            phone.NumberTypeValueId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Id;
-                            person.PhoneNumbers.Add( phone );
-                        }
-
-                        // Create Family
-                        familyGroup = GroupService.SaveNewFamily( rockContext, person, null, false );
+                        // Create Person/Family
+                        familyGroup = PersonService.SaveNewPerson( person, rockContext, null, false );
                     }
 
                     ViewState["PersonId"] = person != null ? person.Id : 0;
@@ -975,6 +973,22 @@ namespace RockWeb.Blocks.Finance
 
             if ( create && person != null ) // person should never be null at this point
             {
+                person.Email = txtEmail.Text;
+
+                if ( GetAttributeValue( "DisplayPhone" ).AsBooleanOrNull() ?? false )
+                {
+                    var numberTypeId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Id;
+                    var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberTypeId );
+                    if ( phone == null )
+                    {
+                        phone = new PhoneNumber();
+                        person.PhoneNumbers.Add( phone );
+                        phone.NumberTypeValueId = numberTypeId;
+                    }
+                    phone.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
+                    phone.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
+                } 
+                
                 if ( familyGroup == null )
                 {
                     var groupLocationService = new GroupLocationService( rockContext );
@@ -990,6 +1004,8 @@ namespace RockWeb.Blocks.Finance
                         familyGroup = personService.GetFamilies( person.Id ).FirstOrDefault();
                     }
                 }
+
+                rockContext.SaveChanges();
 
                 if ( familyGroup != null )
                 {
