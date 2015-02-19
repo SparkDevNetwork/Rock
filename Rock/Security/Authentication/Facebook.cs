@@ -389,7 +389,7 @@ namespace Rock.Security.ExternalAuthentication
 
                         if ( person != null )
                         {
-                            GroupService.SaveNewFamily( rockContext, person, null, false );
+                            PersonService.SaveNewPerson( person, rockContext, null, false );
                         }
                     }
 

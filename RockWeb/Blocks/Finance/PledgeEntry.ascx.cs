@@ -310,7 +310,7 @@ namespace RockWeb.Blocks.Finance
                     ConnectionStatusValueId = definedValue.Id,
                 };
 
-                GroupService.SaveNewFamily( rockContext, person, null, false );
+                PersonService.SaveNewPerson( person, rockContext, null, false );
             }
 
             return person;

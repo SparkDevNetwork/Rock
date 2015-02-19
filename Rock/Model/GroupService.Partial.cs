@@ -182,21 +182,10 @@ namespace Rock.Model
         /// <param name="campusId">The campus identifier.</param>
         /// <param name="savePersonAttributes">if set to <c>true</c> [save person attributes].</param>
         /// <returns></returns>
+        [Obsolete("Use PersonService.SaveNewPerson() instead!")]
         public static Group SaveNewFamily( RockContext rockContext, Person person, int? campusId, bool savePersonAttributes )
         {
-            var groupMember = new GroupMember();
-            groupMember.Person = person;
-
-            var adultRole = new GroupTypeRoleService( rockContext ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() );
-            if ( adultRole != null )
-            {
-                groupMember.GroupRoleId = adultRole.Id;
-            }
-
-            var groupMembers = new List<GroupMember>();
-            groupMembers.Add( groupMember );
-
-            return SaveNewFamily( rockContext, groupMembers, campusId, savePersonAttributes );
+            return PersonService.SaveNewPerson( person, rockContext, campusId, savePersonAttributes );
         }
 
         /// <summary>

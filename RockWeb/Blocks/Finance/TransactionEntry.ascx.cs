@@ -963,8 +963,8 @@ namespace RockWeb.Blocks.Finance
                         person.LastName = txtLastName.Text;
                         person.EmailPreference = EmailPreference.EmailAllowed;
 
-                        // Create Family
-                        familyGroup = GroupService.SaveNewFamily( rockContext, person, null, false );
+                        // Create Person/Family
+                        familyGroup = PersonService.SaveNewPerson( person, rockContext, null, false );
                     }
 
                     ViewState["PersonId"] = person != null ? person.Id : 0;
