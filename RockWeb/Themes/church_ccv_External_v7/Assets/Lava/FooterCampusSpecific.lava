@@ -1,51 +1,61 @@
-<h3>{{ Context.Campus.Name }}</h3>
-<img class="img-rounded" width="260" height="260" src="//maps.googleapis.com/maps/api/staticmap?zoom=12&size=260x260&markers=scale:2%7Cicon:http://bit.ly/1npXPPc%7C{{ Context.Campus.Location.GeoPoint }}&sensor=false&style=feature:all%7Csaturation:-100&scale=2" alt="Map to {{ Context.Campus.Name }}">
-<ul>
-  <li>
-    {{ Context.Campus.Location.Street1 }}<br>
-    {{ Context.Campus.Location.City }}, {{ Context.Campus.Location.State }} {{ Context.Campus.Location.PostalCode }}
-  </li>
-  <li>
-    {{ Context.Campus.Location.PhoneNumber }}
-  </li>
-</ul>
-<div class="well well-dark">
-  <h4>Service Times</h4>
+<h3 class="margin-t-none">{{ Context.Campus.Name }}</h3>
+<div class="row">
 
-  {% assign times = Context.Campus.ServiceTimes | Split: '|' %}
+  <div class="col-sm-6">
+    <img class="img-rounded margin-b-sm" width="260" height="260" src="//maps.googleapis.com/maps/api/staticmap?zoom=12&size=260x260&markers=scale:2%7Cicon:http://bit.ly/1npXPPc%7C{{ Context.Campus.Location.GeoPoint }}&sensor=false&style=feature:all%7Csaturation:-100&scale=2" alt="Map to {{ Context.Campus.Name }}">
+    <ul class="fa-ul">
+      <li class="margin-b-sm">
+        <i class="fa-li fa fa-map-marker"></i>
+        {{ Context.Campus.Location.Street1 }}<br>
+        {{ Context.Campus.Location.City }}, {{ Context.Campus.Location.State }} {{ Context.Campus.Location.PostalCode }}
+      </li>
+      <li class="margin-b-sm">
+        <i class="fa-li fa fa-phone"></i>
+        {{ Context.Campus.PhoneNumber }}
+      </li>
+    </ul>
+  </div>
 
-  {% for time in times %}
-    {% assign split = time | Split: '^' %}
-    {% if split[0] == 'Saturday' %}
-      {% assign hasSaturday = true %}
-    {% endif %}
-    {% if split[0] == 'Sunday' %}
-      {% assign hasSunday = true %}
-    {% endif %}
-  {% endfor %}
+  <div class="col-sm-6">
+    <div class="well well-dark">
+      <h4>Service Times</h4>
 
-  {% if hasSaturday %}
-    <strong>Saturday</strong>
-    <ul class="list-inline">
+      {% assign times = Context.Campus.ServiceTimes | Split: '|' %}
+
       {% for time in times %}
         {% assign split = time | Split: '^' %}
         {% if split[0] == 'Saturday' %}
-          <li>{{ split[1] }}</li>
+          {% assign hasSaturday = true %}
         {% endif %}
-      {% endfor %}
-    </ul>
-  {% endif %}
-
-  {% if hasSunday %}
-    <strong>Sunday</strong>
-    <ul class="list-inline margin-b-none">
-      {% for time in times %}
-        {% assign split = time | Split: '^' %}
         {% if split[0] == 'Sunday' %}
-          <li>{{ split[1] }}</li>
+          {% assign hasSunday = true %}
         {% endif %}
       {% endfor %}
-    </ul>
-  {% endif %}
 
+      {% if hasSaturday %}
+        <strong>Saturday</strong>
+        <ul class="list-inline">
+          {% for time in times %}
+            {% assign split = time | Split: '^' %}
+            {% if split[0] == 'Saturday' %}
+              <li>{{ split[1] }}</li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if hasSunday %}
+        <strong>Sunday</strong>
+        <ul class="list-inline margin-b-none">
+          {% for time in times %}
+            {% assign split = time | Split: '^' %}
+            {% if split[0] == 'Sunday' %}
+              <li>{{ split[1] }}</li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+    </div>
+  </div>
 </div>

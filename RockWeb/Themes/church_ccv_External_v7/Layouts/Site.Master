@@ -85,10 +85,15 @@
             <div class="container">
 
                 <div class="row">
-			        <div class="col-md-12">
-				        <Rock:Zone Name="Footer" runat="server" />
-			        </div>
-		        </div>
+                    <div class="col-sm-6">
+                        <Rock:Zone Name="Footer Left" runat="server" />
+                    </div>
+                    <div class="col-sm-6">
+                        <Rock:Zone Name="Footer Right" runat="server" />
+                    </div>
+                </div>
+
+                <Rock:Zone Name="Footer" runat="server" />
 
             </div>
 	    </footer>
