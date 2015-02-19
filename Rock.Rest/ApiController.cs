@@ -158,7 +158,10 @@ namespace Rock.Rest
             }
             else
             {
-                throw new HttpResponseException( HttpStatusCode.BadRequest );
+                var response = ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    string.Join( ",", targetModel.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+                throw new HttpResponseException( response );
             }
         }
 
@@ -202,7 +205,7 @@ namespace Rock.Rest
                 var paramExpression = Service.ParameterExpression;
                 var whereExpression = dataView.GetExpression( Service, paramExpression, out errorMessages );
 
-                if ( paramExpression != null)
+                if ( paramExpression != null )
                 {
                     return Service.Get( paramExpression, whereExpression );
                 }
