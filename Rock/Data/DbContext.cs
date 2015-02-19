@@ -212,7 +212,7 @@ namespace Rock.Data
                 // Get the context item to track audits
                 var contextItem = new ContextItem( entity, entry.State );
 
-                // If entity was added or modifed, update the Created/Modified fields
+                // If entity was added or modified, update the Created/Modified fields
                 if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
                 {
                     if ( !TriggerWorkflows( entity, WorkflowTriggerType.PreSave, personAlias ) )
