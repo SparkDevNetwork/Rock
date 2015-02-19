@@ -40,15 +40,19 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Detail Lava" )]
     [Category( "Groups" )]
     [Description( "Presents the details of a group using Lava" )]
-    [BooleanField("Enable Debug", "Shows the fields available to merge in lava.", false)]
-    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}" )]
-    [LinkedPage("Person Detail Page", "Page to link to for more information on a group member.", false)]
-    [LinkedPage( "Group Member Add Page", "Page to use for adding a new group member. If no page is provided the built in group member edit panel will be used. This panel allows the individual to search the database.", false )]
-    [BooleanField("Enable Location Edit", "Enables changing locations when editing a group.")]
-    [CodeEditorField("Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 0)]
-    [CodeEditorField( "Edit Group Post-HTML", "HTML to display after the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 1 )]
-    [CodeEditorField( "Edit Group Member Pre-HTML", "HTML to display before the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 2 )]
-    [CodeEditorField( "Edit Group Member Post-HTML", "HTML to display after the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 3 )]
+
+    [LinkedPage( "Person Detail Page", "Page to link to for more information on a group member.", false, "", "", 0 )]
+    [LinkedPage( "Group Member Add Page", "Page to use for adding a new group member. If no page is provided the built in group member edit panel will be used. This panel allows the individual to search the database.", false, "", "", 1 )]
+    [LinkedPage( "Roster Page", "", true, "", "", 2 )]
+    [LinkedPage( "Attendance Page", "", true, "", "", 3 )]
+    [LinkedPage( "Communication Page", "", true, "", "", 4 )]
+    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 5 )]
+    [BooleanField("Enable Location Edit", "Enables changing locations when editing a group.", false, "", 6)]
+    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 7 )]
+    [CodeEditorField("Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 8)]
+    [CodeEditorField( "Edit Group Post-HTML", "HTML to display after the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 9 )]
+    [CodeEditorField( "Edit Group Member Pre-HTML", "HTML to display before the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 10 )]
+    [CodeEditorField( "Edit Group Member Post-HTML", "HTML to display after the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 11 )]
     public partial class GroupDetailLava : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -523,6 +527,9 @@ namespace RockWeb.Blocks.Groups
                 // add linked pages
                 Dictionary<string, object> linkedPages = new Dictionary<string, object>();
                 linkedPages.Add( "PersonDetailPage", LinkedPageUrl( "PersonDetailPage", null ) );
+                linkedPages.Add( "RosterPage", LinkedPageUrl( "RosterPage", null ) );
+                linkedPages.Add( "AttendancePage", LinkedPageUrl( "AttendancePage", null ) );
+                linkedPages.Add( "CommunicationPage", LinkedPageUrl( "CommunicationPage", null ) );
                 mergeFields.Add( "LinkedPages", linkedPages );
 
                 // add collection of allowed security actions
@@ -533,8 +540,14 @@ namespace RockWeb.Blocks.Groups
                 mergeFields.Add( "AllowedActions", securityActions );
 
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
+                
                 var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
                 globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+
+                Dictionary<string, object> currentPageProperties = new Dictionary<string, object>();
+                currentPageProperties.Add( "Id", RockPage.PageId );
+                currentPageProperties.Add( "Path", Request.Path );
+                mergeFields.Add( "CurrentPage", currentPageProperties );
 
                 string template = GetAttributeValue( "LavaTemplate" );
 
