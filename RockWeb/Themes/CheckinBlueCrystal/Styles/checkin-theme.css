@@ -8227,6 +8227,115 @@ input.checkin-phone-entry {
   right: 1px;
   overflow: hidden;
 }
+/*
+    Used to manage styles related to modal dialog.
+
+*/
+.modal-overflow.modal {
+  top: 48px;
+}
+.modal-content {
+  border: 0;
+  background-color: #4b5c65;
+  color: #ffffff;
+}
+.modal-content .modal-header {
+  background-color: #4b5c65;
+  color: #ffffff;
+  padding: 5px 15px;
+  min-height: 34px;
+}
+.modal-content .modal-header:before,
+.modal-content .modal-header:after {
+  content: " ";
+  display: table;
+}
+.modal-content .modal-header:after {
+  clear: both;
+}
+.modal-content .modal-header:before,
+.modal-content .modal-header:after {
+  content: " ";
+  display: table;
+}
+.modal-content .modal-header:after {
+  clear: both;
+}
+.modal-content .modal-header h3 {
+  float: left;
+  margin-right: 12px;
+}
+.modal-content .modal-header .close {
+  margin: 0;
+  padding: 6px;
+  color: #ffffff;
+  text-shadow: none;
+}
+.modal-content .modal-header .label {
+  margin-top: 8px;
+}
+.modal-content .modal-header small {
+  margin-top: 12px;
+  display: block;
+  color: #e6e6e6;
+}
+.modal-content .modal-body {
+  color: #ffffff;
+  text-align: left;
+}
+.modal-content .modal-body .nav-pills {
+  margin: 6px 0 18px;
+}
+.modal-content .modal-body > .scroll-container {
+  width: 720px;
+}
+.modal-content .modal-body > .scroll-container > .viewport {
+  width: 670px;
+}
+.modal-content .modal-body.iframe {
+  overflow: hidden;
+}
+.modal-content .modal-footer {
+  padding: 8px;
+  margin-top: 10px;
+  background-color: #4b5c65;
+  color: #ffffff;
+  border-radius: 0 0 4px 4px;
+}
+.modal {
+  background-color: #ffffff;
+  margin-top: 20px;
+}
+.modal-body {
+  padding: 8px 12px 12px 12px;
+}
+.modal-footer:after {
+  clear: both;
+}
+.modal-footer .btn {
+  float: right;
+  margin-left: 5px;
+}
+#modal-popup_iframe {
+  height: 100%;
+  width: 100%;
+  border: 0;
+  display: block;
+}
+.modal.bootbox {
+  width: auto;
+}
+.bootbox .modal-dialog {
+  margin: 0;
+}
+@media (max-width: 991px) {
+  .bootbox .modal-dialog {
+    width: auto;
+  }
+}
+.bootbox .modal-body {
+  padding-top: 20px;
+}
 @font-face {
   font-family: 'OpenSans';
   src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
