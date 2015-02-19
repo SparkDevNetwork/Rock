@@ -31,13 +31,13 @@ namespace Rock.Net
     /// Used by Apps.CheckScannerUtility
     /// </summary>
     [System.ComponentModel.DesignerCategory( "Code" )]
-    [Obsolete("The RestSharp library should be used instead of this class.  This class will eventually be removed.")]
+    //[Obsolete("The RestSharp library should be used instead of this class.  This class will eventually be removed.")]
     public class RockRestClient : WebClient
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RockRestClient"/> class.
         /// </summary>
-        [Obsolete( "The RestSharp library should be used instead of this class.  This class will eventually be removed." )]
+        //[Obsolete( "The RestSharp library should be used instead of this class.  This class will eventually be removed." )]
         public RockRestClient( string rockBaseUrl )
             : this( rockBaseUrl, new CookieContainer() )
         {
@@ -49,7 +49,7 @@ namespace Rock.Net
         /// </summary>
         /// <param name="rockBaseUrl">The rock base URL.</param>
         /// <param name="c">The c.</param>
-        [Obsolete( "The RestSharp library should be used instead of this class.  This class will eventually be removed." )]
+        //[Obsolete( "The RestSharp library should be used instead of this class.  This class will eventually be removed." )]
         public RockRestClient( string rockBaseUrl, CookieContainer c )
         {
             this.CookieContainer = c;
@@ -552,6 +552,29 @@ namespace Rock.Net
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Uploads the binary file returning the resulting binaryFile.Id
+        /// </summary>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="fileTypeGuid">The file type unique identifier.</param>
+        /// <param name="fileData">The file data.</param>
+        /// <param name="isTemporary">if set to <c>true</c> [is temporary].</param>
+        /// <returns></returns>
+        public int UploadBinaryFile( string fileName, Guid fileTypeGuid, byte[] fileData, bool isTemporary )
+        {
+            RestSharp.RestClient restClient = new RestSharp.RestClient( this.rockBaseUri );
+            restClient.CookieContainer = this.CookieContainer;
+            RestSharp.RestRequest request = new RestSharp.RestRequest( "FileUploader.ashx", RestSharp.Method.POST );
+            request.AddQueryParameter( "isBinaryFile", "true" );
+            request.AddQueryParameter( "fileTypeGuid", fileTypeGuid.ToString() );
+            request.AddQueryParameter( "isTemporary", isTemporary.ToString() );
+            request.AddFile( "file0", fileData, fileName );
+            var response = restClient.Execute( request ).Content;
+
+            dynamic responseObj = JsonConvert.DeserializeObject( response );
+            return responseObj.Id;
         }
     }
 
