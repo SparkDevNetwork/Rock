@@ -393,7 +393,7 @@ namespace Rock.Model
                                 var prevLocationType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS );
                                 if ( prevLocationType != null )
                                 {
-                                    foreach ( var prevLoc in groupLocationService.Queryable()
+                                    foreach ( var prevLoc in groupLocationService.Queryable( "Location,GroupLocationTypeValue" )
                                         .Where( gl =>
                                             gl.GroupId == family.Id &&
                                             gl.GroupLocationTypeValueId == locationType.Id ) )
