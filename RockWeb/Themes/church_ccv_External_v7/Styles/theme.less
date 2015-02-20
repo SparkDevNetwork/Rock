@@ -55,11 +55,52 @@ main {
 .mainfooter {
   background: #333;
   color: #fff;
+  font-weight: 300;
   padding-top: @grid-gutter-width;
   padding-bottom: @grid-gutter-width;
 
   & a { color: inherit; }
 }
+
+.footernav {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: .9em;
+  margin-top: 3px;
+  @media @sm {
+    text-align: right;
+  }
+}
+  .footernav-col {
+    display: inline-block;
+    text-align: right;
+    vertical-align: top;
+    padding-left: @grid-gutter-width;
+    max-width: 35%;
+    @media @sm {
+      max-width: 30%;
+    }
+  }
+  .footernav-col-main {
+    text-align: left;
+    padding-left: 0;
+    font-weight: @headings-font-weight;
+  }
+    .footernav-header {
+      margin-top: 0;
+      font-size: inherit;
+    }
+    .footernav-items {
+      padding-left: 0;
+      list-style-type: none;
+    }
+      .footernav-item {
+        margin-bottom: @grid-gutter-width/2;
+        line-height: @headings-line-height;
+      }
+      .footernav-item-sub {
+        opacity: .5;
+      }
 
 .announcement-rotator {
     margin-bottom: @spacing-lg-px;
@@ -75,6 +116,21 @@ main {
         margin-bottom: @grid-gutter-width;
         img { border-radius: @border-radius-large; }
     }
+
+.social {
+  a { text-decoration: none; }
+}
+  .social-fade {
+    a { opacity: .5; .transition(.3s); }
+    a:hover { opacity: 1; }
+  }
+  .social-dark {}
+  .social-dark .fa-inverse {
+    color: @gray-dark;
+  }
+  .social-icon-md {
+    font-size: 1.5em;
+  }
 
 // Undo appearance of block panels
 .panel.panel-block {
@@ -94,6 +150,9 @@ main {
     }
 }
 
+.well {
+  margin-bottom: @grid-gutter-width/2; // override bs default of 20px
+}
 .well-dark {
   background: @gray;
   border-color: @gray-light;

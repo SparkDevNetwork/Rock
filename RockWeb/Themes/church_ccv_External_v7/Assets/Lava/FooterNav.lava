@@ -6,37 +6,38 @@
 
 
 {% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
-  <div class="row">
+  <div class="footernav">
 
-    <div class="col-xs-4 col-md-3 col-md-offset-1 col-lg-2 col-lg-offset-2">
+    <div class="footernav-col footernav-col-main">
+      <ul class="footernav-items">
+        {% for childPage in Page.Pages %}
 
-      {% for childPage in Page.Pages %}
+          {% if childPage.Title == "Menu" %}
+            {% assign menuPage = childPage %}
+          {% else %}
+            <li class="footernav-item"><a href="{{ childPage.Url }}">{{ childPage.Title }}</a></li>
+          {% endif %}
 
-        {% if childPage.Title == "Menu" %}
-          {% assign menuPage = childPage %}
-        {% else %}
-          <p><strong><a href="{{ childPage.Url }}">{{ childPage.Title }}</a></strong></p>
-        {% endif %}
-
-      {% endfor %}
+        {% endfor %}
+      </ul>
 
     </div>
 
     {% for childPage in menuPage.Pages %}
 
-      <div class="col-xs-4 text-right">
+      <div class="footernav-col">
 
-        <p><strong>{{ childPage.Title }}</strong></p>
+        <h5 class="footernav-header">{{ childPage.Title }}</h5>
 
-        <ul class="list-unstyled">
+        <ul class="footernav-items">
         {% for gchildPage in childPage.Pages %}
 
           {% if gchildPage.Title == "Sub" %}
             {% for ggchildPage in gchildPage.Pages %}
-              <li> <em><a href="{{ ggchildPage.Url }}">{{ ggchildPage.Title }}</a></em> </li>
+              <li class="footernav-item footernav-item-sub"><a href="{{ ggchildPage.Url }}">{{ ggchildPage.Title }}</a></li>
             {% endfor %}
           {% else %}
-            <li> <a href="{{ gchildPage.Url }}">{{ gchildPage.Title }}</a> </li>
+            <li class="footernav-item"><a href="{{ gchildPage.Url }}">{{ gchildPage.Title }}</a></li>
           {% endif %}
 
 

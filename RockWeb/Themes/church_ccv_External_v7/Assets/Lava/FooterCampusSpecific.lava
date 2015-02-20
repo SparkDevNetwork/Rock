@@ -57,5 +57,31 @@
       {% endif %}
 
     </div>
+    <div class="social social-dark social-fade margin-b-md">
+      <a href="http://twitter.com/ccvonline" title="CCV on Twitter">
+        <span class="fa-stack fa-lg">
+          <i class="fa fa-circle fa-stack-2x"></i>
+          <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+        </span>
+      </a>
+      <a href="http://facebook.com/ccvonline" title="CCV on Facebook">
+        <span class="fa-stack fa-lg">
+          <i class="fa fa-circle fa-stack-2x"></i>
+          <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+        </span>
+      </a>
+      <a href="http://instagram.com/ccvonline" title="CCV on Instagram">
+        <span class="fa-stack fa-lg">
+          <i class="fa fa-circle fa-stack-2x"></i>
+          <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+        </span>
+      </a>
+      <a href="http://ccv.church/apps" title="Mobile Apps from CCV">
+        <span class="fa-stack fa-lg">
+          <i class="fa fa-circle fa-stack-2x"></i>
+          <i class="fa fa-mobile fa-stack-1x fa-inverse social-icon-md"></i>
+        </span>
+      </a>
+    </div>
   </div>
 </div>
