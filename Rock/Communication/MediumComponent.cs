@@ -88,6 +88,17 @@ namespace Rock.Communication
         public abstract MediumControl GetControl( bool useSimpleMode );
 
         /// <summary>
+        /// Gets a value indicating whether [supports bulk communication].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [supports bulk communication]; otherwise, <c>false</c>.
+        /// </value>
+        public abstract bool SupportsBulkCommunication
+        {
+            get;
+        }
+
+        /// <summary>
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
