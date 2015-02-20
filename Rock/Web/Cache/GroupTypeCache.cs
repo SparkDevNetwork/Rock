@@ -156,6 +156,15 @@ namespace Rock.Web.Cache
         public bool TakesAttendance { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [send attendance reminder].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [send attendance reminder]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool SendAttendanceReminder { get; set; }
+
+        /// <summary>
         /// Gets or sets the attendance rule.
         /// </summary>
         /// <value>
@@ -394,6 +403,7 @@ namespace Rock.Web.Cache
                 this.ShowInNavigation = groupType.ShowInNavigation;
                 this.IconCssClass = groupType.IconCssClass;
                 this.TakesAttendance = groupType.TakesAttendance;
+                this.SendAttendanceReminder = groupType.SendAttendanceReminder;
                 this.AttendanceRule = groupType.AttendanceRule;
                 this.AttendancePrintTo = groupType.AttendancePrintTo;
                 this.Order = groupType.Order;

@@ -168,6 +168,10 @@
     <Compile Include="Migrations\201502181628400_SiteCommunicationPage.Designer.cs">
       <DependentUpon>201502181628400_SiteCommunicationPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201502201729341_SendAttendanceReminder.cs" />
+    <Compile Include="Migrations\201502201729341_SendAttendanceReminder.Designer.cs">
+      <DependentUpon>201502201729341_SendAttendanceReminder.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.cs" />
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.Designer.cs">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
@@ -1542,6 +1546,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201502181628400_SiteCommunicationPage.resx">
       <DependentUpon>201502181628400_SiteCommunicationPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201502201729341_SendAttendanceReminder.resx">
+      <DependentUpon>201502201729341_SendAttendanceReminder.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.resx">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>

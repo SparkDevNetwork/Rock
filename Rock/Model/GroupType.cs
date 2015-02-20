@@ -165,6 +165,14 @@ namespace Rock.Model
         [DataMember]
         public bool TakesAttendance { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating if an attendance reminder should be sent to group leaders.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [send attendance reminder]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool SendAttendanceReminder { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.AttendanceRule"/> that indicates how attendance is managed a <see cref="Rock.Model.Group"/> of this GroupType
