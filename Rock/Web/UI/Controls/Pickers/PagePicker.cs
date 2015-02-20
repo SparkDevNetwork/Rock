@@ -382,7 +382,7 @@ namespace Rock.Web.UI.Controls
             _hfPageRouteId.ID = string.Format( "hfPageRouteId_{0}", this.ID );
 
             _btnShowPageRoutePicker = new HyperLink();
-            _btnShowPageRoutePicker.CssClass = "btn btn-xs btn-link";
+            _btnShowPageRoutePicker.CssClass = "btn btn-xs btn-link js-hide-on-select-none";
             _btnShowPageRoutePicker.ID = string.Format( "btnShowPageRoutePicker_{0}", this.ID );
             _btnShowPageRoutePicker.Text = "Pick Route";
             _btnShowPageRoutePicker.Style[HtmlTextWriterStyle.Display] = "none";
@@ -427,14 +427,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// This is where you implment the simple aspects of rendering your control.  The rest
-        /// will be handled by calling RenderControlHelper's RenderControl() method.
+        /// Renders the child picker controls in the right spot
         /// </summary>
         /// <param name="writer">The writer.</param>
-        public override void RenderBaseControl( HtmlTextWriter writer )
+        public override void RenderChildPickerControls( HtmlTextWriter writer )
         {
-            base.RenderBaseControl( writer );
-
             // don't show the PageRoutePicker if this control is not enabled (readonly)
             if ( this.Enabled )
             {
