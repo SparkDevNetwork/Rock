@@ -833,6 +833,8 @@ namespace RockWeb.Blocks.Communication
                     nbInvalidTransport.Visible = false;
                 }
 
+                cbBulk.Visible = component.SupportsBulkCommunication;
+
                 return mediumControl;
             }
 
