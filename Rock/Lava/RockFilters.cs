@@ -909,6 +909,16 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string ToJSON (object input)
+        {
+            return input.ToJson();
+        }
+
         #endregion
     }
 }
