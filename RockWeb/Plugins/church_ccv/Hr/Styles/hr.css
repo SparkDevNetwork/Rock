@@ -12,3 +12,8 @@
 .gridresponsive-commandcolumn {
   text-align: right;
 }
+
+/* MP */
+.timecard-subtotal-item {
+    font-weight:bold;
+}
