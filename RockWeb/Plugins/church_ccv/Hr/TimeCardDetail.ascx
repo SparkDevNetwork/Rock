@@ -149,7 +149,7 @@
 
                                 <div class="col-md-2 pull-right gridresponsive-commandcolumn">
                                     <asp:LinkButton runat="server" ID="lbSave" CssClass="btn btn-success btn-sm js-item-save margin-b-sm" OnClick="lbSave_Click"><i class="fa fa-check"></i></asp:LinkButton>
-                                    <a runat="server" id="lbCancel" class="btn btn-default btn-sm js-item-cancel margin-b-sm"><i class="fa fa-chevron-up"></i></a>
+                                    <a runat="server" id="lbCancel" class="btn btn-warning btn-sm js-item-cancel margin-b-sm"><i class="fa fa-minus"></i></a>
                                 </div>
 
                             </div>
