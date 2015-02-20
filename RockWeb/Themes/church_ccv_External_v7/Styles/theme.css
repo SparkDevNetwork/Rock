@@ -5539,6 +5539,9 @@ main {
   padding-top: 30px;
   padding-bottom: 30px;
 }
+.mainfooter a {
+  color: inherit;
+}
 .announcement-rotator {
   margin-bottom: 30px;
 }

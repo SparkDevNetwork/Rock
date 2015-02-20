@@ -1,0 +1,51 @@
+{% comment %}
+
+  Make sure nav block is set to 4 levels of depth
+
+{% endcomment%}
+
+
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+  <div class="row">
+
+    <div class="col-xs-4 col-md-3 col-md-offset-1 col-lg-2 col-lg-offset-2">
+
+      {% for childPage in Page.Pages %}
+
+        {% if childPage.Title == "Menu" %}
+          {% assign menuPage = childPage %}
+        {% else %}
+          <p><strong><a href="{{ childPage.Url }}">{{ childPage.Title }}</a></strong></p>
+        {% endif %}
+
+      {% endfor %}
+
+    </div>
+
+    {% for childPage in menuPage.Pages %}
+
+      <div class="col-xs-4 text-right">
+
+        <p><strong>{{ childPage.Title }}</strong></p>
+
+        <ul class="list-unstyled">
+        {% for gchildPage in childPage.Pages %}
+
+          {% if gchildPage.Title == "Sub" %}
+            {% for ggchildPage in gchildPage.Pages %}
+              <li> <em><a href="{{ ggchildPage.Url }}">{{ ggchildPage.Title }}</a></em> </li>
+            {% endfor %}
+          {% else %}
+            <li> <a href="{{ gchildPage.Url }}">{{ gchildPage.Title }}</a> </li>
+          {% endif %}
+
+
+        {% endfor %}
+        </ul>
+
+      </div>
+
+    {% endfor %}
+
+  </div>
+{% endif %}
