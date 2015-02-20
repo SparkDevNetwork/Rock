@@ -519,7 +519,8 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "id", this.ClientID );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( "class", "form-group" );
+                writer.AddAttribute( "class", "form-group " + (this.Required ? "required" : "") );
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
                 writer.AddAttribute( HtmlTextWriterAttribute.For, _tbStreet1.ClientID );
@@ -534,7 +535,7 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( "class", "form-group" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-                    writer.AddAttribute( HtmlTextWriterAttribute.For, _tbStreet1.ClientID );
+                    writer.AddAttribute( HtmlTextWriterAttribute.For, _tbStreet2.ClientID );
                     writer.RenderBeginTag( HtmlTextWriterTag.Label );
                     writer.Write( "Address Line 2" );
                     writer.RenderEndTag();  // label
@@ -548,7 +549,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "form-group col-sm-6" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-                writer.AddAttribute( HtmlTextWriterAttribute.For, _tbStreet1.ClientID );
+                writer.AddAttribute( HtmlTextWriterAttribute.For, _tbCity.ClientID );
                 writer.RenderBeginTag( HtmlTextWriterTag.Label );
                 writer.Write( cityLabel );
                 writer.RenderEndTag();  // label
@@ -558,7 +559,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "form-group col-sm-3" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-                writer.AddAttribute( HtmlTextWriterAttribute.For, _tbStreet1.ClientID );
+                writer.AddAttribute( HtmlTextWriterAttribute.For, _tbState.ClientID );
                 writer.RenderBeginTag( HtmlTextWriterTag.Label );
                 writer.Write( stateLabel );
                 writer.RenderEndTag();  // label
@@ -569,7 +570,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "form-group col-sm-3" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-                writer.AddAttribute( HtmlTextWriterAttribute.For, _tbStreet1.ClientID );
+                writer.AddAttribute( HtmlTextWriterAttribute.For, _tbPostalCode.ClientID );
                 writer.RenderBeginTag( HtmlTextWriterTag.Label );
                 writer.Write( postalCodeLabel );
                 writer.RenderEndTag();  // label
