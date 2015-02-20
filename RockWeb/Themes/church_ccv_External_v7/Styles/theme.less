@@ -54,7 +54,9 @@ main {
 
 .mainfooter {
   background: #333;
+  .img-retina('../Assets/Images/cloth.png'; '../Assets/Images/cloth@2x.png'; 100px; 100px);
   color: #fff;
+  letter-spacing: .5px;
   font-weight: 300;
   padding-top: @grid-gutter-width;
   padding-bottom: @grid-gutter-width;
@@ -65,24 +67,25 @@ main {
 .footernav {
   text-transform: uppercase;
   letter-spacing: 1px;
-  font-size: .9em;
-  margin-top: 3px;
+  font-size: .91em;
+  // margin-top: 3px; // align with campus name
+  margin-top: (@font-size-h3 * @headings-line-height) + @grid-gutter-width/2 - 5px; // align with map
   @media @sm {
     text-align: right;
   }
 }
   .footernav-col {
     display: inline-block;
-    text-align: right;
+    text-align: left;
     vertical-align: top;
     padding-left: @grid-gutter-width;
     max-width: 35%;
-    @media @sm {
-      max-width: 30%;
-    }
+    // @media @sm {
+    //   max-width: 30%;
+    // }
   }
   .footernav-col-main {
-    text-align: left;
+    // text-align: left;
     padding-left: 0;
     font-weight: @headings-font-weight;
   }
@@ -153,11 +156,14 @@ main {
 .well {
   margin-bottom: @grid-gutter-width/2; // override bs default of 20px
 }
-.well-dark {
-  background: @gray;
-  border-color: @gray-light;
-  color: @gray-lighter;
-}
+  .well-dark {
+    background: rgba(255,255,255,.075);
+    border-color: rgba(255,255,255,.15);
+    color: @gray-lighter;
+  }
+  .well-borderless {
+    border: none;
+  }
 
 // Type things
 .underline {

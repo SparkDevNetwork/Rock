@@ -17,7 +17,7 @@
   </div>
 
   <div class="col-sm-6">
-    <div class="well well-dark">
+    <div class="well well-dark well-borderless">
       <h4>Service Times</h4>
 
       {% assign times = Context.Campus.ServiceTimes | Split: '|' %}

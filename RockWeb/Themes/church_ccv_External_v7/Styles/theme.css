@@ -5535,10 +5535,18 @@ main {
 }
 .mainfooter {
   background: #333;
+  background-image: url("../Assets/Images/cloth.png");
   color: #fff;
+  letter-spacing: .5px;
   font-weight: 300;
   padding-top: 30px;
   padding-bottom: 30px;
+}
+@media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio: 2), only screen and (-o-min-device-pixel-ratio: 2/1), only screen and (min-device-pixel-ratio: 2), only screen and (min-resolution: 192dpi), only screen and (min-resolution: 2dppx) {
+  .mainfooter {
+    background-image: url("../Assets/Images/cloth@2x.png");
+    background-size: 100px 100px;
+  }
 }
 .mainfooter a {
   color: inherit;
@@ -5546,8 +5554,8 @@ main {
 .footernav {
   text-transform: uppercase;
   letter-spacing: 1px;
-  font-size: .9em;
-  margin-top: 3px;
+  font-size: .91em;
+  margin-top: 44.1px;
 }
 @media (min-width: 768px) {
   .footernav {
@@ -5556,18 +5564,12 @@ main {
 }
 .footernav-col {
   display: inline-block;
-  text-align: right;
+  text-align: left;
   vertical-align: top;
   padding-left: 30px;
   max-width: 35%;
 }
-@media (min-width: 768px) {
-  .footernav-col {
-    max-width: 30%;
-  }
-}
 .footernav-col-main {
-  text-align: left;
   padding-left: 0;
   font-weight: 700;
 }
@@ -5635,9 +5637,12 @@ main {
   margin-bottom: 15px;
 }
 .well-dark {
-  background: #555555;
-  border-color: #777777;
+  background: rgba(255, 255, 255, 0.075);
+  border-color: rgba(255, 255, 255, 0.15);
   color: #eeeeee;
+}
+.well-borderless {
+  border: none;
 }
 .underline {
   border-bottom: 1px solid #eeeeee;
