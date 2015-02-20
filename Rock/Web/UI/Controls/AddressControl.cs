@@ -15,13 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Constants;
-using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -48,8 +45,15 @@ namespace Rock.Web.UI.Controls
         ]
         public string Label
         {
-            get { return ViewState["Label"] as string ?? string.Empty; }
-            set { ViewState["Label"] = value; }
+            get
+            {
+                return ViewState["Label"] as string ?? string.Empty;
+            }
+
+            set
+            {
+                ViewState["Label"] = value;
+            }
         }
 
         /// <summary>
@@ -70,6 +74,7 @@ namespace Rock.Web.UI.Controls
             {
                 return HelpBlock != null ? HelpBlock.Text : string.Empty;
             }
+
             set
             {
                 if ( HelpBlock != null )
@@ -78,6 +83,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
         /// </summary>
@@ -92,8 +98,15 @@ namespace Rock.Web.UI.Controls
         ]
         public bool Required
         {
-            get { return ViewState["Required"] as bool? ?? false; }
-            set { ViewState["Required"] = value; }
+            get
+            {
+                return ViewState["Required"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["Required"] = value;
+            }
         }
 
         /// <summary>
@@ -108,6 +121,7 @@ namespace Rock.Web.UI.Controls
             {
                 return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
             }
+
             set
             {
                 if ( RequiredFieldValidator != null )
@@ -258,7 +272,7 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
 
-                string state =  value ?? GetDefaultState();
+                string state = value ?? GetDefaultState();
                 _tbState.Text = state;
                 _ddlState.SetValue( state );
             }
@@ -304,7 +318,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
 
                 string country = value ?? GetDefaultCountry();
-                _ddlCountry.SetValue( country  );
+                _ddlCountry.SetValue( country );
                 BindStates( country );
             }
         }
@@ -321,6 +335,7 @@ namespace Rock.Web.UI.Controls
             {
                 return ViewState["ShowAddressLine2"] as bool? ?? true;
             }
+
             set
             {
                 ViewState["ShowAddressLine2"] = value;
@@ -336,6 +351,7 @@ namespace Rock.Web.UI.Controls
             {
                 return ViewState["UseStateAbbreviation"] as bool? ?? true;
             }
+
             set
             {
                 if ( ( ViewState["UseStateAbbreviation"] as bool? ?? false ) != value )
@@ -360,6 +376,7 @@ namespace Rock.Web.UI.Controls
             {
                 return ViewState["UseCountryAbbreviation"] as bool? ?? false;
             }
+
             set
             {
                 if ( ( ViewState["UseCountryAbbreviation"] as bool? ?? false ) != value )
@@ -509,17 +526,17 @@ namespace Rock.Web.UI.Controls
                     .DefinedValues
                     .Where( v => v.Value.Equals( _ddlCountry.SelectedValue, StringComparison.OrdinalIgnoreCase ) )
                     .FirstOrDefault();
-                if (countryValue != null)
+                if ( countryValue != null )
                 {
                     cityLabel = countryValue.GetAttributeValue( "CityLabel" );
                     stateLabel = countryValue.GetAttributeValue( "StateLabel" );
-                    postalCodeLabel = countryValue.GetAttributeValue("PostalCodeLabel");
+                    postalCodeLabel = countryValue.GetAttributeValue( "PostalCodeLabel" );
                 }
-                
+
                 writer.AddAttribute( "id", this.ClientID );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( "class", "form-group " + (this.Required ? "required" : "") );
+                writer.AddAttribute( "class", "form-group " + ( this.Required ? "required" : string.Empty ) );
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
@@ -609,11 +626,16 @@ namespace Rock.Web.UI.Controls
 
         #region Events
 
-        void _ddlCountry_SelectedIndexChanged( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the _ddlCountry control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        public void _ddlCountry_SelectedIndexChanged( object sender, EventArgs e )
         {
             EnsureChildControls();
 
-            if (string.IsNullOrWhiteSpace(_ddlCountry.SelectedValue))
+            if ( string.IsNullOrWhiteSpace( _ddlCountry.SelectedValue ) )
             {
                 _ddlCountry.SelectedIndex = 0;
             }
@@ -623,7 +645,7 @@ namespace Rock.Web.UI.Controls
 
             BindStates( _ddlCountry.SelectedValue );
 
-            if (_tbState.Visible)
+            if ( _tbState.Visible )
             {
                 State = selectedStateFromEdit;
             }
@@ -641,7 +663,7 @@ namespace Rock.Web.UI.Controls
         /// Sets the values.
         /// </summary>
         /// <param name="location">The location.</param>
-        public void SetValues( Rock.Model.Location location)
+        public void SetValues( Rock.Model.Location location )
         {
             if ( location != null )
             {
@@ -694,6 +716,9 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Sets the organization address defaults.
+        /// </summary>
         private void SetOrganizationAddressDefaults()
         {
             var globalAttributesCache = GlobalAttributesCache.Read();
@@ -701,6 +726,9 @@ namespace Rock.Web.UI.Controls
             _orgCountry = globalAttributesCache.OrganizationCountry;
         }
 
+        /// <summary>
+        /// Binds the countries.
+        /// </summary>
         private void BindCountries()
         {
             string currentValue = _ddlCountry.SelectedValue;
@@ -716,20 +744,21 @@ namespace Rock.Web.UI.Controls
                 .OrderBy( v => v.Order )
                 .ThenBy( v => v.Value )
                 .ToList();
-            
+
             // Move default country to the top of the list
             string defaultCountryCode = GetDefaultCountry();
-            if (!string.IsNullOrWhiteSpace(defaultCountryCode))
+            if ( !string.IsNullOrWhiteSpace( defaultCountryCode ) )
             {
                 var defaultCountry = countryValues
-                    .Where( v => v.Value.Equals(defaultCountryCode, StringComparison.OrdinalIgnoreCase))
+                    .Where( v => v.Value.Equals( defaultCountryCode, StringComparison.OrdinalIgnoreCase ) )
                     .FirstOrDefault();
-                if (defaultCountry != null)
+                if ( defaultCountry != null )
                 {
                     _ddlCountry.Items.Add( new ListItem( UseCountryAbbreviation ? defaultCountry.Value : defaultCountry.Description, defaultCountry.Value ) );
-                    _ddlCountry.Items.Add( new ListItem( "------------------------", "" ) );
+                    _ddlCountry.Items.Add( new ListItem( "------------------------", string.Empty ) );
                 }
             }
+
             foreach ( var country in countryValues )
             {
                 _ddlCountry.Items.Add( new ListItem( UseCountryAbbreviation ? country.Value : country.Description, country.Value ) );
@@ -744,6 +773,10 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Binds the states.
+        /// </summary>
+        /// <param name="country">The country.</param>
         private void BindStates( string country )
         {
             string countryGuid = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
@@ -760,12 +793,12 @@ namespace Rock.Web.UI.Controls
                     (
                         v.AttributeValues.ContainsKey( "Country" ) &&
                         v.AttributeValues["Country"] != null &&
-                        v.AttributeValues["Country"].Value.Equals( countryGuid, StringComparison.OrdinalIgnoreCase ) 
+                        v.AttributeValues["Country"].Value.Equals( countryGuid, StringComparison.OrdinalIgnoreCase )
                     ) ||
                     (
                         ( !v.AttributeValues.ContainsKey( "Country" ) || v.AttributeValues["Country"] == null ) &&
-                        v.Attributes.ContainsKey("Country") &&
-                        v.Attributes["Country"].DefaultValue.Equals( countryGuid, StringComparison.OrdinalIgnoreCase)
+                        v.Attributes.ContainsKey( "Country" ) &&
+                        v.Attributes["Country"].DefaultValue.Equals( countryGuid, StringComparison.OrdinalIgnoreCase )
                     ) )
                 .OrderBy( v => v.Order )
                 .ThenBy( v => v.Value )
@@ -788,7 +821,7 @@ namespace Rock.Web.UI.Controls
                 _ddlState.DataSource = stateList;
                 _ddlState.DataBind();
 
-                if (!string.IsNullOrWhiteSpace(currentValue))
+                if ( !string.IsNullOrWhiteSpace( currentValue ) )
                 {
                     _ddlState.SetValue( currentValue );
                 }
