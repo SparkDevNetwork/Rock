@@ -249,6 +249,19 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Handles the Click event of the lbSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbCancel_Click( object sender, EventArgs e )
+        {
+            if ( _group != null )
+            {
+                NavigateToParentPage( new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } } );
+            }
+        }
+        
+        /// <summary>
         /// Handles the ItemCommand event of the lvPendingMembers control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>

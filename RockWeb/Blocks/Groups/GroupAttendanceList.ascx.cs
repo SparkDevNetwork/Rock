@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Groups
                     occurrences = qry.OrderByDescending( a => a.StartDateTime ).ToList();
                 }
 
-                gOccurrences.DataSource = occurrences.OrderByDescending( o => o.StartDateTime ).ToList();
+                gOccurrences.DataSource = occurrences;
                 gOccurrences.DataBind();
             }
         }

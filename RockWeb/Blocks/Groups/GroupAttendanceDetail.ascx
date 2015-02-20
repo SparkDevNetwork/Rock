@@ -40,10 +40,6 @@
                                 </asp:ListView>
                             </div>
 
-                            <div class="actions">
-                                <asp:LinkButton ID="lbSave" runat="server" Text="Save Attendance" CssClass="btn btn-primary" OnClick="lbSave_Click" CausesValidation="false" />
-                            </div>
-
                         </div>
                         <div class="col-md-6">
 
@@ -61,6 +57,11 @@
                             </asp:panel>
 
                         </div>
+                    </div>
+
+                    <div class="actions">
+                        <asp:LinkButton ID="lbSave" runat="server" Text="Save Attendance" CssClass="btn btn-primary" OnClick="lbSave_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="lbCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancel_Click" CausesValidation="false"></asp:LinkButton>
                     </div>
 
                 </asp:Panel>
