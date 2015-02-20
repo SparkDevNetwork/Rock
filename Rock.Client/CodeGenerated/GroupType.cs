@@ -98,6 +98,9 @@ namespace Rock.Client
         public ICollection<GroupTypeRole> Roles { get; set; }
 
         /// <summary />
+        public bool SendAttendanceReminder { get; set; }
+
+        /// <summary />
         public bool ShowInGroupList { get; set; }
 
         /// <summary />
