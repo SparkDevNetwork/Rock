@@ -966,6 +966,7 @@ namespace RockWeb.Blocks.Finance
                         person = new Person();
                         person.FirstName = txtFirstName.Text;
                         person.LastName = txtLastName.Text;
+                        person.IsEmailActive = true;
                         person.EmailPreference = EmailPreference.EmailAllowed;
                         person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                         if ( dvcConnectionStatus != null )

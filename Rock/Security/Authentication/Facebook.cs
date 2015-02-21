@@ -369,6 +369,7 @@ namespace Rock.Security.ExternalAuthentication
                         person.FirstName = firstName;
                         person.LastName = lastName;
                         person.Email = email;
+                        person.IsEmailActive = true;
                         person.EmailPreference = EmailPreference.EmailAllowed;
                         try
                         {
