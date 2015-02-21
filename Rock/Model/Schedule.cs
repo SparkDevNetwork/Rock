@@ -768,6 +768,14 @@ namespace Rock.Model
         public DateTime EndDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the schedule identifier.
+        /// </summary>
+        /// <value>
+        /// The schedule identifier.
+        /// </value>
+        public int? ScheduleId { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether attendance has been entered for this occurrence.
         /// </summary>
         /// <value>
@@ -833,10 +841,11 @@ namespace Rock.Model
         /// Initializes a new instance of the <see cref="ScheduleOccurrence" /> class.
         /// </summary>
         /// <param name="occurrence">The occurrence.</param>
-        public ScheduleOccurrence( DDay.iCal.Occurrence occurrence )
+        public ScheduleOccurrence( DDay.iCal.Occurrence occurrence, int? scheduleId = null )
         {
             StartDateTime = occurrence.Period.StartTime.Value;
             EndDateTime = occurrence.Period.EndTime.Value;
+            ScheduleId = scheduleId;
         }
 
         /// <summary>
@@ -844,10 +853,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="startDateTime">The start date time.</param>
         /// <param name="endDateTime">The end date time.</param>
-        public ScheduleOccurrence( DateTime startDateTime, DateTime endDateTime )
+        public ScheduleOccurrence( DateTime startDateTime, DateTime endDateTime, int? scheduleId = null )
         {
             StartDateTime = startDateTime;
             EndDateTime = endDateTime;
+            ScheduleId = scheduleId;
         }
     }
 
