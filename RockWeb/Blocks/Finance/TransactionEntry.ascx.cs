@@ -103,6 +103,8 @@ namespace RockWeb.Blocks.Finance
 
     [TextField( "Save Account Title", "The text to display as heading of section for saving payment information.", false, "Make Giving Even Easier", "Text Options", 24 )]
 
+    [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 25 )]
+    [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 26 )]
     #endregion
 
     public partial class TransactionEntry : Rock.Web.UI.RockBlock
@@ -957,11 +959,24 @@ namespace RockWeb.Blocks.Finance
 
                     if ( person == null )
                     {
+                        DefinedValueCache dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+                        DefinedValueCache dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+
                         // Create Person
                         person = new Person();
                         person.FirstName = txtFirstName.Text;
                         person.LastName = txtLastName.Text;
                         person.EmailPreference = EmailPreference.EmailAllowed;
+                        person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                        if ( dvcConnectionStatus != null )
+                        {
+                            person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                        }
+
+                        if ( dvcRecordStatus != null )
+                        {
+                            person.RecordStatusValueId = dvcRecordStatus.Id;
+                        }
 
                         // Create Person/Family
                         familyGroup = PersonService.SaveNewPerson( person, rockContext, null, false );

@@ -312,5 +312,19 @@ namespace Rock.Communication.Medium
             return "@" + randomNumber.ToString();
         }
 
+        /// <summary>
+        /// Gets a value indicating whether [supports bulk communication].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [supports bulk communication]; otherwise, <c>false</c>.
+        /// </value>
+        public override bool SupportsBulkCommunication
+        {
+            get
+            {
+                return false;
+            }
+        }
+
     }
 }

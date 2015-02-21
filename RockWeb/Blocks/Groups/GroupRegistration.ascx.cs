@@ -215,6 +215,7 @@ namespace RockWeb.Blocks.Groups
                     person.FirstName = tbFirstName.Text.Trim();
                     person.LastName = tbLastName.Text.Trim();
                     person.Email = tbEmail.Text.Trim();
+                    person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                     person.ConnectionStatusValueId = _dvcConnectionStatus.Id;
                     person.RecordStatusValueId = _dvcRecordStatus.Id;
                     person.Gender = Gender.Unknown;

@@ -1511,10 +1511,22 @@ namespace Rock.Web.UI.Controls
         /// <param name="modelType">Type of the model.</param>
         public void CreatePreviewColumns( Type modelType )
         {
+            // if there is a selectField, keep it to preserve which items are checked
+            var selectField = this.Columns.OfType<SelectField>().FirstOrDefault();
             this.Columns.Clear();
-            foreach ( var column in GetPreviewColumns( modelType ) )
+
+            var previewColumns = GetPreviewColumns( modelType );
+            foreach ( var column in previewColumns )
             {
-                this.Columns.Add( column );
+                if ( column is SelectField )
+                {
+                    // if we already had a selectField, use it (to preserve checkbox state)
+                    this.Columns.Add( selectField ?? column );
+                }
+                else
+                {
+                    this.Columns.Add( column );
+                }
             }
         }
 
