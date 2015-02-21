@@ -503,7 +503,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     groupMember.Person.Email = contactInfoRow.Email;
                 }
-
+                groupMember.Person.IsEmailActive = true;
                 groupMember.Person.EmailPreference = EmailPreference.EmailAllowed;
 
                 groupMember.Person.LoadAttributes();
