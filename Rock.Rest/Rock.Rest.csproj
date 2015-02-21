@@ -105,6 +105,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiController.cs" />
+    <Compile Include="ApiControllerBase.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Constraints\ValidControllerNameConstraint.cs" />
     <Compile Include="Controllers\AttendancesController.partial.cs" />
