@@ -30,19 +30,11 @@ using Rock.Security;
 
 namespace Rock.Rest
 {
-    /*
-     * NOTE: We could have inherited from System.Web.Http.OData.ODataController, but that changes 
-     * the response format from vanilla REST to OData format. That breaks existing Rock Rest clients.
-     * 
-     */
-
     /// <summary>
-    /// Base ApiController for Rock REST endpoints
-    /// Supports ODataV3 Queries and ODataRouting 
+    /// ApiController for Rock REST Entity endpoints
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    [ODataRouting]
-    public abstract class ApiController<T> : ApiController
+    public abstract class ApiController<T> : ApiControllerBase
         where T : Rock.Data.Entity<T>, new()
     {
         /// <summary>
@@ -220,26 +212,7 @@ namespace Rock.Rest
         /// <returns></returns>
         protected virtual Rock.Model.Person GetPerson()
         {
-            if ( Request.Properties.Keys.Contains( "Person" ) )
-            {
-                return Request.Properties["Person"] as Person;
-            }
-
-            var principal = ControllerContext.Request.GetUserPrincipal();
-            if ( principal != null && principal.Identity != null )
-            {
-                var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
-                var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
-
-                if ( userLogin != null )
-                {
-                    var person = userLogin.Person;
-                    Request.Properties.Add( "Person", person );
-                    return userLogin.Person;
-                }
-            }
-
-            return null;
+            return GetCurrentPerson( Request, ControllerContext );
         }
 
         /// <summary>
@@ -329,6 +302,37 @@ namespace Rock.Rest
         protected bool IsProxy( object type )
         {
             return type != null && System.Data.Entity.Core.Objects.ObjectContext.GetObjectType( type.GetType() ) != type.GetType();
+        }
+
+        /// <summary>
+        /// Gets the current person.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="controllerContext">The controller context.</param>
+        /// <returns></returns>
+        public static Rock.Model.Person GetCurrentPerson( HttpRequestMessage request, System.Web.Http.Controllers.HttpControllerContext controllerContext )
+        {
+            if ( request.Properties.Keys.Contains( "Person" ) )
+            {
+                return request.Properties["Person"] as Person;
+            }
+
+            var principal = controllerContext.Request.GetUserPrincipal();
+            if ( principal != null && principal.Identity != null )
+            {
+                var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
+                var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
+
+                if ( userLogin != null )
+                {
+                    var person = userLogin.Person;
+                    request.Properties.Add( "Person", person );
+                    return userLogin.Person;
+                }
+            }
+
+            return null;
+
         }
     }
 }
