@@ -841,6 +841,7 @@ namespace Rock.Model
         /// Initializes a new instance of the <see cref="ScheduleOccurrence" /> class.
         /// </summary>
         /// <param name="occurrence">The occurrence.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
         public ScheduleOccurrence( DDay.iCal.Occurrence occurrence, int? scheduleId = null )
         {
             StartDateTime = occurrence.Period.StartTime.Value;
@@ -849,10 +850,11 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ScheduleOccurrence"/> class.
+        /// Initializes a new instance of the <see cref="ScheduleOccurrence" /> class.
         /// </summary>
         /// <param name="startDateTime">The start date time.</param>
         /// <param name="endDateTime">The end date time.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
         public ScheduleOccurrence( DateTime startDateTime, DateTime endDateTime, int? scheduleId = null )
         {
             StartDateTime = startDateTime;
