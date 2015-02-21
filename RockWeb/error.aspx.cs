@@ -41,6 +41,21 @@ namespace RockWeb
                 Response.End();
                 return;
             }
+
+            // If this is an call to the handler page, set status code and exit
+            string[] handlers = new string[] {
+                Request.Url.Authority + ResolveUrl( "~/FileUploader.ashx" ),
+                Request.Url.Authority + ResolveUrl( "~/ImageUploader.ashx" )
+            };
+
+            if ( handlers.Any(a => Request.Url.Query.Contains( a ) ) )
+            {
+                Response.StatusCode = 500;
+                Response.Write( "An error has occurred. See the ExceptionLog in Rock for details." );
+                Response.Flush();
+                Response.End();
+                return;
+            }
         }
 
         /// <summary>
