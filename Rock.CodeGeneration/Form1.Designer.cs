@@ -42,6 +42,10 @@
             this.lblAssemblyPath = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.tbServiceFolder = new System.Windows.Forms.TextBox();
+            this.tbRestFolder = new System.Windows.Forms.TextBox();
+            this.tbClientFolder = new System.Windows.Forms.TextBox();
+            this.fdbRockClient = new System.Windows.Forms.FolderBrowserDialog();
             this.SuspendLayout();
             // 
             // btnLoad
@@ -57,7 +61,7 @@
             // btnGenerate
             // 
             this.btnGenerate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnGenerate.Location = new System.Drawing.Point(12, 406);
+            this.btnGenerate.Location = new System.Drawing.Point(12, 448);
             this.btnGenerate.Name = "btnGenerate";
             this.btnGenerate.Size = new System.Drawing.Size(75, 23);
             this.btnGenerate.TabIndex = 2;
@@ -73,14 +77,14 @@
             this.cblModels.FormattingEnabled = true;
             this.cblModels.Location = new System.Drawing.Point(15, 54);
             this.cblModels.Name = "cblModels";
-            this.cblModels.Size = new System.Drawing.Size(597, 340);
+            this.cblModels.Size = new System.Drawing.Size(587, 292);
             this.cblModels.TabIndex = 3;
             // 
             // cbSelectAll
             // 
             this.cbSelectAll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbSelectAll.AutoSize = true;
-            this.cbSelectAll.Location = new System.Drawing.Point(543, 19);
+            this.cbSelectAll.Location = new System.Drawing.Point(533, 19);
             this.cbSelectAll.Name = "cbSelectAll";
             this.cbSelectAll.Size = new System.Drawing.Size(69, 17);
             this.cbSelectAll.TabIndex = 4;
@@ -101,7 +105,7 @@
             this.cbRest.AutoSize = true;
             this.cbRest.Checked = true;
             this.cbRest.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbRest.Location = new System.Drawing.Point(167, 410);
+            this.cbRest.Location = new System.Drawing.Point(15, 391);
             this.cbRest.Name = "cbRest";
             this.cbRest.Size = new System.Drawing.Size(48, 17);
             this.cbRest.TabIndex = 6;
@@ -114,7 +118,7 @@
             this.cbService.AutoSize = true;
             this.cbService.Checked = true;
             this.cbService.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbService.Location = new System.Drawing.Point(99, 410);
+            this.cbService.Location = new System.Drawing.Point(15, 364);
             this.cbService.Name = "cbService";
             this.cbService.Size = new System.Drawing.Size(61, 17);
             this.cbService.TabIndex = 7;
@@ -139,7 +143,7 @@
             this.cbClient.AutoSize = true;
             this.cbClient.Checked = true;
             this.cbClient.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbClient.Location = new System.Drawing.Point(221, 410);
+            this.cbClient.Location = new System.Drawing.Point(15, 418);
             this.cbClient.Name = "cbClient";
             this.cbClient.Size = new System.Drawing.Size(53, 17);
             this.cbClient.TabIndex = 8;
@@ -166,17 +170,56 @@
             // progressBar1
             // 
             this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(400, 410);
+            this.progressBar1.Location = new System.Drawing.Point(390, 452);
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(212, 23);
             this.progressBar1.TabIndex = 11;
             this.progressBar1.Visible = false;
             // 
+            // tbServiceFolder
+            // 
+            this.tbServiceFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbServiceFolder.Location = new System.Drawing.Point(99, 362);
+            this.tbServiceFolder.Name = "tbServiceFolder";
+            this.tbServiceFolder.Size = new System.Drawing.Size(503, 21);
+            this.tbServiceFolder.TabIndex = 12;
+            this.tbServiceFolder.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.tbServiceFolder_MouseDoubleClick);
+            // 
+            // tbRestFolder
+            // 
+            this.tbRestFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbRestFolder.Location = new System.Drawing.Point(99, 389);
+            this.tbRestFolder.Name = "tbRestFolder";
+            this.tbRestFolder.Size = new System.Drawing.Size(503, 21);
+            this.tbRestFolder.TabIndex = 13;
+            this.tbRestFolder.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.tbRestFolder_MouseDoubleClick);
+            // 
+            // tbClientFolder
+            // 
+            this.tbClientFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbClientFolder.Location = new System.Drawing.Point(99, 416);
+            this.tbClientFolder.Name = "tbClientFolder";
+            this.tbClientFolder.Size = new System.Drawing.Size(503, 21);
+            this.tbClientFolder.TabIndex = 14;
+            this.tbClientFolder.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.tbClientFolder_MouseDoubleClick);
+            // 
+            // fdbRockClient
+            // 
+            this.fdbRockClient.Description = "Select folder for Rock.Client ";
+            this.fdbRockClient.RootFolder = System.Environment.SpecialFolder.MyComputer;
+            this.fdbRockClient.ShowNewFolderButton = false;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(624, 441);
+            this.ClientSize = new System.Drawing.Size(614, 483);
+            this.Controls.Add(this.tbClientFolder);
+            this.Controls.Add(this.tbRestFolder);
+            this.Controls.Add(this.tbServiceFolder);
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.lblAssemblyPath);
@@ -212,6 +255,10 @@
         private System.Windows.Forms.Label lblAssemblyPath;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.TextBox tbServiceFolder;
+        private System.Windows.Forms.TextBox tbRestFolder;
+        private System.Windows.Forms.TextBox tbClientFolder;
+        private System.Windows.Forms.FolderBrowserDialog fdbRockClient;
     }
 }
 

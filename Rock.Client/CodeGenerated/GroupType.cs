@@ -98,6 +98,9 @@ namespace Rock.Client
         public ICollection<GroupTypeRole> Roles { get; set; }
 
         /// <summary />
+        public bool SendAttendanceReminder { get; set; }
+
+        /// <summary />
         public bool ShowInGroupList { get; set; }
 
         /// <summary />
@@ -123,6 +126,13 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignId { get; set; }
+
+        /// <summary />
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
+
+
+        /// <summary />
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
 
     }
 }

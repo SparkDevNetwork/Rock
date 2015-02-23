@@ -211,17 +211,18 @@ namespace RockWeb.Blocks.Groups
                 if ( person == null )
                 {
                     // If so, create the person and family record for the new person
-                    var groupMembers = new List<GroupMember>();
-
                     person = new Person();
                     person.FirstName = tbFirstName.Text.Trim();
                     person.LastName = tbLastName.Text.Trim();
                     person.Email = tbEmail.Text.Trim();
+                    person.IsEmailActive = true;
+                    person.EmailPreference = EmailPreference.EmailAllowed;
+                    person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                     person.ConnectionStatusValueId = _dvcConnectionStatus.Id;
                     person.RecordStatusValueId = _dvcRecordStatus.Id;
                     person.Gender = Gender.Unknown;
 
-                    family = GroupService.SaveNewFamily( rockContext, person, _group.CampusId, false );
+                    family = PersonService.SaveNewPerson( person, rockContext, _group.CampusId, false );
                 }
                 else
                 {
@@ -314,6 +315,10 @@ namespace RockWeb.Blocks.Groups
                             spouse.ConnectionStatusValueId = _dvcConnectionStatus.Id;
                             spouse.RecordStatusValueId = _dvcRecordStatus.Id;
                             spouse.Gender = Gender.Unknown;
+
+                            spouse.IsEmailActive = true;
+                            spouse.EmailPreference = EmailPreference.EmailAllowed;
+
                             var groupMember = new GroupMember();
                             groupMember.GroupRoleId = _adultRole.Id;
                             groupMember.Person = spouse;

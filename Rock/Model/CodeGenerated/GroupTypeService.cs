@@ -120,6 +120,7 @@ namespace Rock.Model
             target.LocationSelectionMode = source.LocationSelectionMode;
             target.Name = source.Name;
             target.Order = source.Order;
+            target.SendAttendanceReminder = source.SendAttendanceReminder;
             target.ShowInGroupList = source.ShowInGroupList;
             target.ShowInNavigation = source.ShowInNavigation;
             target.TakesAttendance = source.TakesAttendance;

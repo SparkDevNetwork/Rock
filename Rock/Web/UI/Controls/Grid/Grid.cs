@@ -374,7 +374,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public virtual string CommunicationPageRoute
         {
-            get { return ViewState["CommunicationPageRoute"] as string ?? "~/Communication/{0}"; }
+            get { return ViewState["CommunicationPageRoute"] as string; }
             set { ViewState["CommunicationPageRoute"] = value; }
         }
 
@@ -1147,7 +1147,27 @@ namespace Rock.Web.UI.Controls
 
                     rockContext.SaveChanges();
 
-                    Page.Response.Redirect( string.Format( CommunicationPageRoute, communication.Id ), false );
+                    // Get the URL to communication page
+                    string url = CommunicationPageRoute;
+                    if ( string.IsNullOrWhiteSpace(url) )
+                    {
+                        var pageRef = rockPage.Site.CommunicationPageReference;
+                        if ( pageRef.PageId > 0 )
+                        {
+                            pageRef.Parameters.AddOrReplace( "CommunicationId", communication.Id.ToString() );
+                            url = pageRef.BuildUrl();
+                        }
+                        else
+                        {
+                            url = "~/Communication/{0}";
+                        }
+                    }
+                    if ( url.Contains("{0}"))
+                    {
+                        url = string.Format( url, communication.Id );
+                    }
+
+                    Page.Response.Redirect( url, false );
                     Context.ApplicationInstance.CompleteRequest();
                 }
             }
@@ -1491,10 +1511,22 @@ namespace Rock.Web.UI.Controls
         /// <param name="modelType">Type of the model.</param>
         public void CreatePreviewColumns( Type modelType )
         {
+            // if there is a selectField, keep it to preserve which items are checked
+            var selectField = this.Columns.OfType<SelectField>().FirstOrDefault();
             this.Columns.Clear();
-            foreach ( var column in GetPreviewColumns( modelType ) )
+
+            var previewColumns = GetPreviewColumns( modelType );
+            foreach ( var column in previewColumns )
             {
-                this.Columns.Add( column );
+                if ( column is SelectField )
+                {
+                    // if we already had a selectField, use it (to preserve checkbox state)
+                    this.Columns.Add( selectField ?? column );
+                }
+                else
+                {
+                    this.Columns.Add( column );
+                }
             }
         }
 

@@ -307,10 +307,15 @@ namespace RockWeb.Blocks.Finance
                     FirstName = tbFirstName.Text,
                     LastName = tbLastName.Text,
                     Email = tbEmail.Text,
+                    EmailPreference = Rock.Model.EmailPreference.EmailAllowed,
                     ConnectionStatusValueId = definedValue.Id,
                 };
 
-                GroupService.SaveNewFamily( rockContext, person, null, false );
+                person.IsSystem = false;
+                person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
+
+                PersonService.SaveNewPerson( person, rockContext, null, false );
             }
 
             return person;
