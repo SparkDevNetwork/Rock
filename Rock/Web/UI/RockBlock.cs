@@ -946,11 +946,23 @@ namespace Rock.Web.UI
                 }
 
                 // Delete
-                HtmlGenericControl aDeleteBlock = new HtmlGenericControl( "a" );
-                aDeleteBlock.Attributes.Add( "class", "delete block-delete" );
-                aDeleteBlock.Attributes.Add( "href", BlockCache.Id.ToString() );
-                aDeleteBlock.Attributes.Add( "title", "Delete Block" );
-                configControls.Add( aDeleteBlock );
+                HtmlGenericControl aDeleteBlock;
+                if (!this.BlockCache.IsSystem)
+                {
+                    aDeleteBlock = new HtmlGenericControl( "a" );
+                    aDeleteBlock.Attributes.Add( "class", "delete block-delete" );
+                    aDeleteBlock.Attributes.Add( "href", BlockCache.Id.ToString() );
+                    aDeleteBlock.Attributes.Add( "title", "Delete Block" );
+                    configControls.Add( aDeleteBlock );
+                }
+                else
+                {
+                    // if this is an IsSystem block, don't render it as an anchor (they shouldn't be able to delete ti)
+                    aDeleteBlock = new HtmlGenericControl( "div" );
+                    aDeleteBlock.Attributes.Add( "class", "delete block-delete disabled js-disabled" );
+                    configControls.Add( aDeleteBlock );
+                }
+                
                 HtmlGenericControl iDeleteBlock = new HtmlGenericControl( "i" );
                 aDeleteBlock.Controls.Add( iDeleteBlock );
                 iDeleteBlock.Attributes.Add( "class", "fa fa-times-circle-o" );

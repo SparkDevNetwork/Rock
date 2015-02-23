@@ -58,12 +58,6 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<GroupScheduleExclusion>( Context ).Queryable().Any( a => a.GroupTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, GroupScheduleExclusion.FriendlyTypeName );
-                return false;
-            }  
- 
             if ( new Service<GroupType>( Context ).Queryable().Any( a => a.InheritedGroupTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, GroupType.FriendlyTypeName );
@@ -126,6 +120,7 @@ namespace Rock.Model
             target.LocationSelectionMode = source.LocationSelectionMode;
             target.Name = source.Name;
             target.Order = source.Order;
+            target.SendAttendanceReminder = source.SendAttendanceReminder;
             target.ShowInGroupList = source.ShowInGroupList;
             target.ShowInNavigation = source.ShowInNavigation;
             target.TakesAttendance = source.TakesAttendance;
