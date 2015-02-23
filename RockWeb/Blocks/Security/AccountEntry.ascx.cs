@@ -512,6 +512,7 @@ namespace RockWeb.Blocks.Security
             person.FirstName = tbFirstName.Text;
             person.LastName = tbLastName.Text;
             person.Email = tbEmail.Text;
+            person.IsEmailActive = true;
             person.EmailPreference = EmailPreference.EmailAllowed;
             person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             if ( dvcConnectionStatus != null )

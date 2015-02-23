@@ -182,6 +182,7 @@ function() {
             cblRole = new RockCheckBoxList();
             cblRole.Label = "with Group Member Role(s) (optional)";
             cblRole.ID = filterControl.ID + "_cblRole";
+            cblRole.Visible = false;
             filterControl.Controls.Add( cblRole );
 
             return new Control[3] { gp, cbChildGroups, cblRole };
@@ -223,10 +224,12 @@ function() {
                 }
 
                 cblRole.Visible = list.Count > 0;
+                cbChildGroups.Visible = true;
             }
             else
             {
                 cblRole.Visible = false;
+                cbChildGroups.Visible = false;
             }
         }
 
@@ -239,7 +242,27 @@ function() {
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-            base.RenderControls( entityType, filterControl, writer, controls );
+            if ( controls.Count() >= 3 )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                GroupPicker groupPicker = controls[0] as GroupPicker;
+                groupPicker.RenderControl( writer );
+                RockCheckBox cbChildGroups = controls[1] as RockCheckBox;
+                cbChildGroups.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                RockCheckBoxList cblRoles = controls[2] as RockCheckBoxList;
+                cblRoles.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();
+            }
         }
 
         /// <summary>
