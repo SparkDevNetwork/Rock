@@ -668,12 +668,7 @@ namespace RockWeb.Blocks.Finance
                     qry = qry.Where( t => t.TransactionDateTime < upperDate );
                 }
 
-                // Row Limit
-                int? rowLimit = gfTransactions.GetUserPreference( "Row Limit" ).AsIntegerOrNull();
-                if (rowLimit.HasValue)
-                {
-                    qry = qry.Take( rowLimit.Value );
-                }
+                
 
                 // Amount Range
                 var nre = new NumberRangeEditor();
@@ -753,6 +748,13 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 qry = qry.OrderBy( t => t.Id );
+            }
+
+            // Row Limit
+            int? rowLimit = gfTransactions.GetUserPreference( "Row Limit" ).AsIntegerOrNull();
+            if ( rowLimit.HasValue )
+            {
+                qry = qry.Take( rowLimit.Value );
             }
 
             gTransactions.DataSource = qry.AsNoTracking().ToList();

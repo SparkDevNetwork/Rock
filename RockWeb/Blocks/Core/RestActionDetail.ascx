@@ -20,50 +20,39 @@
 
         <script>
             function doPost() {
-                var restUrl = $('.rest-url').val();
-                var data = $('#<%=tbPayload.ClientID %>').val();
-                $.post(restUrl, data, function (resultData, status, jgXHR) {
-                    $('#result-data').val(resultData);
-                }).fail(function (a, b, c, d) {
-                    $('#result-data').html('FAIL:' + a.status + ', ' + a.statusText);
-                });
+                $.ajax({
+                    url: getRestUrl(),
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: getPayload()
+                }).done(handleDone).fail(handleFail);
             }
 
             function doDelete() {
-                
-                var restUrl = $('.rest-url').val();
-                var $keys = $('.key-value-rows .key-value-key');
-                $.each($keys, function (keyIndex) {
-                    var key = $keys[keyIndex];
-                    var $value = $(key).siblings('.key-value-value').first();
-                    restUrl = restUrl.replace('{' + $(key).val() + '}', $value.val());
-                });
                 $.ajax({
-                    url: restUrl,
+                    url: getRestUrl(),
                     type: 'DELETE'
-                }).done(function (resultData, b, c, d) {
-                    debugger
-                    $('#result-data').val(resultData);
-                }).fail(function (a, b, c, d) {
-                    debugger
-                    $('#result-data').html('FAIL:' + a.status + ', ' + a.statusText);
-                });
+                }).done(handleDone).fail(handleFail);
             }
 
             function doPut() {
-                var restUrl = $('.rest-url').val();
                 $.ajax({
-                    url: restUrl,
+                    url: getRestUrl(),
                     type: 'PUT',
-                    data: $('#<%=tbPayload.ClientID %>').val()
-                }).done(function (resultData) {
-                    $('#result-data').val(resultData);
-                }).fail(function (a, b, c, d) {
-                    $('#result-data').html('FAIL:' + a.status + ', ' + a.statusText);
-                });
+                    contentType: 'application/json',
+                    data: getPayload()
+                }).done(handleDone).fail(handleFail);
             }
 
             function doGet() {
+                var restUrl = getRestUrl();
+                $.ajax({
+                    url: restUrl,
+                    type: 'GET'
+                }).done(handleDone).fail(handleFail);
+            }
+
+            function getRestUrl() {
                 var restUrl = $('.rest-url').val();
                 var $keys = $('.key-value-rows .key-value-key');
                 $.each($keys, function (keyIndex) {
@@ -71,14 +60,21 @@
                     var $value = $(key).siblings('.key-value-value').first();
                     restUrl = restUrl.replace('{' + $(key).val() + '}', $value.val());
                 });
-                $.ajax({
-                    url: restUrl,
-                    type: 'GET'
-                }).done(function (resultData) {
-                    $('#result-data').html(JSON.stringify(resultData, null, 2));
-                }).fail(function (a, b, c, d) {
-                    $('#result-data').html('FAIL:' + a.status + ', ' + a.statusText);
-                });
+                return restUrl;
+            }
+
+            function handleFail(a, b, c, d) {
+                debugger
+                $('#result-data').html('FAIL:' + a.status + '<br/>' + a.statusText + '<br/><br/>' + a.responseText);
+            }
+
+            function handleDone(resultData) {
+                $('#result-data').html(JSON.stringify(resultData, null, 2));
+            }
+
+            function getPayload() {
+                return $('#<%=tbPayload.ClientID %>').val();
+                //return JSON.parse($('#<%=tbPayload.ClientID %>').val());
             }
 
         </script>
