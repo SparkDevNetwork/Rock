@@ -204,7 +204,7 @@
             $("#totaltime").val(total);
 
             // generate url
-            var url = baseUrl + '?ClipUrl=' + recordingurl + '&ClipStart=' + (recordingstarttime*1000) + '&ClipDuration=' + ((recordingduration*1000) - (recordingstarttime*1000));
+            var url = baseUrl + '?ClipUrl=' + recordingurl + '&ClipStart=' + Math.floor(recordingstarttime*1000) + '&ClipDuration=' + Math.floor((recordingduration*1000) - (recordingstarttime*1000));
             $(".js-urltextbox").val(url);
         }
     }
