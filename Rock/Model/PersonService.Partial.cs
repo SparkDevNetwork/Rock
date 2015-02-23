@@ -738,6 +738,86 @@ namespace Rock.Model
 
         #endregion
 
+        /// <summary>
+        /// Adds a person alias, known relationship group, implied relationship group, and optionally a family group for
+        /// a new person.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="savePersonAttributes">if set to <c>true</c> [save person attributes].</param>
+        /// <returns>Family Group</returns>
+        public static Group SaveNewPerson ( Person person, RockContext rockContext, int? campusId = null, bool savePersonAttributes = false )
+        {
+            // Create/Save Known Relationship Group
+            var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
+            if ( knownRelationshipGroupType != null )
+            {
+                var ownerRole = knownRelationshipGroupType.Roles
+                    .FirstOrDefault( r =>
+                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) );
+                if ( ownerRole != null )
+                {
+                    var groupMember = new GroupMember();
+                    groupMember.Person = person;
+                    groupMember.GroupRoleId = ownerRole.Id;
+
+                    var group = new Group();
+                    group.Name = knownRelationshipGroupType.Name;
+                    group.GroupTypeId = knownRelationshipGroupType.Id;
+                    group.Members.Add( groupMember );
+
+                    var groupService = new GroupService( rockContext );
+                    groupService.Add( group );
+                }
+            }
+
+            // Create/Save Implied Relationship Group
+            var impliedRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_IMPLIED_RELATIONSHIPS );
+            if ( impliedRelationshipGroupType != null )
+            {
+                var ownerRole = impliedRelationshipGroupType.Roles
+                    .FirstOrDefault( r =>
+                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_IMPLIED_RELATIONSHIPS_OWNER.AsGuid() ) );
+                if ( ownerRole != null )
+                {
+                    var groupMember = new GroupMember();
+                    groupMember.Person = person;
+                    groupMember.GroupRoleId = ownerRole.Id;
+
+                    var group = new Group();
+                    group.Name = impliedRelationshipGroupType.Name;
+                    group.GroupTypeId = impliedRelationshipGroupType.Id;
+                    group.Members.Add( groupMember );
+
+                    var groupService = new GroupService( rockContext );
+                    groupService.Add( group );
+                }
+            }
+
+            // Create/Save family
+            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            if ( familyGroupType != null )
+            {
+                var adultRole = familyGroupType.Roles
+                    .FirstOrDefault( r =>
+                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
+                if ( adultRole != null )
+                {
+                    var groupMember = new GroupMember();
+                    groupMember.Person = person;
+                    groupMember.GroupRoleId = adultRole.Id;
+
+                    var groupMembers = new List<GroupMember>();
+                    groupMembers.Add( groupMember );
+
+                    return GroupService.SaveNewFamily( rockContext, groupMembers, campusId, savePersonAttributes );
+                }
+            }
+
+            return null;
+        }
+
         #region User Preferences
 
         /// <summary>

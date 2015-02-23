@@ -220,11 +220,14 @@ namespace Rock.Field
 
             bool isLabel = compareControl is Label;
 
-            HtmlGenericControl col1 = new HtmlGenericControl( "div" );
-            col1.ID = string.Format( "{0}_col1", id );
-            row.Controls.Add( col1 );
-            col1.AddCssClass( isLabel ? "col-md-2" : "col-md-4" );
-            col1.Controls.Add( compareControl );
+            if ( compareControl != null )
+            {
+                HtmlGenericControl col1 = new HtmlGenericControl( "div" );
+                col1.ID = string.Format( "{0}_col1", id );
+                row.Controls.Add( col1 );
+                col1.AddCssClass( isLabel ? "col-md-2" : "col-md-4" );
+                col1.Controls.Add( compareControl );
+            }
 
             HtmlGenericControl col2 = new HtmlGenericControl( "div" );
             col2.ID = string.Format( "{0}_col2", id );

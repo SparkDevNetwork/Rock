@@ -31,7 +31,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public partial class MergeFieldsController : ApiController
+    public partial class MergeFieldsController : ApiControllerBase
     {
         /// <summary>
         /// Gets the specified identifier.
@@ -55,6 +55,8 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/MergeFields/GetChildren/{id}/{additionalFields}" )]
         public IQueryable<TreeViewItem> GetChildren( string id, string additionalFields )
         {
+            var person = GetPerson();
+
             List<TreeViewItem> items = new List<TreeViewItem>();
 
             switch ( id )
@@ -103,7 +105,7 @@ namespace Rock.Rest.Controllers
 
                         foreach ( var attributeCache in globalAttributes.Attributes.OrderBy( a => a.Key ) )
                         {
-                            if ( attributeCache.IsAuthorized( Authorization.VIEW, null ) )
+                            if ( attributeCache.IsAuthorized( Authorization.VIEW, person ) )
                             {
                                 items.Add( new TreeViewItem
                                 {
@@ -207,7 +209,7 @@ namespace Rock.Rest.Controllers
                                         // Only include attributes without a qualifier (since we don't have a specific instance of this entity type)
                                         if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) &&
                                             string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) &&
-                                            attribute.IsAuthorized( Authorization.VIEW, null ) )
+                                            attribute.IsAuthorized( Authorization.VIEW, person ) )
                                         {
                                             items.Add( new TreeViewItem
                                             {
@@ -226,5 +228,7 @@ namespace Rock.Rest.Controllers
 
             return items.OrderBy( i => i.Name ).AsQueryable();
         }
+
+
     }
 }

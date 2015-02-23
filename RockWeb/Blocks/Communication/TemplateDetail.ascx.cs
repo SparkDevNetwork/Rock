@@ -371,7 +371,7 @@ namespace RockWeb.Blocks.Communication
             if (component != null)
             {
                 phContent.Controls.Clear();
-                var mediumControl = component.Control;
+                var mediumControl = component.GetControl( false );
                 mediumControl.ID = "commControl";
                 mediumControl.IsTemplate = true;
                 mediumControl.ValidationGroup = btnSave.ValidationGroup;

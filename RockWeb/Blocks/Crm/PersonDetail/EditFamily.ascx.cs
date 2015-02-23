@@ -830,8 +830,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 person.ConnectionStatusValueId = familyMember.ConnectionStatusValueId;
                                 History.EvaluateChange( demographicChanges, "Connection Status", string.Empty, person.ConnectionStatusValueId.HasValue ? DefinedValueCache.GetName( person.ConnectionStatusValueId ) : string.Empty );
 
-                                person.IsEmailActive = false;
-                                History.EvaluateChange( demographicChanges, "Email Active", false.ToString(), ( person.IsEmailActive ?? false ).ToString() );
+                                person.IsEmailActive = true;
+                                History.EvaluateChange( demographicChanges, "Email Active", true.ToString(), ( person.IsEmailActive ?? true ).ToString() );
 
                                 person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                                 History.EvaluateChange( demographicChanges, "Record Type", string.Empty, person.RecordTypeValueId.HasValue ? DefinedValueCache.GetName( person.RecordTypeValueId.Value ) : string.Empty );
