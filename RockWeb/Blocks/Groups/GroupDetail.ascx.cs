@@ -45,7 +45,8 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Limit to Security Role Groups", "", false, "", 3 )]
     [BooleanField( "Limit to Group Types that are shown in navigation", "", false, "", 4, "LimitToShowInNavigationGroupTypes" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The style of maps to use", false, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK, "", 5 )]
-    [LinkedPage("Group Map Page", "The page to display detailed group map.")]
+    [LinkedPage("Group Map Page", "The page to display detailed group map.", true, "", "", 6)]
+    [LinkedPage( "Attendance Page", "The page to display attendance list.", false, "", "", 7)]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
         #region Constants
@@ -1174,6 +1175,10 @@ namespace RockWeb.Blocks.Groups
 
             var pageParams = new Dictionary<string, string>();
             pageParams.Add("GroupId", group.Id.ToString());
+
+            hlAttendance.Visible = groupType.TakesAttendance;
+            hlAttendance.NavigateUrl = LinkedPageUrl( "AttendancePage", pageParams );
+
             string groupMapUrl = LinkedPageUrl("GroupMapPage", pageParams);
 
             // Get Map Style

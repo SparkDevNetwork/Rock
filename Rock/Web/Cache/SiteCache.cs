@@ -245,6 +245,36 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets or sets the communication page identifier.
+        /// </summary>
+        /// <value>
+        /// The communication page identifier.
+        /// </value>
+        public int? CommunicationPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication page route identifier.
+        /// </summary>
+        /// <value>
+        /// The communication page route identifier.
+        /// </value>
+        public int? CommunicationPageRouteId { get; set; }
+
+        /// <summary>
+        /// Gets the communication page reference.
+        /// </summary>
+        /// <value>
+        /// The communication page reference.
+        /// </value>
+        public PageReference CommunicationPageReference
+        {
+            get
+            {
+                return new Rock.Web.PageReference( CommunicationPageId ?? 0, CommunicationPageRouteId ?? 0 );
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the registration page id.
         /// </summary>
         /// <value>
@@ -343,6 +373,8 @@ namespace Rock.Web.Cache
                 this.DefaultPageRouteId = site.DefaultPageRouteId;
                 this.LoginPageId = site.LoginPageId;
                 this.LoginPageRouteId = site.LoginPageRouteId;
+                this.CommunicationPageId = site.CommunicationPageId;
+                this.CommunicationPageRouteId = site.CommunicationPageRouteId;
                 this.RegistrationPageId = site.RegistrationPageId;
                 this.RegistrationPageRouteId = site.RegistrationPageRouteId;
                 this.ErrorPage = site.ErrorPage;
@@ -392,6 +424,16 @@ namespace Rock.Web.Cache
             }
 
             context.Response.Redirect( pageReference.BuildUrl(), false );
+            context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
+        /// Redirects to communication page.
+        /// </summary>
+        public void RedirectToCommunicationPage()
+        {
+            var context = HttpContext.Current;
+            context.Response.Redirect( CommunicationPageReference.BuildUrl(), false );
             context.ApplicationInstance.CompleteRequest();
         }
 

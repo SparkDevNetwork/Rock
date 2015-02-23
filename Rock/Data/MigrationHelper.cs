@@ -824,6 +824,7 @@ namespace Rock.Data
                     AND [Key] = '{2}' )
                 BEGIN
                     UPDATE [Attribute] SET
+                        [IsSystem] = 1,
                         [Name] = '{3}',
                         [Description] = '{4}',
                         [Order] = {5},

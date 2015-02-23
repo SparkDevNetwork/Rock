@@ -116,6 +116,13 @@
                     $(this).closest('.picker-menu').slideUp(function () {
                         self.updateScrollbar();
                     });
+
+                    if (!(event.srcElement == this)) {
+                        // if this event was called by something other than the button itself, make sure the execute the href (which is probably javascript)
+                        if ($(this).attr('href')) {
+                            window.location.href = $(this).attr('href');
+                        }
+                    }
                 });
 
                 $control.find('.picker-select-none').click(function (e) {
@@ -128,6 +135,8 @@
                     // don't have the X appear on hover. nothing is selected
                     $control.find('.picker-select-none').removeClass('rollover-item');
                     $control.find('.picker-select-none').hide();
+
+                    $control.find('.js-hide-on-select-none').hide();
 
                     $spanNames.text(self.options.defaultText);
                     return false;

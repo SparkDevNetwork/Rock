@@ -65,10 +65,12 @@ namespace RockWeb.Blocks.Administration
                         btnPUT.Visible = apiDescription.HttpMethod == System.Net.Http.HttpMethod.Put;
                         btnPOST.Visible = apiDescription.HttpMethod == System.Net.Http.HttpMethod.Post;
                         tbPayload.Visible = apiDescription.HttpMethod == System.Net.Http.HttpMethod.Post || apiDescription.HttpMethod == System.Net.Http.HttpMethod.Put;
-                        //lstParameterValues.Value = "key^value|key^value|key^value|key^value|key^value";
                         foreach ( var param in apiDescription.ParameterDescriptions )
                         {
-                            lstParameterValues.Value += param.Name + "|";
+                            if ( param.Source == System.Web.Http.Description.ApiParameterSource.FromUri )
+                            {
+                                lstParameterValues.Value += param.Name + "|";
+                            }
                         }
                     }
                     else

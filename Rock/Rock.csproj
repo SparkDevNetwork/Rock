@@ -211,6 +211,7 @@
     <Compile Include="Data\IMigration.cs" />
     <Compile Include="Data\IncludeForReportingAttribute.cs" />
     <Compile Include="Data\MigrationHelper.cs" />
+    <Compile Include="Data\NotEmptyGuidAttribute.cs" />
     <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
