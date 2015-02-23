@@ -121,16 +121,18 @@ namespace Rock.Communication.Transport
             var rockContext = new RockContext();
 
             // Requery the Communication object
-            communication = new CommunicationService( rockContext ).Get( communication.Id );
+            communication = new CommunicationService( rockContext )
+                .Queryable( "CreatedByPersonAlias.Person" )
+                .FirstOrDefault( c => c.Id == communication.Id );
 
             if ( communication != null &&
                 communication.Status == Model.CommunicationStatus.Approved &&
                 communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() &&
                 (!communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo(RockDateTime.Now) <= 0))
             {
-
+                var currentPerson = communication.CreatedByPersonAlias.Person;
                 var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-                var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+                var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( currentPerson );
 
                 // From - if none is set, use the one in the Organization's GlobalAttributes.
                 string fromAddress = communication.GetMediumDataValue( "FromAddress" );
@@ -146,8 +148,8 @@ namespace Rock.Communication.Transport
                 }
 
                 // Resolve any possible merge fields in the from address
-                fromAddress = fromAddress.ResolveMergeFields( globalConfigValues );
-                fromName = fromName.ResolveMergeFields( globalConfigValues );
+                fromAddress = fromAddress.ResolveMergeFields( globalConfigValues, currentPerson );
+                fromName = fromName.ResolveMergeFields( globalConfigValues, currentPerson );
 
                 MailMessage message = new MailMessage();
                 message.From = new MailAddress( fromAddress, fromName );
@@ -239,13 +241,13 @@ namespace Rock.Communication.Transport
                             var mergeObjects = recipient.CommunicationMergeValues( globalConfigValues );
 
                             // Subject
-                            message.Subject = communication.Subject.ResolveMergeFields( mergeObjects );
+                            message.Subject = communication.Subject.ResolveMergeFields( mergeObjects, currentPerson );
 
                             // Add any additional headers that specific SMTP provider needs
                             AddAdditionalHeaders( message, recipient );
 
                             // Add text view first as last view is usually treated as the preferred view by email readers (gmail)
-                            string plainTextBody = Rock.Communication.Medium.Email.ProcessTextBody( communication, globalAttributes, mergeObjects );
+                            string plainTextBody = Rock.Communication.Medium.Email.ProcessTextBody( communication, globalAttributes, mergeObjects, currentPerson );
                             if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
                             {
                                 AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Plain ) );
@@ -253,7 +255,7 @@ namespace Rock.Communication.Transport
                             }
 
                             // Add Html view
-                            string htmlBody = Rock.Communication.Medium.Email.ProcessHtmlBody( communication, globalAttributes, mergeObjects );
+                            string htmlBody = Rock.Communication.Medium.Email.ProcessHtmlBody( communication, globalAttributes, mergeObjects, currentPerson );
                             if ( !string.IsNullOrWhiteSpace( htmlBody ) )
                             {
                                 AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Html ) );

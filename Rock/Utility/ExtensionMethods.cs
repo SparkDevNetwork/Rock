@@ -925,6 +925,33 @@ namespace Rock
         /// </summary>
         /// <param name="content">The content.</param>
         /// <param name="mergeObjects">The merge objects.</param>
+        /// <param name="currentPersonOverride">The current person override.</param>
+        /// <returns></returns>
+        public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride )
+        {
+            try
+            {
+                if ( !content.HasMergeFields() )
+                {
+                    return content ?? string.Empty;
+                }
+
+                Template template = Template.Parse( content );
+                template.InstanceAssigns.Add( "CurrentPerson", currentPersonOverride );
+                return template.Render( Hash.FromDictionary( mergeObjects ) );
+            }
+            catch ( Exception ex )
+            {
+                return "Error resolving Lava merge fields: " + ex.Message;
+            }
+        }
+
+        /// <summary>
+        /// Use DotLiquid to resolve any merge codes within the content using the values
+        /// in the mergeObjects.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="mergeObjects">The merge objects.</param>
         /// <returns></returns>
         public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects )
         {

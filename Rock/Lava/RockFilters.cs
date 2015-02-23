@@ -688,10 +688,26 @@ namespace Rock.Lava
             if ( attribute != null && !string.IsNullOrWhiteSpace( rawValue ) )
             {
                 Person currentPerson = null;
-                var httpContext = System.Web.HttpContext.Current;
-                if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
+
+                // First check for a person override value included in lava context
+                if ( context.Scopes != null )
                 {
-                    currentPerson = httpContext.Items["CurrentPerson"] as Person;
+                    foreach ( var scopeHash in context.Scopes )
+                    {
+                        if ( scopeHash.ContainsKey( "CurrentPerson" ) )
+                        {
+                            currentPerson = scopeHash["CurrentPerson"] as Person;
+                        }
+                    }
+                }
+
+                if ( currentPerson == null )
+                {
+                    var httpContext = System.Web.HttpContext.Current;
+                    if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
+                    {
+                        currentPerson = httpContext.Items["CurrentPerson"] as Person;
+                    }
                 }
 
                 if ( attribute.IsAuthorized( Authorization.VIEW, currentPerson ) )

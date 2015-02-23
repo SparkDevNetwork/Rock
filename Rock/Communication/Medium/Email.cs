@@ -295,16 +295,18 @@ You can view an online version of this email here:
         /// <param name="communication">The communication.</param>
         /// <param name="globalAttributes">The global attributes.</param>
         /// <param name="mergeObjects">The merge objects.</param>
+        /// <param name="currentPersonOverride">The current person override.</param>
         /// <returns></returns>
         public static string ProcessHtmlBody( Rock.Model.Communication communication,
             Rock.Web.Cache.GlobalAttributesCache globalAttributes,
-            Dictionary<string, object> mergeObjects )
+            Dictionary<string, object> mergeObjects,
+            Person currentPersonOverride = null )
         {
             string htmlBody = communication.GetMediumDataValue( "HtmlMessage" );
             if ( !string.IsNullOrWhiteSpace( htmlBody ) )
             {
                 // Get the unsubscribe content and add a merge field for it
-                string unsubscribeHtml = communication.GetMediumDataValue( "UnsubscribeHTML" ).ResolveMergeFields( mergeObjects );
+                string unsubscribeHtml = communication.GetMediumDataValue( "UnsubscribeHTML" ).ResolveMergeFields( mergeObjects, currentPersonOverride );
                 if (mergeObjects.ContainsKey( "UnsubscribeOption"))
                 {
                     mergeObjects.Add( "UnsubscribeOption", unsubscribeHtml );
@@ -315,7 +317,7 @@ You can view an online version of this email here:
                 }
                 
                 // Resolve merge fields
-                htmlBody = htmlBody.ResolveMergeFields( mergeObjects );
+                htmlBody = htmlBody.ResolveMergeFields( mergeObjects, currentPersonOverride );
 
                 // Resolve special syntax needed if option was included in global attribute
                 if ( Regex.IsMatch( htmlBody, @"\[\[\s*UnsubscribeOption\s*\]\]" ) )
@@ -345,10 +347,12 @@ You can view an online version of this email here:
         /// <param name="communication">The communication.</param>
         /// <param name="globalAttributes">The global attributes.</param>
         /// <param name="mergeObjects">The merge objects.</param>
+        /// <param name="currentPersonOverride">The current person override.</param>
         /// <returns></returns>
         public static string ProcessTextBody ( Rock.Model.Communication communication,
             Rock.Web.Cache.GlobalAttributesCache globalAttributes,
-            Dictionary<string, object> mergeObjects )
+            Dictionary<string, object> mergeObjects,
+            Person currentPersonOverride = null )
         {
 
             string defaultPlainText = communication.GetMediumDataValue( "DefaultPlainText" );
@@ -359,7 +363,7 @@ You can view an online version of this email here:
                 plainTextBody = defaultPlainText;
             }
 
-            return plainTextBody.ResolveMergeFields( mergeObjects );
+            return plainTextBody.ResolveMergeFields( mergeObjects, currentPersonOverride );
 
         }
 
