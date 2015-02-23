@@ -3,8 +3,9 @@
     var ajaxRequestBegin = function (sender, args) {
             $(".ajax-error").hide();
         },
-        ajaxRequestEnd = function (sender, args) {
+        ajaxRequestEnd = function (sender, args, c, d) {
             if (args.get_error() != undefined && args.get_error().httpStatusCode == '500') {
+                debugger
                 var errorMessage = args.get_error().message;
                 var errorName = args.get_error().name;
                 args.set_errorHandled(true);
