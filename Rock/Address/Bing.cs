@@ -137,7 +137,8 @@ namespace Rock.Address
                                         location.Street1 = address.AddressLine;
                                         location.City = address.Locality;
                                         location.State = address.AdminDistrict;
-                                        if ( !location.PostalCode.StartsWith( address.PostalCode ) )
+                                        if ( !String.IsNullOrWhiteSpace( address.PostalCode ) &&
+                                            !( ( location.PostalCode ?? string.Empty ).StartsWith( address.PostalCode ) ) )
                                         {
                                             location.PostalCode = address.PostalCode;
                                         }
