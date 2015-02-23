@@ -207,30 +207,6 @@ namespace Rock.Rest
         }
 
         /// <summary>
-        /// Gets the peron alias.
-        /// </summary>
-        /// <returns></returns>
-        protected virtual Rock.Model.Person GetPerson()
-        {
-            return GetCurrentPerson( Request, ControllerContext );
-        }
-
-        /// <summary>
-        /// Gets the person alias.
-        /// </summary>
-        /// <returns></returns>
-        protected virtual Rock.Model.PersonAlias GetPersonAlias()
-        {
-            var person = GetPerson();
-            if ( person != null )
-            {
-                return person.PrimaryAlias;
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Checks the can edit.
         /// </summary>
         /// <param name="entity">The entity.</param>
@@ -304,35 +280,5 @@ namespace Rock.Rest
             return type != null && System.Data.Entity.Core.Objects.ObjectContext.GetObjectType( type.GetType() ) != type.GetType();
         }
 
-        /// <summary>
-        /// Gets the current person.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="controllerContext">The controller context.</param>
-        /// <returns></returns>
-        public static Rock.Model.Person GetCurrentPerson( HttpRequestMessage request, System.Web.Http.Controllers.HttpControllerContext controllerContext )
-        {
-            if ( request.Properties.Keys.Contains( "Person" ) )
-            {
-                return request.Properties["Person"] as Person;
-            }
-
-            var principal = controllerContext.Request.GetUserPrincipal();
-            if ( principal != null && principal.Identity != null )
-            {
-                var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
-                var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
-
-                if ( userLogin != null )
-                {
-                    var person = userLogin.Person;
-                    request.Properties.Add( "Person", person );
-                    return userLogin.Person;
-                }
-            }
-
-            return null;
-
-        }
     }
 }
