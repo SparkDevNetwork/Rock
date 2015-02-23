@@ -57,14 +57,7 @@ namespace RockWeb
                 return;
             }
 
-            if ( Request.Headers["X-Requested-With"] == "XMLHttpRequest" )
-            {
-                Response.StatusCode = 500;
-                Response.Write( "An error has occurred. See the ExceptionLog in Rock for details." );
-                Response.Flush();
-                Response.End();
-                return;
-            }
+            
         }
 
         /// <summary>
@@ -151,6 +144,15 @@ namespace RockWeb
                 {
                     lErrorInfo.Text = "<h3>Exception Log:</h3>";
                     ProcessException( ex, " " );
+                }
+
+                if ( Request.Headers["X-Requested-With"] == "XMLHttpRequest" )
+                {
+                    Response.StatusCode = 500;
+                    Response.Write( lErrorInfo.Text );
+                    Response.Flush();
+                    Response.End();
+                    return;
                 }
             }
         }

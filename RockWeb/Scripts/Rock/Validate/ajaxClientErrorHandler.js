@@ -1,15 +1,23 @@
 (function ($) {
     'use strict';
     var ajaxRequestBegin = function (sender, args) {
-            $(".ajax-error").hide();
-        },
+        $(".ajax-error").hide();
+    },
         ajaxRequestEnd = function (sender, args, c, d) {
             if (args.get_error() != undefined && args.get_error().httpStatusCode == '500') {
                 debugger
-                var errorMessage = args.get_error().message;
+
                 var errorName = args.get_error().name;
+                var errorMessage = args.get_error().message;
+                errorMessage = errorMessage.replace(errorName + ":", "");
+                var response = args.get_response();
+                if (response) {
+                    var responseData = response.get_responseData();
+                    errorMessage = responseData;
+                }
+
                 args.set_errorHandled(true);
-                $(".ajax-error-message").text(errorMessage.replace(errorName + ":", ""));
+                $(".ajax-error-message").html(errorMessage);
                 $(".ajax-error").show();
             }
             else if (args.get_response() != undefined && args.get_response().get_timedOut() == true) {
