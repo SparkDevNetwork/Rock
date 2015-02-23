@@ -1519,30 +1519,33 @@ namespace Rock.Model
             var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) );
             var canCheckInRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) );
 
-            var groupMemberService = new GroupMemberService( rockContext );
-            var knownRelationshipGroup = groupMemberService.Queryable()
-                .Where( m =>
-                    m.PersonId == personId &&
-                    m.GroupRole.Guid.Equals( ownerRole.Guid ) )
-                .Select( m => m.Group )
-                .FirstOrDefault();
-
-            if ( knownRelationshipGroup == null )
+            if ( ownerRole != null && canCheckInRole != null )
             {
-                var groupMember = new GroupMember();
-                groupMember.PersonId = personId;
-                groupMember.GroupRoleId = ownerRole.Id;
+                var groupMemberService = new GroupMemberService( rockContext );
+                var knownRelationshipGroup = groupMemberService.Queryable()
+                    .Where( m =>
+                        m.PersonId == personId &&
+                        m.GroupRole.Guid.Equals( ownerRole.Guid ) )
+                    .Select( m => m.Group )
+                    .FirstOrDefault();
 
-                knownRelationshipGroup = new Group();
-                knownRelationshipGroup.Name = knownRelationshipGroupType.Name;
-                knownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
-                knownRelationshipGroup.Members.Add( groupMember );
+                // Create known relationship group if doesn't exist
+                if ( knownRelationshipGroup == null )
+                {
+                    var groupMember = new GroupMember();
+                    groupMember.PersonId = personId;
+                    groupMember.GroupRoleId = ownerRole.Id;
 
-                new GroupService( rockContext ).Add( knownRelationshipGroup );
-            }
+                    knownRelationshipGroup = new Group();
+                    knownRelationshipGroup.Name = knownRelationshipGroupType.Name;
+                    knownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
+                    knownRelationshipGroup.Members.Add( groupMember );
 
-            if ( canCheckInRole != null )
-            {
+                    new GroupService( rockContext ).Add( knownRelationshipGroup );
+                    rockContext.SaveChanges();
+                }
+
+                // Add relationships
                 var canCheckInMember = groupMemberService.Queryable()
                     .FirstOrDefault( m =>
                         m.GroupId == knownRelationshipGroup.Id &&
@@ -1565,8 +1568,6 @@ namespace Rock.Model
                     groupMemberService.Add( inverseGroupMember );
                     rockContext.SaveChanges();
                 }
-
-                rockContext.SaveChanges();
             }
         }
 
