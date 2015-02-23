@@ -576,14 +576,14 @@ namespace RockWeb.Blocks.Finance
             
             FinancialTransaction txn = null;
 
-            bool editAllowed = true;
+            bool editAllowed = UserCanEdit;
 
             var rockContext = new RockContext();
 
             if ( !transactionId.Equals( 0 ) )
             {
                 txn = GetTransaction( transactionId, rockContext );
-                if ( txn != null )
+                if ( !editAllowed && txn != null )
                 {
                     editAllowed = txn.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 }
@@ -601,20 +601,25 @@ namespace RockWeb.Blocks.Finance
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed || !IsUserAuthorized( Authorization.EDIT ) )
+            if ( !editAllowed )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialTransaction.FriendlyTypeName );
-            }
-
-            if ( readOnly )
-            {
                 lbEdit.Visible = false;
-                ShowReadOnlyDetails( txn );
+                lbAddTransaction.Visible = false;
             }
             else
             {
                 lbEdit.Visible = true;
+                lbAddTransaction.Visible = true;
+            }
+
+            if ( readOnly )
+            {
+                ShowReadOnlyDetails( txn );
+            }
+            else
+            {
                 if ( txn.Id > 0 )
                 {
                     ShowReadOnlyDetails( txn );
