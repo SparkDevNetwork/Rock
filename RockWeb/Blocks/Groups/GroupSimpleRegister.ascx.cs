@@ -200,6 +200,7 @@ namespace RockWeb.Blocks.Groups
                 person.FirstName = txtFirstName.Text;
                 person.LastName = txtLastName.Text;
                 person.Email = txtEmail.Text;
+                person.IsEmailActive = true;
                 person.EmailPreference = EmailPreference.EmailAllowed;
                 person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                 if ( dvcConnectionStatus != null )
