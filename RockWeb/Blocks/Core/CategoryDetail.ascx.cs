@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Core
             }
             entityTypeQualifierProperty = GetAttributeValue( "EntityTypeQualifierProperty" );
             entityTypeQualifierValue = GetAttributeValue( "EntityTypeQualifierValue" );
-                        
+
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Category ) ).Id;
         }
 
@@ -288,6 +288,9 @@ namespace RockWeb.Blocks.Core
             if ( category == null )
             {
                 category = new Category { Id = 0, IsSystem = false, ParentCategoryId = parentCategoryId};
+
+                // fetch the ParentCategory (if there is one) so that security can check it
+                category.ParentCategory = categoryService.Get( parentCategoryId ?? 0 );
                 category.EntityTypeId = entityTypeId;
                 category.EntityTypeQualifierColumn = entityTypeQualifierProperty;
                 category.EntityTypeQualifierValue = entityTypeQualifierValue;
@@ -306,7 +309,10 @@ namespace RockWeb.Blocks.Core
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !category.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            
+            // if the person is Authorized to EDIT the category, or has EDIT for the block
+            var canEdit = category.IsAuthorized( Authorization.EDIT, CurrentPerson ) || this.IsUserAuthorized(Authorization.EDIT);
+            if ( !canEdit )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Category.FriendlyTypeName );
@@ -367,9 +373,9 @@ namespace RockWeb.Blocks.Core
             {
                 lTitle.Text = ActionTitle.Add( Category.FriendlyTypeName ).FormatAsHtmlTitle();
 
-                if ( !string.IsNullOrEmpty(category.IconCssClass)  )
+                if ( !string.IsNullOrEmpty( category.IconCssClass ) )
                 {
-                    lIcon.Text = String.Format("<i class='{0}'></i>", category.IconCssClass);
+                    lIcon.Text = String.Format( "<i class='{0}'></i>", category.IconCssClass );
                 }
                 else
                 {
@@ -378,7 +384,7 @@ namespace RockWeb.Blocks.Core
             }
 
             SetEditMode( true );
-            
+
             tbName.Text = category.Name;
 
             if ( category.EntityTypeId != 0 )
@@ -427,9 +433,9 @@ namespace RockWeb.Blocks.Core
             }
 
             lblMainDetails.Text = new DescriptionList()
-                .Add("Entity Type", category.EntityType.Name)
+                .Add( "Entity Type", category.EntityType.Name )
                 .Html;
-            
+
         }
 
         #endregion
