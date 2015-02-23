@@ -121,7 +121,7 @@ namespace church.ccv.Hr.Model
         }
 
         /// <summary>
-        /// Gets or sets the paid holiday hours.
+        /// Gets or sets the paid holiday hours, NOT including EarnedHolidayHours
         /// </summary>
         /// <value>
         /// The paid holiday hours.
@@ -171,7 +171,7 @@ namespace church.ccv.Hr.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets the total holiday hours.
+        /// Gets the total holiday hours including EarnedHolidayHours
         /// </summary>
         /// <value>
         /// The total holiday hours.

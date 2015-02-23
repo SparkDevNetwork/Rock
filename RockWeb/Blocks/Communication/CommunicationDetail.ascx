@@ -16,9 +16,7 @@
                  <asp:Panel ID="pnlDetails" runat="server">
 
                     <div class="form-horizontal">
-
                         <asp:Literal ID="lFutureSend" runat="server"></asp:Literal>
-
                         <div class="row margin-b-lg">
                             <div class="col-md-6">
                                 <asp:Literal ID="lCreatedBy" runat="server"></asp:Literal>

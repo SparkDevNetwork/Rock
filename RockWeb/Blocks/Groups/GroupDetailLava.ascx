@@ -30,6 +30,15 @@
                 </div>
             </div>
 
+            <asp:Panel ID="pnlSchedule" runat="server" Visible="false" CssClass="row">
+                <div class="col-sm-6">
+                    <Rock:DayOfWeekPicker ID="dowWeekly" runat="server" CssClass="input-width-md" Label="Day of the Week" />
+                </div>
+                <div class="col-sm-6">
+                    <Rock:TimePicker ID="timeWeekly" runat="server" Label="Time of Day" />
+                </div>
+            </asp:Panel>
+
             <div class="row">
                 <div class="col-md-12">
                     <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="true" />

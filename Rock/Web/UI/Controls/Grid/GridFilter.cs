@@ -56,11 +56,12 @@ namespace Rock.Web.UI.Controls
                     var keyName = blockKey.Split( new char[] {'|'}, StringSplitOptions.RemoveEmptyEntries );
                     if ( blockKey.Contains("|") && keyName.Length == 2 )
                     {
-                        _userPreferences.Add( new UserPreference( keyName[0], keyName[1], userPreference.Value ) );
-                    }
-                    else
-                    {
-                        _userPreferences.Add( new UserPreference( blockKey, blockKey, userPreference.Value ) );
+                        // only load userPreferences that are stored in the {key}|{name} format
+                        // and make sure there isn't more than one with the same key
+                        if ( !_userPreferences.Any( a => a.Key == keyName[0] ) )
+                        {
+                            _userPreferences.Add( new UserPreference( keyName[0], keyName[1], userPreference.Value ) );
+                        }
                     }
                 }
             }

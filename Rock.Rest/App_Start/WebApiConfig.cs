@@ -43,6 +43,7 @@ namespace Rock.Rest
             config.EnableCors( new Rock.Rest.EnableCorsFromOriginAttribute() );
             config.Filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
             config.Services.Replace( typeof( IExceptionLogger ), new RockApiExceptionLogger() );
+            config.Services.Replace( typeof( IExceptionHandler ), new RockApiExceptionHandler() );
             config.Formatters.Insert( 0, new Rock.Utility.RockJsonMediaTypeFormatter() );
 
             // Add API route for dataviews

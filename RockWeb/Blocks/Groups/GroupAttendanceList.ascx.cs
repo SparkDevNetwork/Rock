@@ -38,7 +38,8 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Lists all the scheduled occurrences for a given group." )]
 
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Detail Page", "", true, "", "", 0 )]
+    [BooleanField("Allow Add", "Should block support adding new attendance dates outside of the group's configured schedule and group type's exclusion dates?", true, "", 1)]
     public partial class GroupAttendanceList : RockBlock
     {
         #region Private Variables
@@ -68,15 +69,14 @@ namespace RockWeb.Blocks.Groups
                 _canView = true;
 
                 gOccurrences.DataKeyNames = new string[] { "StartDateTime" };
-                gOccurrences.ShowActionRow = false;
-                gOccurrences.AllowPaging = false;
-                gOccurrences.AllowSorting = false;
+                gOccurrences.Actions.AddClick += gOccurrences_Add;
                 gOccurrences.GridRebind += gOccurrences_GridRebind;
 
                 // make sure they have Auth to edit the block OR edit to the Group
                 bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
-                gOccurrences.Actions.ShowAdd = canEditBlock;
+                gOccurrences.Actions.ShowAdd = canEditBlock && GetAttributeValue("AllowAdd").AsBoolean();
                 gOccurrences.IsDeleteEnabled = canEditBlock;
+
             }
         }
 
@@ -117,6 +117,18 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Handles the Add event of the gOccurrences control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void gOccurrences_Add( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } };
+            NavigateToLinkedPage( "DetailPage", qryParams );
+        }
+
+        /// <summary>
         /// Handles the GridRebind event of the gOccurrences control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -138,9 +150,22 @@ namespace RockWeb.Blocks.Groups
         {
             if ( _group != null )
             {
-                var occurrences = new ScheduleService( _rockContext ).GetGroupOccurrences( _group );
+                lHeading.Text = _group.Name;
 
-                gOccurrences.DataSource = occurrences.OrderByDescending( o => o.StartDateTime ).ToList();
+                var qry = new ScheduleService( _rockContext ).GetGroupOccurrences( _group ).AsQueryable();
+
+                SortProperty sortProperty = gOccurrences.SortProperty;
+                List<ScheduleOccurrence> occurrences = null;
+                if ( sortProperty != null )
+                {
+                    occurrences = qry.Sort( sortProperty ).ToList();
+                }
+                else
+                {
+                    occurrences = qry.OrderByDescending( a => a.StartDateTime ).ToList();
+                }
+
+                gOccurrences.DataSource = occurrences;
                 gOccurrences.DataBind();
             }
         }

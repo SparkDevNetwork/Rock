@@ -260,7 +260,7 @@ namespace church.ccv.Hr.Model
         }
 
         /// <summary>
-        /// Paids the vacation hours.
+        /// Total Vacation hours.
         /// </summary>
         /// <returns></returns>
         public List<HoursPerWeek> PaidVacationHours()
@@ -273,7 +273,7 @@ namespace church.ccv.Hr.Model
         }
 
         /// <summary>
-        /// Paids the holiday hours.
+        /// Total Paid Holiday Hours (including EarnedHolidayHours)
         /// </summary>
         /// <returns></returns>
         public List<HoursPerWeek> PaidHolidayHours()
@@ -286,7 +286,7 @@ namespace church.ccv.Hr.Model
         }
 
         /// <summary>
-        /// Paids the sick hours.
+        /// Total Sick hours
         /// </summary>
         /// <returns></returns>
         public List<HoursPerWeek> PaidSickHours()

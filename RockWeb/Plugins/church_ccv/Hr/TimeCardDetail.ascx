@@ -40,7 +40,7 @@
                             <div class="col-xs-6"><strong>Overtime Hrs</strong></div>
                         </div>
                     </div>
-                    <div class="col-xs-2 col-md-1 col-lg-1"><strong>Other Hrs</strong></div>
+                    <div class="col-xs-2 col-md-2 col-lg-2"><strong>Other Hrs</strong></div>
                     <div class="col-xs-2 col-md-1 col-lg-1"><strong>Total Hrs</strong></div>
                     <div class="col-md-4 col-lg-2 hidden-xs hidden-sm"><strong>Note</strong></div>
                 </div>
@@ -72,6 +72,7 @@
                                         </div>
                                         <div class="col-md-3">
                                             <asp:Literal runat="server" ID="lEndDateTime" />
+                                            <asp:Literal runat="server" ID="lSummaryLabel" />
                                         </div>
                                     </div>
                                 </div>
@@ -79,19 +80,23 @@
                                     <div class="row">
                                         <div class="col-xs-6">
                                             <asp:Literal runat="server" ID="lWorkedRegularHours" />
+                                            <asp:Literal runat="server" ID="lWorkedRegularHoursSummary" />
                                         </div>
                                         <div class="col-xs-6">
                                             <Rock:Badge runat="server" ID="lWorkedOvertimeHours" BadgeType="Danger" ToolTip="Overtime" />
+                                            <asp:Literal runat="server" ID="lWorkedOvertimeHoursSummary" />
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-xs-3 col-md-2">
+                                <div class="col-xs-2 col-md-2 col-lg-2">
                                     <Rock:Badge runat="server" ID="lPaidVacationHours" BadgeType="Success" ToolTip="Vacation" />
                                     <Rock:Badge runat="server" ID="lPaidHolidayHours" BadgeType="Info" ToolTip="Paid Holiday" />
                                     <Rock:Badge runat="server" ID="lPaidSickHours" BadgeType="Warning" ToolTip="Sick" />
+                                    <asp:Literal runat="server" ID="lOtherHoursSummary" />
                                 </div>
                                 <div class="col-xs-2 col-md-1 col-lg-1">
                                     <asp:Literal runat="server" ID="lTotalHours" />
+                                    <asp:Literal runat="server" ID="lTotalHoursSummary" />
                                 </div>
                                 <div class="col-md-4 col-lg-2 hidden-xs hidden-sm">
                                     <asp:Literal runat="server" ID="lNotes" />
@@ -144,7 +149,7 @@
 
                                 <div class="col-md-2 pull-right gridresponsive-commandcolumn">
                                     <asp:LinkButton runat="server" ID="lbSave" CssClass="btn btn-success btn-sm js-item-save margin-b-sm" OnClick="lbSave_Click"><i class="fa fa-check"></i></asp:LinkButton>
-                                    <a runat="server" id="lbCancel" class="btn btn-default btn-sm js-item-cancel margin-b-sm"><i class="fa fa-chevron-up"></i></a>
+                                    <a runat="server" id="lbCancel" class="btn btn-warning btn-sm js-item-cancel margin-b-sm"><i class="fa fa-minus"></i></a>
                                 </div>
 
                             </div>

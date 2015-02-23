@@ -290,6 +290,19 @@ namespace Rock.Model
         [DataMember]
         public virtual Category Category { get; set; }
 
+        /// <summary>
+        /// Gets the friendly schedule text.
+        /// </summary>
+        /// <value>
+        /// The friendly schedule text.
+        /// </value>
+        [LavaInclude]
+        [NotMapped]
+        public virtual string FriendlyScheduleText
+        {
+            get { return ToFriendlyScheduleText(); }
+        }
+
         #endregion
 
         #region Public Methods
@@ -755,6 +768,14 @@ namespace Rock.Model
         public DateTime EndDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the schedule identifier.
+        /// </summary>
+        /// <value>
+        /// The schedule identifier.
+        /// </value>
+        public int? ScheduleId { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether attendance has been entered for this occurrence.
         /// </summary>
         /// <value>
@@ -820,21 +841,25 @@ namespace Rock.Model
         /// Initializes a new instance of the <see cref="ScheduleOccurrence" /> class.
         /// </summary>
         /// <param name="occurrence">The occurrence.</param>
-        public ScheduleOccurrence( DDay.iCal.Occurrence occurrence )
+        /// <param name="scheduleId">The schedule identifier.</param>
+        public ScheduleOccurrence( DDay.iCal.Occurrence occurrence, int? scheduleId = null )
         {
             StartDateTime = occurrence.Period.StartTime.Value;
             EndDateTime = occurrence.Period.EndTime.Value;
+            ScheduleId = scheduleId;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ScheduleOccurrence"/> class.
+        /// Initializes a new instance of the <see cref="ScheduleOccurrence" /> class.
         /// </summary>
         /// <param name="startDateTime">The start date time.</param>
         /// <param name="endDateTime">The end date time.</param>
-        public ScheduleOccurrence( DateTime startDateTime, DateTime endDateTime )
+        /// <param name="scheduleId">The schedule identifier.</param>
+        public ScheduleOccurrence( DateTime startDateTime, DateTime endDateTime, int? scheduleId = null )
         {
             StartDateTime = startDateTime;
             EndDateTime = endDateTime;
+            ScheduleId = scheduleId;
         }
     }
 

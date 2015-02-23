@@ -342,7 +342,25 @@ namespace Rock.Model
             return this.TotalAmount.ToStringSafe();
         }
 
-        #endregion Public Methods
+        /// <summary>
+        /// Pres the save.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if ( state == System.Data.Entity.EntityState.Deleted )
+            {
+                // since images have a cascade delete relationship, make sure the PreSaveChanges gets called 
+                var childImages = new FinancialTransactionImageService( dbContext as RockContext ).Queryable().Where( a => a.TransactionId == this.Id );
+                foreach ( var image in childImages )
+                {
+                    image.PreSaveChanges( dbContext, state );
+                }
+            }
+        }
+
+        #endregion
     }
 
     /// <summary>

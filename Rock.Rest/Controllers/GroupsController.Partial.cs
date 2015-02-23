@@ -149,6 +149,16 @@ namespace Rock.Rest.Controllers
                     g.Members.Select( m => m.PersonId ).Contains( personId ) );
         }
 
+        /// <summary>
+        /// Gets a group by location.
+        /// </summary>
+        /// <param name="geofenceGroupTypeId">The geofence group type identifier.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="street">The street.</param>
+        /// <param name="city">The city.</param>
+        /// <param name="state">The state.</param>
+        /// <param name="postalCode">The postal code.</param>
+        /// <returns></returns>
         [Authenticate, Secured]
         [EnableQuery]
         [HttpGet]
@@ -213,6 +223,40 @@ namespace Rock.Rest.Controllers
             }
 
             return fenceGroups.AsQueryable();
+        }
+
+        /// <summary>
+        /// Saves a group address.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="locationTypeId">The location type identifier.</param>
+        /// <param name="street1">The street1.</param>
+        /// <param name="city">The city.</param>
+        /// <param name="state">The state.</param>
+        /// <param name="postalCode">The postal code.</param>
+        /// <param name="country">The country.</param>
+        /// <param name="street2">The street2.</param>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [HttpPut]
+        [System.Web.Http.Route( "api/Groups/SaveAddress/{groupId}/{locationTypeId}/{street1}/{city}/{state}/{postalCode}/{country}" )]
+        public virtual void SaveAddress( int groupId, int locationTypeId,
+            string street1, string city, string state, string postalCode, string country, string street2 = ""  )
+        {
+            SetProxyCreation( true );
+
+            var rockContext = (RockContext)Service.Context;
+            var group = new GroupService( rockContext ).Get( groupId );
+
+            var locationType = DefinedValueCache.Read( locationTypeId, rockContext );
+            if ( group == null || locationType == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+            GroupService.AddNewFamilyAddress( rockContext, group, locationType.Guid.ToString(),
+                street1, street2, city, state, postalCode, country, true );
         }
 
         #region MapInfo methods

@@ -38,14 +38,13 @@ namespace Rock.Communication.Medium
         const int TOKEN_REUSE_DURATION = 30; // number of days between token reuse
         
         /// <summary>
-        /// Gets the control path.
+        /// Gets the control.
         /// </summary>
-        /// <value>
-        /// The control path.
-        /// </value>
-        public override MediumControl Control
+        /// <param name="useSimpleMode">if set to <c>true</c> [use simple mode].</param>
+        /// <returns></returns>
+        public override MediumControl GetControl( bool useSimpleMode )
         {
-            get { return new Rock.Web.UI.Controls.Communication.Sms(); }
+            return new Rock.Web.UI.Controls.Communication.Sms();
         }
 
         /// <summary>
@@ -311,6 +310,20 @@ namespace Rock.Communication.Medium
             }
 
             return "@" + randomNumber.ToString();
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether [supports bulk communication].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [supports bulk communication]; otherwise, <c>false</c>.
+        /// </value>
+        public override bool SupportsBulkCommunication
+        {
+            get
+            {
+                return false;
+            }
         }
 
     }

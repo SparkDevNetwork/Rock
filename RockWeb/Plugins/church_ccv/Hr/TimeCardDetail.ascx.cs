@@ -155,6 +155,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
                 var repeaterItem = e.Item;
 
                 bool isHoliday = _holidayDatesCache.Any( a => a == timeCardDay.StartDateTime.Date );
+                bool isEndOfWeek = timeCardDay.StartDateTime.DayOfWeek == DayOfWeek.Sunday;
 
                 // Display Only
                 Literal lTimeCardDayName = repeaterItem.FindControl( "lTimeCardDayName" ) as Literal;
@@ -209,13 +210,42 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
                 Badge lPaidSickHours = repeaterItem.FindControl( "lPaidSickHours" ) as Badge;
                 lPaidSickHours.Text = FormatTimeCardHours( timeCardDay.PaidSickHours );
-                
-                decimal totalOtherHours = timeCardDay.PaidVacationHours ?? 0 + timeCardDay.TotalHolidayHours ?? 0 + timeCardDay.PaidSickHours ?? 0;
+
+                decimal totalOtherHours = ( timeCardDay.PaidVacationHours ?? 0 ) + ( timeCardDay.TotalHolidayHours ?? 0 ) + ( timeCardDay.PaidSickHours ?? 0 );
                 Literal lTotalHours = repeaterItem.FindControl( "lTotalHours" ) as Literal;
                 lTotalHours.Text = FormatTimeCardHours( timeCardDay.TotalWorkedDuration + totalOtherHours );
 
                 Literal lNotes = repeaterItem.FindControl( "lNotes" ) as Literal;
                 lNotes.Text = timeCardDay.Notes;
+
+                if ( isEndOfWeek )
+                {
+                    Literal lSummaryLabel = repeaterItem.FindControl( "lSummaryLabel" ) as Literal;
+                    Literal lWorkedRegularHoursSummary = repeaterItem.FindControl( "lWorkedRegularHoursSummary" ) as Literal;
+                    Literal lWorkedOvertimeHoursSummary = repeaterItem.FindControl( "lWorkedOvertimeHoursSummary" ) as Literal;
+                    Literal lOtherHoursSummary = repeaterItem.FindControl( "lOtherHoursSummary" ) as Literal;
+                    Literal lTotalHoursSummary = repeaterItem.FindControl( "lTotalHoursSummary" ) as Literal;
+
+                    var workedRegularSummaryHours = timeCardDay.TimeCard.GetRegularHours()
+                        .Where( a => a.TimeCardDay.StartDateTime.Date <= timeCardDay.StartDateTime.Date
+                            && a.TimeCardDay.StartDateTime.Date >= timeCardDay.StartDateTime.Date.AddDays( -7 ) )
+                            .Sum( a => a.Hours );
+                    var workedOvertimeSummaryHours = timeCardDay.TimeCard.GetOvertimeHours()
+                        .Where( a => a.TimeCardDay.StartDateTime.Date <= timeCardDay.StartDateTime.Date
+                            && a.TimeCardDay.StartDateTime.Date >= timeCardDay.StartDateTime.Date.AddDays( -7 ) )
+                            .Sum( a => a.Hours );
+                    var otherSummaryHours = timeCardDay.TimeCard.TimeCardDays
+                        .Where( a => a.StartDateTime.Date <= timeCardDay.StartDateTime.Date
+                            && a.StartDateTime.Date >= timeCardDay.StartDateTime.Date.AddDays( -7 ) )
+                            .Sum( a => ( a.PaidHolidayHours ?? 0 ) + ( a.PaidSickHours ?? 0 ) + ( a.PaidVacationHours ?? 0 ) + ( a.EarnedHolidayHours ?? 0 ) );
+
+                    string subtotalItemFormat = "</br><span class='timecard-subtotal-item'>{0}</span>";
+                    lSummaryLabel.Text = string.Format( subtotalItemFormat, "Subtotal:" );
+                    lWorkedRegularHoursSummary.Text = string.Format( subtotalItemFormat, FormatTimeCardHours( workedRegularSummaryHours ) );
+                    lWorkedOvertimeHoursSummary.Text = string.Format( subtotalItemFormat, FormatTimeCardHours( workedOvertimeSummaryHours ) );
+                    lOtherHoursSummary.Text = string.Format( subtotalItemFormat, FormatTimeCardHours( otherSummaryHours ) );
+                    lTotalHoursSummary.Text = string.Format( subtotalItemFormat, FormatTimeCardHours( workedRegularSummaryHours + workedOvertimeSummaryHours + otherSummaryHours ) );
+                }
 
                 Literal lTimeCardDayNameEdit = repeaterItem.FindControl( "lTimeCardDayNameEdit" ) as Literal;
                 lTimeCardDayNameEdit.Text = lTimeCardDayName.Text;
