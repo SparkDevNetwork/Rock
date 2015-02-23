@@ -5,13 +5,13 @@
     },
         ajaxRequestEnd = function (sender, args, c, d) {
             if (args.get_error() != undefined && args.get_error().httpStatusCode == '500') {
-                debugger
-
                 var errorName = args.get_error().name;
                 var errorMessage = args.get_error().message;
                 errorMessage = errorMessage.replace(errorName + ":", "");
                 var response = args.get_response();
                 if (response) {
+
+                    // if we got responseData (probably from Error.aspx.cs), use that as the error output
                     var responseData = response.get_responseData();
                     errorMessage = responseData;
                 }
