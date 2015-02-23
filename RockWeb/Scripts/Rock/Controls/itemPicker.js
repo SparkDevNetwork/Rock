@@ -139,7 +139,6 @@
                     $control.find('.js-hide-on-select-none').hide();
 
                     $spanNames.text(self.options.defaultText);
-                    return false;
                 });
             },
             updateScrollbar: function () {
