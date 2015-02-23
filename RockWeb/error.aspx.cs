@@ -48,7 +48,7 @@ namespace RockWeb
                 Request.Url.Authority + ResolveUrl( "~/ImageUploader.ashx" )
             };
 
-            if ( handlers.Any(a => Request.Url.Query.Contains( a ) ) )
+            if ( handlers.Any( a => Request.Url.Query.Contains( a ) ) )
             {
                 Response.StatusCode = 500;
                 Response.Write( "An error has occurred. See the ExceptionLog in Rock for details." );
@@ -57,7 +57,7 @@ namespace RockWeb
                 return;
             }
 
-            
+
         }
 
         /// <summary>
@@ -149,7 +149,22 @@ namespace RockWeb
                 if ( Request.Headers["X-Requested-With"] == "XMLHttpRequest" )
                 {
                     Response.StatusCode = 500;
-                    Response.Write( lErrorInfo.Text );
+
+                    if ( showDetails )
+                    {
+                        // go get the important exception
+                        while ( ex.InnerException != null )
+                        {
+                            ex = ex.InnerException;
+                        }
+
+                        Response.Write(string.Format("{0}<p><pre>{1}</pre>", ex.Message, ex.StackTrace));
+                    }
+                    else
+                    {
+                        Response.Write( "An error has occurred while processing your request.  Your organization's administrators have been notified of this problem." );
+                    }
+                    
                     Response.Flush();
                     Response.End();
                     return;
