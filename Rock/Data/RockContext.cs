@@ -119,10 +119,26 @@ namespace Rock.Data
         public DbSet<Auth> Auths { get; set; }
 
         /// <summary>
+        /// Gets or sets the Benevolence Results.
+        /// </summary>
+        /// <value>
+        /// the Benevolence Results.
+        /// </value>
+        public DbSet<Model.BenevolenceResult> BenevolenceResults { get; set; }      
+        
+        /// <summary>
+        /// Gets or sets the Benevolence Requests.
+        /// </summary>
+        /// <value>
+        /// The Benevolence Requests.
+        /// </value>
+        public DbSet<Model.BenevolenceRequest> BenevolenceRequests { get; set; }     
+        
+        /// <summary>
         /// Gets or sets the Files.
         /// </summary>
         /// <value>
-        /// the Files.
+        /// The Files.
         /// </value>
         public DbSet<Model.BinaryFile> BinaryFiles { get; set; }
 
