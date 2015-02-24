@@ -823,7 +823,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         birthdate = birthdate.Value.AddYears( -100 );
                                     }
                                 }
-                                person.BirthDate = birthdate;
+                                person.SetBirthDate( birthdate );
 
                                 History.EvaluateChange( demographicChanges, "Birth Date", null, person.BirthDate );
 
