@@ -44,7 +44,7 @@ namespace Rock.Web.UI.Controls
         private RockTextBox _tbLastName;
         private DropDownList _ddlSuffix;
         private RockRadioButtonList _rblGender;
-        private BirthdayPicker _bpBirthDay;
+        private DatePicker _dpBirthdate;
         private DropDownList _ddlConnectionStatus;
         private GradePicker _ddlGradePicker;
 
@@ -140,8 +140,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public DateTime? BirthDate
         {
-            get { return _bpBirthDay.SelectedDate; }
-            set { _bpBirthDay.SelectedDate = value; }
+            get { return _dpBirthdate.SelectedDate; }
+            set { _dpBirthdate.SelectedDate = value; }
         }
 
         /// <summary>
@@ -285,7 +285,7 @@ namespace Rock.Web.UI.Controls
                 _tbFirstName.ValidationGroup = value;
                 _tbLastName.ValidationGroup = value;
                 _rblGender.ValidationGroup = value;
-                _bpBirthDay.ValidationGroup = value;
+                _dpBirthdate.ValidationGroup = value;
                 _ddlGradePicker.ValidationGroup = value;
             }
         }
@@ -302,7 +302,7 @@ namespace Rock.Web.UI.Controls
             _tbLastName = new RockTextBox();
             _ddlSuffix = new DropDownList();
             _rblGender = new RockRadioButtonList();
-            _bpBirthDay = new BirthdayPicker();
+            _dpBirthdate = new DatePicker();
             _ddlConnectionStatus = new DropDownList();
             _ddlGradePicker = new GradePicker { UseAbbreviation = true, UseGradeOffsetAsValue = true };
             _ddlGradePicker.Label = string.Empty;
@@ -323,7 +323,7 @@ namespace Rock.Web.UI.Controls
             _tbLastName.ID = "_tbLastName";
             _ddlSuffix.ID = "_ddlSuffix";
             _rblGender.ID = "_rblGender";
-            _bpBirthDay.ID = "_bpBirthDay";
+            _dpBirthdate.ID = "_dtBirthdate";
             _ddlConnectionStatus.ID = "_ddlConnectionStatus";
             _ddlGradePicker.ID = "_ddlGrade";
             _lbDelete.ID = "_lbDelete";
@@ -334,7 +334,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _tbLastName );
             Controls.Add( _ddlSuffix );
             Controls.Add( _rblGender );
-            Controls.Add( _bpBirthDay );
+            Controls.Add( _dpBirthdate );
             Controls.Add( _ddlConnectionStatus );
             Controls.Add( _ddlGradePicker );
             Controls.Add( _lbDelete );
@@ -372,7 +372,8 @@ namespace Rock.Web.UI.Controls
             _ddlConnectionStatus.CssClass = "form-control";
             BindListToDefinedType( _ddlConnectionStatus, Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS );
 
-            _bpBirthDay.Required = false;
+            _dpBirthdate.StartView = DatePicker.StartViewOption.decade;
+            _dpBirthdate.Required = false;
 
             _ddlGradePicker.CssClass = "form-control";
             _ddlGradePicker.RequiredErrorMessage = _ddlGradePicker.Label + " is required for all children";
@@ -431,7 +432,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                _bpBirthDay.RenderControl( writer );
+                _dpBirthdate.RenderControl( writer );
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
