@@ -17,11 +17,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -153,6 +155,43 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Filter Control
+
+        /// <summary>
+        /// Geta a filter expression for an attribute value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public override System.Linq.Expressions.Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, System.Linq.Expressions.ParameterExpression parameterExpression )
+        {
+            if ( filterValues.Count >= 2 )
+            {
+                string comparisonValue = filterValues[0];
+                if ( comparisonValue != "0" )
+                {
+                    Guid guid = filterValues[1].AsGuid();
+                    int personId = new PersonAliasService( new RockContext() ).Queryable()
+                        .Where( a => a.Guid.Equals( guid ) )
+                        .Select( a => a.PersonId )
+                        .FirstOrDefault();
+
+                    if ( personId > 0 )
+                    {
+                        ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                        MemberExpression propertyExpression = Expression.Property( parameterExpression, "ValueAsPersonId" );
+                        ConstantExpression constantExpression = Expression.Constant( personId, typeof( int ) );
+                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        #endregion
+
         #region Entity Methods
 
         /// <summary>
@@ -210,6 +249,7 @@ namespace Rock.Field.Types
         }
 
         #endregion
+
 
     }
 }

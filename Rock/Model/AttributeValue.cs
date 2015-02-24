@@ -125,7 +125,23 @@ namespace Rock.Model
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [LavaIgnore]
         public DateTime? ValueAsDateTime { get; private set; }
-        
+
+        /// <summary>
+        /// Gets a person alias guid value as a PersonId (ComputedColumn).
+        /// </summary>
+        /// <remarks>
+        /// Computed Column Spec:
+        /// case 
+        ///     when [Value] like '________-____-____-____-____________' 
+        ///         then [dbo].[ufnUtility_GetPersonIdFromPersonAliasGuid]([Value]) 
+        ///     else null 
+        /// end
+        /// </remarks>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [LavaIgnore]
+        public int? ValueAsPersonId { get; private set; }
+
         /// <summary>
         /// Gets the <see cref="Rock.Model.FieldType"/> that represents the type of value that is being represented by the AttributeValue, and provides a UI for the user to set the value.
         /// </summary>

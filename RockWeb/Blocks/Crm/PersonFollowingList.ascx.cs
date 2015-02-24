@@ -101,16 +101,21 @@ namespace RockWeb.Blocks.Crm
         protected void gFollowings_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
-            var service = new FollowingService( rockContext );
+            var personAliasService = new PersonAliasService( rockContext );
+            var followingService = new FollowingService( rockContext );
 
-            int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-            foreach (var following in service.Queryable()
+            var paQry = personAliasService.Queryable()
+                .Where( p => p.PersonId == e.RowKeyId )
+                .Select( p => p.Id );
+
+            int personAliasEntityTypeId = EntityTypeCache.Read( "Rock.Model.PersonAlias" ).Id;
+            foreach ( var following in followingService.Queryable()
                 .Where( f =>
-                    f.EntityTypeId == personEntityTypeId &&
-                    f.EntityId == e.RowKeyId &&
+                    f.EntityTypeId == personAliasEntityTypeId &&
+                    paQry.Contains( f.EntityId ) &&
                     f.PersonAliasId == CurrentPersonAlias.Id ) )
             {
-                service.Delete( following );
+                followingService.Delete( following );
             }
 
             rockContext.SaveChanges();
@@ -151,17 +156,19 @@ namespace RockWeb.Blocks.Crm
             {
                 var rockContext = new RockContext();
 
-                int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-                var personIds = new FollowingService( new RockContext() ).Queryable()
+                int personAliasEntityTypeId = EntityTypeCache.Read( "Rock.Model.PersonAlias" ).Id;
+                var personAliasIds = new FollowingService( new RockContext() ).Queryable()
                     .Where( f =>
-                        f.EntityTypeId == personEntityTypeId &&
+                        f.EntityTypeId == personAliasEntityTypeId &&
                         f.PersonAliasId == CurrentPersonAlias.Id )
                     .Select( f => f.EntityId )
                     .Distinct()
                     .ToList();
 
-                var qry = new PersonService( rockContext ).Queryable()
-                    .Where( p => personIds.Contains( p.Id ) );
+                var qry = new PersonAliasService( rockContext ).Queryable()
+                    .Where( p => personAliasIds.Contains( p.Id ) )
+                    .Select( p => p.Person )
+                    .Distinct();
 
                 // Sort
                 SortProperty sortProperty = gFollowings.SortProperty;
