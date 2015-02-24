@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Cms
     /// <summary>
     /// Block to display content items, html, xml, or transformed xml based on a SQL query or stored procedure.
     /// </summary>
-    [DisplayName( "Content Channel Dynamic" )]
+    [DisplayName( "Content Channel View" )]
     [Category( "CMS" )]
     [Description( "Block to display dynamic content channel items." )]
 
@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Cms
     [TextField( "Meta Description Attribute", "Attribute to use for storing the description attribute.", false, "", "CustomSetting" )]
     [TextField( "Meta Image Attribute", "Attribute to use for storing the image attribute.", false, "", "CustomSetting" )]
 
-    public partial class ContentChannelDynamic : RockBlockCustomSettings
+    public partial class ContentChannelView : RockBlockCustomSettings
     {
         #region Fields
 
