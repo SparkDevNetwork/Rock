@@ -348,6 +348,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             fsAttributes.Controls.Clear();
 
+            string validationGroup = string.Format("vgAttributeValues_{0}", this.BlockId );
+            btnSave.ValidationGroup = validationGroup;
+
             hfAttributeOrder.Value = AttributeList.AsDelimited( "|" );
 
             if ( Person != null )
@@ -387,7 +390,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                     else
                     {
-                        attribute.AddControl( fsAttributes.Controls, attributeValue, string.Empty, setValues, true );
+                        attribute.AddControl( fsAttributes.Controls, attributeValue, validationGroup, setValues, true );
                     }
                 }
             }
