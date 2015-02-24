@@ -50,7 +50,7 @@
       } else {
         if (this.template) {
           this.$element.on({
-            'focus.timepicker': $.proxy(this.showWidget, this),
+            //'focus.timepicker': $.proxy(this.showWidget, this),       DT 2015-02-24: Disabled this setting, so that the popup window is not automatically shown when user tabs to time since it does not hide when user tabs off of the field
             'click.timepicker': $.proxy(this.showWidget, this),
             'blur.timepicker': $.proxy(this.blurElement, this)
           });
@@ -142,7 +142,8 @@
       this.update();
     },
 
-    elementKeydown: function(e) {
+    elementKeydown: function (e) {
+        debugger;
       switch (e.keyCode) {
       case 9: //tab
         this.updateFromElementVal();
@@ -787,7 +788,7 @@
     widgetKeydown: function(e) {
       var $input = $(e.target).closest('input'),
           name = $input.attr('name');
-
+      debugger;
       switch (e.keyCode) {
       case 9: //tab
         if (this.showMeridian) {
