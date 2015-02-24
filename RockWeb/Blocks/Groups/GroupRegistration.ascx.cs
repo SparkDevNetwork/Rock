@@ -372,6 +372,7 @@ namespace RockWeb.Blocks.Groups
 
                 // Show lava content
                 var mergeFields = new Dictionary<string, object>();
+                mergeFields.Add( "Group", _group );
                 mergeFields.Add( "GroupMembers", newGroupMembers );
 
                 bool showDebug = UserCanEdit && GetAttributeValue( "EnableDebug" ).AsBoolean();
