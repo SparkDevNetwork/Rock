@@ -399,7 +399,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 ypGraduation.SelectedYear = null;
             }
 
-            if ( Person.GradeOffset.HasValue )
+            if ( !Person.HasGraduated ?? false )
             {
                 int gradeOffset = Person.GradeOffset.Value;
                 var maxGradeOffset = ddlGradePicker.MaxGradeOffset; ;
