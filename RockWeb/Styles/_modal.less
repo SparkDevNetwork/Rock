@@ -3,6 +3,10 @@
 
 */
 
+// import the following files as less files so they are concatenated properly
+@import (less) "./bootstrap-modal/bootstrap-modal-bs3patch.css";
+@import (less) "./bootstrap-modal/bootstrap-modal.css";
+
 .modal-overflow.modal {
     top: 48px;
 }
@@ -73,12 +77,6 @@
     }
 }
 
-.modal {
-  background-color: @body-bg;
-  margin-top: 20px;
-}
-
-
 .modal-body {
   padding: 8px 12px 12px 12px;
 }
@@ -100,16 +98,16 @@
 
 
 // Bootbox Modal Overrides
-.modal.bootbox {
-    width: auto;
-}
 .bootbox .modal-dialog {
     margin: 0;
-    
-    @media (max-width: @screen-sm-max) {
-        width: auto;
-    }
+    width: auto;
 }
-.bootbox .modal-body {
-    padding-top: 20px;
+
+// bootstrap modal component overrides
+.modal-backdrop, 
+.modal-backdrop.fade.in{
+	opacity: 0.7;
+	filter: alpha(opacity=70);
+	background: @modal-backdrop-bg;
 }
+
