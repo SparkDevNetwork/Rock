@@ -388,8 +388,8 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.IsPublic = cbIsPublic.Checked;
             prayerRequest.FirstName = dtbFirstName.Text;
             prayerRequest.LastName = dtbLastName.Text;
-            prayerRequest.Text = HttpUtility.HtmlEncode(dtbText.Text.Trim());
-            prayerRequest.Answer = HttpUtility.HtmlEncode(dtbAnswer.Text.Trim());
+            prayerRequest.Text = dtbText.Text.Trim();
+            prayerRequest.Answer = dtbAnswer.Text.Trim();
 
             if ( !Page.IsValid )
             {
