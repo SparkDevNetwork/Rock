@@ -15,16 +15,17 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
+using CronExpressionDescriptor;
 using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI;
-using CronExpressionDescriptor;
 using Rock.Security;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -242,13 +243,28 @@ namespace RockWeb.Blocks.Administration
             var jobs = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) ).Values;
 
             var rockContext = new RockContext();
+            List<string> jobTypeErrors = new List<string>();
+            var jobsList = jobs.ToList();
             foreach ( var job in jobs )
             {
-                Rock.Attribute.Helper.UpdateAttributes( job, jobEntityTypeId, "Class", job.FullName, rockContext );
+                try
+                {
+                    Rock.Attribute.Helper.UpdateAttributes( job, jobEntityTypeId, "Class", job.FullName, rockContext );
+                }
+                catch ( Exception ex )
+                {
+                    jobsList.Remove( job );
+                    jobTypeErrors.Add( string.Format( "Job: {0}, Error: {1}", job.Name, ex.Message ) );
+                }
             }
 
-            ddlJobTypes.DataSource = jobs;
+            ddlJobTypes.DataSource = jobsList;
             ddlJobTypes.DataBind();
+
+            nbJobTypeError.Visible = jobTypeErrors.Any();
+            nbJobTypeError.Text = "Error loading job types";
+            nbJobTypeError.Details = jobTypeErrors.AsDelimited( "<br/>" );
+
         }
 
         #endregion
