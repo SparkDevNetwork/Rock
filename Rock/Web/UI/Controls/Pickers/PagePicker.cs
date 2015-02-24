@@ -427,11 +427,14 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Renders the child picker controls in the right spot
+        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// will be handled by calling RenderControlHelper's RenderControl() method.
         /// </summary>
         /// <param name="writer">The writer.</param>
-        public override void RenderChildPickerControls( HtmlTextWriter writer )
+        public override void RenderBaseControl( HtmlTextWriter writer )
         {
+            base.RenderBaseControl( writer );
+
             // don't show the PageRoutePicker if this control is not enabled (readonly)
             if ( this.Enabled )
             {
