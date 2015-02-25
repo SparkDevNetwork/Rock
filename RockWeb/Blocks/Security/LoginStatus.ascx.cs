@@ -113,6 +113,9 @@ namespace RockWeb.Blocks.Security
                 phMyProfile.Visible = false;
                 phMySettings.Visible = false;
                 lbLoginLogout.Text = "Login";
+
+                liDropdown.Visible = false;
+                liLogin.Visible = true;
             }
 
             hfActionType.Value = lbLoginLogout.Text;
