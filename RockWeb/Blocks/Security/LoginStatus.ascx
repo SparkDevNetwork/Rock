@@ -1,7 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="LoginStatus.ascx.cs" Inherits="RockWeb.Blocks.Security.LoginStatus" %>
 
 <ul class="nav navbar-nav loginstatus">    
-    <li class="dropdown">
+    <li class="dropdown" ID="liDropdown" runat="server">
 
         <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
             <div id="divProfilePhoto" runat="server" class="profile-photo"></div>
@@ -31,6 +31,7 @@
         </ul>
 
     </li>
+    <li ID="liLogin" runat="server" Visible="false"><asp:LinkButton ID="lbLogin" runat="server" OnClick="lbLoginLogout_Click" CausesValidation="false" Text="Login"></asp:LinkButton></li>
 </ul>
 <asp:HiddenField ID="hfActionType" runat="server" />
 
