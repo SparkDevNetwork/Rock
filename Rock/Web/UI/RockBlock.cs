@@ -646,7 +646,7 @@ namespace Rock.Web.UI
         /// <param name="queryParams">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked page URL.  
         /// Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> the key value is a <see cref="System.String"/> that represents the name of the query string
         /// parameter, and the value is a <see cref="System.String"/> that represents the query string value. This dictionary defaults to a null value.</param>
-        public void NavigateToLinkedPage( string attributeKey, Dictionary<string, string> queryParams = null )
+        public bool NavigateToLinkedPage( string attributeKey, Dictionary<string, string> queryParams = null )
         {
             string url = LinkedPageUrl( attributeKey, queryParams );
 
@@ -655,7 +655,10 @@ namespace Rock.Web.UI
             {
                 Response.Redirect( url, false );
                 Context.ApplicationInstance.CompleteRequest();
+                return true;
             }
+
+            return false;
         }
 
         /// <summary>
@@ -668,7 +671,7 @@ namespace Rock.Web.UI
         /// This value defaults to null.</param>
         /// <param name="itemParentValue">A <see cref="System.Int32"/> representing the parent item value that is being passed to the linked page in the query string. 
         /// This value defaults to null.</param>
-        public void NavigateToLinkedPage( string attributeKey, string itemKey, int itemKeyValue, string itemParentKey = null, int? itemParentValue = null )
+        public bool NavigateToLinkedPage( string attributeKey, string itemKey, int itemKeyValue, string itemParentKey = null, int? itemParentValue = null )
         {
             Dictionary<string, string> queryParams = new Dictionary<string, string>();
             queryParams.Add( itemKey, itemKeyValue.ToString() );
@@ -677,7 +680,7 @@ namespace Rock.Web.UI
                 queryParams.Add( itemParentKey, ( itemParentValue ?? 0 ).ToString() );
             }
 
-            NavigateToLinkedPage( attributeKey, queryParams );
+            return NavigateToLinkedPage( attributeKey, queryParams );
         }
 
         /// <summary>
@@ -686,7 +689,7 @@ namespace Rock.Web.UI
         /// <param name="queryString">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked <see cref="Rock.Model.Page"/> URL.  
         /// Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> the key value is a <see cref="System.String"/> that represents the name of the query string
         /// parameter, and the value is a <see cref="System.String"/> that represents the query string value. This dictionary defaults to a null value.</param>
-        public void NavigateToParentPage( Dictionary<string, string> queryString = null )
+        public bool NavigateToParentPage( Dictionary<string, string> queryString = null )
         {
             var pageCache = PageCache.Read( RockPage.PageId );
             if ( pageCache != null )
@@ -694,9 +697,11 @@ namespace Rock.Web.UI
                 var parentPage = pageCache.ParentPage;
                 if ( parentPage != null )
                 {
-                    NavigateToPage( parentPage.Guid, queryString );
+                    return NavigateToPage( parentPage.Guid, queryString );
                 }
             }
+
+            return false;
         }
 
         /// <summary>
@@ -706,9 +711,9 @@ namespace Rock.Web.UI
         /// <param name="queryString">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked page URL.  
         /// Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> the key value is a <see cref="System.String"/> that represents the name of the query string
         /// parameter, and the value is a <see cref="System.String"/> that represents the query string value. This dictionary defaults to a null value.</param>
-        public void NavigateToPage( Guid pageGuid, Dictionary<string, string> queryString )
+        public bool NavigateToPage( Guid pageGuid, Dictionary<string, string> queryString )
         {
-            NavigateToPage( pageGuid, Guid.Empty, queryString );
+            return NavigateToPage( pageGuid, Guid.Empty, queryString );
         }
 
         /// <summary>
@@ -720,7 +725,7 @@ namespace Rock.Web.UI
         /// <param name="queryString">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked page URL.  
         /// Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> the key value is a <see cref="System.String"/> that represents the name of the query string
         /// parameter, and the value is a <see cref="System.String"/> that represents the query string value. This dictionary defaults to a null value.</param>
-        public void NavigateToPage( Guid pageGuid, Guid pageRouteGuid, Dictionary<string, string> queryString )
+        public bool NavigateToPage( Guid pageGuid, Guid pageRouteGuid, Dictionary<string, string> queryString )
         {
             var pageCache = PageCache.Read( pageGuid );
             if ( pageCache != null )
@@ -734,19 +739,30 @@ namespace Rock.Web.UI
                     }
                 }
 
-                NavigateToPage( new PageReference( pageCache.Id, routeId, queryString, null ) );
+                return NavigateToPage( new PageReference( pageCache.Id, routeId, queryString, null ) );
             }
+
+            return false;
         }
 
         /// <summary>
         /// Navigates to page.
         /// </summary>
         /// <param name="pageReference">The page reference.</param>
-        public void NavigateToPage( PageReference pageReference )
+        public bool NavigateToPage( PageReference pageReference )
         {
-            string pageUrl = pageReference.BuildUrl();
-            Response.Redirect( pageUrl, false );
-            Context.ApplicationInstance.CompleteRequest();
+            if ( pageReference != null )
+            {
+                string pageUrl = pageReference.BuildUrl();
+                if ( !string.IsNullOrWhiteSpace( pageUrl ) )
+                {
+                    Response.Redirect( pageUrl, false );
+                    Context.ApplicationInstance.CompleteRequest();
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
