@@ -70,6 +70,14 @@ namespace RockWeb.Blocks.Core
         protected string PageParameterName;
 
         /// <summary>
+        /// Gets or sets the selected category identifier.
+        /// </summary>
+        /// <value>
+        /// The selected category identifier.
+        /// </value>
+        protected int? SelectedCategoryId { get; set; }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -120,7 +128,7 @@ namespace RockWeb.Blocks.Core
                 string parms = string.Format( "?getCategorizedItems=true&showUnnamedEntityItems={0}", showUnnamedEntityItems.ToTrueFalse().ToLower() );
                 parms += string.Format( "&entityTypeId={0}", entityTypeId );
 
-                var rootCategory = new CategoryService( new RockContext() ).Get( this.GetAttributeValue( "RootCategory" ).AsGuid() );
+                var rootCategory = CategoryCache.Read( this.GetAttributeValue( "RootCategory" ).AsGuid() );
 
                 // make sure the rootCategory matches the EntityTypeId (just in case they changed the EntityType after setting RootCategory
                 if ( rootCategory != null && rootCategory.EntityTypeId == entityTypeId )
@@ -166,19 +174,16 @@ namespace RockWeb.Blocks.Core
                 lbAddCategoryChild.Enabled = false;
                 lbAddItem.Enabled = false;
 
+                CategoryCache selectedCategory = null;
+
                 if ( itemId.HasValue )
                 {
-                    hfInitialItemId.Value = itemId.Value.ToString();
-                    hfInitialEntityIsCategory.Value = ( selectedEntityType == "category" ).ToString();
-                    hfSelectedCategoryId.Value = itemId.Value.ToString();
+                    hfSelectedItemId.Value = itemId.Value.ToString();
                     List<string> parentIdList = new List<string>();
 
-                    CategoryCache category = null;
                     if ( selectedEntityType.Equals( "category" ) )
                     {
-                        category = CategoryCache.Read( itemId.Value );
-                        lbAddItem.Enabled = true;
-                        lbAddCategoryChild.Enabled = true;
+                        selectedCategory = CategoryCache.Read( itemId.Value );
                     }
                     else
                     {
@@ -199,10 +204,10 @@ namespace RockWeb.Blocks.Core
                                     lbAddCategoryChild.Enabled = false;
                                     if ( entity.CategoryId.HasValue )
                                     {
-                                        category = CategoryCache.Read( entity.CategoryId.Value );
-                                        if ( category != null )
+                                        selectedCategory = CategoryCache.Read( entity.CategoryId.Value );
+                                        if ( selectedCategory != null )
                                         {
-                                            parentIdList.Insert( 0, category.Id.ToString() );
+                                            parentIdList.Insert( 0, selectedCategory.Id.ToString() );
                                         }
                                     }
                                 }
@@ -211,6 +216,7 @@ namespace RockWeb.Blocks.Core
                     }
 
                     // get the parents of the selected item so we can tell the treeview to expand those
+                    var category = selectedCategory;
                     while ( category != null )
                     {
                         category = category.ParentCategory;
@@ -236,6 +242,19 @@ namespace RockWeb.Blocks.Core
 
                     hfInitialCategoryParentIds.Value = parentIdList.AsDelimited( "," );
                 }
+
+                selectedCategory = selectedCategory ?? rootCategory;
+
+                if ( selectedCategory != null )
+                {
+                    lbAddItem.Enabled = true;
+                    lbAddCategoryChild.Enabled = true;
+                    this.SelectedCategoryId = selectedCategory.Id;
+                }
+                else
+                {
+                    this.SelectedCategoryId = null;
+                }
             }
         }
 
@@ -248,10 +267,10 @@ namespace RockWeb.Blocks.Core
         {
             Dictionary<string, string> qryParams = new Dictionary<string, string>();
             qryParams.Add( PageParameterName, 0.ToString() );
-            int parentCategoryId = hfSelectedCategoryId.Value.AsInteger();
+            int parentCategoryId = this.SelectedCategoryId ?? 0;
             if ( parentCategoryId > 0 )
             {
-                qryParams.Add( "parentCategoryId", hfSelectedCategoryId.Value );
+                qryParams.Add( "parentCategoryId", parentCategoryId.ToString() );
                 qryParams.Add( "ExpandedIds", hfInitialCategoryParentIds.Value );
                 NavigateToLinkedPage( "DetailPage", qryParams );
             }
@@ -264,7 +283,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddCategoryChild_Click( object sender, EventArgs e )
         {
-            int parentCategoryId = hfSelectedCategoryId.ValueAsInt();
+            int parentCategoryId = this.SelectedCategoryId ?? 0;
 
             Dictionary<string, string> qryParams = new Dictionary<string, string>();
             qryParams.Add( "CategoryId", 0.ToString() );
