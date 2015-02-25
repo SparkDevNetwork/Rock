@@ -52,7 +52,8 @@
                 backdrop: 'static',
                 keyboard: false,
                 attentionAnimation: '',
-                modalOverflow: true
+                modalOverflow: true,
+                replace: true
             });
         },
 
