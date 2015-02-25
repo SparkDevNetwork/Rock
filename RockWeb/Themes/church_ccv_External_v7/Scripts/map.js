@@ -105,6 +105,9 @@ CCV.baseMap.prototype = {
     })
     this.markers.push(marker)
     this.bounds.extend(marker.position)
+    this.afterDropMarker(this, campus, marker)
+  },
+  afterDropMarker: function (_this, campus, marker) {
   },
   fitMarkers: function () {
     this.map.setCenter(this.bounds.getCenter())
@@ -124,4 +127,39 @@ CCV.baseMap.prototype = {
       if (window[name] == this)
         return name
   },
+}
+
+
+// Infowindow map
+
+// Inherit baseMap and add initial infowindow
+CCV.infoWindowMap = function (holder, campusToDraw) {
+  CCV.baseMap.call(this, holder, campusToDraw)
+  this.infowindow = new google.maps.InfoWindow({ content: 'Loading...' })
+}
+CCV.infoWindowMap.prototype = new CCV.baseMap()
+CCV.infoWindowMap.prototype.constructor = CCV.infoWindowMap
+
+// Custom & override methods
+CCV.infoWindowMap.prototype.afterDropMarker = function (_this, campus, marker) {
+  google.maps.event.addListener(marker, 'click', function () {
+    _this.infowindow.setContent(_this.buildInfoWindow(campus))
+    _this.infowindow.open(_this.map, this)
+  })
+}
+CCV.infoWindowMap.prototype.buildInfoWindow = function(campus) {
+  var result
+  result  = '<div class="map-campus-infobox">'
+  result += '  <div class="name">'+campus.name+'</div>'
+  result += '  <div class="cf">'
+  //result += '    <img class="photo" src="'+campus.photo+'" style="width: 75px; height: 75px;">'
+  result += '    <div class="details">'
+  result += '      <span class="address">'+campus.street+'<br>'+campus.city+', '+campus.state+' '+campus.zip+'</span>'
+  result += '      <span class="phone">'+campus.phone+'</span>'
+  result += '    </div>'
+  result += '  </div>'
+  if (typeof this.selectCampus == 'function')
+     result += '  <a onclick="'+this.getInstanceName()+'.selectCampus('+campus.id+')" class="select">Select this Campus</a>'
+  result += '</div>'
+  return result
 }

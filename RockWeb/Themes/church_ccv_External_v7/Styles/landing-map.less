@@ -1,0 +1,52 @@
+
+// Vendor Imports
+// -------------------------
+
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_rock-variables.less";
+
+
+// Custom Imports
+// -------------------------
+
+@import "_din-1-4-7";
+@ccv-font-path: "../Assets/Fonts/DIN/";
+
+@import "_variables";
+
+
+// Styles that should be moved later
+// -------------------------
+
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+    text-transform: uppercase;
+}
+
+img { .img-responsive(); }
+// Fix Google Map infowindow close mark being affected by img-responsive
+.gm-style img { max-width: none; }
+
+
+[id=map-holder] {
+  position: absolute;
+  top: 170px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+@media @sm {
+  [id=map-holder] {
+    top: 0;
+    left: 320px;
+  }
+}
