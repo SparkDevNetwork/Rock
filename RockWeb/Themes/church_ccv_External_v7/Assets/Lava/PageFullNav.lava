@@ -10,7 +10,7 @@
           <ul class="brandlist">
             {% for gchildPage in childPage.Pages %}
               {% if gchildPage.Title != "Sub" %}
-                <li class="brandlist-item"><a href="{{ childPage.Url }}">{{ gchildPage.Title }}</a></li>
+                <li class="brandlist-item"><a href="{{ gchildPage.Url }}">{{ gchildPage.Title }}</a></li>
               {% else %}
                 {% for ggchildPage in gchildPage.Pages %}
                 <li class="brandlist-item brandlist-item-sub"><a href="{{ childPage.Url }}">{{ ggchildPage.Title }}</a></li>
