@@ -233,7 +233,7 @@ END
             RockMigrationHelper.AddSecurityAuthForEntityType( "Rock.Model.GroupType", 0, "View", true, "2C112948-FF4C-46E7-981A-0257681EADF4", 0, "25bb9da3-f680-0d80-45ed-e944eff95353" );
             RockMigrationHelper.AddSecurityAuthForEntityType( "Rock.Model.GroupType", 1, "View", true, "628C51A8-4613-43ED-A18D-4A6FB999273E", 0, "6ce1f6a9-bb91-8fb3-4316-9dcfc90fd6af" );
             RockMigrationHelper.AddSecurityAuthForEntityType( "Rock.Model.GroupType", 2, "View", true, "300BA2C8-49A3-44BA-A82A-82E3FD8C3745", 0, "ee3226ce-b1d5-b995-49f7-6b3f4a1f5fd7" );
-            RockMigrationHelper.AddSecurityAuthForEntityType( "Rock.Model.GroupType", 3, "View", true, null, 1, "73a2c6c6-d13a-6493-4121-3867ec60492a" );
+            RockMigrationHelper.AddSecurityAuthForEntityType( "Rock.Model.GroupType", 3, "View", false, null, 1, "73a2c6c6-d13a-6493-4121-3867ec60492a" );
 
             Sql( @"
     UPDATE [AttributeValue] 
