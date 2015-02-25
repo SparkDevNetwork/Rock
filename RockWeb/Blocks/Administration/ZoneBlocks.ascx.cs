@@ -363,9 +363,13 @@ namespace RockWeb.Blocks.Administration
 
             int blockId = hfBlockId.ValueAsInt();
 
+            bool newBlock = false;
+
             if ( blockId == 0 )
             {
+
                 block = new Rock.Model.Block();
+                newBlock = true;
 
                 BlockLocation location = hfBlockLocation.Value.ConvertToEnum<BlockLocation>();
                 if ( location == BlockLocation.Layout )
@@ -404,7 +408,10 @@ namespace RockWeb.Blocks.Administration
 
             rockContext.SaveChanges();
 
-            Rock.Security.Authorization.CopyAuthorization( page, block );
+            if ( newBlock )
+            {
+                Rock.Security.Authorization.CopyAuthorization( page, block );
+            }
 
             if ( block.Layout != null )
             {
