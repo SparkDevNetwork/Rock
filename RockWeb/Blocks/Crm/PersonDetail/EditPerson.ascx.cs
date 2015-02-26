@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                     else
                     {
-                        person.BirthDate = null;
+                        person.SetBirthDate( null );
                     }
 
                     History.EvaluateChange( changes, "Birth Month", birthMonth, person.BirthMonth );
@@ -399,7 +399,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 ypGraduation.SelectedYear = null;
             }
 
-            if ( Person.GradeOffset.HasValue )
+            if ( !Person.HasGraduated ?? false )
             {
                 int gradeOffset = Person.GradeOffset.Value;
                 var maxGradeOffset = ddlGradePicker.MaxGradeOffset; ;

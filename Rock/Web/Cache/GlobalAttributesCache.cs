@@ -313,7 +313,7 @@ namespace Rock.Web.Cache
                 var collectionDictionary = collection.Value as Dictionary<string, object>;
                 foreach ( var item in collectionDictionary.ToList() )
                 {
-                    collectionDictionary[item.Key] = ResolveConfigValue( item.Value as string, configValues );
+                    collectionDictionary[item.Key] = ResolveConfigValue( item.Value as string, configValues, currentPerson );
                 }
             }
 
@@ -327,15 +327,15 @@ namespace Rock.Web.Cache
         /// <param name="value">The value.</param>
         /// <param name="configValues">The config values.</param>
         /// <returns></returns>
-        private static string ResolveConfigValue( string value, Dictionary<string, object> configValues )
+        private static string ResolveConfigValue( string value, Dictionary<string, object> configValues, Person currentPerson )
         {
-            string result = value.ResolveMergeFields( configValues );
+            string result = value.ResolveMergeFields( configValues, currentPerson );
 
             // If anything was resolved, keep resolving until nothing changed.
             while ( result != value )
             {
                 value = result;
-                result = ResolveConfigValue( result, configValues );
+                result = ResolveConfigValue( result, configValues, currentPerson );
             }
 
             return result;

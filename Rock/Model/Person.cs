@@ -786,7 +786,7 @@ namespace Rock.Model
         public virtual Group GivingGroup { get; set; }
 
         /// <summary>
-        /// Gets or sets the Person's birth date.
+        /// Gets the Person's birth date. Note: Use SetBirthDate to set the Birthdate
         /// </summary>
         /// <value>
         /// A <see cref="System.DateTime"/> representing the Person's birthdate.  If no birthdate is available, null is returned. If the year is not available then the birthdate is returned with the DateTime.MinValue.Year.
@@ -797,6 +797,7 @@ namespace Rock.Model
         {
             get
             {
+                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database
                 if ( BirthDay == null || BirthMonth == null )
                 {
                     return null;
@@ -807,27 +808,36 @@ namespace Rock.Model
                 }
             }
 
-            set
+            private set
             {
-                if ( value.HasValue )
+                // don't do anthing here since EF uses this for loading the Birthdate From the database. Use SetBirthDate to set the birthdate
+            }
+        }
+
+        /// <summary>
+        /// Sets the birth date, which will set the BirthMonth, BirthDay, and BirthYear values
+        /// </summary>
+        /// <param name="birthDate">The birth date.</param>
+        public void SetBirthDate( DateTime? value )
+        {
+            if ( value.HasValue )
+            {
+                BirthMonth = value.Value.Month;
+                BirthDay = value.Value.Day;
+                if ( value.Value.Year != DateTime.MinValue.Year )
                 {
-                    BirthMonth = value.Value.Month;
-                    BirthDay = value.Value.Day;
-                    if ( value.Value.Year != DateTime.MinValue.Year )
-                    {
-                        BirthYear = value.Value.Year;
-                    }
-                    else
-                    {
-                        BirthYear = null;
-                    }
+                    BirthYear = value.Value.Year;
                 }
                 else
                 {
-                    BirthMonth = null;
-                    BirthDay = null;
                     BirthYear = null;
                 }
+            }
+            else
+            {
+                BirthMonth = null;
+                BirthDay = null;
+                BirthYear = null;
             }
         }
 
@@ -1519,30 +1529,33 @@ namespace Rock.Model
             var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) );
             var canCheckInRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) );
 
-            var groupMemberService = new GroupMemberService( rockContext );
-            var knownRelationshipGroup = groupMemberService.Queryable()
-                .Where( m =>
-                    m.PersonId == personId &&
-                    m.GroupRole.Guid.Equals( ownerRole.Guid ) )
-                .Select( m => m.Group )
-                .FirstOrDefault();
-
-            if ( knownRelationshipGroup == null )
+            if ( ownerRole != null && canCheckInRole != null )
             {
-                var groupMember = new GroupMember();
-                groupMember.PersonId = personId;
-                groupMember.GroupRoleId = ownerRole.Id;
+                var groupMemberService = new GroupMemberService( rockContext );
+                var knownRelationshipGroup = groupMemberService.Queryable()
+                    .Where( m =>
+                        m.PersonId == personId &&
+                        m.GroupRole.Guid.Equals( ownerRole.Guid ) )
+                    .Select( m => m.Group )
+                    .FirstOrDefault();
 
-                knownRelationshipGroup = new Group();
-                knownRelationshipGroup.Name = knownRelationshipGroupType.Name;
-                knownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
-                knownRelationshipGroup.Members.Add( groupMember );
+                // Create known relationship group if doesn't exist
+                if ( knownRelationshipGroup == null )
+                {
+                    var groupMember = new GroupMember();
+                    groupMember.PersonId = personId;
+                    groupMember.GroupRoleId = ownerRole.Id;
 
-                new GroupService( rockContext ).Add( knownRelationshipGroup );
-            }
+                    knownRelationshipGroup = new Group();
+                    knownRelationshipGroup.Name = knownRelationshipGroupType.Name;
+                    knownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
+                    knownRelationshipGroup.Members.Add( groupMember );
 
-            if ( canCheckInRole != null )
-            {
+                    new GroupService( rockContext ).Add( knownRelationshipGroup );
+                    rockContext.SaveChanges();
+                }
+
+                // Add relationships
                 var canCheckInMember = groupMemberService.Queryable()
                     .FirstOrDefault( m =>
                         m.GroupId == knownRelationshipGroup.Id &&
@@ -1565,8 +1578,6 @@ namespace Rock.Model
                     groupMemberService.Add( inverseGroupMember );
                     rockContext.SaveChanges();
                 }
-
-                rockContext.SaveChanges();
             }
         }
 
