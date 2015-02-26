@@ -192,13 +192,6 @@ namespace Rock.Web.UI.Controls.Communication
             htmlMessage = new HtmlEditor();
             htmlMessage.ID = string.Format( "htmlMessage_{0}", this.ID );
             htmlMessage.AdditionalConfigurations = "autoParagraph: false,";
-            htmlMessage.MergeFields.Clear();
-            htmlMessage.MergeFields.Add( "GlobalAttribute" );
-            htmlMessage.MergeFields.Add( "Rock.Model.Person" );
-            htmlMessage.MergeFields.Add( "Communication.MediumData.FromName|From Name" );
-            htmlMessage.MergeFields.Add( "Communication.MediumData.FromAddress|From Address" );
-            htmlMessage.MergeFields.Add( "Communication.MediumData.ReplyTo|Reply To" );
-            htmlMessage.MergeFields.Add( "UnsubscribeOption" );
             htmlMessage.Help = "<span class='tip tip-lava'></span> <span class='tip tip-html'>";
             this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );
             htmlMessage.Label = "Message";
@@ -345,7 +338,22 @@ namespace Rock.Web.UI.Controls.Communication
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-12" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            htmlMessage.MergeFields.Clear();
+            if ( !UseSimpleMode )
+            {
+                htmlMessage.MergeFields.Add( "GlobalAttribute" );
+            }
+            htmlMessage.MergeFields.Add( "Rock.Model.Person" );
+            if ( !UseSimpleMode )
+            {
+                htmlMessage.MergeFields.Add( "Communication.MediumData.FromName|From Name" );
+                htmlMessage.MergeFields.Add( "Communication.MediumData.FromAddress|From Address" );
+                htmlMessage.MergeFields.Add( "Communication.MediumData.ReplyTo|Reply To" );
+                htmlMessage.MergeFields.Add( "UnsubscribeOption" );
+            }
             htmlMessage.RenderControl( writer );
+
             if ( !UseSimpleMode )
             {
                 tbTextMessage.RenderControl( writer );

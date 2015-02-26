@@ -2,10 +2,8 @@
 
 <asp:UpdatePanel ID="upCategoryTree" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
     <ContentTemplate>
-        <asp:HiddenField ID="hfInitialEntityIsCategory" runat="server" ClientIDMode="Static" />
-        <asp:HiddenField ID="hfInitialItemId" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" ClientIDMode="Static" />
-        <asp:HiddenField ID="hfSelectedCategoryId" runat="server" ClientIDMode="Static" />
+        <asp:HiddenField ID="hfSelectedItemId" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfPageRouteTemplate" runat="server" ClientIDMode="Static" />
 
         <div class="treeview">
@@ -26,9 +24,9 @@
                     </ul>
                 </div>
 
-                <asp:LinkButton ID="lbAddItem" runat="server" CssClass="add btn btn-xs btn-action" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddItem_Click">
+                <asp:LinkButton ID="lbAddItem" runat="server" CssClass="add btn btn-xs btn-action" ToolTip="Add Item" CausesValidation="false" OnClick="lbAddItem_Click">
                     <i class="fa fa-plus-circle"></i>
-                    <asp:Literal ID="lAddItem" runat="server" Text="Add Group" />
+                    <asp:Literal ID="lAddItem" runat="server" Text="Add Item" />
                 </asp:LinkButton>
 
             </div>
@@ -86,7 +84,7 @@
             }
 
             $(function () {
-                var $selectedId = $('#hfSelectedCategoryId'),
+                var $selectedId = $('#hfSelectedItemId'),
                     $expandedIds = $('#hfInitialCategoryParentIds'),
                     _mapCategories = function (arr) {
                         return $.map(arr, function (item) {

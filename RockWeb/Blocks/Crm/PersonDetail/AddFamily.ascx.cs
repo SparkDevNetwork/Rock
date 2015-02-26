@@ -463,17 +463,30 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMember.Person.SuffixValueId = row.SuffixValueId;
                 groupMember.Person.Gender = row.Gender;
 
-                DateTime? birthdate = row.BirthDate;
-                if (birthdate.HasValue)
+                var birthday = row.BirthDate;
+                if (birthday.HasValue)
                 {
                     // If setting a future birthdate, subtract a century until birthdate is not greater than today.
                     var today = RockDateTime.Today;
-                    while ( birthdate.Value.CompareTo( today ) > 0 )
+                    while ( birthday.Value.CompareTo( today ) > 0 )
                     {
-                        birthdate = birthdate.Value.AddYears( -100 );
+                        birthday = birthday.Value.AddYears( -100 );
+                    }
+                    groupMember.Person.BirthMonth = birthday.Value.Month;
+                    groupMember.Person.BirthDay = birthday.Value.Day;
+                    if ( birthday.Value.Year != DateTime.MinValue.Year )
+                    {
+                        groupMember.Person.BirthYear = birthday.Value.Year;
+                    }
+                    else
+                    {
+                        groupMember.Person.BirthYear = null;
                     }
                 }
-                groupMember.Person.BirthDate = birthdate;
+                else
+                {
+                    groupMember.Person.SetBirthDate( null );
+                }
 
                 groupMember.Person.ConnectionStatusValueId = row.ConnectionStatusValueId;
                 groupMember.Person.GradeOffset = row.GradeOffset;

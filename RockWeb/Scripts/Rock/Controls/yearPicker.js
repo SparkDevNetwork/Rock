@@ -10,12 +10,15 @@
                     throw 'id is required';
                 }
 
-                // uses https://github.com/ianserlin/bootstrap-datepicker/tree/3.x
+                var earliestDate = new Date(1000, 1, 1);
+
+                // uses https://github.com/eternicode/bootstrap-datepicker
                 $('#' + options.id).datepicker({
                     format: 'yyyy',
                     autoclose: true,
                     startView: 2,
-                    minViewMode: 2
+                    minViewMode: 2,
+                    startDate: earliestDate
                 });
 
             }
