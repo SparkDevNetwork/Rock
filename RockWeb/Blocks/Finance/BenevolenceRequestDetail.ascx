@@ -32,6 +32,8 @@
                         <Rock:EmailBox ID="ebEmail" runat="server" Label="Email" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="Email" />
                         <Rock:LocationAddressPicker ID="lapAddress" runat="server" Label="Address" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="Location" />
                     </div>
+                    <div class="col-md-6">
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col-md-4">
@@ -46,6 +48,8 @@
                                 <Rock:DeleteField OnClick="gResults_DeleteClick" />
                             </Columns>
                         </Rock:Grid>
+                    </div>
+                    <div class="col-md-8">
                     </div>
                 </div>
                 <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />

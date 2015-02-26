@@ -126,70 +126,65 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The e.</param>
         protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-            if ( e.Key == "Start Date" )
+            int definedValueId = 0;
+
+            switch ( e.Key )
             {
-                e.Value = DateTime.Parse( e.Value ).ToShortDateString();
-                return;
-            }
-            else if ( e.Key == "End Date" )
-            {
-                e.Value = DateTime.Parse( e.Value ).ToShortDateString();
-                return;
-            }
-            else if ( e.Key == "First Name" )
-            {
-                return;
-            }
-            else if ( e.Key == "Last Name" )
-            {
-                return;
-            }
-            else if ( e.Key == "Government ID" )
-            {
-                return;
-            }
-            else if ( e.Key == "Case Worker" )
-            {
-                int personAliasId = 0;
-                if ( int.TryParse( e.Value, out personAliasId ) )
-                {
-                    var personAlias = new PersonAliasService( new RockContext() ).Get( personAliasId );
-                    if ( personAlias != null )
+                case "Start Date":
+
+                    e.Value = DateTime.Parse( e.Value ).ToShortDateString();
+                    return;
+
+                case "End Date":
+                    e.Value = DateTime.Parse( e.Value ).ToShortDateString();
+                    return;
+
+                case "First Name":
+                    return;
+
+                case "Last Name":
+                    return;
+
+                case "Government ID":
+                    return;
+
+                case "Case Worker":
+                    int personAliasId = 0;
+                    if ( int.TryParse( e.Value, out personAliasId ) )
                     {
-                        e.Value = personAlias.Person.FullName;
+                        var personAlias = new PersonAliasService( new RockContext() ).Get( personAliasId );
+                        if ( personAlias != null )
+                        {
+                            e.Value = personAlias.Person.FullName;
+                        }
                     }
-                }
-                return;
-            }
-            else if ( e.Key == "Result" )
-            {
-                int definedValueId = 0;
-                if ( int.TryParse( e.Value, out definedValueId ) )
-                {
-                    var definedValue = DefinedValueCache.Read( definedValueId );
-                    if ( definedValue != null )
+                    return;
+
+                case "Result":
+                    if ( int.TryParse( e.Value, out definedValueId ) )
                     {
-                        e.Value = definedValue.Value;
+                        var definedValue = DefinedValueCache.Read( definedValueId );
+                        if ( definedValue != null )
+                        {
+                            e.Value = definedValue.Value;
+                        }
                     }
-                }
-                return;
-            }
-            else if ( e.Key == "Status" )
-            {
-                int definedValueId = 0;
-                if ( int.TryParse( e.Value, out definedValueId ) )
-                {
-                    var definedValue = DefinedValueCache.Read( definedValueId );
-                    if ( definedValue != null )
+                    return;
+
+                case "Status":
+                    if ( int.TryParse( e.Value, out definedValueId ) )
                     {
-                        e.Value = definedValue.Value;
+                        var definedValue = DefinedValueCache.Read( definedValueId );
+                        if ( definedValue != null )
+                        {
+                            e.Value = definedValue.Value;
+                        }
                     }
-                }
-                return;
-            }
-            else
-            {
-                e.Value = string.Empty;
+                    return;
+
+                default:
+                    e.Value = string.Empty;
+                    return;
             }
         }
 
@@ -216,12 +211,6 @@ namespace RockWeb.Blocks.Finance
                         {
                             lName.Text = String.Format( "{0} {1}", benevolenceRequest.FirstName, benevolenceRequest.LastName );
                         }
-                    }
-
-                    Literal lCaseWorker = e.Row.FindControl( "lCaseWorker" ) as Literal;
-                    if ( lCaseWorker != null && benevolenceRequest.CaseWorkerPersonAliasId != null )
-                    {
-                        lCaseWorker.Text = String.Format( "<a href=\"{0}\">{1}</a>", ResolveUrl( string.Format( "~/Person/{0}", benevolenceRequest.CaseWorkerPersonAlias.PersonId ) ), benevolenceRequest.CaseWorkerPersonAlias.Person.FullName ?? "" );
                     }
 
                     Literal lResults = e.Row.FindControl( "lResults" ) as Literal;

@@ -22,35 +22,31 @@
                         </Rock:GridFilter>
                         <Rock:Grid ID="gList" runat="server" DisplayType="Full" AllowSorting="true" OnRowDataBound="gList_RowDataBound" OnRowSelected="gList_Edit">
                             <Columns>
-                                <asp:BoundField DataField="RequestDateTime" HeaderText="Date" DataFormatString="{0:d}" SortExpression="Date" />
+                                <Rock:RockBoundField DataField="RequestDateTime" HeaderText="Date" DataFormatString="{0:d}" SortExpression="Date" />
 
-                                <asp:TemplateField SortExpression="Name" HeaderText="Name">
+                                <Rock:RockTemplateField SortExpression="Name" HeaderText="Name">
                                     <ItemTemplate>
                                         <asp:Literal ID="lName" runat="server" />
                                     </ItemTemplate>
-                                </asp:TemplateField>
+                                </Rock:RockTemplateField>
 
-                                <asp:BoundField DataField="ConnectionStatusValue.Value" HeaderText="Connection Status" SortExpression="ConnectionStatus" />
+                                <Rock:RockBoundField DataField="ConnectionStatusValue.Value" HeaderText="Connection Status" SortExpression="ConnectionStatus" ColumnPriority="DesktopSmall" />
 
-                                <asp:BoundField DataField="GovernmentId" HeaderText="Government ID" SortExpression="GovernmentId" />
+                                <Rock:RockBoundField DataField="GovernmentId" HeaderText="Government ID" SortExpression="GovernmentId" ColumnPriority="DesktopSmall" />
 
-                                <asp:BoundField DataField="RequestText" HeaderText="Request" SortExpression="Request" />
+                                <Rock:RockBoundField DataField="RequestText" HeaderText="Request" SortExpression="Request" />
 
-                                <asp:TemplateField SortExpression="Case Worker" HeaderText="Case Worker">
-                                    <ItemTemplate>
-                                        <asp:Literal ID="lCaseWorker" runat="server" />
-                                    </ItemTemplate>
-                                </asp:TemplateField>
+                                <Rock:PersonField DataField="CaseWorkerPersonAlias.Person" SortExpression="Case Worker" HeaderText="Case Worker" ColumnPriority="Tablet" />
 
-                                <asp:BoundField DataField="ResultSummary" HeaderText="Result Summary" SortExpression="ResultSummary" />
+                                <Rock:RockBoundField DataField="ResultSummary" HeaderText="Result Summary" SortExpression="ResultSummary" />
 
-                                <asp:TemplateField SortExpression="ResultSpecifics" HeaderText="Result Specifics">
+                                <Rock:RockTemplateField SortExpression="ResultSpecifics" HeaderText="Result Specifics" ColumnPriority="DesktopSmall">
                                     <ItemTemplate>
                                         <asp:Literal ID="lResults" runat="server" />
                                     </ItemTemplate>
-                                </asp:TemplateField>
+                                </Rock:RockTemplateField>
 
-                                <asp:BoundField DataField="TotalAmount" HeaderText="Total Amount" DataFormatString="{0:C}" SortExpression="TotalAmount" />
+                                <Rock:RockBoundField DataField="TotalAmount" HeaderText="Total Amount" DataFormatString="{0:C}" SortExpression="TotalAmount" />
 
                             </Columns>
                         </Rock:Grid>

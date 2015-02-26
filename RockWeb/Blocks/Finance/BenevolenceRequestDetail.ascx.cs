@@ -43,6 +43,35 @@ namespace RockWeb.Blocks.Finance
     [GroupField( "Case Worker Group", "The group to draw case workers from", true, "26E7148C-2059-4F45-BCFE-32230A12F0DC" )]
     public partial class BenevolenceRequestDetail : Rock.Web.UI.RockBlock
     {
+        #region ViewState and Dynamic Controls
+
+        /// <summary>
+        /// ViewState of BenevolenceResultInfos for BenevolenceRequest
+        /// </summary>
+        /// <value>
+        /// The state of the BenevolenceResultInfos for BenevolenceRequest.
+        /// </value>
+        public List<BenevolenceResultInfo> BenevolenceResultsState
+        {
+            get
+            {
+                List<BenevolenceResultInfo> result = ViewState["BenevolenceResultInfoState"] as List<BenevolenceResultInfo>;
+                if ( result == null )
+                {
+                    result = new List<BenevolenceResultInfo>();
+                }
+
+                return result;
+            }
+
+            set
+            {
+                ViewState["BenevolenceResultInfoState"] = value;
+            }
+        }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -72,22 +101,21 @@ namespace RockWeb.Blocks.Finance
             {
                 benevolenceRequest = new BenevolenceRequest { Id = 0 };
             }
-            if ( ViewState["BenevolenceResultAttributeInfoState"] == null )
+            if ( ViewState["BenevolenceResultInfoState"] == null )
             {
-                BenevolenceResultAttributeInfo benevolenceResultAttributeInfo = null;
-                List<BenevolenceResultAttributeInfo> brAttributeInfoList = new List<BenevolenceResultAttributeInfo>();
+                List<BenevolenceResultInfo> brInfoList = new List<BenevolenceResultInfo>();
                 foreach ( BenevolenceResult benevolenceResult in benevolenceRequest.BenevolenceResults )
                 {
-                    benevolenceResultAttributeInfo = new BenevolenceResultAttributeInfo();
-                    benevolenceResultAttributeInfo.ResultId = benevolenceResult.Id;
-                    benevolenceResultAttributeInfo.Amount = benevolenceResult.Amount;
-                    benevolenceResultAttributeInfo.TempGuid = benevolenceResult.Guid;
-                    benevolenceResultAttributeInfo.ResultSummary = benevolenceResult.ResultSummary;
-                    benevolenceResultAttributeInfo.ResultTypeValueId = benevolenceResult.ResultTypeValueId;
-                    benevolenceResultAttributeInfo.ResultTypeName = benevolenceResult.ResultTypeValue.Value;
-                    brAttributeInfoList.Add( benevolenceResultAttributeInfo );
+                    BenevolenceResultInfo benevolenceResultInfo = new BenevolenceResultInfo();
+                    benevolenceResultInfo.ResultId = benevolenceResult.Id;
+                    benevolenceResultInfo.Amount = benevolenceResult.Amount;
+                    benevolenceResultInfo.TempGuid = benevolenceResult.Guid;
+                    benevolenceResultInfo.ResultSummary = benevolenceResult.ResultSummary;
+                    benevolenceResultInfo.ResultTypeValueId = benevolenceResult.ResultTypeValueId;
+                    benevolenceResultInfo.ResultTypeName = benevolenceResult.ResultTypeValue.Value;
+                    brInfoList.Add( benevolenceResultInfo );
                 }
-                BenevolenceResultsState = brAttributeInfoList;
+                BenevolenceResultsState = brInfoList;
             }
         }
 
@@ -106,64 +134,6 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 confirmExit.Enabled = true;
-            }
-        }
-
-        #endregion
-
-        #region BenevolenceResultAttributeInfo
-
-        /// <summary>
-        /// The class used to store BenevolenceResult info.
-        /// </summary>
-        [Serializable]
-        public class BenevolenceResultAttributeInfo
-        {
-            [DataMember]
-            public int? ResultId { get; set; }
-
-            [DataMember]
-            public int ResultTypeValueId { get; set; }
-
-            [DataMember]
-            public string ResultTypeName { get; set; }
-
-            [DataMember]
-            public decimal? Amount { get; set; }
-
-            [DataMember]
-            public Guid TempGuid { get; set; }
-
-            [DataMember]
-            public string ResultSummary { get; set; }
-        }
-
-        #endregion
-
-        #region ViewState and Dynamic Controls
-
-        /// <summary>
-        /// ViewState of BenevolenceResultAttributeInfos for BenevolenceRequest
-        /// </summary>
-        /// <value>
-        /// The state of the BenevolenceResultAttributeInfos for BenevolenceRequest.
-        /// </value>
-        public List<BenevolenceResultAttributeInfo> BenevolenceResultsState
-        {
-            get
-            {
-                List<BenevolenceResultAttributeInfo> result = ViewState["BenevolenceResultAttributeInfoState"] as List<BenevolenceResultAttributeInfo>;
-                if ( result == null )
-                {
-                    result = new List<BenevolenceResultAttributeInfo>();
-                }
-
-                return result;
-            }
-
-            set
-            {
-                ViewState["BenevolenceResultAttributeInfoState"] = value;
             }
         }
 
@@ -208,7 +178,7 @@ namespace RockWeb.Blocks.Finance
         protected void gResults_DeleteClick( object sender, RowEventArgs e )
         {
             Guid? infoGuid = e.RowKeyValue as Guid?;
-            List<BenevolenceResultAttributeInfo> resultList = BenevolenceResultsState;
+            List<BenevolenceResultInfo> resultList = BenevolenceResultsState;
             var resultInfo = resultList.FirstOrDefault( r => r.TempGuid == infoGuid );
             if ( resultInfo != null )
             {
@@ -227,26 +197,26 @@ namespace RockWeb.Blocks.Finance
         protected void btnAddResults_Click( object sender, EventArgs e )
         {
             int? resultType = ddlResultType.SelectedItem.Value.AsIntegerOrNull();
-            BenevolenceResultAttributeInfo benevolenceResultAttributeInfo = new BenevolenceResultAttributeInfo();
+            BenevolenceResultInfo benevolenceResultInfo = new BenevolenceResultInfo();
             try
             {
-                benevolenceResultAttributeInfo.Amount = Decimal.Parse( dtbAmount.Text );
+                benevolenceResultInfo.Amount = Decimal.Parse( dtbAmount.Text );
             }
             catch
             {
 
             }
-            benevolenceResultAttributeInfo.ResultSummary = dtbResultSummary.Text;
+            benevolenceResultInfo.ResultSummary = dtbResultSummary.Text;
             if ( resultType != null )
             {
-                benevolenceResultAttributeInfo.ResultTypeValueId = resultType.Value;
+                benevolenceResultInfo.ResultTypeValueId = resultType.Value;
             }
-            benevolenceResultAttributeInfo.ResultTypeName = ddlResultType.SelectedItem.Text;
-            benevolenceResultAttributeInfo.TempGuid = Guid.NewGuid();
+            benevolenceResultInfo.ResultTypeName = ddlResultType.SelectedItem.Text;
+            benevolenceResultInfo.TempGuid = Guid.NewGuid();
 
-            List<BenevolenceResultAttributeInfo> benevolenceResultAttributeInfoViewStateList = BenevolenceResultsState;
-            benevolenceResultAttributeInfoViewStateList.Add( benevolenceResultAttributeInfo );
-            BenevolenceResultsState = benevolenceResultAttributeInfoViewStateList;
+            List<BenevolenceResultInfo> benevolenceResultInfoViewStateList = BenevolenceResultsState;
+            benevolenceResultInfoViewStateList.Add( benevolenceResultInfo );
+            BenevolenceResultsState = benevolenceResultInfoViewStateList;
 
             mdAddResult.Hide();
             pnlView.Visible = true;
@@ -305,7 +275,7 @@ namespace RockWeb.Blocks.Finance
                 benevolenceRequest.CellPhoneNumber = pnbCellPhone.Number;
                 benevolenceRequest.WorkPhoneNumber = pnbWorkPhone.Number;
 
-                List<BenevolenceResultAttributeInfo> resultList = BenevolenceResultsState;
+                List<BenevolenceResultInfo> resultList = BenevolenceResultsState;
                 BenevolenceResult benevolenceResult = null;
 
                 foreach ( BenevolenceResult result in benevolenceRequest.BenevolenceResults.ToList() )
@@ -317,14 +287,14 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                foreach ( BenevolenceResultAttributeInfo benevolenceResultAttributeInfo in resultList )
+                foreach ( BenevolenceResultInfo benevolenceResultInfo in resultList )
                 {
-                    if ( benevolenceResultAttributeInfo.ResultId == null )
+                    if ( benevolenceResultInfo.ResultId == null )
                     {
                         benevolenceResult = new BenevolenceResult();
-                        benevolenceResult.Amount = benevolenceResultAttributeInfo.Amount;
-                        benevolenceResult.ResultSummary = benevolenceResultAttributeInfo.ResultSummary;
-                        benevolenceResult.ResultTypeValueId = benevolenceResultAttributeInfo.ResultTypeValueId;
+                        benevolenceResult.Amount = benevolenceResultInfo.Amount;
+                        benevolenceResult.ResultSummary = benevolenceResultInfo.ResultSummary;
+                        benevolenceResult.ResultTypeValueId = benevolenceResultInfo.ResultTypeValueId;
                         benevolenceResult.BenevolenceRequestId = benevolenceRequest.Id;
                         benevolenceRequest.BenevolenceResults.Add( benevolenceResult );
                     }
@@ -482,8 +452,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGridFromViewState()
         {
-            List<BenevolenceResultAttributeInfo> benevolenceResultAttributeInfoViewStateList = BenevolenceResultsState;
-            gResults.DataSource = benevolenceResultAttributeInfoViewStateList;
+            List<BenevolenceResultInfo> benevolenceResultInfoViewStateList = BenevolenceResultsState;
+            gResults.DataSource = benevolenceResultInfoViewStateList;
             gResults.DataBind();
         }
 
@@ -508,5 +478,33 @@ namespace RockWeb.Blocks.Finance
 
         #endregion
 
+        #region BenevolenceResultInfo
+
+        /// <summary>
+        /// The class used to store BenevolenceResult info.
+        /// </summary>
+        [Serializable]
+        public class BenevolenceResultInfo
+        {
+            [DataMember]
+            public int? ResultId { get; set; }
+
+            [DataMember]
+            public int ResultTypeValueId { get; set; }
+
+            [DataMember]
+            public string ResultTypeName { get; set; }
+
+            [DataMember]
+            public decimal? Amount { get; set; }
+
+            [DataMember]
+            public Guid TempGuid { get; set; }
+
+            [DataMember]
+            public string ResultSummary { get; set; }
+        }
+
+        #endregion
     }
 }
