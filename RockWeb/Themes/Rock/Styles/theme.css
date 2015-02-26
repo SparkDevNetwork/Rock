@@ -3517,6 +3517,7 @@ table.attribute-grid tr th:nth-child(3) {
   border-bottom: 1px solid #d8d8dc;
   color: #6a6a6a;
   margin-top: 12px;
+  min-height: 60px;
 }
 .personprofilebar-family a {
   color: #6a6a6a;
@@ -4722,7 +4723,7 @@ a.help {
   color: #6a6a6a;
 }
 .panel-block .panel-body .grid.grid-panel {
-  margin: -15px -15px -30px -15px;
+  margin: -15px;
 }
 .panel-block .panel-body .grid.grid-panel .grid-filter {
   border-radius: 0;
