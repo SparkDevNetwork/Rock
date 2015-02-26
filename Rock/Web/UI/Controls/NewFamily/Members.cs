@@ -34,6 +34,30 @@ namespace Rock.Web.UI.Controls
         private LinkButton _lbAddFamilyMember;
 
         /// <summary>
+        /// Gets or sets a value indicating whether [require gender].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [require gender]; otherwise, <c>false</c>.
+        /// </value>
+        public bool RequireGender
+        {
+            get { return ViewState["RequireGender"] as bool? ?? false; }
+            set { ViewState["RequireGender"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [require grade].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [require grade]; otherwise, <c>false</c>.
+        /// </value>
+        public bool RequireGrade
+        {
+            get { return ViewState["RequireGrade"] as bool? ?? false; }
+            set { ViewState["RequireGrade"] = value; }
+        }
+
+        /// <summary>
         /// Gets the family member rows.
         /// </summary>
         /// <value>
@@ -107,6 +131,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Thead );
                 writer.RenderBeginTag( HtmlTextWriterTag.Tr );
 
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "required" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
                 writer.Write( "Role" );
                 writer.RenderEndTag();
@@ -115,6 +140,7 @@ namespace Rock.Web.UI.Controls
                 writer.Write( "Title" );
                 writer.RenderEndTag();
 
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "required" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
                 writer.Write( "Name" );
                 writer.RenderEndTag();
@@ -123,6 +149,10 @@ namespace Rock.Web.UI.Controls
                 writer.Write( "Suffix" );
                 writer.RenderEndTag();
 
+                if ( RequireGender )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "required" );
+                }
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
                 writer.Write( "Gender" );
                 writer.RenderEndTag();
@@ -135,6 +165,10 @@ namespace Rock.Web.UI.Controls
                 writer.Write( "Connection Status" );
                 writer.RenderEndTag();
 
+                if ( RequireGrade )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "required" );
+                }
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
                 writer.Write( GlobalAttributesCache.Read().GetValue( "core.GradeLabel" ) );
                 writer.RenderEndTag();

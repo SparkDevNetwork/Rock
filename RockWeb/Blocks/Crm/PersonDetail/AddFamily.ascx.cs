@@ -122,8 +122,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     .FirstOrDefault();
             }
 
-            bool.TryParse( GetAttributeValue( "Gender" ), out _requireGender );
-            bool.TryParse( GetAttributeValue( "Grade" ), out _requireGrade );
+            nfmMembers.RequireGender = GetAttributeValue( "Gender" ).AsBoolean();
+            nfmMembers.RequireGrade = GetAttributeValue( "Grade" ).AsBoolean();
 
             lTitle.Text = ("Add Family").FormatAsHtmlTitle();
 
@@ -354,8 +354,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 familyMemberRow.RoleUpdated += familyMemberRow_RoleUpdated;
                 familyMemberRow.DeleteClick += familyMemberRow_DeleteClick;
                 familyMemberRow.PersonGuid = familyMember.Person.Guid;
-                familyMemberRow.RequireGender = _requireGender;
-                familyMemberRow.RequireGrade = _requireGrade;
+                familyMemberRow.RequireGender = nfmMembers.RequireGender;
+                familyMemberRow.RequireGrade = nfmMembers.RequireGrade;
                 familyMemberRow.RoleId = familyMember.GroupRoleId;
                 familyMemberRow.ShowGrade = familyMember.GroupRoleId == _childRoleId;
 
@@ -549,8 +549,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             familyMemberRow.DeleteClick += familyMemberRow_DeleteClick;
             familyMemberRow.PersonGuid = familyMemberGuid;
             familyMemberRow.Gender = Gender.Unknown;
-            familyMemberRow.RequireGender = _requireGender;
-            familyMemberRow.RequireGrade = _requireGrade;
+            familyMemberRow.RequireGender = nfmMembers.RequireGender;
+            familyMemberRow.RequireGrade = nfmMembers.RequireGrade;
             familyMemberRow.ValidationGroup = BlockValidationGroup;
 
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
