@@ -317,13 +317,21 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
         private void SetFollowing()
         {
-            var personEntityType = EntityTypeCache.Read( "Rock.Model.Person" );
-            if ( Person != null && CurrentPersonId.HasValue && CurrentPersonAlias != null && personEntityType != null )
+            var personAliasEntityType = EntityTypeCache.Read( "Rock.Model.PersonAlias" );
+            if ( Person != null && CurrentPersonId.HasValue && CurrentPersonAlias != null && personAliasEntityType != null )
             {
-                if ( new FollowingService( new RockContext() ).Queryable()
+                var rockContext = new RockContext();
+                var personAliasService = new PersonAliasService( rockContext );
+                var followingService = new FollowingService( rockContext );
+
+                var paQry = personAliasService.Queryable()
+                    .Where( p => p.PersonId == Person.Id )
+                    .Select( p => p.Id );
+
+                if ( followingService.Queryable()
                     .Where( f =>
-                        f.EntityTypeId == personEntityType.Id &&
-                        f.EntityId == Person.Id &&
+                        f.EntityTypeId == personAliasEntityType.Id &&
+                        paQry.Contains(f.EntityId) &&
                         f.PersonAlias.PersonId == CurrentPersonId )
                     .Any())
                 {
@@ -360,7 +368,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }});
             }}
         }});
-    ", personEntityType.Id, Person.Id, CurrentPersonId.Value, CurrentPersonAlias.Id );
+    ", personAliasEntityType.Id, Person.PrimaryAliasId, CurrentPersonId.Value, CurrentPersonAlias.Id );
                 ScriptManager.RegisterStartupScript( lImage, lImage.GetType(), "following", script, true );
             }
         }

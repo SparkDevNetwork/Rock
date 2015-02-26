@@ -485,7 +485,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
                 else
                 {
-                    groupMember.Person.BirthDate = null;
+                    groupMember.Person.SetBirthDate( null );
                 }
 
                 groupMember.Person.ConnectionStatusValueId = row.ConnectionStatusValueId;

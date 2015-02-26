@@ -16,6 +16,8 @@
 //
 using System;
 using System.ComponentModel;
+using System.Configuration;
+using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -539,6 +541,21 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterStartupScript()
         {
+            int? maxUploadBytes = null;
+            try
+            {
+                HttpRuntimeSection section = ConfigurationManager.GetSection( "system.web/httpRuntime" ) as HttpRuntimeSection;
+                if ( section != null )
+                {
+                    // MaxRequestLength is in KB
+                    maxUploadBytes = section.MaxRequestLength * 1024;
+                }
+            }
+            catch
+            {
+                // intentionally ignore and don't tell the fileUploader the limit
+            }
+
             var postBackScript = this.ImageUploaded != null ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "ImageUploaded" ), true ) : "";
             postBackScript = postBackScript.Replace( '\'', '"' );
 
@@ -565,7 +582,8 @@ Rock.controls.imageUploader.initialize({{
     doneFunction: function (e, data) {{
         {10}
     }},
-    postbackRemovedScript: '{12}'
+    postbackRemovedScript: '{12}',
+    maxUploadBytes: {13}
 }});",
                 _fileUpload.ClientID,
                 this.BinaryFileId,
@@ -579,7 +597,8 @@ Rock.controls.imageUploader.initialize({{
                 this.SubmitFunctionClientScript,
                 this.DoneFunctionClientScript,
                 this.NoPictureUrl,
-                postBackRemovedScript);
+                postBackRemovedScript,
+                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null" );
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ClientID, script, true );
         }
 
