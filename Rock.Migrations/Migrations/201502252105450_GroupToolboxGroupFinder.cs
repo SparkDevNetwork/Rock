@@ -81,13 +81,13 @@ namespace Rock.Migrations
                 -- create topic defined values from the current text based topics
                 INSERT INTO [DefinedValue]
                 ([IsSystem], [Order], [DefinedTypeId], [Value], [Guid])
-                SELECT DISTINCT 0, 1, @DefinedTypeId, [Value], newid() FROM [AttributeValue] WHERE [AttributeId] = @OldTopicAttributeId
+                SELECT DISTINCT 0, 1, @DefinedTypeId, [Value], newid() FROM [AttributeValue] WHERE [AttributeId] = @OldTopicAttributeId and isnull([Value], '') != '' 
 
                 -- assign new defined value topics based on their current text topics
                 INSERT INTO [AttributeValue]
                 ([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
                 SELECT 0, @NewTopicAttributeId, [EntityId], dv.[Guid], newid() FROM [AttributeValue] av
-	                INNER JOIN [DefinedValue] dv ON dv.[Value] = av.[Value]
+	                INNER JOIN [DefinedValue] dv ON dv.DefinedTypeId = @DefinedTypeId and dv.[Value] = av.[Value] 
 	                WHERE [AttributeId] = @OldTopicAttributeId
 
                 -- delete old group topic attribute
