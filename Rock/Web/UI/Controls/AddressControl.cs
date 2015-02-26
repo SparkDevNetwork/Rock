@@ -272,9 +272,10 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
 
-                string state = value ?? GetDefaultState();
+                string defaultState = GetDefaultState();
+                string state = value ?? defaultState;
                 _tbState.Text = state;
-                _ddlState.SetValue( state );
+                _ddlState.SetValue( value, defaultState );
             }
         }
 
@@ -823,7 +824,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( !string.IsNullOrWhiteSpace( currentValue ) )
                 {
-                    _ddlState.SetValue( currentValue );
+                    _ddlState.SetValue( currentValue, GetDefaultState() );
                 }
             }
             else
