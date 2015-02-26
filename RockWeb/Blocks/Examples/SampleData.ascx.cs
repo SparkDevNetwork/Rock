@@ -1474,7 +1474,7 @@ namespace RockWeb.Blocks.Examples
 
                     if ( personElem.Attribute( "birthDate" ) != null )
                     {
-                        person.BirthDate = DateTime.Parse( personElem.Attribute( "birthDate" ).Value.Trim(), new CultureInfo( "en-US" ) );
+                        person.SetBirthDate( DateTime.Parse( personElem.Attribute( "birthDate" ).Value.Trim(), new CultureInfo( "en-US" ) ) );
                     }
 
                     if ( personElem.Attribute( "grade" ) != null )
@@ -1498,7 +1498,7 @@ namespace RockWeb.Blocks.Examples
                     {
                         int age = int.Parse( personElem.Attribute( "age" ).Value.Trim() );
                         int ageDiff = person.Age - age ?? 0;
-                        person.BirthDate = person.BirthDate.Value.AddYears( ageDiff );
+                        person.SetBirthDate( person.BirthDate.Value.AddYears( ageDiff ) );
                     }
 
                     person.EmailPreference = EmailPreference.EmailAllowed;

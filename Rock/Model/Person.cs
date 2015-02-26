@@ -786,7 +786,7 @@ namespace Rock.Model
         public virtual Group GivingGroup { get; set; }
 
         /// <summary>
-        /// Gets or sets the Person's birth date.
+        /// Gets the Person's birth date. Note: Use SetBirthDate to set the Birthdate
         /// </summary>
         /// <value>
         /// A <see cref="System.DateTime"/> representing the Person's birthdate.  If no birthdate is available, null is returned. If the year is not available then the birthdate is returned with the DateTime.MinValue.Year.
@@ -797,6 +797,7 @@ namespace Rock.Model
         {
             get
             {
+                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database
                 if ( BirthDay == null || BirthMonth == null )
                 {
                     return null;
@@ -807,27 +808,36 @@ namespace Rock.Model
                 }
             }
 
-            set
+            private set
             {
-                if ( value.HasValue )
+                // don't do anthing here since EF uses this for loading the Birthdate From the database. Use SetBirthDate to set the birthdate
+            }
+        }
+
+        /// <summary>
+        /// Sets the birth date, which will set the BirthMonth, BirthDay, and BirthYear values
+        /// </summary>
+        /// <param name="birthDate">The birth date.</param>
+        public void SetBirthDate( DateTime? value )
+        {
+            if ( value.HasValue )
+            {
+                BirthMonth = value.Value.Month;
+                BirthDay = value.Value.Day;
+                if ( value.Value.Year != DateTime.MinValue.Year )
                 {
-                    BirthMonth = value.Value.Month;
-                    BirthDay = value.Value.Day;
-                    if ( value.Value.Year != DateTime.MinValue.Year )
-                    {
-                        BirthYear = value.Value.Year;
-                    }
-                    else
-                    {
-                        BirthYear = null;
-                    }
+                    BirthYear = value.Value.Year;
                 }
                 else
                 {
-                    BirthMonth = null;
-                    BirthDay = null;
                     BirthYear = null;
                 }
+            }
+            else
+            {
+                BirthMonth = null;
+                BirthDay = null;
+                BirthYear = null;
             }
         }
 

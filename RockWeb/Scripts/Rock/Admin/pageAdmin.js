@@ -97,8 +97,8 @@
                     $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '1000' });
                 });
 
-                // Bind the block instance delete anchor
-                $('a.block-delete').click(function (a, b, c) {
+                // Bind the block instance delete anchor (ensure it is only bound once)
+                $('a.block-delete').off('click').on('click', function (a, b, c) {
                     var blockId = $(this).attr('href');
 
                     Rock.dialogs.confirm('Are you sure you want to delete this block?', function(result) {
@@ -131,7 +131,7 @@
                 });
 
                 // Bind the click event of the block move anchor tag
-                $('a.block-move').click(function () {
+                $('a.block-move').off('click').on('click', function () {
 
                     // Get a reference to the anchor tag for use in the dialog success function
                     $moveLink = $(this);

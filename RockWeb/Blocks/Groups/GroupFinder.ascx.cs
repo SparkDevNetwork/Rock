@@ -321,7 +321,10 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gGroups_RowSelected( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "GroupDetailPage", "GroupId", e.RowKeyId );
+            if ( !NavigateToLinkedPage( "GroupDetailPage", "GroupId", e.RowKeyId ) )
+            {
+                ShowResults();
+            }
         }
 
         /// <summary>
@@ -331,7 +334,10 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         void registerColumn_Click( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "RegisterPage", "GroupId", e.RowKeyId );
+            if ( !NavigateToLinkedPage( "RegisterPage", "GroupId", e.RowKeyId ) )
+            {
+                ShowResults();
+            }
         }
 
         /// <summary>

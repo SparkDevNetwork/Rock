@@ -16,8 +16,10 @@
 //
 using System;
 using System.ComponentModel;
+using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -821,6 +823,7 @@ namespace Rock.Web.UI.Controls
             _lbShowModal.RenderControl( writer );
             _lbUploadImage.Text = this.ButtonText;
             _lbUploadImage.CssClass = this.ButtonCssClass;
+            _lbUploadImage.Attributes["onclick"] = "return false;";
             _lbUploadImage.RenderControl( writer );
 
             // render the circle check status for when save happens
@@ -864,6 +867,22 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterStartupScript()
         {
+            int? maxUploadBytes = null;
+            try
+            {
+                HttpRuntimeSection section = ConfigurationManager.GetSection( "system.web/httpRuntime" ) as HttpRuntimeSection;
+                if ( section != null )
+                {
+                    // MaxRequestLength is in KB
+                    maxUploadBytes = section.MaxRequestLength * 1024;
+                }
+            }
+            catch
+            {
+                // intentionally ignore and don't tell the fileUploader the limit
+            }
+            
+            
             var script = string.Format(
 @"
 Rock.controls.imageUploader.initialize({{
@@ -883,7 +902,8 @@ Rock.controls.imageUploader.initialize({{
 
         // postback to show Modal after uploading new image
         {10}
-    }}
+    }},
+    maxUploadBytes: {12}
 }});
 
 $('#{6}').Jcrop({{
@@ -919,7 +939,11 @@ $('#{5}').click(function () {{
                 _lbUploadImage.ClientID,
                 _lbShowModal.ClientID,
                 Page.ClientScript.GetPostBackEventReference( _lbUploadImage, string.Empty ),
-                this.NoPictureUrl);
+                this.NoPictureUrl,
+                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null" );
+
+
+            _lbUploadImage.Enabled = false;
 
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ClientID, script, true );
         }

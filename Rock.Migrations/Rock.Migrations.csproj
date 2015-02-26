@@ -176,9 +176,13 @@
     <Compile Include="Migrations\201502202034342_CascadeFinancialTransactionImage.Designer.cs">
       <DependentUpon>201502202034342_CascadeFinancialTransactionImage.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502241620068_Benevolence.cs" />
-    <Compile Include="Migrations\201502241620068_Benevolence.Designer.cs">
-      <DependentUpon>201502241620068_Benevolence.cs</DependentUpon>
+    <Compile Include="Migrations\201502242100351_ValueAsPersonId.cs" />
+    <Compile Include="Migrations\201502242100351_ValueAsPersonId.Designer.cs">
+      <DependentUpon>201502242100351_ValueAsPersonId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201502252105450_GroupToolboxGroupFinder.cs" />
+    <Compile Include="Migrations\201502252105450_GroupToolboxGroupFinder.Designer.cs">
+      <DependentUpon>201502252105450_GroupToolboxGroupFinder.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.cs" />
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.Designer.cs">
@@ -1561,8 +1565,11 @@
     <EmbeddedResource Include="Migrations\201502202034342_CascadeFinancialTransactionImage.resx">
       <DependentUpon>201502202034342_CascadeFinancialTransactionImage.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502241620068_Benevolence.resx">
-      <DependentUpon>201502241620068_Benevolence.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201502242100351_ValueAsPersonId.resx">
+      <DependentUpon>201502242100351_ValueAsPersonId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201502252105450_GroupToolboxGroupFinder.resx">
+      <DependentUpon>201502252105450_GroupToolboxGroupFinder.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.resx">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
