@@ -305,6 +305,8 @@
 	{% endif %}
 
 {% else %}
-	<div class='alert alert-warning'>You do not have persmission to view this group.</div>
+	{% if Group.Id %}
+		<div class='alert alert-warning'>You do not have persmission to view this group.</div>
+	{% endif %}
 {% endif %}
 
