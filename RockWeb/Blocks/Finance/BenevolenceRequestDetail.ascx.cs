@@ -344,14 +344,38 @@ namespace RockWeb.Blocks.Finance
                     ddlConnectionStatus.SelectedValue = person.ConnectionStatusValueId.ToString();
                     ddlConnectionStatus.Enabled = false;
 
-                    pnbHomePhone.Text = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValue.Value == "Home" ).NumberFormatted;
-                    pnbHomePhone.Enabled = false;
+                    var homePhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
+                    if ( homePhoneType != null )
+                    {
+                        var homePhone = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == homePhoneType.Id );
+                        if ( homePhone != null )
+                        {
+                            pnbHomePhone.Text = homePhone.NumberFormatted;
+                            pnbHomePhone.Enabled = false;
+                        }
+                    }
 
-                    pnbCellPhone.Text = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValue.Value == "Mobile" ).NumberFormatted;
-                    pnbCellPhone.Enabled = false;
+                    var mobilePhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+                    if ( mobilePhoneType != null )
+                    {
+                        var mobileNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneType.Id );
+                        if ( mobileNumber != null )
+                        {
+                            pnbCellPhone.Text = mobileNumber.NumberFormatted;
+                            pnbCellPhone.Enabled = false;
+                        }
+                    }
 
-                    pnbWorkPhone.Text = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValue.Value == "Work" ).NumberFormatted;
-                    pnbWorkPhone.Enabled = false;
+                    var workPhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
+                    if ( workPhoneType != null )
+                    {
+                        var workPhone = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == workPhoneType.Id );
+                        if ( workPhone != null )
+                        {
+                            pnbWorkPhone.Text = workPhone.NumberFormatted;
+                            pnbWorkPhone.Enabled = false;
+                        }
+                    }
 
                     ebEmail.Text = person.Email;
                     ebEmail.Enabled = false;
@@ -359,7 +383,6 @@ namespace RockWeb.Blocks.Finance
                     lapAddress.SetValue( person.GetHomeLocation() );
                     lapAddress.Enabled = false;
                 }
-
             }
             else
             {
@@ -390,9 +413,11 @@ namespace RockWeb.Blocks.Finance
             {
                 benevolenceRequest = benevolenceRequestService.Get( benevolenceRequestId );
             }
+
             if ( benevolenceRequest == null )
             {
                 benevolenceRequest = new BenevolenceRequest { Id = 0 };
+                benevolenceRequest.RequestDateTime = RockDateTime.Now;
             }
 
             dtbFirstName.Text = benevolenceRequest.FirstName;
@@ -403,7 +428,15 @@ namespace RockWeb.Blocks.Finance
             dtbSummary.Text = benevolenceRequest.ResultSummary;
             dpRequestDate.SelectedDate = benevolenceRequest.RequestDateTime;
 
-            ppPerson.SelectedValue = benevolenceRequest.RequestedByPersonAliasId;
+            if ( benevolenceRequest.RequestedByPersonAlias != null )
+            {
+                ppPerson.SetValue( benevolenceRequest.RequestedByPersonAlias.Person );
+            }
+            else
+            {
+                ppPerson.SetValue( null );
+            }
+
             if ( benevolenceRequest.HomePhoneNumber != null )
             {
                 pnbHomePhone.Text = benevolenceRequest.HomePhoneNumber;
