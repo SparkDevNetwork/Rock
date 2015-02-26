@@ -1828,20 +1828,40 @@ namespace Rock
         #region ListControl Extensions
 
         /// <summary>
-        /// Tries to set the selected value, if the value does not exist, will set the first item in the list.
+        /// Tries to set the selected value, if the value does not exist, it will attempt to set the value to defaultValue (if specified), 
+        /// otherwise it will set the first item in the list.
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
-        public static void SetValue( this ListControl listControl, string value )
+        /// <param name="defaultValue">The default value.</param>
+        public static void SetValue( this ListControl listControl, string value, string defaultValue = null )
         {
             try
             {
-                listControl.SelectedValue = value;
+                var valueItem = listControl.Items.FindByValue( value );
+                if (valueItem == null && defaultValue != null)
+                {
+                    valueItem = listControl.Items.FindByValue( defaultValue );
+                }
+
+                if ( valueItem != null )
+                {
+                    listControl.SelectedValue = valueItem.Value;
+                }
+                else
+                {
+                    if ( listControl.Items.Count > 0 )
+                    {
+                        listControl.SelectedIndex = 0;
+                    }
+                }
             }
             catch
             {
                 if ( listControl.Items.Count > 0 )
+                {
                     listControl.SelectedIndex = 0;
+                }
             }
         }
 
