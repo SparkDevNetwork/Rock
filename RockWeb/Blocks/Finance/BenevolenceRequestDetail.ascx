@@ -44,7 +44,7 @@
 
                 <Rock:DataTextBox ID="dtbRequestText" runat="server" Label="Description of Request" TextMode="MultiLine" Rows="4" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestText" />
                 <Rock:DataTextBox ID="dtbSummary" runat="server" Label="Result Summary" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="ResultSummary" />
-                <Rock:Grid ID="gResults" runat="server" DisplayType="Light" AllowSorting="true" ShowActionRow="true" RowItemText="Label" AllowPaging="false">
+                <Rock:Grid ID="gResults" runat="server" DisplayType="Light" AllowSorting="true" ShowActionRow="true" RowItemText="Result" AllowPaging="false">
                     <Columns>
                         <Rock:RockBoundField DataField="ResultTypeName" HeaderText="Result Type" SortExpression="ResultType" />
                         <Rock:RockBoundField DataField="Amount" HeaderText="Amount" DataFormatString="{0:C}" SortExpression="Amount" />
@@ -60,7 +60,7 @@
 
         </asp:Panel>
 
-        <Rock:ModalDialog ID="mdAddResult" runat="server" ScrollbarEnabled="false" SaveButtonText="Add" OnSaveClick="btnAddResults_Click" Title="Select Check-in Label" ValidationGroup="valResult">
+        <Rock:ModalDialog ID="mdAddResult" runat="server" ScrollbarEnabled="false" SaveButtonText="Add" OnSaveClick="btnAddResults_Click" Title="Benevolence Request Results" ValidationGroup="valResult">
             <Content>
                 <asp:ValidationSummary ID="valResultsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="valResult" />
                 <Rock:RockDropDownList ID="ddlResultType" runat="server" Label="Result Type" ValidationGroup="valResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" PropertyName="ResultTypeValue" />
