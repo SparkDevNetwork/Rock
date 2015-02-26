@@ -68,7 +68,7 @@ namespace Rock.Migrations
                 
                 -- if they have not created any group delete the meeting time attribute
                 DECLARE @SmallGroupCount int = (SELECT COUNT(*) FROM [Group] WHERE [Guid] NOT IN ('10B60F8D-0F23-4FAA-B35F-9A5F19F5F995', '62DC3753-01D5-48B5-B22D-D2825D92900B') AND [GroupTypeId] = (SELECT [Id] FROM [GroupType] WHERE [Guid] = '50FCFB30-F51A-49DF-86F4-2B176EA1820B'))
-                IF (@SmallGroupCount > 0)
+                IF (@SmallGroupCount = 0)
                 BEGIN
 	                DELETE FROM [Attribute] WHERE [Guid] = 'E439FBC6-0098-4419-A89F-0465569A5BEE'
                 END
