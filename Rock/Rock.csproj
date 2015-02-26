@@ -247,6 +247,16 @@
     <Compile Include="Jobs\GetScheduledPayments.cs" />
     <Compile Include="Lava\ILiquidizable.cs" />
     <Compile Include="Lava\RockFilters.cs" />
+    <Compile Include="Model\BenevolenceRequest.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\BenevolenceRequestService.Partial.cs" />
+    <Compile Include="Model\BenevolenceResult.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\BenevolenceResultService.Partial.cs" />
+    <Compile Include="Model\CodeGenerated\BenevolenceRequestService.cs" />
+    <Compile Include="Model\CodeGenerated\BenevolenceResultService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelItemService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelTypeService.cs" />
