@@ -40,8 +40,19 @@
                             <Rock:DataTextBox ID="tbMiddleName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="MiddleName" />
                             <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" />
                             <Rock:RockDropDownList ID="ddlSuffix" CssClass="input-width-md" runat="server" Label="Suffix"/>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <Rock:RockDropDownList ID="ddlConnectionStatus" runat="server" Label="Connection Status" Required="true" />
+                                </div>
+                                <div class="col-sm-6">
+                                </div>
+                            </div>
+                            <Rock:RockRadioButtonList ID="rblGender" runat="server" RepeatDirection="Horizontal" Label="Gender">
+                                <asp:ListItem Text="Male" Value="Male" />
+                                <asp:ListItem Text="Female" Value="Female" />
+                                <asp:ListItem Text="Unknown" Value="Unknown" />
+                            </Rock:RockRadioButtonList>
                             <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birthday" />
-
                             <div class="row">
                                 <div class="col-sm-3">
                                     <Rock:GradePicker ID="ddlGradePicker" runat="server" UseAbbreviation="true" UseGradeOffsetAsValue="true" CssClass="input-width-md" />
@@ -52,17 +63,16 @@
                                 <div class="col-sm-6">
                                 </div>
                             </div>
-                            <Rock:DatePicker ID="dpAnniversaryDate" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="AnniversaryDate" StartView="decade" />
-
-                            <Rock:RockRadioButtonList ID="rblGender" runat="server" RepeatDirection="Horizontal" Label="Gender">
-                                <asp:ListItem Text="Male" Value="Male" />
-                                <asp:ListItem Text="Female" Value="Female" />
-                                <asp:ListItem Text="Unknown" Value="Unknown" />
-                            </Rock:RockRadioButtonList>
-
-                            <Rock:RockRadioButtonList ID="rblMaritalStatus" runat="server" RepeatDirection="Horizontal" Label="Marital Status" />
-                            <Rock:RockRadioButtonList ID="rblConnectionStatus" runat="server" Label="Connection Status" />
-
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" Label="Marital Status" />
+                                </div>
+                                <div class="col-sm-3">
+                                    <Rock:DatePicker ID="dpAnniversaryDate" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="AnniversaryDate" StartView="decade" />
+                                </div>
+                                <div class="col-sm-6">
+                                </div>
+                            </div>
                         </fieldset>
 
                         <fieldset>
