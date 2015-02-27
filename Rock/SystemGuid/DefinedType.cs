@@ -224,5 +224,9 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SCHOOL_GRADES = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D";
 
+        /// <summary>
+        /// Used to manage the topic options for small groups.
+        /// </summary>
+        public const string SMALL_GROUP_TOPIC = "D4111631-6B42-1CBD-4019-427D6BC6F475";
     }
 }
