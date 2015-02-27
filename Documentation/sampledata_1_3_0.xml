@@ -31,6 +31,18 @@
             <attribute FirstVisit="2012-12-15"/>
             <attribute Employer="Rock Solid Church"/>
             <attribute Position="Outreach Pastor"/>
+
+            <attribute AdaptiveD="28"/>
+            <attribute AdaptiveI="46"/>
+            <attribute AdaptiveS="21"/>
+            <attribute AdaptiveC="8"/>
+            <attribute NaturalD="28"/>
+            <attribute NaturalI="29"/>
+            <attribute NaturalS="20"/>
+            <attribute NaturalC="18"/>
+            <attribute LastSaveDate="2/2/2013"/>
+            <attribute PersonalityType="ID"/>
+            
           </attributes>
           <logins>
             <login userName="tdecker"/>
