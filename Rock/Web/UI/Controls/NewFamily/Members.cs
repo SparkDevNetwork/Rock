@@ -149,6 +149,11 @@ namespace Rock.Web.UI.Controls
                 writer.Write( "Suffix" );
                 writer.RenderEndTag();
 
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "required" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                writer.Write( "Connection Status" );
+                writer.RenderEndTag();
+
                 if ( RequireGender )
                 {
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "required" );
@@ -159,10 +164,6 @@ namespace Rock.Web.UI.Controls
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
                 writer.Write( "Birthdate" );
-                writer.RenderEndTag();
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Th );
-                writer.Write( "Connection Status" );
                 writer.RenderEndTag();
 
                 if ( RequireGrade )
