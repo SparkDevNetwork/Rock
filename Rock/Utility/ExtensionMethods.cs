@@ -2491,9 +2491,9 @@ namespace Rock
         /// <returns></returns>
         public static int PageId( this Route route )
         {
-            if ( route.DataTokens != null )
+            if ( route.DataTokens != null && route.DataTokens["PageId"] != null  )
             {
-                return int.Parse( route.DataTokens["PageId"] as string );
+                return ( route.DataTokens["PageId"] as string ).AsIntegerOrNull() ?? -1;
             }
 
             return -1;
@@ -2508,7 +2508,7 @@ namespace Rock
         {
             if ( route.DataTokens != null && route.DataTokens["RouteId"] != null )
             {
-                return int.Parse( route.DataTokens["RouteId"] as string );
+                return ( route.DataTokens["RouteId"] as string ).AsIntegerOrNull() ?? -1;
             }
 
             return -1;
