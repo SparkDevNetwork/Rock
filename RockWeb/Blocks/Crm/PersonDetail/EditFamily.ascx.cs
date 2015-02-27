@@ -141,9 +141,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
 
-            ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ), true );
-            ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
-            rblNewPersonConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ) );
+            ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() ), true );
+            ddlReason.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() ), true );
+
+            ddlNewPersonTitle.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_TITLE.AsGuid() ), true );
+            ddlNewPersonSuffix.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ), true );
+            ddlNewPersonMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
+            ddlNewPersonConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ), true );
 
             lvMembers.DataKeyNames = new string[] { "Index" };
             lvMembers.ItemDataBound += lvMembers_ItemDataBound;
@@ -164,7 +168,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             gLocations.IsDeleteEnabled = _canEdit;
             gLocations.GridRebind += gLocations_GridRebind;
 
-            ddlNewPersonGender.BindToEnum<Gender>();
+            rblNewPersonGender.Items.Clear();
+            rblNewPersonGender.Items.Add( new ListItem( Gender.Male.ConvertToString(), Gender.Male.ConvertToInt().ToString() ) );
+            rblNewPersonGender.Items.Add( new ListItem( Gender.Female.ConvertToString(), Gender.Female.ConvertToInt().ToString() ) );
 
             btnSave.Visible = _canEdit;
 
@@ -195,11 +201,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             if ( role != null )
                             {
                                 int index = (int)lvMembers.DataKeys[item.DataItemIndex]["Index"];
-                                var familyMember = FamilyMembers.Where( m => m.Index == index ).FirstOrDefault();
-                                if ( familyMember != null )
+                                if ( FamilyMembers != null )
                                 {
-                                    familyMember.RoleGuid = role.Guid;
-                                    familyMember.RoleName = role.Name;
+                                    var familyMember = FamilyMembers.Where( m => m.Index == index ).FirstOrDefault();
+                                    if ( familyMember != null )
+                                    {
+                                        familyMember.RoleGuid = role.Guid;
+                                        familyMember.RoleName = role.Name;
+                                    }
                                 }
                             }
                         }
@@ -395,13 +404,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             tbNewPersonFirstName.Required = true;
             tbNewPersonLastName.Required = true;
+            rblNewPersonRole.Required = true;
+            rblNewPersonGender.Required = true;
+            ddlNewPersonConnectionStatus.Required = true;
+
             hfActiveTab.Value = "New";
             SetActiveTab();
 
             ppPerson.SetValue( null );
 
+            ddlNewPersonTitle.SelectedIndex = 0;
             tbNewPersonFirstName.Text = string.Empty;
-
             // default the last name of the new family member to the lastname of the existing adults in the family (if all the adults have the same last name)
             var lastNames = FamilyMembers.Where( a => a.RoleGuid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Select( a => a.LastName ).Distinct().ToList();
             if ( lastNames.Count == 1 )
@@ -412,11 +425,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 tbNewPersonLastName.Text = string.Empty;
             }
-
-
-            ddlNewPersonGender.SelectedIndex = 0;
+            ddlNewPersonSuffix.SelectedIndex = 0;
+            foreach( ListItem li in rblNewPersonRole.Items )
+            {
+                li.Selected = false;
+            }
+            ddlNewPersonMaritalStatus.SelectedIndex = 0;
+            foreach ( ListItem li in rblNewPersonGender.Items )
+            {
+                li.Selected = false;
+            }
             dpNewPersonBirthDate.SelectedDate = null;
-            rblNewPersonRole.SelectedIndex = 0;
+            ddlGradePicker.SelectedIndex = 0;
 
             modalAddPerson.Show();
         }
@@ -472,11 +492,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             else
             {
                 var familyMember = new FamilyMember();
+                familyMember.TitleValueId = ddlNewPersonTitle.SelectedValueAsId();
                 familyMember.FirstName = tbNewPersonFirstName.Text;
                 familyMember.NickName = tbNewPersonFirstName.Text;
                 familyMember.LastName = tbNewPersonLastName.Text;
-                familyMember.Gender = ddlNewPersonGender.SelectedValueAsEnum<Gender>();
-
+                familyMember.SuffixValueId = ddlNewPersonSuffix.SelectedValueAsId();
+                familyMember.Gender = rblNewPersonGender.SelectedValueAsEnum<Gender>();
+                familyMember.MaritalStatusValueId = ddlNewPersonMaritalStatus.SelectedValueAsInt();
                 DateTime? birthdate = dpNewPersonBirthDate.SelectedDate;
                 if ( birthdate.HasValue )
                 {
@@ -488,8 +510,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                 }
                 familyMember.BirthDate = birthdate;
-
-                familyMember.ConnectionStatusValueId = rblNewPersonConnectionStatus.SelectedValue.AsIntegerOrNull();
+                familyMember.GradeOffset = ddlGradePicker.SelectedValueAsInt();
+                familyMember.ConnectionStatusValueId = ddlNewPersonConnectionStatus.SelectedValueAsId();
                 var role = familyRoles.Where( r => r.Id == ( rblNewPersonRole.SelectedValueAsInt() ?? 0 ) ).FirstOrDefault();
                 if ( role != null )
                 {
@@ -503,6 +525,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ppPerson.Required = false;
             tbNewPersonFirstName.Required = false;
             tbNewPersonLastName.Required = false;
+            rblNewPersonRole.Required = false;
+            rblNewPersonGender.Required = false;
+            ddlNewPersonConnectionStatus.Required = false;
 
             confirmExit.Enabled = true;
 
@@ -803,6 +828,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 demographicChanges.Add( "Created" );
 
                                 var person = new Person();
+
+                                person.TitleValueId = familyMember.TitleValueId;
+                                History.EvaluateChange( demographicChanges, "Title", string.Empty, DefinedValueCache.GetName( person.TitleValueId) );
+
                                 person.FirstName = familyMember.FirstName;
                                 person.NickName = familyMember.NickName;
                                 History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName );
@@ -810,8 +839,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 person.LastName = familyMember.LastName;
                                 History.EvaluateChange( demographicChanges, "Last Name", string.Empty, person.LastName );
 
+                                person.SuffixValueId = familyMember.SuffixValueId;
+                                History.EvaluateChange( demographicChanges, "Suffix", string.Empty, DefinedValueCache.GetName( person.SuffixValueId ) );
+
                                 person.Gender = familyMember.Gender;
                                 History.EvaluateChange( demographicChanges, "Gender", null, person.Gender );
+
+                                person.MaritalStatusValueId = familyMember.MaritalStatusValueId;
+                                History.EvaluateChange( demographicChanges, "Marital Status", string.Empty, DefinedValueCache.GetName( person.MaritalStatusValueId ) );
 
                                 DateTime? birthdate = familyMember.BirthDate;
                                 if ( birthdate.HasValue )
@@ -824,20 +859,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     }
                                 }
                                 person.SetBirthDate( birthdate );
-
                                 History.EvaluateChange( demographicChanges, "Birth Date", null, person.BirthDate );
 
+                                person.GradeOffset = familyMember.GradeOffset;
+                                History.EvaluateChange( demographicChanges, "Graduation Year", null, person.GraduationYear );
+
                                 person.ConnectionStatusValueId = familyMember.ConnectionStatusValueId;
-                                History.EvaluateChange( demographicChanges, "Connection Status", string.Empty, person.ConnectionStatusValueId.HasValue ? DefinedValueCache.GetName( person.ConnectionStatusValueId ) : string.Empty );
+                                History.EvaluateChange( demographicChanges, "Connection Status", string.Empty, DefinedValueCache.GetName( person.ConnectionStatusValueId ) );
 
                                 person.IsEmailActive = true;
                                 History.EvaluateChange( demographicChanges, "Email Active", true.ToString(), ( person.IsEmailActive ?? true ).ToString() );
 
                                 person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                                History.EvaluateChange( demographicChanges, "Record Type", string.Empty, person.RecordTypeValueId.HasValue ? DefinedValueCache.GetName( person.RecordTypeValueId.Value ) : string.Empty );
-
-                                person.MaritalStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_UNKNOWN.AsGuid() ).Id;
-                                History.EvaluateChange( demographicChanges, "Marital Status", string.Empty, person.MaritalStatusValueId.HasValue ? DefinedValueCache.GetName( person.MaritalStatusValueId ) : string.Empty );
+                                History.EvaluateChange( demographicChanges, "Record Type", string.Empty, DefinedValueCache.GetName( person.RecordTypeValueId.Value ) );
 
                                 if ( !isChild )
                                 {
@@ -1335,13 +1369,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         public bool ExistingFamilyMember { get; set; }  // Is this person part of the original family 
         public bool Removed { get; set; } // Was an existing person removed from the family (to their own family)
         public bool RemoveFromOtherFamilies { get; set; } // When adding an existing person, should they be removed from other families
+        public int? TitleValueId { get; set; }
         public string FirstName { get; set; }
         public string NickName { get; set; }
         public string LastName { get; set; }
+        public int? SuffixValueId { get; set; }
         public Gender Gender { get; set; }
         public DateTime? BirthDate { get; set; }
+        public int? GradeOffset { get; set; }
         public Guid RoleGuid { get; set; }
         public string RoleName { get; set; }
+        public int? MaritalStatusValueId { get; set; }
         public int? PhotoId { get; set; }
         public int? ConnectionStatusValueId { get; set; }
 
@@ -1388,12 +1426,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( person != null )
             {
                 Id = person.Id;
+                TitleValueId = person.TitleValueId;
                 FirstName = person.FirstName;
                 NickName = person.NickName;
                 LastName = person.LastName;
+                SuffixValueId = person.SuffixValueId;
                 Gender = person.Gender;
                 BirthDate = person.BirthDate;
+                GradeOffset = person.GradeOffset;
+                MaritalStatusValueId = person.MaritalStatusValueId;
                 PhotoId = person.PhotoId;
+                ConnectionStatusValueId = person.ConnectionStatusValueId;
             }
         }
     }
