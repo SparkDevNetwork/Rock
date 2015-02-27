@@ -828,12 +828,56 @@ namespace Rock.Model
             {
                 return Attendance
                     .Where( a =>
-                        a.PersonAliasId.HasValue &&
+                        a.PersonAlias != null &&
                         a.DidAttend.HasValue &&
                         a.DidAttend.Value )
-                    .Select( a => a.PersonAliasId )
+                    .Select( a => a.PersonAlias.PersonId )
                     .Distinct()
                     .Count();
+            }
+        }
+
+        /// <summary>
+        /// Gets the attendance percentage.
+        /// </summary>
+        /// <value>
+        /// The percentage.
+        /// </value>
+        public double Percentage
+        {
+            get
+            {
+                var people = new Dictionary<int, bool>();
+                foreach( var person in Attendance
+                    .Where( a =>
+                        a.PersonAlias != null &&
+                        a.DidAttend.HasValue )
+                    .Select( a => new { 
+                        PersonId = a.PersonAlias.PersonId, 
+                        DidAttend = a.DidAttend.Value 
+                    } )
+                    .Distinct() )
+                {
+                    if ( person.DidAttend )
+                    {
+                        people.AddOrReplace( person.PersonId, true );
+                    }
+                    else
+                    {
+                        people.AddOrIgnore( person.PersonId, false );
+                    }
+                }
+
+                int attended = people.Where( p => p.Value ).Count();
+                int total = people.Count();
+                if ( total > 0 )
+                {
+                    return (double)( attended ) / (double)total;
+                }
+                else
+                {
+                    return 0.0d;
+                }
             }
         }
 
