@@ -134,12 +134,14 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnLoad( e );
 
-            pnlContent.Visible = _canView;
-
-            if ( !Page.IsPostBack && _canView )
+            if ( !Page.IsPostBack )
             {
-                SetFilter();
-                BindGroupMembersGrid();
+                pnlContent.Visible = _canView;
+                if ( _canView )
+                {
+                    SetFilter();
+                    BindGroupMembersGrid();
+                }
             }
         }
 

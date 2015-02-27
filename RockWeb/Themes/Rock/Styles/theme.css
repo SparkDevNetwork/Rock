@@ -3516,7 +3516,6 @@ table.attribute-grid tr th:nth-child(3) {
   padding: 12px 0;
   border-bottom: 1px solid #d8d8dc;
   color: #6a6a6a;
-  margin-top: 12px;
   min-height: 60px;
 }
 .personprofilebar-family a {
@@ -5721,7 +5720,8 @@ body.navbar-side-close #content-wrapper {
 .personprofile .personprofilebar-family,
 .personprofile .pagetabs,
 .personprofile .person-content {
-  padding: 0 15px;
+  padding-left: 15px;
+  padding-right: 15px;
 }
 .personprofile .personprofilebar-bio {
   margin-top: 12px;

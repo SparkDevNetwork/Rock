@@ -24,6 +24,16 @@ namespace Rock.SystemGuid
     public class DefinedType
     {
         /// <summary>
+        /// Guid for the types of Benevolence Request status (e.g. pending, active, answered, etc.)
+        /// </summary>
+        public const string BENEVOLENCE_REQUEST_STATUS = "2787B088-D607-4D69-84FF-850A6891EE34";
+
+        /// <summary>
+        /// The types of results for a Benevolence Request
+        /// </summary>
+        public const string BENEVOLENCE_RESULT_TYPE = "35FC0225-3DAC-48B4-BDF7-AFDE104FB60E";
+
+        /// <summary>
         /// The types of communication supported (i.e. email, sms, twitter, app-push, etc)
         /// </summary>
         public const string COMMUNICATION_MEDIUM = "DC8A841C-E91D-4BD4-A6A7-0DE765308E8F";
@@ -214,5 +224,9 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SCHOOL_GRADES = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D";
 
+        /// <summary>
+        /// Used to manage the topic options for small groups.
+        /// </summary>
+        public const string SMALL_GROUP_TOPIC = "D4111631-6B42-1CBD-4019-427D6BC6F475";
     }
 }

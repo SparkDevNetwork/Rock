@@ -95,7 +95,7 @@ namespace Rock.Model
                         {
                             EffectiveEndDate = rrule.Until;
                         }
-                        else if ( rrule.Count > 0 )
+                        else
                         {
                             // not really a perfect way to figure out end date.  safer to assume null
                             EffectiveEndDate = null;

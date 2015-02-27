@@ -35,8 +35,24 @@ namespace Rock.Migrations
 
             // add topic defined type and attribute to the small group type
             RockMigrationHelper.AddDefinedType( "Group", "Small Group Topic", "Used to manage the topic options for small groups.", "d4111631-6b42-1cbd-4019-427d6bc6f475" );
-            RockMigrationHelper.AddGroupTypeGroupAttribute( "50FCFB30-F51A-49DF-86F4-2B176EA1820B", "BC48720C-3610-4BCF-AE66-D255A17F1CDF", "Topic", "The group's study topic.", 0, "d4111631-6b42-1cbd-4019-427d6bc6f475", "04bfac9b-6d1a-e089-446a-b2c604c76764" );
-            RockMigrationHelper.AddAttributeQualifier( "04bfac9b-6d1a-e089-446a-b2c604c76764", "definedtype", "d4111631-6b42-1cbd-4019-427d6bc6f475", "2ae729fd-3e73-70b5-488d-4d667e644a98" );
+            RockMigrationHelper.AddGroupTypeGroupAttribute( "50FCFB30-F51A-49DF-86F4-2B176EA1820B", "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Topic", "The group's study topic.", 0, "d4111631-6b42-1cbd-4019-427d6bc6f475", "04bfac9b-6d1a-e089-446a-b2c604c76764" );
+            
+            // add attribute qualifiers
+            Sql( @"  DECLARE @AttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '04bfac9b-6d1a-e089-446a-b2c604c76764')
+  DECLARE @DefinedTypeId int = (SELECT TOP 1 [Id] FROM [DefinedType] WHERE [Guid] = 'd4111631-6b42-1cbd-4019-427d6bc6f475')
+
+  INSERT INTO [AttributeQualifier] ([IsSystem], [AttributeId], [Key], [Value], [Guid])
+  VALUES
+  (0, @AttributeId, 'definedtype', @DefinedTypeId, '6B2F37DB-7237-BDA2-4297-0010040ED95D')
+
+  INSERT INTO [AttributeQualifier] ([IsSystem], [AttributeId], [Key], [Value], [Guid])
+  VALUES
+  (0, @AttributeId, 'allowmultiple', 'False', '1F4E58C7-BC92-6BB0-4E38-F0A0BAB06535')
+
+    INSERT INTO [AttributeQualifier] ([IsSystem], [AttributeId], [Key], [Value], [Guid])
+  VALUES
+  (0, @AttributeId, 'displaydescription', 'False', '102C4AFE-FF12-B890-46C8-362CFBDB9E87')" );
+
 
             // update the topic attribute and meeting time to not be a system ones
             Sql( @"
@@ -68,7 +84,7 @@ namespace Rock.Migrations
                 
                 -- if they have not created any group delete the meeting time attribute
                 DECLARE @SmallGroupCount int = (SELECT COUNT(*) FROM [Group] WHERE [Guid] NOT IN ('10B60F8D-0F23-4FAA-B35F-9A5F19F5F995', '62DC3753-01D5-48B5-B22D-D2825D92900B') AND [GroupTypeId] = (SELECT [Id] FROM [GroupType] WHERE [Guid] = '50FCFB30-F51A-49DF-86F4-2B176EA1820B'))
-                IF (@SmallGroupCount > 0)
+                IF (@SmallGroupCount = 0)
                 BEGIN
 	                DELETE FROM [Attribute] WHERE [Guid] = 'E439FBC6-0098-4419-A89F-0465569A5BEE'
                 END
@@ -81,13 +97,13 @@ namespace Rock.Migrations
                 -- create topic defined values from the current text based topics
                 INSERT INTO [DefinedValue]
                 ([IsSystem], [Order], [DefinedTypeId], [Value], [Guid])
-                SELECT DISTINCT 0, 1, @DefinedTypeId, [Value], newid() FROM [AttributeValue] WHERE [AttributeId] = @OldTopicAttributeId
+                SELECT DISTINCT 0, 1, @DefinedTypeId, [Value], newid() FROM [AttributeValue] WHERE [AttributeId] = @OldTopicAttributeId and isnull([Value], '') != '' 
 
                 -- assign new defined value topics based on their current text topics
                 INSERT INTO [AttributeValue]
                 ([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
                 SELECT 0, @NewTopicAttributeId, [EntityId], dv.[Guid], newid() FROM [AttributeValue] av
-	                INNER JOIN [DefinedValue] dv ON dv.[Value] = av.[Value]
+	                INNER JOIN [DefinedValue] dv ON dv.DefinedTypeId = @DefinedTypeId and dv.[Value] = av.[Value] 
 	                WHERE [AttributeId] = @OldTopicAttributeId
 
                 -- delete old group topic attribute
@@ -100,8 +116,6 @@ namespace Rock.Migrations
             //
             RockMigrationHelper.AddPage( "C0854F84-2E8B-479C-A3FB-6B47BE89B795", "325B7BFD-8B80-44FD-A951-4E4763DA6C0D", "Group Toolbox", "", "4D84E1B1-6BA0-4F04-A9F3-DD07A6CF3F38", "" ); // Site:External Website
             RockMigrationHelper.AddPage( "4D84E1B1-6BA0-4F04-A9F3-DD07A6CF3F38", "325B7BFD-8B80-44FD-A951-4E4763DA6C0D", "Group Attendance", "", "00D2DCE6-D9C0-47A0-BAE1-4591779AE2E1", "" ); // Site:External Website
-            RockMigrationHelper.UpdateBlockType( "Group Attendance Detail", "Lists the group members for a specific occurrence datetime and allows selecting if they attended or not.", "~/Blocks/Groups/GroupAttendanceDetail.ascx", "Groups", "822B5309-2C48-4E6E-B5E1-B4BBFD84CA30" );
-            RockMigrationHelper.UpdateBlockType( "Group Attendance List", "Lists all the scheduled occurrences for a given group.", "~/Blocks/Groups/GroupAttendanceList.ascx", "Groups", "2BE0283D-2842-4B7D-A354-395B4048DB25" );
             RockMigrationHelper.UpdateBlockType( "Group Detail Lava", "Presents the details of a group using Lava", "~/Blocks/Groups/GroupDetailLava.ascx", "Groups", "218B057F-B214-4317-8E84-7A95CF88067E" );
             RockMigrationHelper.UpdateBlockType( "Group Finder", "Block for people to find a group that matches their search parameters.", "~/Blocks/Groups/GroupFinder.ascx", "Groups", "9F8F2D68-DEEA-4686-810F-AB32923F855E" );
             RockMigrationHelper.UpdateBlockType( "Group List Personalized Lava", "Lists all group that the person is a member of using a Lava template.", "~/Blocks/Groups/GroupListPersonalizedLava.ascx", "Groups", "1B172C33-8672-4C98-A995-8E123FF316BD" );
@@ -116,7 +130,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlock( "4D84E1B1-6BA0-4F04-A9F3-DD07A6CF3F38", "", "218B057F-B214-4317-8E84-7A95CF88067E", "Group Detail Lava", "Main", "", "", 0, "1EDDD8D0-5B7A-4148-8AE6-182863048AC5" );
 
             // Add Block to Page: Group Attendance, Site: External Website
-            RockMigrationHelper.AddBlock( "00D2DCE6-D9C0-47A0-BAE1-4591779AE2E1", "", "2BE0283D-2842-4B7D-A354-395B4048DB25", "Group Attendance List", "Main", "", "", 1, "82B107C3-AF97-4476-879C-198C56100C73" );
+            RockMigrationHelper.AddBlock( "00D2DCE6-D9C0-47A0-BAE1-4591779AE2E1", "", "5C547728-38C2-420A-8602-3CDAAC369247", "Group Attendance List", "Main", "", "", 1, "82B107C3-AF97-4476-879C-198C56100C73" );
 
             // Add Block to Page: Small Groups, Site: External Website
             RockMigrationHelper.AddBlock( "EA515FD1-7D71-4E24-A09D-EA9EC34BEC71", "", "9F8F2D68-DEEA-4686-810F-AB32923F855E", "Group Finder", "Main", "", "", 1, "7332DD26-D5F5-4736-BFCF-FC4AD97DD571" );
@@ -171,9 +185,6 @@ namespace Rock.Migrations
 
             // Attrib for BlockType: Group Detail Lava:Person Detail Page
             RockMigrationHelper.AddBlockTypeAttribute( "218B057F-B214-4317-8E84-7A95CF88067E", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Person Detail Page", "PersonDetailPage", "", "Page to link to for more information on a group member.", 0, @"", "6B23DC5D-3E1B-41CE-912E-7DE231B5B2F3" );
-
-            // Attrib for BlockType: Group Attendance List:Detail Page
-            RockMigrationHelper.AddBlockTypeAttribute( "2BE0283D-2842-4B7D-A354-395B4048DB25", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPage", "", "", 0, @"", "747E9320-C85D-42F2-8298-52E65A5F9F5C" );
 
             // Attrib for BlockType: Group Finder:Attribute Filters
             RockMigrationHelper.AddBlockTypeAttribute( "9F8F2D68-DEEA-4686-810F-AB32923F855E", "99B090AA-4D7E-46D8-B393-BF945EA1BA8B", "Attribute Filters", "AttributeFilters", "", "", 0, @"", "380D0978-AF4F-4EEC-B872-56F0FB9F91E4" );
@@ -603,7 +614,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlock( "0C00CD89-BF4C-4B19-9B0D-E1FA2CFF5DD7", "", "1B172C33-8672-4C98-A995-8E123FF316BD", "Group List", "Sidebar1", "", "", 0, "D9E42DA3-1139-4D5E-83B6-12882BD403AE" );
 
             // Add Block to Page: Group Attendance Detail, Site: External Website
-            RockMigrationHelper.AddBlock( "0C00CD89-BF4C-4B19-9B0D-E1FA2CFF5DD7", "", "822B5309-2C48-4E6E-B5E1-B4BBFD84CA30", "Group Attendance Detail", "Main", "", "", 0, "129EF990-DB27-462C-A33E-368E5A84EF4A" );
+            RockMigrationHelper.AddBlock( "0C00CD89-BF4C-4B19-9B0D-E1FA2CFF5DD7", "", "FC6B5DC8-3A90-4D78-8DC2-7F7698A6E73B", "Group Attendance Detail", "Main", "", "", 0, "129EF990-DB27-462C-A33E-368E5A84EF4A" );
 
             // Attrib Value for Block:Group List, Attribute:Lava Template Page: Group Attendance Detail, Site: External Website
             RockMigrationHelper.AddBlockAttributeValue( "D9E42DA3-1139-4D5E-83B6-12882BD403AE", "C7EC3847-7419-4364-98E8-09FE42A04A76", @"{% include '~~/Assets/Lava/GroupListSidebar.lava' %}" );
@@ -618,7 +629,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "D9E42DA3-1139-4D5E-83B6-12882BD403AE", "04AA4BAE-9E55-45C2-ABAB-F85B1F81596E", @"" );
 
             // add attribute value for attendance detail
-            RockMigrationHelper.AddBlockAttributeValue( "82B107C3-AF97-4476-879C-198C56100C73", "747E9320-C85D-42F2-8298-52E65A5F9F5C", "0C00CD89-BF4C-4B19-9B0D-E1FA2CFF5DD7" );
+            RockMigrationHelper.AddBlockAttributeValue( "82B107C3-AF97-4476-879C-198C56100C73", "15299237-7F47-404D-BEFF-460F7818D3D7", "0C00CD89-BF4C-4B19-9B0D-E1FA2CFF5DD7" );
         }
 
         /// <summary>
@@ -757,8 +768,6 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteBlockType( "1B172C33-8672-4C98-A995-8E123FF316BD" ); // Group List Personalized Lava
             RockMigrationHelper.DeleteBlockType( "9F8F2D68-DEEA-4686-810F-AB32923F855E" ); // Group Finder
             RockMigrationHelper.DeleteBlockType( "218B057F-B214-4317-8E84-7A95CF88067E" ); // Group Detail Lava
-            RockMigrationHelper.DeleteBlockType( "2BE0283D-2842-4B7D-A354-395B4048DB25" ); // Group Attendance List
-            RockMigrationHelper.DeleteBlockType( "822B5309-2C48-4E6E-B5E1-B4BBFD84CA30" ); // Group Attendance Detail
             RockMigrationHelper.DeletePage( "00D2DCE6-D9C0-47A0-BAE1-4591779AE2E1" ); //  Page: Group Attendance, Layout: LeftSidebar, Site: External Website
             RockMigrationHelper.DeletePage( "4D84E1B1-6BA0-4F04-A9F3-DD07A6CF3F38" ); //  Page: Group Toolbox, Layout: LeftSidebar, Site: External Website
 
