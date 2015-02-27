@@ -29,9 +29,8 @@
                     <div class="row">
                         <div class="col-md-4">
                             <Rock:CampusPicker ID="cpCampus" runat="server" Required="true" />
-                            <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" Required="true" 
-                                Help="The marital status to use for the adults in this family."
-                                Label="Marital Status of Adults" RequiredErrorMessage="Marital Status of Adults is Required" />
+                            <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" Label="Marital Status of Adults" 
+                                Help="The marital status to use for the adults in this family." />
                         </div>
 
                         <div class="col-md-8">
