@@ -338,6 +338,7 @@
     <Compile Include="Utility\RockSemanticVersion.cs" />
     <Compile Include="Utility\SimpleModeJsonConverter.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
+    <Compile Include="Web\UI\Controls\Grid\CurrencyField.cs" />
     <Compile Include="Web\UI\Controls\Grid\CallbackField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GradePicker.cs" />
     <Compile Include="Web\UI\Controls\RockRating.cs" />
