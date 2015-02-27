@@ -75,7 +75,7 @@ namespace Rock.Model
         public DateTime? TransactionDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the transaction code for the transaction.
+        /// Gets or sets the response code from the Gateway for the transaction.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the transaction code of the transaction.
