@@ -35,8 +35,24 @@ namespace Rock.Migrations
 
             // add topic defined type and attribute to the small group type
             RockMigrationHelper.AddDefinedType( "Group", "Small Group Topic", "Used to manage the topic options for small groups.", "d4111631-6b42-1cbd-4019-427d6bc6f475" );
-            RockMigrationHelper.AddGroupTypeGroupAttribute( "50FCFB30-F51A-49DF-86F4-2B176EA1820B", "BC48720C-3610-4BCF-AE66-D255A17F1CDF", "Topic", "The group's study topic.", 0, "d4111631-6b42-1cbd-4019-427d6bc6f475", "04bfac9b-6d1a-e089-446a-b2c604c76764" );
-            RockMigrationHelper.AddAttributeQualifier( "04bfac9b-6d1a-e089-446a-b2c604c76764", "definedtype", "d4111631-6b42-1cbd-4019-427d6bc6f475", "2ae729fd-3e73-70b5-488d-4d667e644a98" );
+            RockMigrationHelper.AddGroupTypeGroupAttribute( "50FCFB30-F51A-49DF-86F4-2B176EA1820B", "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Topic", "The group's study topic.", 0, "d4111631-6b42-1cbd-4019-427d6bc6f475", "04bfac9b-6d1a-e089-446a-b2c604c76764" );
+            
+            // add attribute qualifiers
+            Sql( @"  DECLARE @AttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '04bfac9b-6d1a-e089-446a-b2c604c76764')
+  DECLARE @DefinedTypeId int = (SELECT TOP 1 [Id] FROM [DefinedType] WHERE [Guid] = 'd4111631-6b42-1cbd-4019-427d6bc6f475')
+
+  INSERT INTO [AttributeQualifier] ([IsSystem], [AttributeId], [Key], [Value], [Guid])
+  VALUES
+  (0, @AttributeId, 'definedtype', @DefinedTypeId, '6B2F37DB-7237-BDA2-4297-0010040ED95D')
+
+  INSERT INTO [AttributeQualifier] ([IsSystem], [AttributeId], [Key], [Value], [Guid])
+  VALUES
+  (0, @AttributeId, 'allowmultiple', 'False', '1F4E58C7-BC92-6BB0-4E38-F0A0BAB06535')
+
+    INSERT INTO [AttributeQualifier] ([IsSystem], [AttributeId], [Key], [Value], [Guid])
+  VALUES
+  (0, @AttributeId, 'displaydescription', 'False', '102C4AFE-FF12-B890-46C8-362CFBDB9E87')" );
+
 
             // update the topic attribute and meeting time to not be a system ones
             Sql( @"
@@ -619,6 +635,11 @@ namespace Rock.Migrations
 
             // add attribute value for attendance detail
             RockMigrationHelper.AddBlockAttributeValue( "82B107C3-AF97-4476-879C-198C56100C73", "747E9320-C85D-42F2-8298-52E65A5F9F5C", "0C00CD89-BF4C-4B19-9B0D-E1FA2CFF5DD7" );
+
+            // add detail pages to the group list blocks
+            RockMigrationHelper.AddBlockAttributeValue( "F66FF6E0-B345-426A-B2C0-A2AA59E11771", "13921BE2-C0D4-4FD6-841F-36022B56DB54", "4D84E1B1-6BA0-4F04-A9F3-DD07A6CF3F38" );
+            RockMigrationHelper.AddBlockAttributeValue( "D9E42DA3-1139-4D5E-83B6-12882BD403AE", "13921BE2-C0D4-4FD6-841F-36022B56DB54", "4D84E1B1-6BA0-4F04-A9F3-DD07A6CF3F38" );
+        
         }
 
         /// <summary>
