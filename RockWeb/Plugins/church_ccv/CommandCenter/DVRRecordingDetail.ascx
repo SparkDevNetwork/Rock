@@ -170,9 +170,7 @@
     function GetVideoStartTime() {
         recordingstarttime = $f("player").getTime().toString();
 
-        var time = recordingstarttime.split('.', 1);
-        time = Math.floor(time / 60).toFixed(0) + ":" + (time % 60);
-
+        var time = FormatSecondsToTime(recordingstarttime);
         $('#starttime').val(time.toString());
 
         CalculateTotalAndUrl();
@@ -182,8 +180,7 @@
     function GetVideoEndTime() {
         recordingduration = $f("player").getTime().toString();
 
-        var time = recordingduration.split('.', 1);
-        time = Math.floor(time / 60).toFixed(0) + ":" + (time % 60);
+        var time = FormatSecondsToTime(recordingduration);
 
         $('#endtime').val(time.toString());
 
@@ -198,8 +195,7 @@
             // calculate total time
             recordingtotaltime = recordingduration - recordingstarttime;
 
-            var total = recordingtotaltime.toString().split('.', 1);
-            total = Math.floor(total / 60).toFixed(0) + ":" + (total % 60);
+            var total = FormatSecondsToTime(recordingtotaltime);
 
             $("#totaltime").val(total);
 
@@ -207,6 +203,20 @@
             var url = baseUrl + '?ClipUrl=' + recordingurl + '&ClipStart=' + Math.floor(recordingstarttime*1000) + '&ClipDuration=' + Math.floor((recordingduration*1000) - (recordingstarttime*1000));
             $(".js-urltextbox").val(url);
         }
+    }
+
+    // Takes the amount of seconds and formats it into a proper time format
+    function FormatSecondsToTime(inputseconds) {
+        var sec_num = parseInt(inputseconds, 10); // don't forget the second param
+        var hours = Math.floor(sec_num / 3600);
+        var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+        var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+        if (hours < 10) { hours = "0" + hours; }
+        if (minutes < 10) { minutes = "0" + minutes; }
+        if (seconds < 10) { seconds = "0" + seconds; }
+        var time = hours + ':' + minutes + ':' + seconds;
+        return time;
     }
 
 </script>
