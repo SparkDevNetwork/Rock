@@ -116,8 +116,6 @@ namespace Rock.Migrations
             //
             RockMigrationHelper.AddPage( "C0854F84-2E8B-479C-A3FB-6B47BE89B795", "325B7BFD-8B80-44FD-A951-4E4763DA6C0D", "Group Toolbox", "", "4D84E1B1-6BA0-4F04-A9F3-DD07A6CF3F38", "" ); // Site:External Website
             RockMigrationHelper.AddPage( "4D84E1B1-6BA0-4F04-A9F3-DD07A6CF3F38", "325B7BFD-8B80-44FD-A951-4E4763DA6C0D", "Group Attendance", "", "00D2DCE6-D9C0-47A0-BAE1-4591779AE2E1", "" ); // Site:External Website
-            RockMigrationHelper.UpdateBlockType( "Group Attendance Detail", "Lists the group members for a specific occurrence datetime and allows selecting if they attended or not.", "~/Blocks/Groups/GroupAttendanceDetail.ascx", "Groups", "822B5309-2C48-4E6E-B5E1-B4BBFD84CA30" );
-            RockMigrationHelper.UpdateBlockType( "Group Attendance List", "Lists all the scheduled occurrences for a given group.", "~/Blocks/Groups/GroupAttendanceList.ascx", "Groups", "2BE0283D-2842-4B7D-A354-395B4048DB25" );
             RockMigrationHelper.UpdateBlockType( "Group Detail Lava", "Presents the details of a group using Lava", "~/Blocks/Groups/GroupDetailLava.ascx", "Groups", "218B057F-B214-4317-8E84-7A95CF88067E" );
             RockMigrationHelper.UpdateBlockType( "Group Finder", "Block for people to find a group that matches their search parameters.", "~/Blocks/Groups/GroupFinder.ascx", "Groups", "9F8F2D68-DEEA-4686-810F-AB32923F855E" );
             RockMigrationHelper.UpdateBlockType( "Group List Personalized Lava", "Lists all group that the person is a member of using a Lava template.", "~/Blocks/Groups/GroupListPersonalizedLava.ascx", "Groups", "1B172C33-8672-4C98-A995-8E123FF316BD" );
@@ -132,7 +130,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlock( "4D84E1B1-6BA0-4F04-A9F3-DD07A6CF3F38", "", "218B057F-B214-4317-8E84-7A95CF88067E", "Group Detail Lava", "Main", "", "", 0, "1EDDD8D0-5B7A-4148-8AE6-182863048AC5" );
 
             // Add Block to Page: Group Attendance, Site: External Website
-            RockMigrationHelper.AddBlock( "00D2DCE6-D9C0-47A0-BAE1-4591779AE2E1", "", "2BE0283D-2842-4B7D-A354-395B4048DB25", "Group Attendance List", "Main", "", "", 1, "82B107C3-AF97-4476-879C-198C56100C73" );
+            RockMigrationHelper.AddBlock( "00D2DCE6-D9C0-47A0-BAE1-4591779AE2E1", "", "5C547728-38C2-420A-8602-3CDAAC369247", "Group Attendance List", "Main", "", "", 1, "82B107C3-AF97-4476-879C-198C56100C73" );
 
             // Add Block to Page: Small Groups, Site: External Website
             RockMigrationHelper.AddBlock( "EA515FD1-7D71-4E24-A09D-EA9EC34BEC71", "", "9F8F2D68-DEEA-4686-810F-AB32923F855E", "Group Finder", "Main", "", "", 1, "7332DD26-D5F5-4736-BFCF-FC4AD97DD571" );
@@ -187,9 +185,6 @@ namespace Rock.Migrations
 
             // Attrib for BlockType: Group Detail Lava:Person Detail Page
             RockMigrationHelper.AddBlockTypeAttribute( "218B057F-B214-4317-8E84-7A95CF88067E", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Person Detail Page", "PersonDetailPage", "", "Page to link to for more information on a group member.", 0, @"", "6B23DC5D-3E1B-41CE-912E-7DE231B5B2F3" );
-
-            // Attrib for BlockType: Group Attendance List:Detail Page
-            RockMigrationHelper.AddBlockTypeAttribute( "2BE0283D-2842-4B7D-A354-395B4048DB25", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPage", "", "", 0, @"", "747E9320-C85D-42F2-8298-52E65A5F9F5C" );
 
             // Attrib for BlockType: Group Finder:Attribute Filters
             RockMigrationHelper.AddBlockTypeAttribute( "9F8F2D68-DEEA-4686-810F-AB32923F855E", "99B090AA-4D7E-46D8-B393-BF945EA1BA8B", "Attribute Filters", "AttributeFilters", "", "", 0, @"", "380D0978-AF4F-4EEC-B872-56F0FB9F91E4" );
@@ -619,7 +614,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlock( "0C00CD89-BF4C-4B19-9B0D-E1FA2CFF5DD7", "", "1B172C33-8672-4C98-A995-8E123FF316BD", "Group List", "Sidebar1", "", "", 0, "D9E42DA3-1139-4D5E-83B6-12882BD403AE" );
 
             // Add Block to Page: Group Attendance Detail, Site: External Website
-            RockMigrationHelper.AddBlock( "0C00CD89-BF4C-4B19-9B0D-E1FA2CFF5DD7", "", "822B5309-2C48-4E6E-B5E1-B4BBFD84CA30", "Group Attendance Detail", "Main", "", "", 0, "129EF990-DB27-462C-A33E-368E5A84EF4A" );
+            RockMigrationHelper.AddBlock( "0C00CD89-BF4C-4B19-9B0D-E1FA2CFF5DD7", "", "FC6B5DC8-3A90-4D78-8DC2-7F7698A6E73B", "Group Attendance Detail", "Main", "", "", 0, "129EF990-DB27-462C-A33E-368E5A84EF4A" );
 
             // Attrib Value for Block:Group List, Attribute:Lava Template Page: Group Attendance Detail, Site: External Website
             RockMigrationHelper.AddBlockAttributeValue( "D9E42DA3-1139-4D5E-83B6-12882BD403AE", "C7EC3847-7419-4364-98E8-09FE42A04A76", @"{% include '~~/Assets/Lava/GroupListSidebar.lava' %}" );
@@ -635,11 +630,6 @@ namespace Rock.Migrations
 
             // add attribute value for attendance detail
             RockMigrationHelper.AddBlockAttributeValue( "82B107C3-AF97-4476-879C-198C56100C73", "747E9320-C85D-42F2-8298-52E65A5F9F5C", "0C00CD89-BF4C-4B19-9B0D-E1FA2CFF5DD7" );
-
-            // add detail pages to the group list blocks
-            RockMigrationHelper.AddBlockAttributeValue( "F66FF6E0-B345-426A-B2C0-A2AA59E11771", "13921BE2-C0D4-4FD6-841F-36022B56DB54", "4D84E1B1-6BA0-4F04-A9F3-DD07A6CF3F38" );
-            RockMigrationHelper.AddBlockAttributeValue( "D9E42DA3-1139-4D5E-83B6-12882BD403AE", "13921BE2-C0D4-4FD6-841F-36022B56DB54", "4D84E1B1-6BA0-4F04-A9F3-DD07A6CF3F38" );
-        
         }
 
         /// <summary>
@@ -778,8 +768,6 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteBlockType( "1B172C33-8672-4C98-A995-8E123FF316BD" ); // Group List Personalized Lava
             RockMigrationHelper.DeleteBlockType( "9F8F2D68-DEEA-4686-810F-AB32923F855E" ); // Group Finder
             RockMigrationHelper.DeleteBlockType( "218B057F-B214-4317-8E84-7A95CF88067E" ); // Group Detail Lava
-            RockMigrationHelper.DeleteBlockType( "2BE0283D-2842-4B7D-A354-395B4048DB25" ); // Group Attendance List
-            RockMigrationHelper.DeleteBlockType( "822B5309-2C48-4E6E-B5E1-B4BBFD84CA30" ); // Group Attendance Detail
             RockMigrationHelper.DeletePage( "00D2DCE6-D9C0-47A0-BAE1-4591779AE2E1" ); //  Page: Group Attendance, Layout: LeftSidebar, Site: External Website
             RockMigrationHelper.DeletePage( "4D84E1B1-6BA0-4F04-A9F3-DD07A6CF3F38" ); //  Page: Group Toolbox, Layout: LeftSidebar, Site: External Website
 
