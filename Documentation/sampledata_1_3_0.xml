@@ -337,7 +337,72 @@
 
     </family>
 
+    <family name="Smith Family" guid="A93BA69D-FC5E-4F03-B6AE-87CD49D5202D" campus="main campus">
+      <addresses>
+        <address type="home" street1="3935 E Rough Rider Rd" street2="" city="Phoenix" state="AZ" postalCode="85050" lat="33.6878242" long="-111.9908905" />
+      </addresses>
 
+      <members>
+        <person guid="D7CE30DF-58F8-4268-BA19-56FDF17D3890"
+          firstName="Paul" nickName="Paul" lastName="Smith" birthDate="2/27/1995" age="20" gender="male"
+          email="paul@rocksolidchurchdemo.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="attendee" maritalStatus="single" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/smith_paul.jpg"
+          homePhone="" mobilePhone="623-555-9981" workPhone="">
+          <attributes>
+            <attribute Employer="Arizona State University"/>
+            <attribute Position="Teacher"/>
+            
+            <attribute AdaptiveD="7"/>
+            <attribute AdaptiveI="18"/>
+            <attribute AdaptiveS="32"/>
+            <attribute AdaptiveC="43"/>
+            <attribute NaturalD="26"/>
+            <attribute NaturalI="18"/>
+            <attribute NaturalS="28"/>
+            <attribute NaturalC="28"/>
+            <attribute LastSaveDate="12/2/2014"/>
+            <attribute PersonalityType="SC"/>
+
+          </attributes>
+        </person>
+      </members>
+      
+    </family>
+
+    <family name="McClintock Family" guid="6296F68F-E89B-4DCA-90E2-5DA5141DC662" campus="main campus">
+      <addresses>
+        <address type="home" street1="3944 E Cat Balue Dr" street2="" city="Phoenix" state="AZ" postalCode="85050" lat="33.685314" long="-111.991045" />
+      </addresses>
+
+      <members>
+        <person guid="A08C02C7-ED75-4F24-8F75-FB3956521804"
+          firstName="Taylor" nickName="Ty" lastName="McClintock" birthDate="7/1/1995" age="20" gender="male"
+          email="taylor@rocksolidchurchdemo.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="attendee" maritalStatus="single" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/mcclintock_taylor.jpg"
+          homePhone="" mobilePhone="623-555-9876" workPhone="">
+          <attributes>
+            <attribute Employer="Arizona State University"/>
+            <attribute Position="Graduate Assistant"/>
+
+            <attribute AdaptiveD="46"/>
+            <attribute AdaptiveI="18"/>
+            <attribute AdaptiveS="7"/>
+            <attribute AdaptiveC="29"/>
+            <attribute NaturalD="28"/>
+            <attribute NaturalI="22"/>
+            <attribute NaturalS="21"/>
+            <attribute NaturalC="29"/>
+            <attribute LastSaveDate="12/2/2014"/>
+            <attribute PersonalityType="CD"/>
+            
+          </attributes>
+        </person>
+      </members>
+
+    </family>
+    
   </families>
 
   <relationships>
@@ -386,6 +451,14 @@
       <person fullname="Peter Foster" guid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C" isLeader="true"/>
       <person fullname="Thomas Miller" guid="955BF3E9-D38A-4DCB-A6F2-EDF5EC2571C5"/>
       <person fullname="James Simmons" guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33"/>
+    </group>
+
+    <group type="smallgroup" name="ASU Student Group" guid="CD65C668-B324-4F41-BBB7-BEC9C62233F1" parentGroupGuid="3CBC1A3F-DD26-430A-9B53-B476CB385ABC"
+
+        studyTopic="Students of the Bible" groupSchedule="weekly,Saturday,13:00:00"
+        description ="We hang out and study the bible in an informal way.">
+      <person fullname="Paul Smith" guid="D7CE30DF-58F8-4268-BA19-56FDF17D3890"/>
+      <person fullname="Taylor McClintock" guid="A08C02C7-ED75-4F24-8F75-FB3956521804"/>
     </group>
     
   </groups>
