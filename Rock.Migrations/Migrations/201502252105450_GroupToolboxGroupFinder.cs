@@ -629,7 +629,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "D9E42DA3-1139-4D5E-83B6-12882BD403AE", "04AA4BAE-9E55-45C2-ABAB-F85B1F81596E", @"" );
 
             // add attribute value for attendance detail
-            RockMigrationHelper.AddBlockAttributeValue( "82B107C3-AF97-4476-879C-198C56100C73", "747E9320-C85D-42F2-8298-52E65A5F9F5C", "0C00CD89-BF4C-4B19-9B0D-E1FA2CFF5DD7" );
+            RockMigrationHelper.AddBlockAttributeValue( "82B107C3-AF97-4476-879C-198C56100C73", "15299237-7F47-404D-BEFF-460F7818D3D7", "0C00CD89-BF4C-4B19-9B0D-E1FA2CFF5DD7" );
         }
 
         /// <summary>
