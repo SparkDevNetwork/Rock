@@ -6,8 +6,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title pull-left">Benevolence Request
-                </h1>
+                <h1 class="panel-title pull-left"><i class="fa fa-paste"></i> Benevolence Request</h1>
 
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlStatus" runat="server" LabelType="Default" Text="Pending" />
@@ -47,14 +46,14 @@
                 <Rock:Grid ID="gResults" runat="server" DisplayType="Light" AllowSorting="true" ShowActionRow="true" RowItemText="Result" AllowPaging="false">
                     <Columns>
                         <Rock:RockBoundField DataField="ResultTypeName" HeaderText="Result Type" SortExpression="ResultType" />
-                        <Rock:RockBoundField DataField="Amount" HeaderText="Amount" DataFormatString="{0:C}" SortExpression="Amount" />
+                        <Rock:CurrencyField DataField="Amount" HeaderText="Amount" SortExpression="Amount" />
                         <Rock:RockBoundField DataField="ResultSummary" HeaderText="Details" SortExpression="Details" />
                         <Rock:DeleteField OnClick="gResults_DeleteClick" />
                     </Columns>
                 </Rock:Grid>
 
                 <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
-                <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" OnClick="lbCancel_Click" />
+                <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancel_Click" />
 
             </div>
 
@@ -63,9 +62,16 @@
         <Rock:ModalDialog ID="mdAddResult" runat="server" ScrollbarEnabled="false" SaveButtonText="Add" OnSaveClick="btnAddResults_Click" Title="Benevolence Request Result" ValidationGroup="valResult">
             <Content>
                 <asp:ValidationSummary ID="valResultsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="valResult" />
-                <Rock:RockDropDownList ID="ddlResultType" runat="server" Label="Result Type" ValidationGroup="valResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" PropertyName="ResultTypeValue" />
-                <Rock:DataTextBox ID="dtbAmount" runat="server" Label="Amount" ValidationGroup="valResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" PropertyName="Amount" />
-                <Rock:DataTextBox ID="dtbResultSummary" runat="server" Label="Details" ValidationGroup="valResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" PropertyName="ResultSummary" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockDropDownList ID="ddlResultType" runat="server" Label="Result Type" ValidationGroup="valResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" PropertyName="ResultTypeValue" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:CurrencyBox ID="dtbAmount" runat="server" Label="Amount" ValidationGroup="valResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" PropertyName="Amount" />
+                    </div>
+                </div>
+
+                <Rock:DataTextBox ID="dtbResultSummary" runat="server" Label="Details" ValidationGroup="valResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" TextMode="MultiLine" Rows="3" PropertyName="ResultSummary" />
             </Content>
         </Rock:ModalDialog>
 

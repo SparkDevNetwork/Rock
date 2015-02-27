@@ -270,6 +270,15 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Returns the global attribute value for the given key.
+        /// </summary>
+        /// <returns></returns>
+        public static string Value( string key )
+        {
+            return Read().GetValue( key );
+        }
+
+        /// <summary>
         /// Removes Global Attributes from cache
         /// </summary>
         public static void Flush()
