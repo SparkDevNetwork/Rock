@@ -51,149 +51,149 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Migrations\201412091659040_FacebookFriends.cs" />
-    <Compile Include="Migrations\201412091659040_FacebookFriends.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201412091659040_FacebookFriends.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201412091659040_FacebookFriends.Designer.cs">
       <DependentUpon>201412091659040_FacebookFriends.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201412112307047_GroupMemberListBinaryFileType.cs" />
-    <Compile Include="Migrations\201412112307047_GroupMemberListBinaryFileType.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201412112307047_GroupMemberListBinaryFileType.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201412112307047_GroupMemberListBinaryFileType.Designer.cs">
       <DependentUpon>201412112307047_GroupMemberListBinaryFileType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201412160006127_BinaryFileUrl.cs" />
-    <Compile Include="Migrations\201412160006127_BinaryFileUrl.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201412160006127_BinaryFileUrl.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201412160006127_BinaryFileUrl.Designer.cs">
       <DependentUpon>201412160006127_BinaryFileUrl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201412192231166_OrganizationUnit.cs" />
-    <Compile Include="Migrations\201412192231166_OrganizationUnit.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201412192231166_OrganizationUnit.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201412192231166_OrganizationUnit.Designer.cs">
       <DependentUpon>201412192231166_OrganizationUnit.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201412301436122_RestrictCheckinAdminSite.cs" />
-    <Compile Include="Migrations\201412301436122_RestrictCheckinAdminSite.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201412301436122_RestrictCheckinAdminSite.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201412301436122_RestrictCheckinAdminSite.Designer.cs">
       <DependentUpon>201412301436122_RestrictCheckinAdminSite.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201501051814547_WorkflowNotes.cs" />
-    <Compile Include="Migrations\201501051814547_WorkflowNotes.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501051814547_WorkflowNotes.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501051814547_WorkflowNotes.Designer.cs">
       <DependentUpon>201501051814547_WorkflowNotes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201501062218053_ExcludeOuGroupType.cs" />
-    <Compile Include="Migrations\201501062218053_ExcludeOuGroupType.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501062218053_ExcludeOuGroupType.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501062218053_ExcludeOuGroupType.Designer.cs">
       <DependentUpon>201501062218053_ExcludeOuGroupType.cs</DependentUpon>
     </Compile>
     <Compile Include="HotFixMigrations\001_FixLabelMergeFields.cs" />
-    <Compile Include="Migrations\201501071632548_GroupSavedAccount.cs" />
-    <Compile Include="Migrations\201501071632548_GroupSavedAccount.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501071632548_GroupSavedAccount.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501071632548_GroupSavedAccount.Designer.cs">
       <DependentUpon>201501071632548_GroupSavedAccount.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201501072220452_OuGroupTypeUpdates.cs" />
-    <Compile Include="Migrations\201501072220452_OuGroupTypeUpdates.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501072220452_OuGroupTypeUpdates.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501072220452_OuGroupTypeUpdates.Designer.cs">
       <DependentUpon>201501072220452_OuGroupTypeUpdates.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201501092131155_WorkflowButtonsUpdate.cs" />
-    <Compile Include="Migrations\201501092131155_WorkflowButtonsUpdate.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501092131155_WorkflowButtonsUpdate.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501092131155_WorkflowButtonsUpdate.Designer.cs">
       <DependentUpon>201501092131155_WorkflowButtonsUpdate.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201501102154046_RockShopPages.cs" />
-    <Compile Include="Migrations\201501102154046_RockShopPages.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501102154046_RockShopPages.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501102154046_RockShopPages.Designer.cs">
       <DependentUpon>201501102154046_RockShopPages.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201501141430064_WorkflowNotes2.cs" />
-    <Compile Include="Migrations\201501141430064_WorkflowNotes2.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501141430064_WorkflowNotes2.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501141430064_WorkflowNotes2.Designer.cs">
       <DependentUpon>201501141430064_WorkflowNotes2.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201501151001546_ContentLastModified.cs" />
-    <Compile Include="Migrations\201501151001546_ContentLastModified.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501151001546_ContentLastModified.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501151001546_ContentLastModified.Designer.cs">
       <DependentUpon>201501151001546_ContentLastModified.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201501161641360_BinaryFileStorageSettings.cs" />
-    <Compile Include="Migrations\201501161641360_BinaryFileStorageSettings.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501161641360_BinaryFileStorageSettings.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501161641360_BinaryFileStorageSettings.Designer.cs">
       <DependentUpon>201501161641360_BinaryFileStorageSettings.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201501212322501_NoteTypesPlusRollup.cs" />
-    <Compile Include="Migrations\201501212322501_NoteTypesPlusRollup.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501212322501_NoteTypesPlusRollup.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501212322501_NoteTypesPlusRollup.Designer.cs">
       <DependentUpon>201501212322501_NoteTypesPlusRollup.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201501241557366_BinaryFilePath.cs" />
-    <Compile Include="Migrations\201501241557366_BinaryFilePath.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501241557366_BinaryFilePath.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201501241557366_BinaryFilePath.Designer.cs">
       <DependentUpon>201501241557366_BinaryFilePath.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502051534068_GroupTypeRoleEditView.cs" />
-    <Compile Include="Migrations\201502051534068_GroupTypeRoleEditView.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502051534068_GroupTypeRoleEditView.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502051534068_GroupTypeRoleEditView.Designer.cs">
       <DependentUpon>201502051534068_GroupTypeRoleEditView.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502081716094_DateTimeFieldType.cs" />
-    <Compile Include="Migrations\201502081716094_DateTimeFieldType.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502081716094_DateTimeFieldType.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502081716094_DateTimeFieldType.Designer.cs">
       <DependentUpon>201502081716094_DateTimeFieldType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502082023094_SecurityRolesRename.cs" />
-    <Compile Include="Migrations\201502082023094_SecurityRolesRename.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502082023094_SecurityRolesRename.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502082023094_SecurityRolesRename.Designer.cs">
       <DependentUpon>201502082023094_SecurityRolesRename.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502082106367_UpdateSecuritySettings-PageNames.cs" />
-    <Compile Include="Migrations\201502082106367_UpdateSecuritySettings-PageNames.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502082106367_UpdateSecuritySettings-PageNames.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502082106367_UpdateSecuritySettings-PageNames.Designer.cs">
       <DependentUpon>201502082106367_UpdateSecuritySettings-PageNames.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502091626293_AddWorkflowNote.cs" />
-    <Compile Include="Migrations\201502091626293_AddWorkflowNote.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502091626293_AddWorkflowNote.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502091626293_AddWorkflowNote.Designer.cs">
       <DependentUpon>201502091626293_AddWorkflowNote.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502101527075_AddMySettingsPage.cs" />
-    <Compile Include="Migrations\201502101527075_AddMySettingsPage.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502101527075_AddMySettingsPage.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502101527075_AddMySettingsPage.Designer.cs">
       <DependentUpon>201502101527075_AddMySettingsPage.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502111638534_AddGradesDefinedValue.cs" />
-    <Compile Include="Migrations\201502111638534_AddGradesDefinedValue.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502111638534_AddGradesDefinedValue.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502111638534_AddGradesDefinedValue.Designer.cs">
       <DependentUpon>201502111638534_AddGradesDefinedValue.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502121151303_UpdateBackgroundCheckWF.cs" />
-    <Compile Include="Migrations\201502121151303_UpdateBackgroundCheckWF.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502121151303_UpdateBackgroundCheckWF.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502121151303_UpdateBackgroundCheckWF.Designer.cs">
       <DependentUpon>201502121151303_UpdateBackgroundCheckWF.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502121513468_GroupSchedule.cs" />
-    <Compile Include="Migrations\201502121513468_GroupSchedule.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502121513468_GroupSchedule.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502121513468_GroupSchedule.Designer.cs">
       <DependentUpon>201502121513468_GroupSchedule.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502131814119_GraduationYear.cs" />
-    <Compile Include="Migrations\201502131814119_GraduationYear.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502131814119_GraduationYear.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502131814119_GraduationYear.Designer.cs">
       <DependentUpon>201502131814119_GraduationYear.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502141343544_ScheduleTypes.cs" />
-    <Compile Include="Migrations\201502141343544_ScheduleTypes.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502141343544_ScheduleTypes.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502141343544_ScheduleTypes.Designer.cs">
       <DependentUpon>201502141343544_ScheduleTypes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502171622284_CascadeScheduleExclusion.cs" />
-    <Compile Include="Migrations\201502171622284_CascadeScheduleExclusion.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502171622284_CascadeScheduleExclusion.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502171622284_CascadeScheduleExclusion.Designer.cs">
       <DependentUpon>201502171622284_CascadeScheduleExclusion.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502181628400_SiteCommunicationPage.cs" />
-    <Compile Include="Migrations\201502181628400_SiteCommunicationPage.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502181628400_SiteCommunicationPage.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502181628400_SiteCommunicationPage.Designer.cs">
       <DependentUpon>201502181628400_SiteCommunicationPage.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502201729341_SendAttendanceReminder.cs" />
-    <Compile Include="Migrations\201502201729341_SendAttendanceReminder.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502201729341_SendAttendanceReminder.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502201729341_SendAttendanceReminder.Designer.cs">
       <DependentUpon>201502201729341_SendAttendanceReminder.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502202034342_CascadeFinancialTransactionImage.cs" />
-    <Compile Include="Migrations\201502202034342_CascadeFinancialTransactionImage.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502202034342_CascadeFinancialTransactionImage.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502202034342_CascadeFinancialTransactionImage.Designer.cs">
       <DependentUpon>201502202034342_CascadeFinancialTransactionImage.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502242100351_ValueAsPersonId.cs" />
-    <Compile Include="Migrations\201502242100351_ValueAsPersonId.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502242100351_ValueAsPersonId.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502242100351_ValueAsPersonId.Designer.cs">
       <DependentUpon>201502242100351_ValueAsPersonId.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502252105450_GroupToolboxGroupFinder.cs" />
-    <Compile Include="Migrations\201502252105450_GroupToolboxGroupFinder.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502252105450_GroupToolboxGroupFinder.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502252105450_GroupToolboxGroupFinder.Designer.cs">
       <DependentUpon>201502252105450_GroupToolboxGroupFinder.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502261828273_Benevolence.cs" />
-    <Compile Include="Migrations\201502261828273_Benevolence.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502261828273_Benevolence.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502261828273_Benevolence.Designer.cs">
       <DependentUpon>201502261828273_Benevolence.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502262153571_RemoveUnknownMaritalStatus.cs" />
-    <Compile Include="Migrations\201502262153571_RemoveUnknownMaritalStatus.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502262153571_RemoveUnknownMaritalStatus.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502262153571_RemoveUnknownMaritalStatus.Designer.cs">
       <DependentUpon>201502262153571_RemoveUnknownMaritalStatus.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201502281307465_AttendanceReminderJob.cs" />
-    <Compile Include="Migrations\201502281307465_AttendanceReminderJob.Designer.cs">
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502281307465_AttendanceReminderJob.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.0\201502281307465_AttendanceReminderJob.Designer.cs">
       <DependentUpon>201502281307465_AttendanceReminderJob.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.cs" />
@@ -1484,112 +1484,112 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201412091659040_FacebookFriends.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201412091659040_FacebookFriends.resx">
       <DependentUpon>201412091659040_FacebookFriends.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201412112307047_GroupMemberListBinaryFileType.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201412112307047_GroupMemberListBinaryFileType.resx">
       <DependentUpon>201412112307047_GroupMemberListBinaryFileType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201412160006127_BinaryFileUrl.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201412160006127_BinaryFileUrl.resx">
       <DependentUpon>201412160006127_BinaryFileUrl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201412192231166_OrganizationUnit.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201412192231166_OrganizationUnit.resx">
       <DependentUpon>201412192231166_OrganizationUnit.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201412301436122_RestrictCheckinAdminSite.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201412301436122_RestrictCheckinAdminSite.resx">
       <DependentUpon>201412301436122_RestrictCheckinAdminSite.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201501051814547_WorkflowNotes.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201501051814547_WorkflowNotes.resx">
       <DependentUpon>201501051814547_WorkflowNotes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201501062218053_ExcludeOuGroupType.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201501062218053_ExcludeOuGroupType.resx">
       <DependentUpon>201501062218053_ExcludeOuGroupType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201501071632548_GroupSavedAccount.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201501071632548_GroupSavedAccount.resx">
       <DependentUpon>201501071632548_GroupSavedAccount.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201501072220452_OuGroupTypeUpdates.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201501072220452_OuGroupTypeUpdates.resx">
       <DependentUpon>201501072220452_OuGroupTypeUpdates.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201501092131155_WorkflowButtonsUpdate.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201501092131155_WorkflowButtonsUpdate.resx">
       <DependentUpon>201501092131155_WorkflowButtonsUpdate.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201501102154046_RockShopPages.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201501102154046_RockShopPages.resx">
       <DependentUpon>201501102154046_RockShopPages.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201501141430064_WorkflowNotes2.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201501141430064_WorkflowNotes2.resx">
       <DependentUpon>201501141430064_WorkflowNotes2.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201501151001546_ContentLastModified.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201501151001546_ContentLastModified.resx">
       <DependentUpon>201501151001546_ContentLastModified.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201501161641360_BinaryFileStorageSettings.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201501161641360_BinaryFileStorageSettings.resx">
       <DependentUpon>201501161641360_BinaryFileStorageSettings.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201501212322501_NoteTypesPlusRollup.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201501212322501_NoteTypesPlusRollup.resx">
       <DependentUpon>201501212322501_NoteTypesPlusRollup.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201501241557366_BinaryFilePath.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201501241557366_BinaryFilePath.resx">
       <DependentUpon>201501241557366_BinaryFilePath.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502051534068_GroupTypeRoleEditView.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502051534068_GroupTypeRoleEditView.resx">
       <DependentUpon>201502051534068_GroupTypeRoleEditView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502081716094_DateTimeFieldType.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502081716094_DateTimeFieldType.resx">
       <DependentUpon>201502081716094_DateTimeFieldType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502082023094_SecurityRolesRename.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502082023094_SecurityRolesRename.resx">
       <DependentUpon>201502082023094_SecurityRolesRename.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502082106367_UpdateSecuritySettings-PageNames.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502082106367_UpdateSecuritySettings-PageNames.resx">
       <DependentUpon>201502082106367_UpdateSecuritySettings-PageNames.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502091626293_AddWorkflowNote.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502091626293_AddWorkflowNote.resx">
       <DependentUpon>201502091626293_AddWorkflowNote.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502101527075_AddMySettingsPage.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502101527075_AddMySettingsPage.resx">
       <DependentUpon>201502101527075_AddMySettingsPage.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502111638534_AddGradesDefinedValue.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502111638534_AddGradesDefinedValue.resx">
       <DependentUpon>201502111638534_AddGradesDefinedValue.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502121151303_UpdateBackgroundCheckWF.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502121151303_UpdateBackgroundCheckWF.resx">
       <DependentUpon>201502121151303_UpdateBackgroundCheckWF.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502121513468_GroupSchedule.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502121513468_GroupSchedule.resx">
       <DependentUpon>201502121513468_GroupSchedule.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502131814119_GraduationYear.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502131814119_GraduationYear.resx">
       <DependentUpon>201502131814119_GraduationYear.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502141343544_ScheduleTypes.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502141343544_ScheduleTypes.resx">
       <DependentUpon>201502141343544_ScheduleTypes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502171622284_CascadeScheduleExclusion.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502171622284_CascadeScheduleExclusion.resx">
       <DependentUpon>201502171622284_CascadeScheduleExclusion.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502181628400_SiteCommunicationPage.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502181628400_SiteCommunicationPage.resx">
       <DependentUpon>201502181628400_SiteCommunicationPage.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502201729341_SendAttendanceReminder.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502201729341_SendAttendanceReminder.resx">
       <DependentUpon>201502201729341_SendAttendanceReminder.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502202034342_CascadeFinancialTransactionImage.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502202034342_CascadeFinancialTransactionImage.resx">
       <DependentUpon>201502202034342_CascadeFinancialTransactionImage.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502242100351_ValueAsPersonId.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502242100351_ValueAsPersonId.resx">
       <DependentUpon>201502242100351_ValueAsPersonId.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502252105450_GroupToolboxGroupFinder.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502252105450_GroupToolboxGroupFinder.resx">
       <DependentUpon>201502252105450_GroupToolboxGroupFinder.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502261828273_Benevolence.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502261828273_Benevolence.resx">
       <DependentUpon>201502261828273_Benevolence.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502262153571_RemoveUnknownMaritalStatus.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502262153571_RemoveUnknownMaritalStatus.resx">
       <DependentUpon>201502262153571_RemoveUnknownMaritalStatus.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502281307465_AttendanceReminderJob.resx">
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201502281307465_AttendanceReminderJob.resx">
       <DependentUpon>201502281307465_AttendanceReminderJob.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.resx">
