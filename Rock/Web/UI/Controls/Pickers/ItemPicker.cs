@@ -655,8 +655,6 @@ namespace Rock.Web.UI.Controls
                 // closing div of picker-menu
                 writer.RenderEndTag();
 
-                RenderChildPickerControls( writer );
-
                 // closing div of picker
                 writer.RenderEndTag();
 
@@ -675,15 +673,6 @@ namespace Rock.Web.UI.Controls
                 writer.WriteLine();
                 writer.RenderEndTag();
             }
-        }
-
-        /// <summary>
-        /// Renders the child picker controls in the right spot
-        /// </summary>
-        /// <param name="writer">The writer.</param>
-        public virtual void RenderChildPickerControls( HtmlTextWriter writer )
-        {
-            // picker that inherit from ItemPicker can use this to render in the right spot
         }
 
         /// <summary>

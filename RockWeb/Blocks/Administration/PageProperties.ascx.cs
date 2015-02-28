@@ -269,9 +269,9 @@ namespace RockWeb.Blocks.Administration
                 var page = pageService.Get( _pageId.Value );
 
                 // validate/check for removed routes
-                string[] editorRoutes = tbPageRoute.Text.SplitDelimitedValues();
+                var editorRoutes = tbPageRoute.Text.SplitDelimitedValues().Distinct();
                 var databasePageRoutes = page.PageRoutes.ToList();
-                var deletedRoutes = new List<string>();
+                var deletedRouteIds = new List<int>();
                 var addedRoutes = new List<string>();
 
                 // validate if removed routes can be deleted
@@ -306,7 +306,7 @@ namespace RockWeb.Blocks.Administration
                         page.PageRoutes.Remove( pageRoute );
 
                         routeService.Delete( pageRoute );
-                        deletedRoutes.Add( pageRoute.Route );
+                        deletedRouteIds.Add( pageRoute.Id );
                     }
                 }
 
@@ -403,19 +403,28 @@ namespace RockWeb.Blocks.Administration
                 {
                     rockContext.SaveChanges();
 
+                    // remove any routes that were deleted
+                    foreach (var deletedRouteId in deletedRouteIds )
+                    {
+                        var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == deletedRouteId );
+                        if ( existingRoute != null )
+                        {
+                            RouteTable.Routes.Remove( existingRoute );
+                        }
+                    }
+
+                    // ensure that there aren't any other extra routes for this page in the RouteTable
+                    foreach (var routeTableRoute in RouteTable.Routes.OfType<Route>().Where(a => a.PageId() == page.Id))
+                    {
+                        if ( !editorRoutes.Any( a => a == routeTableRoute.Url ) )
+                        {
+                            RouteTable.Routes.Remove( routeTableRoute );
+                        }
+                    }
+
+                    // Add any routes that were added
                     foreach ( var pageRoute in new PageRouteService( rockContext ).GetByPageId( page.Id ) )
                     {
-                        // remove any routes that were deleted
-                        if ( deletedRoutes.Contains( pageRoute.Route ) )
-                        {
-                            var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == pageRoute.Id );
-                            if ( existingRoute != null )
-                            {
-                                RouteTable.Routes.Remove( existingRoute );
-                            }
-                        }
-
-                        // Add any routes that were added
                         if ( addedRoutes.Contains( pageRoute.Route ) )
                         {
                             RouteTable.Routes.AddPageRoute( pageRoute );

@@ -135,18 +135,12 @@ namespace Rock.Rest.Controllers
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        [EnableQuery]
+        [EnableQuery(MaxExpansionDepth=4)]
         [HttpGet]
         [System.Web.Http.Route( "api/Groups/GetFamilies/{personId}" )]
         public IQueryable<Group> GetFamilies( int personId )
         {
-            Guid groupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-
-            return ( (GroupService)Service )
-                .Queryable( "Campus,GroupLocations.Location,Members.GroupRole" )
-                .Where( g =>
-                    g.GroupType.Guid.Equals( groupTypeGuid ) &&
-                    g.Members.Select( m => m.PersonId ).Contains( personId ) );
+            return new PersonService( (RockContext)Service.Context ).GetFamilies( personId );
         }
 
         /// <summary>

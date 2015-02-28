@@ -138,7 +138,7 @@
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
-        <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Person" Content-Height="380" ValidationGroup="AddPerson" >
+        <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Person" ValidationGroup="AddPerson" >
             <Content>
 
                 <asp:HiddenField ID="hfActiveTab" runat="server" />
@@ -154,44 +154,30 @@
 
                     <div id="divNewPerson" runat="server" class="tab-pane active">
                         <div class="row">
-                            <div class="col-md-4">
-                                <fieldset>
+                            <div class="col-sm-4">
+                                <div class="well">
+                                    <Rock:RockDropDownList ID="ddlNewPersonTitle" runat="server" Label="Title" ValidationGroup="AddPerson" CssClass="input-width-md" />
                                     <Rock:RockTextBox ID="tbNewPersonFirstName" runat="server" Label="First Name" ValidationGroup="AddPerson" />
-                                </fieldset>
-                            </div>
-                            <div class="col-md-4">
-                                <fieldset>
                                     <Rock:RockTextBox ID="tbNewPersonLastName" runat="server" Label="Last Name" ValidationGroup="AddPerson" />
-                                </fieldset>
+                                    <Rock:RockDropDownList ID="ddlNewPersonSuffix" runat="server" Label="Suffix" ValidationGroup="AddPerson" CssClass="input-width-md" />
+                                </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <fieldset>
-                                    <Rock:RockDropDownList ID="ddlNewPersonGender" runat="server" Label="Gender" ValidationGroup="AddPerson"/>
-                                </fieldset>
-                            </div>
-                            <div class="col-md-4">
-                                <fieldset>
-                                    <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" Label="Birthdate" ValidationGroup="AddPerson"/>
-                                </fieldset>
-                            </div>
-                        </div>
-                        <div class="row">
-                            
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <fieldset>
-                                    <Rock:RockRadioButtonList ID="rblNewPersonConnectionStatus" runat="server" Label="Connection Status" Required="true" ValidationGroup="AddPerson"/>
-                                </fieldset>
-                            </div>
-                            <div class="col-md-4">
-                                <fieldset>
+                            <div class="col-sm-4">
+                                <div class="well">
+                                    <Rock:RockDropDownList ID="ddlNewPersonConnectionStatus" runat="server" Label="Connection Status" ValidationGroup="AddPerson"/>
                                     <Rock:RockRadioButtonList ID="rblNewPersonRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" ValidationGroup="AddPerson"/>
-                                </fieldset>
+                                    <Rock:RockRadioButtonList ID="rblNewPersonGender" runat="server" Required="true" Label="Gender" RepeatDirection="Horizontal" ValidationGroup="AddPerson"/>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="well">
+                                    <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" Label="Birthdate" ValidationGroup="AddPerson"/>
+                                    <Rock:GradePicker ID="ddlGradePicker" runat="server" Label="Grade" ValidationGroup="AddPerson" UseAbbreviation="true" UseGradeOffsetAsValue="true" />
+                                    <Rock:RockDropDownList ID="ddlNewPersonMaritalStatus" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Marital Status"  ValidationGroup="AddPerson"/>
+                                </div>
                             </div>
                         </div>
+
                     </div>
 
                     <div id="divExistingPerson" runat="server" class="tab-pane">
@@ -214,13 +200,17 @@
                                 enableRequiredField('<%=ppPerson.RequiredFieldValidator.ClientID%>', true)
                                 enableRequiredField('<%=tbNewPersonFirstName.RequiredFieldValidator.ClientID%>', false);
                                 enableRequiredField('<%=tbNewPersonLastName.RequiredFieldValidator.ClientID%>', false);
-                                enableRequiredField('<%=rblNewPersonConnectionStatus.RequiredFieldValidator.ClientID%>', false);
+                                enableRequiredField('<%=rblNewPersonRole.RequiredFieldValidator.ClientID%>', false);
+                                enableRequiredField('<%=rblNewPersonGender.RequiredFieldValidator.ClientID%>', false);
+                                enableRequiredField('<%=ddlNewPersonConnectionStatus.RequiredFieldValidator.ClientID%>', false);
                             }
                             else {
                                 enableRequiredField('<%=ppPerson.RequiredFieldValidator.ClientID%>', false)
                                 enableRequiredField('<%=tbNewPersonFirstName.RequiredFieldValidator.ClientID%>', true);
                                 enableRequiredField('<%=tbNewPersonLastName.RequiredFieldValidator.ClientID%>', true);
-                                enableRequiredField('<%=rblNewPersonConnectionStatus.RequiredFieldValidator.ClientID%>', true);
+                                enableRequiredField('<%=rblNewPersonRole.RequiredFieldValidator.ClientID%>', true);
+                                enableRequiredField('<%=rblNewPersonGender.RequiredFieldValidator.ClientID%>', true);
+                                enableRequiredField('<%=ddlNewPersonConnectionStatus.RequiredFieldValidator.ClientID%>', true);
                             }
 
                             // update the scrollbar since our validation box could show

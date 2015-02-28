@@ -833,7 +833,7 @@ namespace RockWeb.Blocks.Communication
                     nbInvalidTransport.Visible = false;
                 }
 
-                cbBulk.Visible = component.SupportsBulkCommunication;
+                cbBulk.Visible = _fullMode && component.SupportsBulkCommunication;
 
                 return mediumControl;
             }
@@ -1073,15 +1073,9 @@ namespace RockWeb.Blocks.Communication
 
             nbResult.Text = message;
 
-            if ( CurrentPageReference.Parameters.ContainsKey( "CommunicationId" ) )
-            {
-                CurrentPageReference.Parameters["CommunicationId"] = communication.Id.ToString();
-            }
-            else
-            {
-                CurrentPageReference.Parameters.Add( "CommunicationId", communication.Id.ToString() );
-            }
+            CurrentPageReference.Parameters.AddOrReplace( "CommunicationId", communication.Id.ToString() );
             hlViewCommunication.NavigateUrl = CurrentPageReference.BuildUrl();
+            hlViewCommunication.Visible = this.Page.ControlsOfTypeRecursive<RockWeb.Blocks.Communication.CommunicationDetail>().Any();
 
             pnlResult.Visible = true;
 

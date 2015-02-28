@@ -136,10 +136,9 @@
                     $control.find('.picker-select-none').removeClass('rollover-item');
                     $control.find('.picker-select-none').hide();
 
-                    $control.find('.js-hide-on-select-none').hide();
+                    $control.siblings('.js-hide-on-select-none').hide();
 
                     $spanNames.text(self.options.defaultText);
-                    return false;
                 });
             },
             updateScrollbar: function () {

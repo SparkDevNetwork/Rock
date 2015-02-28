@@ -3,6 +3,7 @@
     iframeUrl += "?rootFolder=" + encodeURIComponent(editor.config.rockFileBrowserOptions.documentFolderRoot);
     iframeUrl += "&browserMode=doc";
     iframeUrl += "&fileTypeBlackList=" + encodeURIComponent(editor.config.rockFileBrowserOptions.fileTypeBlackList);
+    iframeUrl += "&theme=" + editor.config.rockTheme;
     return {
         title: 'Select File',
         minWidth: 1000,
