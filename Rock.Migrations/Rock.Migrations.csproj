@@ -192,6 +192,10 @@
     <Compile Include="Migrations\201502262153571_RemoveUnknownMaritalStatus.Designer.cs">
       <DependentUpon>201502262153571_RemoveUnknownMaritalStatus.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201502281307465_AttendanceReminderJob.cs" />
+    <Compile Include="Migrations\201502281307465_AttendanceReminderJob.Designer.cs">
+      <DependentUpon>201502281307465_AttendanceReminderJob.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.cs" />
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.Designer.cs">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
@@ -1584,6 +1588,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201502262153571_RemoveUnknownMaritalStatus.resx">
       <DependentUpon>201502262153571_RemoveUnknownMaritalStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201502281307465_AttendanceReminderJob.resx">
+      <DependentUpon>201502281307465_AttendanceReminderJob.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.resx">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
