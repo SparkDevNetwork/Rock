@@ -335,6 +335,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="configValues">The config values.</param>
+        /// <param name="currentPerson">The current person.</param>
         /// <returns></returns>
         private static string ResolveConfigValue( string value, Dictionary<string, object> configValues, Person currentPerson )
         {
