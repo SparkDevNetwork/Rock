@@ -63,7 +63,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the type of qualifier that is being used.
         /// </value>
         [Required]
-        [MaxLength( 50 )]
+        [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         [Index( "IX_AttributeIdKey", 1, IsUnique = true )]
         public string Key { get; set; }

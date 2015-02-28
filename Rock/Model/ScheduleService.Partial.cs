@@ -67,12 +67,13 @@ namespace Rock.Model
 
                 if ( schedule != null )
                 {
+                    var endDate = RockDateTime.Today.AddDays( 1 );
 
                     DDay.iCal.Event calEvent = schedule.GetCalenderEvent();
                     if ( calEvent != null )
                     {
                         // If schedule has an iCal schedule, get all the past occurrences 
-                        foreach ( var occurrence in calEvent.GetOccurrences( schedule.EffectiveStartDate.Value, RockDateTime.Now ) )
+                        foreach ( var occurrence in calEvent.GetOccurrences( schedule.EffectiveStartDate.Value, endDate ) )
                         {
                             occurrences.Add( new ScheduleOccurrence( occurrence, schedule.Id ) );
                         }
@@ -98,11 +99,11 @@ namespace Rock.Model
                             // Add the start time
                             if ( schedule.WeeklyTimeOfDay.HasValue )
                             {
-                                startDateTime.Add( schedule.WeeklyTimeOfDay.Value );
+                                startDateTime = startDateTime.Add( schedule.WeeklyTimeOfDay.Value );
                             }
 
                             // Create occurrences up to current time
-                            while ( startDateTime < RockDateTime.Now )
+                            while ( startDateTime < endDate )
                             {
                                 occurrences.Add( new ScheduleOccurrence( startDateTime, startDateTime.AddDays( 1 ), schedule.Id ) );
                                 startDateTime = startDateTime.AddDays( 7 );

@@ -100,7 +100,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the Key value that is used to reference and call the Attribute.
         /// </value>
         [Required]
-        [MaxLength( 50 )]
+        [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
         public string Key { get; set; }
         
