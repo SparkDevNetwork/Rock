@@ -817,7 +817,7 @@ namespace Rock.Model
         /// <summary>
         /// Sets the birth date, which will set the BirthMonth, BirthDay, and BirthYear values
         /// </summary>
-        /// <param name="birthDate">The birth date.</param>
+        /// <param name="value">The value.</param>
         public void SetBirthDate( DateTime? value )
         {
             if ( value.HasValue )

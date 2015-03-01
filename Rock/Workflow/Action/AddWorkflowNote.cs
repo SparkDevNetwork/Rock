@@ -66,7 +66,7 @@ namespace Rock.Workflow.Action
                 note.Caption = string.Empty;
                 note.Text = text;
 
-                var sourceType = DefinedValueCache.Read( GetAttributeValue( action, "NoteType" ) );
+                var  sourceType = DefinedValueCache.Read( GetAttributeValue( action, "NoteType" ) );
                 if ( sourceType != null )
                 {
                     note.SourceTypeValueId = sourceType.Id;

@@ -222,7 +222,7 @@ namespace RockWeb.Blocks.Finance
                         {
                             if ( result.Amount != null )
                             {
-                                stringBuilder.Append( String.Format( "<div class='row'>{0} ({1:C})</div>", result.ResultTypeValue, result.Amount ) );
+                                stringBuilder.Append( String.Format( "<div class='row'>{0} ({1}{2:0.00})</div>", result.ResultTypeValue, GlobalAttributesCache.Value("CurrencySymbol"), result.Amount ) );
                             }
                             else
                             {
@@ -306,7 +306,7 @@ namespace RockWeb.Blocks.Finance
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
-        {
+        {  
             phSummary.Controls.Clear();
             rFilter.Visible = true;
             gList.Visible = true;
@@ -397,9 +397,9 @@ namespace RockWeb.Blocks.Finance
             }
             foreach ( KeyValuePair<string, decimal> keyValuePair in resultTotals )
             {
-                phSummary.Controls.Add( new LiteralControl( String.Format( "<div class='row'><div class='col-md-12'>{0}: {1:C}</div></div>", keyValuePair.Key, keyValuePair.Value ) ) );
+                phSummary.Controls.Add( new LiteralControl( String.Format( "<div class='row'><div class='col-xs-8'>{0}: </div><div class='col-xs-4 text-right'>{1}{2:0.00}</div></div>", keyValuePair.Key, GlobalAttributesCache.Value( "CurrencySymbol" ), keyValuePair.Value ) ) );
             }
-            phSummary.Controls.Add( new LiteralControl( String.Format( "<div class='row'><div class='col-md-12'><b>Grand Total: {0:C}</b></div></div>", grandTotal ) ) );
+            phSummary.Controls.Add( new LiteralControl( String.Format( "<div class='row'><div class='col-xs-8'><b>Grand Total: </div><div class='col-xs-4 text-right'>{0}{1:0.00}</b></div></div>", GlobalAttributesCache.Value( "CurrencySymbol" ), grandTotal ) ) );
         }
 
         #endregion

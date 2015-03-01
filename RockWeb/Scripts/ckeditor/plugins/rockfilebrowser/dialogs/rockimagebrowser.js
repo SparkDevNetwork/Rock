@@ -4,6 +4,7 @@
     iframeUrl += "&browserMode=image";
     iframeUrl += "&fileTypeBlackList=" + encodeURIComponent(editor.config.rockFileBrowserOptions.fileTypeBlackList);
     iframeUrl += "&imageFileTypeWhiteList=" + encodeURIComponent(editor.config.rockFileBrowserOptions.imageFileTypeWhiteList);
+    iframeUrl += "&theme=" + editor.config.rockTheme;
     return {
         title: 'Select Image',
         minWidth: 1000,
