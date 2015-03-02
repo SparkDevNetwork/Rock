@@ -5008,6 +5008,10 @@ div.aspNetDisabled {
     4. Responsive Overrides 
 
 */
+html {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
 main {
   display: block;
 }

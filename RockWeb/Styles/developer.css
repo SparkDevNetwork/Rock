@@ -172,10 +172,3 @@ div.toggle-container {   /* ???? JME */
   color: #eca9a7;
   vertical-align: super;
 }
-
-
-/* NS Apply font smoothing and legibility to Rock (especially noticeable on Chrome for Windows) */
-html {
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-}

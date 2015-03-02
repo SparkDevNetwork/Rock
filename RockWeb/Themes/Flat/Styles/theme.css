@@ -5144,6 +5144,10 @@ html[xmlns] .slides {
     4. Flatly Theme
 
     */
+html {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
 main {
   display: block;
 }
