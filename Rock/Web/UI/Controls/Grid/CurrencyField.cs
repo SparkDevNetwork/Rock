@@ -22,33 +22,34 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// <see cref="Grid"/> Column to display a boolean value.
+    /// <see cref="Grid"/> Column to display a currency value using the Currency Symbol from Global Attributes
     /// </summary>
     [ToolboxData( "<{0}:CurrencyField runat=server></{0}:CurrencyField>" )]
     public class CurrencyField : RockBoundField
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BoolField" /> class.
+        /// Initializes a new instance of the <see cref="CurrencyField"/> class.
         /// </summary>
         public CurrencyField()
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+            this.DataFormatString = "{0:C}";
         }
 
         /// <summary>
-        /// Formats the specified field value for a cell in the <see cref="T:System.Web.UI.WebControls.BoundField"/> object.
+        /// Formats the specified field value for a cell in the <see cref="T:System.Web.UI.WebControls.BoundField" /> object.
         /// </summary>
         /// <param name="dataValue">The field value to format.</param>
         /// <param name="encode">true to encode the value; otherwise, false.</param>
         /// <returns>
-        /// The field value converted to the format specified by <see cref="P:System.Web.UI.WebControls.BoundField.DataFormatString"/>.
+        /// The field value converted to the format specified by <see cref="P:System.Web.UI.WebControls.BoundField.DataFormatString" />.
         /// </returns>
         protected override string FormatDataValue( object dataValue, bool encode )
         {
             string value = base.FormatDataValue( dataValue, encode );
 
-            return String.Format( "{0}{1}", GlobalAttributesCache.Value("CurrencySymbol"), value );
+            return String.Format( "{0}{1}", GlobalAttributesCache.Value( "CurrencySymbol" ), value );
         }
     }
 }

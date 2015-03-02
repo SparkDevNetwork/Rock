@@ -76,6 +76,17 @@ namespace Rock.Reporting.DataSelect.FinancialTransaction
         }
 
         /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
+        {
+            return new Rock.Web.UI.Controls.CurrencyField();
+        }
+
+        /// <summary>
         /// Gets the default column header text.
         /// </summary>
         /// <value>
