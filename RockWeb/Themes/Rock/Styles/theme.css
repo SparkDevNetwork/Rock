@@ -5205,6 +5205,10 @@ div.aspNetDisabled {
 /*#endregion */
 /*#region
 // 2. HTML Overrides         */
+html {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
 main {
   display: block;
 }
