@@ -34,7 +34,6 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
-            this.DataFormatString = "{0:C}";
         }
 
         /// <summary>
@@ -47,9 +46,7 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override string FormatDataValue( object dataValue, bool encode )
         {
-            string value = base.FormatDataValue( dataValue, encode );
-
-            return String.Format( "{0}{1}", GlobalAttributesCache.Value( "CurrencySymbol" ), value );
+            return String.Format( "{0}{1}", GlobalAttributesCache.Value( "CurrencySymbol" ), dataValue );
         }
     }
 }
