@@ -144,10 +144,6 @@ namespace Rock.Reporting
                             }
                         }
                     }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine( string.Format( "Unreported Entity PropertyType {0} for {1}", property.PropertyType.ToString(), property.Name ) );
-                    }
 
                     if ( entityField != null && entityField.FieldType != null )
                     {

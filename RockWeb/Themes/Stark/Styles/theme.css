@@ -174,6 +174,175 @@
 img.jcrop-preview {
   max-width: none;
 }
+/*
+    Used to manage styles related to the CMS admin UI for on page editing
+    
+    1. Zone Configuration
+    2. Module Configuration
+    3. Admin Footer
+    4. Responsive Rules
+*/
+.zone-instance.outline {
+  border: 1px dashed #909090;
+  /* todo */
+  min-height: 30px;
+  min-width: 50px;
+  position: relative;
+  margin: 1px;
+  border-radius: 3px;
+  float: left;
+  width: 100%;
+  z-index: 1049;
+}
+.zone-configuration {
+  background: #428bca;
+  border: 1px solid #3071a9;
+  border-radius: 4px;
+  cursor: pointer;
+  display: none;
+  height: 26px;
+  overflow: hidden;
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 25px;
+  z-index: 1000;
+  right: auto;
+}
+.zone-configuration p {
+  float: left;
+}
+.zone-configuration-bar {
+  color: #ecf0f3;
+  display: inline-block;
+  float: left;
+  left: 24px;
+  margin-left: 6px;
+  margin-right: -999em;
+  overflow: hidden;
+  position: absolute;
+}
+.zone-configuration-bar span {
+  display: block;
+  float: left;
+  font-size: 10px;
+  padding-right: 20px;
+  margin-top: 4px;
+}
+.block-configuration {
+  background: #428bca;
+  border: 1px solid #3071a9;
+  border-radius: 4px;
+  cursor: pointer;
+  display: none;
+  height: 26px;
+  overflow: hidden;
+  position: absolute;
+  top: 2px;
+  width: 26px;
+  z-index: 1049;
+}
+.block-instance.outline {
+  min-height: 36px;
+  clear: both;
+  display: block;
+  position: relative;
+}
+.config-bar {
+  -moz-box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4);
+}
+.config-bar > a {
+  text-decoration: none;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.config-bar a i.fa {
+  float: left;
+  margin-left: 5px;
+  margin-top: 3px;
+  font-size: 18px;
+  color: #ecf0f3;
+  margin-right: 10px;
+}
+.block-configuration-bar {
+  color: #ecf0f3;
+  display: inline-block;
+  float: left;
+  left: 24px;
+  margin-left: 6px;
+  margin-right: -999em;
+  overflow: hidden;
+  position: absolute;
+}
+.block-configuration-bar .btn {
+  margin-right: 12px;
+  color: #ecf0f3;
+  text-shadow: none;
+}
+.block-configuration-bar span {
+  display: block;
+  float: left;
+  font-size: 10px;
+  padding-right: 20px;
+  margin-top: 3px;
+}
+#cms-admin-footer {
+  bottom: 0;
+  width: 100%;
+  height: 26px;
+  z-index: 1001;
+  position: fixed;
+  right: 0;
+  margin-right: 0;
+  background: #428bca;
+  border-color: #3071a9;
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  color: #ecf0f3;
+  padding: 5px 12px 0 12px;
+  font-size: 80%;
+}
+#cms-admin-footer > span {
+  display: none;
+  text-align: center;
+  margin-bottom: 4px;
+}
+#cms-admin-footer .button-bar {
+  margin-top: -8px;
+  margin-left: 12px;
+  text-align: center;
+}
+#cms-admin-footer .button-bar a {
+  background-color: transparent;
+  background-image: none;
+  border: 0;
+}
+#cms-admin-footer .btn {
+  color: #ecf0f3;
+  box-shadow: none;
+  text-shadow: none;
+}
+@media (min-width: 768px) {
+  #cms-admin-footer {
+    height: 28px;
+    margin-right: 25px;
+    width: auto;
+  }
+  #cms-admin-footer > span {
+    display: block;
+    text-align: left;
+    float: left;
+  }
+  #cms-admin-footer .button-bar {
+    float: right;
+  }
+}
+/*
+    Used to manage styles related to modal dialog.
+
+*/
 /*!
  * Bootstrap Modal
  *
@@ -443,175 +612,6 @@ Copyright (c) 2012 Dan Eden*/
   -o-animation-name: shake;
   animation-name: shake;
 }
-/*
-    Used to manage styles related to the CMS admin UI for on page editing
-    
-    1. Zone Configuration
-    2. Module Configuration
-    3. Admin Footer
-    4. Responsive Rules
-*/
-.zone-instance.outline {
-  border: 1px dashed #909090;
-  /* todo */
-  min-height: 30px;
-  min-width: 50px;
-  position: relative;
-  margin: 1px;
-  border-radius: 3px;
-  float: left;
-  width: 100%;
-  z-index: 1049;
-}
-.zone-configuration {
-  background: #428bca;
-  border: 1px solid #3071a9;
-  border-radius: 4px;
-  cursor: pointer;
-  display: none;
-  height: 26px;
-  overflow: hidden;
-  position: absolute;
-  top: 1px;
-  left: 1px;
-  width: 25px;
-  z-index: 1000;
-  right: auto;
-}
-.zone-configuration p {
-  float: left;
-}
-.zone-configuration-bar {
-  color: #ecf0f3;
-  display: inline-block;
-  float: left;
-  left: 24px;
-  margin-left: 6px;
-  margin-right: -999em;
-  overflow: hidden;
-  position: absolute;
-}
-.zone-configuration-bar span {
-  display: block;
-  float: left;
-  font-size: 10px;
-  padding-right: 20px;
-  margin-top: 4px;
-}
-.block-configuration {
-  background: #428bca;
-  border: 1px solid #3071a9;
-  border-radius: 4px;
-  cursor: pointer;
-  display: none;
-  height: 26px;
-  overflow: hidden;
-  position: absolute;
-  top: 2px;
-  width: 26px;
-  z-index: 1049;
-}
-.block-instance.outline {
-  min-height: 36px;
-  clear: both;
-  display: block;
-  position: relative;
-}
-.config-bar {
-  -moz-box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4);
-  -webkit-box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4);
-  box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4);
-}
-.config-bar > a {
-  text-decoration: none;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-.config-bar a i.fa {
-  float: left;
-  margin-left: 5px;
-  margin-top: 3px;
-  font-size: 18px;
-  color: #ecf0f3;
-  margin-right: 10px;
-}
-.block-configuration-bar {
-  color: #ecf0f3;
-  display: inline-block;
-  float: left;
-  left: 24px;
-  margin-left: 6px;
-  margin-right: -999em;
-  overflow: hidden;
-  position: absolute;
-}
-.block-configuration-bar .btn {
-  margin-right: 12px;
-  color: #ecf0f3;
-  text-shadow: none;
-}
-.block-configuration-bar span {
-  display: block;
-  float: left;
-  font-size: 10px;
-  padding-right: 20px;
-  margin-top: 3px;
-}
-#cms-admin-footer {
-  bottom: 0;
-  width: 100%;
-  height: 26px;
-  z-index: 1001;
-  position: fixed;
-  right: 0;
-  margin-right: 0;
-  background: #428bca;
-  border-color: #3071a9;
-  border-width: 1px 1px 0 1px;
-  border-style: solid;
-  color: #ecf0f3;
-  padding: 5px 12px 0 12px;
-  font-size: 80%;
-}
-#cms-admin-footer > span {
-  display: none;
-  text-align: center;
-  margin-bottom: 4px;
-}
-#cms-admin-footer .button-bar {
-  margin-top: -8px;
-  margin-left: 12px;
-  text-align: center;
-}
-#cms-admin-footer .button-bar a {
-  background-color: transparent;
-  background-image: none;
-  border: 0;
-}
-#cms-admin-footer .btn {
-  color: #ecf0f3;
-  box-shadow: none;
-  text-shadow: none;
-}
-@media (min-width: 768px) {
-  #cms-admin-footer {
-    height: 28px;
-    margin-right: 25px;
-    width: auto;
-  }
-  #cms-admin-footer > span {
-    display: block;
-    text-align: left;
-    float: left;
-  }
-  #cms-admin-footer .button-bar {
-    float: right;
-  }
-}
-/*
-    Used to manage styles related to modal dialog.
-
-*/
 .modal-overflow.modal {
   top: 48px;
 }
@@ -675,10 +675,6 @@ Copyright (c) 2012 Dan Eden*/
   color: #555555;
   border-radius: 0 0 4px 4px;
 }
-.modal {
-  background-color: #ffffff;
-  margin-top: 20px;
-}
 .modal-body {
   padding: 8px 12px 12px 12px;
 }
@@ -695,19 +691,15 @@ Copyright (c) 2012 Dan Eden*/
   border: 0;
   display: block;
 }
-.modal.bootbox {
-  width: auto;
-}
 .bootbox .modal-dialog {
   margin: 0;
+  width: auto;
 }
-@media (max-width: 991px) {
-  .bootbox .modal-dialog {
-    width: auto;
-  }
-}
-.bootbox .modal-body {
-  padding-top: 20px;
+.modal-backdrop,
+.modal-backdrop.fade.in {
+  opacity: 0.7;
+  filter: alpha(opacity=70);
+  background: rgba(0, 0, 0, 0.3);
 }
 /*
     Used to manage styles related to reusable components / widgets.
@@ -1374,13 +1366,6 @@ div.tagsinput .tags_clear {
 fieldset .actions {
   margin-top: 12px;
 }
-/*.title {
-    font-weight: @title-default-weight;
-
-    .first-word {
-        font-weight: @title-firstword-weight;
-    }
-}*/
 .code-editor {
   position: relative;
 }
@@ -3531,7 +3516,7 @@ table.attribute-grid tr th:nth-child(3) {
   padding: 12px 0;
   border-bottom: 1px solid #e6e6e6;
   color: #333333;
-  margin-top: 12px;
+  min-height: 60px;
 }
 .personprofilebar-family a {
   color: #333333;
@@ -4737,7 +4722,7 @@ a.help {
   color: #6a6a6a;
 }
 .panel-block .panel-body .grid.grid-panel {
-  margin: -15px -15px -30px -15px;
+  margin: -15px;
 }
 .panel-block .panel-body .grid.grid-panel .grid-filter {
   border-radius: 0;
@@ -5023,6 +5008,10 @@ div.aspNetDisabled {
     4. Responsive Overrides 
 
 */
+html {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
 main {
   display: block;
 }

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Principal;
 using System.ServiceModel.Web;
 using System.Web;
 using System.Web.SessionState;
@@ -50,6 +51,31 @@ namespace RockWeb
         /// <exception cref="WebFaultException">Must be logged in</exception>
         public virtual void ProcessRequest( HttpContext context )
         {
+            if ( !context.User.Identity.IsAuthenticated )
+            {
+                // If not, see if there's a valid token
+                string authToken = context.Request.Headers["Authorization-Token"];
+                if ( string.IsNullOrWhiteSpace( authToken ) )
+                {
+                    authToken = context.Request.Params["apikey"];
+                }
+
+                if (!string.IsNullOrWhiteSpace(authToken))
+                {
+                    var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
+                    var userLogin = userLoginService.Queryable().Where( u => u.ApiKey == authToken ).FirstOrDefault();
+                    if ( userLogin != null )
+                    {
+                        var identity = new GenericIdentity( userLogin.UserName );
+                        var principal = new GenericPrincipal( identity, null );
+                        context.User = principal;
+                    }
+                }
+            }
+
+            var currentUser = UserLoginService.GetCurrentUser();
+            Person currentPerson = currentUser != null ? currentUser.Person : null;
+
             if ( !context.User.Identity.IsAuthenticated )
             {
                 throw new Rock.Web.FileUploadException( "Must be logged in", System.Net.HttpStatusCode.Forbidden );
@@ -187,7 +213,9 @@ namespace RockWeb
             var binaryFileService = new BinaryFileService( rockContext );
             var binaryFile = new BinaryFile();
             binaryFileService.Add( binaryFile );
-            binaryFile.IsTemporary = true;
+
+            // assume file is temporary unless specified otherwise so that files that don't end up getting used will get cleaned up
+            binaryFile.IsTemporary = context.Request.QueryString["IsTemporary"].AsBooleanOrNull() ?? true;
             binaryFile.BinaryFileTypeId = binaryFileType.Id;
             binaryFile.MimeType = uploadedFile.ContentType;
             binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );

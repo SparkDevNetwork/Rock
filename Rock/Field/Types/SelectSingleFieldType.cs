@@ -422,7 +422,7 @@ namespace Rock.Field.Types
         /// <remarks>
         /// Used only by enums ( See the EntityHelper.GetEntityFields() method )
         /// </remarks>
-        public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression, string propertyName, Type propertyType )
+        public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
         {
             List<string> selectedValues = filterValues[0].Split( new char[] {','}, StringSplitOptions.RemoveEmptyEntries ).ToList();
             if ( selectedValues.Any() )

@@ -67,6 +67,7 @@ namespace Rock.Data
         [Index( IsUnique = true )]
         [DataMember]
         [IncludeForReporting]
+        [NotEmptyGuidAttribute]
         public Guid Guid
         {
             get { return _guid; }

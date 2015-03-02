@@ -232,7 +232,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     a.GroupId.HasValue &&
                     a.LocationId.HasValue &&
                     a.PersonAlias != null &&
-                    a.DidAttend &&
+                    a.DidAttend.HasValue &&
+                    a.DidAttend.Value &&
                     a.StartDateTime > today &&
                     activeScheduleIds.Contains( a.ScheduleId.Value ) &&
                     groupIds.Contains( a.GroupId.Value ) )
@@ -247,7 +248,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     a.GroupId.HasValue &&
                     a.LocationId.HasValue &&
                     a.PersonAliasId.HasValue &&
-                    a.DidAttend &&
+                    a.DidAttend.Value &&
                     scheduleIds.Contains( a.ScheduleId.Value) && 
                     groupIds.Contains( a.GroupId.Value ) )
                 .GroupBy( a => new
@@ -701,7 +702,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         a.LocationId.HasValue &&
                         a.StartDateTime > dayStart &&
                         a.StartDateTime < now &&
-                        a.DidAttend &&
+                        a.DidAttend.HasValue &&
+                        a.DidAttend.Value &&
                         groupIds.Contains( a.GroupId.Value ) &&
                         locationIds.Contains( a.LocationId.Value ) )
                     .ToList();
@@ -1073,7 +1075,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                 a.LocationId == locationItem.Id &&
                                 a.StartDateTime > dayStart &&
                                 a.StartDateTime < now &&
-                                a.DidAttend &&
+                                a.DidAttend.HasValue &&
+                                a.DidAttend.Value &&
                                 activeSchedules.Contains( a.ScheduleId.Value ) )
                             .Distinct()
                             .OrderBy( a => a.PersonAlias.Person.NickName )

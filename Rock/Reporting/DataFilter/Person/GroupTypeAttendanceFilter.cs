@@ -109,7 +109,7 @@ namespace Rock.Reporting.DataFilter.Person
             {
                 var groupType = Rock.Web.Cache.GroupTypeCache.Read( options[0].AsGuid() );
 
-                ComparisonType comparisonType = options[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
+                ComparisonType comparisonType = options[1].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
 
                 s = string.Format(
                     "Attended '{0}' {1} {2} times in the last {3} week(s)",
@@ -287,7 +287,7 @@ namespace Rock.Reporting.DataFilter.Person
                                     ( a.Group.GroupTypeId == groupTypeId ) &&
                                     ( a.StartDateTime >= startDate )
                                 ) &&
-                                ( a.DidAttend == true )
+                                ( a.DidAttend.HasValue && a.DidAttend.Value )
                             )
                         ) == attended );
 

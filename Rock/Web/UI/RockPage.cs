@@ -1662,9 +1662,13 @@ namespace Rock.Web.UI
         {
             System.Collections.IDictionary items = HttpContext.Current.Items;
             if ( items.Contains( key ) )
+            {
                 items[key] = item;
+            }
             else
+            {
                 items.Add( key, item );
+            }
         }
 
         /// <summary>
@@ -1679,7 +1683,9 @@ namespace Rock.Web.UI
 
             System.Collections.IDictionary items = HttpContext.Current.Items;
             if ( items.Contains( itemKey ) )
+            {
                 return items[itemKey];
+            }
 
             return null;
         }
@@ -1739,15 +1745,23 @@ namespace Rock.Web.UI
         public string PageParameter( PageReference pageReference, string name )
         {
             if ( String.IsNullOrEmpty( name ) )
+            {
                 return string.Empty;
+            }
 
             if ( pageReference.Parameters.ContainsKey( name ) )
+            {
                 return (string)pageReference.Parameters[name];
+            }
 
             if ( String.IsNullOrEmpty( pageReference.QueryString[name] ) )
+            {
                 return string.Empty;
+            }
             else
+            {
                 return pageReference.QueryString[name];
+            }
         }
 
         /// <summary>
@@ -1797,7 +1811,9 @@ namespace Rock.Web.UI
             htmlLink.Attributes.Add( "rel", "stylesheet" );
             htmlLink.Attributes.Add( "href", page.ResolveUrl( href ) );
             if ( mediaType != string.Empty )
+            {
                 htmlLink.Attributes.Add( "media", mediaType );
+            }
 
             AddHtmlLink( page, htmlLink, "css" );
         }
@@ -1810,16 +1826,19 @@ namespace Rock.Web.UI
         public static void AddMetaTag( Page page, HtmlMeta htmlMeta )
         {
             if ( page != null && page.Header != null )
+            {
                 if ( !HtmlMetaExists( page, htmlMeta ) )
                 {
                     // Find last meta element
                     int index = 0;
                     for ( int i = page.Header.Controls.Count - 1; i >= 0; i-- )
+                    {
                         if ( page.Header.Controls[i] is HtmlMeta )
                         {
                             index = i;
                             break;
                         }
+                    }
 
                     if ( index == page.Header.Controls.Count )
                     {
@@ -1832,6 +1851,7 @@ namespace Rock.Web.UI
                         page.Header.Controls.AddAt( ++index, htmlMeta );
                     }
                 }
+            }
         }
 
         /// <summary>
@@ -2100,10 +2120,13 @@ namespace Rock.Web.UI
             if ( userPreferences == null )
             {
                 if ( CurrentPerson != null )
+                {
                     userPreferences = PersonService.GetUserPreferences( CurrentPerson );
+                }
                 else
+                {
                     userPreferences = new Dictionary<string, string>();
-
+                }
                 Session[sessionKey] = userPreferences;
             }
 

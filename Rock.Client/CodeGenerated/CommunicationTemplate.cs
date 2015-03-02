@@ -38,6 +38,9 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public Dictionary<string, string> MediumData { get; set; }
+
+        /// <summary />
         public EntityType MediumEntityType { get; set; }
 
         /// <summary />
@@ -72,6 +75,13 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignId { get; set; }
+
+        /// <summary />
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
+
+
+        /// <summary />
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
 
     }
 }

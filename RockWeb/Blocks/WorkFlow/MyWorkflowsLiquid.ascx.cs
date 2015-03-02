@@ -331,20 +331,25 @@ as fields on the workflow or activity)...
 
         private List<WorkflowAction> GetActions()
         {
-            var rockContext = new RockContext();
-
-            // Get all of the active form actions that user is assigned to and authorized to view
-            var formActions = GetActiveForms( rockContext );
-
-            // If a category filter was specified, filter list by selected categories
-            var categoryIds = GetCategories(rockContext);
-            if ( categoryIds.Any() )
+            var formActions = new List<WorkflowAction>();
+            
+            if ( CurrentPerson != null )
             {
-                formActions = formActions
-                    .Where( a =>
-                        a.ActionType.ActivityType.WorkflowType.CategoryId.HasValue &&
-                        categoryIds.Contains( a.ActionType.ActivityType.WorkflowType.CategoryId.Value ) )
-                    .ToList();
+                var rockContext = new RockContext();
+
+                // Get all of the active form actions that user is assigned to and authorized to view
+                formActions = GetActiveForms( rockContext );
+
+                // If a category filter was specified, filter list by selected categories
+                var categoryIds = GetCategories( rockContext );
+                if ( categoryIds.Any() )
+                {
+                    formActions = formActions
+                        .Where( a =>
+                            a.ActionType.ActivityType.WorkflowType.CategoryId.HasValue &&
+                            categoryIds.Contains( a.ActionType.ActivityType.WorkflowType.CategoryId.Value ) )
+                        .ToList();
+                }
             }
 
             return formActions;

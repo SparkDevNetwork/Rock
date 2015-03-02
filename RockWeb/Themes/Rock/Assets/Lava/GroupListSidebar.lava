@@ -1,6 +1,12 @@
 <div class="panel panel-default">
   <div class="panel-heading">Groups</div>
 
+  {% assign groupCount = Groups | Size %}
+
+  {% if groupCount == 0 %}
+  <div class="margin-all-md"> No Groups Available To List</div>
+  {% endif %}
+
   <ul class="list-group list-group-panel">
     {% for group in Groups %}
 
@@ -9,6 +15,7 @@
     <i class='fa fa-asterisk'></i>
     {% endif %}
     {% endcapture %}
+
     <li class="list-group-item">
       <a href="{{ LinkedPages.DetailPage }}?GroupId={{group.Group.Id}}" class="js-group-item" data-toggle="tooltip" data-placement="top" title="{{ group.GroupType }}">
         {{ group.Group.Name }} <small>({{ group.Role }}{{ isLeaderIcon }})</small>

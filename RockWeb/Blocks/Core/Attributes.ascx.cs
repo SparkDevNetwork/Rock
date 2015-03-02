@@ -84,7 +84,13 @@ namespace RockWeb.Blocks.Core
             _entityQualifierColumn = GetAttributeValue( "EntityQualifierColumn" );
             _entityQualifierValue = GetAttributeValue( "EntityQualifierValue" );
             _displayValueEdit = GetAttributeValue( "AllowSettingofValues" ).AsBooleanOrNull() ?? false;
-            _entityId = GetAttributeValue( "EntityId" ).AsIntegerOrNull() ?? 0;
+
+            _entityId = GetAttributeValue( "EntityId" ).AsIntegerOrNull();
+            if ( _entityId == 0 )
+            {
+                _entityId = null;
+            }
+
             _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
 
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;

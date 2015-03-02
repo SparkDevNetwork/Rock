@@ -35,54 +35,6 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Rock\SystemGuid\Attribute.cs">
-      <Link>Rock.SystemGuid\Attribute.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\BinaryFileType.cs">
-      <Link>Rock.SystemGuid\BinaryFileType.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\BlockType.cs">
-      <Link>Rock.SystemGuid\BlockType.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\Category.cs">
-      <Link>Rock.SystemGuid\Category.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\DefinedType.cs">
-      <Link>Rock.SystemGuid\DefinedType.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\DefinedValue.cs">
-      <Link>Rock.SystemGuid\DefinedValue.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\EntityType.cs">
-      <Link>Rock.SystemGuid\EntityType.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\FieldType.cs">
-      <Link>Rock.SystemGuid\FieldType.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\FinancialAccount.cs">
-      <Link>Rock.SystemGuid\FinancialAccount.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\Group.cs">
-      <Link>Rock.SystemGuid\Group.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\GroupRole.cs">
-      <Link>Rock.SystemGuid\GroupRole.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\GroupType.cs">
-      <Link>Rock.SystemGuid\GroupType.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\NoteType.cs">
-      <Link>Rock.SystemGuid\NoteType.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\Page.cs">
-      <Link>Rock.SystemGuid\Page.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\Site.cs">
-      <Link>Rock.SystemGuid\Site.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\SystemEmail.cs">
-      <Link>Rock.SystemGuid\SystemEmail.cs</Link>
-    </Compile>
     <Compile Include="CodeGenerated\Attendance.cs" />
     <Compile Include="CodeGenerated\AttendanceCode.cs" />
     <Compile Include="CodeGenerated\Attribute.cs" />
@@ -130,6 +82,7 @@
     <Compile Include="CodeGenerated\Group.cs" />
     <Compile Include="CodeGenerated\GroupLocation.cs" />
     <Compile Include="CodeGenerated\GroupMember.cs" />
+    <Compile Include="CodeGenerated\GroupScheduleExclusion.cs" />
     <Compile Include="CodeGenerated\GroupType.cs" />
     <Compile Include="CodeGenerated\GroupTypeLocationType.cs" />
     <Compile Include="CodeGenerated\GroupTypeRole.cs" />
@@ -164,6 +117,7 @@
     <Compile Include="CodeGenerated\Site.cs" />
     <Compile Include="CodeGenerated\SiteDomain.cs" />
     <Compile Include="CodeGenerated\SystemEmail.cs" />
+    <Compile Include="CodeGenerated\SystemGuid\RockSystemGuids.cs" />
     <Compile Include="CodeGenerated\Tag.cs" />
     <Compile Include="CodeGenerated\TaggedItem.cs" />
     <Compile Include="CodeGenerated\UserLogin.cs" />

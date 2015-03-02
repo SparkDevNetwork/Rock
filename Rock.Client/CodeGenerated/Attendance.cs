@@ -50,7 +50,10 @@ namespace Rock.Client
         public int? DeviceId { get; set; }
 
         /// <summary />
-        public bool DidAttend { get; set; }
+        public bool? DidAttend { get; set; }
+
+        /// <summary />
+        public bool? DidNotOccur { get; set; }
 
         /// <summary />
         public DateTime? EndDateTime { get; set; }
@@ -68,10 +71,16 @@ namespace Rock.Client
         public int? PersonAliasId { get; set; }
 
         /// <summary />
+        public bool? Processed { get; set; }
+
+        /// <summary />
         public DefinedValue Qualifier { get; set; }
 
         /// <summary />
         public int? QualifierValueId { get; set; }
+
+        /// <summary />
+        public int /* RSVP*/ RSVP { get; set; }
 
         /// <summary />
         public int? ScheduleId { get; set; }
@@ -102,6 +111,13 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignId { get; set; }
+
+        /// <summary />
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
+
+
+        /// <summary />
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
 
     }
 }
