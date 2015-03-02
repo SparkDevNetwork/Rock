@@ -67,6 +67,11 @@ namespace Rock.SystemGuid
         public const string PERSON = "72657ED8-D16E-492E-AC12-144C5E7567E7";
 
         /// <summary>
+        /// The guid for the Rock.Model.PersonAlias entity
+        /// </summary>
+        public const string PERSON_ALIAS = "90F5E87B-F0D5-4617-8AE9-EB57E673F36F";
+
+        /// <summary>
         /// The LiquidSelect DataSelect field for Reporting
         /// </summary>
         public const string REPORTING_DATASELECT_LIQUIDSELECT = "C130DC52-CA31-45EE-A4F2-6C53A838EF3D";        

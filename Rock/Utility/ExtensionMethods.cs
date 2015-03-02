@@ -925,6 +925,33 @@ namespace Rock
         /// </summary>
         /// <param name="content">The content.</param>
         /// <param name="mergeObjects">The merge objects.</param>
+        /// <param name="currentPersonOverride">The current person override.</param>
+        /// <returns></returns>
+        public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride )
+        {
+            try
+            {
+                if ( !content.HasMergeFields() )
+                {
+                    return content ?? string.Empty;
+                }
+
+                Template template = Template.Parse( content );
+                template.InstanceAssigns.Add( "CurrentPerson", currentPersonOverride );
+                return template.Render( Hash.FromDictionary( mergeObjects ) );
+            }
+            catch ( Exception ex )
+            {
+                return "Error resolving Lava merge fields: " + ex.Message;
+            }
+        }
+
+        /// <summary>
+        /// Use DotLiquid to resolve any merge codes within the content using the values
+        /// in the mergeObjects.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="mergeObjects">The merge objects.</param>
         /// <returns></returns>
         public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects )
         {
@@ -1801,20 +1828,40 @@ namespace Rock
         #region ListControl Extensions
 
         /// <summary>
-        /// Tries to set the selected value, if the value does not exist, will set the first item in the list.
+        /// Tries to set the selected value, if the value does not exist, it will attempt to set the value to defaultValue (if specified), 
+        /// otherwise it will set the first item in the list.
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
-        public static void SetValue( this ListControl listControl, string value )
+        /// <param name="defaultValue">The default value.</param>
+        public static void SetValue( this ListControl listControl, string value, string defaultValue = null )
         {
             try
             {
-                listControl.SelectedValue = value;
+                var valueItem = listControl.Items.FindByValue( value );
+                if (valueItem == null && defaultValue != null)
+                {
+                    valueItem = listControl.Items.FindByValue( defaultValue );
+                }
+
+                if ( valueItem != null )
+                {
+                    listControl.SelectedValue = valueItem.Value;
+                }
+                else
+                {
+                    if ( listControl.Items.Count > 0 )
+                    {
+                        listControl.SelectedIndex = 0;
+                    }
+                }
             }
             catch
             {
                 if ( listControl.Items.Count > 0 )
+                {
                     listControl.SelectedIndex = 0;
+                }
             }
         }
 
@@ -2444,9 +2491,9 @@ namespace Rock
         /// <returns></returns>
         public static int PageId( this Route route )
         {
-            if ( route.DataTokens != null )
+            if ( route.DataTokens != null && route.DataTokens["PageId"] != null  )
             {
-                return int.Parse( route.DataTokens["PageId"] as string );
+                return ( route.DataTokens["PageId"] as string ).AsIntegerOrNull() ?? -1;
             }
 
             return -1;
@@ -2461,7 +2508,7 @@ namespace Rock
         {
             if ( route.DataTokens != null && route.DataTokens["RouteId"] != null )
             {
-                return int.Parse( route.DataTokens["RouteId"] as string );
+                return ( route.DataTokens["RouteId"] as string ).AsIntegerOrNull() ?? -1;
             }
 
             return -1;

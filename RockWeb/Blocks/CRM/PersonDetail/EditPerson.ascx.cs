@@ -53,8 +53,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             ddlTitle.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
             ddlSuffix.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
-            rblMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ) );
-            rblConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ) );
+            ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ), true );
+            ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
             ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
             ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
 
@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                     else
                     {
-                        person.BirthDate = null;
+                        person.SetBirthDate( null );
                     }
 
                     History.EvaluateChange( changes, "Birth Month", birthMonth, person.BirthMonth );
@@ -220,11 +220,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     History.EvaluateChange( changes, "Gender", person.Gender, newGender );
                     person.Gender = newGender;
 
-                    int? newMaritalStatusId = rblMaritalStatus.SelectedValueAsInt();
+                    int? newMaritalStatusId = ddlMaritalStatus.SelectedValueAsInt();
                     History.EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
                     person.MaritalStatusValueId = newMaritalStatusId;
 
-                    int? newConnectionStatusId = rblConnectionStatus.SelectedValueAsInt();
+                    int? newConnectionStatusId = ddlConnectionStatus.SelectedValueAsInt();
                     History.EvaluateChange( changes, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
                     person.ConnectionStatusValueId = newConnectionStatusId;
 
@@ -399,7 +399,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 ypGraduation.SelectedYear = null;
             }
 
-            if ( Person.GradeOffset.HasValue )
+            if ( !Person.HasGraduated ?? false )
             {
                 int gradeOffset = Person.GradeOffset.Value;
                 var maxGradeOffset = ddlGradePicker.MaxGradeOffset; ;
@@ -419,8 +419,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             dpAnniversaryDate.SelectedDate = Person.AnniversaryDate;
             rblGender.SelectedValue = Person.Gender.ConvertToString( false );
-            rblMaritalStatus.SelectedValue = Person.MaritalStatusValueId.HasValue ? Person.MaritalStatusValueId.Value.ToString() : string.Empty;
-            rblConnectionStatus.SelectedValue = Person.ConnectionStatusValueId.HasValue ? Person.ConnectionStatusValueId.Value.ToString() : string.Empty;
+            ddlMaritalStatus.SelectedValue = Person.MaritalStatusValueId.HasValue ? Person.MaritalStatusValueId.Value.ToString() : string.Empty;
+            ddlConnectionStatus.SelectedValue = Person.ConnectionStatusValueId.HasValue ? Person.ConnectionStatusValueId.Value.ToString() : string.Empty;
             tbEmail.Text = Person.Email;
             cbIsEmailActive.Checked = Person.IsEmailActive ?? true;
             rblEmailPreference.SelectedValue = Person.EmailPreference.ConvertToString( false );

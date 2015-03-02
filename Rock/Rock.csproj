@@ -245,8 +245,19 @@
     <Compile Include="Field\Types\WorkflowTypeFieldType.cs" />
     <Compile Include="Financial\TestGateway.cs" />
     <Compile Include="Jobs\GetScheduledPayments.cs" />
+    <Compile Include="Jobs\SendAttendanceReminders.cs" />
     <Compile Include="Lava\ILiquidizable.cs" />
     <Compile Include="Lava\RockFilters.cs" />
+    <Compile Include="Model\BenevolenceRequest.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\BenevolenceRequestService.Partial.cs" />
+    <Compile Include="Model\BenevolenceResult.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\BenevolenceResultService.Partial.cs" />
+    <Compile Include="Model\CodeGenerated\BenevolenceRequestService.cs" />
+    <Compile Include="Model\CodeGenerated\BenevolenceResultService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelItemService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelTypeService.cs" />
@@ -328,6 +339,7 @@
     <Compile Include="Utility\RockSemanticVersion.cs" />
     <Compile Include="Utility\SimpleModeJsonConverter.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
+    <Compile Include="Web\UI\Controls\Grid\CurrencyField.cs" />
     <Compile Include="Web\UI\Controls\Grid\CallbackField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GradePicker.cs" />
     <Compile Include="Web\UI\Controls\RockRating.cs" />
