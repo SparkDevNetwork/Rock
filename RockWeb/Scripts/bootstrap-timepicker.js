@@ -143,7 +143,6 @@
     },
 
     elementKeydown: function (e) {
-        debugger;
       switch (e.keyCode) {
       case 9: //tab
         this.updateFromElementVal();
@@ -788,7 +787,6 @@
     widgetKeydown: function(e) {
       var $input = $(e.target).closest('input'),
           name = $input.attr('name');
-      debugger;
       switch (e.keyCode) {
       case 9: //tab
         if (this.showMeridian) {
