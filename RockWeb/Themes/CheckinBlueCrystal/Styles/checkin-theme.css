@@ -1,4 +1,4 @@
-/*
+﻿/*
      
      Rock Advenure Kids Check-in Theme
      Crafted by: Spark Development Network
@@ -12,8 +12,8 @@
  * -------------------------- */
 @font-face {
   font-family: 'FontAwesome';
-  src: url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.eot?v=4.3.0');
-  src: url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.eot?#iefix&v=4.3.0') format('embedded-opentype'), url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.woff2?v=4.3.0') format('woff2'), url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.woff?v=4.3.0') format('woff'), url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.ttf?v=4.3.0') format('truetype'), url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.svg?v=4.3.0#fontawesomeregular') format('svg');
+  src: url('../../../../Assets/Fonts/FontAwesome/fontawesome-webfont.eot?v=4.3.0');
+  src: url('../../../../Assets/Fonts/FontAwesome/fontawesome-webfont.eot?#iefix&v=4.3.0') format('embedded-opentype'), url('../../../../Assets/Fonts/FontAwesome/fontawesome-webfont.woff2?v=4.3.0') format('woff2'), url('../../../../Assets/Fonts/FontAwesome/fontawesome-webfont.woff?v=4.3.0') format('woff'), url('../../../../Assets/Fonts/FontAwesome/fontawesome-webfont.ttf?v=4.3.0') format('truetype'), url('../../../../Assets/Fonts/FontAwesome/fontawesome-webfont.svg?v=4.3.0#fontawesomeregular') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -2058,8 +2058,8 @@ th {
 }
 @font-face {
   font-family: 'Glyphicons Halflings';
-  src: url('../fonts/glyphicons-halflings-regular.eot');
-  src: url('../fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('../fonts/glyphicons-halflings-regular.woff') format('woff'), url('../fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('../fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg');
+  src: url('../../../Styles/fonts/glyphicons-halflings-regular.eot');
+  src: url('../../../Styles/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('../../../Styles/fonts/glyphicons-halflings-regular.woff') format('woff'), url('../../../Styles/fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('../../../Styles/fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg');
 }
 .glyphicon {
   position: relative;
@@ -8027,6 +8027,21 @@ body {
     background-color: transparent;
   }
 }
+.primary-color {
+  color: #4b5c65;
+}
+.secondary-color {
+  color: #ffffff;
+}
+.background-primary {
+  background-color: #4b5c65;
+}
+.background-secondary {
+  background-color: #ffffff;
+}
+.base-font {
+  font-family: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
 .checkin-header {
   margin-top: 45px;
   margin-bottom: 24px;
@@ -8644,3 +8659,4 @@ body {
     background-size: 496px 504px;
   }
 }
+/*# sourceMappingURL=checkin-theme.css.map */
