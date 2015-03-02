@@ -71,6 +71,7 @@ namespace Rock.Model
         /// A <see cref="System.Decimal"/> representing the amount of the transaction detail.
         /// </value>
         [DataMember]
+        [BoundFieldTypeAttribute(typeof(Rock.Web.UI.Controls.CurrencyField))]
         public decimal Amount { get; set; }
 
         /// <summary>
