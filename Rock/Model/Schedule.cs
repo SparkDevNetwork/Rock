@@ -258,24 +258,9 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
-        public virtual DDay.iCal.Event GetCalenderEvent()
+        public virtual DDay.iCal.Event GetCalenderEvent() 
         {
-            //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
-            //// We just need one Calendar and one Event
-
-            StringReader stringReader = new StringReader( iCalendarContent.Trim() );
-            var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
-            DDay.iCal.Event calendarEvent = null;
-            if ( calendarList.Count > 0 )
-            {
-                var calendar = calendarList[0] as DDay.iCal.iCalendar;
-                if ( calendar != null )
-                {
-                    calendarEvent = calendar.Events[0] as DDay.iCal.Event;
-                }
-            }
-
-            return calendarEvent;
+            return ScheduleICalHelper.GetCalenderEvent( iCalendarContent );
         }
 
         /// <summary>
@@ -626,6 +611,52 @@ namespace Rock.Model
         public ScheduleConfiguration()
         {
             this.HasOptional( s => s.Category ).WithMany().HasForeignKey( s => s.CategoryId ).WillCascadeOnDelete( false );
+        }
+    }
+
+    #endregion
+
+    #region Helper Class
+
+    /// <summary>
+    /// DDay.ical LoadFromStream is not threadsafe, so use locking
+    /// </summary>
+    public static class ScheduleICalHelper
+    {
+        private static object _initLock;
+
+        static ScheduleICalHelper()
+        {
+            ScheduleICalHelper._initLock = new object();
+        }
+
+        /// <summary>
+        /// Gets the calender event.
+        /// </summary>
+        /// <param name="iCalendarContent">Content of the i calendar.</param>
+        /// <returns></returns>
+        public static DDay.iCal.Event GetCalenderEvent( string iCalendarContent )
+        {
+            //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
+            //// We just need one Calendar and one Event
+
+            DDay.iCal.Event calendarEvent = null;
+
+            lock ( ScheduleICalHelper._initLock )
+            {
+                StringReader stringReader = new StringReader( iCalendarContent.Trim() );
+                var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
+                if ( calendarList.Count > 0 )
+                {
+                    var calendar = calendarList[0] as DDay.iCal.iCalendar;
+                    if ( calendar != null )
+                    {
+                        calendarEvent = calendar.Events[0] as DDay.iCal.Event;
+                    }
+                }
+            }
+
+            return calendarEvent;
         }
     }
 
