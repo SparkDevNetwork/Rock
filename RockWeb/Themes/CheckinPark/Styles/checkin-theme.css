@@ -8028,21 +8028,6 @@ body {
     background-size: 1348px 1024px;
   }
 }
-.primary-color {
-  color: #85b11c;
-}
-.secondary-color {
-  color: #ffffff;
-}
-.background-primary {
-  background-color: #85b11c;
-}
-.background-secondary {
-  background-color: #ffffff;
-}
-.base-font {
-  font-family: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
 .checkin-header {
   margin-top: 45px;
   margin-bottom: 24px;
@@ -8657,6 +8642,12 @@ Copyright (c) 2012 Dan Eden*/
   background-color: #e3151a;
   color: #ffffff;
   border: 1px solid #b41115;
+}
+.bg-color {
+  background-color: #85b11c;
+}
+.text-color {
+  color: #ffffff;
 }
 .padding-all-none {
   padding: 0 !important;
