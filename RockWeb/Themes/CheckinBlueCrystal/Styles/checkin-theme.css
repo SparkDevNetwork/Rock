@@ -8612,6 +8612,281 @@ Copyright (c) 2012 Dan Eden*/
   filter: alpha(opacity=70);
   background: #000000;
 }
+/*
+
+  Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
+
+  1. Variables - specific variables for sizing classes and media query helpers
+  2. Colors - creates utility classes for each of the accent colors
+  3. Spacing - provides utility classes for spacing based off of the themes gutter widths
+
+*/
+.accent-color {
+  background-color: #23353d;
+  color: #ffffff;
+}
+.accent-color-bordered {
+  background-color: #23353d;
+  color: #ffffff;
+  border: 1px solid #10191d;
+}
+.accent-light-color {
+  background-color: #c4c5c6;
+  color: #626161;
+}
+.accent-light-color-bordered {
+  background-color: #c4c5c6;
+  color: #626161;
+  border: 1px solid #aaacad;
+}
+.accent-semibold-color {
+  background-color: #c4c5c6;
+  color: #626161;
+}
+.accent-semibold-color-bordered {
+  background-color: #c4c5c6;
+  color: #626161;
+  border: 1px solid #aaacad;
+}
+.accent-bold-color {
+  background-color: #23353d;
+  color: #ffffff;
+}
+.accent-bold-color-bordered {
+  background-color: #23353d;
+  color: #ffffff;
+  border: 1px solid #10191d;
+}
+.padding-all-none {
+  padding: 0 !important;
+}
+.padding-all-sm {
+  padding: 7.5px !important;
+}
+.padding-all-md {
+  padding: 15px !important;
+}
+.padding-all-lg {
+  padding: 30px !important;
+}
+.padding-all-xl {
+  padding: 60px !important;
+}
+.margin-all-none {
+  margin: 0 !important;
+}
+.margin-all-sm {
+  margin: 7.5px !important;
+}
+.margin-all-md {
+  margin: 15px !important;
+}
+.margin-all-lg {
+  margin: 30px !important;
+}
+.margin-all-xl {
+  margin: 60px !important;
+}
+.padding-v-none {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.padding-v-sm {
+  padding-top: 7.5px !important;
+  padding-bottom: 7.5px !important;
+}
+.padding-v-md {
+  padding-top: 15px !important;
+  padding-bottom: 15px !important;
+}
+.padding-v-lg {
+  padding-top: 30px !important;
+  padding-bottom: 30px !important;
+}
+.padding-v-xl {
+  padding-top: 60px !important;
+  padding-bottom: 60px !important;
+}
+.margin-v-none {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+.margin-v-sm {
+  margin-top: 7.5px !important;
+  margin-bottom: 7.5px !important;
+}
+.margin-v-md {
+  margin-top: 15px !important;
+  margin-bottom: 15px !important;
+}
+.margin-v-lg {
+  margin-top: 30px !important;
+  margin-bottom: 30px !important;
+}
+.margin-v-xl {
+  margin-top: 60px !important;
+  margin-bottom: 60px !important;
+}
+.padding-h-none {
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+}
+.padding-h-sm {
+  padding-right: 7.5px !important;
+  padding-left: 7.5px !important;
+}
+.padding-h-md {
+  padding-right: 15px !important;
+  padding-left: 15px !important;
+}
+.padding-h-lg {
+  padding-right: 30px !important;
+  padding-left: 30px !important;
+}
+.padding-h-xl {
+  padding-right: 60px !important;
+  padding-left: 60px !important;
+}
+.margin-h-none {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+}
+.margin-h-sm {
+  margin-right: 7.5px !important;
+  margin-left: 7.5px !important;
+}
+.margin-h-md {
+  margin-right: 15px !important;
+  margin-left: 15px !important;
+}
+.margin-h-lg {
+  margin-right: 30px !important;
+  margin-left: 30px !important;
+}
+.margin-h-xl {
+  margin-right: 60px !important;
+  margin-left: 60px !important;
+}
+.padding-t-none {
+  padding-top: 0 !important;
+}
+.padding-t-sm {
+  padding-top: 7.5px !important;
+}
+.padding-t-md {
+  padding-top: 15px !important;
+}
+.padding-t-lg {
+  padding-top: 30px !important;
+}
+.padding-t-xl {
+  padding-top: 60px !important;
+}
+.margin-t-none {
+  margin-top: 0 !important;
+}
+.margin-t-sm {
+  margin-top: 7.5px !important;
+}
+.margin-t-md {
+  margin-top: 15px !important;
+}
+.margin-t-lg {
+  margin-top: 30px !important;
+}
+.margin-t-xl {
+  margin-top: 60px !important;
+}
+.padding-b-none {
+  padding-bottom: 0 !important;
+}
+.padding-b-sm {
+  padding-bottom: 7.5px !important;
+}
+.padding-b-md {
+  padding-bottom: 15px !important;
+}
+.padding-b-lg {
+  padding-bottom: 30px !important;
+}
+.padding-b-xl {
+  padding-bottom: 60px !important;
+}
+.margin-b-none {
+  margin-bottom: 0 !important;
+}
+.margin-b-sm {
+  margin-bottom: 7.5px !important;
+}
+.margin-b-md {
+  margin-bottom: 15px !important;
+}
+.margin-b-lg {
+  margin-bottom: 30px !important;
+}
+.margin-b-xl {
+  margin-bottom: 60px !important;
+}
+.padding-r-none {
+  padding-right: 0 !important;
+}
+.padding-r-sm {
+  padding-right: 7.5px !important;
+}
+.padding-r-md {
+  padding-right: 15px !important;
+}
+.padding-r-lg {
+  padding-right: 30px !important;
+}
+.padding-r-xl {
+  padding-right: 60px !important;
+}
+.margin-r-none {
+  margin-right: 0 !important;
+}
+.margin-r-sm {
+  margin-right: 7.5px !important;
+}
+.margin-r-md {
+  margin-right: 15px !important;
+}
+.margin-r-lg {
+  margin-right: 30px !important;
+}
+.margin-r-xl {
+  margin-right: 60px !important;
+}
+.padding-l-none {
+  padding-left: 0 !important;
+}
+.padding-l-sm {
+  padding-left: 7.5px !important;
+}
+.padding-l-md {
+  padding-left: 15px !important;
+}
+.padding-l-lg {
+  padding-left: 30px !important;
+}
+.padding-l-xl {
+  padding-left: 60px !important;
+}
+.margin-l-none {
+  margin-left: 0 !important;
+}
+.margin-l-sm {
+  margin-left: 7.5px !important;
+}
+.margin-l-md {
+  margin-left: 15px !important;
+}
+.margin-l-lg {
+  margin-left: 30px !important;
+}
+.margin-l-xl {
+  margin-left: 60px !important;
+}
 @font-face {
   font-family: 'OpenSans';
   src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
