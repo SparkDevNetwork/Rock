@@ -64,6 +64,7 @@ namespace Rock.Model
         /// An example is that a person pledges $100.00 to be given monthly for the next year. This value will be $100.00 and the grand total of the pledge would be $1,200.00
         /// </remarks>
         [DataMember]
+        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public decimal TotalAmount { get; set; }
 
         /// <summary>
