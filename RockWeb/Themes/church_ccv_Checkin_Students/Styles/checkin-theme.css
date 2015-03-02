@@ -1,7 +1,7 @@
 /*
-     
-     Rock Park Check-in Theme
-     Crafted by: Spark Development Network
+
+  Rock Park Check-in Theme
+  Crafted by: Spark Development Network
 
  */
 /*!
@@ -4561,8 +4561,8 @@ fieldset[disabled] .btn {
 }
 .btn-default {
   color: #ffffff;
-  background-color: #7f7e7e;
-  border-color: #9d9c9c;
+  background-color: #777777;
+  border-color: #919191;
 }
 .btn-default:hover,
 .btn-default:focus,
@@ -4570,8 +4570,8 @@ fieldset[disabled] .btn {
 .btn-default.active,
 .open > .dropdown-toggle.btn-default {
   color: #ffffff;
-  background-color: #656565;
-  border-color: #7f7d7d;
+  background-color: #5e5e5e;
+  border-color: #727272;
 }
 .btn-default:active,
 .btn-default.active,
@@ -4593,16 +4593,16 @@ fieldset[disabled] .btn-default:active,
 .btn-default.disabled.active,
 .btn-default[disabled].active,
 fieldset[disabled] .btn-default.active {
-  background-color: #7f7e7e;
-  border-color: #9d9c9c;
+  background-color: #777777;
+  border-color: #919191;
 }
 .btn-default .badge {
-  color: #7f7e7e;
+  color: #777777;
   background-color: #ffffff;
 }
 .btn-primary {
   color: #ffffff;
-  background-color: #e3151a;
+  background-color: #e2231a;
   border-color: #b00a0e;
 }
 .btn-primary:hover,
@@ -4611,7 +4611,7 @@ fieldset[disabled] .btn-default.active {
 .btn-primary.active,
 .open > .dropdown-toggle.btn-primary {
   color: #ffffff;
-  background-color: #b41115;
+  background-color: #b41c15;
   border-color: #760709;
 }
 .btn-primary:active,
@@ -4634,11 +4634,11 @@ fieldset[disabled] .btn-primary:active,
 .btn-primary.disabled.active,
 .btn-primary[disabled].active,
 fieldset[disabled] .btn-primary.active {
-  background-color: #e3151a;
+  background-color: #e2231a;
   border-color: #b00a0e;
 }
 .btn-primary .badge {
-  color: #e3151a;
+  color: #e2231a;
   background-color: #ffffff;
 }
 .btn-success {
@@ -8015,18 +8015,12 @@ h1 {
   opacity: 0.33;
 }
 body {
-  background: #85b11c url('../Assets/Images/background.jpg') top right no-repeat fixed;
+  background: #111111;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
   background-size: cover;
   overflow-x: hidden;
-}
-@media all and (-webkit-min-device-pixel-ratio: 1.5) {
-  body {
-    background-image: url('../Assets/Images/background@2x.jpg');
-    background-size: 1348px 1024px;
-  }
 }
 .checkin-header {
   margin-top: 45px;
@@ -8092,13 +8086,13 @@ body {
 }
 .btn-checkbox {
   padding: 24px;
-  background-color: #7f7e7e;
+  background-color: #777777;
   color: #ffffff;
-  border-color: #9d9c9c;
+  border-color: #919191;
   font-size: 20px;
 }
 .btn-checkbox.active {
-  background-color: #e3151a;
+  background-color: #e2231a;
   color: #ffffff;
   border-color: #b00a0e;
 }
@@ -8133,10 +8127,10 @@ body {
   z-index: 1060;
 }
 .bootbox .modal-content {
-  background-color: #85b11c;
+  background-color: #111111;
 }
 .bootbox .modal-footer {
-  border-top-color: #b8e350;
+  border-top-color: #444444;
 }
 .checkin-search-body {
   margin-right: auto !important;
@@ -8506,11 +8500,11 @@ Copyright (c) 2012 Dan Eden*/
 }
 .modal-content {
   border: 0;
-  background-color: #85b11c;
+  background-color: #111111;
   color: #ffffff;
 }
 .modal-content .modal-header {
-  background-color: #85b11c;
+  background-color: #111111;
   color: #ffffff;
   padding: 5px 15px;
   min-height: 34px;
@@ -8568,7 +8562,7 @@ Copyright (c) 2012 Dan Eden*/
 .modal-content .modal-footer {
   padding: 8px;
   margin-top: 10px;
-  background-color: #85b11c;
+  background-color: #111111;
   color: #ffffff;
   border-radius: 0 0 4px 4px;
 }
@@ -8629,4 +8623,32 @@ Copyright (c) 2012 Dan Eden*/
 .checkin-count h3,
 .checkin-count li {
   color: #4c4c4b;
+}
+.bird-wrapper {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+[id=bird] {
+  position: absolute;
+  bottom: -25%;
+  right: -25%;
+  height: 100%;
+  width: 100%;
+  opacity: 0.1;
+  filter: alpha(opacity=10);
+}
+.bootbox {
+  background: none;
+}
+.bootbox .modal-content {
+  background-color: #373737;
+}
+.bootbox .modal-footer {
+  background-color: #1e1e1e;
+  border-top-color: #444444;
 }
