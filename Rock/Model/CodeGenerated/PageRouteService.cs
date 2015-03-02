@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.CommunicationPageRouteId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PageRoute.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Site>( Context ).Queryable().Any( a => a.DefaultPageRouteId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PageRoute.FriendlyTypeName, Site.FriendlyTypeName );

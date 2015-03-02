@@ -34,6 +34,8 @@ namespace Rock.Web.UI.Controls.Communication
 
         private RockTextBox tbFromName;
         private RockTextBox tbFromAddress;
+        private RockLiteral lFromName;
+        private RockLiteral lFromAddress;
         private RockTextBox tbReplyToAddress;
         private RockTextBox tbSubject;
         private HtmlEditor htmlMessage;
@@ -44,6 +46,18 @@ namespace Rock.Web.UI.Controls.Communication
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [use simple mode].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [use simple mode]; otherwise, <c>false</c>.
+        /// </value>
+        public bool UseSimpleMode
+        {
+            get { return ViewState["UseSimpleMode"] as Boolean? ?? false; }
+            set { ViewState["UseSimpleMode"] = value; }
+        }
 
         /// <summary>
         /// Gets or sets the medium data.
@@ -113,6 +127,27 @@ namespace Rock.Web.UI.Controls.Communication
 
         #endregion
 
+        #region Constructor
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Email"/> class.
+        /// </summary>
+        public Email() : base()
+        {
+
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Email"/> class.
+        /// </summary>
+        /// <param name="useSimpleMode">if set to <c>true</c> [use simple mode].</param>
+        public Email( bool useSimpleMode) :this()
+        {
+            UseSimpleMode = useSimpleMode;
+        }
+
+        #endregion
+
         #region CompositeControl Methods
 
         /// <summary>
@@ -128,10 +163,20 @@ namespace Rock.Web.UI.Controls.Communication
             tbFromName.Label = "From Name";
             Controls.Add( tbFromName );
 
+            lFromName = new RockLiteral();
+            lFromName.ID = string.Format( "lFromName_{0}", this.ID );
+            lFromName.Label = "From Name";
+            Controls.Add( lFromName );
+
             tbFromAddress = new RockTextBox();
             tbFromAddress.ID = string.Format( "tbFromAddress_{0}", this.ID );
             tbFromAddress.Label = "From Address";
             Controls.Add( tbFromAddress );
+
+            lFromAddress = new RockLiteral();
+            lFromAddress.ID = string.Format( "lFromAddress_{0}", this.ID );
+            lFromAddress.Label = "From Address";
+            Controls.Add( lFromAddress );
 
             tbReplyToAddress = new RockTextBox();
             tbReplyToAddress.ID = string.Format( "tbReplyToAddress_{0}", this.ID );
@@ -147,13 +192,6 @@ namespace Rock.Web.UI.Controls.Communication
             htmlMessage = new HtmlEditor();
             htmlMessage.ID = string.Format( "htmlMessage_{0}", this.ID );
             htmlMessage.AdditionalConfigurations = "autoParagraph: false,";
-            htmlMessage.MergeFields.Clear();
-            htmlMessage.MergeFields.Add( "GlobalAttribute" );
-            htmlMessage.MergeFields.Add( "Rock.Model.Person" );
-            htmlMessage.MergeFields.Add( "Communication.MediumData.FromName|From Name" );
-            htmlMessage.MergeFields.Add( "Communication.MediumData.FromAddress|From Address" );
-            htmlMessage.MergeFields.Add( "Communication.MediumData.ReplyTo|Reply To" );
-            htmlMessage.MergeFields.Add( "UnsubscribeOption" );
             htmlMessage.Help = "<span class='tip tip-lava'></span> <span class='tip tip-html'>";
             this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );
             htmlMessage.Label = "Message";
@@ -209,15 +247,16 @@ namespace Rock.Web.UI.Controls.Communication
         public override void InitializeFromSender( Person sender )
         {
             EnsureChildControls();
-
             if ( string.IsNullOrEmpty( tbFromName.Text ) )
             {
                 tbFromName.Text = sender.FullName;
+                lFromName.Text = sender.FullName;
             }
 
             if ( string.IsNullOrEmpty( tbFromAddress.Text ) )
             {
                 tbFromAddress.Text = sender.Email;
+                lFromAddress.Text = sender.Email;
             }
         }
 
@@ -236,9 +275,19 @@ namespace Rock.Web.UI.Controls.Communication
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            tbFromName.RenderControl( writer );
-            tbFromAddress.RenderControl( writer );
-            tbReplyToAddress.RenderControl( writer );
+
+            if ( !UseSimpleMode )
+            {
+                tbFromName.RenderControl( writer );
+                tbFromAddress.RenderControl( writer );
+                tbReplyToAddress.RenderControl( writer );
+            }
+            else
+            {
+                lFromName.RenderControl( writer );
+                lFromAddress.RenderControl( writer );
+            }
+
             tbSubject.RenderControl( writer );
             writer.RenderEndTag();
 
@@ -289,8 +338,26 @@ namespace Rock.Web.UI.Controls.Communication
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-12" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            htmlMessage.MergeFields.Clear();
+            if ( !UseSimpleMode )
+            {
+                htmlMessage.MergeFields.Add( "GlobalAttribute" );
+            }
+            htmlMessage.MergeFields.Add( "Rock.Model.Person" );
+            if ( !UseSimpleMode )
+            {
+                htmlMessage.MergeFields.Add( "Communication.MediumData.FromName|From Name" );
+                htmlMessage.MergeFields.Add( "Communication.MediumData.FromAddress|From Address" );
+                htmlMessage.MergeFields.Add( "Communication.MediumData.ReplyTo|Reply To" );
+                htmlMessage.MergeFields.Add( "UnsubscribeOption" );
+            }
             htmlMessage.RenderControl( writer );
-            tbTextMessage.RenderControl( writer );
+
+            if ( !UseSimpleMode )
+            {
+                tbTextMessage.RenderControl( writer );
+            }
             writer.RenderEndTag();
             writer.RenderEndTag();
 

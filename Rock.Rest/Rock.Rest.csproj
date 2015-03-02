@@ -105,6 +105,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiController.cs" />
+    <Compile Include="ApiControllerBase.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Constraints\ValidControllerNameConstraint.cs" />
     <Compile Include="Controllers\AttendancesController.partial.cs" />
@@ -118,6 +119,7 @@
     <Compile Include="Controllers\CodeGenerated\EntitySetItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\EntitySetsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FollowingsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupScheduleExclusionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetricCategoriesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PageViewsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonDuplicatesController.cs" />
@@ -227,6 +229,7 @@
     <Compile Include="Filters\SecuredAttribute.cs" />
     <Compile Include="Filters\RequireHttpsAttribute.cs" />
     <Compile Include="Filters\ValidateAttribute.cs" />
+    <Compile Include="Handler\RockApiExceptionHandler.cs" />
     <Compile Include="Handler\RockApiExceptionLogger.cs" />
     <Compile Include="IHasCustomRoutes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

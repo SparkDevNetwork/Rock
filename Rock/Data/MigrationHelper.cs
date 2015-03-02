@@ -766,6 +766,52 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Updates the name of the category by.
+        /// </summary>
+        /// <param name="entityTypeGuid">The entity type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="order">The order.</param>
+        public void UpdateCategoryByName( string entityTypeGuid, string name, string iconCssClass, string description, string guid, int order = 0 )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @EntityTypeId int
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{0}')
+
+                IF EXISTS (
+                    SELECT [Id] 
+                    FROM [Category] 
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [Name] = '{1}' )
+                BEGIN
+                    UPDATE [Category] SET
+                        [IsSystem] = 1,
+                        [IconCssClass] = '{2}',
+                        [Description] = '{3}',
+                        [Order] = {5},
+                        [Guid] = '{4}'
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [Name] = '{1}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Category] ( [IsSystem],[EntityTypeId],[Name],[IconCssClass],[Description],[Order],[Guid] )
+                    VALUES( 1,@EntityTypeId,'{1}','{2}','{3}',{5},'{4}' )  
+                END
+",
+                    entityTypeGuid,
+                    name,
+                    iconCssClass,
+                    description.Replace( "'", "''" ),
+                    guid,
+                    order )
+            );
+        }
+
+        /// <summary>
         /// Deletes the category.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
@@ -824,6 +870,7 @@ namespace Rock.Data
                     AND [Key] = '{2}' )
                 BEGIN
                     UPDATE [Attribute] SET
+                        [IsSystem] = 1,
                         [Name] = '{3}',
                         [Description] = '{4}',
                         [Order] = {5},

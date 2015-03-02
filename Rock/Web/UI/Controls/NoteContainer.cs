@@ -299,38 +299,24 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [show more option].
-        /// </summary>
-
-        public bool ShowMoreOption
-        {
-            get
-            {
-                if ( SortDirection == ListSortDirection.Ascending )
-                {
-                    return false;
-                }
-                else
-                {
-                    EnsureChildControls();
-                    return _lbShowMore.Visible;
-                }
-            }
-            set
-            {
-                EnsureChildControls();
-                _lbShowMore.Visible = value;
-            }
-        }
 
         /// <summary>
-        /// Gets or sets the current display count.  
+        /// Gets or sets the current display count. Only applies if notes are in descending order. 
+        /// If notes are displayed in ascending order, all notes will always be displayed
         /// </summary>
         public int DisplayCount
         {
             get { return ViewState["DisplayCount"] as int? ?? 10; }
             set { ViewState["DisplayCount"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show more option].
+        /// </summary>
+        private bool ShowMoreOption
+        {
+            get { return ViewState["ShowMoreOption"] as bool? ?? true; }
+            set { ViewState["ShowMoreOption"] = value; }
         }
 
         /// <summary>
@@ -649,7 +635,7 @@ namespace Rock.Web.UI.Controls
 
                 foreach ( var note in notes )
                 {
-                    if ( i >= DisplayCount )
+                    if ( SortDirection == ListSortDirection.Descending && i >= DisplayCount )
                     {
                         ShowMoreOption = true;
                         break;

@@ -504,7 +504,6 @@ namespace RockWeb.Blocks.Security
         private Person CreatePerson()
         {
             var rockContext = new RockContext();
-            Rock.Model.PersonService personService = new PersonService( rockContext );
 
             DefinedValueCache dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
             DefinedValueCache dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
@@ -513,8 +512,9 @@ namespace RockWeb.Blocks.Security
             person.FirstName = tbFirstName.Text;
             person.LastName = tbLastName.Text;
             person.Email = tbEmail.Text;
+            person.IsEmailActive = true;
             person.EmailPreference = EmailPreference.EmailAllowed;
-
+            person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             if ( dvcConnectionStatus != null )
             {
                 person.ConnectionStatusValueId = dvcConnectionStatus.Id;
@@ -549,7 +549,7 @@ namespace RockWeb.Blocks.Security
                 }
             }
 
-            GroupService.SaveNewFamily( rockContext, person, null, false );
+            PersonService.SaveNewPerson( person, rockContext, null, false );
             return person;
         }
 

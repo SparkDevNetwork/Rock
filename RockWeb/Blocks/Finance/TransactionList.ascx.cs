@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Finance
     {
         #region Fields
 
-        private bool _canConfigure = false;
+        private bool _canEdit = false;
         private FinancialBatch _batch = null;
         private Person _person = null;
         private FinancialScheduledTransaction _scheduledTxn = null;
@@ -78,29 +78,29 @@ namespace RockWeb.Blocks.Finance
             }
             lTitle.Text = title;
 
-            _canConfigure = IsUserAuthorized( Authorization.EDIT );
+            _canEdit = UserCanEdit;
 
-            if ( _canConfigure )
+            gTransactions.DataKeyNames = new string[] { "Id" };
+            gTransactions.Actions.ShowAdd = _canEdit;
+            gTransactions.Actions.AddClick += gTransactions_Add;
+            gTransactions.GridRebind += gTransactions_GridRebind;
+            gTransactions.RowDataBound += gTransactions_RowDataBound;
+            gTransactions.IsDeleteEnabled = _canEdit;
+
+            // enable delete transaction
+            gTransactions.Columns[gTransactions.Columns.Count - 1].Visible = true;
+
+            int currentBatchId = PageParameter( "batchId" ).AsInteger();
+
+            if ( _canEdit )
             {
-                gTransactions.DataKeyNames = new string[] { "Id" };
-                gTransactions.Actions.ShowAdd = true;
-                gTransactions.Actions.AddClick += gTransactions_Add;
-                gTransactions.GridRebind += gTransactions_GridRebind;
-                gTransactions.RowDataBound += gTransactions_RowDataBound;
-                gTransactions.IsDeleteEnabled = true;
-
-                // enable delete transaction
-                gTransactions.Columns[gTransactions.Columns.Count - 1].Visible = true;
-
-                int currentBatchId = PageParameter( "batchId" ).AsInteger();
-
                 _ddlMove.ID = "ddlMove";
                 _ddlMove.CssClass = "pull-left input-width-xl";
                 _ddlMove.DataValueField = "Id";
                 _ddlMove.DataTextField = "Name";
                 _ddlMove.DataSource = new FinancialBatchService( new RockContext() )
                     .Queryable()
-                    .Where( b => 
+                    .Where( b =>
                         b.Status == BatchStatus.Open &&
                         b.BatchStartDateTime.HasValue &&
                         b.Id != currentBatchId )
@@ -120,12 +120,7 @@ namespace RockWeb.Blocks.Finance
                     .ToList();
                 _ddlMove.DataBind();
                 _ddlMove.Items.Insert( 0, new ListItem( "-- Move Transactions To Batch --", "" ) );
-
                 gTransactions.Actions.AddCustomActionControl( _ddlMove );
-            }
-            else
-            {
-                DisplayError( "You are not authorized to edit these transactions" );
             }
 
             this.BlockUpdated += Block_BlockUpdated;
@@ -180,7 +175,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            if ( UserCanEdit && _batch != null )
+            if ( _canEdit && _batch != null )
             {
                 string script = string.Format( @"
     $('#{0}').change(function( e ){{
@@ -225,7 +220,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 // If the batch is closed, do not allow any editing of the transactions
-                if ( _batch.Status != BatchStatus.Closed && _canConfigure )
+                if ( _batch.Status != BatchStatus.Closed && _canEdit )
                 {
                     gTransactions.Actions.ShowAdd = true;
                     gTransactions.IsDeleteEnabled = true;
@@ -630,7 +625,7 @@ namespace RockWeb.Blocks.Finance
                 qry = qry.Where( t => t.BatchId.HasValue && t.BatchId.Value == _batch.Id );
 
                 // If the batch is closed, do not allow any editing of the transactions
-                if ( _batch.Status != BatchStatus.Closed && _canConfigure )
+                if ( _batch.Status != BatchStatus.Closed && _canEdit )
                 {
                     gTransactions.IsDeleteEnabled = true;
                 }
@@ -668,12 +663,7 @@ namespace RockWeb.Blocks.Finance
                     qry = qry.Where( t => t.TransactionDateTime < upperDate );
                 }
 
-                // Row Limit
-                int? rowLimit = gfTransactions.GetUserPreference( "Row Limit" ).AsIntegerOrNull();
-                if (rowLimit.HasValue)
-                {
-                    qry = qry.Take( rowLimit.Value );
-                }
+                
 
                 // Amount Range
                 var nre = new NumberRangeEditor();
@@ -755,6 +745,13 @@ namespace RockWeb.Blocks.Finance
                 qry = qry.OrderBy( t => t.Id );
             }
 
+            // Row Limit
+            int? rowLimit = gfTransactions.GetUserPreference( "Row Limit" ).AsIntegerOrNull();
+            if ( rowLimit.HasValue )
+            {
+                qry = qry.Take( rowLimit.Value );
+            }
+
             gTransactions.DataSource = qry.AsNoTracking().ToList();
             gTransactions.DataBind();
         }
@@ -783,17 +780,6 @@ namespace RockWeb.Blocks.Finance
             {
                 NavigateToLinkedPage( "DetailPage", "transactionId", id );
             }
-        }
-
-        /// <summary>
-        /// Displays the error.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        private void DisplayError( string message )
-        {
-            valSummaryTop.Controls.Clear();
-            valSummaryTop.Controls.Add( new LiteralControl( message ) );
-            valSummaryTop.Visible = true;
         }
 
         #endregion Internal Methods

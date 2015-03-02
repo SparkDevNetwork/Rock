@@ -28,12 +28,35 @@ using Rock.Web.Cache;
 
 namespace RockWeb
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public partial class Error : System.Web.UI.Page
     {
+        /// <summary>
+        /// Handles the Init event of the Page control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Page_Init( object sender, EventArgs e )
         {
             // If this is an API call, set status code and exit
             if ( Request.Url.Query.Contains( Request.Url.Authority + ResolveUrl( "~/api/" ) ) )
+            {
+                Response.StatusCode = 500;
+                Response.Write( "An error has occurred. See the ExceptionLog in Rock for details." );
+                Response.Flush();
+                Response.End();
+                return;
+            }
+
+            // If this is an call to the handler page, set status code and exit
+            string[] handlers = new string[] {
+                Request.Url.Authority + ResolveUrl( "~/FileUploader.ashx" ),
+                Request.Url.Authority + ResolveUrl( "~/ImageUploader.ashx" )
+            };
+
+            if ( handlers.Any( a => Request.Url.Query.Contains( a ) ) )
             {
                 Response.StatusCode = 500;
                 Response.Write( "An error has occurred. See the ExceptionLog in Rock for details." );
@@ -69,7 +92,10 @@ namespace RockWeb
                     ShowException();
                 }
             }
-            catch { }
+            catch 
+            {
+                // intentionally ignore exception
+            }
         }
 
         /// <summary>
@@ -89,7 +115,7 @@ namespace RockWeb
             Exception ex = GetSavedValue( "RockLastException" ) as Exception;
             if ( ex != null )
             {
-                int? siteId = ( GetSavedValue( "Rock:SiteId" ) ?? "" ).ToString().AsIntegerOrNull();
+                int? siteId = ( GetSavedValue( "Rock:SiteId" ) ?? string.Empty ).ToString().AsIntegerOrNull();
                 if ( siteId.HasValue )
                 {
                     var site = SiteCache.Read( siteId.Value );
@@ -104,7 +130,7 @@ namespace RockWeb
                 pnlSecurity.Visible = false;
                 pnlException.Visible = true;
 
-                int? errorLevel = ( GetSavedValue( "RockExceptionOrder" ) ?? "" ).ToString().AsIntegerOrNull();
+                int? errorLevel = ( GetSavedValue( "RockExceptionOrder" ) ?? string.Empty ).ToString().AsIntegerOrNull();
 
                 ClearSavedValue( "RockExceptionOrder" );
                 ClearSavedValue( "RockLastException" );
@@ -120,13 +146,40 @@ namespace RockWeb
                         Group adminGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ) );
                         showDetails = userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0;
                     }
-                    catch { }
+                    catch 
+                    { 
+                        // ignore
+                    }
                 }
 
                 if ( showDetails )
                 {
                     lErrorInfo.Text = "<h3>Exception Log:</h3>";
                     ProcessException( ex, " " );
+                }
+
+                if ( Request.Headers["X-Requested-With"] == "XMLHttpRequest" )
+                {
+                    Response.StatusCode = 500;
+
+                    if ( showDetails )
+                    {
+                        // go get the important exception
+                        while ( ex.InnerException != null )
+                        {
+                            ex = ex.InnerException;
+                        }
+
+                        Response.Write( string.Format( "{0}<p><pre>{1}</pre>", ex.Message, ex.StackTrace ) );
+                    }
+                    else
+                    {
+                        Response.Write( "An error has occurred while processing your request.  Your organization's administrators have been notified of this problem." );
+                    }
+
+                    Response.Flush();
+                    Response.End();
+                    return;
                 }
             }
         }
@@ -147,7 +200,6 @@ namespace RockWeb
             // check for inner exception
             if ( ex.InnerException != null )
             {
-                //lErrorInfo.Text += "<p /><p />";
                 ProcessException( ex.InnerException, "-" + exLevel );
             }
         }
@@ -164,10 +216,12 @@ namespace RockWeb
             {
                 item = Context.Session[key];
             }
+
             if ( item == null )
             {
                 item = Context.Cache[key];
             }
+
             return item;
         }
 
@@ -181,8 +235,8 @@ namespace RockWeb
             {
                 Context.Session.Remove( key );
             }
+
             Context.Cache.Remove( key );
         }
-
     }
 }

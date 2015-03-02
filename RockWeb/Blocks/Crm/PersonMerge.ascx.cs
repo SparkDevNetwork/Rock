@@ -301,9 +301,9 @@ namespace RockWeb.Blocks.Crm
                     primaryPerson.IsDeceased = GetNewBoolValue( "Deceased", changes );
                     primaryPerson.Gender = (Gender)GetNewEnumValue( "Gender", typeof( Gender ), changes );
                     primaryPerson.MaritalStatusValueId = GetNewIntValue( "MaritalStatus", changes );
-                    primaryPerson.BirthDate = GetNewDateTimeValue( "BirthDate", changes );
+                    primaryPerson.SetBirthDate( GetNewDateTimeValue( "BirthDate", changes ) );
                     primaryPerson.AnniversaryDate = GetNewDateTimeValue( "AnniversaryDate", changes );
-                    primaryPerson.GraduationDate = GetNewDateTimeValue( "GraduationDate", changes );
+                    primaryPerson.GraduationYear = GetNewIntValue( "GraduationYear", changes );
                     primaryPerson.Email = GetNewStringValue( "Email", changes );
                     primaryPerson.IsEmailActive = GetNewBoolValue( "EmailActive", changes );
                     primaryPerson.EmailNote = GetNewStringValue( "EmailNote", changes );
@@ -956,7 +956,7 @@ namespace RockWeb.Blocks.Crm
             AddProperty( "MaritalStatus", person.Id, person.MaritalStatusValue );
             AddProperty( "BirthDate", person.Id, person.BirthDate );
             AddProperty( "AnniversaryDate", person.Id, person.AnniversaryDate );
-            AddProperty( "GraduationDate", person.Id, person.GraduationDate );
+            AddProperty( "GraduationYear", person.Id, person.GraduationYear.HasValue ? person.GraduationYear.ToString() : string.Empty );
             AddProperty( "Email", person.Id, person.Email );
             AddProperty( "EmailActive", person.Id, person.IsEmailActive );
             AddProperty( "EmailNote", person.Id, person.EmailNote );

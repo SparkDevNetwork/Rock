@@ -31,7 +31,7 @@
                 </asp:Panel>
             </div>
  
-            <Rock:ModalDialog ID="dlgKeyAttribute" runat="server" Title="Bookmarked Attributes" Content-Height="380" ValidationGroup="KeyAttribute" OnCancelScript="clearActiveDialog();" >
+            <Rock:ModalDialog ID="dlgKeyAttribute" runat="server" Title="Bookmarked Attributes" ValidationGroup="KeyAttribute" OnCancelScript="clearActiveDialog();" >
             <Content>
 
                 <Rock:RockDropDownList ID="ddlCategories" runat="server" Label="Category" AutoPostBack="true" OnSelectedIndexChanged="ddlCategories_SelectedIndexChanged" />

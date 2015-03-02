@@ -65,7 +65,7 @@
                             </div>
                         </Rock:PanelWidget>
 
-                        <Rock:PanelWidget ID="wpLocations" runat="server" Title="Meeting Details">
+                        <Rock:PanelWidget ID="wpMeetingDetails" runat="server" Title="Meeting Details">
                             <div class="grid">
                                 <Rock:Grid ID="gLocations" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location">
                                     <Columns>
@@ -77,6 +77,27 @@
                                     </Columns>
                                 </Rock:Grid>
                             </div>
+                            <asp:Panel ID="pnlSchedule" runat="server" Visible="false">
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:RockRadioButtonList ID="rblScheduleSelect" runat="server" Label="Group Schedule" CssClass="margin-b-sm" OnSelectedIndexChanged="rblScheduleSelect_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" /> 
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <Rock:DayOfWeekPicker ID="dowWeekly" runat="server" CssClass="input-width-md" Visible="false" Label="Day of the Week" />
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <Rock:TimePicker ID="timeWeekly" runat="server" Visible="false" Label="Time of Day" />
+                                            </div>
+                                        </div>
+                                        <Rock:SchedulePicker ID="spSchedule" runat="server" AllowMultiSelect="false" Visible="false" Label="Named Schedule" />
+                                        <asp:HiddenField ID="hfUniqueScheduleId" runat="server" />
+                                        <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ShowDuration="false" ShowScheduleFriendlyTextAsToolTip="true" Visible="false" Label="Custom Schedule" />
+                                    </div>
+                                </div>
+                            </asp:Panel>
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpGroupAttributes" runat="server" Title="Group Attribute Values">
@@ -129,8 +150,14 @@
 
                         <div class="row">
                             <div class="col-md-6">
-                                <asp:Literal ID="lblMainDetails" runat="server" />
-                                <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <asp:Literal ID="lblMainDetails" runat="server" />
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6 location-maps">
                                 <asp:PlaceHolder ID="phMaps" runat="server" />
@@ -143,6 +170,7 @@
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                             <span class="pull-right">
+                                <asp:HyperLink ID="hlAttendance" runat="server" CssClass="btn btn-sm btn-default" ToolTip="Attendance"><i class="fa fa-check-square-o"></i></asp:HyperLink>
                                 <asp:HyperLink ID="hlMap" runat="server" CssClass="btn btn-sm btn-default" ToolTip="Interactive Map"><i class="fa fa-map-marker"></i></asp:HyperLink>
                                 <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" Title="Secure Group" />
                             </span>

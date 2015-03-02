@@ -926,12 +926,15 @@ namespace RockWeb.Blocks.Reporting
                 var selectedAttributes = new Dictionary<int, AttributeCache>();
                 var selectedComponents = new Dictionary<int, ReportField>();
 
+                // if there is a selectField, keep it to preserve which items are checked
+                var selectField = gReport.Columns.OfType<SelectField>().FirstOrDefault();
                 gReport.Columns.Clear();
                 int columnIndex = 0;
 
                 if ( !string.IsNullOrWhiteSpace( gReport.PersonIdField ) )
                 {
-                    gReport.Columns.Add( new SelectField() );
+                    // if we already had a selectField, use it (to preserve checkbox state)
+                    gReport.Columns.Add( selectField ?? new SelectField() );
                     columnIndex++;
                 }
 

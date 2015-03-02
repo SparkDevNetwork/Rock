@@ -71,8 +71,35 @@
                                         </Rock:Grid>
                                     </div>
                                 </Rock:RockControlWrapper>
-                                <Rock:RockCheckBox ID="cbTakesAttendance" runat="server" Label="Takes Attendance" Text="Yes" 
-                                    Help="Check this option if groups of this type should support taking and tracking attendance." />
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbTakesAttendance" runat="server" Label="Takes Attendance" Text="Yes" 
+                                            Help="Check this option if groups of this type should support taking and tracking attendance." />
+                                        <Rock:RockCheckBox ID="cbSendAttendanceReminder" runat="server" Label="Send Attendance Reminder" Text="Yes"
+                                            Help="Check this option if an email should be sent to the group leaders of these group types reminding them to enter attendance information." />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBoxList ID="cblScheduleTypes" runat="server" Label="Group Schedule Options"
+                                            Help="The schedule option types to allow when editing groups of this type."/>
+                                    </div>
+                                </div>
+                                <Rock:RockControlWrapper ID="rcScheduleExclusions" runat="server" Label="Schedule Exclusions"
+                                    Help="The date ranges that groups of this type do not meet (regardless of their individual schedules).">
+                                    <div class="grid">
+                                        <Rock:Grid ID="gScheduleExclusions" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Exclusion">
+                                            <Columns>
+                                                <asp:TemplateField>
+                                                    <ItemTemplate>
+                                                        <%# ((DateTime)Eval("Value.Start")).ToShortDateString() %> - 
+                                                        <%# ((DateTime)Eval("Value.End")).ToShortDateString() %>
+                                                    </ItemTemplate>
+                                                </asp:TemplateField>
+                                                <Rock:EditField OnClick="gScheduleExclusions_Edit" />
+                                                <Rock:DeleteField OnClick="gScheduleExclusions_Delete" />
+                                            </Columns>
+                                        </Rock:Grid>
+                                    </div>
+                                </Rock:RockControlWrapper>
                                 <Rock:RockDropDownList ID="ddlAttendanceRule" runat="server" Label="Check-in Rule"
                                     Help="The rule that check in should use when a person attempts to check in to a group of this type.  If 'None' is selected, user will not be added to group and is not required to belong to group.  If 'Add On Check In' is selected, user will be added to group if they don't already belong.  If 'Already Belongs' is selected, user must already be a member of the group or they will not be allowed to check in." />
                                 <Rock:RockDropDownList ID="ddlPrintTo" runat="server" Label="Print Using" 
@@ -82,14 +109,14 @@
                                 </Rock:RockDropDownList>
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockCheckBoxList ID="cblLocationSelectionModes" runat="server" Label="Location Selection Modes"
-                                    Help="The location selection modes to allow when adding locations to groups of this type."/>
                                 <div class="row">
                                     <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Multiple Locations" Text="Allow" 
-                                            Help="Check this option if more than one location should be allowed for groups of this type." />
+                                         <Rock:RockCheckBoxList ID="cblLocationSelectionModes" runat="server" Label="Location Selection Modes"
+                                            Help="The location selection modes to allow when adding locations to groups of this type."/>
                                     </div>
                                     <div class="col-xs-6">
+                                       <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Multiple Locations" Text="Allow" 
+                                            Help="Check this option if more than one location should be allowed for groups of this type." />
                                         <Rock:RockCheckBox ID="cbEnableLocationSchedules" runat="server" Label="Enable Location Schedules" Text="Yes" 
                                             Help="Check this option if group locations should be associated with one or more pre-defined schedules." />
                                     </div>
@@ -296,6 +323,13 @@
         <Rock:ModalDialog ID="dlgChildGroupType" runat="server" OnSaveClick="dlgChildGroupType_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ChildGroupTypes">
             <Content>
                 <Rock:RockDropDownList ID="ddlChildGroupType" runat="server" DataTextField="Name" DataValueField="Id" Label="Child Group Type" ValidationGroup="ChildGroupTypes" />
+            </Content>
+        </Rock:ModalDialog>
+
+        <Rock:ModalDialog ID="dlgScheduleExclusion" runat="server" OnSaveClick="dlgScheduleExclusion_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ScheduleExclusion">
+            <Content>
+                <asp:HiddenField ID="hfScheduleExclusion" runat="server" />
+                <Rock:DateRangePicker ID="drpScheduleExclusion" runat="server" Label="Schedule Exclusion" ValidationGroup="ScheduleExclusion" />
             </Content>
         </Rock:ModalDialog>
 
