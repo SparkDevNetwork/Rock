@@ -1,5 +1,5 @@
 ﻿/*
-    Used to manage styles related to modal dialog.
+  Used to manage styles related to modal dialog.
 
 */
 
@@ -8,73 +8,73 @@
 @import (less) "./bootstrap-modal/bootstrap-modal.css";
 
 .modal-overflow.modal {
-    top: 48px;
+  top: 48px;
 }
 
 .modal-content {
-    border: 0;
-    background-color: @modal-body-bg;
+  border: 0;
+  background-color: @modal-body-bg;
+  color: @modal-body-text-color;
+
+  .modal-header {
+    background-color: @modal-header-bg;
+    color: @modal-header-text-color;
+    padding: 5px 15px;
+    min-height: 34px;
+    .clearfix();
+
+    h3 {
+      float: left;
+      margin-right: 12px;
+    }
+
+    .close {
+      margin: 0;
+      padding: 6px;
+      color: @modal-header-text-color;
+      text-shadow: none;
+    }
+
+    .label {
+      margin-top: 8px;
+    }
+
+    small {
+      margin-top: 12px;
+      display: block;
+      color: darken(@modal-header-text-color, 10%);
+    }
+  }
+
+  .modal-body {
     color: @modal-body-text-color;
+    text-align: left;
 
-    .modal-header {
-        background-color: @modal-header-bg;
-        color: @modal-header-text-color;
-        padding: 5px 15px;
-        min-height: 34px;
-        .clearfix();
-
-        h3 {
-            float: left;
-            margin-right: 12px;
-        }
-
-        .close {
-            margin: 0;
-            padding: 6px;
-            color: @modal-header-text-color;
-            text-shadow: none;
-        }
-
-        .label {
-            margin-top: 8px;
-        }
-
-        small {
-            margin-top: 12px;
-            display: block;
-            color: darken(@modal-header-text-color, 10%);
-        }
+    // styling for the top nav-pill naviagtion
+    .nav-pills {
+      margin: 6px 0 18px;
     }
 
-    .modal-body {
-        color: @modal-body-text-color;
-        text-align: left;
+    > .scroll-container {
+      width: 720px;
 
-        // styling for the top nav-pill naviagtion
-        .nav-pills {
-            margin: 6px 0 18px;
-        }
-
-        > .scroll-container {
-            width: 720px;
-
-            > .viewport {
-                width: 670px;
-            }
-        }
-
-        &.iframe {
-            overflow: hidden;
-        }
+      > .viewport {
+        width: 670px;
+      }
     }
 
-    .modal-footer {
-        padding: 8px;
-        margin-top: 10px;
-        background-color: @modal-footer-bg;
-        color: @modal-footer-text-color;
-        border-radius: 0 0 @border-radius-base @border-radius-base;
+    &.iframe {
+      overflow: hidden;
     }
+  }
+
+  .modal-footer {
+    padding: 8px;
+    margin-top: 10px;
+    background-color: @modal-footer-bg;
+    color: @modal-footer-text-color;
+    border-radius: 0 0 @border-radius-base @border-radius-base;
+  }
 }
 
 .modal-body {
@@ -90,24 +90,24 @@
 }
 
 #modal-popup_iframe {
-    height: 100%;
-    width: 100%;
-    border: 0;
-    display: block;
+  height: 100%;
+  width: 100%;
+  border: 0;
+  display: block;
 }
 
 
 // Bootbox Modal Overrides
 .bootbox .modal-dialog {
-    margin: 0;
-    width: auto;
+  margin: 0;
+  width: auto;
 }
 
 // bootstrap modal component overrides
-.modal-backdrop, 
+.modal-backdrop,
 .modal-backdrop.fade.in{
-	opacity: 0.7;
-	filter: alpha(opacity=70);
-	background: @modal-backdrop-bg;
+  opacity: 0.7;
+  filter: alpha(opacity=70);
+  background: @modal-backdrop-bg;
 }
 
