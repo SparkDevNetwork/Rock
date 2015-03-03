@@ -1,4 +1,4 @@
-@import url(http://fonts.googleapis.com/css?family=Montserrat:700);
+﻿@import url(http://fonts.googleapis.com/css?family=Montserrat:700);
 @import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
 /*
    Rock's Core CSS
@@ -3054,7 +3054,7 @@ table.attribute-grid tr th:nth-child(3) {
   overflow: hidden;
   text-align: left;
   text-indent: -999px;
-  background: url(../../../Assets/Images/sprite-cards.png) 0 0 no-repeat;
+  background: url(../../../../../Assets/Images/sprite-cards.png) 0 0 no-repeat;
 }
 .card-mastercard {
   background-position: -55px 0;
@@ -4126,6 +4126,12 @@ iframe.email-body {
   background-color: #18bc9c;
   color: #ffffff;
   border: 1px solid #128f76;
+}
+.body-bg {
+  background-color: #ffffff;
+}
+.text-color {
+  color: #2c3e50;
 }
 .padding-all-none {
   padding: 0 !important;

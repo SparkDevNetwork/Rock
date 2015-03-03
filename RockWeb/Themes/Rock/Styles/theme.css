@@ -1,4 +1,4 @@
-/*
+﻿/*
    Rock's Core CSS
 
     1. Imports - Used to import the various core less files
@@ -3052,7 +3052,7 @@ table.attribute-grid tr th:nth-child(3) {
   overflow: hidden;
   text-align: left;
   text-indent: -999px;
-  background: url(../../../Assets/Images/sprite-cards.png) 0 0 no-repeat;
+  background: url(../../../../../Assets/Images/sprite-cards.png) 0 0 no-repeat;
 }
 .card-mastercard {
   background-position: -55px 0;
@@ -4124,6 +4124,12 @@ iframe.email-body {
   background-color: #282526;
   color: #d3cec5;
   border: 1px solid #0e0c0d;
+}
+.body-bg {
+  background-color: #f3f3f4;
+}
+.text-color {
+  color: #6a6a6a;
 }
 .padding-all-none {
   padding: 0 !important;
@@ -5742,4 +5748,3 @@ body.navbar-side-close #content-wrapper {
 .title .first-word {
   font-weight: 900;
 }
-/*#endregion */

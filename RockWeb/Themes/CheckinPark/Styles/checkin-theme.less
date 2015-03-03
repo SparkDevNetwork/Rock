@@ -25,14 +25,14 @@
 @font-weight-bold:      700;
 @font-weight-semibold:  600;
 
-@bg-color:      #85b11c;
+@body-bg:      #85b11c;
 @text-color:    #fff;
 
-@modal-body-bg: @bg-color;
+@modal-body-bg: @body-bg;
 @modal-body-text-color: @text-color;
-@modal-header-bg: @bg-color;
+@modal-header-bg: @body-bg;
 @modal-header-text-color: @text-color;
-@modal-footer-bg: @bg-color;
+@modal-footer-bg: @body-bg;
 @modal-footer-text-color: @text-color;
 
 @header-text-color:     #fff;
@@ -128,7 +128,7 @@
 // Mix-ins
 // --------------------------------------------------
 .checkinBackground () {
-  	background: @bg-color url('../Assets/Images/background.jpg') top right no-repeat fixed;
+  	background: @body-bg url('../Assets/Images/background.jpg') top right no-repeat fixed;
 }
 
 .checkinBackgroundRetina()
