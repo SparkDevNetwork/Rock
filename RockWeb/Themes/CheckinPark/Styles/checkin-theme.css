@@ -8643,6 +8643,12 @@ Copyright (c) 2012 Dan Eden*/
   color: #ffffff;
   border: 1px solid #b41115;
 }
+.bg-color {
+  background-color: #ffffff;
+}
+.text-color {
+  color: #ffffff;
+}
 .padding-all-none {
   padding: 0 !important;
 }
