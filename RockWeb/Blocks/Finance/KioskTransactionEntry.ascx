@@ -17,6 +17,19 @@
             Sys.Application.add_load(function () {
 
                 //
+                // setup swipe detection
+                //
+                $(document).scannerDetection({
+                    
+                    preventDefault:true,
+                    onComplete: function (e, data) {
+                        console.log('e:' + e);
+                        console.log('data:' + data);
+                        return false;
+                    }
+                });
+
+                //
                 // search 
                 //
                 if ($(".js-pnlsearch").is(":visible")) {

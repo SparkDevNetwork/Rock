@@ -1,39 +1,46 @@
 <div class="alert alert-success">
 
 	{% if GaveAnonymous == 'False' %}
-		<strong>{{ FirstNames }}, thank you for your contribution
+		<strong>
+      {{ FirstNames }}, thank you for your contribution.
 
-		{% if {{ReceiptEmailed == 'True'}} %}
-			, a receipt has been emailed to {{ ReceiptEmail }}
-		{% endif %}.
+      {% if {{ReceiptEmailed == 'True'}} %}
+      A receipt has been emailed to {{ ReceiptEmail | ObfuscateEmail }}.
+      {% endif %}
 
-	{% else %}
-		<strong>Thank you for your contribution.
-	{% endif %}
-
+      {% else %}
+      Thank you for your contribution.
+      {% endif %}
+    </strong>
 </div>
 
 <div class="panel panel-default">
 	<div class="panel-body">
-		<strong>Gift Details</strong>
+		<h4>Gift Details</h4>
 
-		<table>
-			<tr>
-				<th>Account</th>
-				<th>Amount</th>
-			</tr>
+		<table class="table">
+      <thead>
+        <tr>
+				  <th>Account</th>
+				  <th>Amount</th>
+			  </tr>
+      </thead>
 
+      <tbody>
 			{% for amount in Amounts %}
 				<tr>
 					<td>{{ amount.AccountName }}</td>
-					<td>{{ amount.Amount }}</td>
+					<td>{{ 'Global' | Attribute:'CurrencySymbol' }} {{ amount.Amount }}</td>
 				</tr>
 			{% endfor %}
+      </tbody>
 
-			<tr>
-				<td></td>
-				<td style="border-top: 1px solid #000">{{ TotalAmount }}</td>
-			</tr>
+      <tfoot>
+			  <tr>
+				  <td></td>
+				  <td style="border-top: 1px solid #000">{{ 'Global' | Attribute:'CurrencySymbol' }} {{ TotalAmount }}</td>
+			  </tr>
+      </tfoot>
 
 		</table>
 	</div>
