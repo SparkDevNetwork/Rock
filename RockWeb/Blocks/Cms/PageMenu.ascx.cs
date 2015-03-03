@@ -91,70 +91,84 @@ namespace RockWeb.Blocks.Cms
 
         private void Render()
         {
-            RockContext rockContext = new RockContext();
-            PageCache currentPage = PageCache.Read( RockPage.PageId, rockContext );
-            PageCache rootPage = null;
-
-            Guid pageGuid = Guid.Empty;
-            if ( Guid.TryParse( GetAttributeValue( ROOT_PAGE ), out pageGuid ) )
+            try
             {
-                rootPage = PageCache.Read( pageGuid );
+                RockContext rockContext = new RockContext();
+                PageCache currentPage = PageCache.Read( RockPage.PageId, rockContext );
+                PageCache rootPage = null;
+
+                Guid pageGuid = Guid.Empty;
+                if ( Guid.TryParse( GetAttributeValue( ROOT_PAGE ), out pageGuid ) )
+                {
+                    rootPage = PageCache.Read( pageGuid );
+                }
+
+                // If a root page was not found, use current page
+                if ( rootPage == null )
+                {
+                    rootPage = currentPage;
+                }
+
+                int levelsDeep = Convert.ToInt32( GetAttributeValue( NUM_LEVELS ) );
+
+                Dictionary<string, string> pageParameters = null;
+                if ( GetAttributeValue( "IncludeCurrentParameters" ).AsBoolean() )
+                {
+                    pageParameters = CurrentPageReference.Parameters;
+                }
+
+                NameValueCollection queryString = null;
+                if ( GetAttributeValue( "IncludeCurrentQueryString" ).AsBoolean() )
+                {
+                    queryString = CurrentPageReference.QueryString;
+                }
+
+                // Get list of pages in curren't page's heirarchy
+                var pageHeirarchy = new List<int>();
+                if ( currentPage != null )
+                {
+                    pageHeirarchy = currentPage.GetPageHierarchy().Select( p => p.Id ).ToList();
+                }
+
+                var pageProperties = new Dictionary<string, object>();
+                pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
+                string content = GetTemplate().Render( Hash.FromDictionary( pageProperties ) );
+
+                // check for errors
+                if ( content.Contains( "error" ) )
+                {
+                    content = "<div class='alert alert-warning'><h4>Warning</h4>" + content + "</div>";
+                }
+
+                phContent.Controls.Clear();
+                phContent.Controls.Add( new LiteralControl( content ) );
+
+                // add debug info
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+                {
+                    StringBuilder tipInfo = new StringBuilder();
+                    tipInfo.Append( "<p /><div class='alert alert-success' style='clear: both;'><h4>Page Menu Tips</h4>" );
+
+                    tipInfo.Append( "<p><em>Note:</em> If a page or group of pages is not in the data above check the following: <ul>" );
+                    tipInfo.Append( "<li>The parent page has 'Show Child Pages' enabled in the 'Page Properties' > 'Display Settings'</li>" );
+                    tipInfo.Append( "<li>Check the 'Display Settings' on the child pages</li>" );
+                    tipInfo.Append( "<li>Check the security of the child pages</li>" );
+                    tipInfo.Append( "</ul><br /></p>" );
+                    tipInfo.Append( "</div>" );
+
+                    phContent.Controls.Add( new LiteralControl( tipInfo.ToString() + pageProperties.lavaDebugInfo() ) );
+                }
             }
-
-            // If a root page was not found, use current page
-            if ( rootPage == null )
+            catch ( Exception ex )
             {
-                rootPage = currentPage;
-            }
+                StringBuilder errorMessage = new StringBuilder();
+                errorMessage.Append( "<div class='alert alert-warning'>");
+                errorMessage.Append( "An error has occurred while generating the page menu. Error details:" );
+                errorMessage.Append( ex.Message );
+                errorMessage.Append( "</div>" );
 
-            int levelsDeep = Convert.ToInt32( GetAttributeValue( NUM_LEVELS ) );
-
-            Dictionary<string, string> pageParameters = null;
-            if ( GetAttributeValue( "IncludeCurrentParameters" ).AsBoolean() )
-            {
-                pageParameters = CurrentPageReference.Parameters;
-            }
-
-            NameValueCollection queryString = null;
-            if ( GetAttributeValue( "IncludeCurrentQueryString" ).AsBoolean() )
-            {
-                queryString = CurrentPageReference.QueryString;
-            }
-
-            // Get list of pages in curren't page's heirarchy
-            var pageHeirarchy = new List<int>();
-            if ( currentPage != null )
-            {
-                pageHeirarchy = currentPage.GetPageHierarchy().Select( p => p.Id ).ToList();
-            }
-
-            var pageProperties = new Dictionary<string, object>();
-            pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
-            string content = GetTemplate().Render( Hash.FromDictionary( pageProperties ) );
-
-            // check for errors
-            if ( content.Contains( "error" ) )
-            {
-                content = "<div class='alert alert-warning'><h4>Warning</h4>" + content + "</div>";
-            }
-
-            phContent.Controls.Clear();
-            phContent.Controls.Add( new LiteralControl( content ) );
-
-            // add debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                StringBuilder tipInfo = new StringBuilder();
-                tipInfo.Append( "<p /><div class='alert alert-success' style='clear: both;'><h4>Page Menu Tips</h4>" );
-
-                tipInfo.Append( "<p><em>Note:</em> If a page or group of pages is not in the data above check the following: <ul>" );
-                tipInfo.Append( "<li>The parent page has 'Show Child Pages' enabled in the 'Page Properties' > 'Display Settings'</li>" );
-                tipInfo.Append( "<li>Check the 'Display Settings' on the child pages</li>" );
-                tipInfo.Append( "<li>Check the security of the child pages</li>" );
-                tipInfo.Append( "</ul><br /></p>" );
-                tipInfo.Append( "</div>" );
-
-                phContent.Controls.Add( new LiteralControl( tipInfo.ToString() + pageProperties.lavaDebugInfo() ) );
+                phContent.Controls.Add( new LiteralControl( errorMessage.ToString()) );
+                
             }
 
         }
