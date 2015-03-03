@@ -8652,3 +8652,11 @@ Copyright (c) 2012 Dan Eden*/
   background-color: #1e1e1e;
   border-top-color: #444444;
 }
+.block-instance.welcome h1 {
+  display: none;
+}
+.block-instance.welcome .checkin-search-actions {
+  width: 100%;
+  text-align: center;
+  margin-top: 25%;
+}
