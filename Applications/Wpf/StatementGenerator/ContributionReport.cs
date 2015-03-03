@@ -58,11 +58,20 @@ namespace Rock.Apps.StatementGenerator
 
         /// <summary>
         /// Gets or sets the person unique identifier.
+        /// NULL means to get all individuals
         /// </summary>
         /// <value>
         /// The person unique identifier.
         /// </value>
         public int? PersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [include individuals with no address].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [include individuals with no address]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeIndividualsWithNoAddress { get; set; }
 
         /// <summary>
         /// Gets or sets the layout file.
@@ -184,11 +193,13 @@ namespace Rock.Apps.StatementGenerator
             // shouldn't happen, but just in case the StartDate isn't set, set it to the first day of the current year
             DateTime firstDayOfYear = new DateTime( DateTime.Now.Year, 1, 1 );
 
+            // note: if a specific person is specified, get them even if they don't have an address. 
             _contributionStatementOptionsREST = new Rock.Net.RestParameters.ContributionStatementOptions
             {
                 StartDate = Options.StartDate ?? firstDayOfYear,
                 EndDate = Options.EndDate,
                 AccountIds = Options.AccountIds,
+                IncludeIndividualsWithNoAddress = Options.PersonId.HasValue || Options.IncludeIndividualsWithNoAddress,
                 PersonId = Options.PersonId,
                 OrderByPostalCode = true
             };

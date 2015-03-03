@@ -60,7 +60,7 @@ namespace Rock.Model
  
             if ( new Service<Group>( Context ).Queryable().Any( a => a.ParentGroupId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Group.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} contains one or more child {1}.", Group.FriendlyTypeName, Group.FriendlyTypeName.Pluralize().ToLower() );
                 return false;
             }  
  
@@ -122,6 +122,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Order = source.Order;
             target.ParentGroupId = source.ParentGroupId;
+            target.ScheduleId = source.ScheduleId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

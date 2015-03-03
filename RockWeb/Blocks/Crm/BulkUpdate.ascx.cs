@@ -78,56 +78,9 @@ namespace RockWeb.Blocks.Crm
             ddlInactiveReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ) );
             ddlReviewReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_REVIEW_REASON ) ), true );
 
-            DateTime? gradeTransitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime();
-            if ( gradeTransitionDate.HasValue )
-            {
-                _gradeTransitionDate = gradeTransitionDate.Value;
-            }
+            ScriptManager.RegisterStartupScript( ddlGradePicker, ddlGradePicker.GetType(), "grade-selection-" + BlockId.ToString(), ddlGradePicker.GetJavascriptForYearPicker( ypGraduation ), true );
 
-            ddlGrade.Items.Clear();
-            ddlGrade.Items.Add( new ListItem( "", "" ) );
-            ddlGrade.Items.Add( new ListItem( "K", "0" ) );
-            ddlGrade.Items.Add( new ListItem( "1st", "1" ) );
-            ddlGrade.Items.Add( new ListItem( "2nd", "2" ) );
-            ddlGrade.Items.Add( new ListItem( "3rd", "3" ) );
-            ddlGrade.Items.Add( new ListItem( "4th", "4" ) );
-            ddlGrade.Items.Add( new ListItem( "5th", "5" ) );
-            ddlGrade.Items.Add( new ListItem( "6th", "6" ) );
-            ddlGrade.Items.Add( new ListItem( "7th", "7" ) );
-            ddlGrade.Items.Add( new ListItem( "8th", "8" ) );
-            ddlGrade.Items.Add( new ListItem( "9th", "9" ) );
-            ddlGrade.Items.Add( new ListItem( "10th", "10" ) );
-            ddlGrade.Items.Add( new ListItem( "11th", "11" ) );
-            ddlGrade.Items.Add( new ListItem( "12th", "12" ) );
-
-            int gradeFactorReactor = ( RockDateTime.Now < _gradeTransitionDate ) ? 12 : 13;
-
-            string script = string.Format( @"
-    $('#{0}').change(function(){{
-        if ($(this).val() == '') {{
-            $('#{1}').val('');
-        }} else {{
-            $('#{1}').val( {2} + ( {3} - parseInt( $(this).val() ) ) );
-        }} 
-    }});
-
-    $('#{1}').change(function(){{
-        if ($(this).val() == '') {{
-            $('#{0}').val('');
-        }} else {{
-            var grade = {3} - ( parseInt( $(this).val() ) - {4} );
-            if (grade >= 0 && grade <= 12) {{
-                $('#{0}').val(grade.toString());
-            }} else {{
-                $('#{0}').val('');
-            }}
-        }}
-    }});
-
-", ddlGrade.ClientID, ypGraduation.ClientID, _gradeTransitionDate.Year, gradeFactorReactor, RockDateTime.Now.Year );
-            ScriptManager.RegisterStartupScript( ddlGrade, ddlGrade.GetType(), "grade-selection-" + BlockId.ToString(), script, true );
-
-            script = @"
+            string script = @"
     $('a.remove-all-individuals').click(function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to remove all of the individuals from this update?', function (result) {
@@ -170,6 +123,7 @@ namespace RockWeb.Blocks.Crm
             if ( $(this).prop('id') == '{1}' ) {{
                 $('#{2}').toggleClass('aspNetDisabled', !enabled);
                 $('#{2}').prop('disabled', !enabled);
+                $('#{2}').closest('.form-group').toggleClass('bulk-item-selected', enabled)
             }}
 
         }});
@@ -186,7 +140,7 @@ namespace RockWeb.Blocks.Crm
         $('#{0}').val(newValue);            
 
     }});
-", hfSelectedItems.ClientID, ddlGrade.ClientID, ypGraduation.ClientID );
+", hfSelectedItems.ClientID, ddlGradePicker.ClientID, ypGraduation.ClientID );
             ScriptManager.RegisterStartupScript( hfSelectedItems, hfSelectedItems.GetType(), "select-items-" + BlockId.ToString(), script, true );
 
             ddlGroupAction.SelectedValue = "Add";
@@ -234,7 +188,6 @@ namespace RockWeb.Blocks.Crm
             if ( !Page.IsPostBack )
             {
                 cpCampus.Campuses = CampusCache.All( rockContext );
-                cpCampus.Required = true;
 
                 Individuals = new List<Individual>();
                 SelectedFields = new List<string>();
@@ -450,14 +403,14 @@ namespace RockWeb.Blocks.Crm
                     EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( newMaritalStatusId ) );
                 }
 
-                if ( SelectedFields.Contains( ddlGrade.ClientID ) )
+                if ( SelectedFields.Contains( ddlGradePicker.ClientID ) )
                 {
-                    DateTime? newGraduationDate = null;
+                    int? newGraduationYear = null;
                     if ( ypGraduation.SelectedYear.HasValue )
                     {
-                        newGraduationDate = new DateTime( ypGraduation.SelectedYear.Value, _gradeTransitionDate.Month, _gradeTransitionDate.Day );
+                        newGraduationYear = ypGraduation.SelectedYear.Value;
                     }
-                    EvaluateChange( changes, "Graduation Date", newGraduationDate );
+                    EvaluateChange( changes, "Graduation Year", newGraduationYear );
                 }
 
                 if ( SelectedFields.Contains( ddlIsEmailActive.ClientID ) )
@@ -703,209 +656,215 @@ namespace RockWeb.Blocks.Crm
                 var personService = new PersonService( rockContext );
                 var ids = Individuals.Select( i => i.PersonId ).ToList();
 
-                var personEntityType = EntityTypeCache.Read( "Rock.Model.Person" );
-                if ( personEntityType != null )
+                #region Individual Details Updates
+
+                int? newTitleId = ddlTitle.SelectedValueAsInt();
+                int? newSuffixId = ddlSuffix.SelectedValueAsInt();
+                int? newConnectionStatusId = ddlStatus.SelectedValueAsInt();
+                int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
+                int? newInactiveReasonId = ddlInactiveReason.SelectedValueAsInt();
+                string newInactiveReasonNote = tbInactiveReasonNote.Text;
+                Gender newGender = ddlGender.SelectedValue.ConvertToEnum<Gender>();
+                int? newMaritalStatusId = ddlMaritalStatus.SelectedValueAsInt();
+
+                int? newGraduationYear = null;
+                if ( ypGraduation.SelectedYear.HasValue )
                 {
-                    int personEntityTypeId = personEntityType.Id;
+                    newGraduationYear = ypGraduation.SelectedYear.Value;
+                }
 
-                    #region Individual Details Updates
+                int? newCampusId = cpCampus.SelectedCampusId;
 
-                    int? newTitleId = ddlTitle.SelectedValueAsInt();
-                    int? newSuffixId = ddlSuffix.SelectedValueAsInt();
-                    int? newConnectionStatusId = ddlStatus.SelectedValueAsInt();
-                    int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
-                    int? newInactiveReasonId = ddlInactiveReason.SelectedValueAsInt();
-                    string newInactiveReasonNote = tbInactiveReasonNote.Text;
-                    Gender newGender = ddlGender.SelectedValue.ConvertToEnum<Gender>();
-                    int? newMaritalStatusId = ddlMaritalStatus.SelectedValueAsInt();
+                bool? newEmailActive = null;
+                if ( !string.IsNullOrWhiteSpace( ddlIsEmailActive.SelectedValue ) )
+                {
+                    newEmailActive = ddlIsEmailActive.SelectedValue == "Active";
+                }
 
-                    DateTime? newGraduationDate = null;
-                    if ( ypGraduation.SelectedYear.HasValue )
+                EmailPreference? newEmailPreference = ddlEmailPreference.SelectedValue.ConvertToEnumOrNull<EmailPreference>();
+
+                string newEmailNote = tbEmailNote.Text;
+
+
+                int? newReviewReason = ddlReviewReason.SelectedValueAsInt();
+                string newSystemNote = tbSystemNote.Text;
+                string newReviewReasonNote = tbReviewReasonNote.Text;
+
+                int inactiveStatusId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id;
+
+                var allChanges = new Dictionary<int, List<string>>();
+
+                var people = personService.Queryable().Where( p => ids.Contains( p.Id ) ).ToList();
+                foreach ( var person in people )
+                {
+                    var changes = new List<string>();
+                    allChanges.Add( person.Id, changes );
+
+                    if ( SelectedFields.Contains( ddlTitle.ClientID ) )
                     {
-                        newGraduationDate = new DateTime( ypGraduation.SelectedYear.Value, _gradeTransitionDate.Month, _gradeTransitionDate.Day );
+                        History.EvaluateChange( changes, "Title", DefinedValueCache.GetName( person.TitleValueId ), DefinedValueCache.GetName( newTitleId ) );
+                        person.TitleValueId = newTitleId;
                     }
 
-                    int? newCampusId = cpCampus.SelectedCampusId;
-
-                    bool? newEmailActive = null;
-                    if ( !string.IsNullOrWhiteSpace( ddlIsEmailActive.SelectedValue ) )
+                    if ( SelectedFields.Contains( ddlSuffix.ClientID ) )
                     {
-                        newEmailActive = ddlIsEmailActive.SelectedValue == "Active";
+                        History.EvaluateChange( changes, "Suffix", DefinedValueCache.GetName( person.SuffixValueId ), DefinedValueCache.GetName( newSuffixId ) );
+                        person.SuffixValueId = newSuffixId;
                     }
 
-                    EmailPreference? newEmailPreference = ddlEmailPreference.SelectedValue.ConvertToEnumOrNull<EmailPreference>();
-                    
-                    string newEmailNote = tbEmailNote.Text;
-
-
-                    int? newReviewReason = ddlReviewReason.SelectedValueAsInt();
-                    string newSystemNote = tbSystemNote.Text;
-                    string newReviewReasonNote = tbReviewReasonNote.Text;
-
-                    int inactiveStatusId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id;
-
-                    var allChanges = new Dictionary<int, List<string>>();
-
-                    var people = personService.Queryable().Where( p => ids.Contains( p.Id ) ).ToList();
-                    foreach ( var person in people )
+                    if ( SelectedFields.Contains( ddlStatus.ClientID ) )
                     {
-                        var changes = new List<string>();
-                        allChanges.Add( person.Id, changes );
+                        History.EvaluateChange( changes, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
+                        person.ConnectionStatusValueId = newConnectionStatusId;
+                    }
 
-                        if ( SelectedFields.Contains( ddlTitle.ClientID ) )
+                    if ( SelectedFields.Contains( ddlRecordStatus.ClientID ) )
+                    {
+                        History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), DefinedValueCache.GetName( newRecordStatusId ) );
+                        person.RecordStatusValueId = newRecordStatusId;
+
+                        if ( newRecordStatusId.HasValue && newRecordStatusId.Value == inactiveStatusId )
                         {
-                            History.EvaluateChange( changes, "Title", DefinedValueCache.GetName( person.TitleValueId ), DefinedValueCache.GetName( newTitleId ) );
-                            person.TitleValueId = newTitleId;
-                        }
+                            History.EvaluateChange( changes, "Inactive Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( newInactiveReasonId ) );
+                            person.RecordStatusReasonValueId = newInactiveReasonId;
 
-                        if ( SelectedFields.Contains( ddlSuffix.ClientID ) )
-                        {
-                            History.EvaluateChange( changes, "Suffix", DefinedValueCache.GetName( person.SuffixValueId ), DefinedValueCache.GetName( newSuffixId ) );
-                            person.SuffixValueId = newSuffixId;
-                        }
-
-                        if ( SelectedFields.Contains( ddlStatus.ClientID ) )
-                        {
-                            History.EvaluateChange( changes, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
-                            person.ConnectionStatusValueId = newConnectionStatusId;
-                        }
-
-                        if ( SelectedFields.Contains( ddlRecordStatus.ClientID ) )
-                        {
-                            History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), DefinedValueCache.GetName( newRecordStatusId ) );
-                            person.RecordStatusValueId = newRecordStatusId;
-
-                            if ( newRecordStatusId.HasValue && newRecordStatusId.Value == inactiveStatusId )
+                            if ( !string.IsNullOrWhiteSpace( newInactiveReasonNote ) )
                             {
-                                History.EvaluateChange( changes, "Inactive Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( newInactiveReasonId ) );
-                                person.RecordStatusReasonValueId = newInactiveReasonId;
-
-                                if ( !string.IsNullOrWhiteSpace( newInactiveReasonNote ) )
-                                {
-                                    History.EvaluateChange( changes, "Inactive Reason Note", person.InactiveReasonNote, newInactiveReasonNote );
-                                    person.InactiveReasonNote = newInactiveReasonNote;
-                                }
+                                History.EvaluateChange( changes, "Inactive Reason Note", person.InactiveReasonNote, newInactiveReasonNote );
+                                person.InactiveReasonNote = newInactiveReasonNote;
                             }
                         }
-
-                        if ( SelectedFields.Contains( ddlGender.ClientID ) )
-                        {
-                            History.EvaluateChange( changes, "Gender", person.Gender, newGender );
-                            person.Gender = newGender;
-                        }
-
-                        if ( SelectedFields.Contains( ddlMaritalStatus.ClientID ) )
-                        {
-                            History.EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
-                            person.MaritalStatusValueId = newMaritalStatusId;
-                        }
-
-                        if ( SelectedFields.Contains( ddlGrade.ClientID ) )
-                        {
-                            History.EvaluateChange( changes, "Graduation Date", person.GraduationDate, newGraduationDate );
-                            person.GraduationDate = newGraduationDate;
-                        }
-
-                        if ( SelectedFields.Contains( ddlIsEmailActive.ClientID ) )
-                        {
-                            History.EvaluateChange( changes, "Email Is Active", person.IsEmailActive ?? true, newEmailActive.Value );
-                            person.IsEmailActive = newEmailActive;
-                        }
-
-                        if ( SelectedFields.Contains( ddlEmailPreference.ClientID ) )
-                        {
-                            History.EvaluateChange( changes, "Email Preference", person.EmailPreference, newEmailPreference );
-                            person.EmailPreference = newEmailPreference.Value;
-                        }
-
-                        if ( SelectedFields.Contains( tbEmailNote.ClientID ) )
-                        {
-                            History.EvaluateChange( changes, "Email Note", person.EmailNote, newEmailNote );
-                            person.EmailNote = newEmailNote;
-                        }
-
-                        if ( SelectedFields.Contains( tbSystemNote.ClientID ) )
-                        {
-                            History.EvaluateChange( changes, "System Note", person.SystemNote, newSystemNote );
-                            person.SystemNote = newSystemNote;
-                        }
-
-                        if ( SelectedFields.Contains( ddlReviewReason.ClientID ) )
-                        {
-                            History.EvaluateChange( changes, "Review Reason", DefinedValueCache.GetName( person.ReviewReasonValueId ), DefinedValueCache.GetName( newReviewReason ) );
-                            person.ReviewReasonValueId = newReviewReason;
-                        }
-
-                        if ( SelectedFields.Contains( tbReviewReasonNote.ClientID ) )
-                        {
-                            History.EvaluateChange( changes, "Review Reason Note", person.ReviewReasonNote, newReviewReasonNote );
-                            person.ReviewReasonNote = newReviewReasonNote;
-                        }
                     }
 
-                    if ( SelectedFields.Contains( cpCampus.ClientID ) && cpCampus.SelectedCampusId.HasValue )
+                    if ( SelectedFields.Contains( ddlGender.ClientID ) )
                     {
-                        int campusId = cpCampus.SelectedCampusId.Value;
+                        History.EvaluateChange( changes, "Gender", person.Gender, newGender );
+                        person.Gender = newGender;
+                    }
 
-                        Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                    if ( SelectedFields.Contains( ddlMaritalStatus.ClientID ) )
+                    {
+                        History.EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
+                        person.MaritalStatusValueId = newMaritalStatusId;
+                    }
 
-                        var familyMembers = new GroupMemberService( rockContext ).Queryable()
-                            .Where( m => ids.Contains( m.PersonId ) && m.Group.GroupType.Guid == familyGuid )
-                            .Select( m => new { m.PersonId, m.GroupId })
-                            .Distinct()
-                            .ToList();
+                    if ( SelectedFields.Contains( ddlGradePicker.ClientID ) )
+                    {
+                        History.EvaluateChange( changes, "Graduation Year", person.GraduationYear, newGraduationYear );
+                        person.GraduationYear = newGraduationYear;
+                    }
 
-                        var families = new GroupMemberService( rockContext ).Queryable()
-                            .Where( m => ids.Contains( m.PersonId ) && m.Group.GroupType.Guid == familyGuid )
-                            .Select( m => m.Group )
-                            .Distinct()
-                            .ToList();
+                    if ( SelectedFields.Contains( ddlIsEmailActive.ClientID ) )
+                    {
+                        History.EvaluateChange( changes, "Email Is Active", person.IsEmailActive ?? true, newEmailActive.Value );
+                        person.IsEmailActive = newEmailActive;
+                    }
 
-                        foreach (int personId in ids)
+                    if ( SelectedFields.Contains( ddlEmailPreference.ClientID ) )
+                    {
+                        History.EvaluateChange( changes, "Email Preference", person.EmailPreference, newEmailPreference );
+                        person.EmailPreference = newEmailPreference.Value;
+                    }
+
+                    if ( SelectedFields.Contains( tbEmailNote.ClientID ) )
+                    {
+                        History.EvaluateChange( changes, "Email Note", person.EmailNote, newEmailNote );
+                        person.EmailNote = newEmailNote;
+                    }
+
+                    if ( SelectedFields.Contains( tbSystemNote.ClientID ) )
+                    {
+                        History.EvaluateChange( changes, "System Note", person.SystemNote, newSystemNote );
+                        person.SystemNote = newSystemNote;
+                    }
+
+                    if ( SelectedFields.Contains( ddlReviewReason.ClientID ) )
+                    {
+                        History.EvaluateChange( changes, "Review Reason", DefinedValueCache.GetName( person.ReviewReasonValueId ), DefinedValueCache.GetName( newReviewReason ) );
+                        person.ReviewReasonValueId = newReviewReason;
+                    }
+
+                    if ( SelectedFields.Contains( tbReviewReasonNote.ClientID ) )
+                    {
+                        History.EvaluateChange( changes, "Review Reason Note", person.ReviewReasonNote, newReviewReasonNote );
+                        person.ReviewReasonNote = newReviewReasonNote;
+                    }
+                }
+
+                if ( SelectedFields.Contains( cpCampus.ClientID ) && cpCampus.SelectedCampusId.HasValue )
+                {
+                    int campusId = cpCampus.SelectedCampusId.Value;
+
+                    Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+
+                    var familyMembers = new GroupMemberService( rockContext ).Queryable()
+                        .Where( m => ids.Contains( m.PersonId ) && m.Group.GroupType.Guid == familyGuid )
+                        .Select( m => new { m.PersonId, m.GroupId } )
+                        .Distinct()
+                        .ToList();
+
+                    var families = new GroupMemberService( rockContext ).Queryable()
+                        .Where( m => ids.Contains( m.PersonId ) && m.Group.GroupType.Guid == familyGuid )
+                        .Select( m => m.Group )
+                        .Distinct()
+                        .ToList();
+
+                    foreach ( int personId in ids )
+                    {
+                        var familyIds = familyMembers.Where( m => m.PersonId == personId ).Select( m => m.GroupId ).ToList();
+                        if ( familyIds.Count == 1 )
                         {
-                            var familyIds = familyMembers.Where( m => m.PersonId == personId ).Select( m => m.GroupId ).ToList();
-                            if (familyIds.Count == 1)
+                            int familyId = familyIds.FirstOrDefault();
+                            var family = families.Where( g => g.Id == familyId ).FirstOrDefault();
                             {
-                                int familyId = familyIds.FirstOrDefault();
-                                var family = families.Where( g => g.Id == familyId).FirstOrDefault();
+                                if ( family != null )
                                 {
-                                    if (family != null)
-                                    {
-                                        family.CampusId = campusId;
-                                    }
-                                    familyMembers.RemoveAll( m => m.GroupId == familyId );
+                                    family.CampusId = campusId;
                                 }
+                                familyMembers.RemoveAll( m => m.GroupId == familyId );
                             }
                         }
-
-                        rockContext.SaveChanges();
                     }
 
-                    // Update following
-                    if ( SelectedFields.Contains( ddlFollow.ClientID ) )
+                    rockContext.SaveChanges();
+                }
+
+                // Update following
+                if ( SelectedFields.Contains( ddlFollow.ClientID ) )
+                {
+                    var personAliasEntityType = EntityTypeCache.Read( "Rock.Model.PersonAlias" );
+                    if ( personAliasEntityType != null )
                     {
+                        int personAliasEntityTypeId = personAliasEntityType.Id;
+
+
                         bool follow = true;
                         if ( !string.IsNullOrWhiteSpace( ddlFollow.SelectedValue ) )
                         {
                             follow = ddlFollow.SelectedValue == "Add";
                         }
 
+                        var personAliasService = new PersonAliasService( rockContext );
                         var followingService = new FollowingService( rockContext );
                         if ( follow )
                         {
-                            var alreadyFollingIds = followingService.Queryable()
+                            var paQry = personAliasService.Queryable();
+
+                            var alreadyFollowingIds = followingService.Queryable()
                                 .Where( f =>
-                                    f.EntityTypeId == personEntityTypeId &&
+                                    f.EntityTypeId == personAliasEntityTypeId &&
                                     f.PersonAlias.Id == CurrentPersonAlias.Id )
-                                .Select( f => f.EntityId )
+                                .Join( paQry, f => f.EntityId, p => p.Id, ( f, p ) => new { PersonAlias = p } )
+                                .Select( p => p.PersonAlias.PersonId )
                                 .Distinct()
                                 .ToList();
-                            foreach ( int id in ids.Where( id => !alreadyFollingIds.Contains( id ) ) )
+
+                            foreach ( int id in ids.Where( id => !alreadyFollowingIds.Contains( id ) ) )
                             {
                                 var following = new Following
                                 {
-                                    EntityTypeId = personEntityTypeId,
-                                    EntityId = id,
+                                    EntityTypeId = personAliasEntityTypeId,
+                                    EntityId = ( people.FirstOrDefault( p => p.Id == id ).PrimaryAliasId ) ?? 0,
                                     PersonAliasId = CurrentPersonAlias.Id
                                 };
                                 followingService.Add( following );
@@ -913,267 +872,237 @@ namespace RockWeb.Blocks.Crm
                         }
                         else
                         {
+                            var paQry = personAliasService.Queryable()
+                                .Where( p => ids.Contains( p.PersonId ) )
+                                .Select( p => p.Id );
+
                             foreach ( var following in followingService.Queryable()
                                 .Where( f =>
-                                    f.EntityTypeId == personEntityTypeId &&
-                                    ids.Contains( f.EntityId ) &&
+                                    f.EntityTypeId == personAliasEntityTypeId &&
+                                    paQry.Contains( f.EntityId ) &&
                                     f.PersonAlias.Id == CurrentPersonAlias.Id ) )
                             {
                                 followingService.Delete( following );
                             }
                         }
                     }
+                }
 
-                    rockContext.SaveChanges();
+                rockContext.SaveChanges();
 
-                    #endregion
+                #endregion
 
-                    #region Attributes
+                #region Attributes
 
-                    var selectedCategories = new List<CategoryCache>();
-                    foreach ( string categoryGuid in GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues() )
+                var selectedCategories = new List<CategoryCache>();
+                foreach ( string categoryGuid in GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues() )
+                {
+                    var category = CategoryCache.Read( categoryGuid.AsGuid(), rockContext );
+                    if ( category != null )
                     {
-                        var category = CategoryCache.Read( categoryGuid.AsGuid(), rockContext );
-                        if ( category != null )
+                        selectedCategories.Add( category );
+                    }
+                }
+
+                var attributes = new List<AttributeCache>();
+                var attributeValues = new Dictionary<int, string>();
+
+                int categoryIndex = 0;
+                foreach ( var category in selectedCategories.OrderBy( c => c.Name ) )
+                {
+                    PanelWidget pw = null;
+                    string controlId = "pwAttributes_" + category.Id.ToString();
+                    if ( categoryIndex % 2 == 0 )
+                    {
+                        pw = phAttributesCol1.FindControl( controlId ) as PanelWidget;
+                    }
+                    else
+                    {
+                        pw = phAttributesCol2.FindControl( controlId ) as PanelWidget;
+                    }
+                    categoryIndex++;
+
+                    if ( pw != null )
+                    {
+                        var orderedAttributeList = new AttributeService( rockContext ).GetByCategoryId( category.Id )
+                            .OrderBy( a => a.Order ).ThenBy( a => a.Name );
+                        foreach ( var attribute in orderedAttributeList )
                         {
-                            selectedCategories.Add( category );
+                            if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                            {
+                                var attributeCache = AttributeCache.Read( attribute.Id );
+
+                                Control attributeControl = pw.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
+
+                                if ( attributeControl != null && SelectedFields.Contains( attributeControl.ClientID ) )
+                                {
+                                    string newValue = attributeCache.FieldType.Field.GetEditValue( attributeControl, attributeCache.QualifierValues );
+                                    attributes.Add( attributeCache );
+                                    attributeValues.Add( attributeCache.Id, newValue );
+                                }
+                            }
                         }
                     }
+                }
 
-                    var attributes = new List<AttributeCache>();
-                    var attributeValues = new Dictionary<int, string>();
-
-                    int categoryIndex = 0;
-                    foreach ( var category in selectedCategories.OrderBy( c => c.Name ) )
+                if ( attributes.Any() )
+                {
+                    foreach ( var person in people )
                     {
-                        PanelWidget pw = null;
-                        string controlId = "pwAttributes_" + category.Id.ToString();
-                        if ( categoryIndex % 2 == 0 )
+                        person.LoadAttributes();
+                        foreach ( var attribute in attributes )
                         {
-                            pw = phAttributesCol1.FindControl( controlId ) as PanelWidget;
+                            string originalValue = person.GetAttributeValue( attribute.Key );
+                            string newValue = attributeValues[attribute.Id];
+                            if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
+                            {
+                                Rock.Attribute.Helper.SaveAttributeValue( person, attribute, newValue, rockContext );
+
+                                string formattedOriginalValue = string.Empty;
+                                if ( !string.IsNullOrWhiteSpace( originalValue ) )
+                                {
+                                    formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
+                                }
+
+                                string formattedNewValue = string.Empty;
+                                if ( !string.IsNullOrWhiteSpace( newValue ) )
+                                {
+                                    formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
+                                }
+
+                                History.EvaluateChange( allChanges[person.Id], attribute.Name, formattedOriginalValue, formattedNewValue );
+                            }
+                        }
+                    }
+                }
+
+                // Create the history records
+                foreach ( var changes in allChanges )
+                {
+                    if ( changes.Value.Any() )
+                    {
+                        HistoryService.AddChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                            changes.Key, changes.Value );
+                    }
+                }
+                rockContext.SaveChanges();
+
+                #endregion
+
+                #region Add Note
+
+                if ( !string.IsNullOrWhiteSpace( tbNote.Text ) && CurrentPerson != null )
+                {
+                    string text = tbNote.Text;
+                    bool isAlert = cbIsAlert.Checked;
+                    bool isPrivate = cbIsPrivate.Checked;
+
+                    var noteTypeService = new NoteTypeService( rockContext );
+                    var noteType = noteTypeService.Get( Rock.SystemGuid.NoteType.PERSON_TIMELINE.AsGuid() );
+                    if ( noteType != null )
+                    {
+                        var notes = new List<Note>();
+                        var noteService = new NoteService( rockContext );
+
+                        foreach ( int id in ids )
+                        {
+                            var note = new Note();
+                            note.IsSystem = false;
+                            note.EntityId = id;
+                            note.Caption = isPrivate ? "You - Personal Note" : string.Empty;
+                            note.Text = tbNote.Text;
+                            note.IsAlert = cbIsAlert.Checked;
+                            note.NoteType = noteType;
+                            notes.Add( note );
+                            noteService.Add( note );
+                        }
+
+                        rockContext.WrapTransaction( () =>
+                        {
+                            rockContext.SaveChanges();
+                            foreach ( var note in notes )
+                            {
+                                note.AllowPerson( Authorization.EDIT, CurrentPerson, rockContext );
+                                if ( isPrivate )
+                                {
+                                    note.MakePrivate( Authorization.VIEW, CurrentPerson, rockContext );
+                                }
+                            }
+                        } );
+
+                    }
+                }
+
+                #endregion
+
+                #region Group
+
+                int? groupId = gpGroup.SelectedValue.AsIntegerOrNull();
+                if ( groupId.HasValue )
+                {
+                    var group = new GroupService( rockContext ).Get( groupId.Value );
+                    if ( group != null )
+                    {
+                        var groupMemberService = new GroupMemberService( rockContext );
+
+                        var existingMembers = groupMemberService.Queryable( "Group" )
+                            .Where( m =>
+                                m.GroupId == group.Id &&
+                                ids.Contains( m.PersonId ) )
+                            .ToList();
+
+                        string action = ddlGroupAction.SelectedValue;
+                        if ( action == "Remove" )
+                        {
+                            groupMemberService.DeleteRange( existingMembers );
+                            rockContext.SaveChanges();
                         }
                         else
                         {
-                            pw = phAttributesCol2.FindControl( controlId) as PanelWidget;
-                        }
-                        categoryIndex++;
+                            var roleId = ddlGroupRole.SelectedValueAsInt();
+                            var status = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
 
-                        if ( pw != null )
-                        {
-                            var orderedAttributeList = new AttributeService( rockContext ).GetByCategoryId( category.Id )
-                                .OrderBy( a => a.Order ).ThenBy( a => a.Name );
-                            foreach ( var attribute in orderedAttributeList )
+                            // Get the attribute values updated
+                            var gm = new GroupMember();
+                            gm.Group = group;
+                            gm.GroupId = group.Id;
+                            gm.LoadAttributes( rockContext );
+                            var selectedGroupAttributes = new List<AttributeCache>();
+                            var selectedGroupAttributeValues = new Dictionary<string, string>();
+                            foreach ( var attributeCache in gm.Attributes.Select( a => a.Value ) )
                             {
-                                if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                                Control attributeControl = phAttributes.FindControl( string.Format( "attribute_field_{0}", attributeCache.Id ) );
+                                if ( attributeControl != null && ( action == "Add" || SelectedFields.Contains( attributeControl.ClientID ) ) )
                                 {
-                                    var attributeCache = AttributeCache.Read( attribute.Id );
-
-                                    Control attributeControl = pw.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
-                                    
-                                    if ( attributeControl != null && SelectedFields.Contains( attributeControl.ClientID ) )
-                                    {
-                                        string newValue = attributeCache.FieldType.Field.GetEditValue( attributeControl, attributeCache.QualifierValues );
-                                        attributes.Add( attributeCache);
-                                        attributeValues.Add( attributeCache.Id, newValue );
-                                    }
+                                    string newValue = attributeCache.FieldType.Field.GetEditValue( attributeControl, attributeCache.QualifierValues );
+                                    selectedGroupAttributes.Add( attributeCache );
+                                    selectedGroupAttributeValues.Add( attributeCache.Key, newValue );
                                 }
                             }
-                        }
-                    }
 
-                    if (attributes.Any())
-                    {
-                        foreach ( var person in people )
-                        {
-                            person.LoadAttributes();
-                            foreach ( var attribute in attributes )
+                            if ( action == "Add" )
                             {
-                                string originalValue = person.GetAttributeValue( attribute.Key );
-                                string newValue = attributeValues[attribute.Id];
-                                if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
+                                if ( roleId.HasValue )
                                 {
-                                    Rock.Attribute.Helper.SaveAttributeValue( person, attribute, newValue, rockContext );
+                                    var newGroupMembers = new List<GroupMember>();
 
-                                    string formattedOriginalValue = string.Empty;
-                                    if ( !string.IsNullOrWhiteSpace( originalValue ) )
+                                    var existingIds = existingMembers.Select( m => m.PersonId ).Distinct().ToList();
+                                    foreach ( int id in ids.Where( id => !existingIds.Contains( id ) ) )
                                     {
-                                        formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
-                                    }
-
-                                    string formattedNewValue = string.Empty;
-                                    if ( !string.IsNullOrWhiteSpace( newValue ) )
-                                    {
-                                        formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
-                                    }
-
-                                    History.EvaluateChange( allChanges[person.Id], attribute.Name, formattedOriginalValue, formattedNewValue );
-                                }
-                            }
-                        }
-                    }
-
-                    // Create the history records
-                    foreach ( var changes in allChanges )
-                    {
-                        if ( changes.Value.Any() )
-                        {
-                            HistoryService.AddChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                changes.Key, changes.Value );
-                        }
-                    }
-                    rockContext.SaveChanges();
-
-                    #endregion
-
-                    #region Add Note
-
-                    if ( !string.IsNullOrWhiteSpace( tbNote.Text ) && CurrentPerson != null )
-                    {
-                        string text = tbNote.Text;
-                        bool isAlert = cbIsAlert.Checked;
-                        bool isPrivate = cbIsPrivate.Checked;
-
-                        var noteTypeService = new NoteTypeService( rockContext );
-                        var noteType = noteTypeService.Get( Rock.SystemGuid.NoteType.PERSON_TIMELINE.AsGuid() );
-                        if ( noteType != null )
-                        {
-                            var notes = new List<Note>();
-                            var noteService = new NoteService( rockContext );
-
-                            foreach ( int id in ids )
-                            {
-                                var note = new Note();
-                                note.IsSystem = false;
-                                note.EntityId = id;
-                                note.Caption = isPrivate ? "You - Personal Note" : string.Empty;
-                                note.Text = tbNote.Text;
-                                note.IsAlert = cbIsAlert.Checked;
-                                note.NoteType = noteType;
-                                notes.Add( note );
-                                noteService.Add( note );
-                            }
-
-                            rockContext.WrapTransaction( () =>
-                            {
-                                rockContext.SaveChanges();
-                                foreach( var note in notes)
-                                {
-                                    note.AllowPerson( Authorization.EDIT, CurrentPerson, rockContext );
-                                    if ( isPrivate)
-                                    {
-                                        note.MakePrivate( Authorization.VIEW, CurrentPerson, rockContext );
-                                    }
-                                }
-                            } );
-
-                        }
-                    }
-
-                    #endregion
-
-                    #region Group
-
-                    int? groupId = gpGroup.SelectedValue.AsIntegerOrNull();
-                    if ( groupId.HasValue )
-                    {
-                        var group = new GroupService( rockContext ).Get( groupId.Value );
-                        if ( group != null )
-                        {
-                            var groupMemberService = new GroupMemberService( rockContext );
-
-                            var existingMembers = groupMemberService.Queryable( "Group" )
-                                .Where( m => 
-                                    m.GroupId == group.Id &&
-                                    ids.Contains( m.PersonId ) )
-                                .ToList();
-
-                            string action = ddlGroupAction.SelectedValue;
-                            if ( action == "Remove" )
-                            {
-                                groupMemberService.DeleteRange( existingMembers );
-                                rockContext.SaveChanges();
-                            }
-                            else
-                            {
-                                var roleId = ddlGroupRole.SelectedValueAsInt();
-                                var status = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
-
-                                // Get the attribute values updated
-                                var gm = new GroupMember();
-                                gm.Group = group;
-                                gm.GroupId = group.Id;
-                                gm.LoadAttributes( rockContext );
-                                var selectedGroupAttributes = new List<AttributeCache>();
-                                var selectedGroupAttributeValues = new Dictionary<string, string>();
-                                foreach ( var attributeCache in gm.Attributes.Select( a => a.Value ) )
-                                {
-                                    Control attributeControl = phAttributes.FindControl( string.Format( "attribute_field_{0}", attributeCache.Id ) );
-                                    if ( attributeControl != null && ( action == "Add" || SelectedFields.Contains( attributeControl.ClientID ) ) )
-                                    {
-                                        string newValue = attributeCache.FieldType.Field.GetEditValue( attributeControl, attributeCache.QualifierValues );
-                                        selectedGroupAttributes.Add( attributeCache );
-                                        selectedGroupAttributeValues.Add( attributeCache.Key, newValue );
-                                    }
-                                }
-
-                                if ( action == "Add" )
-                                {
-                                    if ( roleId.HasValue )
-                                    {
-                                        var newGroupMembers = new List<GroupMember>();
-
-                                        var existingIds = existingMembers.Select( m => m.PersonId ).Distinct().ToList();
-                                        foreach ( int id in ids.Where( id => !existingIds.Contains(id)))
-                                        {
-                                            var groupMember = new GroupMember();
-                                            groupMember.GroupId = group.Id;
-                                            groupMember.GroupRoleId = roleId.Value;
-                                            groupMember.GroupMemberStatus = status;
-                                            groupMember.PersonId = id;
-                                            groupMemberService.Add( groupMember );
-                                            newGroupMembers.Add( groupMember );
-                                        }
-
-                                        rockContext.SaveChanges();
-
-                                        if ( selectedGroupAttributes.Any() )
-                                        {
-                                            foreach ( var groupMember in newGroupMembers )
-                                            {
-                                                foreach ( var attribute in selectedGroupAttributes )
-                                                {
-                                                    Rock.Attribute.Helper.SaveAttributeValue( groupMember, attribute, selectedGroupAttributeValues[attribute.Key], rockContext );
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                else // Update
-                                {
-                                    if ( SelectedFields.Contains( ddlGroupRole.ClientID ) && roleId.HasValue )
-                                    {
-                                        foreach ( var member in existingMembers.Where( m => m.GroupRoleId != roleId.Value ) )
-                                        {
-                                            if ( !existingMembers.Where( m => m.PersonId == member.PersonId && m.GroupRoleId == roleId.Value ).Any() )
-                                            {
-                                                member.GroupRoleId = roleId.Value;
-                                            }
-                                        }
-                                    }
-
-                                    if ( SelectedFields.Contains( ddlGroupMemberStatus.ClientID ) )
-                                    {
-                                        foreach ( var member in existingMembers )
-                                        {
-                                            member.GroupMemberStatus = status;
-                                        }
+                                        var groupMember = new GroupMember();
+                                        groupMember.GroupId = group.Id;
+                                        groupMember.GroupRoleId = roleId.Value;
+                                        groupMember.GroupMemberStatus = status;
+                                        groupMember.PersonId = id;
+                                        groupMemberService.Add( groupMember );
+                                        newGroupMembers.Add( groupMember );
                                     }
 
                                     rockContext.SaveChanges();
 
                                     if ( selectedGroupAttributes.Any() )
                                     {
-                                        foreach ( var groupMember in existingMembers )
+                                        foreach ( var groupMember in newGroupMembers )
                                         {
                                             foreach ( var attribute in selectedGroupAttributes )
                                             {
@@ -1183,11 +1112,45 @@ namespace RockWeb.Blocks.Crm
                                     }
                                 }
                             }
+                            else // Update
+                            {
+                                if ( SelectedFields.Contains( ddlGroupRole.ClientID ) && roleId.HasValue )
+                                {
+                                    foreach ( var member in existingMembers.Where( m => m.GroupRoleId != roleId.Value ) )
+                                    {
+                                        if ( !existingMembers.Where( m => m.PersonId == member.PersonId && m.GroupRoleId == roleId.Value ).Any() )
+                                        {
+                                            member.GroupRoleId = roleId.Value;
+                                        }
+                                    }
+                                }
+
+                                if ( SelectedFields.Contains( ddlGroupMemberStatus.ClientID ) )
+                                {
+                                    foreach ( var member in existingMembers )
+                                    {
+                                        member.GroupMemberStatus = status;
+                                    }
+                                }
+
+                                rockContext.SaveChanges();
+
+                                if ( selectedGroupAttributes.Any() )
+                                {
+                                    foreach ( var groupMember in existingMembers )
+                                    {
+                                        foreach ( var attribute in selectedGroupAttributes )
+                                        {
+                                            Rock.Attribute.Helper.SaveAttributeValue( groupMember, attribute, selectedGroupAttributeValues[attribute.Key], rockContext );
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
-
-                    #endregion
                 }
+
+                #endregion
 
                 pnlEntry.Visible = false;
                 pnlConfirm.Visible = false;
@@ -1272,8 +1235,8 @@ namespace RockWeb.Blocks.Crm
             SetControlSelection( ddlStatus, "Connection Status" );
             SetControlSelection( ddlGender, "Gender" );
             SetControlSelection( ddlMaritalStatus, "Marital Status" );
-            SetControlSelection( ddlGrade, "Grade" );
-            ypGraduation.Enabled = ddlGrade.Enabled;
+            SetControlSelection( ddlGradePicker, GlobalAttributesCache.Read().GetValue( "core.GradeLabel" ) );
+            ypGraduation.Enabled = ddlGradePicker.Enabled;
 
             SetControlSelection( cpCampus, "Campus" );
             SetControlSelection( ddlSuffix, "Suffix" );

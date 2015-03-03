@@ -75,14 +75,24 @@ namespace Rock.Utility
         public override void WriteToStream( Type type, object value, System.IO.Stream writeStream, Encoding effectiveEncoding )
         {
             // query should be filtered by now, so iterate thru items and load attributes before the response is serialized
-            if ( LoadAttributes && value is IEnumerable<Rock.Attribute.IHasAttributes> )
+            if ( LoadAttributes )
             {
-                var rockContext = new Rock.Data.RockContext();
-
-                // if the REST call specified that Attributes should be loaded
-                foreach ( var item in value as IEnumerable<Rock.Attribute.IHasAttributes> )
+                if ( value is IEnumerable<Rock.Attribute.IHasAttributes> )
                 {
-                    item.LoadAttributes( rockContext );
+                    var rockContext = new Rock.Data.RockContext();
+
+                    // if the REST call specified that Attributes should be loaded and we are returning a list of IHasAttributes..
+                    foreach ( var item in value as IEnumerable<Rock.Attribute.IHasAttributes> )
+                    {
+                        item.LoadAttributes( rockContext );
+                    }
+                }
+                else if (value is Rock.Attribute.IHasAttributes)
+                {
+                    var rockContext = new Rock.Data.RockContext();
+                    
+                    // if the REST call specified that Attributes should be loaded and we are returning a single IHasAttributes..
+                    (value as Rock.Attribute.IHasAttributes).LoadAttributes( rockContext );
                 }
             }
 

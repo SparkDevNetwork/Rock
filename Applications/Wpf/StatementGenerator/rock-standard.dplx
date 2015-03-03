@@ -56,7 +56,7 @@
 				</query>
 				<header id="Header1"/>
 				<detail id="OrgDetail" height="100">
-					<image height="51" path="logo.jpg" width="137" x="0" y="0" id="imgLogo"/>
+					<image path="logo.jpg" x="0" id="imgLogo" y="0" height="50" width="150"/>
 					<recordArea x="0" width="252" id="raOrganizationAddress" height="42" y="54" fontSize="10">
 						<text>#Street1#, #City# #State# #PostalCode#
 </text>

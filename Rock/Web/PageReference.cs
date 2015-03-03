@@ -153,6 +153,7 @@ namespace Rock.Web
         /// <param name="pageId">The page id.</param>
         public PageReference( int pageId )
         {
+            Parameters = new Dictionary<string, string>();
             PageId = pageId;
         }
 

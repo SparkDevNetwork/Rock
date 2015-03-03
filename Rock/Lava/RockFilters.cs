@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Web;
+using System.Web.UI.HtmlControls;
 using DotLiquid;
 using DotLiquid.Util;
 using Humanizer;
@@ -27,6 +29,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Lava
 {
@@ -660,7 +663,11 @@ namespace Rock.Lava
                     .FirstOrDefault( a => a.Key.Equals(attributeKey, StringComparison.OrdinalIgnoreCase));
                 if (attribute != null )
                 {
-                    rawValue = globalAttributeCache.GetValue( attributeKey );
+                    // Get the value
+                    string theValue = globalAttributeCache.GetValue( attributeKey );
+
+                    // Global attributes may reference other global attributes, so try to resolve this value again
+                    rawValue = theValue.ResolveMergeFields( new Dictionary<string, object>() );
                 }
             }
 
@@ -684,10 +691,26 @@ namespace Rock.Lava
             if ( attribute != null && !string.IsNullOrWhiteSpace( rawValue ) )
             {
                 Person currentPerson = null;
-                var httpContext = System.Web.HttpContext.Current;
-                if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
+
+                // First check for a person override value included in lava context
+                if ( context.Scopes != null )
                 {
-                    currentPerson = httpContext.Items["CurrentPerson"] as Person;
+                    foreach ( var scopeHash in context.Scopes )
+                    {
+                        if ( scopeHash.ContainsKey( "CurrentPerson" ) )
+                        {
+                            currentPerson = scopeHash["CurrentPerson"] as Person;
+                        }
+                    }
+                }
+
+                if ( currentPerson == null )
+                {
+                    var httpContext = System.Web.HttpContext.Current;
+                    if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
+                    {
+                        currentPerson = httpContext.Items["CurrentPerson"] as Person;
+                    }
                 }
 
                 if ( attribute.IsAuthorized( Authorization.VIEW, currentPerson ) )
@@ -885,7 +908,7 @@ namespace Rock.Lava
 
         #endregion
 
-        #region Object Filters
+        #region Misc Filters
 
         /// <summary>
         /// creates a postback javascript function
@@ -903,6 +926,60 @@ namespace Rock.Lava
             {
                 return string.Empty;
             }
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string ToJSON (object input)
+        {
+            return input.ToJson();
+        }
+
+        /// <summary>
+        /// adds a meta tag to the head of the document
+        /// </summary>
+        /// <param name="input">The input to use for the content attribute of the tag.</param>
+        /// <param name="command">Attribute name to use for the meta tag (usually 'name' or 'property').</param>
+        /// <param name="command">Attribute value to use for the attribute name.</param>
+        /// <returns></returns>
+        public static string AddMetaTagToHead( string input, string attributeName, string attributeValue )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            if ( page != null )
+            {
+                HtmlMeta metaTag = new HtmlMeta();
+                metaTag.Attributes.Add( attributeName, attributeValue );
+                metaTag.Content = input;
+                page.Header.Controls.Add( metaTag );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// adds a link tag to the head of the document
+        /// </summary>
+        /// <param name="input">The input to use for the href of the tag.</param>
+        /// <param name="command">Attribute name to use for the link tag (usually 'rel').</param>
+        /// <param name="command">Attribute value to use for the attribute name.</param>
+        /// <returns></returns>
+        public static string AddLinkTagToHead( string input, string attributeName, string attributeValue )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            if ( page != null )
+            {
+                HtmlLink imageLink = new HtmlLink();
+                imageLink.Attributes.Add( attributeName, attributeValue );
+                imageLink.Attributes.Add( "href", input );
+                page.Header.Controls.Add( imageLink );
+            }
+
+            return null;
         }
 
         #endregion

@@ -165,6 +165,14 @@ namespace Rock.Model
         [DataMember]
         public bool TakesAttendance { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating if an attendance reminder should be sent to group leaders.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [send attendance reminder]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool SendAttendanceReminder { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.AttendanceRule"/> that indicates how attendance is managed a <see cref="Rock.Model.Group"/> of this GroupType
@@ -212,6 +220,15 @@ namespace Rock.Model
         /// <value>A <see cref="System.Int32"/> representing the Id of a GroupType to inherit properties and values from.</value>
         [DataMember]
         public int? InheritedGroupTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the allowed schedule types.
+        /// </summary>
+        /// <value>
+        /// The allowed schedule types.
+        /// </value>
+        [DataMember]
+        public ScheduleType AllowedScheduleTypes { get; set; }
 
         /// <summary>
         /// Gets or sets selection mode that the Location Picker should use when adding locations to groups of this type
@@ -307,6 +324,19 @@ namespace Rock.Model
             set { _roles = value; }
         }
         private ICollection<GroupTypeRole> _roles;
+
+        /// <summary>
+        /// Gets or sets the group schedule exclusions.
+        /// </summary>
+        /// <value>
+        /// The group schedule exclusions.
+        /// </value>
+        public virtual ICollection<GroupScheduleExclusion> GroupScheduleExclusions
+        {
+            get { return _groupScheduleExclusions ?? ( _groupScheduleExclusions = new Collection<GroupScheduleExclusion>() ); }
+            set { _groupScheduleExclusions = value; }
+        }
+        private ICollection<GroupScheduleExclusion> _groupScheduleExclusions;
 
         /// <summary>
         /// Gets or sets a collection of the <see cref="Rock.Model.GroupTypeLocationType">GroupTypeLocationTypes</see> that are associated with this GroupType.

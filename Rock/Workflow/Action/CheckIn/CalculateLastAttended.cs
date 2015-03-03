@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
@@ -54,9 +55,15 @@ namespace Rock.Workflow.Action.CheckIn
                 {
                     foreach ( var person in family.People )
                     {
+                        person.FirstTime = !attendanceService
+                            .Queryable().AsNoTracking()
+                            .Where( a => a.PersonAlias.PersonId == person.Person.Id )
+                            .Any();
+
                         foreach ( var groupType in person.GroupTypes )
                         {
-                            var groupTypeCheckIns = attendanceService.Queryable()
+                            var groupTypeCheckIns = attendanceService
+                                .Queryable().AsNoTracking()
                                 .Where( a =>
                                     a.PersonAlias.PersonId == person.Person.Id &&
                                     a.Group.GroupTypeId == groupType.GroupType.Id &&

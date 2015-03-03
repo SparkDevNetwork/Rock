@@ -77,6 +77,7 @@
     7. Responsive Overrides
     8. Side Navbar
     9. Person Details
+    10. First Word Weight
 
 */
 
@@ -90,6 +91,11 @@
 /*#region
 // 2. HTML Overrides         */
 // -------------------------
+
+html {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+}
 
 main {
     display: block;
@@ -817,7 +823,8 @@ body.navbar-side-close {
     .personprofilebar-family,
     .pagetabs,
     .person-content {
-        padding: 0 15px;
+        padding-left: 15px;
+        padding-right: 15px;
     }
 
     .personprofilebar-bio {
@@ -829,4 +836,16 @@ body.navbar-side-close {
     }
 }
 
+/*#endregion */
+
+/*#region
+// 10. First Word Weight  */
+// -------------------------
+.title {
+    font-weight: @font-weight-light;
+
+    .first-word {
+        font-weight: @font-weight-bold;
+    }
+}
 /*#endregion */

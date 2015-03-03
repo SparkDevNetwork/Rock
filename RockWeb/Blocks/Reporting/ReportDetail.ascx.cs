@@ -546,27 +546,8 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="entityTypeId">The entity type identifier.</param>
         private void LoadDropdownsForEntityType( int? entityTypeId )
         {
-            if ( entityTypeId.HasValue )
-            {
-                var rockContext = new RockContext();
-                ddlDataView.Enabled = true;
-                ddlDataView.Items.Clear();
-
-                foreach ( var dataView in new DataViewService( new RockContext() ).GetByEntityTypeId( entityTypeId.Value ).ToList() )
-                {
-                    if ( dataView.IsAuthorized( Authorization.VIEW, this.CurrentPerson, rockContext ) )
-                    {
-                        ddlDataView.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
-                    }
-                }
-
-                ddlDataView.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
-            }
-            else
-            {
-                ddlDataView.Enabled = false;
-                ddlDataView.Items.Clear();
-            }
+            ddlDataView.EntityTypeId = entityTypeId;
+            ddlDataView.Enabled = entityTypeId.HasValue;
         }
 
         /// <summary>
@@ -926,12 +907,15 @@ namespace RockWeb.Blocks.Reporting
                 var selectedAttributes = new Dictionary<int, AttributeCache>();
                 var selectedComponents = new Dictionary<int, ReportField>();
 
+                // if there is a selectField, keep it to preserve which items are checked
+                var selectField = gReport.Columns.OfType<SelectField>().FirstOrDefault();
                 gReport.Columns.Clear();
                 int columnIndex = 0;
 
                 if ( !string.IsNullOrWhiteSpace( gReport.PersonIdField ) )
                 {
-                    gReport.Columns.Add( new SelectField() );
+                    // if we already had a selectField, use it (to preserve checkbox state)
+                    gReport.Columns.Add( selectField ?? new SelectField() );
                     columnIndex++;
                 }
 
@@ -947,16 +931,7 @@ namespace RockWeb.Blocks.Reporting
                         {
                             selectedEntityFields.Add( columnIndex, entityField );
 
-                            BoundField boundField;
-                            if ( entityField.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid() ) )
-                            {
-                                boundField = new DefinedValueField();
-                            }
-                            else
-                            {
-                                boundField = Grid.GetGridField( entityField.PropertyType );
-                            }
-
+                            BoundField boundField = entityField.GetBoundFieldType();
                             boundField.DataField = string.Format( "Entity_{0}_{1}", entityField.Name, columnIndex );
                             boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? entityField.Title : reportField.ColumnHeaderText;
                             boundField.SortExpression = boundField.DataField;
@@ -1044,15 +1019,7 @@ namespace RockWeb.Blocks.Reporting
                         columnIndex++;
                         selectedEntityFields.Add( columnIndex, entityField );
 
-                        BoundField boundField;
-                        if ( entityField.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid() ) )
-                        {
-                            boundField = new DefinedValueField();
-                        }
-                        else
-                        {
-                            boundField = Grid.GetGridField( entityField.PropertyType );
-                        }
+                        BoundField boundField = entityField.GetBoundFieldType();
 
                         boundField.DataField = string.Format( "Entity_{0}_{1}", entityField.Name, columnIndex );
                         boundField.HeaderText = entityField.Name;

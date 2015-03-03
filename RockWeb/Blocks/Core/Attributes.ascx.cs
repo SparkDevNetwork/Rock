@@ -84,7 +84,13 @@ namespace RockWeb.Blocks.Core
             _entityQualifierColumn = GetAttributeValue( "EntityQualifierColumn" );
             _entityQualifierValue = GetAttributeValue( "EntityQualifierValue" );
             _displayValueEdit = GetAttributeValue( "AllowSettingofValues" ).AsBooleanOrNull() ?? false;
-            _entityId = GetAttributeValue( "EntityId" ).AsIntegerOrNull() ?? 0;
+
+            _entityId = GetAttributeValue( "EntityId" ).AsIntegerOrNull();
+            if ( _entityId == 0 )
+            {
+                _entityId = null;
+            }
+
             _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
 
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
@@ -458,7 +464,7 @@ namespace RockWeb.Blocks.Core
                     rockContext.SaveChanges();
 
                     Rock.Web.Cache.AttributeCache.Flush( attributeId );
-                    if ( !_entityTypeId.HasValue && _entityQualifierColumn == string.Empty && _entityQualifierValue == string.Empty && !_entityId.HasValue )
+                    if ( !_entityTypeId.HasValue && _entityQualifierColumn == string.Empty && _entityQualifierValue == string.Empty && ( !_entityId.HasValue || _entityId.Value == 0 ) )
                     {
                         Rock.Web.Cache.GlobalAttributesCache.Flush();
                     }

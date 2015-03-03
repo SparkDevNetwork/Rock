@@ -42,6 +42,7 @@
                              IsChecked="True"
                              Checked="radPersons_Checked"
                              GroupName="radSelect" />
+                <CheckBox Name="ckIncludeIndividualsWithNoAddress" Content="Include individuals that don't have a mailing address" Margin="16,4,8,8" IsChecked="False" />
                 <RadioButton Name="radSingle"
                                  Content="Single individual"
                                  Checked="radPersons_Checked"

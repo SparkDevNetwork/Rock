@@ -31,14 +31,6 @@ namespace Rock.Communication
     public abstract class MediumComponent : Component
     {
         /// <summary>
-        /// Gets the control path.
-        /// </summary>
-        /// <value>
-        /// The control path.
-        /// </value>
-        public abstract MediumControl Control { get; }
-
-        /// <summary>
         /// Gets the transport.
         /// </summary>
         /// <value>
@@ -87,6 +79,24 @@ namespace Rock.Communication
         /// <param name="communication">The communication.</param>
         /// <returns></returns>
         public abstract string GetMessageDetails( Model.Communication communication );
+
+        /// <summary>
+        /// Gets the control.
+        /// </summary>
+        /// <param name="useSimpleMode">if set to <c>true</c> [use simple mode].</param>
+        /// <returns></returns>
+        public abstract MediumControl GetControl( bool useSimpleMode );
+
+        /// <summary>
+        /// Gets a value indicating whether [supports bulk communication].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [supports bulk communication]; otherwise, <c>false</c>.
+        /// </value>
+        public abstract bool SupportsBulkCommunication
+        {
+            get;
+        }
 
         /// <summary>
         /// Sends the specified communication.

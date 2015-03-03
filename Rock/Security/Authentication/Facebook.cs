@@ -369,6 +369,7 @@ namespace Rock.Security.ExternalAuthentication
                         person.FirstName = firstName;
                         person.LastName = lastName;
                         person.Email = email;
+                        person.IsEmailActive = true;
                         person.EmailPreference = EmailPreference.EmailAllowed;
                         try
                         {
@@ -389,7 +390,7 @@ namespace Rock.Security.ExternalAuthentication
 
                         if ( person != null )
                         {
-                            GroupService.SaveNewFamily( rockContext, person, null, false );
+                            PersonService.SaveNewPerson( person, rockContext, null, false );
                         }
                     }
 

@@ -30,12 +30,18 @@ namespace Rock.Migrations
         public override void Up()
         {
             Sql( @"
-    -- Delete an entity type that might have already been created by Rock
+    -- Delete a 'AddWorkflowNote' action entity type ( and it's attributes ) that might have already been created by Rock
+    DELETE A 
+    FROM [EntityType] E
+    INNER JOIN [Attribute] A ON A.[EntityTypeId] = E.[Id]
+    WHERE E.[Name] = 'Rock.Workflow.Action.AddWorkflowNote'
+    AND E.[Guid] <> 'F6532683-9797-4F16-8DB7-8B413EDC8AD7'
+
     DELETE [EntityType]
     WHERE [Name] = 'Rock.Workflow.Action.AddWorkflowNote'
     AND [Guid] <> 'F6532683-9797-4F16-8DB7-8B413EDC8AD7'
 
-    -- Rename the entity type
+    -- Rename the 'AddNote' to be 'AddWorkflowNote' instead
     UPDATE [EntityType] SET
 	    [Name] = 'Rock.Workflow.Action.AddWorkflowNote',
 	    [AssemblyName] = 'Rock.Workflow.Action.AddWorkflowNote, Rock, Version=1.3.0.0, Culture=neutral, PublicKeyToken=null',
@@ -43,12 +49,18 @@ namespace Rock.Migrations
 	    [Guid] = 'F6532683-9797-4F16-8DB7-8B413EDC8AD7'
     WHERE [Name] = 'Rock.Workflow.Action.AddNote'
 
-    -- Delete an entity type that might have already been created by Rock
+    -- Delete a 'SetAttributeFromEntity' action entity type ( and it's attributes ) that might have already been created by Rock
+    DELETE A 
+    FROM [EntityType] E
+    INNER JOIN [Attribute] A ON A.[EntityTypeId] = E.[Id]
+    WHERE E.[Name] = 'Rock.Workflow.Action.SetAttributeFromEntity'
+    AND E.[Guid] <> '972F19B9-598B-474B-97A4-50E56E7B59D2'
+
     DELETE [EntityType]
     WHERE [Name] = 'Rock.Workflow.Action.SetAttributeFromEntity'
     AND [Guid] <> '972F19B9-598B-474B-97A4-50E56E7B59D2'
 
-    -- Rename the entity type
+    -- Rename the 'SetAttributeToEntity' to be 'SetAttributeFromEntity' instead
     UPDATE [EntityType] SET
 	    [Name] = 'Rock.Workflow.Action.SetAttributeFromEntity',
 	    [AssemblyName] = 'Rock.Workflow.Action.SetAttributeFromEntity, Rock, Version=1.3.0.0, Culture=neutral, PublicKeyToken=null',

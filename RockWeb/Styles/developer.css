@@ -160,3 +160,15 @@ span.data-view-filter-label {
 div.toggle-container {   /* ???? JME */
     display: inline-block;
 }
+
+
+
+/* DT If th has a required class, render the required field indicator after the column heading */
+.table thead th.required:after {
+  font-family: FontAwesome;
+  content: '\f111';
+  margin-left: 4px;
+  font-size: 6px;
+  color: #eca9a7;
+  vertical-align: super;
+}

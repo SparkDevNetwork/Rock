@@ -512,7 +512,7 @@
     padding: 12px 0;
     border-bottom: 1px solid darken(@persondetails-familybar-bg, @const-border-darken-amt);
     color: @persondetails-familybar-color;
-    margin-top: 12px;
+    min-height: 60px;
 
     a {
         color: @persondetails-familybar-color;
@@ -623,18 +623,16 @@
 .editfamily-list {
 
     li.member {
-        max-width: 200px;
+       min-width: 200px;
 
-        .radio { // put adult/child radios side by side
-            width: 65px;
-            float: left;
+        .radio { 
             margin: 0;
         }
-
-        h4 {
-            height: 38px;
-        }
     }
+
+    .groupmembers h4 {
+           margin-bottom: 4px;
+       }
 }
 
 // 7. Styles for Page Tabs

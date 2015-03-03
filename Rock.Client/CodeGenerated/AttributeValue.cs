@@ -56,6 +56,9 @@ namespace Rock.Client
         public decimal? ValueAsNumeric { get; set; }
 
         /// <summary />
+        public int? ValueAsPersonId { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />
@@ -72,6 +75,13 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignId { get; set; }
+
+        /// <summary />
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
+
+
+        /// <summary />
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
 
     }
 }

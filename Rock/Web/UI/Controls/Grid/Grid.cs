@@ -374,7 +374,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public virtual string CommunicationPageRoute
         {
-            get { return ViewState["CommunicationPageRoute"] as string ?? "~/Communication/{0}"; }
+            get { return ViewState["CommunicationPageRoute"] as string; }
             set { ViewState["CommunicationPageRoute"] = value; }
         }
 
@@ -669,20 +669,14 @@ namespace Rock.Web.UI.Controls
             {
                 if ( this.EnableResponsiveTable )
                 {
-                    writer.AddAttribute( "data-pattern", "priority-columns" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive" );
                 }
-
-                writer.AddAttribute( "data-add-focus-btn", "false" );
-                writer.AddAttribute( "data-add-display-all-btn", "false" );
 
                 if ( DisplayType == GridDisplayType.Light )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive table-no-border" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-no-border" );
                 }
-                else
-                {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive" );
-                }
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
             
@@ -1153,7 +1147,27 @@ namespace Rock.Web.UI.Controls
 
                     rockContext.SaveChanges();
 
-                    Page.Response.Redirect( string.Format( CommunicationPageRoute, communication.Id ), false );
+                    // Get the URL to communication page
+                    string url = CommunicationPageRoute;
+                    if ( string.IsNullOrWhiteSpace(url) )
+                    {
+                        var pageRef = rockPage.Site.CommunicationPageReference;
+                        if ( pageRef.PageId > 0 )
+                        {
+                            pageRef.Parameters.AddOrReplace( "CommunicationId", communication.Id.ToString() );
+                            url = pageRef.BuildUrl();
+                        }
+                        else
+                        {
+                            url = "~/Communication/{0}";
+                        }
+                    }
+                    if ( url.Contains("{0}"))
+                    {
+                        url = string.Format( url, communication.Id );
+                    }
+
+                    Page.Response.Redirect( url, false );
                     Context.ApplicationInstance.CompleteRequest();
                 }
             }
@@ -1497,10 +1511,22 @@ namespace Rock.Web.UI.Controls
         /// <param name="modelType">Type of the model.</param>
         public void CreatePreviewColumns( Type modelType )
         {
+            // if there is a selectField, keep it to preserve which items are checked
+            var selectField = this.Columns.OfType<SelectField>().FirstOrDefault();
             this.Columns.Clear();
-            foreach ( var column in GetPreviewColumns( modelType ) )
+
+            var previewColumns = GetPreviewColumns( modelType );
+            foreach ( var column in previewColumns )
             {
-                this.Columns.Add( column );
+                if ( column is SelectField )
+                {
+                    // if we already had a selectField, use it (to preserve checkbox state)
+                    this.Columns.Add( selectField ?? column );
+                }
+                else
+                {
+                    this.Columns.Add( column );
+                }
             }
         }
 
@@ -1530,7 +1556,7 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( property.Name != "Id" )
                     {
-                        BoundField boundField = GetGridField( property.PropertyType );
+                        BoundField boundField = GetGridField( property );
                         boundField.DataField = property.Name;
                         boundField.SortExpression = property.Name;
                         boundField.HeaderText = property.Name.SplitCase();
@@ -1799,7 +1825,25 @@ namespace Rock.Web.UI.Controls
         #region Static Methods
 
         /// <summary>
-        /// Gets the grid field.
+        /// Gets the most appropriate grid field for the model property
+        /// </summary>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        public static BoundField GetGridField( PropertyInfo propertyInfo )
+        {
+            var specifiedBoundFieldType = propertyInfo.GetCustomAttribute<BoundFieldTypeAttribute>();
+            if (specifiedBoundFieldType != null)
+            {
+                return Activator.CreateInstance( specifiedBoundFieldType.BoundFieldType ) as BoundField;
+            }
+            else
+            {
+                return GetGridField( propertyInfo.PropertyType );
+            }
+        }
+
+        /// <summary>
+        /// Gets the most appropriate grid field for the propertyType (int, bool, etc)
         /// </summary>
         /// <param name="propertyType">Type of the property.</param>
         /// <returns></returns>

@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Security
 
     [LinkedPage( "My Account Page", "Page for user to manage their account (if blank will use 'MyAccount' page route)" )]
     [LinkedPage( "My Profile Page", "Page for user to view their person profile (if blank option will not be displayed)" )]
+    [LinkedPage( "My Settings Page", "Page for user to view their settings (if blank option will not be displayed)" )]
     public partial class LoginStatus : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -46,11 +47,15 @@ namespace RockWeb.Blocks.Security
             base.OnInit( e );
 
             var myAccountUrl = LinkedPageUrl( "MyAccountPage" );
-            if ( string.IsNullOrWhiteSpace( myAccountUrl ) )
+            
+            if ( !string.IsNullOrWhiteSpace( myAccountUrl ) )
             {
-                myAccountUrl = ResolveRockUrl( "~/MyAccount" );
+                hlMyAccount.NavigateUrl = myAccountUrl;
             }
-            hlMyAccount.NavigateUrl = myAccountUrl;
+            else
+            {
+                phMyAccount.Visible = false;
+            }
         }
 
         /// <summary>
@@ -68,10 +73,15 @@ namespace RockWeb.Blocks.Security
                 lHello.Text = string.Format( "<span>Hello {0}</span>", currentPerson.NickName );
 
                 var currentUser = CurrentUser;
-                phMyAccount.Visible = currentUser != null && currentUser.IsAuthenticated;
-
+                if ( currentUser == null || !currentUser.IsAuthenticated )
+                {
+                    phMyAccount.Visible = false;
+                    phMySettings.Visible = false;
+                }
+                
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "PersonId", currentPerson.Id.ToString() );
+                
                 var myProfileUrl = LinkedPageUrl( "MyProfilePage", queryParams );
                 if ( !string.IsNullOrWhiteSpace( myProfileUrl ) )
                 {
@@ -80,6 +90,16 @@ namespace RockWeb.Blocks.Security
                 else
                 {
                     phMyProfile.Visible = false;
+                }
+
+                var mySettingsUrl = LinkedPageUrl( "MySettingsPage", null );
+                if ( !string.IsNullOrWhiteSpace( mySettingsUrl ) )
+                {
+                    hlMySettings.NavigateUrl = mySettingsUrl;
+                }
+                else
+                {
+                    phMySettings.Visible = false;
                 }
 
                 lbLoginLogout.Text = "Logout";
@@ -91,7 +111,11 @@ namespace RockWeb.Blocks.Security
                 phHello.Visible = false;
                 phMyAccount.Visible = false;
                 phMyProfile.Visible = false;
+                phMySettings.Visible = false;
                 lbLoginLogout.Text = "Login";
+
+                liDropdown.Visible = false;
+                liLogin.Visible = true;
             }
 
             hfActionType.Value = lbLoginLogout.Text;

@@ -17,10 +17,6 @@
 @import "./FontAwesome/variables.less";
 @import "./JCrop/jcrop.less";
 
-// import the following files as less files so they are concatenated properly
-@import (less) "./bootstrap-modal/bootstrap-modal-bs3patch.css";
-@import (less) "./bootstrap-modal/bootstrap-modal.css";
-
 @import "_page-admin.less";
 @import "_modal.less";
 @import "_components.less";
@@ -67,11 +63,6 @@
     color: @text-selection-text-color;
 }
 
-small
-{
-    font-family: 'OpenSans', 'Helvetica Neue',Helvetica,Arial,sans-serif;
-    margin-top: 2px;
-}
 
 
 // 3. Utility Classes
@@ -336,7 +327,7 @@ a.help {
     .panel-body {
 
         .grid.grid-panel {
-            margin: -15px -15px -30px -15px;
+            margin: -15px;
 
             .grid-filter {
                 border-radius: 0;

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Reflection;
 using System.Web;
@@ -210,9 +211,9 @@ namespace Rock.Data
                 var entity = entry.Entity as IEntity;
 
                 // Get the context item to track audits
-                var contextItem = new ContextItem( entity, entry.State );
+                var contextItem = new ContextItem( entity, entry );
 
-                // If entity was added or modifed, update the Created/Modified fields
+                // If entity was added or modified, update the Created/Modified fields
                 if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
                 {
                     if ( !TriggerWorkflows( entity, WorkflowTriggerType.PreSave, personAlias ) )
@@ -394,7 +395,7 @@ namespace Rock.Data
             // Check to make sure class does not have [NotAudited] attribute
             if ( AuditClass( rockEntityType ) )
             {
-                var dbEntity = dbContext.Entry( item.Entity );
+                var dbEntity = item.DbEntityEntry;
                 var audit = item.Audit;
 
                 PropertyInfo[] properties = rockEntityType.GetProperties();
@@ -492,7 +493,21 @@ namespace Rock.Data
             /// <value>
             /// The state.
             /// </value>
-            public EntityState State { get; set; }
+            public EntityState State
+            {
+                get
+                {
+                    return this.DbEntityEntry.State;
+                }
+            }
+
+            /// <summary>
+            /// Gets or sets the database entity entry.
+            /// </summary>
+            /// <value>
+            /// The database entity entry.
+            /// </value>
+            public DbEntityEntry DbEntityEntry { get; set; }
 
             /// <summary>
             /// Gets or sets the audit.
@@ -503,17 +518,17 @@ namespace Rock.Data
             public Audit Audit { get; set; }
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="ContextItem"/> class.
+            /// Initializes a new instance of the <see cref="ContextItem" /> class.
             /// </summary>
             /// <param name="entity">The entity.</param>
-            /// <param name="state">The state.</param>
-            public ContextItem( IEntity entity, EntityState state )
+            /// <param name="dbEntityEntry">The database entity entry.</param>
+            public ContextItem( IEntity entity, DbEntityEntry dbEntityEntry )
             {
                 Entity = entity;
-                State = state;
+                DbEntityEntry = dbEntityEntry;
                 Audit = new Audit();
 
-                switch ( state )
+                switch ( dbEntityEntry.State )
                 {
                     case EntityState.Added:
                         {

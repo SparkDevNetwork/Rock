@@ -95,7 +95,7 @@ namespace Rock.Model
                         {
                             EffectiveEndDate = rrule.Until;
                         }
-                        else if ( rrule.Count > 0 )
+                        else
                         {
                             // not really a perfect way to figure out end date.  safer to assume null
                             EffectiveEndDate = null;
@@ -164,6 +164,24 @@ namespace Rock.Model
         [DataMember]
         [Column( TypeName = "Date" )]
         public DateTime? EffectiveEndDate { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the weekly day of week.
+        /// </summary>
+        /// <value>
+        /// The weekly day of week.
+        /// </value>
+        [DataMember]
+        public DayOfWeek? WeeklyDayOfWeek { get; set; }
+
+        /// <summary>
+        /// Gets or sets the weekly time of day.
+        /// </summary>
+        /// <value>
+        /// The weekly time of day.
+        /// </value>
+        [DataMember]
+        public TimeSpan? WeeklyTimeOfDay { get; set; }
 
         /// <summary>
         /// Gets or sets the CategoryId of the <see cref="Rock.Model.Category"/> that this Schedule belongs to.
@@ -240,6 +258,30 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the type of the schedule.
+        /// </summary>
+        /// <value>
+        /// The type of the schedule.
+        /// </value>
+        public virtual ScheduleType ScheduleType
+        {
+            get
+            {
+                DDay.iCal.Event calendarEvent = this.GetCalenderEvent();
+                if ( calendarEvent != null && calendarEvent.DTStart != null )
+                {
+                    return !string.IsNullOrWhiteSpace( this.Name ) ?
+                        ScheduleType.Named : ScheduleType.Custom;
+                }
+                else
+                {
+                    return WeeklyDayOfWeek.HasValue ?
+                        ScheduleType.Weekly : ScheduleType.None;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Category"/> that this Schedule belongs to.
         /// </summary>
         /// <value>
@@ -247,6 +289,19 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Category Category { get; set; }
+
+        /// <summary>
+        /// Gets the friendly schedule text.
+        /// </summary>
+        /// <value>
+        /// The friendly schedule text.
+        /// </value>
+        [LavaInclude]
+        [NotMapped]
+        public virtual string FriendlyScheduleText
+        {
+            get { return ToFriendlyScheduleText(); }
+        }
 
         #endregion
 
@@ -260,22 +315,7 @@ namespace Rock.Model
         /// </value>
         public virtual DDay.iCal.Event GetCalenderEvent()
         {
-            //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
-            //// We just need one Calendar and one Event
-
-            StringReader stringReader = new StringReader( iCalendarContent.Trim() );
-            var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
-            DDay.iCal.Event calendarEvent = null;
-            if ( calendarList.Count > 0 )
-            {
-                var calendar = calendarList[0] as DDay.iCal.iCalendar;
-                if ( calendar != null )
-                {
-                    calendarEvent = calendar.Events[0] as DDay.iCal.Event;
-                }
-            }
-
-            return calendarEvent;
+            return Schedule.GetCalenderEvent( iCalendarContent );
         }
 
         /// <summary>
@@ -427,8 +467,19 @@ namespace Rock.Model
             }
             else
             {
-                // no start time.  Nothing scheduled
-                return "No Schedule";
+                if ( WeeklyDayOfWeek.HasValue )
+                {
+                    result = WeeklyDayOfWeek.Value.ConvertToString();
+                    if ( WeeklyTimeOfDay.HasValue )
+                    {
+                        result += " at " + WeeklyTimeOfDay.Value.ToTimeString();
+                    }
+                }
+                else
+                {
+                    // no start time.  Nothing scheduled
+                    return "No Schedule";
+                }
             }
 
             return result;
@@ -597,6 +648,35 @@ namespace Rock.Model
 
         #endregion
 
+        #region Static Methods
+
+        /// <summary>
+        /// Gets the calender event.
+        /// </summary>
+        /// <param name="iCalendarContent">Content of the i calendar.</param>
+        /// <returns></returns>
+        public static DDay.iCal.Event GetCalenderEvent( string iCalendarContent )
+        {
+            //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
+            //// We just need one Calendar and one Event
+
+            StringReader stringReader = new StringReader( iCalendarContent.Trim() );
+            var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
+            DDay.iCal.Event calendarEvent = null;
+            if ( calendarList.Count > 0 )
+            {
+                var calendar = calendarList[0] as DDay.iCal.iCalendar;
+                if ( calendar != null )
+                {
+                    calendarEvent = calendar.Events[0] as DDay.iCal.Event;
+                }
+            }
+
+            return calendarEvent;
+        }
+
+        #endregion
+
         #region consts
 
         /// <summary>
@@ -630,4 +710,203 @@ namespace Rock.Model
     }
 
     #endregion
+
+    #region Enumerations
+
+    /// <summary>
+    /// Schedule Type
+    /// </summary>
+    [Flags]
+    public enum ScheduleType
+    {
+        /// <summary>
+        /// None
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// Weekly
+        /// </summary>
+        Weekly = 1,
+
+        /// <summary>
+        /// Custom
+        /// </summary>
+        Custom = 2,
+
+        /// <summary>
+        /// Custom
+        /// </summary>
+        Named = 4,
+    }
+
+    #endregion
+
+    #region Helper Classes
+
+    /// <summary>
+    /// Helper class for grouping attendance records associated into logical occurrences based on
+    /// a given schedule
+    /// </summary>
+    public class ScheduleOccurrence
+    {
+
+        /// <summary>
+        /// Gets or sets the logical occurrence start date time.
+        /// </summary>
+        /// <value>
+        /// The occurrence start date time.
+        /// </value>
+        public DateTime StartDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the logical occurrence end date time.
+        /// </summary>
+        /// <value>
+        /// The occurrence end date time.
+        /// </value>
+        public DateTime EndDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedule identifier.
+        /// </summary>
+        /// <value>
+        /// The schedule identifier.
+        /// </value>
+        public int? ScheduleId { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether attendance has been entered for this occurrence.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [attendance entered]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AttendanceEntered
+        {
+            get
+            {
+                return Attendance != null && Attendance.Any( a => a.DidAttend.HasValue );
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether occurrence did not occur for the selected
+        /// start time. This is determined by not having any attendance records with 
+        /// a 'DidAttend' value, and at least one attendance record with 'DidNotOccur'
+        /// value.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [did not occur]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DidNotOccur
+        {
+            get
+            {
+                return Attendance != null &&
+                    !Attendance.Where( a => a.DidAttend.HasValue ).Any() &&
+                    Attendance.Where( a => a.DidNotOccur.HasValue ).Any();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the attendance records associated with this occurrence
+        /// </summary>
+        /// <value>
+        /// The attendance.
+        /// </value>
+        public List<Attendance> Attendance { get; set; }
+
+        /// <summary>
+        /// Gets the number of people attended.
+        /// </summary>
+        /// <value>
+        /// The attended.
+        /// </value>
+        public int NumberAttended
+        {
+            get
+            {
+                return Attendance
+                    .Where( a =>
+                        a.PersonAlias != null &&
+                        a.DidAttend.HasValue &&
+                        a.DidAttend.Value )
+                    .Select( a => a.PersonAlias.PersonId )
+                    .Distinct()
+                    .Count();
+            }
+        }
+
+        /// <summary>
+        /// Gets the attendance percentage.
+        /// </summary>
+        /// <value>
+        /// The percentage.
+        /// </value>
+        public double Percentage
+        {
+            get
+            {
+                var people = new Dictionary<int, bool>();
+                foreach( var person in Attendance
+                    .Where( a =>
+                        a.PersonAlias != null &&
+                        a.DidAttend.HasValue )
+                    .Select( a => new { 
+                        PersonId = a.PersonAlias.PersonId, 
+                        DidAttend = a.DidAttend.Value 
+                    } )
+                    .Distinct() )
+                {
+                    if ( person.DidAttend )
+                    {
+                        people.AddOrReplace( person.PersonId, true );
+                    }
+                    else
+                    {
+                        people.AddOrIgnore( person.PersonId, false );
+                    }
+                }
+
+                int attended = people.Where( p => p.Value ).Count();
+                int total = people.Count();
+                if ( total > 0 )
+                {
+                    return (double)( attended ) / (double)total;
+                }
+                else
+                {
+                    return 0.0d;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ScheduleOccurrence" /> class.
+        /// </summary>
+        /// <param name="occurrence">The occurrence.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        public ScheduleOccurrence( DDay.iCal.Occurrence occurrence, int? scheduleId = null )
+        {
+            StartDateTime = occurrence.Period.StartTime.Value;
+            EndDateTime = occurrence.Period.EndTime.Value;
+            ScheduleId = scheduleId;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ScheduleOccurrence" /> class.
+        /// </summary>
+        /// <param name="startDateTime">The start date time.</param>
+        /// <param name="endDateTime">The end date time.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        public ScheduleOccurrence( DateTime startDateTime, DateTime endDateTime, int? scheduleId = null )
+        {
+            StartDateTime = startDateTime;
+            EndDateTime = endDateTime;
+            ScheduleId = scheduleId;
+        }
+    }
+
+    #endregion
+
 }
