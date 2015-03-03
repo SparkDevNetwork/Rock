@@ -20,7 +20,7 @@
                         <Columns>
                             <Rock:RockBoundField DataField="PersonAlias.Person" HeaderText="Person" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName"/>
                             <Rock:RockBoundField DataField="Account" HeaderText="Account" SortExpression="AccountId"/>
-                            <Rock:RockBoundField DataField="TotalAmount" HeaderText="Total Amount" SortExpression="TotalAmount" DataFormatString="{0:C}"/>
+                            <Rock:CurrencyField DataField="TotalAmount" HeaderText="Total Amount" SortExpression="TotalAmount" />
                             <Rock:RockBoundField DataField="PledgeFrequencyValue" HeaderText="Payment Schedule" SortExpression="PledgeFrequencyValue" />
                             <Rock:DateField DataField="StartDate" HeaderText="Starts" SortExpression="StartDate"/>
                             <Rock:DateField DataField="EndDate" HeaderText="Ends" SortExpression="EndDate"/>

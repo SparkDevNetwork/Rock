@@ -323,6 +323,7 @@ namespace Rock.Model
         /// <value>
         /// The total amount.
         /// </value>
+        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public virtual decimal TotalAmount
         {
             get { return TransactionDetails.Sum( d => d.Amount ); }
