@@ -56,6 +56,9 @@ namespace Rock.Client
         public decimal? ValueAsNumeric { get; set; }
 
         /// <summary />
+        public int? ValueAsPersonId { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />
