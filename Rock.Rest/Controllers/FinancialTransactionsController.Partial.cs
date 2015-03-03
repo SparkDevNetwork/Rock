@@ -105,6 +105,15 @@ namespace Rock.Rest.Controllers
                 parameters.Add( "personId", DBNull.Value );
             }
 
+            if ( options.IncludeIndividualsWithNoAddress )
+            {
+                parameters.Add( "includeIndividualsWithNoAddress", options.IncludeIndividualsWithNoAddress );
+            }
+            else
+            {
+                parameters.Add( "includeIndividualsWithNoAddress", false );
+            }
+
             parameters.Add( "orderByPostalCode", options.OrderByPostalCode );
             var result = DbService.GetDataSet( "spFinance_ContributionStatementQuery", System.Data.CommandType.StoredProcedure, parameters );
 

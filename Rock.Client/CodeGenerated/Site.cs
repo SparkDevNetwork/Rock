@@ -35,6 +35,18 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public Page CommunicationPage { get; set; }
+
+        /// <summary />
+        public int? CommunicationPageId { get; set; }
+
+        /// <summary />
+        public PageRoute CommunicationPageRoute { get; set; }
+
+        /// <summary />
+        public int? CommunicationPageRouteId { get; set; }
+
+        /// <summary />
         public Page DefaultPage { get; set; }
 
         /// <summary />
@@ -129,6 +141,13 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignId { get; set; }
+
+        /// <summary />
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
+
+
+        /// <summary />
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
 
     }
 }

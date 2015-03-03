@@ -31,6 +31,7 @@ namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type used to display a dropdown list of Defined Values for a specific Defined Type
+    /// Stored as either a single DefinedValue.Guid or a comma-delimited list of DefinedValue.Guids (if AllowMultiple)
     /// </summary>
     [Serializable]
     public class DefinedValueFieldType : FieldType, IEntityFieldType
@@ -88,8 +89,7 @@ namespace Rock.Field.Types
             cb.Text = "Yes";
             cb.Help = "When set, allows multiple defined type values to be selected.";
 
-            // Add checkbox for deciding if the defined values list is renedered as a drop
-            // down list or a checkbox list.
+            // option for Display Descriptions
             var cbDescription = new RockCheckBox();
             controls.Add( cbDescription );
             cbDescription.AutoPostBack = true;
@@ -505,7 +505,7 @@ namespace Rock.Field.Types
         /// <param name="propertyName">Name of the property.</param>
         /// <param name="propertyType">Type of the property.</param>
         /// <returns></returns>
-        public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression, string propertyName, Type propertyType )
+        public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
         {
             List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
             if ( selectedValues.Any() )

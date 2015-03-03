@@ -54,11 +54,17 @@ namespace Rock.Model
  
             if ( new Service<Page>( Context ).Queryable().Any( a => a.ParentPageId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Page.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} contains one or more child {1}.", Page.FriendlyTypeName, Page.FriendlyTypeName.Pluralize().ToLower() );
                 return false;
             }  
             
             // ignoring PageView,PageId 
+ 
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.CommunicationPageId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
  
             if ( new Service<Site>( Context ).Queryable().Any( a => a.DefaultPageId == item.Id ) )
             {

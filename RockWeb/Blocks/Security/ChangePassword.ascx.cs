@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Security
                     var component = Rock.Security.AuthenticationContainer.GetComponent( CurrentUser.EntityType.Name );
                     if ( !component.SupportsChangePassword )
                     {
-                        DisplayMessage( "ChangePasswordNotSupportedCaption", NotificationBoxType.Warning );
+                        DisplayMessage( string.Format( "Changing your password is not supported when logged in using {0}.", component.EntityType.FriendlyName), NotificationBoxType.Warning );
                         pnlChangePassword.Visible = false;
                     }
                 }

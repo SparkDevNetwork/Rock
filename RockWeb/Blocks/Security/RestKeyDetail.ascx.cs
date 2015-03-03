@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Security
             }
         }
 
-        #endregion Control Methods
+        #endregion
 
         #region Events
 
@@ -150,6 +150,7 @@ namespace RockWeb.Blocks.Security
                     userLogin.UserName = Guid.NewGuid().ToString();
                 }
 
+                userLogin.IsConfirmed = true;
                 userLogin.ApiKey = tbKey.Text;
                 userLogin.PersonId = restUser.Id;
                 userLogin.EntityTypeId = entityType.Id;
@@ -194,7 +195,7 @@ namespace RockWeb.Blocks.Security
             tbKey.Text = key;
         }
 
-        #endregion Events
+        #endregion
 
         #region Internal Methods
 
@@ -267,6 +268,6 @@ namespace RockWeb.Blocks.Security
             }
         }
 
-        #endregion Internal Methods
+        #endregion
     }
 }

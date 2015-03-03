@@ -100,6 +100,42 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<BenevolenceRequest>( Context ).Queryable().Any( a => a.CaseWorkerPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, BenevolenceRequest.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<BenevolenceRequest>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, BenevolenceRequest.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<BenevolenceRequest>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, BenevolenceRequest.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<BenevolenceRequest>( Context ).Queryable().Any( a => a.RequestedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, BenevolenceRequest.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<BenevolenceResult>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, BenevolenceResult.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<BenevolenceResult>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, BenevolenceResult.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<BinaryFile>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, BinaryFile.FriendlyTypeName );
@@ -619,6 +655,18 @@ namespace Rock.Model
             if ( new Service<GroupMember>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, GroupMember.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<GroupScheduleExclusion>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, GroupScheduleExclusion.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<GroupScheduleExclusion>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, GroupScheduleExclusion.FriendlyTypeName );
                 return false;
             }  
  

@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Caching;
 using Rock.Data;
@@ -102,6 +103,14 @@ namespace Rock.Web.Cache
         public int? LocationId { get; set; }
 
         /// <summary>
+        /// Gets or sets the location.
+        /// </summary>
+        /// <value>
+        /// The location.
+        /// </value>
+        public CampusLocation Location { get; set; }
+
+        /// <summary>
         /// Gets or sets the phone number.
         /// </summary>
         /// <value>
@@ -183,6 +192,8 @@ namespace Rock.Web.Cache
                 this.PhoneNumber = campus.PhoneNumber;
                 this.LeaderPersonAliasId = campus.LeaderPersonAliasId;
                 this.RawServiceTimes = campus.ServiceTimes;
+
+                this.Location = new CampusLocation( campus.Location );
             }
         }
 
@@ -228,7 +239,9 @@ namespace Rock.Web.Cache
             {
                 rockContext = rockContext ?? new RockContext();
                 var campusService = new CampusService( rockContext );
-                var campusModel = campusService.Get( id );
+                var campusModel = campusService
+                    .Queryable("Location").AsNoTracking()
+                    .FirstOrDefault( c => c.Id == id );
                 if ( campusModel != null )
                 {
                     campusModel.LoadAttributes( rockContext );
@@ -264,7 +277,9 @@ namespace Rock.Web.Cache
             {
                 rockContext = rockContext ?? new RockContext();
                 var campusService = new CampusService( rockContext );
-                var campusModel = campusService.Get( guid );
+                var campusModel = campusService
+                    .Queryable("Location").AsNoTracking()
+                    .FirstOrDefault( c => c.Guid.Equals(guid) );
                 if ( campusModel != null )
                 {
                     campusModel.LoadAttributes( rockContext );
@@ -332,7 +347,8 @@ namespace Rock.Web.Cache
 
                 rockContext = rockContext ?? new RockContext();
                 var campusService = new CampusService( rockContext );
-                foreach ( var campusModel in campusService.Queryable()
+                foreach ( var campusModel in campusService
+                    .Queryable( "Location" ).AsNoTracking()
                     .OrderBy( c => c.Name) )
                 {
                     campusIds.Add( campusModel.Id );
@@ -394,7 +410,100 @@ namespace Rock.Web.Cache
             /// The time.
             /// </value>
             public string Time { get; set; }
+        }
 
+        /// <summary>
+        /// Special class for adding location info as available liquid fields
+        /// </summary>
+        [DotLiquid.LiquidType( "Street1", "Street2", "City", "State", "PostalCode", "Country", "Latitude", "Longitude" )]
+        public class CampusLocation
+        {
+            /// <summary>
+            /// Gets or sets the street1.
+            /// </summary>
+            /// <value>
+            /// The street1.
+            /// </value>
+            public string Street1 { get; set; }
+
+            /// <summary>
+            /// Gets or sets the street2.
+            /// </summary>
+            /// <value>
+            /// The street2.
+            /// </value>
+            public string Street2 { get; set; }
+
+            /// <summary>
+            /// Gets or sets the city.
+            /// </summary>
+            /// <value>
+            /// The city.
+            /// </value>
+            public string City { get; set; }
+
+            /// <summary>
+            /// Gets or sets the state.
+            /// </summary>
+            /// <value>
+            /// The state.
+            /// </value>
+            public string State { get; set; }
+
+            /// <summary>
+            /// Gets or sets the postal code.
+            /// </summary>
+            /// <value>
+            /// The postal code.
+            /// </value>
+            public string PostalCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets the country.
+            /// </summary>
+            /// <value>
+            /// The country.
+            /// </value>
+            public string Country { get; set; }
+
+            /// <summary>
+            /// Gets or sets the latitude.
+            /// </summary>
+            /// <value>
+            /// The latitude.
+            /// </value>
+            public double? Latitude { get; set; }
+
+            /// <summary>
+            /// Gets or sets the longitude.
+            /// </summary>
+            /// <value>
+            /// The longitude.
+            /// </value>
+            public double? Longitude { get; set; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="CampusLocation"/> class.
+            /// </summary>
+            /// <param name="locationModel">The location model.</param>
+            public CampusLocation( Rock.Model.Location locationModel )
+            {
+                if ( locationModel != null )
+                {
+                    Street1 = locationModel.Street1;
+                    Street2 = locationModel.Street2;
+                    City = locationModel.City;
+                    State = locationModel.State;
+                    PostalCode = locationModel.PostalCode;
+                    Country = locationModel.Country;
+
+                    if ( locationModel.GeoPoint != null )
+                    {
+                        Latitude = locationModel.GeoPoint.Latitude;
+                        Longitude = locationModel.GeoPoint.Longitude;
+                    }
+                }
+            }
         }
 
         #endregion    

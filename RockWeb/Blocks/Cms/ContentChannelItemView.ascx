@@ -54,7 +54,7 @@
 
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
-                    <Rock:Grid ID="gContentChannelItems" runat="server" OnRowSelected="gContentChannelItems_Edit" />
+                    <Rock:Grid ID="gContentChannelItems" runat="server" AllowSorting="true" OnRowSelected="gContentChannelItems_Edit" />
 
                 </div>
             </div>

@@ -1,5 +1,6 @@
 ﻿CKEDITOR.dialog.add('rockmergefieldDialog', function (editor) {
     var iframeUrl = Rock.settings.get('baseUrl') + "ckeditorplugins/RockMergeField?mergeFields=" + encodeURIComponent(editor.config.rockMergeFieldOptions.mergeFields);
+    iframeUrl += "&theme=" + editor.config.rockTheme;
     return {
         title: 'Select Merge Field',
         minWidth: 400,

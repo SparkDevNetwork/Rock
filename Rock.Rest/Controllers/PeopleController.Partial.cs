@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.OData;
@@ -32,6 +34,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PeopleController
     {
+
+        #region Get
+
         /// <summary>
         /// Overrides base Get api controller to add option to include Person records for deceased individuals.
         /// </summary>
@@ -128,6 +133,36 @@ namespace Rock.Rest.Controllers
 
             throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );
         }
+
+        #endregion
+
+        #region Post
+
+        /// <summary>
+        /// Posts the specified person.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public override System.Net.Http.HttpResponseMessage Post( Person person )
+        {
+            SetProxyCreation( true );
+
+            CheckCanEdit( person );
+
+            if ( !person.IsValid )
+            {
+                return ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    string.Join( ",", person.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+            }
+
+            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+            PersonService.SaveNewPerson( person, (Rock.Data.RockContext)Service.Context, null, false );
+
+            return  ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+        }
+
+        #endregion
 
         #region Search
 

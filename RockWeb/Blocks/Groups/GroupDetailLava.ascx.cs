@@ -40,15 +40,19 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Detail Lava" )]
     [Category( "Groups" )]
     [Description( "Presents the details of a group using Lava" )]
-    [BooleanField("Enable Debug", "Shows the fields available to merge in lava.", false)]
-    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}" )]
-    [LinkedPage("Person Detail Page", "Page to link to for more information on a group member.", false)]
-    [LinkedPage( "Group Member Add Page", "Page to use for adding a new group member. If no page is provided the built in group member edit panel will be used. This panel allows the individual to search the database.", false )]
-    [BooleanField("Enable Location Edit", "Enables changing locations when editing a group.")]
-    [CodeEditorField("Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 0)]
-    [CodeEditorField( "Edit Group Post-HTML", "HTML to display after the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 1 )]
-    [CodeEditorField( "Edit Group Member Pre-HTML", "HTML to display before the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 2 )]
-    [CodeEditorField( "Edit Group Member Post-HTML", "HTML to display after the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 3 )]
+
+    [LinkedPage( "Person Detail Page", "Page to link to for more information on a group member.", false, "", "", 0 )]
+    [LinkedPage( "Group Member Add Page", "Page to use for adding a new group member. If no page is provided the built in group member edit panel will be used. This panel allows the individual to search the database.", false, "", "", 1 )]
+    [LinkedPage( "Roster Page", "The page to link to to view the roster.", true, "", "", 2 )]
+    [LinkedPage( "Attendance Page", "The page to link to to manage the group's attendance.", true, "", "", 3 )]
+    [LinkedPage( "Communication Page", "The communication page to use for sending emails to the group members.", true, "", "", 4 )]
+    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 5 )]
+    [BooleanField("Enable Location Edit", "Enables changing locations when editing a group.", false, "", 6)]
+    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 7 )]
+    [CodeEditorField("Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 8)]
+    [CodeEditorField( "Edit Group Post-HTML", "HTML to display after the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 9 )]
+    [CodeEditorField( "Edit Group Member Pre-HTML", "HTML to display before the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 10 )]
+    [CodeEditorField( "Edit Group Member Post-HTML", "HTML to display after the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 11 )]
     public partial class GroupDetailLava : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -238,6 +242,17 @@ namespace RockWeb.Blocks.Groups
                 group.Name = tbName.Text;
                 group.Description = tbDescription.Text;
                 group.IsActive = cbIsActive.Checked;
+
+                if ( pnlSchedule.Visible )
+                {
+                    if ( group.Schedule == null )
+                    {
+                        group.Schedule = new Schedule();
+                        group.Schedule.iCalendarContent = null;
+                    }
+                    group.Schedule.WeeklyDayOfWeek = dowWeekly.SelectedDayOfWeek;
+                    group.Schedule.WeeklyTimeOfDay = timeWeekly.SelectedTime;
+                }
 
                 // set attributes
                 group.LoadAttributes( rockContext );
@@ -460,6 +475,10 @@ namespace RockWeb.Blocks.Groups
                             DeleteGroupMember( groupMemberId );
                             DisplayViewGroup();
                             break;
+
+                        case "SendCommunication":
+                            SendCommunication();
+                            break;
                     }
                 }
             }
@@ -497,7 +516,7 @@ namespace RockWeb.Blocks.Groups
                 bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
 
                 var qry = groupService
-                    .Queryable( "GroupLocations,Members,Members.Person" )
+                    .Queryable( "GroupLocations,Members,Members.Person,GroupType" )
                     .Where( g => g.Id == _groupId );
 
                 if ( !enableDebug )
@@ -506,51 +525,54 @@ namespace RockWeb.Blocks.Groups
                 }
                 var group = qry.FirstOrDefault();
 
-                // check security on the group
-                if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) || group.IsAuthorized( Authorization.EDIT, CurrentPerson ) || group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+                var mergeFields = new Dictionary<string, object>();
+                mergeFields.Add( "Group", group );
+
+                // add linked pages
+                Dictionary<string, object> linkedPages = new Dictionary<string, object>();
+                linkedPages.Add( "PersonDetailPage", LinkedPageUrl( "PersonDetailPage", null ) );
+                linkedPages.Add( "RosterPage", LinkedPageUrl( "RosterPage", null ) );
+                linkedPages.Add( "AttendancePage", LinkedPageUrl( "AttendancePage", null ) );
+                linkedPages.Add( "CommunicationPage", LinkedPageUrl( "CommunicationPage", null ) );
+                mergeFields.Add( "LinkedPages", linkedPages );
+
+                // add collection of allowed security actions
+                Dictionary<string, object> securityActions = new Dictionary<string, object>();
+                securityActions.Add( "View", group != null && group.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
+                securityActions.Add( "Edit", group != null && group.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
+                securityActions.Add( "Administrate", group != null && group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
+                mergeFields.Add( "AllowedActions", securityActions );
+
+                mergeFields.Add( "CurrentPerson", CurrentPerson );
+                
+                var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+                globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+
+                Dictionary<string, object> currentPageProperties = new Dictionary<string, object>();
+                currentPageProperties.Add( "Id", RockPage.PageId );
+                currentPageProperties.Add( "Path", Request.Path );
+                mergeFields.Add( "CurrentPage", currentPageProperties );
+
+                string template = GetAttributeValue( "LavaTemplate" );
+
+                // show debug info
+                if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
                 {
-                    var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "Group", group );
+                    string postbackCommands = @"<h5>Available Postback Commands</h5>
+                                                <ul>
+                                                    <li><strong>EditGroup:</strong> Shows a panel for modifing group info. Expects a group id. <code>{{ Group.Id | Postback:'EditGroup' }}</code></li>
+                                                    <li><strong>AddGroupMember:</strong> Shows a panel for adding group info. Does not require input. <code>{{ '' | Postback:'AddGroupMember' }}</code></li>
+                                                    <li><strong>EditGroupMember:</strong> Shows a panel for modifing group info. Expects a group member id. <code>{{ member.Id | Postback:'EditGroupMember' }}</code></li>
+                                                    <li><strong>DeleteGroupMember:</strong> Deletes a group member. Expects a group member id. <code>{{ member.Id | Postback:'DeleteGroupMember' }}</code></li>
+                                                    <li><strong>SendCommunication:</strong> Sends a communication to all group members on behalf of the Current User. This will redirect them to the communication page where they can author their email. <code>{{ '' | Postback:'SendCommunication' }}</code></li>
+                                                </ul>";
 
-                    // add linked pages
-                    Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-                    linkedPages.Add( "PersonDetailPage", LinkedPageUrl( "PersonDetailPage", null ) );
-                    mergeFields.Add( "LinkedPages", linkedPages );
-
-                    // add collection of allowed security actions
-                    Dictionary<string, object> securityActions = new Dictionary<string, object>();
-                    securityActions.Add( "View", group.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
-                    securityActions.Add( "Edit", group.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
-                    securityActions.Add( "Administrate", group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
-                    mergeFields.Add( "AllowedActions", securityActions );
-
-                    mergeFields.Add( "CurrentPerson", CurrentPerson );
-                    var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-                    globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-
-                    string template = GetAttributeValue( "LavaTemplate" );
-
-                    // show debug info
-                    if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
-                    {
-                        string postbackCommands = @"<h5>Available Postback Commands</h5>
-                                                    <ul>
-                                                        <li><strong>EditGroup:</strong> Shows a panel for modifing group info. Expects a group id. <code>{{ Group.Id | Postback:'EditGroup' }}</code></li>
-                                                        <li><strong>AddGroupMember:</strong> Shows a panel for adding group info. Does not require input. <code>{{ '' | Postback:'AddGroupMember' }}</code></li>
-                                                        <li><strong>EditGroupMember:</strong> Shows a panel for modifing group info. Expects a group member id. <code>{{ member.Id | Postback:'EditGroupMember' }}</code></li>
-                                                        <li><strong>DeleteGroupMember:</strong> Deletes a group member. Expects a group member id. <code>{{ member.Id | Postback:'DeleteGroupMember' }}</code></li>
-                                                    </ul>";
-
-                        lDebug.Visible = true;
-                        lDebug.Text = mergeFields.lavaDebugInfo( null, "", postbackCommands );
-                    }
-
-                    lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID );
+                    lDebug.Visible = true;
+                    lDebug.Text = mergeFields.lavaDebugInfo( null, "", postbackCommands );
                 }
-                else
-                {
-                    lContent.Text = "<div class='alert alert-warning'>You do not have access to view this group.</div>";
-                }
+
+                lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID );
+
             }
             else
             {
@@ -570,7 +592,7 @@ namespace RockWeb.Blocks.Groups
                 GroupService groupService = new GroupService( rockContext );
 
                 var qry = groupService
-                        .Queryable( "GroupLocations" )
+                        .Queryable( "GroupLocations,GroupType,Schedule" )
                         .Where( g => g.Id == _groupId );
 
                 var group = qry.FirstOrDefault();
@@ -580,6 +602,25 @@ namespace RockWeb.Blocks.Groups
                     tbName.Text = group.Name;
                     tbDescription.Text = group.Description;
                     cbIsActive.Checked = group.IsActive;
+
+                    if ( ( group.GroupType.AllowedScheduleTypes & ScheduleType.Weekly ) == ScheduleType.Weekly )
+                    {
+                        pnlSchedule.Visible = group.Schedule == null || group.Schedule.ScheduleType == ScheduleType.Weekly;
+                        if ( group.Schedule != null )
+                        {
+                            dowWeekly.SelectedDayOfWeek = group.Schedule.WeeklyDayOfWeek;
+                            timeWeekly.SelectedTime = group.Schedule.WeeklyTimeOfDay;
+                        }
+                        else
+                        {
+                            dowWeekly.SelectedDayOfWeek = null;
+                            timeWeekly.SelectedTime = null;
+                        }
+                    }
+                    else
+                    {
+                        pnlSchedule.Visible = false;
+                    }
 
                     group.LoadAttributes();
                     phAttributes.Controls.Clear();
@@ -848,6 +889,43 @@ namespace RockWeb.Blocks.Groups
             }
 
             rockContext.SaveChanges();
+        }
+
+        private void SendCommunication()
+        {
+            // create communication
+            if ( this.CurrentPerson != null && _groupId != -1 && !string.IsNullOrWhiteSpace( GetAttributeValue( "CommunicationPage" ) ) )
+            {
+                var rockContext = new RockContext();
+                var service = new Rock.Model.CommunicationService( rockContext );
+                var communication = new Rock.Model.Communication();
+                communication.IsBulkCommunication = false;
+                communication.Status = Rock.Model.CommunicationStatus.Transient;
+            
+                communication.SenderPersonAliasId = this.CurrentPersonAliasId;
+
+                service.Add( communication );
+
+                var personAliasIds = new GroupMemberService( rockContext ).Queryable().Where( m => m.GroupId == _groupId )
+                                    .ToList()
+                                    .Select( m => m.Person.PrimaryAliasId )
+                                    .ToList();
+
+                // Get the primary aliases
+                foreach ( int personAlias in personAliasIds )
+                {
+                    var recipient = new Rock.Model.CommunicationRecipient();
+                    recipient.PersonAliasId = personAlias;
+                    communication.Recipients.Add( recipient );
+                }
+
+                rockContext.SaveChanges();
+
+                Dictionary<string, string> queryParameters = new Dictionary<string, string>();
+                queryParameters.Add( "CommunicationId", communication.Id.ToString() );
+
+                NavigateToLinkedPage( "CommunicationPage", queryParameters );
+            }
         }
 
         #endregion 

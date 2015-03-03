@@ -128,46 +128,51 @@ namespace Rock.Field.Types
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             string formattedValue = string.Empty;
-            bool boolValue = value.AsBooleanOrNull() ?? false;
+            bool? boolValue = value.AsBooleanOrNull();
 
-            if ( boolValue )
+            if ( boolValue.HasValue )
             {
-                if ( condensed )
+                if ( boolValue.Value )
                 {
-                    formattedValue = "Y";
-                }
-                else
-                {
-                    if ( configurationValues.ContainsKey( "truetext" ) )
+                    if ( condensed )
                     {
-                        formattedValue = configurationValues["truetext"].Value;
+                        formattedValue = "Y";
                     }
                     else
                     {
-                        formattedValue = "Yes";
+                        if ( configurationValues.ContainsKey( "truetext" ) )
+                        {
+                            formattedValue = configurationValues["truetext"].Value;
+                        }
+                        else
+                        {
+                            formattedValue = "Yes";
+                        }
                     }
-                }
-            }
-            else
-            {
-                if ( condensed )
-                {
-                    formattedValue = "N";
                 }
                 else
                 {
-                    if ( configurationValues.ContainsKey( "falsetext" ) )
+                    if ( condensed )
                     {
-                        formattedValue = configurationValues["falsetext"].Value;
+                        formattedValue = "N";
                     }
                     else
                     {
-                        formattedValue = "No";
+                        if ( configurationValues.ContainsKey( "falsetext" ) )
+                        {
+                            formattedValue = configurationValues["falsetext"].Value;
+                        }
+                        else
+                        {
+                            formattedValue = "No";
+                        }
                     }
                 }
+
+                return base.FormatValue( parentControl, formattedValue, null, condensed );
             }
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return string.Empty;
         }
 
         #endregion
@@ -184,19 +189,26 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var editControl = new RockCheckBox { ID = id };
+            var editControl = new RockDropDownList { ID = id };
+
+            string yesText = "Yes";
+            string noText = "No";
 
             if ( configurationValues != null )
             {
                 if ( configurationValues.ContainsKey( "truetext" ) )
                 {
-                    editControl.Text = configurationValues["truetext"].Value;
+                    yesText = configurationValues["truetext"].Value;
                 }
-                else
+                if ( configurationValues.ContainsKey( "falsetext" ) )
                 {
-                    editControl.Text = "Yes";
+                    noText = configurationValues["falsetext"].Value;
                 }
             }
+
+            editControl.Items.Add( new ListItem() );
+            editControl.Items.Add( new ListItem( noText, "False" ) );
+            editControl.Items.Add( new ListItem( yesText, "True" ) );
 
             return editControl;
         }
@@ -209,9 +221,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is CheckBox )
+            if ( control != null && control is RockDropDownList )
             {
-                return ( (CheckBox)control ).Checked.ToString();
+                return ( (RockDropDownList)control ).SelectedValue;
             }
             return null;
         }
@@ -226,9 +238,9 @@ namespace Rock.Field.Types
         {
             if ( value != null )
             {
-                if ( control != null && control is CheckBox )
+                if ( control != null && control is RockDropDownList )
                 {
-                    ( (CheckBox)control ).Checked = value.AsBooleanOrNull() ?? false;
+                    ( (RockDropDownList)control ).SetValue( value );
                 }
             }
         }
@@ -244,8 +256,8 @@ namespace Rock.Field.Types
         /// </returns>
         public override bool IsValid( string value, bool required, out string message )
         {
-            bool boolValue = false;
-            if ( !bool.TryParse( value, out boolValue ) )
+            bool? boolValue = value.AsBooleanOrNull();
+            if ( required && !boolValue.HasValue )
             {
                 message = "Invalid boolean value";
                 return false;
@@ -383,7 +395,7 @@ namespace Rock.Field.Types
         /// <param name="propertyName">Name of the property.</param>
         /// <param name="propertyType">Type of the property.</param>
         /// <returns></returns>
-        public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression, string propertyName, Type propertyType )
+        public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
         {
             if ( filterValues.Count == 1 )
             {

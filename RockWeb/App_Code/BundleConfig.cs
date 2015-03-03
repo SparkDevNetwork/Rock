@@ -53,8 +53,7 @@ public class BundleConfig
             "~/Scripts/jquery.fileupload.js",
             "~/Scripts/jquery.tinyscrollbar.js",
             "~/Scripts/jcrop.min.js",
-            "~/Scripts/ResizeSensor.js",
-            "~/Scripts/rwd-table.min.js",
+            "~/Scripts/ResizeSensor.js",       
             "~/Scripts/Rock/Extensions/*.js" ) );
 
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockUi" ).Include(

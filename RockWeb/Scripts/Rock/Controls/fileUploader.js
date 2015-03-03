@@ -95,7 +95,10 @@
                     var msg = "unable to upload";
                     if (data.response().jqXHR && data.response().jqXHR.status == 406) {
                         msg = "file type not allowed";
+                    } else if (data.response().jqXHR && data.response().jqXHR.responseText) {
+                        msg = data.response().jqXHR.responseText;
                     }
+
                     if (options.maxUploadBytes && data.total) {
                         if (data.total >= options.maxUploadBytes) {
                             msg = "file size is limited to " + (options.maxUploadBytes / 1024 / 1024) + "MB";

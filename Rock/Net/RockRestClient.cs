@@ -553,6 +553,29 @@ namespace Rock.Net
 
             return result;
         }
+
+        /// <summary>
+        /// Uploads the binary file returning the resulting binaryFile.Id
+        /// </summary>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="fileTypeGuid">The file type unique identifier.</param>
+        /// <param name="fileData">The file data.</param>
+        /// <param name="isTemporary">if set to <c>true</c> [is temporary].</param>
+        /// <returns></returns>
+        public int UploadBinaryFile( string fileName, Guid fileTypeGuid, byte[] fileData, bool isTemporary )
+        {
+            RestSharp.RestClient restClient = new RestSharp.RestClient( this.rockBaseUri );
+            restClient.CookieContainer = this.CookieContainer;
+            RestSharp.RestRequest request = new RestSharp.RestRequest( "FileUploader.ashx", RestSharp.Method.POST );
+            request.AddQueryParameter( "isBinaryFile", "true" );
+            request.AddQueryParameter( "fileTypeGuid", fileTypeGuid.ToString() );
+            request.AddQueryParameter( "isTemporary", isTemporary.ToString() );
+            request.AddFile( "file0", fileData, fileName );
+            var response = restClient.Execute( request ).Content;
+
+            dynamic responseObj = JsonConvert.DeserializeObject( response );
+            return responseObj.Id;
+        }
     }
 
     /// <summary>

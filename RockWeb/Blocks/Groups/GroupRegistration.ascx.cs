@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Groups
     [CustomRadioListField( "Group Member Status", "The group member status to use when adding person to group (default: 'Pending'.)", "2^Pending,1^Active,0^Inactive", true, "2", "", 1 )]
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 2 )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 3 )]
-    [WorkflowTypeField( "Workflow", "An optional workflow to start when registration is created.", false, false, "", "", 4 )]
+    [WorkflowTypeField( "Workflow", "An optional workflow to start when registration is created. The GroupMember will set as the workflow 'Entity' when processing is started.", false, false, "", "", 4 )]
     [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 5 )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"
 ", "", 6  )]
@@ -211,17 +211,18 @@ namespace RockWeb.Blocks.Groups
                 if ( person == null )
                 {
                     // If so, create the person and family record for the new person
-                    var groupMembers = new List<GroupMember>();
-
                     person = new Person();
                     person.FirstName = tbFirstName.Text.Trim();
                     person.LastName = tbLastName.Text.Trim();
                     person.Email = tbEmail.Text.Trim();
+                    person.IsEmailActive = true;
+                    person.EmailPreference = EmailPreference.EmailAllowed;
+                    person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                     person.ConnectionStatusValueId = _dvcConnectionStatus.Id;
                     person.RecordStatusValueId = _dvcRecordStatus.Id;
                     person.Gender = Gender.Unknown;
 
-                    family = GroupService.SaveNewFamily( rockContext, person, _group.CampusId, false );
+                    family = PersonService.SaveNewPerson( person, rockContext, _group.CampusId, false );
                 }
                 else
                 {
@@ -314,6 +315,10 @@ namespace RockWeb.Blocks.Groups
                             spouse.ConnectionStatusValueId = _dvcConnectionStatus.Id;
                             spouse.RecordStatusValueId = _dvcRecordStatus.Id;
                             spouse.Gender = Gender.Unknown;
+
+                            spouse.IsEmailActive = true;
+                            spouse.EmailPreference = EmailPreference.EmailAllowed;
+
                             var groupMember = new GroupMember();
                             groupMember.GroupRoleId = _adultRole.Id;
                             groupMember.Person = spouse;
@@ -367,6 +372,7 @@ namespace RockWeb.Blocks.Groups
 
                 // Show lava content
                 var mergeFields = new Dictionary<string, object>();
+                mergeFields.Add( "Group", _group );
                 mergeFields.Add( "GroupMembers", newGroupMembers );
 
                 bool showDebug = UserCanEdit && GetAttributeValue( "EnableDebug" ).AsBoolean();

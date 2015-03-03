@@ -76,7 +76,6 @@ namespace Rock.Migrations
     IF @BlockId IS NOT NULL AND @AttributeId IS NOT NULL 
     BEGIN
         DECLARE @Value varchar(max) =  ( SELECT TOP 1 [Value] FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId )
-		Print @Value
 		IF @Value = '
 {% for item in Items %}
     {% if item.DetailImage_unformatted != '''' %}

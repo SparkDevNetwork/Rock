@@ -75,7 +75,8 @@ namespace Rock.Model
         public DateTime? TransactionDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the transaction code for the transaction.
+        /// For Credit Card transactions, this is the response code that the gateway returns 
+        /// For Scanned Checks, this is the check number
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the transaction code of the transaction.
@@ -322,6 +323,7 @@ namespace Rock.Model
         /// <value>
         /// The total amount.
         /// </value>
+        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public virtual decimal TotalAmount
         {
             get { return TransactionDetails.Sum( d => d.Amount ); }
@@ -342,7 +344,25 @@ namespace Rock.Model
             return this.TotalAmount.ToStringSafe();
         }
 
-        #endregion Public Methods
+        /// <summary>
+        /// Pres the save.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if ( state == System.Data.Entity.EntityState.Deleted )
+            {
+                // since images have a cascade delete relationship, make sure the PreSaveChanges gets called 
+                var childImages = new FinancialTransactionImageService( dbContext as RockContext ).Queryable().Where( a => a.TransactionId == this.Id );
+                foreach ( var image in childImages )
+                {
+                    image.PreSaveChanges( dbContext, state );
+                }
+            }
+        }
+
+        #endregion
     }
 
     /// <summary>

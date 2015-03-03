@@ -27,9 +27,19 @@ namespace Rock.SystemGuid
     public static class SystemEmail
     {
         /// <summary>
-        /// Gets the template guid for the Forgot Username email
+        /// Gets the template guid for the Exception Notification email
         /// </summary>
-        public const string SECURITY_FORGOT_USERNAME = "113593ff-620e-4870-86b1-7a0ec0409208";
+        public const string CONFIG_EXCEPTION_NOTIFICATION = "75CB0A4A-B1C5-4958-ADEB-8621BD231520";
+
+        /// <summary>
+        /// Gets the template guid for finance pledge confirmation email
+        /// </summary>
+        public const string FINANCE_PLEDGE_CONFIRMATION = "73E8D035-61BB-495A-A87F-39007B98834C";
+
+        /// <summary>
+        /// Gets the template guid for group attendance reminder
+        /// </summary>
+        public const string GROUP_ATTENDANCE_REMINDER = "ED567FDE-A3B4-4827-899D-C2740DF3E5DA";
 
         /// <summary>
         /// Gets the template guid for the Account Created email
@@ -42,18 +52,14 @@ namespace Rock.SystemGuid
         public const string SECURITY_CONFIRM_ACCOUNT = "17aaceef-15ca-4c30-9a3a-11e6cf7e6411";
 
         /// <summary>
-        /// Gets the template guid for the Exception Notification email
+        /// Gets the template guid for the Forgot Username email
         /// </summary>
-        public const string CONFIG_EXCEPTION_NOTIFICATION = "75CB0A4A-B1C5-4958-ADEB-8621BD231520";
+        public const string SECURITY_FORGOT_USERNAME = "113593ff-620e-4870-86b1-7a0ec0409208";
 
         /// <summary>
         /// Gets the template guid for workflow form notifications
         /// </summary>
         public const string WORKFLOW_FORM_NOTIFICATION = "88C7D1CC-3478-4562-A301-AE7D4D7FFF6D";
 
-        /// <summary>
-        /// Gets the template guid for finance pledge confirmation email
-        /// </summary>
-        public const string FINANCE_PLEDGE_CONFIRMATION = "73E8D035-61BB-495A-A87F-39007B98834C";
     }
 }
