@@ -2,11 +2,4 @@
 
 {% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
 
-<script>
-
-  var mapHolder = document.getElementById('map-holder')
-
-  landingMap = new CCV.infoWindowMap(mapHolder)
-  landingMap.draw()
-
-</script>
+<script src="~~/Scripts/map-landing-page.js"></script>

@@ -51,6 +51,17 @@
             </ProgressTemplate>
         </asp:UpdateProgress>
 
+        <header>
+            <Rock:Zone Name="Header" runat="server" />
+
+            <section>
+                <p class="tagline">CCV is one church with many locations</p>
+                <p class="instructions">Select a campus to continue</p>
+                <!-- campus grid -->
+                <a class="find-nearest-campus js-find-nearest-campus"><i class="fa fa-fw fa-location-arrow"></i> Find Nearest Campus</a>
+            </section>
+        </header>
+
         <main>
 
             <!-- Start Content Area -->

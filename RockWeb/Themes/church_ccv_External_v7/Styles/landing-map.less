@@ -6,6 +6,8 @@
 @import "../../../Styles/_rock-core.less";
 @import "../../../Styles/_rock-variables.less";
 
+@import "../../../Styles/FontAwesome/animated.less";
+
 
 // Custom Imports
 // -------------------------
@@ -50,3 +52,76 @@ img { .img-responsive(); }
     left: 320px;
   }
 }
+
+header {
+  min-height: 170px;
+  background: @gray-darker;
+  color: #fff;
+  overflow: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  @media @sm {
+    height: 100vh;
+    width: 320px;
+  }
+  a, a:hover { color: inherit; }
+}
+
+  .logo {
+    display: block;
+    background-image: url(../assets/logo.svg);
+    height: 50px;
+    width: 235px;
+    margin-left: -@grid-gutter-width;
+    @media @sm {
+      margin-left: -@grid-gutter-width/2;
+      margin-top: @grid-gutter-width;
+      margin-bottom: @grid-gutter-width;
+    }
+  }
+
+  section {
+    padding: @grid-gutter-width/2;
+    @media @sm {
+      background: darken(@gray-darker, 5%);
+      padding: @grid-gutter-width;
+    }
+  }
+
+    p.tagline {
+      text-align: center;
+      margin-bottom: 0;
+      @media @sm {
+        font-size: 1.1em;
+      }
+    }
+    p.instructions {
+      text-transform: uppercase;
+      font-weight: @headings-font-weight;
+      text-align: center;
+      margin-bottom: @line-height-computed;
+      @media @sm {
+        font-size: 1.25em;
+      }
+    }
+
+    .find-nearest-campus {
+      display: block;
+      text-transform: uppercase;
+      font-weight: @headings-font-weight;
+      .fa {
+        color: lighten(@brand-primary, 10%);
+        .transition(.3s);
+      }
+      &.is-loading {
+        .fa {
+          .fa-spin;
+          &:before { content: "\f013"; }
+        }
+      }
+      &:hover {
+        text-decoration: none;
+        cursor: pointer;
+        .fa { color: inherit; }
+      }
+    }
