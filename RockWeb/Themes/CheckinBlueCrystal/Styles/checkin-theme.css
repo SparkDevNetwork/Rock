@@ -8227,10 +8227,6 @@ input.checkin-phone-entry {
   right: 1px;
   overflow: hidden;
 }
-/*
-  Used to manage styles related to modal dialog.
-
-*/
 /*!
  * Bootstrap Modal
  *
@@ -8500,86 +8496,104 @@ Copyright (c) 2012 Dan Eden*/
   -o-animation-name: shake;
   animation-name: shake;
 }
-.modal-overflow.modal {
-  top: 48px;
-}
-.modal-content {
+.modal-content.rock-modal,
+.rock-modal .modal-content {
   border: 0;
   background-color: #4b5c65;
   color: #ffffff;
 }
-.modal-content .modal-header {
+.modal-content.rock-modal .modal-header,
+.rock-modal .modal-content .modal-header {
   background-color: #4b5c65;
   color: #ffffff;
   padding: 5px 15px;
   min-height: 34px;
 }
-.modal-content .modal-header:before,
-.modal-content .modal-header:after {
+.modal-content.rock-modal .modal-header:before,
+.rock-modal .modal-content .modal-header:before,
+.modal-content.rock-modal .modal-header:after,
+.rock-modal .modal-content .modal-header:after {
   content: " ";
   display: table;
 }
-.modal-content .modal-header:after {
+.modal-content.rock-modal .modal-header:after,
+.rock-modal .modal-content .modal-header:after {
   clear: both;
 }
-.modal-content .modal-header:before,
-.modal-content .modal-header:after {
+.modal-content.rock-modal .modal-header:before,
+.rock-modal .modal-content .modal-header:before,
+.modal-content.rock-modal .modal-header:after,
+.rock-modal .modal-content .modal-header:after {
   content: " ";
   display: table;
 }
-.modal-content .modal-header:after {
+.modal-content.rock-modal .modal-header:after,
+.rock-modal .modal-content .modal-header:after {
   clear: both;
 }
-.modal-content .modal-header h3 {
+.modal-content.rock-modal .modal-header h3,
+.rock-modal .modal-content .modal-header h3 {
   float: left;
   margin-right: 12px;
 }
-.modal-content .modal-header .close {
+.modal-content.rock-modal .modal-header .close,
+.rock-modal .modal-content .modal-header .close {
   margin: 0;
   padding: 6px;
   color: #ffffff;
   text-shadow: none;
 }
-.modal-content .modal-header .label {
+.modal-content.rock-modal .modal-header .label,
+.rock-modal .modal-content .modal-header .label {
   margin-top: 8px;
 }
-.modal-content .modal-header small {
+.modal-content.rock-modal .modal-header small,
+.rock-modal .modal-content .modal-header small {
   margin-top: 12px;
   display: block;
   color: #e6e6e6;
 }
-.modal-content .modal-body {
+.modal-content.rock-modal .modal-body,
+.rock-modal .modal-content .modal-body {
   color: #ffffff;
   text-align: left;
 }
-.modal-content .modal-body .nav-pills {
+.modal-content.rock-modal .modal-body .nav-pills,
+.rock-modal .modal-content .modal-body .nav-pills {
   margin: 6px 0 18px;
 }
-.modal-content .modal-body > .scroll-container {
+.modal-content.rock-modal .modal-body > .scroll-container,
+.rock-modal .modal-content .modal-body > .scroll-container {
   width: 720px;
 }
-.modal-content .modal-body > .scroll-container > .viewport {
+.modal-content.rock-modal .modal-body > .scroll-container > .viewport,
+.rock-modal .modal-content .modal-body > .scroll-container > .viewport {
   width: 670px;
 }
-.modal-content .modal-body.iframe {
+.modal-content.rock-modal .modal-body.iframe,
+.rock-modal .modal-content .modal-body.iframe {
   overflow: hidden;
 }
-.modal-content .modal-footer {
+.modal-content.rock-modal .modal-footer,
+.rock-modal .modal-content .modal-footer {
   padding: 8px;
   margin-top: 10px;
   background-color: #4b5c65;
   color: #ffffff;
   border-radius: 0 0 4px 4px;
 }
-.modal-body {
+.rock-modal .modal-body {
   padding: 8px 12px 12px 12px;
 }
-.modal-footer:after {
+.rock-modal .modal-footer:after {
   clear: both;
 }
-.modal-footer .btn {
+.rock-modal .modal-footer .btn {
   float: right;
   margin-left: 5px;
+}
+.modal.modal-overflow {
+  top: 30px;
 }
 #modal-popup_iframe {
   height: 100%;
@@ -8587,15 +8601,18 @@ Copyright (c) 2012 Dan Eden*/
   border: 0;
   display: block;
 }
-.bootbox .modal-dialog {
-  margin: 0;
-  width: auto;
-}
 .modal-backdrop,
 .modal-backdrop.fade.in {
   opacity: 0.7;
   filter: alpha(opacity=70);
   background: #000000;
+}
+.modal-dialog {
+  margin: 0;
+  width: auto;
+}
+.modal-content {
+  border: none;
 }
 @font-face {
   font-family: 'OpenSans';
