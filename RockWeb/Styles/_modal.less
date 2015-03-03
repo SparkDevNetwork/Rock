@@ -1,17 +1,23 @@
-﻿/*
-  Used to manage styles related to modal dialog.
+﻿
 
-*/
+//
+// MODAL STYLES
+// --------------------------------------------------
 
-// import the following files as less files so they are concatenated properly
+
+// Imports
+// -------------------------
+
+// import as less files so they are concatenated properly
 @import (less) "./bootstrap-modal/bootstrap-modal-bs3patch.css";
 @import (less) "./bootstrap-modal/bootstrap-modal.css";
 
-.modal-overflow.modal {
-  top: 48px;
-}
 
-.modal-content {
+// Rock modal (page properties, etc.)
+// -------------------------
+
+.modal-content.rock-modal,
+.rock-modal .modal-content {
   border: 0;
   background-color: @modal-body-bg;
   color: @modal-body-text-color;
@@ -77,16 +83,21 @@
   }
 }
 
-.modal-body {
-  padding: 8px 12px 12px 12px;
+.rock-modal {
+  .modal-body {
+    padding: 8px 12px 12px 12px;
+  }
+  .modal-footer:after {
+    clear: both;
+  }
+  .modal-footer .btn {
+    float: right;
+    margin-left: 5px;
+  }
 }
 
-.modal-footer:after {
-  clear: both;
-}
-.modal-footer .btn {
-  float: right;
-  margin-left: 5px;
+.modal.modal-overflow {
+  top: @grid-gutter-width;
 }
 
 #modal-popup_iframe {
@@ -97,17 +108,25 @@
 }
 
 
-// Bootbox Modal Overrides
-.bootbox .modal-dialog {
-  margin: 0;
-  width: auto;
-}
+// All modals
+// -------------------------
 
-// bootstrap modal component overrides
 .modal-backdrop,
 .modal-backdrop.fade.in{
   opacity: 0.7;
   filter: alpha(opacity=70);
   background: @modal-backdrop-bg;
+}
+
+// Fixes some appearance issues from switching standard BS modal to
+// responsive bootstrap-modal.
+
+.modal-dialog {
+  margin: 0;
+  width: auto;
+}
+
+.modal-content {
+  border: none;
 }
 
