@@ -137,6 +137,7 @@ namespace RockWeb.Blocks.Finance
 
             RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/Kiosk/kiosk-core.js" );
+            RockPage.AddScriptLink( "~/Scripts/Kiosk/jquery.scannerdetection.js" );
         }
 
         /// <summary>
@@ -516,24 +517,19 @@ namespace RockWeb.Blocks.Finance
             // setup lava
             var mergeFields = new Dictionary<string, object>();
 
-            List<object> accountAmounts = new List<object>();
+            List<Dictionary<String, object>> accountAmounts = new List<Dictionary<String, object>>();
             decimal totalAmount = 0;
 
             foreach ( var amount in this.Amounts )
             {
                 if ( amount.Value > 0 )
                 {
-                    dynamic expando = new ExpandoObject();
-                    //var accountAmount = expando as IDictionary<String, object>;
-                    expando.AccountId = amount.Key;
-                    expando.AccountName = this.Accounts.Where( a => a.Key == amount.Key ).FirstOrDefault().Value;
-                    expando.Amount = amount.Value;
-                    
-                    //accountAmount["AccountId"] = amount.Key;
-                    //accountAmount["AccountName"] = this.Accounts.Where( a => a.Key == amount.Key ).FirstOrDefault().Value;
-                    //accountAmount["Amount"] = amount.Value;
+                    var accountAmount = new Dictionary<String, object>();
+                    accountAmount.Add( "AccountId", amount.Key );
+                    accountAmount.Add("AccountName", this.Accounts.Where( a => a.Key == amount.Key ).FirstOrDefault().Value);
+                    accountAmount.Add( "Amount", amount.Value );
 
-                    accountAmounts.Add( expando );
+                    accountAmounts.Add( accountAmount );
 
                     totalAmount += amount.Value;
                 }
