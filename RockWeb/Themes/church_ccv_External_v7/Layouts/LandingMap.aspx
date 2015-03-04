@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
+<%@ Page Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 
 <!DOCTYPE html>
 
@@ -50,23 +50,9 @@
             </ProgressTemplate>
         </asp:UpdateProgress>
 
-        <header>
-            <Rock:Zone Name="Header" runat="server" />
+        <!-- Start Content Area -->
+        <Rock:Zone Name="Main" runat="server" />
 
-            <section>
-                <p class="tagline">CCV is one church with many locations</p>
-                <p class="instructions">Select a campus to continue</p>
-                <!-- campus grid -->
-                <a class="find-nearest-campus js-find-nearest-campus"><i class="fa fa-fw fa-location-arrow"></i> Find Nearest Campus</a>
-            </section>
-        </header>
-
-        <main>
-
-            <!-- Start Content Area -->
-            <Rock:Zone Name="Main" runat="server" />
-
-        </main>
     </form>
 </body>
 </html>

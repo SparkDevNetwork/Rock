@@ -159,7 +159,7 @@ CCV.infoWindowMap.prototype.buildInfoWindow = function(campus) {
   result += '    </div>'
   result += '  </div>'
   if (typeof this.selectCampus == 'function')
-    result += '  <a onclick="'+this.getInstanceName()+'.selectCampus('+campus.id+')" class="select">Select this Campus</a>'
+    result += '  <a class="cursor" onclick="'+this.getInstanceName()+'.selectCampus('+campus.id+')" class="select">Select this Campus</a>'
   result += '</div>'
   return result
 }

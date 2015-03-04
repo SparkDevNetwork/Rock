@@ -28,9 +28,10 @@ landingMap.bindUi = function() {
 }
 
 // New methods
-// landingMap.selectCampus = function (campusId) {
-//   setCampus(campusId)
-// }
+landingMap.selectCampus = function (campusId) {
+  var campus = CCV.findCampusById(campusId)
+  alert(campus.name)
+}
 landingMap.openInfoWindow = function (campus) {
   var marker = this.markers.filter(function (marker) {
     return marker.campusid == campus.id
