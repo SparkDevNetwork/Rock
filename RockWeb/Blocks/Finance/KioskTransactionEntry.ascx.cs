@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Finance
     [Description( "Block used to process giving from a kiosk." )]
 
     #region Block Attributes
-    [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", true, "", "", 0, "CCGateway" )]
+    [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", true, "", "", 0 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false,
         Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_KIOSK, "", 1 )]
     [AccountsField( "Accounts", "Accounts to allow giving. This list will be filtered by campus context when displayed.", true, "", "", 1 )]
@@ -347,46 +347,61 @@ namespace RockWeb.Blocks.Finance
             
             if ( gateway != null )
             {
-                string errorMessage = string.Empty;
-                var transaction = gateway.Charge( swipeInfo, out errorMessage );
-                
-                if (transaction != null)
+                try
                 {
-                    transaction.TransactionDateTime = RockDateTime.Now;
-                    transaction.AuthorizedPersonAliasId = this.SelectedGivingUnit.PersonAliasId;
-                    transaction.GatewayEntityTypeId = gateway.TypeId;
-                    //transaction.TransactionTypeValueId = DefinedValueCache.Read( new Guid( GetAttributeValue() ) ).Id;
-                    //transaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
-                    //transaction.CreditCardTypeValueId = savedCreditCard.CreditCardTypeValueId;
+                    string errorMessage = string.Empty;
+                    var transaction = gateway.Charge( swipeInfo, out errorMessage );
 
-                    foreach ( var accountAmount in this.Amounts )
+                    if ( transaction != null )
                     {
-                        var transactionDetail = new FinancialTransactionDetail();
-                        transactionDetail.Amount = accountAmount.Value;
-                        transactionDetail.AccountId = accountAmount.Key;
-                        //transactionDetail.EntityTypeId = packageEntityTypeId;
-                        //transactionDetail.EntityId = package.Id;
-                        //transactionDetail.Summary = string.Format( "Purchase of '{0}' package from {1}", package.Name, package.Vendor.Name );
-                        transaction.TransactionDetails.Add( transactionDetail );
+                        transaction.TransactionDateTime = RockDateTime.Now;
+                        transaction.AuthorizedPersonAliasId = this.SelectedGivingUnit.PersonAliasId;
+                        transaction.GatewayEntityTypeId = gateway.TypeId;
+                        transaction.TransactionTypeValueId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) ).Id;
+                        transaction.CurrencyTypeValueId = swipeInfo.CurrencyTypeValue.Id;
+
+                        Guid sourceGuid = Guid.Empty;
+                        if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
+                        {
+                            transaction.SourceTypeValueId = DefinedValueCache.Read( sourceGuid ).Id;
+                        }
+                        
+                        //transaction.CreditCardTypeValueId = swipeInfo.CreditCardTypeValue.Id;
+
+                        foreach ( var accountAmount in this.Amounts.Where(a => a.Value > 0 ))
+                        {
+                            var transactionDetail = new FinancialTransactionDetail();
+                            transactionDetail.Amount = accountAmount.Value;
+                            transactionDetail.AccountId = accountAmount.Key;
+                            transaction.TransactionDetails.Add( transactionDetail );
+                        }
+
+                        var batchService = new FinancialBatchService( rockContext );
+
+                        // Get the batch 
+                        var batch = batchService.Get(
+                            GetAttributeValue( "BatchNamePrefix" ),
+                            swipeInfo.CurrencyTypeValue,
+                            swipeInfo.CreditCardTypeValue,
+                            transaction.TransactionDateTime.Value,
+                            gateway.BatchTimeOffset );
+
+                        batch.ControlAmount += transaction.TotalAmount;
+
+                        transaction.BatchId = batch.Id;
+                        batch.Transactions.Add( transaction );
+                        rockContext.SaveChanges();
+                        HidePanels();
+                        ShowReceiptPanel();
                     }
-
-                    var batchService = new FinancialBatchService( rockContext );
-
-                    // Get the batch 
-                    /*var batch = batchService.Get(
-                        "Rock Shop Purchases",
-                        transaction.CurrencyTypeValue,
-                        paymentInfo.CreditCardTypeValue,
-                        transaction.TransactionDateTime.Value,
-                        gateway.BatchTimeOffset );*/
- 
-
-                    HidePanels();
-                    ShowReceiptPanel();
+                    else
+                    {
+                        lSwipeErrors.Text = String.Format( "<div class='alert alert-danger'>An error occurred while process this transaction. Message: {0}</div>", errorMessage );
+                    }
                 }
-                else
+                catch ( Exception ex )
                 {
-                    lSwipeErrors.Text = String.Format("<div class='alert alert-danger'>An error occurred while process this transaction. Message: {0}</div>", errorMessage);
+                    lSwipeErrors.Text = String.Format( "<div class='alert alert-danger'>An error occurred while process this transaction. Message: {0}</div>", ex.Message );
                 }
             } else {
                 lSwipeErrors.Text = "<div class='alert alert-danger'>Invalid gateway provided. Please provide a gateway. Transaction not processed.</div>";
