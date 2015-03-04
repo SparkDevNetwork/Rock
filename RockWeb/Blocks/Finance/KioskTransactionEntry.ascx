@@ -23,8 +23,10 @@
                     
                     preventDefault:true,
                     onComplete: function (e, data) {
-                        console.log('e:' + e);
-                        console.log('data:' + data);
+                        if ($(".js-swipe").is(":visible")) {
+                            $('#hfSwipe').val(e);
+                            __doPostBack('hfSwipe', 'Swipe_Complete');
+                        }
                         return false;
                     }
                 });
@@ -92,79 +94,6 @@
                 if ($(".js-pnlregister").is(":visible")) {
                     $(".input-account .form-control:first").focus();
                 }
-
-                //
-                // configure the swipe capability
-                //
-                /*$(document).keypress(function (event) {
-
-                    
-
-                    if ($('#pnlSwipe').is(":visible")) {
-
-                        if ($('#hfSwipe').val() == '') {
-                            // Start buffering keypresses when % char is recieved
-                            if ((date.getTime() - lastKeyPress) > 500)
-                                keyboardBuffer = String.fromCharCode(event.which);
-
-                            // Continue buffering as long as keypresses are within 1/10 sec
-                            if ((date.getTime() - lastKeyPress) < 100)
-                                keyboardBuffer += String.fromCharCode(event.which);
-
-                            // Stop buffering on CR char
-                            if (event.which == 13) {
-
-                                $('#hfSwipe').val(keyboardBuffer);
-
-                                $('#swipeContent').hide();
-                                $('#swipeNavButtons').hide();
-                                $('#swipeLoading').show();
-
-                                eval($('#swipeNext').attr('href').replace('javascript:', ''));
-                            }
-                        }
-
-                        event.preventDefault();
-                    }
-                    else {
-
-                        // If not on the swipe panel, ignore the % key and any keypress that was less 
-                        // then 1/10 sec since the last keypress (card scanned)        
-                        if (event.which == 37 || ((date.getTime() - lastKeyPress) < 50)) {
-                            console.log('Date: ' + date.getTime());
-                            console.log('Last Key Press: ' + lastKeyPress);
-                            console.log('Delay: ' + (date.getTime() - lastKeyPress));
-                            console.log('Key Event: ' + event.which);
-                            event.preventDefault();
-
-                        }
-                        else {
-
-                            // If enter key is pressed, execute the next buttons postback script
-                            if (event.which == 13) {
-                                switch (panelName) {
-                                    case 'phone':
-                                        eval($('#phoneNext').attr('href').replace('javascript:', ''));
-                                        break;
-                                    case 'family':
-                                        break;
-                                    case 'register':
-                                        eval($('#registerNext').attr('href').replace('javascript:', ''));
-                                        break;
-                                    case 'amount':
-                                        eval($('#amountNext').attr('href').replace('javascript:', ''));
-                                        break;
-                                }
-                            }
-
-                            else if (event.which == 45 && panelName == 'amount')
-                                event.preventDefault();
-                        }
-                    }
-
-                    lastKeyPress = date.getTime();
-
-                });*/
             });
         
         </script>
@@ -334,13 +263,14 @@
 
         </asp:Panel>
 
-        <asp:Panel ID="pnlSwipe" runat="server" Visible="false">
+        <asp:Panel ID="pnlSwipe" CssClass="js-swipe" runat="server" Visible="false">
             <header>
                 <h1>Please Swipe Your Card</h1>
             </header>
 
             <main>
-                
+                <asp:Literal id="lSwipeErrors" runat="server" />
+
                 <div>
                     <i class="fa fa-cc-visa fa-2x"></i>
                     <i class="fa fa-cc-mastercard fa-2x"></i>
@@ -348,7 +278,6 @@
                     <i class="fa fa-cc-discover fa-2x"></i>
                 </div>
                 <asp:Image ID="imgSwipe" runat="server" ImageUrl="<%$ Fingerprint:~/Assets/Images/Kiosk/card_swipe.png %>" />
-                <asp:LinkButton id="lbSwipeNext" runat="server" OnClick="lbSwipeNext_Click" ClientIDMode="Static" CssClass="btn btn-primary btn-kiosk btn-kiosk-lg">Next</asp:LinkButton>
             </main>
             
             <footer>

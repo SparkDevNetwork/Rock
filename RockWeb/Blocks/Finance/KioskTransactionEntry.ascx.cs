@@ -32,6 +32,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Security;
+using Rock.Financial;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -94,18 +95,18 @@ namespace RockWeb.Blocks.Finance
             set { ViewState["AnonymousGiverPersonAliasId"] = value; }
         }
 
-        private int Campus {
+        private int CampusId {
             get {
-                if ( ViewState["Campus"] == null )
+                if ( ViewState["CampusId"] == null )
                 {
                     return 1;
                 }
                 else
                 {
-                    return Int32.Parse( ViewState["Campus"].ToString() );
+                    return Int32.Parse( ViewState["CampusId"].ToString() );
                 }
             }
-            set { ViewState["Campus"] = value; }
+            set { ViewState["CampusId"] = value; }
         }
 
         DefinedValueCache _dvcConnectionStatus = null;
@@ -166,10 +167,19 @@ namespace RockWeb.Blocks.Finance
                 LoadAccounts();
 
                 // todo set campus
-                this.Campus = 1;
+                this.CampusId = 1;
             }
             else
             {
+                // check for swipe event
+                if ( Request.Form["__EVENTARGUMENT"] != null )
+                {
+                    if ( Request.Form["__EVENTARGUMENT"] == "Swipe_Complete" )
+                    {
+                        ProcessSwipe( hfSwipe.Value );
+                    }
+                }
+                
                 if ( pnlGivingUnitSelect.Visible )
                 {
                     BuildGivingUnitControls();
@@ -187,6 +197,7 @@ namespace RockWeb.Blocks.Finance
         #region Events
 
         #region Search Panel Events
+        
         //
         // Search Panel Events
         //
@@ -324,10 +335,64 @@ namespace RockWeb.Blocks.Finance
         // Swipe Panel Events
         //
 
-        protected void lbSwipeNext_Click( object sender, EventArgs e )
-        {
-            HidePanels();
-            ShowReceiptPanel();            
+        private void ProcessSwipe(string swipeData) {
+
+            RockContext rockContext = new RockContext();
+
+            // create swipe object
+            SwipePaymentInfo swipeInfo = new SwipePaymentInfo(swipeData);
+            
+            // get gateway
+            GatewayComponent gateway = GatewayContainer.GetComponent( GetAttributeValue("CreditCardGateway"));
+            
+            if ( gateway != null )
+            {
+                string errorMessage = string.Empty;
+                var transaction = gateway.Charge( swipeInfo, out errorMessage );
+                
+                if (transaction != null)
+                {
+                    transaction.TransactionDateTime = RockDateTime.Now;
+                    transaction.AuthorizedPersonAliasId = this.SelectedGivingUnit.PersonAliasId;
+                    transaction.GatewayEntityTypeId = gateway.TypeId;
+                    //transaction.TransactionTypeValueId = DefinedValueCache.Read( new Guid( GetAttributeValue() ) ).Id;
+                    //transaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
+                    //transaction.CreditCardTypeValueId = savedCreditCard.CreditCardTypeValueId;
+
+                    foreach ( var accountAmount in this.Amounts )
+                    {
+                        var transactionDetail = new FinancialTransactionDetail();
+                        transactionDetail.Amount = accountAmount.Value;
+                        transactionDetail.AccountId = accountAmount.Key;
+                        //transactionDetail.EntityTypeId = packageEntityTypeId;
+                        //transactionDetail.EntityId = package.Id;
+                        //transactionDetail.Summary = string.Format( "Purchase of '{0}' package from {1}", package.Name, package.Vendor.Name );
+                        transaction.TransactionDetails.Add( transactionDetail );
+                    }
+
+                    var batchService = new FinancialBatchService( rockContext );
+
+                    // Get the batch 
+                    /*var batch = batchService.Get(
+                        "Rock Shop Purchases",
+                        transaction.CurrencyTypeValue,
+                        paymentInfo.CreditCardTypeValue,
+                        transaction.TransactionDateTime.Value,
+                        gateway.BatchTimeOffset );*/
+ 
+
+                    HidePanels();
+                    ShowReceiptPanel();
+                }
+                else
+                {
+                    lSwipeErrors.Text = String.Format("<div class='alert alert-danger'>An error occurred while process this transaction. Message: {0}</div>", errorMessage);
+                }
+            } else {
+                lSwipeErrors.Text = "<div class='alert alert-danger'>Invalid gateway provided. Please provide a gateway. Transaction not processed.</div>";
+            }
+
+            
         }
 
         protected void lbSwipeBack_Click( object sender, EventArgs e )
@@ -375,7 +440,7 @@ namespace RockWeb.Blocks.Finance
             person.RecordStatusValueId = _dvcRecordStatus.Id;
             person.Gender = Gender.Unknown;
 
-            GroupService.SaveNewFamily( new RockContext(), person, this.Campus, false );
+            PersonService.SaveNewPerson( person, new RockContext(), this.CampusId, false );
 
             // set as selected giving unit
             this.SelectedGivingUnit = new GivingUnit( person.PrimaryAliasId.Value, person.LastName, person.FirstName );
@@ -670,8 +735,8 @@ namespace RockWeb.Blocks.Finance
             var accounts = accountService.Queryable()
                             .Where( a => selectedAccounts.Contains( a.Guid ));
             
-            if (this.Campus != null) {
-                accounts = accounts.Where(a => a.CampusId.Value == this.Campus || a.CampusId == null);
+            if (this.CampusId != null) {
+                accounts = accounts.Where(a => a.CampusId.Value == this.CampusId || a.CampusId == null);
             }
             
             this.Accounts = new Dictionary<int, string>();
