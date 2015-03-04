@@ -43,6 +43,9 @@
     <Reference Include="DDay.iCal">
       <HintPath>..\packages\DDay.iCal.1.0.2.575\lib\DDay.iCal.dll</HintPath>
     </Reference>
+    <Reference Include="DocumentFormat.OpenXml">
+      <HintPath>..\packages\DocumentFormat.OpenXml.2.5\lib\DocumentFormat.OpenXml.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework">
       <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -335,6 +338,7 @@
     <Compile Include="Transactions\UpdateFacebookFriends.cs" />
     <Compile Include="Utility\AttributeCacheJsonConverter.cs" />
     <Compile Include="Utility\AttributeValueJsonConverter.cs" />
+    <Compile Include="Utility\MergeDocHelper.cs" />
     <Compile Include="Utility\RockJsonMediaTypeFormatter.cs" />
     <Compile Include="Utility\RockJsonTextWriter.cs" />
     <Compile Include="Utility\RockSemanticVersion.cs" />
