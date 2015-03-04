@@ -20,7 +20,7 @@
 
 <main>
 
-    <div id="map-holder"></div>
+    <div id="map-holder">Loading...</div>
 
 </main>
 

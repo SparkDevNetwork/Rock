@@ -21,6 +21,7 @@ CCV.locations = [
     city: '{{ campus.Location.City }}',
     state: '{{ campus.Location.State }}',
     zip: '{{ campus.Location.PostalCode }}',
+    photo: '{{ campus.Location.ImageUrl }}',
     serviceTimes: {{ campus.ServiceTimes | ToJSON }}
   }{% unless forloop.last %},{% endunless %}
 {% endfor %}

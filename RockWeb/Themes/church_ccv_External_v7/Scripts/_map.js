@@ -65,6 +65,7 @@ CCV.baseMap = function (holder, campusToDraw) {
   this.markers = []
   this.bounds = new google.maps.LatLngBounds()
   this.zoom = this.zoom || 12
+  this.useZoom = this.useZoom || false
   this.mapOptions = this.mapOptions || {
     mapTypeId: 'CCV',
     disableDefaultUI: true
@@ -149,17 +150,17 @@ CCV.infoWindowMap.prototype.afterDropMarker = function (_this, campus, marker) {
 }
 CCV.infoWindowMap.prototype.buildInfoWindow = function(campus) {
   var result
-  result  = '<div class="map-campus-infobox">'
+  result  = '<div class="infowindow">'
   result += '  <div class="name">'+campus.name+'</div>'
-  result += '  <div class="cf">'
-  //result += '    <img class="photo" src="'+campus.photo+'" style="width: 75px; height: 75px;">'
+  result += '  <div class="group">'
+  result += '    <img class="photo" src="'+campus.photo+'&width=75" style="width: 75px; height: 75px;">'
   result += '    <div class="details">'
   result += '      <span class="address">'+campus.street+'<br>'+campus.city+', '+campus.state+' '+campus.zip+'</span>'
   result += '      <span class="phone">'+campus.phone+'</span>'
   result += '    </div>'
   result += '  </div>'
   if (typeof this.selectCampus == 'function')
-    result += '  <a class="cursor" onclick="'+this.getInstanceName()+'.selectCampus('+campus.id+')" class="select">Select this Campus</a>'
+    result += '  <a class="select" onclick="'+this.getInstanceName()+'.selectCampus('+campus.id+')">Select this Campus</a>'
   result += '</div>'
   return result
 }

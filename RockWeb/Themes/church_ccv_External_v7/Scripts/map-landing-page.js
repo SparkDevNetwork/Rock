@@ -16,6 +16,10 @@
 
 var landingMap = new CCV.infoWindowMap(document.getElementById('map-holder'))
 
+// Custom properties
+// landingMap.zoom = 11
+// landingMap.useZoom = true
+
 // Overwritten methods
 landingMap.bindUi = function() {
   var _this = this
