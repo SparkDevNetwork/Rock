@@ -21,7 +21,7 @@
                 //
                 $(document).scannerDetection({
                     
-                    preventDefault:true,
+                    preventDefault: true,
                     onComplete: function (e, data) {
                         if ($(".js-swipe").is(":visible")) {
                             $('#hfSwipe').val(e);
