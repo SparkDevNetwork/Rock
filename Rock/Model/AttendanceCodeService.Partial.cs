@@ -48,7 +48,7 @@ namespace Rock.Model
         {
             DateTime today = day.Date;
             DateTime tomorrow = today.AddDays( 1 );
-            return Queryable().Where( c => c.Code == code && c.IssueDateTime <= today && c.IssueDateTime < tomorrow);
+            return Queryable().Where( c => c.Code == code && c.IssueDateTime >= today && c.IssueDateTime < tomorrow);
         }
 
         /// <summary>
