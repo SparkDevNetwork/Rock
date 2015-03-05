@@ -6,7 +6,7 @@
             <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-paste"></i> Benevolence Requests</h1>
+                    <h1 class="panel-title"><i class="fa fa-paste"></i>Benevolence Requests</h1>
                 </div>
                 <div class="panel-body">
 
@@ -43,6 +43,12 @@
                                 <Rock:RockTemplateField SortExpression="ResultSpecifics" HeaderText="Result Specifics" ColumnPriority="DesktopLarge">
                                     <ItemTemplate>
                                         <asp:Literal ID="lResults" runat="server" />
+                                    </ItemTemplate>
+                                </Rock:RockTemplateField>
+
+                                <Rock:RockTemplateField SortExpression="RequestStatus" HeaderText="Status">
+                                    <ItemTemplate>
+                                        <Rock:HighlightLabel ID="hlStatus" runat="server" />
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
 
