@@ -312,8 +312,6 @@ namespace DocXSample
                                     } );
                                 }
 
-                                XDocument xdoc = XDocument.Parse( cell.OuterXml );
-
                                 var newCell = new TableCell( xe[0].ToString() );
 
                                 cell.Parent.ReplaceChild( newCell, cell );
@@ -331,9 +329,88 @@ namespace DocXSample
             File.WriteAllBytes( path + @"\LabelOut_OpenXML.docx", outputDocStream.ToArray() );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnMakeTableOpenXML control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void btnMakeTableOpenXML_Click( object sender, EventArgs e )
         {
-            //
+            string path = Directory.GetCurrentDirectory();
+
+            string[] names = { "Tom Selleck", "Tom Cruise", "Jon Edmiston" };
+            string[] emails = { "ts@higgins.com", "tom@topgun.com", "jonathan.edmiston@gmail.com" };
+            string[] coolness = { "Pretty Cool", "Kinda Cool", "Exteremely Cool" };
+            string[] colors = { "blue", "red", "c4c4c4" };
+
+            var mergeObjectsList = new List<Dictionary<string, object>>();
+            for ( int i = 0; i < names.Length; i++ )
+            {
+                var mergeObjects = new Dictionary<string, object>();
+                mergeObjects.Add( "Name", names[i] );
+                mergeObjects.Add( "Email", emails[i] );
+                mergeObjects.Add( "Coolness", coolness[i] );
+                mergeObjects.Add( "FavoriteColor", colors[i] );
+                mergeObjects.Add( "DateTime", DateTime.Now );
+                mergeObjectsList.Add( mergeObjects );
+            }
+
+            // Start by creating a new document with the contents of the Template (so that Styles, etc get included)
+            MemoryStream outputDocStream = new MemoryStream();
+            using ( var letterTemplateStream = File.OpenRead( path + @"\table-template.docx" ) )
+            {
+                letterTemplateStream.CopyTo( outputDocStream );
+                outputDocStream.Seek( 0, SeekOrigin.Begin );
+            }
+
+            using ( WordprocessingDocument outputDoc = WordprocessingDocument.Open( outputDocStream, true ) )
+            {
+                var newDocBody = outputDoc.MainDocumentPart.Document.Body;
+                var tables = newDocBody.ChildElements.OfType<DocumentFormat.OpenXml.Wordprocessing.Table>();
+
+                foreach ( var table in tables )
+                {
+                    var templateRows = table.ChildElements.OfType<TableRow>().ToList();
+                    var firstFooterRow = templateRows.Where( a => a.ChildElements.Any( c => c.InnerText.Contains( "{{" ) ) ).LastOrDefault().NextSibling();
+
+                    // get the templateRows that have merge fields in it
+                    var templateMergeFieldsRows = templateRows.Where( a => a.ChildElements.Any( c => c.InnerText.Contains( "{{" ) ) ).ToList();
+
+                    foreach ( var mergeObjects in mergeObjectsList )
+                    {
+                        foreach ( var templateMergeFieldsRow in templateMergeFieldsRows )
+                        {
+                            XElement[] xe = new XElement[] { XElement.Parse( templateMergeFieldsRow.OuterXml ) };
+                            foreach ( var mergeObject in mergeObjects )
+                            {
+                                OpenXmlRegex.Replace( xe, new Regex( "{{" + mergeObject.Key + "}}" ), mergeObject.Value.ToString(), ( x, m ) =>
+                                {
+                                    return true;
+                                } );
+                            }
+
+                            if ( firstFooterRow != null )
+                            {
+                                table.InsertBefore( new TableRow( xe[0].ToString() ), firstFooterRow );
+                            }
+                            else
+                            {
+                                table.AppendChild( new TableRow( xe[0].ToString() ) );
+                            }
+                        }
+                        
+                    }
+
+                    // now that we are done with the template rows, remove them
+                    foreach ( var templateMergeFieldsRow in templateMergeFieldsRows )
+                    {
+                        templateMergeFieldsRow.Remove();
+                    }
+                }
+            }
+
+            // Save to disk
+            File.WriteAllBytes( path + @"\TableOut_OpenXML.docx", outputDocStream.ToArray() );
         }
     }
 }

@@ -165,17 +165,93 @@ namespace Rock.Utility
                                     } );
                                 }
 
-                                XDocument xdoc = XDocument.Parse( cell.OuterXml );
-
                                 var newCell = new TableCell( xe[0].ToString() );
 
                                 cell.Parent.ReplaceChild( newCell, cell );
 
                                 mergeItemIndex++;
                             }
-
-
                         }
+                    }
+                }
+            }
+
+            BinaryFile outputFile = new BinaryFile();
+            // TODO
+
+            outputFile.ContentStream = outputDocStream;
+            binaryFileService.Add( outputFile );
+            rockContext.SaveChanges();
+            return outputFile.Id;
+        }
+
+        /// <summary>
+        /// Makes the table.
+        /// </summary>
+        /// <param name="templateBinaryFileId">The template binary file identifier.</param>
+        /// <param name="mergeObjectsList">The merge objects list.</param>
+        /// <returns></returns>
+        public static int? MakeTable( int templateBinaryFileId, List<Dictionary<string, object>> mergeObjectsList )
+        {
+            // Start by creating a new document with the contents of the Template (so that Styles, etc get included)
+            var rockContext = new RockContext();
+            var binaryFileService = new BinaryFileService( rockContext );
+
+            var templateBinaryFile = binaryFileService.Get( templateBinaryFileId );
+            if ( templateBinaryFile == null )
+            {
+                return null;
+            }
+
+            var letterTemplateStream = templateBinaryFile.ContentStream;
+            // Start by creating a new document with the contents of the Template (so that Styles, etc get included)
+            MemoryStream outputDocStream = new MemoryStream();
+
+            letterTemplateStream.CopyTo( outputDocStream );
+            outputDocStream.Seek( 0, SeekOrigin.Begin );
+
+            using ( WordprocessingDocument outputDoc = WordprocessingDocument.Open( outputDocStream, true ) )
+            {
+                var newDocBody = outputDoc.MainDocumentPart.Document.Body;
+                var tables = newDocBody.ChildElements.OfType<DocumentFormat.OpenXml.Wordprocessing.Table>();
+
+                foreach ( var table in tables )
+                {
+                    var templateRows = table.ChildElements.OfType<TableRow>().ToList();
+                    var firstFooterRow = templateRows.Where( a => a.ChildElements.Any( c => c.InnerText.Contains( "{{" ) ) ).LastOrDefault().NextSibling();
+
+                    // get the templateRows that have merge fields in it
+                    var templateMergeFieldsRows = templateRows.Where( a => a.ChildElements.Any( c => c.InnerText.Contains( "{{" ) ) ).ToList();
+
+                    foreach ( var mergeObjects in mergeObjectsList )
+                    {
+                        foreach ( var templateMergeFieldsRow in templateMergeFieldsRows )
+                        {
+                            XElement[] xe = new XElement[] { XElement.Parse( templateMergeFieldsRow.OuterXml ) };
+                            foreach ( var mergeObject in mergeObjects )
+                            {
+                                OpenXmlRegex.Replace( xe, new Regex( "{{" + mergeObject.Key + "}}" ), mergeObject.Value.ToString(), ( x, m ) =>
+                                {
+                                    return true;
+                                } );
+                            }
+
+                            if ( firstFooterRow != null )
+                            {
+                                table.InsertBefore( new TableRow( xe[0].ToString() ), firstFooterRow );
+                            }
+                            else
+                            {
+                                table.AppendChild( new TableRow( xe[0].ToString() ) );
+                            }
+                        }
+
+                    }
+
+                    // now that we are done with the template rows, remove them
+                    foreach ( var templateMergeFieldsRow in templateMergeFieldsRows )
+                    {
+                        templateMergeFieldsRow.Remove();
                     }
                 }
             }
