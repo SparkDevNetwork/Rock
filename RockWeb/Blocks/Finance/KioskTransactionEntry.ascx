@@ -6,20 +6,56 @@
         <asp:HiddenField ID="hfSwipe" runat="server" ClientIDMode="Static" />
 
         <script>
-        
-            /*var date = new Date();
-            var lastKeyPress = date.getTime();
-            console.log('Last Key Press: ' + lastKeyPress);
-            var keyboardBuffer = '';*/
 
             var isTouchDevice = 'ontouchstart' in document.documentElement;
 
+            //
+            // setup swipe detection
+            //
+            var lastKeyPress = 0;
+            var keyboardBuffer = '';
+
+            $(document).keypress(function (e) {
+                console.log('Keypressed: ' + e.which + ' - ' + String.fromCharCode(e.which));
+                var date = new Date();
+
+                if ($(".js-swipe").is(":visible")) {
+
+                    if (e.which == 37 && (date.getTime() - lastKeyPress) > 500) { // start buffering if first character of the swipe (always '%')
+                        console.log('Start the buffering');
+                        keyboardBuffer = String.fromCharCode(e.which);
+                    } else if ((date.getTime() - lastKeyPress) < 100) {  // continuing the reading into the buffer if the stream of characters is still coming
+                        keyboardBuffer += String.fromCharCode(e.which);
+                    }
+
+                    // if the character is a line break stop buffering and call postback
+                    if (e.which == 13 && keyboardBuffer.length != 0) {
+                        console.log('Bam! Done... ' + keyboardBuffer);
+                        $('#hfSwipe').val(keyboardBuffer);
+                        keyboardBuffer = '';
+                        __doPostBack('hfSwipe', 'Swipe_Complete');
+                    }
+
+                    // stop the keypress
+                    e.preventDefault();
+
+                } else {
+                    // if not the swipe panel ignore characters from the swipe
+                    if (e.which == 37 || ((date.getTime() - lastKeyPress) < 50)) {
+                        console.log('Swiper... no swiping...');
+                        e.preventDefault();
+                    }
+                }
+
+                lastKeyPress = date.getTime();
+            });
+
             Sys.Application.add_load(function () {
 
-                //
-                // setup swipe detection
-                //
-                $(document).scannerDetection({
+                
+
+
+                /*$(document).scannerDetection({
                     
                     preventDefault: true,
                     onComplete: function (e, data) {
@@ -29,7 +65,9 @@
                         }
                         return false;
                     }
-                });
+                });*/
+
+
 
                 //
                 // search 
