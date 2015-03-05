@@ -44,6 +44,9 @@ namespace Rock.Client
         public int? CaseWorkerPersonAliasId { get; set; }
 
         /// <summary />
+        public string CellPhoneNumber { get; set; }
+
+        /// <summary />
         public DefinedValue ConnectionStatusValue { get; set; }
 
         /// <summary />
@@ -59,10 +62,7 @@ namespace Rock.Client
         public string GovernmentId { get; set; }
 
         /// <summary />
-        public PhoneNumber HomePhoneNumber { get; set; }
-
-        /// <summary />
-        public int? HomePhoneNumberId { get; set; }
+        public string HomePhoneNumber { get; set; }
 
         /// <summary />
         public string LastName { get; set; }
@@ -72,12 +72,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? LocationId { get; set; }
-
-        /// <summary />
-        public PhoneNumber MobilePhoneNumber { get; set; }
-
-        /// <summary />
-        public int? MobilePhoneNumberId { get; set; }
 
         /// <summary />
         public DateTime RequestDateTime { get; set; }
@@ -101,10 +95,7 @@ namespace Rock.Client
         public string ResultSummary { get; set; }
 
         /// <summary />
-        public PhoneNumber WorkPhoneNumber { get; set; }
-
-        /// <summary />
-        public int? WorkPhoneNumberId { get; set; }
+        public string WorkPhoneNumber { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -123,6 +114,13 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignId { get; set; }
+
+        /// <summary />
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
+
+
+        /// <summary />
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
 
     }
 }

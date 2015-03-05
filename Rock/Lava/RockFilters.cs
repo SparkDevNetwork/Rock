@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Web;
+using System.Web.UI.HtmlControls;
 using DotLiquid;
 using DotLiquid.Util;
 using Humanizer;
@@ -27,6 +29,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Lava
 {
@@ -905,7 +908,7 @@ namespace Rock.Lava
 
         #endregion
 
-        #region Object Filters
+        #region Misc Filters
 
         /// <summary>
         /// creates a postback javascript function
@@ -933,6 +936,50 @@ namespace Rock.Lava
         public static string ToJSON (object input)
         {
             return input.ToJson();
+        }
+
+        /// <summary>
+        /// adds a meta tag to the head of the document
+        /// </summary>
+        /// <param name="input">The input to use for the content attribute of the tag.</param>
+        /// <param name="command">Attribute name to use for the meta tag (usually 'name' or 'property').</param>
+        /// <param name="command">Attribute value to use for the attribute name.</param>
+        /// <returns></returns>
+        public static string AddMetaTagToHead( string input, string attributeName, string attributeValue )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            if ( page != null )
+            {
+                HtmlMeta metaTag = new HtmlMeta();
+                metaTag.Attributes.Add( attributeName, attributeValue );
+                metaTag.Content = input;
+                page.Header.Controls.Add( metaTag );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// adds a link tag to the head of the document
+        /// </summary>
+        /// <param name="input">The input to use for the href of the tag.</param>
+        /// <param name="command">Attribute name to use for the link tag (usually 'rel').</param>
+        /// <param name="command">Attribute value to use for the attribute name.</param>
+        /// <returns></returns>
+        public static string AddLinkTagToHead( string input, string attributeName, string attributeValue )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            if ( page != null )
+            {
+                HtmlLink imageLink = new HtmlLink();
+                imageLink.Attributes.Add( attributeName, attributeValue );
+                imageLink.Attributes.Add( "href", input );
+                page.Header.Controls.Add( imageLink );
+            }
+
+            return null;
         }
 
         #endregion
