@@ -1556,7 +1556,7 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( property.Name != "Id" )
                     {
-                        BoundField boundField = GetGridField( property.PropertyType );
+                        BoundField boundField = GetGridField( property );
                         boundField.DataField = property.Name;
                         boundField.SortExpression = property.Name;
                         boundField.HeaderText = property.Name.SplitCase();
@@ -1825,7 +1825,25 @@ namespace Rock.Web.UI.Controls
         #region Static Methods
 
         /// <summary>
-        /// Gets the grid field.
+        /// Gets the most appropriate grid field for the model property
+        /// </summary>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        public static BoundField GetGridField( PropertyInfo propertyInfo )
+        {
+            var specifiedBoundFieldType = propertyInfo.GetCustomAttribute<BoundFieldTypeAttribute>();
+            if (specifiedBoundFieldType != null)
+            {
+                return Activator.CreateInstance( specifiedBoundFieldType.BoundFieldType ) as BoundField;
+            }
+            else
+            {
+                return GetGridField( propertyInfo.PropertyType );
+            }
+        }
+
+        /// <summary>
+        /// Gets the most appropriate grid field for the propertyType (int, bool, etc)
         /// </summary>
         /// <param name="propertyType">Type of the property.</param>
         /// <returns></returns>
