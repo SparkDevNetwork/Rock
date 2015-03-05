@@ -78,6 +78,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NuGet.Core.2.8.3\lib\net40-Client\NuGet.Core.dll</HintPath>
     </Reference>
+    <Reference Include="OpenXmlPowerTools">
+      <HintPath>..\packages\OpenXmlPowerTools.3.0.0\lib\OpenXmlPowerTools.dll</HintPath>
+    </Reference>
     <Reference Include="Quartz">
       <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
     </Reference>
@@ -128,6 +131,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Twilio.3.6.25\lib\3.5\Twilio.Api.dll</HintPath>
     </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Address\SmartyStreets.cs" />

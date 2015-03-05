@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using OpenXmlPowerTools;
 using Rock.Data;
 using Rock.Model;
 
@@ -20,15 +23,11 @@ namespace Rock.Utility
         /// <param name="templateBinaryFileId">The template binary file identifier.</param>
         /// <param name="mergeObjectsList">The merge objects list.</param>
         /// <returns></returns>
-        public int? MakeDocument( int templateBinaryFileId, List<Dictionary<string, object>> mergeObjectsList )
+        public static int? MakeDocument( int templateBinaryFileId, List<Dictionary<string, object>> mergeObjectsList )
         {
-            // see HowTos at https://msdn.microsoft.com/EN-US/library/office/cc850849.aspx
-
             // Start by creating a new document with the contents of the Template (so that Styles, etc get included)
             var rockContext = new RockContext();
             var binaryFileService = new BinaryFileService( rockContext );
-
-            MemoryStream outputDocStream = new MemoryStream();
 
             var templateBinaryFile = binaryFileService.Get( templateBinaryFileId );
             if ( templateBinaryFile == null )
@@ -37,6 +36,8 @@ namespace Rock.Utility
             }
 
             var letterTemplateStream = templateBinaryFile.ContentStream;
+
+            MemoryStream outputDocStream = new MemoryStream();
             letterTemplateStream.CopyTo( outputDocStream );
             outputDocStream.Seek( 0, SeekOrigin.Begin );
 
@@ -44,26 +45,39 @@ namespace Rock.Utility
             {
                 var newDocBody = outputDoc.MainDocumentPart.Document.Body;
 
-                // for each Merge Item, we want to start with the Body of the orig template, 
-                // which was copied into the new document (above)
-                // Do this by cloning the template body...
-                var templateBody = newDocBody.CloneNode( true );
-
-                // ...then removing the contents of it from our new document
+                // start with a clean body
                 newDocBody.RemoveAllChildren();
 
                 // loop thru each merge item, using the template
                 foreach ( var mergeObjects in mergeObjectsList )
                 {
 
-                    // make a copy of each of the child elements of the template for the merge item
-                    foreach ( var childEl in templateBody.ChildElements )
-                    {
-                        var clone = childEl.CloneNode( true );
+                    var tempMergeDocStream = new MemoryStream();
+                    letterTemplateStream.Position = 0;
+                    letterTemplateStream.CopyTo( tempMergeDocStream );
+                    tempMergeDocStream.Position = 0;
+                    var tempMergeDoc = WordprocessingDocument.Open( tempMergeDocStream, true );
 
-                        // recursivly find any Text nodes, replacing the MergeField with the Value
-                        ResolveMergeFieldsRecursive( clone, mergeObjects );
-                        newDocBody.AppendChild( clone );
+                    var xdoc = tempMergeDoc.MainDocumentPart.GetXDocument();
+                    foreach ( var r in mergeObjects )
+                    {
+                        OpenXmlRegex.Match( xdoc.Nodes().OfType<XElement>(), new Regex( r.Key, RegexOptions.Multiline ), ( x, m ) =>
+                        {
+                            string todo = "hello";
+                        } );
+
+                        OpenXmlRegex.Replace( xdoc.Nodes().OfType<XElement>(), new Regex( r.Key ), r.Value.ToString(), ( x, m ) =>
+                                        {
+                                            return true;
+                                        } );
+                    }
+
+                    tempMergeDoc.MainDocumentPart.PutXDocument();
+
+                    foreach ( var childBodyItem in tempMergeDoc.MainDocumentPart.Document.Body )
+                    {
+                        var clonedChild = childBodyItem.CloneNode( true );
+                        newDocBody.AppendChild( clonedChild );
                     }
 
                     // add page break
@@ -79,6 +93,8 @@ namespace Rock.Utility
             }
 
             BinaryFile outputFile = new BinaryFile();
+            // TODO
+
             outputFile.ContentStream = outputDocStream;
             binaryFileService.Add( outputFile );
             rockContext.SaveChanges();
@@ -86,37 +102,91 @@ namespace Rock.Utility
         }
 
         /// <summary>
-        /// Searches the and replace recursive.
+        /// Makes the labels.
         /// </summary>
-        /// <param name="el">The el.</param>
-        /// <param name="replacements">The replacements.</param>
-        public void ResolveMergeFieldsRecursive( OpenXmlElement el, Dictionary<string, object> mergeObjects )
+        /// <param name="templateBinaryFileId">The template binary file identifier.</param>
+        /// <param name="mergeObjectsList">The merge objects list.</param>
+        /// <returns></returns>
+        public static int? MakeLabels( int templateBinaryFileId, List<Dictionary<string, object>> mergeObjectsList )
         {
-            if ( el is Text )
+            // Start by creating a new document with the contents of the Template (so that Styles, etc get included)
+            var rockContext = new RockContext();
+            var binaryFileService = new BinaryFileService( rockContext );
+
+            var templateBinaryFile = binaryFileService.Get( templateBinaryFileId );
+            if ( templateBinaryFile == null )
             {
-                string newText = ( el as Text ).InnerText;
-                newText = newText.ResolveMergeFields( mergeObjects );
+                return null;
+            }
 
-                Text newTextNode = new Text
-                {
-                    Text = newText,
-                    Space = SpaceProcessingModeValues.Preserve
-                };
+            var letterTemplateStream = templateBinaryFile.ContentStream;
+            // Start by creating a new document with the contents of the Template (so that Styles, etc get included)
+            MemoryStream outputDocStream = new MemoryStream();
+            letterTemplateStream.CopyTo( outputDocStream );
+            outputDocStream.Seek( 0, SeekOrigin.Begin );
 
-                foreach ( var child in el.ChildElements )
+            int mergeItemIndex = 0;
+            int mergeItemCount = mergeObjectsList.Count();
+
+
+            using ( WordprocessingDocument outputDoc = WordprocessingDocument.Open( outputDocStream, true ) )
+            {
+                var newDocBody = outputDoc.MainDocumentPart.Document.Body;
+                var tables = newDocBody.ChildElements.OfType<DocumentFormat.OpenXml.Wordprocessing.Table>();
+
+                foreach ( var table in tables )
                 {
-                    newTextNode.AppendChild( child.CloneNode( true ) );
+                    foreach ( var row in table.ChildElements.OfType<TableRow>() )
+                    {
+                        foreach ( var cell in row.ChildElements.OfType<TableCell>().Where( a => a.InnerText.Contains( "{{" ) ).ToList() )
+                        {
+                            if ( mergeItemIndex >= ( mergeItemCount - 1 ) )
+                            {
+                                // out of data so hide cell contents
+                                var emptyCell = new TableCell( new DocumentFormat.OpenXml.Wordprocessing.Paragraph[] { new DocumentFormat.OpenXml.Wordprocessing.Paragraph() } );
+                                cell.Parent.ReplaceChild( emptyCell, cell );
+                            }
+                            else
+                            {
+                                XElement[] xe = new XElement[] { XElement.Parse( cell.OuterXml ) };
+
+                                foreach ( var r in mergeObjectsList[mergeItemIndex] )
+                                {
+                                    OpenXmlRegex.Match( xe, new Regex( r.Key, RegexOptions.Multiline ), ( x, m ) =>
+                                    {
+                                        // TODO
+                                        string todo = "hello";
+                                    } );
+
+
+                                    OpenXmlRegex.Replace( xe, new Regex( r.Key ), r.Value.ToString(), ( x, m ) =>
+                                    {
+                                        return true;
+                                    } );
+                                }
+
+                                XDocument xdoc = XDocument.Parse( cell.OuterXml );
+
+                                var newCell = new TableCell( xe[0].ToString() );
+
+                                cell.Parent.ReplaceChild( newCell, cell );
+
+                                mergeItemIndex++;
+                            }
+
+
+                        }
+                    }
                 }
-
-                el.Parent.ReplaceChild( newTextNode, el );
-
-                el = newTextNode;
             }
 
-            foreach ( var child in el.ChildElements )
-            {
-                ResolveMergeFieldsRecursive( child, mergeObjects );
-            }
+            BinaryFile outputFile = new BinaryFile();
+            // TODO
+
+            outputFile.ContentStream = outputDocStream;
+            binaryFileService.Add( outputFile );
+            rockContext.SaveChanges();
+            return outputFile.Id;
         }
     }
 }
