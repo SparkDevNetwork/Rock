@@ -313,11 +313,12 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
-        public virtual DDay.iCal.Event GetCalenderEvent()
+        public virtual DDay.iCal.Event GetCalenderEvent() 
         {
-            return Schedule.GetCalenderEvent( iCalendarContent );
+            return ScheduleICalHelper.GetCalenderEvent( iCalendarContent );
         }
 
+        public virtual 
         /// <summary>
         /// Gets the next Check-in start date for this Schedule.  
         /// </summary>
@@ -648,35 +649,6 @@ namespace Rock.Model
 
         #endregion
 
-        #region Static Methods
-
-        /// <summary>
-        /// Gets the calender event.
-        /// </summary>
-        /// <param name="iCalendarContent">Content of the i calendar.</param>
-        /// <returns></returns>
-        public static DDay.iCal.Event GetCalenderEvent( string iCalendarContent )
-        {
-            //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
-            //// We just need one Calendar and one Event
-
-            StringReader stringReader = new StringReader( iCalendarContent.Trim() );
-            var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
-            DDay.iCal.Event calendarEvent = null;
-            if ( calendarList.Count > 0 )
-            {
-                var calendar = calendarList[0] as DDay.iCal.iCalendar;
-                if ( calendar != null )
-                {
-                    calendarEvent = calendar.Events[0] as DDay.iCal.Event;
-                }
-            }
-
-            return calendarEvent;
-        }
-
-        #endregion
-
         #region consts
 
         /// <summary>
@@ -904,9 +876,64 @@ namespace Rock.Model
             StartDateTime = startDateTime;
             EndDateTime = endDateTime;
             ScheduleId = scheduleId;
+		}
+	}
+
+    /// <summary>
+    /// DDay.ical LoadFromStream is not threadsafe, so use locking
+    /// </summary>
+    public static class ScheduleICalHelper
+    {
+        private static object _initLock;
+        private static Dictionary<string, DDay.iCal.Event> _iCalSchedules = new Dictionary<string, Event>();
+
+        static ScheduleICalHelper()
+        {
+            ScheduleICalHelper._initLock = new object();
+        }
+
+        /// <summary>
+        /// Gets the calender event.
+        /// </summary>
+        /// <param name="iCalendarContent">Content of the i calendar.</param>
+        /// <returns></returns>
+        public static DDay.iCal.Event GetCalenderEvent( string iCalendarContent )
+        {
+            string trimmedContent = iCalendarContent.Trim();
+
+            if ( string.IsNullOrWhiteSpace(trimmedContent))
+            {
+                return null;
+            }
+
+            DDay.iCal.Event calendarEvent = null;
+
+            lock ( ScheduleICalHelper._initLock )
+            {
+                if ( _iCalSchedules.ContainsKey( trimmedContent ) )
+                {
+                    return _iCalSchedules[trimmedContent];
+                }
+
+                StringReader stringReader = new StringReader( trimmedContent );
+                var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
+
+                //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
+                //// We just need one Calendar and one Event
+                if ( calendarList.Count > 0 )
+                {
+                    var calendar = calendarList[0] as DDay.iCal.iCalendar;
+                    if ( calendar != null )
+                    {
+                        calendarEvent = calendar.Events[0] as DDay.iCal.Event;
+                        _iCalSchedules.AddOrReplace( trimmedContent, calendarEvent );
+                    }
+                }
+            }
+
+            return calendarEvent;
         }
     }
 
     #endregion
-
 }
