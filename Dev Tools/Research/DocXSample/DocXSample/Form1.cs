@@ -44,14 +44,12 @@ namespace DocXSample
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void btnGo_Click( object sender, EventArgs e )
         {
-            string path = Directory.GetCurrentDirectory();
+            var path = GetOutputFolder();
             string templatePath = path + @"\letter-template - extra formatting.docx";
             MemoryStream templateStream = new MemoryStream();
             File.OpenRead( templatePath ).CopyTo( templateStream );
             string outputDocPath = path + @"\LetterOut.docx";
             var docStream = new MemoryStream();
-
-
 
             // Create a new document using DocX Library
             using ( DocX document = DocX.Create( docStream ) )
@@ -87,11 +85,18 @@ namespace DocXSample
             System.Diagnostics.Process.Start( outputDocPath );
         }
 
+        private static string GetOutputFolder()
+        {
+            var dir = new DirectoryInfo( Directory.GetCurrentDirectory() );
+            var path = dir.Parent.Parent.GetDirectories( "Docs" ).FirstOrDefault().FullName;
+            return path;
+        }
+
 
 
         private void btnLabels_Click( object sender, EventArgs e )
         {
-            string path = Directory.GetCurrentDirectory();
+            var path = GetOutputFolder();
 
             int companyCount = 0;
 
@@ -142,7 +147,7 @@ namespace DocXSample
 
         private void btnTable_Click( object sender, EventArgs e )
         {
-            string path = Directory.GetCurrentDirectory();
+            var path = GetOutputFolder();
 
             string[] names = { "Tom Selleck", "Tom Cruise", "Jon Edmiston" };
             string[] emails = { "ts@higgins.com", "tom@topgun.com", "jonathan.edmiston@gmail.com" };
@@ -204,7 +209,7 @@ namespace DocXSample
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void btnMakeDocumentOpenXML_Click( object sender, EventArgs e )
         {
-            string path = Directory.GetCurrentDirectory();
+            var path = GetOutputFolder();
             string templatePath = path + @"\letter-template - extra formatting.docx";
             string outputDocPath = path + @"\LetterOut_OpenXML.docx";
             Regex lavaChunk = new Regex( @".*\{\{.+\}\}.*", RegexOptions.Multiline );
@@ -292,7 +297,7 @@ namespace DocXSample
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void btnLabelsOpenXML_Click( object sender, EventArgs e )
         {
-            string path = Directory.GetCurrentDirectory();
+            var path = GetOutputFolder();
 
             // see HowTos at https://msdn.microsoft.com/EN-US/library/office/cc850849.aspx
 
@@ -366,7 +371,7 @@ namespace DocXSample
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void btnMakeTableOpenXML_Click( object sender, EventArgs e )
         {
-            string path = Directory.GetCurrentDirectory();
+            var path = GetOutputFolder();
 
             string[] names = { "Tom Selleck", "Tom Cruise", "Jon Edmiston" };
             string[] emails = { "ts@higgins.com", "tom@topgun.com", "jonathan.edmiston@gmail.com" };
