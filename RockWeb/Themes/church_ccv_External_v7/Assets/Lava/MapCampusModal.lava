@@ -6,6 +6,10 @@
 
     <div class="campusmodal-wrapper">
       <div id="campusmodal-holder" class="campusmodal-holder">Loading...</div>
+      <footer class="campusmodal-footer">
+        <h3 class="campusmodal-footertitle">Select a campus</h3>
+        <p class="campusmodal-footertext">We tailor content on this site to the campus you select. <span class="text-muted">If you do not live in the Phoenix area, choose any campus.</span></p>
+      </footer>
     </div>
 
   </div>

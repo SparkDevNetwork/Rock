@@ -5,20 +5,45 @@
 // --------------------------------------------------
 
 .campusmodal {
+  // display: none;
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   z-index: @zindex-modal-background;
 }
   .campusmodal-wrapper {
-    padding: 10%;
-    height: 100%;
-    position: relative;
     z-index: @zindex-modal;
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    .box-shadow(0 2.5px 9px rgba(0,0,0,.5));
+
+    @media @sm {
+      position: absolute;
+      top: 5%;
+      left: 5%;
+      right: 5%;
+      bottom: 5%;
+    }
   }
     .campusmodal-holder {
-      height: 100%;
-      width: 100%;
+      background: @gray-lighter;
+      position: absolute;
+      top: 0; right: 0; left: 0;
+      bottom: @line-height-computed*3;
     }
+    .campusmodal-footer {
+      position: absolute;
+      right: 0; bottom: 0; left: 0;
+      background: @gray-darker;
+      color: #fff;
+      height: @line-height-computed*3;
+    }
+      .campusmodal-footertitle,
+      .campusmodal-footertext {
+        float: left;
+        margin: 0;
+        line-height: @line-height-computed;
+        padding: @line-height-computed;
+      }
+      .campusmodal-footertitle {
+        background: @brand-primary;
+      }
