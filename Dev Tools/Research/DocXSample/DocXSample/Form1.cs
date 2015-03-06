@@ -92,8 +92,6 @@ namespace DocXSample
             return path;
         }
 
-
-
         private void btnLabels_Click( object sender, EventArgs e )
         {
             var path = GetOutputFolder();
@@ -212,7 +210,7 @@ namespace DocXSample
             var path = GetOutputFolder();
             string templatePath = path + @"\letter-template - extra formatting.docx";
             string outputDocPath = path + @"\LetterOut_OpenXML.docx";
-            Regex lavaChunk = new Regex( @".*\{\{.+\}\}.*", RegexOptions.Multiline );
+            Regex lavaRegEx = new Regex( @"\{\{.+?\}\}", RegexOptions.Multiline );
 
             MemoryStream outputDocStream = new MemoryStream();
 
@@ -234,11 +232,6 @@ namespace DocXSample
                         // loop thru each merge item, using the template
                         for ( int i = 0; i < 4; i++ )
                         {
-                            // create our replacement dictionary
-                            Dictionary<string, string> replacements = new Dictionary<string, string>();
-                            replacements.Add( "<<Relation>>", relations[i] );
-                            replacements.Add( "<<Season>>", seasons[i] );
-
                             var tempMergeDocStream = new MemoryStream();
                             letterTemplateStream.Position = 0;
                             letterTemplateStream.CopyTo( tempMergeDocStream );
@@ -247,21 +240,27 @@ namespace DocXSample
 
                             var xdoc = tempMergeDoc.MainDocumentPart.GetXDocument();
 
-                            // first look for DotLiquid/Lava stuff
-                            OpenXmlRegex.Match( xdoc.Nodes().OfType<XElement>(), lavaChunk, ( x, m ) =>
+                            var localVariables = new DotLiquid.Hash();
+                            localVariables.Add( "Relation", relations[i] );
+                            localVariables.Add( "Season", seasons[i] );
+                            localVariables.Add( "Person", letterMergeObjects[i] );
+
+                            OpenXmlRegex.Match( xdoc.Nodes().OfType<XElement>(), lavaRegEx, ( x, m ) =>
                             {
                                 DotLiquid.Template template = DotLiquid.Template.Parse( m.Value );
-                                var localVariables = new DotLiquid.Hash();
-                                localVariables.Add( "Person", letterMergeObjects[i] );
                                 var replacementValue = template.Render( localVariables );
-                                OpenXmlRegex.Replace( new XElement[] { x }, lavaChunk, replacementValue, ( xx, mm ) => { return true; } );
-                            } );
+                                bool didReplace = false;
+                                OpenXmlRegex.Replace( new XElement[] { x }, lavaRegEx, replacementValue, ( xx, mm ) => {
+                                    // only replace the first occurrence
+                                    if ( !didReplace )
+                                    {
+                                        didReplace = true;
+                                        return true;
+                                    }
 
-                            foreach ( var r in replacements )
-                            {
-                                string replacementValue = r.Value;
-                                OpenXmlRegex.Replace( xdoc.Nodes().OfType<XElement>(), new Regex( r.Key ), r.Value, ( x, m ) => { return true; } );
-                            }
+                                    return false;
+                                } );
+                            } );
 
                             tempMergeDoc.MainDocumentPart.PutXDocument();
 
