@@ -16,13 +16,13 @@
             var keyboardBuffer = '';
 
             $(document).keypress(function (e) {
-                console.log('Keypressed: ' + e.which + ' - ' + String.fromCharCode(e.which));
+                //console.log('Keypressed: ' + e.which + ' - ' + String.fromCharCode(e.which));
                 var date = new Date();
 
                 if ($(".js-swipe").is(":visible")) {
 
                     if (e.which == 37 && (date.getTime() - lastKeyPress) > 500) { // start buffering if first character of the swipe (always '%')
-                        console.log('Start the buffering');
+                        //console.log('Start the buffering');
                         keyboardBuffer = String.fromCharCode(e.which);
                     } else if ((date.getTime() - lastKeyPress) < 100) {  // continuing the reading into the buffer if the stream of characters is still coming
                         keyboardBuffer += String.fromCharCode(e.which);
@@ -30,7 +30,7 @@
 
                     // if the character is a line break stop buffering and call postback
                     if (e.which == 13 && keyboardBuffer.length != 0) {
-                        console.log('Bam! Done... ' + keyboardBuffer);
+                        //console.log('Bam! Done... ' + keyboardBuffer);
                         $('#hfSwipe').val(keyboardBuffer);
                         keyboardBuffer = '';
                         __doPostBack('hfSwipe', 'Swipe_Complete');
@@ -42,7 +42,7 @@
                 } else {
                     // if not the swipe panel ignore characters from the swipe
                     if (e.which == 37 || ((date.getTime() - lastKeyPress) < 50)) {
-                        console.log('Swiper... no swiping...');
+                        //console.log('Swiper... no swiping...');
                         e.preventDefault();
                     }
                 }
@@ -51,22 +51,6 @@
             });
 
             Sys.Application.add_load(function () {
-
-                
-
-
-                /*$(document).scannerDetection({
-                    
-                    preventDefault: true,
-                    onComplete: function (e, data) {
-                        if ($(".js-swipe").is(":visible")) {
-                            $('#hfSwipe').val(e);
-                            __doPostBack('hfSwipe', 'Swipe_Complete');
-                        }
-                        return false;
-                    }
-                });*/
-
 
 
                 //
@@ -138,7 +122,7 @@
 
         <Rock:NotificationBox ID="nbBlockConfigErrors" runat="server" NotificationBoxType="Danger" />
 
-        <asp:Panel ID="pnlSearch" runat="server" CssClass="js-pnlsearch">
+        <asp:Panel ID="pnlSearch" runat="server" CssClass="js-pnlsearch" DefaultButton="lbSearchNext">
             <header>
                 <h1>Please Enter Your Phone Number</h1>
             </header>
@@ -222,7 +206,7 @@
             </footer>
         </asp:Panel>
 
-        <asp:Panel ID="pnlRegister" runat="server" Visible="false" CssClass="js-pnlregister">
+        <asp:Panel ID="pnlRegister" runat="server" Visible="false" CssClass="js-pnlregister" DefaultButton="lbRegisterNext">
             <header>
                 <h1>Register</h1>
             </header>
@@ -233,7 +217,7 @@
                         <Rock:RockTextBox ID="tbLastName" Label="Last Name" runat="server" Required="true" />
                         <Rock:PhoneNumberBox ID="pnbHomePhone" Label="Home Phone" runat="server" Required="true" />
                         <Rock:AddressControl ID="acAddress" ShowAddressLine2="false" runat="server" Required="true"/>
-                        <Rock:EmailBox ID="tbEmail" runat="server" Required="true" />
+                        <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="true" />
                     </div>
                     <div class="col-md-4">
                         <asp:LinkButton ID="lbRegisterNext" runat="server" OnClick="lbRegisterNext_Click" CssClass="btn btn-primary btn-kiosk btn-kiosk-lg">Next</asp:LinkButton>
@@ -248,7 +232,7 @@
             </footer>
         </asp:Panel>
 
-        <asp:Panel ID="pnlAccountEntry" runat="server" CssClass="js-pnlaccountentry" Visible="false">
+        <asp:Panel ID="pnlAccountEntry" runat="server" CssClass="js-pnlaccountentry" Visible="false" DefaultButton="lbAccountEntryNext">
             <header>
                 <h1>Enter An Amount</h1>
             </header>
