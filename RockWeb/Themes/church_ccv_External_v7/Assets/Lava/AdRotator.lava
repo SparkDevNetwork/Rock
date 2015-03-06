@@ -1,0 +1,28 @@
+﻿<div class="announcement-rotator loading">
+
+    <div class="flexslider">
+      <ul class="slides">
+
+        {% for item in Items -%}
+          <li>
+            <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">
+              <img src="/GetImage.ashx?guid={{ item | Attribute:'Image','RawValue' }}&width=1280&height=720&mode=crop&scale=both" alt="{{ item.Title }}">
+            </a>
+          </li>
+        {% endfor -%}
+
+      </ul>
+    </div>
+
+  <div class="slide-control">
+    <ul>
+
+      {% for item in Items -%}
+        <li>{{ item.Title }}</li>
+      {% endfor -%}
+
+    </ul>
+    <div class="tipper"></div>
+  </div>
+
+</div>

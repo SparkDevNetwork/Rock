@@ -1,0 +1,122 @@
+<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+
+<script runat="server">
+
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+    }
+
+</script>
+
+<html class="no-js">
+<head runat="server">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta charset="utf-8">
+    <title></title>
+
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>" ></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js", true) %>"></script>
+    <script src="<%# ResolveRockUrl("~~/Scripts/min/plugins.min.js", true) %>" ></script>
+    <script src="<%# ResolveRockUrl("~~/Scripts/min/main.min.js", true) %>" ></script>
+
+    <!-- Set the viewport width to device width for mobile -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+	<!-- Included CSS Files -->
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+    <!-- Icons -->
+    <link rel="shortcut icon" href="<%# ResolveRockUrl("~/Assets/Icons/favicon.ico", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-ipad-retina.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone-retina.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-ipad.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone.png", true) %>">
+
+</head>
+<body>
+
+    <form id="form1" runat="server">
+
+        <div class="">
+            <header class="masthead">
+                <div class="masthead-upper">
+                    <div class="masthead-brand">
+                        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".js-all-collapse">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <Rock:Zone Name="Header" runat="server" />
+                    </div>
+
+                    <nav class="masthead-nav">
+                        <div class="navbar-collapse js-all-collapse collapse">
+                            <Rock:Zone Name="Navigation" runat="server" />
+                        </div>
+                    </nav>
+                </div>
+                <div class="masthead-fullmenu js-fullmenu js-all-collapse collapse">
+                    <Rock:Zone Name="Full Menu" runat="server" />
+                </div>
+                <div class="masthead-lower">
+                    <Rock:Zone Name="Login" runat="server" />
+                </div>
+            </header>
+        </div>
+
+        <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+	    <footer class="mainfooter">
+            <div class="container">
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        <Rock:Zone Name="Footer Left" runat="server" />
+                    </div>
+                    <div class="col-sm-6">
+                        <Rock:Zone Name="Footer Right" runat="server" />
+                    </div>
+                </div>
+
+                <Rock:Zone Name="Footer" runat="server" />
+
+            </div>
+	    </footer>
+
+        <%-- controls for scriptmanager and update panel --%>
+        <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server"/>
+        <asp:UpdateProgress id="updateProgress" runat="server">
+		        <ProgressTemplate>
+		            <div class="updateprogress-status">
+                        <div class="spinner">
+                          <div class="rect1"></div>
+                          <div class="rect2"></div>
+                          <div class="rect3"></div>
+                          <div class="rect4"></div>
+                          <div class="rect5"></div>
+                        </div>
+                    </div>
+                    <div class="updateprogress-bg modal-backdrop"></div>
+		        </ProgressTemplate>
+        </asp:UpdateProgress>
+
+    </form>
+
+</body>
+
+</html>

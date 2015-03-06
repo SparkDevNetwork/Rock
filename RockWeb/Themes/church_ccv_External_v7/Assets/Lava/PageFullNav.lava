@@ -1,0 +1,26 @@
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+  <div class="container fade">
+
+    <div class="row">
+
+      {% for childPage in Page.Pages %}
+        <div class="masthead-fullmenusection col-sm-4{% if forloop.first %} col-sm-offset-2{% endif %}">
+
+          <h2 class="underline">{{ childPage.Title }}</h2>
+          <ul class="brandlist">
+            {% for gchildPage in childPage.Pages %}
+              {% if gchildPage.Title != "Sub" %}
+                <li class="brandlist-item"><a href="{{ gchildPage.Url }}">{{ gchildPage.Title }}</a></li>
+              {% else %}
+                {% for ggchildPage in gchildPage.Pages %}
+                <li class="brandlist-item brandlist-item-sub"><a href="{{ childPage.Url }}">{{ ggchildPage.Title }}</a></li>
+                {% endfor %}
+              {% endif %}
+            {% endfor %}
+          </ul>
+
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}

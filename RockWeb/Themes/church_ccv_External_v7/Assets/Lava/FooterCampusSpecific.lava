@@ -1,0 +1,91 @@
+{% if Context.Campus %}
+
+  <h3 class="margin-t-none">{{ Context.Campus.Name }}</h3>
+  <div class="row">
+
+    <div class="col-sm-6">
+      <img class="img-rounded margin-b-sm" width="260" height="260" src="//maps.googleapis.com/maps/api/staticmap?zoom=12&size=260x260&markers=scale:2%7Cicon:http://bit.ly/1npXPPc%7C{{ Context.Campus.Location.GeoPoint }}&sensor=false&style=feature:all%7Csaturation:-100&scale=2" alt="Map to {{ Context.Campus.Name }}">
+      <ul class="fa-ul">
+        <li class="margin-b-sm">
+          <i class="fa-li fa fa-map-marker"></i>
+          {{ Context.Campus.Location.Street1 }}<br>
+          {{ Context.Campus.Location.City }}, {{ Context.Campus.Location.State }} {{ Context.Campus.Location.PostalCode }}
+        </li>
+        <li class="margin-b-sm">
+          <i class="fa-li fa fa-phone"></i>
+          {{ Context.Campus.PhoneNumber }}
+        </li>
+      </ul>
+    </div>
+
+    <div class="col-sm-6">
+      <div class="well well-dark well-borderless">
+        <h4>Service Times</h4>
+
+        {% assign times = Context.Campus.ServiceTimes | Split: '|' %}
+
+        {% for time in times %}
+          {% assign split = time | Split: '^' %}
+          {% if split[0] == 'Saturday' %}
+            {% assign hasSaturday = true %}
+          {% endif %}
+          {% if split[0] == 'Sunday' %}
+            {% assign hasSunday = true %}
+          {% endif %}
+        {% endfor %}
+
+        {% if hasSaturday %}
+          <strong>Saturday</strong>
+          <ul class="list-inline">
+            {% for time in times %}
+              {% assign split = time | Split: '^' %}
+              {% if split[0] == 'Saturday' %}
+                <li>{{ split[1] }}</li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        {% if hasSunday %}
+          <strong>Sunday</strong>
+          <ul class="list-inline margin-b-none">
+            {% for time in times %}
+              {% assign split = time | Split: '^' %}
+              {% if split[0] == 'Sunday' %}
+                <li>{{ split[1] }}</li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+      </div>
+      <div class="social social-dark social-fade margin-b-md">
+        <a href="http://twitter.com/ccvonline" data-toggle="tooltip" data-placement="top" title="CCV on Twitter">
+          <span class="fa-stack fa-lg">
+            <i class="fa fa-circle fa-stack-2x"></i>
+            <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+          </span>
+        </a>
+        <a href="http://facebook.com/ccvonline" data-toggle="tooltip" data-placement="top" title="CCV on Facebook">
+          <span class="fa-stack fa-lg">
+            <i class="fa fa-circle fa-stack-2x"></i>
+            <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+          </span>
+        </a>
+        <a href="http://instagram.com/ccvonline" data-toggle="tooltip" data-placement="top" title="CCV on Instagram">
+          <span class="fa-stack fa-lg">
+            <i class="fa fa-circle fa-stack-2x"></i>
+            <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+          </span>
+        </a>
+        <a href="http://ccv.church/apps" data-toggle="tooltip" data-placement="top" title="Mobile Apps from CCV">
+          <span class="fa-stack fa-lg">
+            <i class="fa fa-circle fa-stack-2x"></i>
+            <i class="fa fa-mobile fa-stack-1x fa-inverse social-icon-md"></i>
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+{% endif %}

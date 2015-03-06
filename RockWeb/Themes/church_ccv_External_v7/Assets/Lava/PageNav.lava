@@ -1,0 +1,19 @@
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+  <ul class="masthead-navitems">
+
+	{% for childPage in Page.Pages %}
+
+    {% if childPage.Title == "Menu" %}
+      <li class="masthead-navitem menu-btn collapsed" data-toggle="collapse" data-target=".js-fullmenu">
+        <a><div class="menu-icon"><span class="lines"></span></div> Menu</a>
+      </li>
+    {% else %}
+      <li class="masthead-navitem{% if childPage.Current == 'true' %} active{% endif%}">
+        <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+      </li>
+    {% endif %}
+
+  {% endfor %}
+
+  </ul>
+{% endif %}

@@ -1,0 +1,52 @@
+{% comment %}
+
+  Make sure nav block is set to 4 levels of depth
+
+{% endcomment%}
+
+
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+  <div class="footernav">
+
+    <div class="footernav-col footernav-col-main">
+      <ul class="footernav-items">
+        {% for childPage in Page.Pages %}
+
+          {% if childPage.Title == "Menu" %}
+            {% assign menuPage = childPage %}
+          {% else %}
+            <li class="footernav-item"><a href="{{ childPage.Url }}">{{ childPage.Title }}</a></li>
+          {% endif %}
+
+        {% endfor %}
+      </ul>
+
+    </div>
+
+    {% for childPage in menuPage.Pages %}
+
+      <div class="footernav-col">
+
+        <h5 class="footernav-header">{{ childPage.Title }}</h5>
+
+        <ul class="footernav-items">
+        {% for gchildPage in childPage.Pages %}
+
+          {% if gchildPage.Title == "Sub" %}
+            {% for ggchildPage in gchildPage.Pages %}
+              <li class="footernav-item footernav-item-sub"><a href="{{ ggchildPage.Url }}">{{ ggchildPage.Title }}</a></li>
+            {% endfor %}
+          {% else %}
+            <li class="footernav-item"><a href="{{ gchildPage.Url }}">{{ gchildPage.Title }}</a></li>
+          {% endif %}
+
+
+        {% endfor %}
+        </ul>
+
+      </div>
+
+    {% endfor %}
+
+  </div>
+{% endif %}
