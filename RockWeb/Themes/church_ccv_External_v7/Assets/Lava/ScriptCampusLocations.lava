@@ -16,7 +16,7 @@ CCV.locations = [
       lng: {{ campus.Location.Longitude }},
     },
     {% endif %}
-    phone: '{{ campus.PhoneNumber }},',
+    phone: '{{ campus.PhoneNumber }}',
     street: '{{ campus.Location.Street1 }}',
     city: '{{ campus.Location.City }}',
     state: '{{ campus.Location.State }}',
