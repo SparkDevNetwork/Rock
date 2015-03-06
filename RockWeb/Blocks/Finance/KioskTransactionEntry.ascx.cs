@@ -446,6 +446,9 @@ namespace RockWeb.Blocks.Finance
         }
         protected void lbRegisterNext_Click( object sender, EventArgs e )
         {
+            _dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+            _dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+            
             // create new person / family
             Person person = new Person();
             person.FirstName = tbFirstName.Text.Trim();
@@ -714,7 +717,7 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 phGivingUnits.Controls.Add( new LiteralControl(
-                    "<div class='alert alert-danger'>There were not any families found with the phone number you entered. You can add your family using the 'Register Your Family' button below.</div>" ) );
+                    "<div class='alert alert-info'>There were not any families found with the phone number you entered. You can add your family using the 'Register Your Family' button below.</div>" ) );
             }
         }
 
@@ -767,22 +770,6 @@ namespace RockWeb.Blocks.Finance
         {
             nbBlockConfigErrors.Title = string.Empty;
             nbBlockConfigErrors.Text = string.Empty;
-            
-            _dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
-            if ( _dvcConnectionStatus == null )
-            {
-                nbBlockConfigErrors.Heading = "Invalid Connection Status";
-                nbBlockConfigErrors.Text = "<p>The selected Connection Status setting does not exist.</p>";
-                return false;
-            }
-
-            _dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
-            if ( _dvcRecordStatus == null )
-            {
-                nbBlockConfigErrors.Heading = "Invalid Record Status";
-                nbBlockConfigErrors.Text = "<p>The selected Record Status setting does not exist.</p>";
-                return false;
-            }
 
             // get anonymous person
             RockContext rockContext = new RockContext();
@@ -803,6 +790,22 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 lbGiveAnonymously.Visible = false;
+            }
+
+            _dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+            if ( _dvcConnectionStatus == null )
+            {
+                nbBlockConfigErrors.Heading = "Invalid Connection Status";
+                nbBlockConfigErrors.Text = "<p>The selected Connection Status setting does not exist.</p>";
+                return false;
+            }
+
+            _dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+            if ( _dvcRecordStatus == null )
+            {
+                nbBlockConfigErrors.Heading = "Invalid Record Status";
+                nbBlockConfigErrors.Text = "<p>The selected Record Status setting does not exist.</p>";
+                return false;
             }
 
             return true;
