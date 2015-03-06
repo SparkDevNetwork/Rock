@@ -17,6 +17,8 @@ namespace Rock.Utility
 {
     public static class MergeDocHelper
     {
+        private static Regex lavaRegEx = new Regex( @"\{\{.+?\}\}", RegexOptions.Multiline );
+        
         /// <summary>
         /// Makes the document returning the binaryFileId of the output file
         /// </summary>
@@ -59,18 +61,23 @@ namespace Rock.Utility
                     var tempMergeDoc = WordprocessingDocument.Open( tempMergeDocStream, true );
 
                     var xdoc = tempMergeDoc.MainDocumentPart.GetXDocument();
-                    foreach ( var r in mergeObjects )
-                    {
-                        OpenXmlRegex.Match( xdoc.Nodes().OfType<XElement>(), new Regex( r.Key, RegexOptions.Multiline ), ( x, m ) =>
-                        {
-                            string todo = "hello";
-                        } );
 
-                        OpenXmlRegex.Replace( xdoc.Nodes().OfType<XElement>(), new Regex( r.Key ), r.Value.ToString(), ( x, m ) =>
-                                        {
-                                            return true;
-                                        } );
-                    }
+                    OpenXmlRegex.Match( xdoc.Nodes().OfType<XElement>(), lavaRegEx, ( x, m ) =>
+                    {
+                        var replacementValue = m.Value.ResolveMergeFields( mergeObjects );
+                        bool didReplace = false;
+                        OpenXmlRegex.Replace( new XElement[] { x }, lavaRegEx, replacementValue, ( xx, mm ) =>
+                        {
+                            // only replace the first occurrence (we are doing them one at a time)
+                            if ( !didReplace )
+                            {
+                                didReplace = true;
+                                return true;
+                            }
+
+                            return false;
+                        } );
+                    } );
 
                     tempMergeDoc.MainDocumentPart.PutXDocument();
 
