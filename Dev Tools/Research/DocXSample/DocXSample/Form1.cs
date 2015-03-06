@@ -23,12 +23,12 @@ namespace DocXSample
         // docs
         private string[] relations = { "son", "daughter", "uncle", "aunt" };
         private string[] seasons = { "spring", "summer", "fall", "winter is a great season that lasts a long time in many areas of the world, especially in the north" };
-        private object[] letterMergeObjects = { 
-                                            new { Name = "Ted", Birthdate = new DateTime(1960, 5, 15) }, 
-                                            new { Name = "Sally", Birthdate = new DateTime(1970, 1, 9) }, 
-                                            new { Name = "Noah", Birthdate = new DateTime(2007,11, 12) }, 
-                                            new { Name = "Alex", Birthdate = new DateTime(2010, 2, 28) }, 
-                                        };
+        private object[] letterMergeObjects = {
+            new { Name = "Ted", Birthdate = new DateTime(1960, 5, 15) }, 
+            new { Name = "Sally", Birthdate = new DateTime(1970, 1, 9) }, 
+            new { Name = "Noah", Birthdate = new DateTime(2007, 11, 12) }, 
+            new { Name = "Alex", Birthdate = new DateTime(2010, 2, 28) }, 
+        };
 
         // labels
         string[] companies = { "Time Warner", "Apple", "IBM", "CCV", "Honeywell", "Amex" };
@@ -233,7 +233,6 @@ namespace DocXSample
                             Dictionary<string, string> replacements = new Dictionary<string, string>();
                             replacements.Add( "<<Relation>>", relations[i] );
                             replacements.Add( "<<Season>>", seasons[i] );
-                            replacements.Add( @"<<LAVA>>.<<LAVA/>>", @"block of lava" );
 
                             var tempMergeDocStream = new MemoryStream();
                             letterTemplateStream.Position = 0;
@@ -256,11 +255,7 @@ namespace DocXSample
                             foreach ( var r in replacements )
                             {
                                 string replacementValue = r.Value;
-                                OpenXmlRegex.Replace( xdoc.Nodes().OfType<XElement>(), new Regex( r.Key ), r.Value, ( x, m ) =>
-                                                {
-                                                    return true;
-                                                } );
-
+                                OpenXmlRegex.Replace( xdoc.Nodes().OfType<XElement>(), new Regex( r.Key ), r.Value, ( x, m ) => { return true; } );
                             }
 
                             tempMergeDoc.MainDocumentPart.PutXDocument();
