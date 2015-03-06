@@ -39,6 +39,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>.\DocX.dll</HintPath>
     </Reference>
+    <Reference Include="DotLiquid">
+      <HintPath>..\..\..\..\RockWeb\Bin\DotLiquid.dll</HintPath>
+    </Reference>
     <Reference Include="OpenXmlPowerTools">
       <HintPath>..\packages\OpenXmlPowerTools.3.0.0\lib\OpenXmlPowerTools.dll</HintPath>
     </Reference>
