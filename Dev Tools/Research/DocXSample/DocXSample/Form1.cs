@@ -23,6 +23,12 @@ namespace DocXSample
         // docs
         private string[] relations = { "son", "daughter", "uncle", "aunt" };
         private string[] seasons = { "spring", "summer", "fall", "winter is a great season that lasts a long time in many areas of the world, especially in the north" };
+        private object[] letterMergeObjects = { 
+                                            new { Name = "Ted", Birthdate = new DateTime(1960, 5, 15) }, 
+                                            new { Name = "Sally", Birthdate = new DateTime(1970, 1, 9) }, 
+                                            new { Name = "Noah", Birthdate = new DateTime(2007,11, 12) }, 
+                                            new { Name = "Alex", Birthdate = new DateTime(2010, 2, 28) }, 
+                                        };
 
         // labels
         string[] companies = { "Time Warner", "Apple", "IBM", "CCV", "Honeywell", "Amex" };
@@ -39,30 +45,46 @@ namespace DocXSample
         private void btnGo_Click( object sender, EventArgs e )
         {
             string path = Directory.GetCurrentDirectory();
+            string templatePath = path + @"\letter-template - extra formatting.docx";
+            MemoryStream templateStream = new MemoryStream();
+            File.OpenRead( templatePath ).CopyTo( templateStream );
+            string outputDocPath = path + @"\LetterOut.docx";
+            var docStream = new MemoryStream();
+
+
 
             // Create a new document using DocX Library
-            using ( DocX document = DocX.Create( path + @"\LetterOut.docx" ) )
+            using ( DocX document = DocX.Create( docStream ) )
             {
-
-                for ( int i = 0; i < 4; i++ )
+                //                for ( int j = 0; j < 100; j++ )
                 {
-                    DocX template = DocX.Load( path + @"\letter-template - insane formatting2.docx" );
-                    template.ReplaceText( "<<Relation>>", relations[i], false );
-                    template.ReplaceText( "<<Season>>", seasons[i], false );
-                    document.InsertDocument( template );
-
-                    // insert page break
-                    if ( i != 3 )
+                    for ( int i = 0; i < 4; i++ )
                     {
-                        Novacode.Paragraph p1 = document.InsertParagraph( "", false );
-                        p1.InsertPageBreakAfterSelf();
+                        var itemTemplateStream = new MemoryStream();
+                        templateStream.Position = 0;
+                        templateStream.CopyTo( itemTemplateStream );
+                        using ( DocX template = DocX.Load( itemTemplateStream ) )
+                        {
+                            template.ReplaceText( "<<Relation>>", relations[i], false );
+                            template.ReplaceText( @".*\{\{.+\}\}.*", @"chunk of lava", false );
+                            template.ReplaceText( "<<Season>>", seasons[i], false );
+
+                            document.InsertDocument( template );
+
+                            // insert page break
+                            if ( i != 3 )
+                            {
+                                Novacode.Paragraph p1 = document.InsertParagraph( "", false );
+                                p1.InsertPageBreakAfterSelf();
+                            }
+                        }
                     }
-
-                    template.Dispose();
                 }
-
                 document.Save();
+                document.SaveAs( outputDocPath );
             }
+
+            System.Diagnostics.Process.Start( outputDocPath );
         }
 
 
@@ -124,7 +146,7 @@ namespace DocXSample
 
             string[] names = { "Tom Selleck", "Tom Cruise", "Jon Edmiston" };
             string[] emails = { "ts@higgins.com", "tom@topgun.com", "jonathan.edmiston@gmail.com" };
-            string[] coolness = { "Pretty Cool", "Kinda Cool", "Exteremely Cool" };
+            string[] coolness = { "Pretty Cool", "Kinda Cool", "Extremely Cool" };
 
             // Create a new document.
             using ( DocX document = DocX.Create( path + @"\TableOut.docx" ) )
@@ -183,10 +205,13 @@ namespace DocXSample
         private void btnMakeDocumentOpenXML_Click( object sender, EventArgs e )
         {
             string path = Directory.GetCurrentDirectory();
+            string templatePath = path + @"\letter-template - extra formatting.docx";
+            string outputDocPath = path + @"\LetterOut_OpenXML.docx";
+            Regex lavaChunk = new Regex( @".*\{\{.+\}\}.*", RegexOptions.Multiline );
 
             MemoryStream outputDocStream = new MemoryStream();
 
-            using ( var letterTemplateStream = new FileStream( path + @"\letter-template - insane formatting3.docx", FileMode.Open, FileAccess.ReadWrite ) )
+            using ( var letterTemplateStream = new FileStream( templatePath, FileMode.Open, FileAccess.Read ) )
             {
                 // Start by creating a new document with the contents of the Template (so that Styles, etc get included)
                 letterTemplateStream.CopyTo( outputDocStream );
@@ -199,47 +224,56 @@ namespace DocXSample
                     // start with a clean body
                     newDocBody.RemoveAllChildren();
 
-                    // loop thru each merge item, using the template
-                    for ( int i = 0; i < 4; i++ )
+                    for ( int j = 0; j < 100; j++ )
                     {
-                        // create our replacement dictionary
-                        Dictionary<string, string> replacements = new Dictionary<string, string>();
-                        replacements.Add( "<<Relation>>", relations[i] );
-                        replacements.Add( "<<Season>>", seasons[i] );
-                        replacements.Add( @"<<LAVA>>.<<LAVA/>>", @"block of lava" );
-                        replacements.Add( @".*\{\{.+\}\}.*", @"chunk of lava" );
-
-                        var tempMergeDocStream = new MemoryStream();
-                        letterTemplateStream.Position = 0;
-                        letterTemplateStream.CopyTo( tempMergeDocStream );
-                        tempMergeDocStream.Position = 0;
-                        var tempMergeDoc = WordprocessingDocument.Open( tempMergeDocStream, true );
-
-                        var xdoc = tempMergeDoc.MainDocumentPart.GetXDocument();
-                        foreach ( var r in replacements )
+                        // loop thru each merge item, using the template
+                        for ( int i = 0; i < 4; i++ )
                         {
-                            OpenXmlRegex.Match( xdoc.Nodes().OfType<XElement>(), new Regex( r.Key, RegexOptions.Multiline ), ( x, m ) =>
+                            // create our replacement dictionary
+                            Dictionary<string, string> replacements = new Dictionary<string, string>();
+                            replacements.Add( "<<Relation>>", relations[i] );
+                            replacements.Add( "<<Season>>", seasons[i] );
+                            replacements.Add( @"<<LAVA>>.<<LAVA/>>", @"block of lava" );
+
+                            var tempMergeDocStream = new MemoryStream();
+                            letterTemplateStream.Position = 0;
+                            letterTemplateStream.CopyTo( tempMergeDocStream );
+                            tempMergeDocStream.Position = 0;
+                            var tempMergeDoc = WordprocessingDocument.Open( tempMergeDocStream, true );
+
+                            var xdoc = tempMergeDoc.MainDocumentPart.GetXDocument();
+
+                            // first look for DotLiquid/Lava stuff
+                            OpenXmlRegex.Match( xdoc.Nodes().OfType<XElement>(), lavaChunk, ( x, m ) =>
                             {
-                                string todo = "hello";
+                                DotLiquid.Template template = DotLiquid.Template.Parse( m.Value );
+                                var localVariables = new DotLiquid.Hash();
+                                localVariables.Add( "Person", letterMergeObjects[i] );
+                                var replacementValue = template.Render( localVariables );
+                                OpenXmlRegex.Replace( new XElement[] { x }, lavaChunk, replacementValue, ( xx, mm ) => { return true; } );
                             } );
 
-                            OpenXmlRegex.Replace( xdoc.Nodes().OfType<XElement>(), new Regex( r.Key ), r.Value, ( x, m ) =>
-                                            {
-                                                return true;
-                                            } );
+                            foreach ( var r in replacements )
+                            {
+                                string replacementValue = r.Value;
+                                OpenXmlRegex.Replace( xdoc.Nodes().OfType<XElement>(), new Regex( r.Key ), r.Value, ( x, m ) =>
+                                                {
+                                                    return true;
+                                                } );
 
+                            }
+
+                            tempMergeDoc.MainDocumentPart.PutXDocument();
+
+                            foreach ( var childBodyItem in tempMergeDoc.MainDocumentPart.Document.Body )
+                            {
+                                var clonedChild = childBodyItem.CloneNode( true );
+                                newDocBody.AppendChild( clonedChild );
+                            }
+
+                            // add page break
+                            newDocBody.AppendChild( new DocumentFormat.OpenXml.Wordprocessing.Break() { Type = BreakValues.Page } );
                         }
-
-                        tempMergeDoc.MainDocumentPart.PutXDocument();
-
-                        foreach ( var childBodyItem in tempMergeDoc.MainDocumentPart.Document.Body )
-                        {
-                            var clonedChild = childBodyItem.CloneNode( true );
-                            newDocBody.AppendChild( clonedChild );
-                        }
-
-                        // add page break
-                        newDocBody.AppendChild( new DocumentFormat.OpenXml.Wordprocessing.Break() { Type = BreakValues.Page } );
                     }
 
                     // remove last page break
@@ -252,7 +286,8 @@ namespace DocXSample
             }
 
             // Save to disk
-            File.WriteAllBytes( path + @"\LetterOut_OpenXML.docx", outputDocStream.ToArray() );
+            File.WriteAllBytes( outputDocPath, outputDocStream.ToArray() );
+            System.Diagnostics.Process.Start( outputDocPath );
         }
 
         /// <summary>
@@ -340,7 +375,7 @@ namespace DocXSample
 
             string[] names = { "Tom Selleck", "Tom Cruise", "Jon Edmiston" };
             string[] emails = { "ts@higgins.com", "tom@topgun.com", "jonathan.edmiston@gmail.com" };
-            string[] coolness = { "Pretty Cool", "Kinda Cool", "Exteremely Cool" };
+            string[] coolness = { "Pretty Cool", "Kinda Cool", "Extremely Cool" };
             string[] colors = { "blue", "red", "c4c4c4" };
 
             var mergeObjectsList = new List<Dictionary<string, object>>();
@@ -398,7 +433,7 @@ namespace DocXSample
                                 table.AppendChild( new TableRow( xe[0].ToString() ) );
                             }
                         }
-                        
+
                     }
 
                     // now that we are done with the template rows, remove them
