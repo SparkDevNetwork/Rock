@@ -93,11 +93,18 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnLoad( e );
 
+            string eventTarget = this.Page.Request.Params["__EVENTTARGET"] ?? string.Empty;
+
             if ( !Page.IsPostBack )
             {
                 BindFilter();
 
                 SelectedChannelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
+                GetData();
+            }
+            else if ( eventTarget.StartsWith( gContentChannelItems.UniqueID ) )
+            {
+                // if we got a PostBack from the Grid (or child controls) make sure the Grid is bound
                 GetData();
             }
         }
