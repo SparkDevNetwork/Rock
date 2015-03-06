@@ -624,6 +624,7 @@ namespace Rock.Model
     public static class ScheduleICalHelper
     {
         private static object _initLock;
+        private static Dictionary<string, DDay.iCal.Event> _iCalSchedules = new Dictionary<string, Event>();
 
         static ScheduleICalHelper()
         {
@@ -637,21 +638,34 @@ namespace Rock.Model
         /// <returns></returns>
         public static DDay.iCal.Event GetCalenderEvent( string iCalendarContent )
         {
-            //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
-            //// We just need one Calendar and one Event
+            string trimmedContent = iCalendarContent.Trim();
+
+            if ( string.IsNullOrWhiteSpace(trimmedContent))
+            {
+                return null;
+            }
 
             DDay.iCal.Event calendarEvent = null;
 
             lock ( ScheduleICalHelper._initLock )
             {
-                StringReader stringReader = new StringReader( iCalendarContent.Trim() );
+                if ( _iCalSchedules.ContainsKey( trimmedContent ) )
+                {
+                    return _iCalSchedules[trimmedContent];
+                }
+
+                StringReader stringReader = new StringReader( trimmedContent );
                 var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
+
+                //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
+                //// We just need one Calendar and one Event
                 if ( calendarList.Count > 0 )
                 {
                     var calendar = calendarList[0] as DDay.iCal.iCalendar;
                     if ( calendar != null )
                     {
                         calendarEvent = calendar.Events[0] as DDay.iCal.Event;
+                        _iCalSchedules.AddOrReplace( trimmedContent, calendarEvent );
                     }
                 }
             }

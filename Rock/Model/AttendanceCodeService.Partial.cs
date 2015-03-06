@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
@@ -26,7 +27,10 @@ namespace Rock.Model
     /// </summary>
     public partial class AttendanceCodeService
     {
-        private static readonly Object obj = new object();
+        private static readonly Object _obj = new object();
+        private static Random _random = new Random( Guid.NewGuid().GetHashCode() );
+        private static DateTime? _today = null;
+        private static List<string> _todaysCodes = null;
 
         /// <summary>
         /// An array of characters that can be used as a part of  <see cref="Rock.Model.AttendanceCode">AttendanceCodes</see>
@@ -39,50 +43,44 @@ namespace Rock.Model
         private static List<string> noGood = new List<string> { "666", "KKK", "FCK", "SHT", "5HT", "DCK" };
 
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Model.AttendanceCode"/> entities that used a specified code on a specified date.
-        /// </summary>
-        /// <param name="day">A <see cref="System.DateTime" /> representing the date to search by.</param>
-        /// <param name="code">A <see cref="System.String"/> representing the code to search for.</param>
-        /// <returns>A queryable collection of <see cref="Rock.Model.AttendanceCode"/> entities that contain a specific code on a specified day. </returns>
-        public IQueryable<AttendanceCode> Get( DateTime day, string code )
-        {
-            DateTime today = day.Date;
-            DateTime tomorrow = today.AddDays( 1 );
-            return Queryable().Where( c => c.Code == code && c.IssueDateTime >= today && c.IssueDateTime < tomorrow);
-        }
-
-        /// <summary>
         /// Returns a new <see cref="Rock.Model.AttendanceCode"/>
         /// </summary>
         /// <param name="codeLength">A <see cref="System.Int32"/> representing the length of the (security) code.</param>
         /// <returns>A new <see cref="Rock.Model.AttendanceCode"/></returns>
-        public static AttendanceCode GetNew(int codeLength = 3)
+        public static AttendanceCode GetNew( int codeLength = 3 )
         {
-            string code = string.Empty;
-
-            var attendanceCode = new AttendanceCode();
-
-            var rockContext = new Rock.Data.RockContext();
-            var service = new AttendanceCodeService( rockContext );
-
-            // Make sure only one instance at a time is checking for unique code
-            lock (obj)
+            lock ( _obj )
             {
+                var rockContext = new Rock.Data.RockContext();
+                var service = new AttendanceCodeService( rockContext );
+
+                DateTime today = RockDateTime.Today;
+                if ( _todaysCodes == null || !_today.HasValue || !_today.Value.Equals( today ) )
+                {
+                    _today = today;
+                    DateTime tomorrow = today.AddDays( 1 );
+                    _todaysCodes = service.Queryable().AsNoTracking()
+                        .Where( c => c.IssueDateTime >= today && c.IssueDateTime < tomorrow )
+                        .Select( c => c.Code )
+                        .ToList();
+                }
+
                 // Find a good unique code for today
-                while ( code == string.Empty ||
-                    noGood.Any( s => s == code ) ||
-                    service.Get( RockDateTime.Today, code ).Any() )
+                string code = GenerateRandomCode( codeLength );
+                while ( noGood.Any( s => s == code ) || _todaysCodes.Any( c => c == code ) )
                 {
                     code = GenerateRandomCode( codeLength );
                 }
+                _todaysCodes.Add( code );
 
+                var attendanceCode = new AttendanceCode();
                 attendanceCode.IssueDateTime = RockDateTime.Now;
                 attendanceCode.Code = code;
                 service.Add( attendanceCode );
                 rockContext.SaveChanges();
-            }
 
-            return attendanceCode;
+                return attendanceCode;
+            }
         }
 
         /// <summary>
@@ -93,12 +91,11 @@ namespace Rock.Model
         private static string GenerateRandomCode( int length )
         {
             StringBuilder sb = new StringBuilder();
-            Random rnd = new Random();
-            int poolSize = codeCharacters.Length;
 
+            int poolSize = codeCharacters.Length;
             for(int i = 0; i < length; i++)
             {
-                sb.Append( codeCharacters[rnd.Next( poolSize )] );
+                sb.Append( codeCharacters[_random.Next( poolSize )] );
             }
 
             return sb.ToString();
