@@ -289,7 +289,7 @@ namespace Rock.Model
 
             if ( calEvent != null )
             {
-                var occurrences = calEvent.GetOccurrences( fromDate, fromDate.AddMonths( 1 ) );
+                var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, fromDate, fromDate.AddMonths( 1 ) );
                 if ( occurrences.Count > 0 )
                 {
                     var nextOccurance = occurrences[0];
@@ -450,7 +450,7 @@ namespace Rock.Model
                     return false;
                 }
 
-                var occurrences = calEvent.GetOccurrences( time.Date );
+                var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, time.Date );
                 return occurrences.Count > 0;
             }
 
@@ -511,7 +511,7 @@ namespace Rock.Model
                     return false;
                 }
 
-                var occurrences = calEvent.GetOccurrences( time.Date );
+                var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, time.Date );
                 return occurrences.Count > 0;
             }
 
@@ -562,7 +562,7 @@ namespace Rock.Model
                     return false;
                 }
 
-                var occurrences = calEvent.GetOccurrences( time.Date );
+                var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, time.Date );
                 return occurrences.Count > 0;
             }
 
@@ -671,6 +671,22 @@ namespace Rock.Model
             }
 
             return calendarEvent;
+        }
+
+        public static IList<Occurrence> GetOccurrences( DDay.iCal.Event icalEvent, DateTime startTime)
+        {
+            lock( ScheduleICalHelper._initLock)
+            {
+                return icalEvent.GetOccurrences( startTime );
+            }
+        }
+
+        public static IList<Occurrence> GetOccurrences( DDay.iCal.Event icalEvent, DateTime startTime, DateTime endTime )
+        {
+            lock ( ScheduleICalHelper._initLock )
+            {
+                return icalEvent.GetOccurrences( startTime, endTime );
+            }
         }
     }
 
