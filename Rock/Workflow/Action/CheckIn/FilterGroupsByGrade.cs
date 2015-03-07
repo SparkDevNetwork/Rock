@@ -107,13 +107,13 @@ namespace Rock.Workflow.Action.CheckIn
                                     // example person is in 3rd grade (offset 9) and range is 4th to 6th (offset 6 to 8)
                                     if ( !personsGradeOffset.HasValue || personsGradeOffset < minGradeOffset.Value )
                                     {
-                                        if ( remove )
+                                        if ( remove ) 
                                         {
-                                            person.GroupTypes.Remove( groupType );
+                                            groupType.Groups.Remove( group );
                                         }
                                         else
                                         {
-                                            groupType.ExcludedByFilter = true;
+                                            group.ExcludedByFilter = true;
                                         }
 
                                         continue;
@@ -134,11 +134,11 @@ namespace Rock.Workflow.Action.CheckIn
                                     {
                                         if ( remove )
                                         {
-                                            person.GroupTypes.Remove( groupType );
+                                            groupType.Groups.Remove( group );
                                         }
                                         else
                                         {
-                                            groupType.ExcludedByFilter = true;
+                                            group.ExcludedByFilter = true;
                                         }
 
                                         continue;
