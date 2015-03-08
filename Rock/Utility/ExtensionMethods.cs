@@ -1616,14 +1616,15 @@ namespace Rock
         #region TimeSpan Extensions
 
         /// <summary>
-        /// Returns a TimeSpan to HH:MM AM/PM.
+        /// Returns a TimeSpan as h:mm AM/PM (culture invariant)
         /// Examples: 1:45 PM, 12:01 AM
         /// </summary>
         /// <param name="timespan">The timespan.</param>
         /// <returns></returns>
         public static string ToTimeString( this TimeSpan timespan )
         {
-            return RockDateTime.Today.Add( timespan ).ToShortTimeString();
+            // since the comments on this say HH:MM AM/PM, make sure to return the time in that format
+            return RockDateTime.Today.Add( timespan ).ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         #endregion TimeSpan Extensions
