@@ -41,6 +41,32 @@ namespace Rock.Lava
         #region String Filters
 
         /// <summary>
+        /// obfuscate a given email
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string ObfuscateEmail( string input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+            else
+            {
+                string[] emailParts = input.Split('@');
+
+                if ( emailParts.Length != 2 )
+                {
+                    return input;
+                }
+                else
+                {
+                    return string.Format( "{0}xxxxx@{1}", emailParts[0].Substring( 0, 1 ), emailParts[1] );
+                }
+            }
+        }
+
+        /// <summary>
         /// pluralizes string
         /// </summary>
         /// <param name="input"></param>

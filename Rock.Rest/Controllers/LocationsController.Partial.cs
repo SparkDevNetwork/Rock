@@ -20,8 +20,11 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
+using System.Web.Http.OData;
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
@@ -48,6 +51,34 @@ namespace Rock.Rest.Controllers
             }
 
             throw new HttpResponseException( HttpStatusCode.BadRequest );
+        }
+
+        /// <summary>
+        /// Gets the specified street.
+        /// </summary>
+        /// <param name="street">The street.</param>
+        /// <param name="city">The city.</param>
+        /// <param name="state">The state.</param>
+        /// <param name="postalCode">The postal code.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [EnableQuery]
+        [HttpGet]
+        [System.Web.Http.Route( "api/locations/{street}/{city}/{state}/{postalCode}" )]
+        public Location Get( string street, string city, string state, string postalCode )
+        {
+            string street2 = string.Empty;
+            string country = GlobalAttributesCache.Read().OrganizationCountry;
+
+            // Get a new location record for the address
+            var location = ( (LocationService)Service ).Get( street, street2, city, state, postalCode, country );
+            if ( location == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            return location;
         }
 
         /// <summary>

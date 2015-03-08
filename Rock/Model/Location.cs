@@ -458,6 +458,16 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the distance to another location. 
+        /// </summary>
+        /// <value>
+        /// The distance.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual double Distance { get; set; }
+
         #endregion
 
         #region Public Methods
