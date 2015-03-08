@@ -712,6 +712,20 @@ namespace Rock
         }
 
         /// <summary>
+        /// Replaces the last occurrence of a given string with a new value
+        /// </summary>
+        /// <param name="Source">The string.</param>
+        /// <param name="Find">The search parameter.</param>
+        /// <param name="Replace">The replacement parameter.</param>
+        /// <returns></returns>
+        public static string ReplaceLastOccurrence( this string Source, string Find, string Replace )
+        {
+            int Place = Source.LastIndexOf( Find );
+            string result = Source.Remove( Place, Find.Length ).Insert( Place, Replace );
+            return result;
+        }
+
+        /// <summary>
         /// The true strings for AsBoolean and AsBooleanOrNull.
         /// </summary>
         private static string[] trueStrings = new string[] { "true", "yes", "t", "y", "1" };
@@ -1602,14 +1616,15 @@ namespace Rock
         #region TimeSpan Extensions
 
         /// <summary>
-        /// Returns a TimeSpan to HH:MM AM/PM.
+        /// Returns a TimeSpan as h:mm AM/PM (culture invariant)
         /// Examples: 1:45 PM, 12:01 AM
         /// </summary>
         /// <param name="timespan">The timespan.</param>
         /// <returns></returns>
         public static string ToTimeString( this TimeSpan timespan )
         {
-            return RockDateTime.Today.Add( timespan ).ToShortTimeString();
+            // since the comments on this say HH:MM AM/PM, make sure to return the time in that format
+            return RockDateTime.Today.Add( timespan ).ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         #endregion TimeSpan Extensions
