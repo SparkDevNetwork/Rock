@@ -249,6 +249,7 @@ namespace Rock.Model
         /// The friendly schedule text.
         /// </value>
         [LavaInclude]
+        [DataMember]
         [NotMapped]
         public virtual string FriendlyScheduleText
         {
