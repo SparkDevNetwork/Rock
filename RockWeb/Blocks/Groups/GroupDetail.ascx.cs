@@ -1589,6 +1589,7 @@ namespace RockWeb.Blocks.Groups
                         if ( displayOtherTab )
                         {
                             locpGroupLocation.AllowedPickerModes = modes;
+                            locpGroupLocation.CurrentPickerMode = locpGroupLocation.GetBestPickerModeForLocation( null );
                         }
 
                         ddlLocationType.DataSource = groupType.LocationTypeValues.ToList();
