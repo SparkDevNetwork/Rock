@@ -465,7 +465,6 @@ namespace Rock.Model
         /// The distance.
         /// </value>
         [DataMember]
-        [NotMapped]
         public virtual double Distance { get; set; }
 
         #endregion
