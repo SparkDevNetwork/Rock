@@ -546,27 +546,8 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="entityTypeId">The entity type identifier.</param>
         private void LoadDropdownsForEntityType( int? entityTypeId )
         {
-            if ( entityTypeId.HasValue )
-            {
-                var rockContext = new RockContext();
-                ddlDataView.Enabled = true;
-                ddlDataView.Items.Clear();
-
-                foreach ( var dataView in new DataViewService( new RockContext() ).GetByEntityTypeId( entityTypeId.Value ).ToList() )
-                {
-                    if ( dataView.IsAuthorized( Authorization.VIEW, this.CurrentPerson, rockContext ) )
-                    {
-                        ddlDataView.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
-                    }
-                }
-
-                ddlDataView.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
-            }
-            else
-            {
-                ddlDataView.Enabled = false;
-                ddlDataView.Items.Clear();
-            }
+            ddlDataView.EntityTypeId = entityTypeId;
+            ddlDataView.Enabled = entityTypeId.HasValue;
         }
 
         /// <summary>
@@ -950,16 +931,7 @@ namespace RockWeb.Blocks.Reporting
                         {
                             selectedEntityFields.Add( columnIndex, entityField );
 
-                            BoundField boundField;
-                            if ( entityField.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid() ) )
-                            {
-                                boundField = new DefinedValueField();
-                            }
-                            else
-                            {
-                                boundField = Grid.GetGridField( entityField.PropertyType );
-                            }
-
+                            BoundField boundField = entityField.GetBoundFieldType();
                             boundField.DataField = string.Format( "Entity_{0}_{1}", entityField.Name, columnIndex );
                             boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? entityField.Title : reportField.ColumnHeaderText;
                             boundField.SortExpression = boundField.DataField;
@@ -1047,15 +1019,7 @@ namespace RockWeb.Blocks.Reporting
                         columnIndex++;
                         selectedEntityFields.Add( columnIndex, entityField );
 
-                        BoundField boundField;
-                        if ( entityField.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid() ) )
-                        {
-                            boundField = new DefinedValueField();
-                        }
-                        else
-                        {
-                            boundField = Grid.GetGridField( entityField.PropertyType );
-                        }
+                        BoundField boundField = entityField.GetBoundFieldType();
 
                         boundField.DataField = string.Format( "Entity_{0}_{1}", entityField.Name, columnIndex );
                         boundField.HeaderText = entityField.Name;

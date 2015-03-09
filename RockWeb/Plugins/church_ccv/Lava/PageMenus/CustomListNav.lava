@@ -1,7 +1,7 @@
 <div class="panel panel-block"> 
     <div class="panel-heading"><h4 class="panel-title">{{ icon | Default:'<i class=""fa fa-link"></i>' }} {{ title | Default:'Links' }}</h4></div>
     <div class="panel-body">
-        <ul>
+        <ul style="list-style: none;">
         {% for page in Page.Pages %}
             <li><a  href="{{ page.Url }}"><i class="{{ page.IconCssClass }}"></i> {{ page.Title }}</a></li>
         {% endfor %}

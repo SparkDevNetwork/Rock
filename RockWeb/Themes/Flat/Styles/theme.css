@@ -4141,6 +4141,12 @@ iframe.email-body {
   color: #ffffff;
   border: 1px solid #128f76;
 }
+.bg-color {
+  background-color: #ffffff;
+}
+.text-color {
+  color: #2c3e50;
+}
 .padding-all-none {
   padding: 0 !important;
 }
@@ -5158,6 +5164,10 @@ html[xmlns] .slides {
     4. Flatly Theme
 
     */
+html {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
 main {
   display: block;
 }

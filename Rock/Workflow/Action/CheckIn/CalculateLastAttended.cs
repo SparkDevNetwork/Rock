@@ -68,6 +68,13 @@ namespace Rock.Workflow.Action.CheckIn
                                     a.PersonAlias.PersonId == person.Person.Id &&
                                     a.Group.GroupTypeId == groupType.GroupType.Id &&
                                     a.StartDateTime >= sixMonthsAgo )
+                                .Select( a => new
+                                {
+                                    a.StartDateTime,
+                                    a.GroupId,
+                                    a.LocationId,
+                                    a.ScheduleId
+                                } )
                                 .ToList();
 
                             if ( groupTypeCheckIns.Any() )

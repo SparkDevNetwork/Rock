@@ -355,6 +355,7 @@ $(document).ready(function() {
             ppFieldType.SetEditValue( ppDetailPage, null, GetAttributeValue( "DetailPage" ) );
 
             var directions = new Dictionary<string, string>();
+            directions.Add( "", "" );
             directions.Add( SortDirection.Ascending.ConvertToInt().ToString(), "Ascending" );
             directions.Add( SortDirection.Descending.ConvertToInt().ToString(), "Descending" );
             kvlOrder.CustomValues = directions;
@@ -673,8 +674,15 @@ $(document).ready(function() {
                                 var fieldDirection = new List<string>();
                                 foreach ( var itemPair in orderBy.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Split( '^' ) ) )
                                 {
-                                    var sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Ascending );
-                                    fieldDirection.Add( itemPair[0] + ( sortDirection == SortDirection.Descending ? " desc" : "" ) );
+                                    if ( itemPair.Length == 2 && !string.IsNullOrWhiteSpace( itemPair[0] ) )
+                                    {
+                                        var sortDirection = SortDirection.Ascending;
+                                        if ( !string.IsNullOrWhiteSpace( itemPair[1] ) )
+                                        {
+                                            sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Ascending );
+                                        }
+                                        fieldDirection.Add( itemPair[0] + ( sortDirection == SortDirection.Descending ? " desc" : "" ) );
+                                    }
                                 }
 
                                 sortProperty = new SortProperty();
@@ -841,6 +849,7 @@ $(document).ready(function() {
                     CreateFilterControl( channel, filter, true, rockContext );
 
                     kvlOrder.CustomKeys = new Dictionary<string, string>();
+                    kvlOrder.CustomKeys.Add( "", "" );
                     kvlOrder.CustomKeys.Add( "Title", "Title" );
                     kvlOrder.CustomKeys.Add( "Priority", "Priority" );
                     kvlOrder.CustomKeys.Add( "Status", "Status" );

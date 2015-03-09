@@ -64,6 +64,7 @@ namespace Rock.Model
         /// A <see cref="System.String" /> containing the amount of benevolence.
         /// </value>
         [DataMember]
+        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public decimal? Amount { get; set; }
 
         /// <summary>
