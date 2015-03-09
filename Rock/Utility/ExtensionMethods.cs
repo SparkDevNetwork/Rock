@@ -38,7 +38,7 @@ namespace Rock
     /// </summary>
     public static class ExtensionMethods
     {
-        #region Object Extensions
+        #region Json Extensions
 
         /// <summary>
         /// Converts object to JSON string
@@ -53,6 +53,35 @@ namespace Rock
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 } );
         }
+
+        /// <summary>
+        /// Attempts to deserialize a json string into T.  If it can't be deserialized, returns null
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="val">The value.</param>
+        /// <returns></returns>
+        public static T FromJsonOrNull<T>( this string val )
+        {
+            try
+            {
+                if ( string.IsNullOrWhiteSpace( val ) )
+                {
+                    return default( T );
+                }
+                else
+                {
+                    return JsonConvert.DeserializeObject<T>( val );
+                }
+            }
+            catch
+            {
+                return default(T);
+            }
+        }
+
+        #endregion
+
+        #region Object Extensions
 
         /// <summary>
         /// Gets the property value.
