@@ -687,7 +687,26 @@ namespace Rock.Model
                 return string.Empty;
             }
         }
+        
         #endregion
+
+        #region constants
+
+        /// <summary>
+        /// Meters per mile (1609.344)
+        /// NOTE: Geo Spatial distances are in meters
+        /// </summary>
+        public const double MetersPerMile = 1609.344;
+
+
+        /// <summary>
+        /// Miles per meter 1/1609.344 (0.00062137505)
+        /// NOTE: Geo Spatial distances are in meters
+        /// </summary>
+        public const double MilesPerMeter = 1 / MetersPerMile;
+
+        #endregion
+
 
     }
 
