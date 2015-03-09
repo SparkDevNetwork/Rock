@@ -817,7 +817,7 @@ namespace Rock.Model
         /// <summary>
         /// Sets the birth date, which will set the BirthMonth, BirthDay, and BirthYear values
         /// </summary>
-        /// <param name="birthDate">The birth date.</param>
+        /// <param name="value">The value.</param>
         public void SetBirthDate( DateTime? value )
         {
             if ( value.HasValue )
@@ -1518,12 +1518,13 @@ namespace Rock.Model
         /// is typically configured to allow check-in.  If an inverse relationship is configured for 'Can check in'
         /// (i.e. 'Allow check in by'), that relationship will also be created.
         /// </summary>
-        /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the Person.</param>
-        /// <param name="relatedPersonId">A <see cref="System.Int32"/> representing the Id of the related Person.</param>
-        /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias"/> representing the Person who is logged in.</param>
-        public static void CreateCheckinRelationship( int personId, int relatedPersonId, PersonAlias currentPersonAlias )
+        /// <param name="personId">A <see cref="System.Int32" /> representing the Id of the Person.</param>
+        /// <param name="relatedPersonId">A <see cref="System.Int32" /> representing the Id of the related Person.</param>
+        /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias" /> representing the Person who is logged in.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void CreateCheckinRelationship( int personId, int relatedPersonId, PersonAlias currentPersonAlias, RockContext rockContext = null )
         {
-            var rockContext = new RockContext();
+            rockContext = rockContext ?? new RockContext();
 
             var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
             var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) );

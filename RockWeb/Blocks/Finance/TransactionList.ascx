@@ -38,7 +38,7 @@
                                 <Rock:RockBoundField DataField="AuthorizedPersonAlias.Person.FullName" HeaderText="Person" 
                                     SortExpression="AuthorizedPersonAlias.Person.LastName,AuthorizedPersonAlias.Person.NickName" />
                                 <Rock:RockBoundField DataField="TransactionDateTime" HeaderText="Date / Time" SortExpression="TransactionDateTime" />                
-                                <Rock:RockBoundField DataField="TotalAmount" HeaderText="Amount" DataFormatString="{0:C}" SortExpression="TotalAmount" />
+                                <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" SortExpression="TotalAmount" />
                                 <Rock:RockTemplateField HeaderText="Currency Type" >
                                     <ItemTemplate>
                                         <asp:Literal ID="lCurrencyType" runat="server" />

@@ -1,113 +1,132 @@
-﻿/*
-    Used to manage styles related to modal dialog.
+﻿
 
-*/
+//
+// MODAL STYLES
+// --------------------------------------------------
 
-// import the following files as less files so they are concatenated properly
+
+// Imports
+// -------------------------
+
+// import as less files so they are concatenated properly
 @import (less) "./bootstrap-modal/bootstrap-modal-bs3patch.css";
 @import (less) "./bootstrap-modal/bootstrap-modal.css";
 
-.modal-overflow.modal {
-    top: 48px;
-}
 
-.modal-content {
-    border: 0;
-    background-color: @modal-body-bg;
+// Rock modal (page properties, etc.)
+// -------------------------
+
+.modal-content.rock-modal,
+.rock-modal .modal-content {
+  border: 0;
+  background-color: @modal-body-bg;
+  color: @modal-body-text-color;
+
+  .modal-header {
+    background-color: @modal-header-bg;
+    color: @modal-header-text-color;
+    padding: 5px 15px;
+    min-height: 34px;
+    .clearfix();
+
+    h3 {
+      float: left;
+      margin-right: 12px;
+    }
+
+    .close {
+      margin: 0;
+      padding: 6px;
+      color: @modal-header-text-color;
+      text-shadow: none;
+    }
+
+    .label {
+      margin-top: 8px;
+    }
+
+    small {
+      margin-top: 12px;
+      display: block;
+      color: darken(@modal-header-text-color, 10%);
+    }
+  }
+
+  .modal-body {
     color: @modal-body-text-color;
+    text-align: left;
 
-    .modal-header {
-        background-color: @modal-header-bg;
-        color: @modal-header-text-color;
-        padding: 5px 15px;
-        min-height: 34px;
-        .clearfix();
-
-        h3 {
-            float: left;
-            margin-right: 12px;
-        }
-
-        .close {
-            margin: 0;
-            padding: 6px;
-            color: @modal-header-text-color;
-            text-shadow: none;
-        }
-
-        .label {
-            margin-top: 8px;
-        }
-
-        small {
-            margin-top: 12px;
-            display: block;
-            color: darken(@modal-header-text-color, 10%);
-        }
+    // styling for the top nav-pill naviagtion
+    .nav-pills {
+      margin: 6px 0 18px;
     }
 
-    .modal-body {
-        color: @modal-body-text-color;
-        text-align: left;
+    > .scroll-container {
+      width: 720px;
 
-        // styling for the top nav-pill naviagtion
-        .nav-pills {
-            margin: 6px 0 18px;
-        }
-
-        > .scroll-container {
-            width: 720px;
-
-            > .viewport {
-                width: 670px;
-            }
-        }
-
-        &.iframe {
-            overflow: hidden;
-        }
+      > .viewport {
+        width: 670px;
+      }
     }
 
-    .modal-footer {
-        padding: 8px;
-        margin-top: 10px;
-        background-color: @modal-footer-bg;
-        color: @modal-footer-text-color;
-        border-radius: 0 0 @border-radius-base @border-radius-base;
+    &.iframe {
+      overflow: hidden;
     }
+  }
+
+  .modal-footer {
+    padding: 8px;
+    margin-top: 10px;
+    background-color: @modal-footer-bg;
+    color: @modal-footer-text-color;
+    border-radius: 0 0 @border-radius-base @border-radius-base;
+  }
 }
 
-.modal-body {
-  padding: 8px 12px 12px 12px;
+.rock-modal {
+  .modal-body {
+    padding: 8px 12px 12px 12px;
+  }
+  .modal-footer:after {
+    clear: both;
+  }
+  .modal-footer .btn {
+    float: right;
+    margin-left: 5px;
+  }
 }
 
-.modal-footer:after {
-  clear: both;
-}
-.modal-footer .btn {
-  float: right;
-  margin-left: 5px;
+.modal.modal-overflow {
+  top: @grid-gutter-width;
 }
 
 #modal-popup_iframe {
-    height: 100%;
-    width: 100%;
-    border: 0;
-    display: block;
+  height: 100%;
+  width: 100%;
+  border: 0;
+  display: block;
 }
 
 
-// Bootbox Modal Overrides
-.bootbox .modal-dialog {
-    margin: 0;
-    width: auto;
-}
+// All modals
+// -------------------------
 
-// bootstrap modal component overrides
-.modal-backdrop, 
+.modal-backdrop,
 .modal-backdrop.fade.in{
-	opacity: 0.7;
-	filter: alpha(opacity=70);
-	background: @modal-backdrop-bg;
+  opacity: 0.7;
+  filter: alpha(opacity=70);
+  background: @modal-backdrop-bg;
+}
+
+// Fixes some appearance issues from switching standard BS modal to
+// responsive bootstrap-modal.
+
+.modal-dialog {
+  margin: 0;
+  width: auto;
+}
+
+.modal-content {
+  border: none;
 }
 

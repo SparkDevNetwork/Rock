@@ -776,7 +776,7 @@ namespace RockWeb.Blocks.Groups
                         if ( showProximity && personLocation != null && personLocation.GeoPoint != null )
                         {
                             double meters = groupLocation.Location.GeoPoint.Distance( personLocation.GeoPoint ) ?? 0.0D;
-                            double miles = meters / 1609.344;
+                            double miles = meters * Location.MilesPerMeter;
 
                             // If this group already has a distance calculated, see if this location is closer and if so, use it instead
                             if ( distances.ContainsKey( group.Id ) )

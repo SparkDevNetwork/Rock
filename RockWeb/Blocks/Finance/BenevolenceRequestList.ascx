@@ -6,7 +6,7 @@
             <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
                 <div class="panel-heading">
-                    <h1 class="panel-title">Benevolence Requests</h1>
+                    <h1 class="panel-title"><i class="fa fa-paste"></i>Benevolence Requests</h1>
                 </div>
                 <div class="panel-body">
 
@@ -32,21 +32,27 @@
 
                                 <Rock:RockBoundField DataField="ConnectionStatusValue.Value" HeaderText="Connection Status" SortExpression="ConnectionStatus" ColumnPriority="DesktopSmall" />
 
-                                <Rock:RockBoundField DataField="GovernmentId" HeaderText="Government ID" SortExpression="GovernmentId" ColumnPriority="DesktopSmall" />
+                                <Rock:RockBoundField DataField="GovernmentId" HeaderText="Government ID" SortExpression="GovernmentId" ColumnPriority="DesktopLarge" />
 
                                 <Rock:RockBoundField DataField="RequestText" HeaderText="Request" SortExpression="Request" />
 
                                 <Rock:PersonField DataField="CaseWorkerPersonAlias.Person" SortExpression="Case Worker" HeaderText="Case Worker" ColumnPriority="Tablet" />
 
-                                <Rock:RockBoundField DataField="ResultSummary" HeaderText="Result Summary" SortExpression="ResultSummary" />
+                                <Rock:RockBoundField DataField="ResultSummary" HeaderText="Result Summary" SortExpression="ResultSummary" ColumnPriority="DesktopLarge" />
 
-                                <Rock:RockTemplateField SortExpression="ResultSpecifics" HeaderText="Result Specifics" ColumnPriority="DesktopSmall">
+                                <Rock:RockTemplateField SortExpression="ResultSpecifics" HeaderText="Result Specifics" ColumnPriority="DesktopLarge">
                                     <ItemTemplate>
                                         <asp:Literal ID="lResults" runat="server" />
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
 
-                                <Rock:RockBoundField DataField="TotalAmount" HeaderText="Total Amount" DataFormatString="{0:C}" SortExpression="TotalAmount" />
+                                <Rock:RockTemplateField SortExpression="RequestStatus" HeaderText="Status">
+                                    <ItemTemplate>
+                                        <Rock:HighlightLabel ID="hlStatus" runat="server" />
+                                    </ItemTemplate>
+                                </Rock:RockTemplateField>
+
+                                <Rock:CurrencyField DataField="TotalAmount" HeaderText="Total Amount" SortExpression="TotalAmount" />
 
                             </Columns>
                         </Rock:Grid>
@@ -56,7 +62,7 @@
 
             </asp:Panel>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-4 col-md-offset-8">
             <asp:Panel ID="pnlSummary" runat="server" CssClass="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title">Total Results</h1>

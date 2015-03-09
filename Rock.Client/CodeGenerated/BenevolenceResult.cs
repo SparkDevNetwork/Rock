@@ -50,7 +50,7 @@ namespace Rock.Client
         public DefinedValue ResultTypeValue { get; set; }
 
         /// <summary />
-        public int? ResultTypeValueId { get; set; }
+        public int ResultTypeValueId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -69,6 +69,13 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignId { get; set; }
+
+        /// <summary />
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
+
+
+        /// <summary />
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
 
     }
 }

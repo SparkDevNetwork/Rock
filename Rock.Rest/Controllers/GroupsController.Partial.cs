@@ -148,29 +148,22 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="geofenceGroupTypeId">The geofence group type identifier.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
-        /// <param name="street">The street.</param>
-        /// <param name="city">The city.</param>
-        /// <param name="state">The state.</param>
-        /// <param name="postalCode">The postal code.</param>
+        /// <param name="locationId">The location identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [EnableQuery]
         [HttpGet]
-        [System.Web.Http.Route( "api/Groups/ByLocation/{geofenceGroupTypeId}/{groupTypeId}/{street}/{city}/{state}/{postalCode}" )]
-        public IQueryable<Group> GetByLocation( int geofenceGroupTypeId, int groupTypeId,
-            string street, string city, string state, string postalCode )
+        [System.Web.Http.Route( "api/Groups/ByLocation/{geofenceGroupTypeId}/{groupTypeId}/{locationId}" )]
+        public IQueryable<Group> GetByLocation( int geofenceGroupTypeId, int groupTypeId, int locationId )
         {
             var fenceGroups = new List<Group>();
 
-            string street2 = string.Empty;
-            string country = GlobalAttributesCache.Read().OrganizationCountry;
-
-            // Get a new location record for the address
+            // Get the location record
             var rockContext = (RockContext)Service.Context;
-            var location = new LocationService( rockContext ).Get( street, street2, city, state, postalCode, country );
+            var location = new LocationService( rockContext ).Get( locationId );
 
-            // If address was geocoded succesfully
-            if ( location.GeoPoint != null )
+            // If location was valid and address was geocoded succesfully
+            if ( location != null && location.GeoPoint != null )
             {
                 // Find all the groupLocation records ( belonging to groups of the "geofenceGroupType" )
                 // where the geofence surrounds the location
@@ -193,26 +186,32 @@ namespace Rock.Rest.Controllers
 
                     // Find all the group groupLocation records ( with group of the "groupTypeId" ) that have a location
                     // within the fence 
-                    var groups = new List<Group>();
-                    foreach ( var groupLocation in groupLocationService
-                        .Queryable( "Group,Location" ).AsNoTracking()
-                        .Where( gl =>
-                            gl.Group.GroupTypeId == groupTypeId &&
-                            gl.Location.GeoPoint != null &&
-                            gl.Location.GeoPoint.Intersects( fenceGroupLocation.Location.GeoFence ) ) )
+                    foreach ( var group in Service
+                        .Queryable( "Schedule,GroupLocations.Location" ).AsNoTracking()
+                        .Where( g =>
+                            g.GroupTypeId == groupTypeId &&
+                            g.GroupLocations.Any( gl =>
+                                gl.Location.GeoPoint != null &&
+                                gl.Location.GeoPoint.Intersects( fenceGroupLocation.Location.GeoFence ) ) ) )
                     {
-                        var group = groups.FirstOrDefault( g => g.Id == groupLocation.GroupId );
-                        if ( group == null )
+                        // Remove any other group locations that do not belong to fence
+                        foreach ( var gl in group.GroupLocations.ToList() )
                         {
-                            group = groupLocation.Group;
-                            group.LoadAttributes();
-                            groups.Add( group );
+                            if ( gl.Location.GeoPoint == null ||
+                                !gl.Location.GeoPoint.Intersects( fenceGroupLocation.Location.GeoFence ) )
+                            {
+                                group.GroupLocations.Remove( gl );
+                            }
+                            else
+                            {
+                                // Calculate distance
+                                double meters = gl.Location.GeoPoint.Distance( location.GeoPoint ) ?? 0.0D;
+                                gl.Location.Distance = meters * Location.MilesPerMeter;
+                            }
                         }
-                        groupLocation.Group = null;
-                    }
 
-                    // Add the group as a child of the fence group 
-                    groups.ForEach( g => fenceGroup.Groups.Add( g ) );
+                        fenceGroup.Groups.Add( group );
+                    }
                 }
             }
 

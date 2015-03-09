@@ -335,7 +335,7 @@ namespace Rock.Model
     public partial class BenevolenceRequestConfiguration : EntityTypeConfiguration<BenevolenceRequest>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="benevolenceRequestConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="BenevolenceRequestConfiguration" /> class.
         /// </summary>
         public BenevolenceRequestConfiguration()
         {

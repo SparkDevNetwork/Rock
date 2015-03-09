@@ -117,10 +117,10 @@ namespace Rock.Reporting.DataFilter
         {
             string s = "Another Data View";
 
-            int dataviewId = int.MinValue;
-            if ( int.TryParse( selection, out dataviewId ) )
+            int? dataviewId = selection.AsIntegerOrNull();
+            if ( dataviewId.HasValue )
             {
-                var dataView = new DataViewService( new RockContext() ).Get( dataviewId );
+                var dataView = new DataViewService( new RockContext() ).Get( dataviewId.Value );
                 if ( dataView != null )
                 {
                     return string.Format( "Included in '{0}' Data View", dataView.Name );
@@ -138,25 +138,12 @@ namespace Rock.Reporting.DataFilter
         {
             int entityTypeId = EntityTypeCache.Read( entityType ).Id;
 
-            var ddlDataViews = new RockDropDownList();
+            var ddlDataViews = new DataViewPicker();
             ddlDataViews.ID = filterControl.ID + "_0";
             filterControl.Controls.Add( ddlDataViews );
-
-            // add Empty option first
-            ddlDataViews.Items.Add( new ListItem() );
-
-            RockPage page = filterControl.Page as RockPage;
-            if ( page != null )
-            {
-                foreach ( var dataView in new DataViewService( new RockContext() ).GetByEntityTypeId( entityTypeId ) )
-                {
-                    if ( dataView.IsAuthorized( Authorization.VIEW, page.CurrentPerson ) &&
-                        dataView.DataViewFilter.IsAuthorized( Authorization.VIEW, page.CurrentPerson ) )
-                    {
-                        ddlDataViews.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
-                    }
-                }
-            }
+            
+            ddlDataViews.EntityTypeId = entityTypeId;
+            
 
             return new Control[1] { ddlDataViews };
         }
@@ -198,7 +185,7 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            return ( (DropDownList)controls[0] ).SelectedValue;
+            return ( (DataViewPicker)controls[0] ).SelectedValue;
         }
 
         /// <summary>
@@ -209,7 +196,7 @@ namespace Rock.Reporting.DataFilter
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            ( (DropDownList)controls[0] ).SelectedValue = selection;
+            ( (DataViewPicker)controls[0] ).SelectedValue = selection;
         }
 
         /// <summary>
@@ -223,10 +210,10 @@ namespace Rock.Reporting.DataFilter
         /// <exception cref="System.Exception">Filter issue(s):  + errorMessages.AsDelimited( ;  )</exception>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            int dataviewId = int.MinValue;
-            if ( int.TryParse( selection, out dataviewId ) )
+            int? dataviewId = selection.AsIntegerOrNull();
+            if ( dataviewId.HasValue )
             {
-                var dataView = new DataViewService( (RockContext)serviceInstance.Context ).Get( dataviewId );
+                var dataView = new DataViewService( (RockContext)serviceInstance.Context ).Get( dataviewId.Value );
                 if ( dataView != null && dataView.DataViewFilter != null )
                 {
                     // Verify that there is not a child filter that uses this view (would result in stack-overflow error)
@@ -265,8 +252,8 @@ namespace Rock.Reporting.DataFilter
         {
             if ( filter.EntityTypeId == EntityTypeCache.Read( this.GetType() ).Id )
             {
-                int filterDataViewId = int.MinValue;
-                if (int.TryParse(filter.Selection, out filterDataViewId))
+                int? filterDataViewId = filter.Selection.AsIntegerOrNull();
+                if ( filterDataViewId.HasValue )
                 {
                     if (filterDataViewId == dataViewId)
                     {
