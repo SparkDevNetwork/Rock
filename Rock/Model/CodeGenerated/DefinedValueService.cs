@@ -64,6 +64,24 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<BenevolenceRequest>( Context ).Queryable().Any( a => a.ConnectionStatusValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, BenevolenceRequest.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<BenevolenceRequest>( Context ).Queryable().Any( a => a.RequestStatusValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, BenevolenceRequest.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<BenevolenceResult>( Context ).Queryable().Any( a => a.ResultTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, BenevolenceResult.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Device>( Context ).Queryable().Any( a => a.DeviceTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Device.FriendlyTypeName );

@@ -4139,6 +4139,12 @@ iframe.email-body {
   color: #ecf0f3;
   border: 1px solid #3071a9;
 }
+.bg-color {
+  background-color: #ffffff;
+}
+.text-color {
+  color: #333333;
+}
 .padding-all-none {
   padding: 0 !important;
 }
@@ -5022,6 +5028,10 @@ div.aspNetDisabled {
     4. Responsive Overrides 
 
 */
+html {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
 main {
   display: block;
 }
