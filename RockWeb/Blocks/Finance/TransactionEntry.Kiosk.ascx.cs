@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Kiosk Transaction Entry" )]
+    [DisplayName( "Transaction Entry - Kiosk" )]
     [Category( "Finance" )]
     [Description( "Block used to process giving from a kiosk." )]
 
@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 10 )]
     #endregion
 
-    public partial class KioskTransactionEntry : Rock.Web.UI.RockBlock
+    public partial class TransactionEntryKiosk : Rock.Web.UI.RockBlock
     {
         #region Fields
 
@@ -165,8 +165,6 @@ namespace RockWeb.Blocks.Finance
                 // set max length of phone
                 int maxLength = int.Parse( GetAttributeValue( "MaximumPhoneNumberLength" ) );
                 tbPhone.MaxLength = maxLength;
-
-                LoadAccounts();
 
                 // todo set campus
                 this.CampusId = 1;
@@ -743,36 +741,53 @@ namespace RockWeb.Blocks.Finance
             NavigateToLinkedPage( "Homepage" );
         }
 
-        // loads accounts
-        private void LoadAccounts()
-        {
-            // get list of selected accounts filtered by the current campus
-            RockContext rockContext = new RockContext();
-            FinancialAccountService accountService = new FinancialAccountService( rockContext );
-
-            Guid[] selectedAccounts = GetAttributeValue( "Accounts" ).Split( ',' ).Select( s => Guid.Parse( s ) ).ToArray(); ;
-
-            var accounts = accountService.Queryable()
-                            .Where( a => selectedAccounts.Contains( a.Guid ));
-            
-            accounts = accounts.Where(a => a.CampusId.Value == this.CampusId || a.CampusId == null);
-            
-            this.Accounts = new Dictionary<int, string>();
-
-            foreach ( var account in accounts.ToList() )
-            {
-                this.Accounts.Add( account.Id, account.PublicName );
-            }
-        }
-
         // checks the settings provided
         private bool CheckSettings()
         {
             nbBlockConfigErrors.Title = string.Empty;
             nbBlockConfigErrors.Text = string.Empty;
 
-            // get anonymous person
+            // get list of selected accounts filtered by the current campus
             RockContext rockContext = new RockContext();
+            FinancialAccountService accountService = new FinancialAccountService( rockContext );
+
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) ) )
+            {
+                Guid[] selectedAccounts = GetAttributeValue( "Accounts" ).Split( ',' ).Select( s => Guid.Parse( s ) ).ToArray(); ;
+
+                var accounts = accountService.Queryable()
+                                .Where( a => selectedAccounts.Contains( a.Guid ) );
+
+                if ( this.CampusId != null )
+                {
+                    accounts = accounts.Where( a => a.CampusId.Value == this.CampusId || a.CampusId == null );
+                }
+
+                this.Accounts = new Dictionary<int, string>();
+
+                foreach ( var account in accounts.ToList() )
+                {
+                    this.Accounts.Add( account.Id, account.PublicName );
+                }
+            }
+            else
+            {
+                nbBlockConfigErrors.Heading = "No Accounts Configured";
+                nbBlockConfigErrors.Text = "<p>There are currently no accounts configured.</p>";
+                return false;
+            }
+
+            // hide cancel buttons if no homepage defined
+            if ( string.IsNullOrWhiteSpace( GetAttributeValue( "Homepage" ) ) )
+            {
+                lbSearchCancel.Visible = false;
+                lbGivingUnitSelectCancel.Visible = false;
+                lbRegisterCancel.Visible = false;
+                lbAccountEntryCancel.Visible = false;
+                lbSwipeCancel.Visible = false;
+            }
+
+            // get anonymous person
             Person anonymousPerson = null;
 
             Guid anonymousPersonAliasGuid;
