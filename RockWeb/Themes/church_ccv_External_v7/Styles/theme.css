@@ -5606,7 +5606,7 @@ html[xmlns] .slides {
   -webkit-box-shadow: 0 2.5px 9px rgba(0, 0, 0, 0.5);
   box-shadow: 0 2.5px 9px rgba(0, 0, 0, 0.5);
 }
-@media (min-width: 768px) {
+@media (min-width: 992px) {
   .campusmodal-wrapper {
     position: absolute;
     top: 5%;
@@ -5621,7 +5621,12 @@ html[xmlns] .slides {
   top: 0;
   right: 0;
   left: 0;
-  bottom: 69px;
+  bottom: 161px;
+}
+@media (min-width: 992px) {
+  .campusmodal-holder {
+    bottom: 69px;
+  }
 }
 .campusmodal-footer {
   position: absolute;
@@ -5630,17 +5635,27 @@ html[xmlns] .slides {
   left: 0;
   background: #222222;
   color: #fff;
-  height: 69px;
+  height: 161px;
 }
-.campusmodal-footertitle,
-.campusmodal-footertext {
-  float: left;
-  margin: 0;
-  line-height: 23px;
-  padding: 23px;
+@media (min-width: 992px) {
+  .campusmodal-footer {
+    height: 69px;
+  }
 }
-.campusmodal-footertitle {
-  background: #7a1315;
+@media (min-width: 992px) {
+  .campusmodal-footertitle,
+  .campusmodal-footertext {
+    float: left;
+    margin: 0;
+    line-height: 23px;
+    padding: 23px;
+  }
+  .campusmodal-footertitle {
+    background: #7a1315;
+  }
+  .campusmodal-footertext {
+    padding-right: 0;
+  }
 }
 html {
   box-sizing: border-box;

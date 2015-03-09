@@ -16,7 +16,7 @@
     top: 0; right: 0; bottom: 0; left: 0;
     .box-shadow(0 2.5px 9px rgba(0,0,0,.5));
 
-    @media @sm {
+    @media @md {
       position: absolute;
       top: 5%;
       left: 5%;
@@ -28,22 +28,33 @@
       background: @gray-lighter;
       position: absolute;
       top: 0; right: 0; left: 0;
-      bottom: @line-height-computed*3;
+      bottom: @line-height-computed*7;
+      @media @md {
+        bottom: @line-height-computed*3;
+      }
     }
     .campusmodal-footer {
       position: absolute;
       right: 0; bottom: 0; left: 0;
       background: @gray-darker;
       color: #fff;
-      height: @line-height-computed*3;
-    }
-      .campusmodal-footertitle,
-      .campusmodal-footertext {
-        float: left;
-        margin: 0;
-        line-height: @line-height-computed;
-        padding: @line-height-computed;
+      height: @line-height-computed*7;
+      @media @md {
+        height: @line-height-computed*3;
       }
-      .campusmodal-footertitle {
-        background: @brand-primary;
+    }
+      @media @md {
+        .campusmodal-footertitle,
+        .campusmodal-footertext {
+          float: left;
+          margin: 0;
+          line-height: @line-height-computed;
+          padding: @line-height-computed;
+        }
+        .campusmodal-footertitle {
+          background: @brand-primary;
+        }
+        .campusmodal-footertext {
+          padding-right: 0;
+        }
       }
