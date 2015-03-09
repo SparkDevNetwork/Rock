@@ -95,8 +95,10 @@ namespace RockWeb.Blocks.Finance
             set { ViewState["AnonymousGiverPersonAliasId"] = value; }
         }
 
-        private int CampusId {
-            get {
+        private int CampusId 
+        {
+            get 
+            { 
                 if ( ViewState["CampusId"] == null )
                 {
                     return 1;
@@ -753,9 +755,7 @@ namespace RockWeb.Blocks.Finance
             var accounts = accountService.Queryable()
                             .Where( a => selectedAccounts.Contains( a.Guid ));
             
-            if (this.CampusId != null) {
-                accounts = accounts.Where(a => a.CampusId.Value == this.CampusId || a.CampusId == null);
-            }
+            accounts = accounts.Where(a => a.CampusId.Value == this.CampusId || a.CampusId == null);
             
             this.Accounts = new Dictionary<int, string>();
 
