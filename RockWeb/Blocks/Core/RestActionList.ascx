@@ -13,7 +13,7 @@
                     <Rock:Grid ID="gActions" runat="server" AllowSorting="true">
                         <Columns>
                             <Rock:RockBoundField DataField="Method" HeaderText="Method" SortExpression="Method" />
-                            <Rock:RockBoundField DataField="Path" HeaderText="Relative Path" SortExpression="Path" />
+                            <Rock:CallbackField DataField="Path" HeaderText="Relative Path" SortExpression="Path" OnOnFormatDataValue="gActionsPath_OnFormatDataValue" />
                             <Rock:SecurityField TitleField="Method" />
                         </Columns>
                     </Rock:Grid>
