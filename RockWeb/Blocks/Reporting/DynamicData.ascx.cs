@@ -384,13 +384,17 @@ namespace RockWeb.Blocks.Reporting
                 var matches = pattern.Matches( urlMask );
                 if ( matches.Count > 0 )
                 {
-                    string[] keyNames = new string[matches.Count];
+                    var keyNames = new List<string>();
                     for ( int i = 0; i < matches.Count; i++ )
                     {
-                        keyNames[i] = matches[i].Value.TrimStart( '{' ).TrimEnd( '}' );
+                        string colName = matches[i].Value.TrimStart( '{' ).TrimEnd( '}' );
+                        if ( dataTable.Columns.Contains( colName ) )
+                        {
+                            keyNames.Add( colName );
+                        }
                     }
 
-                    grid.DataKeyNames = keyNames;
+                    grid.DataKeyNames = keyNames.ToArray();
                 }
             }
             else

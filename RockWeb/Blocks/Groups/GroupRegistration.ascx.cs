@@ -197,15 +197,15 @@ namespace RockWeb.Blocks.Groups
                     person = personService.Get( CurrentPerson.Id );
                 }
 
-                // Try to find person by name/email (Not sure we should do this)
-                //if ( person == null )
-                //{
-                //    var matches = personService.GetByMatch( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim() );
-                //    if ( matches.Count() == 1 )
-                //    {
-                //        person = matches.First();
-                //    }
-                //}
+                // Try to find person by name/email 
+                if ( person == null )
+                {
+                    var matches = personService.GetByMatch( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim() );
+                    if ( matches.Count() == 1 )
+                    {
+                        person = matches.First();
+                    }
+                }
 
                 // Check to see if this is a new person
                 if ( person == null )

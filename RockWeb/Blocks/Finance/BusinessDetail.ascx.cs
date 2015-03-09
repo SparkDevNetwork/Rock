@@ -367,23 +367,27 @@ namespace RockWeb.Blocks.Finance
 
                 var rockContext = new RockContext();
                 var groupMemberService = new GroupMemberService( rockContext );
+
+                Guid businessContact = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT.AsGuid();
+                Guid business = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS.AsGuid();
+                Guid ownerGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
                 foreach ( var groupMember in groupMemberService.Queryable()
                     .Where( m =>
                         (
                             // The contact person in the business's known relationships
                             m.PersonId == businessContactId &&
-                            m.GroupRole.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT.AsGuid() ) &&
+                            m.GroupRole.Guid.Equals( businessContact ) &&
                             m.Group.Members.Any( o =>
                                 o.PersonId == businessId &&
-                                o.GroupRole.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) )
+                                o.GroupRole.Guid.Equals( ownerGuid ) )
                         ) ||
                         (
                             // The business in the person's know relationships
                             m.PersonId == businessId &&
-                            m.GroupRole.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS.AsGuid() ) &&
+                            m.GroupRole.Guid.Equals( business ) &&
                             m.Group.Members.Any( o =>
                                 o.PersonId == businessContactId &&
-                                o.GroupRole.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) )
+                                o.GroupRole.Guid.Equals( ownerGuid ) )
                         )
                         ) )
                 {
