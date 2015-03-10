@@ -6,6 +6,10 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-exchange"></i> <asp:Literal ID="lControllerName" runat="server"/></h1>
+
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlblWarning" runat="server" LabelType="Warning" Text="" />
+                </div>
             </div>
             <div class="panel-body">
 
