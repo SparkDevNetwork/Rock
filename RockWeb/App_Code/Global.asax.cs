@@ -100,9 +100,9 @@ namespace RockWeb
         {
             try
             {
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
                 LogMessage( APP_LOG_FILENAME, "Application Starting..." );
-
-                DateTime startDateTime = RockDateTime.Now;
+                
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
@@ -123,8 +123,8 @@ namespace RockWeb
                     try
                     {
                         new AttributeService( rockContext ).Get( 0 );
-                        System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", ( RockDateTime.Now - startDateTime ).TotalMilliseconds ) );
-                        startDateTime = RockDateTime.Now;
+                        System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
+                        stopwatch.Restart();
                     }
                     catch
                     {
@@ -141,8 +141,8 @@ namespace RockWeb
                 LoadCacheObjects( rockContext );
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-                    System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - {0} ms", ( RockDateTime.Now - startDateTime ).TotalMilliseconds ) );
-                    startDateTime = RockDateTime.Now;
+                    System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
+                    stopwatch.Restart();
                 }
 
                 // setup and launch the jobs infrastructure if running under IIS
