@@ -19,11 +19,14 @@ using Microsoft.Owin;
 using Owin;
 using System.Web;
 
-
-public class Startup
+[assembly: OwinStartup(typeof(RockWeb.Startup))]
+namespace RockWeb
 {
-    public void Configuration( IAppBuilder app )
+    public class Startup
     {
-        app.MapSignalR();
+        public void Configuration( IAppBuilder app )
+        {
+            app.MapSignalR();
+        }
     }
 }
