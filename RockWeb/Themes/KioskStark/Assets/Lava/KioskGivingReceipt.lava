@@ -17,7 +17,10 @@
 <div class="panel panel-default">
 	<div class="panel-body">
 		<h4>Gift Details</h4>
-
+    
+    <p>
+      <strong>Confirmation Number:</strong> {{ TransactionCode }}
+    </p>
 		<table class="table">
       <thead>
         <tr>
@@ -45,6 +48,3 @@
 		</table>
 	</div>
 </div>
-
-<!--
-//todo jo********@gmail.com -->
