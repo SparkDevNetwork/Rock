@@ -805,7 +805,7 @@ namespace RockWeb.Blocks.Finance
                 var accounts = accountService.Queryable()
                                 .Where( a => selectedAccounts.Contains( a.Guid ) );
 
-                if ( this.CampusId != null )
+                if ( this.CampusId != 0 )
                 {
                     accounts = accounts.Where( a => a.CampusId.Value == this.CampusId || a.CampusId == null );
                 }
