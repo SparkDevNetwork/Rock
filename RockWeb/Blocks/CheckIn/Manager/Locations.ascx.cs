@@ -681,6 +681,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         .ToList();
                 }
 
+                // Still no group types? redirect to area select page
+                if ( NavData.GroupTypes.Count == 0 )
+                {
+                    NavigateToLinkedPage( "AreaSelectPage" );
+                }
+                
                 // Get the locations
                 var locationIds = NavData.Groups.SelectMany( g => g.ChildLocationIds ).Distinct().ToList();
                 foreach ( var location in new LocationService( rockContext ).Queryable( "ParentLocation" )
