@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Web.UI;
 using Rock;
 using Rock.Attribute;
@@ -108,6 +109,17 @@ namespace RockWeb.Blocks.Administration
                 if ( controller != null )
                 {
                     string name = controller.Name.SplitCase();
+                    var controllerType = Reflection.FindTypes( typeof( Rock.Rest.ApiControllerBase ) )
+                        .Where( a => a.Key.Equals( controller.ClassName ) ).Select( a => a.Value ).FirstOrDefault();
+                    if ( controllerType != null )
+                    {
+                        var obsoleteAttribute = controllerType.GetCustomAttribute<System.ObsoleteAttribute>();
+                        if (obsoleteAttribute != null)
+                        {
+                            hlblWarning.Text = string.Format( "Obsolete: {1}", controller.Name.SplitCase(), obsoleteAttribute.Message );
+                        }
+                    }
+
                     lControllerName.Text = name + " Controller";
                     breadCrumbs.Add( new BreadCrumb( name, pageReference ) );
                 }
@@ -170,7 +182,7 @@ namespace RockWeb.Blocks.Administration
         protected void gActionsPath_OnFormatDataValue( object sender, CallbackField.CallbackEventArgs e )
         {
             e.FormattedValue = e.DataValue.ToString();
-            if (e.FormattedValue.EndsWith("?key={key}"))
+            if ( e.FormattedValue.EndsWith( "?key={key}" ) )
             {
                 e.FormattedValue = e.FormattedValue.Replace( "?key={key}", "(id)" );
             }
