@@ -1250,13 +1250,15 @@ namespace Rock.Apps.CheckScannerUtility
 
             // include CheckNumber for checks that we scanned in this session
             var scannedCheckList = ScannedDocList.Where( a => a.IsCheck ).ToList();
-            var gridList = transactions.OrderByDescending( a => a.CreatedDateTime ).Select( a => new
+            var gridList = transactions.OrderBy( a => a.CreatedDateTime ).ThenBy(a=> a.Id).Select( a => new
             {
                 FinancialTransaction = a,
                 CheckNumber = a.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid()
                     ? scannedCheckList.FirstOrDefault( s => s.TransactionId == a.Id ) != null ? scannedCheckList.FirstOrDefault( s => s.TransactionId == a.Id ).CheckNumber : "****"
                     : "-"
             } );
+
+            lblCount.Content = string.Format( "{0} item{1}", gridList.Count(), gridList.Count() != 1 ? "s" : "" );
 
             grdBatchItems.DataContext = gridList;
         }
