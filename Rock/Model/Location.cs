@@ -459,13 +459,17 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the distance to another location. 
+        /// Gets the distance.
         /// </summary>
         /// <value>
         /// The distance.
         /// </value>
         [DataMember]
-        public virtual double Distance { get; set; }
+        public virtual double Distance
+        {
+            get { return _distance; }
+        }
+        private double _distance = 0.0D;
 
         #endregion
 
@@ -641,6 +645,15 @@ namespace Rock.Model
             }
 
             return str.ToString();
+        }
+
+        /// <summary>
+        /// Sets the distance.
+        /// </summary>
+        /// <param name="distance">The distance.</param>
+        public void SetDistance( double distance )
+        {
+            _distance = distance;
         }
 
         /// <summary>
