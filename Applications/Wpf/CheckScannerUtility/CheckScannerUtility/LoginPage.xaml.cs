@@ -208,5 +208,16 @@ namespace Rock.Apps.CheckScannerUtility
                 btnLogin_Click( null, null );
             }
         }
+
+        /// <summary>
+        /// (EasterEgg) Handles the MouseDoubleClick event of the LoginLabel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="MouseButtonEventArgs"/> instance containing the event data.</param>
+        private void LoginLabel_MouseDoubleClick( object sender, MouseButtonEventArgs e )
+        {
+            lblRockUrl.Visibility = Visibility.Visible;
+            txtRockUrl.Visibility = Visibility.Visible;
+        }
     }
 }
