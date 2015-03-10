@@ -206,7 +206,7 @@ namespace Rock.Rest.Controllers
                             {
                                 // Calculate distance
                                 double meters = gl.Location.GeoPoint.Distance( location.GeoPoint ) ?? 0.0D;
-                                gl.Location.Distance = meters * Location.MilesPerMeter;
+                                gl.Location.SetDistance( meters * Location.MilesPerMeter );
                             }
                         }
 
