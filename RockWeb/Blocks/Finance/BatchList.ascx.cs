@@ -568,16 +568,6 @@ namespace RockWeb.Blocks.Finance
 
                                 break;
                             }
-
-                        case BatchStatus.Closed:
-                            {
-                                if ( ControlAmount != TransactionAmount )
-                                {
-                                    notes.Append( "<span class='label label-danger'>Transaction Total Does Not Match Control Amount</span><br/>" );
-                                }
-
-                                break;
-                            }
                     }
 
                     return notes.ToString();
