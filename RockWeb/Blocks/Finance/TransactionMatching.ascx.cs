@@ -43,6 +43,15 @@ namespace RockWeb.Blocks.Finance
     public partial class TransactionMatching : RockBlock, IDetailBlock
     {
 
+        #region Properties
+
+        /// <summary>
+        /// The _focus control
+        /// </summary>
+        private Control _focusControl = null;
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -81,6 +90,22 @@ namespace RockWeb.Blocks.Finance
                 LoadDropDowns();
                 ShowDetail( PageParameter( "BatchId" ).AsInteger() );
             }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnPreRender( EventArgs e )
+        {
+            if ( _focusControl != null )
+            {
+                _focusControl.Focus();
+            }
+
+            //btnNext.AccessKey = new string(new char[] { (char)39 });
+
+            base.OnPreRender( e );
         }
 
         #endregion
@@ -429,6 +454,8 @@ namespace RockWeb.Blocks.Finance
                 </div>", percentComplete);
 
                 hfBackNextHistory.Value = historyList.AsDelimited( "," );
+
+                _focusControl = rptAccounts.ControlsOfTypeRecursive<Rock.Web.UI.Controls.CurrencyBox>().FirstOrDefault();
             }
         }
 
