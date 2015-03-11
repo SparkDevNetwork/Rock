@@ -716,40 +716,41 @@ namespace Rock.Apps.CheckScannerUtility
                 int percentComplete = position++ * 100 / totalCount;
                 bw.ReportProgress( percentComplete );
 
-                FinancialTransaction financialTransactionScanned = new FinancialTransaction();
+                FinancialTransaction financialTransaction = new FinancialTransaction();
 
                 Guid transactionGuid = Guid.NewGuid();
 
-                financialTransactionScanned.BatchId = SelectedFinancialBatch.Id;
-                financialTransactionScanned.TransactionCode = string.Empty;
-                financialTransactionScanned.Summary = "Scanned from Check Scanner Utility";
+                financialTransaction.BatchId = SelectedFinancialBatch.Id;
+                financialTransaction.TransactionCode = string.Empty;
+                financialTransaction.Summary = string.Empty;
 
-                financialTransactionScanned.Guid = transactionGuid;
-                financialTransactionScanned.TransactionDateTime = SelectedFinancialBatch.BatchStartDateTime;
+                financialTransaction.Guid = transactionGuid;
+                financialTransaction.TransactionDateTime = SelectedFinancialBatch.BatchStartDateTime;
 
-                financialTransactionScanned.CurrencyTypeValueId = scannedDocInfo.CurrencyTypeValue.Id;
-                financialTransactionScanned.SourceTypeValueId = scannedDocInfo.SourceTypeValue.Id;
+                financialTransaction.CurrencyTypeValueId = scannedDocInfo.CurrencyTypeValue.Id;
+                financialTransaction.SourceTypeValueId = scannedDocInfo.SourceTypeValue.Id;
 
-                financialTransactionScanned.TransactionTypeValueId = transactionTypeValueContribution.Id;
+                financialTransaction.TransactionTypeValueId = transactionTypeValueContribution.Id;
 
                 if ( scannedDocInfo.IsCheck )
                 {
+                    financialTransaction.TransactionCode = scannedDocInfo.CheckNumber;
+                    
                     FinancialTransactionScannedCheck financialTransactionScannedCheck = new FinancialTransactionScannedCheck();
 
                     // Rock server will encrypt CheckMicrPlainText to this since we can't have the DataEncryptionKey in a RestClient
-                    financialTransactionScannedCheck.FinancialTransaction = financialTransactionScanned;
+                    financialTransactionScannedCheck.FinancialTransaction = financialTransaction;
                     financialTransactionScannedCheck.ScannedCheckMicr = scannedDocInfo.ScannedCheckMicr;
 
                     client.PostData<FinancialTransactionScannedCheck>( "api/FinancialTransactions/PostScanned", financialTransactionScannedCheck );
                 }
                 else
                 {
-                    client.PostData<FinancialTransaction>( "api/FinancialTransactions", financialTransactionScanned as FinancialTransaction );
+                    client.PostData<FinancialTransaction>( "api/FinancialTransactions", financialTransaction as FinancialTransaction );
                 }
 
                 // get the FinancialTransaction back from server so that we can get it's Id
                 int transactionId = client.GetIdFromGuid( "api/FinancialTransactions/", transactionGuid );
-                
 
                 // upload FinancialTransactionImage records for front/back
                 FinancialTransactionImage financialTransactionImageFront = new FinancialTransactionImage();
@@ -1249,13 +1250,15 @@ namespace Rock.Apps.CheckScannerUtility
 
             // include CheckNumber for checks that we scanned in this session
             var scannedCheckList = ScannedDocList.Where( a => a.IsCheck ).ToList();
-            var gridList = transactions.OrderByDescending( a => a.CreatedDateTime ).Select( a => new
+            var gridList = transactions.OrderBy( a => a.CreatedDateTime ).ThenBy(a=> a.Id).Select( a => new
             {
                 FinancialTransaction = a,
                 CheckNumber = a.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid()
                     ? scannedCheckList.FirstOrDefault( s => s.TransactionId == a.Id ) != null ? scannedCheckList.FirstOrDefault( s => s.TransactionId == a.Id ).CheckNumber : "****"
                     : "-"
             } );
+
+            lblCount.Content = string.Format( "{0} item{1}", gridList.Count(), gridList.Count() != 1 ? "s" : "" );
 
             grdBatchItems.DataContext = gridList;
         }

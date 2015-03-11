@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Crm
             var personDuplicateQry = personDuplicateService.Queryable()
                 .Where( a => !a.IsConfirmedAsNotDuplicate )
                 .Where( a => !a.IgnoreUntilScoreChanges )
-                .Where( a => a.PersonAlias.Person.RecordStatusValueId != recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId != recordStatusInactiveId );
+                .Where( a => !(a.PersonAlias.Person.RecordStatusValueId == recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId == recordStatusInactiveId) );
 
             double? confidenceScoreLow = GetAttributeValue( "ConfidenceScoreLow" ).AsDoubleOrNull();
             if (confidenceScoreLow.HasValue)

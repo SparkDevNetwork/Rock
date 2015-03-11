@@ -27,48 +27,60 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for Schedule
+    /// Use Rock.Client.UserLoginWithPlainTextPassword and set PlainTextPassword to set a new password as part of a api/UserLogins POST or PUT
     /// </summary>
-    public partial class Schedule
+    public partial class UserLoginWithPlainTextPassword
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public Category Category { get; set; }
+        public string ApiKey { get; set; }
 
         /// <summary />
-        public int? CategoryId { get; set; }
+        public EntityType EntityType { get; set; }
 
         /// <summary />
-        public int? CheckInEndOffsetMinutes { get; set; }
+        public int? EntityTypeId { get; set; }
 
         /// <summary />
-        public int? CheckInStartOffsetMinutes { get; set; }
+        public int? FailedPasswordAttemptCount { get; set; }
 
         /// <summary />
-        public string Description { get; set; }
+        public DateTime? FailedPasswordAttemptWindowStartDateTime { get; set; }
 
         /// <summary />
-        public DateTime? EffectiveEndDate { get; set; }
+        public bool? IsConfirmed { get; set; }
 
         /// <summary />
-        public DateTime? EffectiveStartDate { get; set; }
+        public bool? IsLockedOut { get; set; }
 
         /// <summary />
-        public string FriendlyScheduleText { get; set; }
+        public bool? IsOnLine { get; set; }
 
         /// <summary />
-        public string iCalendarContent { get; set; }
+        public DateTime? LastActivityDateTime { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
+        public DateTime? LastLockedOutDateTime { get; set; }
 
         /// <summary />
-        public int /* DayOfWeek*/? WeeklyDayOfWeek { get; set; }
+        public DateTime? LastLoginDateTime { get; set; }
 
         /// <summary />
-        public TimeSpan? WeeklyTimeOfDay { get; set; }
+        public DateTime? LastPasswordChangedDateTime { get; set; }
+
+        /// <summary />
+        public DateTime? LastPasswordExpirationWarningDateTime { get; set; }
+
+        /// <summary />
+        public int? PersonId { get; set; }
+
+        /// <summary />
+        public string PlainTextPassword { get; set; }
+
+        /// <summary />
+        public string UserName { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

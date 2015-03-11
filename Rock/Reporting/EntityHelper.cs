@@ -354,21 +354,20 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="fieldKind">Kind of the field.</param>
-        /// <param name="propertyType">Type of the property.</param>
-        /// <param name="attributeGuid">The attribute unique identifier.</param>
-        /// 
+        /// <param name="propertyInfo">The property information.</param>
         public EntityField( string name, FieldKind fieldKind, PropertyInfo propertyInfo )
             : this( name, fieldKind, propertyInfo.PropertyType, propertyInfo, null )
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityField"/> class.
+        /// Initializes a new instance of the <see cref="EntityField" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="fieldKind">Kind of the field.</param>
         /// <param name="propertyType">Type of the property.</param>
         /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="fieldType">Type of the field.</param>
         public EntityField( string name, FieldKind fieldKind, Type propertyType, Guid attributeGuid, FieldTypeCache fieldType )
             : this( name, fieldKind, propertyType, null, attributeGuid )
         {

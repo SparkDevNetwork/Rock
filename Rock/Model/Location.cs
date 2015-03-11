@@ -459,14 +459,17 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the distance to another location. 
+        /// Gets the distance.
         /// </summary>
         /// <value>
         /// The distance.
         /// </value>
         [DataMember]
-        [NotMapped]
-        public virtual double Distance { get; set; }
+        public virtual double Distance
+        {
+            get { return _distance; }
+        }
+        private double _distance = 0.0D;
 
         #endregion
 
@@ -645,6 +648,15 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Sets the distance.
+        /// </summary>
+        /// <param name="distance">The distance.</param>
+        public void SetDistance( double distance )
+        {
+            _distance = distance;
+        }
+
+        /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
         /// <value>
@@ -687,7 +699,26 @@ namespace Rock.Model
                 return string.Empty;
             }
         }
+        
         #endregion
+
+        #region constants
+
+        /// <summary>
+        /// Meters per mile (1609.344)
+        /// NOTE: Geo Spatial distances are in meters
+        /// </summary>
+        public const double MetersPerMile = 1609.344;
+
+
+        /// <summary>
+        /// Miles per meter 1/1609.344 (0.00062137505)
+        /// NOTE: Geo Spatial distances are in meters
+        /// </summary>
+        public const double MilesPerMeter = 1 / MetersPerMile;
+
+        #endregion
+
 
     }
 
