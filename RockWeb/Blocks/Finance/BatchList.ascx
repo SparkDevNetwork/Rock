@@ -12,6 +12,7 @@
             </div>
             <div class="panel-body">
                 <div class="grid grid-panel">
+                    <Rock:ModalAlert ID="maWarningDialog" runat="server" />
                     <Rock:GridFilter ID="gfBatchFilter" runat="server">
                         <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
                         <Rock:DateRangePicker ID="drpBatchDate" runat="server" Label="Date Range" />
