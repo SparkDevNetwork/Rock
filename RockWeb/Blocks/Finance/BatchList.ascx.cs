@@ -287,6 +287,12 @@ namespace RockWeb.Blocks.Finance
                     foreach ( var batch in batchesToUpdate )
                     {
                         batch.Status = newStatus;
+                        if (!batch.IsValid)
+                        {
+                            string message = string.Format("Unable to update status for the selected batches.<br/><br/>{0}", batch.ValidationResults.AsDelimited( "<br/>" ));
+                            maWarningDialog.Show(message, ModalAlertType.Warning);
+                            return;
+                        }
                     }
 
                     rockContext.SaveChanges();
