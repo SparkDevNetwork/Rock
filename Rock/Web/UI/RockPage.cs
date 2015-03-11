@@ -646,11 +646,47 @@ namespace Rock.Web.UI
                     ModelContext = new Dictionary<string, Data.KeyEntity>();
                     try
                     {
+                        char[] delim = new char[1] { ',' };
 
-                        // first search cookies, but pageContext can replace it
+                        // Check to see if a context from query string should be saved to a cookie first
+                        foreach ( string param in PageParameter( "SetContext", true ).Split( delim, StringSplitOptions.RemoveEmptyEntries ) )
+                        {
+                            string[] parts = param.Split( '|' );
+                            if ( parts.Length == 2 )
+                            {
+                                var contextModelEntityType = EntityTypeCache.Read( parts[0], false, rockContext );
+                                int? contextId = parts[1].AsIntegerOrNull();
+
+                                if ( contextModelEntityType != null && contextId.HasValue )
+                                {
+                                    var contextModelType = contextModelEntityType.GetEntityType();
+                                    var contextDbContext = Reflection.GetDbContextForEntityType( contextModelType );
+                                    if ( contextDbContext != null )
+                                    {
+                                        var contextService = Reflection.GetServiceForEntityType( contextModelType, contextDbContext );
+                                        if ( contextService != null )
+                                        {
+                                            MethodInfo getMethod = contextService.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+                                            if ( getMethod != null )
+                                            {
+                                                var getResult = getMethod.Invoke( contextService, new object[] { contextId.Value } );
+                                                var contextEntity = getResult as IEntity;
+                                                if ( contextEntity != null )
+                                                {
+                                                    SetContextCookie( contextEntity, false, false );
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // first search the cookies for any saved context, but pageContext can replace it
                         GetCookieContext( GetContextCookieName( false ) );      // Site
                         GetCookieContext( GetContextCookieName( true ) );       // Page (will replace any site values)
 
+                        // check for page context
                         foreach ( var pageContext in _pageCache.PageContexts )
                         {
                             int? contextId = PageParameter( pageContext.Value ).AsIntegerOrNull();
@@ -660,7 +696,7 @@ namespace Rock.Web.UI
                             }
                         }
 
-                        char[] delim = new char[1] { ',' };
+                        // check for any encrypted contextkeys specified in query string
                         foreach ( string param in PageParameter( "context", true ).Split( delim, StringSplitOptions.RemoveEmptyEntries ) )
                         {
                             string contextItem = Rock.Security.Encryption.DecryptString( param );
@@ -1336,6 +1372,11 @@ namespace Rock.Web.UI
             return result;
         }
 
+        public void SetCurrentContext( EntityTypeCache entity )
+        {
+
+        }
+
         /// <summary>
         /// Gets the current context object for a given entity type.
         /// </summary>
@@ -1427,7 +1468,11 @@ namespace Rock.Web.UI
                 contextCookie = new HttpCookie( cookieName );
             }
 
-            contextCookie.Values[entity.GetType().FullName] = HttpUtility.UrlDecode( entity.ContextKey );
+            Type entityType = entity.GetType();
+            if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+                entityType = entityType.BaseType;
+
+            contextCookie.Values[entityType.FullName] = HttpUtility.UrlDecode( entity.ContextKey );
             contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
 
             Response.Cookies.Add( contextCookie );
@@ -1441,11 +1486,21 @@ namespace Rock.Web.UI
 
         private void GetCookieContext( string cookieName )
         {
-            if ( Request.Cookies[cookieName] != null )
+            HttpCookie cookie = null;
+            if ( Response.Cookies.AllKeys.Contains(cookieName))
             {
-                for ( int valueIndex = 0; valueIndex < Request.Cookies[cookieName].Values.Count; valueIndex++ )
+                cookie = Response.Cookies[cookieName];
+            }
+            else if ( Request.Cookies.AllKeys.Contains(cookieName))
+            {
+                cookie = Request.Cookies[cookieName];
+            }
+
+            if ( cookie != null )
+            {
+                for ( int valueIndex = 0; valueIndex < cookie.Values.Count; valueIndex++ )
                 {
-                    string cookieValue = Request.Cookies[cookieName].Values[valueIndex];
+                    string cookieValue = cookie.Values[valueIndex];
                     if ( !string.IsNullOrWhiteSpace( cookieValue ) )
                     {
                         try
@@ -1473,7 +1528,7 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public string GetContextCookieName( bool pageSpecific )
         {
-            return "Rock:context" + ( pageSpecific ? ( ":" + PageId.ToString() ) : "" );
+            return "Rock_Context" + ( pageSpecific ? ( ":" + PageId.ToString() ) : "" );
         }
 
         /// <summary>
