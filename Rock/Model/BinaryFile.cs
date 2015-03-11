@@ -277,19 +277,7 @@ namespace Rock.Model
         {
             get
             {
-                if ( !string.IsNullOrWhiteSpace( StorageEntitySettings ) )
-                {
-                    try
-                    {
-                        return Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>( StorageEntitySettings );
-                    }
-                    catch
-                    {
-                        // intentionally ignore error and just let it return an empty dictionary
-                    }
-                }
-
-                return new Dictionary<string, string>();
+                return StorageEntitySettings.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
             }
         }
 

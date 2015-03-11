@@ -222,7 +222,7 @@ namespace RockWeb.Blocks.Finance
                         {
                             if ( result.Amount != null )
                             {
-                                stringBuilder.Append( String.Format( "<div class='row'>{0} ({1}{2:0.00})</div>", result.ResultTypeValue, GlobalAttributesCache.Value("CurrencySymbol"), result.Amount ) );
+                                stringBuilder.Append( String.Format( "<div class='row'>{0} ({1}{2:0.00})</div>", result.ResultTypeValue, GlobalAttributesCache.Value( "CurrencySymbol" ), result.Amount ) );
                             }
                             else
                             {
@@ -231,6 +231,26 @@ namespace RockWeb.Blocks.Finance
                         }
                         stringBuilder.Append( "</div>" );
                         lResults.Text = stringBuilder.ToString();
+                    }
+
+                    HighlightLabel hlStatus = e.Row.FindControl( "hlStatus" ) as HighlightLabel;
+                    if ( hlStatus != null )
+                    {
+                        switch ( benevolenceRequest.RequestStatusValue.Value )
+                        {
+                            case "Approved":
+                                hlStatus.Text = "Approved";
+                                hlStatus.LabelType = LabelType.Success;
+                                return;
+                            case "Denied":
+                                hlStatus.Text = "Denied";
+                                hlStatus.LabelType = LabelType.Danger;
+                                return;
+                            case "Pending":
+                                hlStatus.Text = "Pending";
+                                hlStatus.LabelType = LabelType.Default;
+                                return;
+                        }
                     }
                 }
             }
@@ -306,7 +326,7 @@ namespace RockWeb.Blocks.Finance
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
-        {  
+        {
             phSummary.Controls.Clear();
             rFilter.Visible = true;
             gList.Visible = true;

@@ -56,6 +56,9 @@ namespace Rock.Client
         public DateTime? EffectiveStartDate { get; set; }
 
         /// <summary />
+        public string FriendlyScheduleText { get; set; }
+
+        /// <summary />
         public string iCalendarContent { get; set; }
 
         /// <summary />

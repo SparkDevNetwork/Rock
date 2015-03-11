@@ -73,7 +73,7 @@ namespace Rock.Model
                     if ( calEvent != null )
                     {
                         // If schedule has an iCal schedule, get all the past occurrences 
-                        foreach ( var occurrence in calEvent.GetOccurrences( schedule.EffectiveStartDate.Value, endDate ) )
+                        foreach ( var occurrence in calEvent.GetOccurrences( DateTime.MinValue, endDate ) )
                         {
                             occurrences.Add( new ScheduleOccurrence( occurrence, schedule.Id ) );
                         }
