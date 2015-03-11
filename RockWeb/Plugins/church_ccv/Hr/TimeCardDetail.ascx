@@ -11,7 +11,8 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-clock-o"></i> <asp:Literal ID="lTimeCardPersonName" runat="server" />
+                    <i class="fa fa-clock-o"></i>
+                    <asp:Literal ID="lTimeCardPersonName" runat="server" />
                 </h1>
 
                 (<asp:Literal ID="lTitle" runat="server" Text="Pay Period" />)
@@ -47,6 +48,7 @@
 
                 <asp:Repeater runat="server" ID="rptTimeCardDay" OnItemDataBound="rptTimeCardDay_ItemDataBound">
                     <ItemTemplate>
+
                         <div class="row gridresponsive-row gridresponsive-item">
                             <div class="gridresponsive-item-view clickable">
                                 <div class="col-xs-3 col-md-2 col-lg-1">
@@ -72,7 +74,6 @@
                                         </div>
                                         <div class="col-md-3">
                                             <asp:Literal runat="server" ID="lEndDateTime" />
-                                            <asp:Literal runat="server" ID="lSummaryLabel" />
                                         </div>
                                     </div>
                                 </div>
@@ -80,11 +81,9 @@
                                     <div class="row">
                                         <div class="col-xs-6">
                                             <asp:Literal runat="server" ID="lWorkedRegularHours" />
-                                            <asp:Literal runat="server" ID="lWorkedRegularHoursSummary" />
                                         </div>
                                         <div class="col-xs-6">
                                             <Rock:Badge runat="server" ID="lWorkedOvertimeHours" BadgeType="Danger" ToolTip="Overtime" />
-                                            <asp:Literal runat="server" ID="lWorkedOvertimeHoursSummary" />
                                         </div>
                                     </div>
                                 </div>
@@ -92,11 +91,9 @@
                                     <Rock:Badge runat="server" ID="lPaidVacationHours" BadgeType="Success" ToolTip="Vacation" />
                                     <Rock:Badge runat="server" ID="lPaidHolidayHours" BadgeType="Info" ToolTip="Paid Holiday" />
                                     <Rock:Badge runat="server" ID="lPaidSickHours" BadgeType="Warning" ToolTip="Sick" />
-                                    <asp:Literal runat="server" ID="lOtherHoursSummary" />
                                 </div>
                                 <div class="col-xs-2 col-md-1 col-lg-1">
                                     <asp:Literal runat="server" ID="lTotalHours" />
-                                    <asp:Literal runat="server" ID="lTotalHoursSummary" />
                                 </div>
                                 <div class="col-md-4 col-lg-2 hidden-xs hidden-sm">
                                     <asp:Literal runat="server" ID="lNotes" />
@@ -155,6 +152,31 @@
                             </div>
 
                         </div>
+                        <asp:Panel ID="pnlTimeCardSummaryRow" runat="server">
+                            <div class="row gridresponsive-row timecard-subtotal-row">
+                                <div class="col-xs-3 col-md-2 col-lg-1">
+                                    Subtotal:
+                                </div>
+                                <div class="col-lg-3 hidden-xs hidden-sm hidden-md"></div>
+                                <div class="col-xs-4 col-md-2">
+                                    <div class="row">
+                                        <div class="col-xs-6">
+                                            <asp:Literal runat="server" ID="lWorkedRegularHoursSummary" />
+                                        </div>
+                                        <div class="col-xs-6">
+                                            <asp:Literal runat="server" ID="lWorkedOvertimeHoursSummary" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xs-2 col-md-2 col-lg-2">
+                                    <asp:Literal runat="server" ID="lOtherHoursSummary" />
+                                </div>
+                                <div class="col-xs-2 col-md-1 col-lg-1">
+                                    <asp:Literal runat="server" ID="lTotalHoursSummary" />
+                                </div>
+                                <div class="col-md-4 col-lg-2 hidden-xs hidden-sm"></div>
+                            </div>
+                        </asp:Panel>
                     </ItemTemplate>
                 </asp:Repeater>
 
@@ -171,20 +193,20 @@
                         <!-- Actions/Submit Panel -->
                         <asp:Panel ID="pnlPersonActions" CssClass="js-submit-panel" runat="server">
                             <h4>Submit</h4>
-                            
-                                    <Rock:NotificationBox ID="nbSubmittedSuccessMessage" runat="server" NotificationBoxType="Success" />
-                                    <asp:ValidationSummary ID="valSummarySubmit" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vgSubmit" />
-                                    <Rock:RockDropDownList ID="ddlSubmitTo" runat="server" Label="Submit to" Required="true" ValidationGroup="vgSubmit" />
-                                    
-                                    <asp:CustomValidator ID="validateAgree" runat="server" ValidationGroup="vgSubmit" ClientValidationFunction="validateCheckbox" ErrorMessage="Agree must be checked" />
-                                    <Rock:RockCheckBox ID="cbAgree" runat="server" CssClass="js-agree-checkbox" Text="I certify and agree that:" />
-                                    
-                                    <ol>
-                                        <li>All of the entries on this Time Card for this payroll period are both accurate and complete;</li>
-                                        <li>The entries include all hours worked plus paid time off hours, if any;</li>
-                                        <li>The entries do not include unpaid meal periods or other non-work time; and,</li>
-                                        <li>I have not worked either more or fewer hours than entered.</li>
-                                    </ol>
+
+                            <Rock:NotificationBox ID="nbSubmittedSuccessMessage" runat="server" NotificationBoxType="Success" />
+                            <asp:ValidationSummary ID="valSummarySubmit" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vgSubmit" />
+                            <Rock:RockDropDownList ID="ddlSubmitTo" runat="server" Label="Submit to" Required="true" ValidationGroup="vgSubmit" />
+
+                            <asp:CustomValidator ID="validateAgree" runat="server" ValidationGroup="vgSubmit" ClientValidationFunction="validateCheckbox" ErrorMessage="Agree must be checked" />
+                            <Rock:RockCheckBox ID="cbAgree" runat="server" CssClass="js-agree-checkbox" Text="I certify and agree that:" />
+
+                            <ol>
+                                <li>All of the entries on this Time Card for this payroll period are both accurate and complete;</li>
+                                <li>The entries include all hours worked plus paid time off hours, if any;</li>
+                                <li>The entries do not include unpaid meal periods or other non-work time; and,</li>
+                                <li>I have not worked either more or fewer hours than entered.</li>
+                            </ol>
 
 
                             <div class="actions margin-t-sm">
@@ -196,66 +218,66 @@
                     </div>
 
                     <div class="col-md-4">
-                         <!-- Totals Panel -->
-                            <asp:Panel ID="pnlTotals" runat="server">
+                        <!-- Totals Panel -->
+                        <asp:Panel ID="pnlTotals" runat="server">
 
-                                <h4>Totals:</h4>
-                                
-                                <div>
-                                    <strong>Worked Hours</strong>
-                                    <div class="row">
-                                        <div class="col-xs-8">&nbsp;Regular</div>
-                                        <div class="col-xs-4">
-                                            <asp:Literal ID="lTotalRegularWorked" runat="server" />
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-xs-8">&nbsp;Overtime</div>
-                                        <div class="col-xs-4">
-                                            <asp:Literal ID="lTotalOvertimeWorked" runat="server" />
-                                        </div>
-                                    </div>
-                                </div>
+                            <h4>Totals:</h4>
 
-                                <div class="margin-t-sm">
-                                    <div class="row">
-                                        <div class="col-xs-8">Vacation Hours</div>
-                                        <div class="col-xs-4">
-                                            <asp:Literal ID="lTotalVacationPaid" runat="server" />
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-xs-8">Holiday Hours</div>
-                                        <div class="col-xs-4">
-                                            <asp:Literal ID="lTotalHolidayPaid" runat="server" />
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-xs-8">Sick Hours</div>
-                                        <div class="col-xs-4">
-                                            <asp:Literal ID="lTotalSickPaid" runat="server" />
-                                        </div>
-                                    </div>
-                                </div>
-
+                            <div>
+                                <strong>Worked Hours</strong>
                                 <div class="row">
-                                    <h4>
-                                        <div class="col-xs-8">All Hours</div>
-                                        <div class="col-xs-4">
-                                            <strong>
-                                                <asp:Literal ID="lTotalHours" runat="server" />
-                                            </strong>
-                                        </div>
-                                    </h4>
+                                    <div class="col-xs-8">&nbsp;Regular</div>
+                                    <div class="col-xs-4">
+                                        <asp:Literal ID="lTotalRegularWorked" runat="server" />
+                                    </div>
                                 </div>
-                            </asp:Panel>
+                                <div class="row">
+                                    <div class="col-xs-8">&nbsp;Overtime</div>
+                                    <div class="col-xs-4">
+                                        <asp:Literal ID="lTotalOvertimeWorked" runat="server" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="margin-t-sm">
+                                <div class="row">
+                                    <div class="col-xs-8">Vacation Hours</div>
+                                    <div class="col-xs-4">
+                                        <asp:Literal ID="lTotalVacationPaid" runat="server" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-8">Holiday Hours</div>
+                                    <div class="col-xs-4">
+                                        <asp:Literal ID="lTotalHolidayPaid" runat="server" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-8">Sick Hours</div>
+                                    <div class="col-xs-4">
+                                        <asp:Literal ID="lTotalSickPaid" runat="server" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <h4>
+                                    <div class="col-xs-8">All Hours</div>
+                                    <div class="col-xs-4">
+                                        <strong>
+                                            <asp:Literal ID="lTotalHours" runat="server" />
+                                        </strong>
+                                    </div>
+                                </h4>
+                            </div>
+                        </asp:Panel>
                     </div>
-                    
+
                 </div>
 
-               
 
-                
+
+
 
                 <!-- Actions/Approver-->
                 <asp:Panel ID="pnlApproverActions" CssClass="js-approve-panel" runat="server">
@@ -272,7 +294,7 @@
 
                 <!-- History Panel -->
                 <asp:Panel ID="pnlHistory" runat="server">
-                    
+
                     <h2>History</h2>
                     <Rock:Grid ID="gHistory" runat="server" AllowPaging="false" AllowSorting="false" DataKeyNames="Id" DisplayType="Light">
                         <Columns>
@@ -333,13 +355,11 @@
                         if (earnedHours && $earnedHolidayBadge.data('is-holiday')) {
                             $earnedHolidayBadge.text("+ " + earnedHours.toFixed(2));
                         }
-                        else
-                        {
+                        else {
                             $earnedHolidayBadge.text('');
                         }
                     }
                     catch (e) {
-                        debugger
                         $earnedHolidayBadge.text("+ 50%");
                     }
                 });
