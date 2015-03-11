@@ -85,6 +85,21 @@ namespace Rock.Model
             rockContext.SaveChanges();
         }
 
+        /// <summary>
+        /// Gets the Guid for the Layout that has the specified Id
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Guid? GetGuid( int id )
+        {
+            var cacheItem = Rock.Web.Cache.LayoutCache.Read( id );
+            if ( cacheItem != null )
+            {
+                return cacheItem.Guid;
+            }
+
+            return null;
+        }
     }
 }
 
