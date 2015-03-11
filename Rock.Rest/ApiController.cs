@@ -219,7 +219,7 @@ namespace Rock.Rest
         [ActionName( "SetContext" )]
         public virtual HttpResponseMessage SetContext( int id )
         {
-            Guid? guid = GetGuid( id );
+            Guid? guid = Service.GetGuid( id );
             if (!guid.HasValue)
             {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
@@ -250,22 +250,6 @@ namespace Rock.Rest
             httpContext.Response.Cookies.Add( contextCookie );
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.OK );
-        }
-
-        /// <summary>
-        /// Gets the unique identifier.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns></returns>
-        protected virtual Guid? GetGuid( int id )
-        {
-            var entity = Service.Get( id );
-            if ( entity != null )
-            {
-                return entity.Guid;
-            }
-
-            return null;
         }
 
         /// <summary>

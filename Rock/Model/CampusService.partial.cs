@@ -14,28 +14,23 @@
 // limitations under the License.
 // </copyright>
 //
-
 using System;
-using Rock.Web.Cache;
 
-namespace Rock.Rest.Controllers
+namespace Rock.Model
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public partial class CampusesController 
+    public partial class CampusService
     {
         /// <summary>
-        /// Gets the unique identifier.
+        /// Gets the Guid for the Campus that has the specified Id
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        protected override Guid? GetGuid( int id )
+        public override Guid? GetGuid( int id )
         {
-            var campus = CampusCache.Read( id );
-            if ( campus != null )
+            var cacheItem = Rock.Web.Cache.CampusCache.Read( id );
+            if ( cacheItem != null )
             {
-                return campus.Guid;
+                return cacheItem.Guid;
             }
 
             return null;
