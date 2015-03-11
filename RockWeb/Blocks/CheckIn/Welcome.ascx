@@ -67,16 +67,12 @@
 
         <%-- Panel for active checkin --%>
         <asp:Panel ID="pnlActive" runat="server">
-
-            <div class="checkin-header">
-                <h1>Check-in Kiosk</h1>
-            </div>
                 
             <div class="checkin-body">
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
-                        <div class="checkin-search-actions">
-                            <asp:LinkButton CssClass="btn btn-primary" ID="lbSearch" runat="server" OnClick="lbSearch_Click" Text="Search By Phone"/>
+                        <div class="checkin-search-actions checkin-start">
+                            <asp:LinkButton CssClass="btn btn-primary" ID="lbSearch" runat="server" OnClick="lbSearch_Click" Text="Check in"/>
                         </div>
                     </div>
                 </div>

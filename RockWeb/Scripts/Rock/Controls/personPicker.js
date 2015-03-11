@@ -47,8 +47,8 @@
                 appendTo: '#' + controlId + '_personPickerItems',
                 pickerControlId: controlId,
                 messages: {
-                    noResults: function () {},
-                    results: function () {}
+                    noResults: function () { },
+                    results: function () { }
                 }
             });
 
@@ -60,11 +60,13 @@
                 });
             });
 
-            $('#' + controlId + ' .picker-select').on('click', '.picker-select-item', function (e) {
+            $('#' + controlId + ' .picker-select').on('click', '.picker-select-item :input', function (e) {
                 e.stopPropagation();
 
-                var $selectedItem = $(this).attr('data-person-id');
-                var alreadySelected = $(this).find('.picker-select-item-details:hidden').length == 0 && e.target.type != 'radio';
+                var $selectedItem = $(this).closest('.picker-select-item');
+
+                var selectedPersonId = $selectedItem.attr('data-person-id');
+                var alreadySelected = $selectedItem.find('.picker-select-item-details').is(':visible');
                 if (alreadySelected) {
                     $('#' + controlId + '_btnSelect').get(0).click();
                 }
@@ -72,14 +74,14 @@
                 // hide other open details
                 $('#' + controlId + ' .picker-select-item-details').each(function () {
                     var $el = $(this),
-                        $currentItem = $el.closest('.picker-select-item').attr('data-person-id');
+                       currentPersonId = $el.closest('.picker-select-item').attr('data-person-id');
 
-                    if ($currentItem != $selectedItem) {
+                    if (currentPersonId != selectedPersonId) {
                         $el.slideUp();
                     }
                 });
 
-                $(this).find('.picker-select-item-details:hidden').slideDown(function () {
+                $selectedItem.find('.picker-select-item-details:hidden').slideDown(function () {
                     exports.personPickers[controlId].updateScrollbar();
                 });
             });
@@ -183,7 +185,7 @@
                     }
                 }
             });
-            
+
             this.initializeEventHandlers();
         };
 
@@ -195,7 +197,7 @@
             initialize: function (options) {
                 if (!options.controlId) throw '`controlId` is required.';
                 if (!options.restUrl) throw '`restUrl` is required.';
-                
+
                 var personPicker = new PersonPicker(options);
                 exports.personPickers[options.controlId] = personPicker;
                 personPicker.initialize();

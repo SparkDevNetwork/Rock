@@ -626,7 +626,7 @@ achieve our mission.  We are so grateful for your commitment.
                     ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
                 .OrderBy( f => f.Order ) )
             {
-                var accountItem = new AccountItem( account.Id, account.Order, account.Name, account.CampusId );
+                var accountItem = new AccountItem( account.Id, account.Order, account.Name, account.CampusId, account.PublicName );
                 if ( showAll )
                 {
                     SelectedAccounts.Add( accountItem );
@@ -1474,6 +1474,8 @@ achieve our mission.  We are so grateful for your commitment.
 
             public decimal Amount { get; set; }
 
+            public string PublicName { get; set; }
+
             public string AmountFormatted
             {
                 get
@@ -1482,12 +1484,13 @@ achieve our mission.  We are so grateful for your commitment.
                 }
             }
 
-            public AccountItem( int id, int order, string name, int? campusId )
+            public AccountItem( int id, int order, string name, int? campusId, string publicName )
             {
                 Id = id;
                 Order = order;
                 Name = name;
                 CampusId = campusId;
+                PublicName = publicName;
             }
         }
 

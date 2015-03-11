@@ -331,6 +331,7 @@ namespace Rock.Model
     /// </summary>
     [DataContract]
     [NotMapped]
+    [RockClientInclude("Use Rock.Client.UserLoginWithPlainTextPassword and set PlainTextPassword to set a new password as part of a api/UserLogins POST or PUT")]
     public class UserLoginWithPlainTextPassword : UserLogin
     {
         /// <summary>

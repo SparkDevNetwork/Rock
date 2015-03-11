@@ -415,7 +415,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Special class for adding location info as available liquid fields
         /// </summary>
-        [DotLiquid.LiquidType( "Street1", "Street2", "City", "State", "PostalCode", "Country", "Latitude", "Longitude" )]
+        [DotLiquid.LiquidType( "Street1", "Street2", "City", "State", "PostalCode", "Country", "Latitude", "Longitude", "ImageUrl" )]
         public class CampusLocation
         {
             /// <summary>
@@ -483,6 +483,15 @@ namespace Rock.Web.Cache
             public double? Longitude { get; set; }
 
             /// <summary>
+            /// Gets or sets the URL for the image.
+            /// </summary>
+            /// <value>
+            /// The image url.
+            /// </value>
+            public string ImageUrl { get; set; }
+
+
+            /// <summary>
             /// Initializes a new instance of the <see cref="CampusLocation"/> class.
             /// </summary>
             /// <param name="locationModel">The location model.</param>
@@ -496,6 +505,11 @@ namespace Rock.Web.Cache
                     State = locationModel.State;
                     PostalCode = locationModel.PostalCode;
                     Country = locationModel.Country;
+
+                    if ( locationModel.Image != null )
+                    {
+                        ImageUrl = locationModel.Image.Url;
+                    }
 
                     if ( locationModel.GeoPoint != null )
                     {
