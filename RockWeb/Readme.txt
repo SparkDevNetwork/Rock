@@ -1,72 +1,193 @@
-+ Added CreatedByPersonName, ModifiedByPersonName, CreatedByPersonId, and ModifiedByPersonId as available lava merge fields for all models.
-+ Updated security on groups so that a group can use both it's parent group and it's group type as a parent authority. Also improved security handling in the Group Viewer block (Fixes #718).
-+ Fixed security so that if a user is not allowed to view a Group type, they cannot view/edit groups of that type in the Group Viewer block (Fixes #719).
-+ Updated the Day of Week attribute field type to allow setting a default of none (Fixes #726).
-+ Updated Person Merge and Bulk Update to include deceased people when navigating from grid of people (Fixes #727).
-+ Updated the Social Media person attributes to use a URL field type instead of just text (Fixes #728).
-+ Updated all emails ( system, workflow, etc) to check that sender is from a "Safe Sender" domain.
-+ Updated all the places that use "Person" as an available lava merge field for the current person to use "CurrentPerson" instead.
-+ Updated the lava fields used by the PageMenu block to have the same format as all other lava merge fields in Rock. They are now mixed case fields. This required all Page Menu templates and template include files to be updated (update should automatically fix all of the templates).
-+ Fixed issue with row selection not working on Dynamic Data Block.
-+ Added ability to delete channel items from the Tools &gt; Content page.
-+ Updated Twilio SMS transport to report back messages that are undeliverable (Fixes #715).
-+ Fixed HTMLEditor issue in IE when toggling between source and WYSIWYG modes not saving content (Fixes #588).
-+ Added "Include Child Groups" option to the "In Group" and "Not in Group" Person dataview filters.
-+ Updated several workflow action fields used to select attributes to only display attributes that have the specific field types allowed by the action.
-+ Updated the location and naming convention of the Lava include files to be RockWeb/Themes/[Theme]/Assets/Lava/[Template].lava instead of RockWeb/Themes/[Theme]/Assets/Liquid/_[Template].liquid.
-+ Updated prayer requests so that new prayer requests that were not auto-approved will now show up in the Prayer Requests list without having to check 'Show Expired Requests' (Fixes #685).
-+ Added DISC Result block for viewing results after clicking the DISC badge, and added the DISC Request person profile action with corresponding Workflow.
-+ Added additional 'Text Option' settings to the financial Transaction Entry and Scheduled Transaction Edit blocks to make more of the text captions configurable.
-+ Updated the Send Email, Send SMS, and Send System Email workflow action types so that the recipient field supports Lava.
-+ Fixed attribute category ordering on person profile page (Fixes #716).
-+ Updated the System Info block's 'Clear Cache' option to also delete all the files in the App_Data/Cache folder.
-+ Renamed the 'Send Email Template' workflow action to 'Send System Email' since it is used to send a system email, and not a communication template.
-+ Fixed issue with workflow entry form notifications including fields that are not marked visible.
-+ Updated the Rock REST API so that exceptions that occur when using the API will now return an error and log the exception to the Rock Exception Log.
-+ Updated communication templates to correctly use 'Communication.MediumData.*' instead of 'Communication.ChannelData.*' lava merge fields.
-+ Fixed the group member status field label on bulk update block to have the correct label(Fixes #708).
-+ Added block properties to the Register block (AccountEntry.ascx) to set the Connection Status and Record Status used when creating new individuals. Default values are 'Web Prospect' and 'Pended' (Fixes #699).
-+ Fixed the 'Copy Communication' option in Communication History so that it correctly copies all the channel data (e.g. email body text) to the new communication.
-+ Subject value in email templates can now be removed (Fixes #692).
-+ Updated workflow entry screen so that inactive workflow types cannot be used to start a new workflow. They will still appear, so that they can be managed, but will not link to the entry form (Fixes #695).
-+ Fixed issue where public account names were not being used on the transaction entry page (Fixes #696).
-+ Updated Lava templating engine to support enumerations correctly (i.e. Gender) (Fixes #689).
-+ Fixed several problems associated with Global Attributes not being properly merged in communication templates for email exceptions, account confirmation, and account creation during new giving transaction (Fixes #684).
-+ Updated the Group Tree View block so that it only shows groups of the selected type when specific types are selected in the settings (Fixes #671).
-+ Dataview filter selector now shows tooltip with the description of the filter.
-+ Report field selector now shows tooltip with the description of what the field is (if it has a description).
-+ Changed "Person Link" report field to "Person Name" and moved it to show in the Common fields. It also now has the option to show as a link, and whether to show 'FirstName Lastname', or 'LastName, Firstname'
-+ Fixed issue with adding multiple existing people to a family not displaying the correct tab in add person dialog window (Fixes #666).
-+ Updated the check-in application so that when the search page is displayed, the number field already has focus (Fixes #623).
-+ Fixed issue with check-in codes not printing on labels.
-+ Added a way to set the requester of the prayer request on the Prayer Request detail block. Also now shows the requester if one was set.
-+ Fixed communication copy so that it uses the current datetime instead of retaining the original create date (Fixes #651).
-+ Fixsd bug that was preventing GlobalAttributes from being included in new account creation block emails (Fixes #649).
-+ Updated Rock REST API to use latest version OData V3. Now there is support for most of the standard OData V3 Query Types and also an endpoint at api/$metadata to see the schema
-+ Fixed issue that was preventing prayer requests with comments from being deleted until each comment was removed first (Fixes #644).
-+ Fixed a few REST endpoints that were not configured to check authentication correctly (Fixes #647).
-+ Added workflow actions to add and remove a person from an organization tag.
-+ Fixed exception that would occur on person bio block if person had a phone number with an invalid phone number type
-+ Added new Video and Audio field types that can be used to display Video and Audio content.
-+ Updated the 'Set Attribute From Entity' workflow action to support any entity type instead of just person or group.
-+ Fixed issue with attribute values becoming unavailable when a cached item is reloaded from a model
-+ Updated the Memo field type to have a configurable number of rows (instead of always being 3).
-+ Added a new DISC Person Profile Badge.
-+ Removed the 'Current Date' check box option from the Date field type and added it to a new FilterDate field type. This field type is intended to only be used for report filters when specifying date comparisons (Fixes #627).
-+ Added "Not in Group" and "Not in Group of Group Type" dataview filters.
-+ Added new "Media File" BinaryFileType as the File Type for Video and Audio field types.
-+ Added new AudioFieldType that can be used to add Audio content.
-+ Added New VideoFieldType that can be used to upload and include video in content pages.
-+ Updated the MyWorkflows block so that when the 'All Types' option is used, only the workflow types that user is authorized to edit are displayed (in addition to any types that have active activities assigned to current user).
-+ Updated the 'Person/{PersonId}/StaffDetails' route for the person profile security page to be 'Person/{PersonId}/Security' instead.
-+ Removed the 'Blocs' page route as it is no longer needed.
-+ Updated how lava include files are referenced. Previously they always needed to be in the current theme's Assets/Liquid folder, and required an underscore prefix and suffix of 'liquid'. Now they are referenced using the actual path and file name relative to the the website's root folder.  For example a previous include of {% include 'PageNav' %} would now be {% include '~~/Assets/Lava/PageNav.lava' %}. All of Rock's Liquid include statements have been updated to reflect this change.
-+ Updated Content Channel functionality to allow channel-specific item attributes.
-+ Updated the item list on channel view block to include columns for the attributes that have been configured with the 'Display in Grid' option enabled
-+ Added a new workflow action and webhook for processing background checks.
-+ Updated the System Info block's clear cache option to also refresh the list of EntityTypes, FieldTypes, and BlockTypes.
-+ Added new Encrypted Field Type and Attribute that can be used to store sensitive attribute values as an encrypted value in database (e.g. Passwords, SSN, etc ).
-+ Added option to RockTextBox field type for using password mode on rendered textboxs and update SMTP settings and Payment Gateway settings to use password mode (Fixes #426).
-+ Added a 'Delay' workflow action that will delay successful execution of action until a specified number of minutes have passed.
-+ Updated the Content Channel Dynamic block to allow sorting items by attribute values in addition to item properties.
-+ Added optional setting to Group Member list to allow the Member Count column to be hidden
++ Fixes inaccurate check-in countdown for due to time not using ISO 8601 format (Fixes #878).
++ Made some changes to improve performance and accuracy of check-in random code generation
++ Updated the schedule class reading of DDay.iCal data to be thread safe.
++ Fixed BusinessDetail block so that an exception does not occur when trying to delete contacts from a business (Fixes #867).
++ Added a job and system email for sending reminders to group leaders about entering attendance for their group meetings
++ Updated SampleData block and xml data to handle adding small group topics as  defined values, and to handle setting up a small group's schedule.
++ Updated the Add Family, Edit Person, and Edit Family blocks to have a more consistent UI for adding new people (Fixes #849, Fixes #850, Fixes #855)
++ Fixed issue with effective end date not being updated when saving a recurring schedule
++ Merge pull request #857 from tcavaletto/feature-tc-benevolence
+
+Feature tc benevolence+ Merge commit 'b71f9b16b3650b8abe2226189aaaba4f2f787aec' into develop
++ Updated the zone block list so that it only copies authorization from page when a new block is added and not when an existing block is edited.
++ Merge pull request #852 from SparkDevNetwork/feature-ns-loginstatus
+
+Only show "Login" when user not logged in, not empty dropdown+ Updated person following and person attribute filtering to use person alias id instead of person id.
++ Updated the Transaction Detail block to facilitate easier keyboard adding of transactions.
++ Added Benevolence Module
++ Changed PrayerRequestDetail block to not encode HTML prior to storage as per https://github.com/SparkDevNetwork/Rock/wiki/Security-Considerations (Fixes #846).
++ Updated the communication send process to use the the person who created the communication when resolving merge fields so that secured attribute values can actually be included in a communication (Fixes #802).
++ Fixed display of transaction list/detail when user is authorized to view, but not to edit (Fixes #805)
++ more error handing fixes
++ Added new ToJSON Lava Filter
++ Update Bing address verification to handle when a null postalcode value is returned for valid international addresses (Fixes #845).
++ Updated the New Family block to allow people to be added with partial birthday information (e.g. month and day, but no year) similiar to the Edit Person block ( Fixes #706)
++ Merge pull request #837 from NewSpring/Create-Nonexisting-Known-Relationship-Group
+
+Create known relationship group inside CreateCheckinRelationship if it doesn't exist+ Update https://github.com/SparkDevNetwork/Rock/pull/837 based on @azturner feedback
++ Updated the boolean field type to render a drop-down list with a blank option instead of a radio-button. This allows specifying a none/true/false value. If attribute is configured to be required, user would still need to select true or false (Fixes #776, Fixes #784)
++ Updated Family Edit to set email active when adding new family members (Fixes #820).
++ Updated the HTML Editor's merge field picker to use current person's security when determining the attributes to display include in list (vs showing only attributes available to anyone) (Fixes #802).
++ Fixed issue with note container only showing first 10 comments and not displaying the 'Show More' option (Fixes #808).
++ Updated group attendance to optionally allow attendance occurrences to be added outside a pre-defined schedule.
++ Merge branch 'feature-mp-rest-uploadbinaryfile' into develop
++ Added a new api/Groups/SaveAddress REST endpoint for updating the address associated with a group/family. This method takes care of checking for existing addresses, updating address pointers correctly, and writing change to family history.
++ Updated the api/Peoples REST POST endpoint to create all the needed relationships for a new person (i.e. Family Member, Person Alias, Known Relationships, Implied Relationships)
++ Fixed the TransactionEntry block to update the phone numbers and or email address for an existing person.
++ Updated the Communication Entry block to support a 'Simple' mode that can be used on an external site for members to initiate a communication.  Also updated Site to include a Communication Page setting.
++ Changed directories names in the content folder to not have spaces.
++ Create known relationship on Checkin if doesn't exist.  Also use cache to look up GroupType instead of making database call.
++ Merge pull request #826 from NewSpring/Fix-REST-user-not-confirmed
+
+Fix new REST key not confirmed on create + Merge branch 'feature-mp-gradeoffset' into develop
++ Added a 'Schedule' field to the group detail that allows a group have either a custom schedule or use any one of the named schedules
++ Updated the 'First-time Icon' merge field for checkin labels to use a new Person.FirstTime field that is true if person has ever attended anything rather than previous merge field that only checked if person had previously checked into a group with same group type.
++ Added regex option to the search screen of check-in to allow applying a regex pattern to the user's input. For example the expression '[0](\d*)' would strip off a leading 0 from the input. This example would be needed in the UK where Rock does not store the leading 0 in the database but many individuals would be used to searching using it. #MakingUpForTheSinsOfTheNSA
++ Added option to include people without a mailing address in the Statement Generator. Also, if an individual person is selected, it will include them regardless of mailing address.
++ Updated Statement Generator to recommend a 600x200px logo, and to ship with a standard logo at 600x200px.
++ Add new 'My Settings' page which lives under the 'Login Status' dropdown in the upper right of the internal pages. This page will be people's one stop shop for all of their personal settings and configurations. For now it contains links to change their password and manage their communication templates.
++ AttributeCache and AttributeValues can now included in a REST response by specifying ?LoadAttributes='simple' or ?LoadAttributes='expanded' in the request parameters. In 'simple' mode, only the most commonly needed properties of Attributes and AttributeValues are serialized in a REST response.
++ AttributeCache and AttributeValues can now included in a REST response by specifying ?LoadAttributes='simple' or ?LoadAttributes='expanded' in the request parameters. In 'simple' mode, only the most commonly needed properties of Attributes and AttributeValues are serialized in a REST response.
++ Updated the 'Set Attribute From Entity' workflow action to support setting a value based on a Lava template that can parse the entity passed in for processing.
++ Moved the Content Channel Type and Content Channel admin screens from under the 'Communications' page to the 'CMS Configuration Page'. This will simplify the security access since these pages will be used more by Web Administrators.
++ Moved the 'Photo Request' page under 'Admin > Communications'. This helps limit who can send out bulk photo requests and helps to clean up the 'People' menu item.
+
++ Adjusted the security under 'Admin Tools' to allow the 'WEB - Administration' security role to see the 'CMS Configuration' pages and the 'RSG - Communications Administration' role to see the 'Communications' pages.
+
++ Added edit and administrate access for the 'WEB - Administration' role to the External Website Ads content channel.
++ In an effort to help organizations create an organized system for managing their security roles we've implemented a sample naming system. You can read more about our recommendations in the updated Admin Hero Guide.
++ Added new DateTime field type for attributes.
++ Fixes DISC Last Save Date not storing in international date format (Fixes #828).
++ Upgraded to FontAwesome 4.3.0 (Fixes #814)
++ Added the ability to filter group members by specific attribute values
++ Remove endregion titles
++ Added additional checking in the PhotoSendRequest block to verify the communication template and certain fields in the template (Fixes #798)
++ Fix new REST key not confirmed on create and UserDetail block showing incorrectly that it was. Fixes https://github.com/SparkDevNetwork/Rock/issues/825.
++ Merge pull request #821 from tcavaletto/tcavalet-RestApi
+
+- Fixed Rest Key to create a person alias record as well as a login and ...+ Merge pull request #823 from tcavaletto/tcavalet-Issue#769
+
+- Updates "Last Save Date"->"Disc Last Save Date", set ModifiedDateTime ...+ Merge pull request #822 from tcavaletto/tcavalet-CurrencyTypeTotal
+
+- Added Currency Type Totals to Financial Batch Detail block.+ Merge pull request #818 from saconger/develop
+
+Modified for larger attendance codes. Added 2 noGoods.+ Added Block Property to GroupList to filter by Active Status. If this is set, it overrides the user filter for Active Status
++ Fixed check scanner allowing checks without a checknumber through when using a Ranger scanner
++ Generated codes can be larger than three characters. Modified noGood list to check if code "contains" a noGood, instead just equals.  Also, added two noGood codes.
++ Added option in to pick what portion of the Address to show in the Address data select.
++ Added an option to the 'Memo' field type to optioanlly allow html to be entered in field without causing a Validation Request error.
++ Merge pull request #813 from NewSpring/Fix-Checkin-Config-Multiple-Levels
+
+Save viewstate for all levels of groups & labels+ Save viewstate for all levels of groups & labels. Fixes https://github.com/SparkDevNetwork/Rock/issues/806
++ Added an option in Service Job list to "Run Now".
++ Merge branch 'feature-mp-contributionreport2' into develop
++ Updated the grid export to resolve defined value ids with their values when exporting to Excel.
++ Changed Statement Generator to display a breakdown of the Accounts for each Transaction
++ Merge branch 'feature-ns-css-things' into develop
++ Changed the DISC service to work even if someone changes the DISC category name (Fixes #792).
++ Changed reverse order and format of the graduation and grade labels on the person profile (Bio block)
++ Added "Combine Giving" option to Total Giving Amount data select in reporting. When enabled, the total giving for the person will include amounts given by members of their giving group (or just the total for the person if they are not in a giving group)
++ Rearranged the Content Channel Item View block to make it more intuitive. (Fixes #787)
++ Added "Combine Giving" option to the Giving Amount Dataview Filter. When enabled, it will combine individuals in the same giving group when calculating totals and reporting the list of individuals.
++ Fixed issue with Location Picker control not maintaining state when toggling between different location types on the group details location editor.
++ Merge branch 'feature-mp-modal_resizesensor' into develop
++ Added keyboard shortcuts to speed up several operations in Rock these include:
+   - Alt + Q = Quick Search (sets focus to the search box at the top of the page)
+   - Alt + S = Save (presses the save button on the given page)
+   - Alt + E = Edit (presses the edit button on the given page)
+   - Alt + N = New ( presses the add button on any grid on the page)
+   - Alt + C = Cancel (presses the cancel button on the given page)
++ Added new Lava filter to create postback links in Lava.
++ Fixed the Delete workflow action so that it does not cause an exception when processing.
++ Updated the workflow detail block so that only users with edit access to the block see the advanced options for editing a workflow.
++ Removed the double borders around the grid when used inside of a grid-panel.
++ Fixed an issue with Categories block that prevented categories from being able to be ordered.
++ Merge branch 'feature-ns-overflowing-modals' into develop
++ Added new block attribute types for using the KeyValueList and ValueList field types
++ Added a new rating control and field type. An attribute can use this field type to display a group of stars that can be selected to rate an item.
++ Add new note types for use in workflows.
++ Updated the 'Set Attribute From Entity' workflow action to include an option for determining if workflow should continue processing or not when the entity is missing or invalid.
++ Added access key to the search field to allow quickly setting focus using Alt+S.
++ Fixed bug in transaction detail block where the cancel button would not take you back to the parent batch when clicked.
++ Made changes to the  transaction details block to make entering transactions faster. There is now a new 'Add New Transaction' button to enter an additional sibling transaction and the person picker now expands when entering a new transaction.
++ Changed the default sort order of financial transactions to be in the order they where entered.
++ Added keyboard shortcut to the grid. 'Alt+N' will fire the Add button on the gird.
++ Changed person picker to set the focus to the search box when opened.
++ Merge pull request #778 from NewSpring/SaveAttendance-With-Reuse-Attendance-Code-Option
+
+Checkin/SaveAttendance: Add an option to reuse the code per family (disabled by default).+ Updated the Binary File URL property to return a full path instead of a relative path when file type is using Database or File System storage provider.
++ Updated check-in labels so that attribute values are not HTML encoded.
++ Added helper method to SavedAccount model to create a new reference transaction
++ Added an "Authorize" method to financial gateway components.
++ Fixed issue that enabled the keyboard to display on touch devices (Fixes #777).
++ Fixed issue that enabled the keyboard to display on touch devices (Fixes #777).
++ Add an option to reuse the code by family (disabled by default).
++ Added helper method to SavedAccount model to create a new reference transaction
++ Added an "Authorize" method to financial gateway components.
++ Updated content feed to sort content items in decending order. Also added filters to respect the content item's date ranges.
++ Updated workflow administration so that users with edit security on a workflow type can manage workflows of that type (Fixes #771).
++ Updated workflow list to allow filtering by workflow attribute values
++ Added feature to the GetChannelFeed.ashx to resolve any relative links to absolute links.
++ Merge branch 'feature-mp-remove-unused-packages' into develop
++ Added block setting to the Bio block used on the Person Profile page to enable prepending the country code to phone numbers. Helpful for internationalization.
++ Merge branch 'feature-dt-preposthtml' into develop
+
+Conflicts:
+	Rock/Web/UI/RockBlock.cs
+	Rock/Web/UI/RockPage.cs
++ Updated block rendering so that the Pre/Post text is rendered outside of all the block wrapping divs (reverted from commit 74eb043a2bdd314f6cdb56c81022c1c08fb34f17)
++ Updated block rendering so that the Pre/Post text is rendered outside of all the block wrapping divs
++ Updated the Lava "Attribute" filter to use the current person when checking security rather than defaulting to anonymous user (Fixes #760).
++ Fixed the 'Forgot User Name' block to include Active Directory usernames (Fixes #765)
++ Updated the FinancialPersonSavedAccount to also allow being associated to a group in addition to a person
++ Fixed issue with static text being replaced with security code on check-in labels (Fixes #766).
++ Merge branch 'hotfix-1.2.1' into develop
++ Updated the address verification services so that a second active service will attempt to standardize/geocode a given address even when previous active service attempted to standardize or geocode the address but failed.
++ added gitignore for installed packages file
++ Updated the Defined Value field type to optionally display defined value descriptions instead of the values.
++ starting support for plugin dlls for CodeGenerator
++ Added ability to add notes to a workflow
++ Removed the UserName field from the Change Password block since it uses the currently logged in user's username anyway and the field was being ignored by block.
++ Fixed exception that would occur when manually activating a new activity on an existing workflow.
++ Fixed the workflow processing job so that it will still process workflows when the workflow type has a blank processing interval.
++ Updated the logging of exceptions so that the source and stack trace information get logged correctly for inner exceptions.
++ Added 'Exclude Group Type' block setting to Group Tree View and Group Detail
++ Added new group type for tracking internal staff organizational structures with a new page for viewing them.
++ Added the ability to specify root document/image folders and the option to optionally force user-specific root folders for attributes that use the HTML field type
++ Fixed the 'Delay' workflow action to correctly calculate the time that delay was initiated.
++ Changed Google Map API so it only loads when it is needed vs loading on every page. If you have any custom blocks that need the Google Maps API, call this.LoadGoogleMapsApi() in your OnInit.
++ Merge pull request #751 from NewSpring/Remove-SelectedPersonReq-FilterByAbilityLevel
+
+Remove inconsistent requirement from FilterByAbility/SN that a person be selected+ Added option to CategoryTreeView to set the Root Category
++ Update FilterGroupsByLastName to be consistent with other FilterGroupBy actions
++ Remove inconsistent requirement that a person be selected
++ Updated the Rock Grid control to handle seperate DataKey and PersonId columns correctly.
++ Merge pull request #746 from tcavaletto/develop
+
+- Added message to DISC assessment results after the user takes the test...+ Merge pull request #747 from NewSpring/Fix-Person.CreateCheckinRelationship
+
+Fixed Person.CreateCheckinRelationship method to add group memberships that were missing (Note: method is currently only used by attended checkin).+ Fixed CreateCheckinRelationship to add group membership that was missing
++ Added option to use CurrentDate plus/minus a number of days in DataView date filters
++ Updated the Workflow Entry block so that it will interrogate the query string parameters and set any workflow attributes with same key to the value passed in query string. This results in the Activate Workflow block no longer being needed, so it has been deprecated and will be removed in a future update.
++ Updated workflow type configuration block to include the attribute field types in grid of workflow and activity attributes.
++ Merge branch 'feature-mp-bootstrap-modal' into develop
++ Merge pull request #738 from NewSpring/ExcludedByFilter-Fix-RemoveEmptyPeople
+
+Add support for the ExcludedByFilter flag to RemoveEmptyPeople+ Add support for the ExcludedByFilter flag to RemoveEmptyPeople workflow action
++ Updated the Facebook authentication provider to update the person's Facebook person attribute value whenever they login.
++ Added the ability to specify the kiosk id and group type ids as a query string (route) parameter so that the check-in admin screen can by bypassed.
++ Added Lava Address filter option to provide a template for the address return.
++ Merge pull request #736 from tcavaletto/develop
+
+Develop+ Add Scan Settings to BinaryFileType
++ Updated the 'Attribute' lava merge field to return an object (instead of string) and added an additional 'Property' filter so that these can be used to navigate complex object/attribute structures when outputing lava content.
++ Updated blocks that provide 'Enable Debug' setting for Lava to only show the debug information if the logged in user also has Edit access to the block. This allows an Admin to enable debug on a production page without everyone seeing the debug info.
++ Fixed the DISC assessment block which was not working in IE 10 (Fixes #732).
++ Added responsive table support to the Rock Grid
++ Merge pull request #730 from tcavaletto/develop
+
+Develop+ Added column to GroupMember list for linking to profile detail (and removed 'View Profile' button from group member detail)
++ Added new Lava filter 'Default' that returns the passed default value if the value is undefined or empty, otherwise the value of the variable.
++ Updated several of the Lava string filters (Replace, ReplaceFirst, Remove, RemoveFirst, Append, Prepend to accept objects instead of strings. This allows these filters to be used on numbers also.
++ Updated the Facebook authentication provider so that it works with the new Facebook API.  If person does not have existing photo in Rock it will now also add a photo to Rock from Facebook, and will add a new 'Facebook Friend' known relationships for any of the user's Facebook friends that have also previously logged into Rock using Facebook (Fixes #675).
++ Updated the Memo field type so that attributes of this type retain their line breaks when displayed on page (i.e. workflow entry screen, workflow detail, etc.)
