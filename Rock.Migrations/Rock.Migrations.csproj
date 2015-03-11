@@ -51,6 +51,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\Version 3.0\201503091713044_FixBirthDateCol.cs" />
+    <Compile Include="Migrations\Version 3.0\201503091713044_FixBirthDateCol.Designer.cs">
+      <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 3.0\201503101940064_FinanceRestEndpointsSecurity.cs" />
+    <Compile Include="Migrations\Version 3.0\201503101940064_FinanceRestEndpointsSecurity.Designer.cs">
+      <DependentUpon>201503101940064_FinanceRestEndpointsSecurity.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201412091659040_FacebookFriends.cs" />
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201412091659040_FacebookFriends.Designer.cs">
       <DependentUpon>201412091659040_FacebookFriends.cs</DependentUpon>
@@ -1484,6 +1492,12 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\Version 3.0\201503091713044_FixBirthDateCol.resx">
+      <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 3.0\201503101940064_FinanceRestEndpointsSecurity.resx">
+      <DependentUpon>201503101940064_FinanceRestEndpointsSecurity.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201412091659040_FacebookFriends.resx">
       <DependentUpon>201412091659040_FacebookFriends.cs</DependentUpon>
     </EmbeddedResource>

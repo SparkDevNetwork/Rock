@@ -47,6 +47,9 @@ namespace Rock.Client
         public string Country { get; set; }
 
         /// <summary />
+        public double Distance { get; set; }
+
+        /// <summary />
         public DateTime? GeocodeAttemptedDateTime { get; set; }
 
         /// <summary />

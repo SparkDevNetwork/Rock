@@ -32,7 +32,7 @@
                 Margin="0,40,0,0" >
             </Frame>
 
-            <Label Style="{StaticResource labelStylePanelTitle}" FontSize="21" HorizontalAlignment="Left" Content="Login" />
+            <Label Style="{StaticResource labelStylePanelTitle}" FontSize="21" HorizontalAlignment="Left" Content="Login" MouseDoubleClick="LoginLabel_MouseDoubleClick" />
 
             <Label Name="lblRockUrl" Style="{StaticResource labelStyleBold}" Content="Rock URL" />
             <TextBox Name="txtRockUrl" Style="{StaticResource textboxStyleUrl}" HorizontalAlignment="Stretch" Width="Auto" />

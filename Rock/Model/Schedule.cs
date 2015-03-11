@@ -250,7 +250,6 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         [DataMember]
-        [NotMapped]
         public virtual string FriendlyScheduleText
         {
             get { return ToFriendlyScheduleText(); }

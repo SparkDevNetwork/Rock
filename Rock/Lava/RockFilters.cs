@@ -968,8 +968,8 @@ namespace Rock.Lava
         /// adds a meta tag to the head of the document
         /// </summary>
         /// <param name="input">The input to use for the content attribute of the tag.</param>
-        /// <param name="command">Attribute name to use for the meta tag (usually 'name' or 'property').</param>
-        /// <param name="command">Attribute value to use for the attribute name.</param>
+        /// <param name="attributeName">Name of the attribute.</param>
+        /// <param name="attributeValue">The attribute value.</param>
         /// <returns></returns>
         public static string AddMetaTagToHead( string input, string attributeName, string attributeValue )
         {
@@ -990,8 +990,8 @@ namespace Rock.Lava
         /// adds a link tag to the head of the document
         /// </summary>
         /// <param name="input">The input to use for the href of the tag.</param>
-        /// <param name="command">Attribute name to use for the link tag (usually 'rel').</param>
-        /// <param name="command">Attribute value to use for the attribute name.</param>
+        /// <param name="attributeName">Name of the attribute.</param>
+        /// <param name="attributeValue">The attribute value.</param>
         /// <returns></returns>
         public static string AddLinkTagToHead( string input, string attributeName, string attributeValue )
         {

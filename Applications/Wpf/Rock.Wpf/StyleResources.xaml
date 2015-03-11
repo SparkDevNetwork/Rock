@@ -346,6 +346,21 @@
                 Value="0,6,0,4"></Setter>
     </Style>
 
+    <Style x:Key="labelStyleHighlightInfo"
+           BasedOn="{StaticResource labelStyleIcon}"
+           TargetType="{x:Type Label}">
+        <Setter Property="Label.Background"
+                Value="#3bc2df"></Setter>
+        <Setter Property="Label.Foreground"
+                Value="#ffffff"></Setter>
+        <Setter Property="Label.Padding"
+                Value="6,3,6,3" />
+        <Setter Property="FontWeight"
+                Value="SemiBold"/>
+        <Setter Property="FontSize"
+                Value="11" />
+    </Style>
+
     <!-- Label style: Button Text-->
     <Style x:Key="labelStyleButtonText"
            TargetType="{x:Type Label}">

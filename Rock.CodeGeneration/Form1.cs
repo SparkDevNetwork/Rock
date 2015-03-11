@@ -143,8 +143,13 @@ namespace Rock.CodeGeneration
                         if ( cbClient.Checked )
                         {
                             WriteRockClientFile( rockClientFolder, type );
-                            WriteRockClientSystemGuidFiles( rockClientFolder );
                         }
+                    }
+
+                    if (cbClient.Checked)
+                    {
+                        WriteRockClientIncludeClientFiles( rockClientFolder, cblModels.CheckedItems.OfType<Type>().ToList() );
+                        WriteRockClientSystemGuidFiles( rockClientFolder );
                     }
                 }
             }
@@ -762,6 +767,22 @@ order by [parentTable], [columnName]
         }
 
         /// <summary>
+        /// Writes the rock client include client files.
+        /// </summary>
+        /// <param name="rootFolder">The root folder.</param>
+        /// <param name="alreadyIncludedTypes">The already included types.</param>
+        private void WriteRockClientIncludeClientFiles( string rootFolder, IEnumerable<Type> alreadyIncludedTypes)
+        {
+            foreach ( var rockClientIncludeType in rockAssembly.GetTypes().Where( a => a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null ).OrderBy( a => a.Name ) )
+            {
+                if ( !alreadyIncludedTypes.Any( a => a == rockClientIncludeType ) )
+                {
+                    WriteRockClientFile( rootFolder, rockClientIncludeType );
+                }
+            }
+        }
+
+        /// <summary>
         /// Writes the DTO file for a given type
         /// </summary>
         /// <param name="rootFolder"></param>
@@ -772,6 +793,14 @@ order by [parentTable], [columnName]
                 .Where( a => a.GetCustomAttribute( typeof( DataMemberAttribute ) ) != null )
                 .Where( a => a.GetCustomAttribute( typeof( NotMappedAttribute ) ) == null );
 
+            var rockClientIncludeAttribute = type.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>();
+            string comments = null;
+
+            if ( rockClientIncludeAttribute != null)
+            {
+                comments = rockClientIncludeAttribute.DocumentationMessage;
+            }
+            
             if ( !dataMembers.Any() )
             {
                 return;
@@ -813,7 +842,16 @@ order by [parentTable], [columnName]
             sb.AppendFormat( "namespace Rock.Client" + Environment.NewLine, type.Namespace );
             sb.AppendLine( "{" );
             sb.AppendLine( "    /// <summary>" );
-            sb.AppendFormat( "    /// Simple Client Model for {0}" + Environment.NewLine, type.Name );
+
+            if ( !string.IsNullOrWhiteSpace( comments ) )
+            {
+                sb.AppendFormat( "    /// {0}" + Environment.NewLine, comments );
+            }
+            else
+            {
+                sb.AppendFormat( "    /// Simple Client Model for {0}" + Environment.NewLine, type.Name );
+            }
+
             sb.AppendLine( "    /// </summary>" );
 
             sb.AppendFormat( "    public partial class {0}" + Environment.NewLine, type.Name );
