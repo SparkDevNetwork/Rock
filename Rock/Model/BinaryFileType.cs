@@ -124,28 +124,28 @@ namespace Rock.Model
         /// Gets or sets the preferred format of the file type.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.PreferredFormat"/> enum value that represents the preferred format of the file type.
+        /// A <see cref="Rock.Model.Format"/> enum value that represents the preferred format of the file type.
         /// </value>
         [DataMember]
-        public PreferredFormat PreferredFormat { get; set; }
+        public Format PreferredFormat { get; set; }
 
         /// <summary>
         /// Gets or sets the preferred resolution of the file type.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.PreferredResolution"/> enum value that represents the preferred resolution of the file type.
+        /// A <see cref="Rock.Model.Resolution"/> enum value that represents the preferred resolution of the file type.
         /// </value>
         [DataMember]
-        public PreferredResolution PreferredResolution { get; set; }
+        public Resolution PreferredResolution { get; set; }
 
         /// <summary>
         /// Gets or sets the preferred color depth of the file type.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.PreferredColorDepth"/> enum value that represents the preferred color depth of the file type.
+        /// A <see cref="Rock.Model.ColorDepth"/> enum value that represents the preferred color depth of the file type.
         /// </value>
         [DataMember]
-        public PreferredColorDepth PreferredColorDepth { get; set; }
+        public ColorDepth PreferredColorDepth { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the preferred attributes of the file type are required
@@ -166,9 +166,9 @@ namespace Rock.Model
         public BinaryFileType()
             : base()
         {
-            PreferredFormat = PreferredFormat.Undefined;
-            PreferredResolution = PreferredResolution.Undefined;
-            PreferredColorDepth = PreferredColorDepth.Undefined;
+            PreferredFormat = Format.Undefined;
+            PreferredResolution = Resolution.Undefined;
+            PreferredColorDepth = ColorDepth.Undefined;
         }
 
         #endregion
@@ -256,7 +256,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents the preferred format of the binary file type.
     /// </summary>
-    public enum PreferredFormat
+    public enum Format
     {
         /// <summary>
         /// The undefined.
@@ -307,7 +307,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents the preferred resolution of the binary file type.
     /// </summary>
-    public enum PreferredResolution
+    public enum Resolution
     {
         /// <summary>
         /// The undefined.
@@ -338,7 +338,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents the preferred color depth of the binary file type.
     /// </summary>
-    public enum PreferredColorDepth
+    public enum ColorDepth
     {
         /// <summary>
         /// An undefined color depth.

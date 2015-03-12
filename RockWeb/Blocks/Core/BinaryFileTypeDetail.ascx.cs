@@ -141,13 +141,13 @@ namespace RockWeb.Blocks.Core
             nbMaxWidth.Text = binaryFileType.MaxWidth.ToString();
             nbMaxHeight.Text = binaryFileType.MaxHeight.ToString();
 
-            ddlPreferredFormat.BindToEnum<PreferredFormat>();
+            ddlPreferredFormat.BindToEnum<Format>();
             ddlPreferredFormat.SetValue( (int)binaryFileType.PreferredFormat );
 
-            ddlPreferredResolution.BindToEnum<PreferredResolution>();
+            ddlPreferredResolution.BindToEnum<Resolution>();
             ddlPreferredResolution.SetValue( (int)binaryFileType.PreferredResolution );
 
-            ddlPreferredColorDepth.BindToEnum<PreferredColorDepth>();
+            ddlPreferredColorDepth.BindToEnum<ColorDepth>();
             ddlPreferredColorDepth.SetValue( (int)binaryFileType.PreferredColorDepth );
 
             cbPreferredRequired.Checked = binaryFileType.PreferredRequired;
@@ -272,9 +272,9 @@ namespace RockWeb.Blocks.Core
             binaryFileType.RequiresViewSecurity = cbRequiresViewSecurity.Checked;
             binaryFileType.MaxWidth = nbMaxWidth.Text.AsInteger();
             binaryFileType.MaxHeight = nbMaxHeight.Text.AsInteger();
-            binaryFileType.PreferredFormat = ddlPreferredFormat.SelectedValueAsEnum<PreferredFormat>();
-            binaryFileType.PreferredResolution = ddlPreferredResolution.SelectedValueAsEnum<PreferredResolution>();
-            binaryFileType.PreferredColorDepth = ddlPreferredColorDepth.SelectedValueAsEnum<PreferredColorDepth>();
+            binaryFileType.PreferredFormat = ddlPreferredFormat.SelectedValueAsEnum<Format>();
+            binaryFileType.PreferredResolution = ddlPreferredResolution.SelectedValueAsEnum<Resolution>();
+            binaryFileType.PreferredColorDepth = ddlPreferredColorDepth.SelectedValueAsEnum<ColorDepth>();
             binaryFileType.PreferredRequired = cbPreferredRequired.Checked;
 
             if ( !string.IsNullOrWhiteSpace( cpStorageType.SelectedValue ) )
