@@ -2,6 +2,29 @@
 
 <!DOCTYPE html>
 
+<script runat="server">
+
+    protected override void OnLoad( EventArgs e )
+    {
+        base.OnLoad( e );
+
+        var campusEntityType = Rock.Web.Cache.EntityTypeCache.Read("Rock.Model.Campus");
+        var currentCampus = GetCurrentContext(campusEntityType) as Rock.Model.Campus;
+
+        var homePageRoute = "home";
+
+        if (currentCampus != null)
+        {
+            Response.Redirect("/"+homePageRoute);
+        }
+        else
+        {
+            AddScriptToHead(this.Page, "var CCV = CCV || {}; CCV.homePageRoute ='"+homePageRoute+"';", true);
+        }
+    }
+
+</script>
+
 <html class="no-js">
 <head runat="server">
 
