@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2015 by the Spark Development Network
+// Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -170,6 +170,31 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Handles the RowSelected event of the gResults control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void gResults_RowSelected( object sender, RowEventArgs e )
+        {
+            Guid? infoGuid = e.RowKeyValue as Guid?;
+            List<BenevolenceResultInfo> resultList = BenevolenceResultsState;
+            var resultInfo = resultList.FirstOrDefault( r => r.TempGuid == infoGuid );
+            if ( resultInfo != null )
+            {
+                ddlResultType.Items.Clear();
+                ddlResultType.AutoPostBack = false;
+                ddlResultType.Required = true;
+                ddlResultType.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) ), true );
+                ddlResultType.SelectedValue = resultInfo.ResultTypeValueId.ToString();
+                dtbResultSummary.Text = resultInfo.ResultSummary;
+                dtbAmount.Text = resultInfo.Amount.ToString();
+                hfInfoGuid.Value = e.RowKeyValue.ToString();
+                mdAddResult.Show();
+            }
+        }
+
+        /// <summary>
         /// Handles the DeleteClick event of the gResult control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -197,25 +222,50 @@ namespace RockWeb.Blocks.Finance
         protected void btnAddResults_Click( object sender, EventArgs e )
         {
             int? resultType = ddlResultType.SelectedItem.Value.AsIntegerOrNull();
-            BenevolenceResultInfo benevolenceResultInfo = new BenevolenceResultInfo();
-            try
-            {
-                benevolenceResultInfo.Amount = Decimal.Parse( dtbAmount.Text );
-            }
-            catch
-            {
-
-            }
-            benevolenceResultInfo.ResultSummary = dtbResultSummary.Text;
-            if ( resultType != null )
-            {
-                benevolenceResultInfo.ResultTypeValueId = resultType.Value;
-            }
-            benevolenceResultInfo.ResultTypeName = ddlResultType.SelectedItem.Text;
-            benevolenceResultInfo.TempGuid = Guid.NewGuid();
-
             List<BenevolenceResultInfo> benevolenceResultInfoViewStateList = BenevolenceResultsState;
-            benevolenceResultInfoViewStateList.Add( benevolenceResultInfo );
+            Guid? infoGuid = hfInfoGuid.Value.AsGuidOrNull();
+
+            if ( infoGuid != null )
+            {
+                var resultInfo = benevolenceResultInfoViewStateList.FirstOrDefault( r => r.TempGuid == infoGuid );
+                if ( resultInfo != null )
+                {
+                    try
+                    {
+                        resultInfo.Amount = Decimal.Parse( dtbAmount.Text );
+                    }
+                    catch
+                    {
+
+                    }
+                    resultInfo.ResultSummary = dtbResultSummary.Text;
+                    if ( resultType != null )
+                    {
+                        resultInfo.ResultTypeValueId = resultType.Value;
+                    }
+                    resultInfo.ResultTypeName = ddlResultType.SelectedItem.Text;
+                }
+            }
+            else
+            {
+                BenevolenceResultInfo benevolenceResultInfo = new BenevolenceResultInfo();
+                try
+                {
+                    benevolenceResultInfo.Amount = Decimal.Parse( dtbAmount.Text );
+                }
+                catch
+                {
+
+                }
+                benevolenceResultInfo.ResultSummary = dtbResultSummary.Text;
+                if ( resultType != null )
+                {
+                    benevolenceResultInfo.ResultTypeValueId = resultType.Value;
+                }
+                benevolenceResultInfo.ResultTypeName = ddlResultType.SelectedItem.Text;
+                benevolenceResultInfo.TempGuid = Guid.NewGuid();
+                benevolenceResultInfoViewStateList.Add( benevolenceResultInfo );
+            }
             BenevolenceResultsState = benevolenceResultInfoViewStateList;
 
             mdAddResult.Hide();

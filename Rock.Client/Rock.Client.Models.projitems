@@ -19,6 +19,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Audit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AuditDetail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Auth.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BenevolenceRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BenevolenceResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BinaryFile.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BinaryFileData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BinaryFileType.cs" />
@@ -66,6 +68,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\HtmlContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Layout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Location.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\LoginParameters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Metric.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricCategory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricValue.cs" />
@@ -97,6 +100,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Tag.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\TaggedItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\UserLogin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\UserLoginWithPlainTextPassword.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Workflow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowActionForm.cs" />

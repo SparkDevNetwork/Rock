@@ -8059,6 +8059,10 @@ body {
   line-height: 48px;
   font-weight: 700;
 }
+.checkin-start {
+  text-align: center;
+  margin-top: 25%;
+}
 .checkin-footer {
   position: absolute;
   bottom: 0;

@@ -106,12 +106,12 @@
                             <fieldset>
                             <legend>Contact Info</legend>
 
-                            <div class="form-horizontal">
+                            <div class="row">
                                 <asp:Repeater ID="rContactInfo" runat="server">
                                     <ItemTemplate>
-                                        <div class="form-group">
-                                            <div class="control-label col-sm-2"><%# Rock.Web.Cache.DefinedValueCache.Read( (int)Eval("NumberTypeValueId")).Value  %></div>
-                                            <div class="controls col-sm-10">
+                                        <div class="form-group phonegroup">
+                                            <div class="control-label col-sm-1 phonegroup-label"><%# Rock.Web.Cache.DefinedValueCache.Read( (int)Eval("NumberTypeValueId")).Value  %></div>
+                                            <div class="controls col-sm-11 phonegroup-number">
                                                 <div class="row">
                                                     <div class="col-sm-7">
                                                         <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />

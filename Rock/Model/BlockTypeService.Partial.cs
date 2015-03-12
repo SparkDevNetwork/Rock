@@ -163,5 +163,21 @@ namespace Rock.Model
                 }
             }
         }
+
+        /// <summary>
+        /// Gets the Guid for the BlockType that has the specified Id
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Guid? GetGuid( int id )
+        {
+            var cacheItem = Rock.Web.Cache.BlockTypeCache.Read( id );
+            if ( cacheItem != null )
+            {
+                return cacheItem.Guid;
+            }
+
+            return null;
+        }
     }
 }

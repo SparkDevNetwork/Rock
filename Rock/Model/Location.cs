@@ -26,6 +26,7 @@ using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -458,6 +459,52 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets the campus that is at this location, or one of this location's parent location
+        /// </summary>
+        /// <value>
+        /// The campus identifier.
+        /// </value>
+        [LavaInclude]
+        public virtual int? CampusId
+        {
+            get
+            {
+                var campuses = CampusCache.All();
+
+                int? campusId = null;
+                Location loc = this;
+
+                while ( !campusId.HasValue && loc != null )
+                {
+                    var campus = campuses.Where( c => c.LocationId != null && c.LocationId == loc.Id ).FirstOrDefault();
+                    if ( campus != null )
+                    {
+                        campusId = campus.Id;
+                    }
+                    else
+                    {
+                        loc = loc.ParentLocation;
+                    }
+                }
+
+                return campusId;
+            }
+        }
+
+        /// <summary>
+        /// Gets the distance.
+        /// </summary>
+        /// <value>
+        /// The distance.
+        /// </value>
+        [DataMember]
+        public virtual double Distance
+        {
+            get { return _distance; }
+        }
+        private double _distance = 0.0D;
+
         #endregion
 
         #region Public Methods
@@ -635,6 +682,15 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Sets the distance.
+        /// </summary>
+        /// <param name="distance">The distance.</param>
+        public void SetDistance( double distance )
+        {
+            _distance = distance;
+        }
+
+        /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
         /// <value>
@@ -677,7 +733,26 @@ namespace Rock.Model
                 return string.Empty;
             }
         }
+        
         #endregion
+
+        #region constants
+
+        /// <summary>
+        /// Meters per mile (1609.344)
+        /// NOTE: Geo Spatial distances are in meters
+        /// </summary>
+        public const double MetersPerMile = 1609.344;
+
+
+        /// <summary>
+        /// Miles per meter 1/1609.344 (0.00062137505)
+        /// NOTE: Geo Spatial distances are in meters
+        /// </summary>
+        public const double MilesPerMeter = 1 / MetersPerMile;
+
+        #endregion
+
 
     }
 

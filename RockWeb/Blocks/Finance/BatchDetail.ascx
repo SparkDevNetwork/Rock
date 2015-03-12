@@ -24,6 +24,7 @@
 
                 <div id="pnlEditDetails" runat="server">
                     <asp:ValidationSummary ID="valSummaryBatch" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:CustomValidator ID="cvBatch" runat="server" />
 
                     <div class="row">
                         <div class="col-md-6">
