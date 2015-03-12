@@ -223,18 +223,24 @@ namespace Rock.Security
                 throw new ArgumentNullException( "DataEncryptionKey must be specified in configuration file" );
             }
 
-            // Declare the RijndaelManaged object
-            // used to decrypt the data.
-            RijndaelManaged aesAlg = null;
-
             // Declare the string used to hold
             // the decrypted text.
             string plaintext = null;
 
+            RijndaelManaged aesAlg = null;
+
             try
             {
+                // Create a RijndaelManaged object
+                aesAlg = new RijndaelManaged();
+                
                 // generate the key from the shared secret and the salt
-                Rfc2898DeriveBytes key = new Rfc2898DeriveBytes( dataEncryptionKey, _salt );
+                if ( _keyBytes == null )
+                {
+                    // generate a new key for every thread (vs. every call which is slow) 
+                    Rfc2898DeriveBytes key = new Rfc2898DeriveBytes( dataEncryptionKey, _salt );
+                    _keyBytes = key.GetBytes( aesAlg.KeySize / 8 );
+                }
 
                 // Create the streams used for decryption.                
                 byte[] bytes = Convert.FromBase64String( cipherText );
@@ -243,7 +249,7 @@ namespace Rock.Security
                     // Create a RijndaelManaged object
                     // with the specified key and IV.
                     aesAlg = new RijndaelManaged();
-                    aesAlg.Key = key.GetBytes( aesAlg.KeySize / 8 );
+                    aesAlg.Key = _keyBytes;
                     // Get the initialization vector from the encrypted stream
                     aesAlg.IV = ReadByteArray( msDecrypt );
                     // Create a decrytor to perform the stream transform.

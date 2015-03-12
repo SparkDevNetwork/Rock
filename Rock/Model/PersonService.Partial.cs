@@ -382,11 +382,11 @@ namespace Rock.Model
             var qry = GetByFullName( fullName, includeDeceased, includeBusinesses, allowFirstNameOnly, out reversed );
             if ( reversed )
             {
-                return qry.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );
+                return qry.OrderBy( p => p.LastName ).ThenBy( p => p.NickName );
             }
             else
             {
-                return qry.OrderBy( p => p.FirstName ).ThenBy( p => p.LastName );
+                return qry.OrderBy( p => p.NickName ).ThenBy( p => p.LastName );
             }
         }
 
