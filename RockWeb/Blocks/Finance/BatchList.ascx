@@ -8,7 +8,7 @@
         <asp:Panel ID="pnlBatchList" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-archive"></i> Batch List</h1>
+                <h1 class="panel-title"><i class="fa fa-archive"></i>&nbsp;Batch List</h1>
             </div>
             <div class="panel-body">
                 <div class="grid grid-panel">
@@ -36,16 +36,34 @@
                                     <span class='<%# (decimal)Eval("Variance") != 0 ? "label label-danger" : "" %>'><%# ((decimal)Eval("Variance")).ToString("C2") %></span>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
-                            <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" SortExpression="Campus.Name" ColumnPriority="Desktop"  />
+                            <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" SortExpression="Campus.Name" ColumnPriority="Desktop" />
                             <Rock:RockTemplateField HeaderText="Status" SortExpression="Status" ItemStyle-HorizontalAlign="Center">
                                 <ItemTemplate>
                                     <span class='<%# Eval("StatusLabelClass") %>'><%# Eval("StatusText") %></span>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
-                            <Rock:RockBoundField DataField="Notes" HeaderText="Note" HtmlEncode="false" ColumnPriority="Desktop"  />
+                            <Rock:RockBoundField DataField="Notes" HeaderText="Note" HtmlEncode="false" ColumnPriority="Desktop" />
                             <Rock:DeleteField OnClick="gBatchList_Delete" />
                         </Columns>
                     </Rock:Grid>
+
+                    <div class="batch-list-summary panel-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <span>Total:&nbsp;</span><asp:Literal ID="lBatchesTotalAmount" runat="server" />
+
+                                <h5>Accounts</h5>
+                                <Rock:Grid ID="gAccountSummary" runat="server" DisplayType="Light" CssClass="batch-list-account-summary" ShowHeader="false" GridLines="None">
+                                    <Columns>
+                                        <Rock:RockBoundField DataField="Name" />
+                                        <Rock:CurrencyField DataField="TotalAmount" />
+                                    </Columns>
+                                </Rock:Grid>
+                            </div>
+                            <div class="col-md-8">
+                            </div>
+                        </div>
+                    </div>
 
                     <Rock:NotificationBox ID="nbResult" runat="server" Visible="false" Dismissable="true"></Rock:NotificationBox>
                 </div>
