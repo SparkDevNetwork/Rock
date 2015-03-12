@@ -14,7 +14,7 @@
     1) change 'fa fa-chevron-up' to 'fa fa-chevron-up'
     2) change 'fa fa-chevron-down' to 'fa fa-chevron-down'
     3) disable focus.timepicker': $.proxy(this.showWidget, this)
-
+    4) added 'if (hour.length == 4) ..' and 'if (hour.length == 3) { ..' to let keyboard input of stuff like 445p and 1030a to work
 */
 (function($, window, document, undefined) {
   'use strict';
@@ -784,9 +784,13 @@
         if (hour.length > 4) {
           second = hour.substr(4, 2);
         }
-        if (hour.length > 2) {
+        if (hour.length == 4) {
           minute = hour.substr(2, 2);
           hour = hour.substr(0, 2);
+        }
+        if (hour.length == 3) {
+          minute = hour.substr(1, 2);
+          hour = hour.substr(0, 1);
         }
         if (minute.length > 2) {
           second = minute.substr(2, 2);
