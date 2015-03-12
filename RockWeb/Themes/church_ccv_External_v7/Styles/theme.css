@@ -5621,7 +5621,7 @@ html[xmlns] .slides {
   top: 0;
   right: 0;
   left: 0;
-  bottom: 161px;
+  bottom: 138px;
 }
 @media (min-width: 992px) {
   .campusmodal-holder {
@@ -5635,12 +5635,17 @@ html[xmlns] .slides {
   left: 0;
   background: #222222;
   color: #fff;
-  height: 161px;
+  height: 138px;
+  padding: 11.5px;
 }
 @media (min-width: 992px) {
   .campusmodal-footer {
     height: 69px;
+    padding: 0;
   }
+}
+.campusmodal-footertitle {
+  margin-top: 0;
 }
 @media (min-width: 992px) {
   .campusmodal-footertitle,

@@ -28,7 +28,7 @@
       background: @gray-lighter;
       position: absolute;
       top: 0; right: 0; left: 0;
-      bottom: @line-height-computed*7;
+      bottom: @line-height-computed*6;
       @media @md {
         bottom: @line-height-computed*3;
       }
@@ -38,10 +38,15 @@
       right: 0; bottom: 0; left: 0;
       background: @gray-darker;
       color: #fff;
-      height: @line-height-computed*7;
+      height: @line-height-computed*6;
+      padding: @line-height-computed/2;
       @media @md {
         height: @line-height-computed*3;
+        padding: 0;
       }
+    }
+    .campusmodal-footertitle {
+      margin-top: 0;
     }
       @media @md {
         .campusmodal-footertitle,
