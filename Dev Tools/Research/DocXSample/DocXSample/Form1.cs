@@ -24,10 +24,10 @@ namespace DocXSample
         private string[] relations = { "son", "daughter", "uncle", "aunt" };
         private string[] seasons = { "spring", "summer", "fall", "winter is a great season that lasts a long time in many areas of the world, especially in the north" };
         private object[] letterMergeObjects = {
-            new { Name = "Ted", Birthdate = new DateTime(1960, 5, 15) }, 
-            new { Name = "Sally", Birthdate = new DateTime(1970, 1, 9) }, 
-            new { Name = "Noah", Birthdate = new DateTime(2007, 11, 12) }, 
-            new { Name = "Alex", Birthdate = new DateTime(2010, 2, 28) }, 
+            new { Name = "Ted Decker", Birthdate = new DateTime(1960, 5, 15) }, 
+            new { Name = "Sally Seashell", Birthdate = new DateTime(1970, 1, 9) }, 
+            new { Name = "Noah Lot", Birthdate = new DateTime(2007, 11, 12) }, 
+            new { Name = "Alex Trebek", Birthdate = new DateTime(2010, 2, 28) }, 
         };
 
         // labels
@@ -222,12 +222,32 @@ namespace DocXSample
 
                 using ( WordprocessingDocument outputDoc = WordprocessingDocument.Open( outputDocStream, true ) )
                 {
+                    SimplifyMarkupSettings settings = new SimplifyMarkupSettings
+                    {
+                        NormalizeXml = true,
+                        RemoveWebHidden = true,
+                        RemoveBookmarks = true,
+                        RemoveGoBackBookmark = true,
+                        RemoveMarkupForDocumentComparison = true,
+                        RemoveComments = true,
+                        RemoveContentControls = true,
+                        RemoveEndAndFootNotes = true,
+                        RemoveFieldCodes = false,
+                        RemoveLastRenderedPageBreak = true,
+                        RemovePermissions = true,
+                        RemoveProof = true,
+                        RemoveRsidInfo = true,
+                        RemoveSmartTags = true,
+                        RemoveSoftHyphens = true,
+                        ReplaceTabsWithSpaces = true
+                    };
+
                     var newDocBody = outputDoc.MainDocumentPart.Document.Body;
 
                     // start with a clean body
                     newDocBody.RemoveAllChildren();
 
-                    for ( int j = 0; j < 100; j++ )
+                    //for ( int j = 0; j < 100; j++ )
                     {
                         // loop thru each merge item, using the template
                         for ( int i = 0; i < 4; i++ )
@@ -238,14 +258,40 @@ namespace DocXSample
                             tempMergeDocStream.Position = 0;
                             var tempMergeDoc = WordprocessingDocument.Open( tempMergeDocStream, true );
 
+                            MarkupSimplifier.SimplifyMarkup( tempMergeDoc, settings );
                             var xdoc = tempMergeDoc.MainDocumentPart.GetXDocument();
 
                             var localVariables = new DotLiquid.Hash();
                             localVariables.Add( "Relation", relations[i] );
                             localVariables.Add( "Season", seasons[i] );
+
+                            var listOfRandom = new List<ConsoleColor>();
+                            var random = new Random( 65406540 );
+                            for ( int c = 0; c < 5; c++ )
+                            {
+                                int randomColor = random.Next( 0, (int)ConsoleColor.White );
+                                listOfRandom.Add( (ConsoleColor)randomColor );
+                            }
+
+                            localVariables.Add( "FavoriteColors", listOfRandom );
+
                             localVariables.Add( "Person", letterMergeObjects[i] );
 
-                            OpenXmlRegex.Match( xdoc.Nodes().OfType<XElement>(), lavaRegEx, ( x, m ) =>
+                            var xml = xdoc.ToString().ReplaceWordChars();
+
+                            DotLiquid.Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+                            DotLiquid.Template template = DotLiquid.Template.Parse( xml );
+                            DotLiquid.RenderParameters rp = new DotLiquid.RenderParameters();
+                            rp.RethrowErrors = false;
+                            rp.LocalVariables = localVariables;
+                            var mergedXml = template.Render( rp );
+
+                            var mergedXDoc = XDocument.Parse( mergedXml );
+
+
+                            //xdoc.R
+
+                            /*OpenXmlRegex.Match( xdoc.Nodes().OfType<XElement>(), lavaRegEx, ( x, m ) =>
                             {
                                 DotLiquid.Template template = DotLiquid.Template.Parse( m.Value );
                                 var replacementValue = template.Render( localVariables );
@@ -261,8 +307,9 @@ namespace DocXSample
                                     return false;
                                 } );
                             } );
+                             */
 
-                            tempMergeDoc.MainDocumentPart.PutXDocument();
+                            tempMergeDoc.MainDocumentPart.PutXDocument( mergedXDoc );
 
                             foreach ( var childBodyItem in tempMergeDoc.MainDocumentPart.Document.Body )
                             {
@@ -449,4 +496,29 @@ namespace DocXSample
     }
 }
 
+public static class Extensions
+{
+    public static string ReplaceWordChars( this string text )
+    {
+        var s = text;
+        // smart single quotes and apostrophe
+        s = Regex.Replace( s, "[\u2018\u2019\u201A]", "'" );
+        // smart double quotes
+        s = Regex.Replace( s, "[\u201C\u201D\u201E]", "\"" );
+        // ellipsis
+        s = Regex.Replace( s, "\u2026", "..." );
+        // dashes
+        s = Regex.Replace( s, "[\u2013\u2014]", "-" );
+        // circumflex
+        s = Regex.Replace( s, "\u02C6", "^" );
+        // open angle bracket
+        s = Regex.Replace( s, "\u2039", "<" );
+        // close angle bracket
+        s = Regex.Replace( s, "\u203A", ">" );
+        // spaces
+        s = Regex.Replace( s, "[\u02DC\u00A0]", " " );
+
+        return s;
+    }
+}
 
