@@ -1,10 +1,8 @@
-<div class="panel panel-block"> 
-    <div class="panel-heading"><h4 class="panel-title">{{ icon | Default:'<i class=""fa fa-link"></i>' }} {{ title | Default:'Links' }}</h4></div>
-    <div class="panel-body">
-        <ul style="list-style: none;">
-        {% for page in Page.Pages %}
-            <li><a  href="{{ page.Url }}"><i class="{{ page.IconCssClass }}"></i> {{ page.Title }}</a></li>
-        {% endfor %}
-        </ul>
-    </div>
+<div class="panel panel-block">
+  <div class="panel-heading"><h4 class="panel-title">{{ title | Default:'Links' }}</h4></div>
+  <div class="list-group">
+  {% for page in Page.Pages %}
+    <a class="list-group-item" href="{{ page.Url }}"><i class="fa-fw {{ page.IconCssClass }}"></i>&nbsp; {{ page.Title }}</a>
+  {% endfor %}
+  </div>
 </div>
