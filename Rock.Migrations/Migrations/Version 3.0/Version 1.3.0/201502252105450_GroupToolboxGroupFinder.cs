@@ -95,9 +95,16 @@ namespace Rock.Migrations
                 DECLARE @NewTopicAttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '04bfac9b-6d1a-e089-446a-b2c604c76764')
 
                 -- create topic defined values from the current text based topics
-                INSERT INTO [DefinedValue]
-                ([IsSystem], [Order], [DefinedTypeId], [Value], [Guid])
-                SELECT DISTINCT 0, 1, @DefinedTypeId, [Value], newid() FROM [AttributeValue] WHERE [AttributeId] = @OldTopicAttributeId and isnull([Value], '') != '' 
+                ;WITH CTE
+                AS
+                (
+	                SELECT DISTINCT [Value]
+	                FROM [AttributeValue] 
+	                WHERE [AttributeId] = @OldTopicAttributeId and isnull([Value], '') != '' 
+                )
+                INSERT INTO [DefinedValue] ( [IsSystem], [Order], [DefinedTypeId], [Value], [Guid] )
+                SELECT 0, 1, @DefinedTypeId, [Value], newid() 
+                FROM CTE 
 
                 -- assign new defined value topics based on their current text topics
                 INSERT INTO [AttributeValue]
