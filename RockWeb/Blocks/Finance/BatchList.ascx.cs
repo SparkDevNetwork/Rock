@@ -393,7 +393,7 @@ namespace RockWeb.Blocks.Finance
             {
                 a.Key.Name,
                 TotalAmount = (decimal?)a.Sum( d => d.Amount )
-            } );
+            } ).OrderBy( a => a.Name );
 
             var summaryList = accountSummaryQry.ToList();
             var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ?? 0 ) : 0;
