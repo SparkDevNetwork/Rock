@@ -194,6 +194,27 @@ namespace DocXSample
             }
         }
 
+        // setting to simplify the doc so that stuff doesn't get in the way of doing Lava
+        private SimplifyMarkupSettings settings = new SimplifyMarkupSettings
+                    {
+                        NormalizeXml = true,
+                        RemoveWebHidden = true,
+                        RemoveBookmarks = true,
+                        RemoveGoBackBookmark = true,
+                        RemoveMarkupForDocumentComparison = true,
+                        RemoveComments = true,
+                        RemoveContentControls = true,
+                        RemoveEndAndFootNotes = true,
+                        RemoveFieldCodes = false,
+                        RemoveLastRenderedPageBreak = true,
+                        RemovePermissions = true,
+                        RemoveProof = true,
+                        RemoveRsidInfo = true,
+                        RemoveSmartTags = true,
+                        RemoveSoftHyphens = true,
+                        ReplaceTabsWithSpaces = true
+                    };
+
         /*
          
          Using OPEN XML 
@@ -222,26 +243,6 @@ namespace DocXSample
 
                 using ( WordprocessingDocument outputDoc = WordprocessingDocument.Open( outputDocStream, true ) )
                 {
-                    SimplifyMarkupSettings settings = new SimplifyMarkupSettings
-                    {
-                        NormalizeXml = true,
-                        RemoveWebHidden = true,
-                        RemoveBookmarks = true,
-                        RemoveGoBackBookmark = true,
-                        RemoveMarkupForDocumentComparison = true,
-                        RemoveComments = true,
-                        RemoveContentControls = true,
-                        RemoveEndAndFootNotes = true,
-                        RemoveFieldCodes = false,
-                        RemoveLastRenderedPageBreak = true,
-                        RemovePermissions = true,
-                        RemoveProof = true,
-                        RemoveRsidInfo = true,
-                        RemoveSmartTags = true,
-                        RemoveSoftHyphens = true,
-                        ReplaceTabsWithSpaces = true
-                    };
-
                     var newDocBody = outputDoc.MainDocumentPart.Document.Body;
 
                     // start with a clean body
@@ -492,6 +493,147 @@ namespace DocXSample
 
             // Save to disk
             File.WriteAllBytes( path + @"\TableOut_OpenXML.docx", outputDocStream.ToArray() );
+        }
+
+
+        /// <summary>
+        /// Merges the Letter Template using OpenXML
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void btnMergeUsingNextRecord_Click( object sender, EventArgs e )
+        {
+            var path = GetOutputFolder();
+            string templatePath = path + @"\letter-template - next record.docx";
+            string outputDocPath = path + @"\LetterOut_OpenXML.docx";
+            Regex lavaRegEx = new Regex( @"\{\{.+?\}\}", RegexOptions.Multiline );
+            Regex nextRecordRegEx = new Regex( @"{&\s*\bnext\b\s*&}", RegexOptions.IgnoreCase );
+
+            MemoryStream outputDocStream = new MemoryStream();
+
+            using ( var letterTemplateStream = new FileStream( templatePath, FileMode.Open, FileAccess.Read ) )
+            {
+                // Start by creating a new document with the contents of the Template (so that Styles, etc get included)
+                letterTemplateStream.CopyTo( outputDocStream );
+                outputDocStream.Seek( 0, SeekOrigin.Begin );
+
+                using ( WordprocessingDocument outputDoc = WordprocessingDocument.Open( outputDocStream, true ) )
+                {
+                    var newDocBody = outputDoc.MainDocumentPart.Document.Body;
+
+                    // start with a clean body
+                    newDocBody.RemoveAllChildren();
+
+                    //for ( int j = 0; j < 100; j++ )
+                    {
+                        // loop thru each merge item, using the template
+                        for ( int i = 0; i < 4; i++ )
+                        {
+                            var tempMergeDocStream = new MemoryStream();
+                            letterTemplateStream.Position = 0;
+                            letterTemplateStream.CopyTo( tempMergeDocStream );
+                            tempMergeDocStream.Position = 0;
+                            var tempMergeDoc = WordprocessingDocument.Open( tempMergeDocStream, true );
+
+                            MarkupSimplifier.SimplifyMarkup( tempMergeDoc, settings );
+
+                            // figure out which part of the doc should be considred the RecordNode
+                            // Examples are: Body, Table Cells (Labels), Partial Page (Half Page baptism certificates), etc)
+                            XElement nextIndicatorNode = null;
+
+                            OpenXmlRegex.Match( tempMergeDoc.MainDocumentPart.GetXDocument().Elements(), nextRecordRegEx, ( x, m ) =>
+                            {
+                                nextIndicatorNode = x;
+                            } );
+
+                            XContainer recordNode = null;
+                            if ( nextIndicatorNode != null && nextIndicatorNode.Parent != null )
+                            {
+                                recordNode = nextIndicatorNode.Parent;
+                            }
+                            else
+                            {
+                                // TODO, find the body element...
+                                recordNode = tempMergeDoc.MainDocumentPart.GetXDocument();
+                            }
+
+                            var localVariables = new DotLiquid.Hash();
+                            localVariables.Add( "Relation", relations[i] );
+                            localVariables.Add( "Season", seasons[i] );
+
+                            var listOfRandom = new List<ConsoleColor>();
+                            var random = new Random( 65406540 );
+                            for ( int c = 0; c < 5; c++ )
+                            {
+                                int randomColor = random.Next( 0, (int)ConsoleColor.White );
+                                listOfRandom.Add( (ConsoleColor)randomColor );
+                            }
+
+                            localVariables.Add( "FavoriteColors", listOfRandom );
+
+                            localVariables.Add( "Person", letterMergeObjects[i] );
+
+                            var xml = recordNode.ToString().ReplaceWordChars();
+
+                            DotLiquid.Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+                            DotLiquid.Template template = DotLiquid.Template.Parse( xml );
+                            DotLiquid.RenderParameters rp = new DotLiquid.RenderParameters();
+                            rp.RethrowErrors = false;
+                            rp.LocalVariables = localVariables;
+                            var mergedXml = template.Render( rp );
+
+                            var mergedXRecord = XElement.Parse( mergedXml ) as XContainer;
+                            if ( recordNode.Parent == null )
+                            {
+                                foreach ( var childNode in recordNode.Nodes() )
+                                {
+                                    var xchildNode = childNode as XElement;
+                                    //newDocBody.AppendChild( xchildNode );
+                                }
+
+                                // add page break
+                                newDocBody.AppendChild( new DocumentFormat.OpenXml.Wordprocessing.Break() { Type = BreakValues.Page } );
+                            }
+                            else
+                            {
+                                var parentNode = recordNode.Parent;
+                                recordNode.Remove();
+                                parentNode.Add( mergedXRecord );
+                            }
+
+                            /*if ( ( mergedXRecord as XElement ).Name.LocalName == "body" )
+                            {
+
+                            }
+                            */
+
+
+                            /*
+
+                            foreach ( var childBodyItem in tempMergeDoc.MainDocumentPart.Document.Body )
+                            {
+                                var clonedChild = childBodyItem.CloneNode( true );
+                                recordNode.Add( clonedChild );
+                            }
+
+                             */
+
+                        }
+                    }
+
+                    // remove last page break
+                    var lastBr = newDocBody.LastChild as DocumentFormat.OpenXml.Wordprocessing.Break;
+                    if ( lastBr != null )
+                    {
+                        newDocBody.RemoveChild( lastBr );
+                    }
+
+                }
+            }
+
+            // Save to disk
+            File.WriteAllBytes( outputDocPath, outputDocStream.ToArray() );
+            System.Diagnostics.Process.Start( outputDocPath );
         }
     }
 }
