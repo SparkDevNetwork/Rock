@@ -26,25 +26,16 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for Attendance
-    /// </summary>
-    public partial class Attendance
+    public partial class AttendanceEntity
     {
         /// <summary />
         public int Id { get; set; }
-
-        /// <summary />
-        public AttendanceCode AttendanceCode { get; set; }
 
         /// <summary />
         public int? AttendanceCodeId { get; set; }
 
         /// <summary />
         public int? CampusId { get; set; }
-
-        /// <summary />
-        public Device Device { get; set; }
 
         /// <summary />
         public int? DeviceId { get; set; }
@@ -74,9 +65,6 @@ namespace Rock.Client
         public bool? Processed { get; set; }
 
         /// <summary />
-        public DefinedValue Qualifier { get; set; }
-
-        /// <summary />
         public int? QualifierValueId { get; set; }
 
         /// <summary />
@@ -86,13 +74,35 @@ namespace Rock.Client
         public int? ScheduleId { get; set; }
 
         /// <summary />
-        public DefinedValue SearchTypeValue { get; set; }
-
-        /// <summary />
         public int? SearchTypeValueId { get; set; }
 
         /// <summary />
         public DateTime StartDateTime { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for Attendance
+    /// </summary>
+    public partial class Attendance : AttendanceEntity
+    {
+        /// <summary />
+        public AttendanceCode AttendanceCode { get; set; }
+
+        /// <summary />
+        public Device Device { get; set; }
+
+        /// <summary />
+        public DefinedValue Qualifier { get; set; }
+
+        /// <summary />
+        public DefinedValue SearchTypeValue { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -107,17 +117,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

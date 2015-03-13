@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for AttendanceCode
-    /// </summary>
-    public partial class AttendanceCode
+    public partial class AttendanceCodeEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -46,5 +43,12 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+    }
+
+    /// <summary>
+    /// Simple Client Model for AttendanceCode
+    /// </summary>
+    public partial class AttendanceCode : AttendanceCodeEntity
+    {
     }
 }

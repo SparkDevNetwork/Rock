@@ -26,22 +26,26 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
+    public partial class GroupTypeLocationTypeEntity
+    {
+        /// <summary />
+        public int GroupTypeId { get; set; }
+
+        /// <summary />
+        public int LocationTypeValueId { get; set; }
+
+    }
+
     /// <summary>
     /// Simple Client Model for GroupTypeLocationType
     /// </summary>
-    public partial class GroupTypeLocationType
+    public partial class GroupTypeLocationType : GroupTypeLocationTypeEntity
     {
         /// <summary />
         public GroupType GroupType { get; set; }
 
         /// <summary />
-        public int GroupTypeId { get; set; }
-
-        /// <summary />
         public DefinedValue LocationTypeValue { get; set; }
-
-        /// <summary />
-        public int LocationTypeValueId { get; set; }
 
     }
 }

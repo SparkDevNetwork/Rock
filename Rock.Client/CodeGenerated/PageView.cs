@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for PageView
-    /// </summary>
-    public partial class PageView
+    public partial class PageViewEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -48,9 +45,6 @@ namespace Rock.Client
 
         /// <summary />
         public string PageTitle { get; set; }
-
-        /// <summary />
-        public PersonAlias PersonAlias { get; set; }
 
         /// <summary />
         public int? PersonAliasId { get; set; }
@@ -72,6 +66,16 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for PageView
+    /// </summary>
+    public partial class PageView : PageViewEntity
+    {
+        /// <summary />
+        public PersonAlias PersonAlias { get; set; }
 
     }
 }

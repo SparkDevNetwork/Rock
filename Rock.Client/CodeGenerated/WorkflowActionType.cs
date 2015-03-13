@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for WorkflowActionType
-    /// </summary>
-    public partial class WorkflowActionType
+    public partial class WorkflowActionTypeEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -47,9 +44,6 @@ namespace Rock.Client
         public string CriteriaValue { get; set; }
 
         /// <summary />
-        public EntityType EntityType { get; set; }
-
-        /// <summary />
         public int EntityTypeId { get; set; }
 
         /// <summary />
@@ -65,10 +59,26 @@ namespace Rock.Client
         public int Order { get; set; }
 
         /// <summary />
-        public WorkflowActionForm WorkflowForm { get; set; }
+        public int? WorkflowFormId { get; set; }
 
         /// <summary />
-        public int? WorkflowFormId { get; set; }
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for WorkflowActionType
+    /// </summary>
+    public partial class WorkflowActionType : WorkflowActionTypeEntity
+    {
+        /// <summary />
+        public EntityType EntityType { get; set; }
+
+        /// <summary />
+        public WorkflowActionForm WorkflowForm { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -83,17 +93,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }
