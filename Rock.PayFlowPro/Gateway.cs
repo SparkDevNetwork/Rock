@@ -694,6 +694,7 @@ namespace Rock.PayFlowPro
             ppBillingInfo.PhoneNum = paymentInfo.Phone;
             ppBillingInfo.Street = paymentInfo.Street1;
             ppBillingInfo.BillToStreet2 = paymentInfo.Street2;
+            ppBillingInfo.City = paymentInfo.City;
             ppBillingInfo.State = paymentInfo.State;
             ppBillingInfo.Zip = paymentInfo.PostalCode;
             ppBillingInfo.BillToCountry = paymentInfo.Country;
@@ -714,6 +715,8 @@ namespace Rock.PayFlowPro
             var ppInvoice = new Invoice();
             ppInvoice.Amt = ppAmount;
             ppInvoice.BillTo = ppBillingInfo;
+            ppInvoice.Comment1 = paymentInfo.Comment1;
+            ppInvoice.Comment2 = paymentInfo.Comment2;
             ppInvoice.Desc = paymentInfo.Description;
             return ppInvoice;
         }
