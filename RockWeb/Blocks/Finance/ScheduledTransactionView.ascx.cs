@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Finance
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to cancel this scheduled transaction?', function (result) {
             if (result) {
-                eval(e.target.href);
+                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
             }
         });
     });
@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Finance
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to reactivate this scheduled transaction?', function (result) {
             if (result) {
-                eval(e.target.href);
+                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
             }
         });
     });
