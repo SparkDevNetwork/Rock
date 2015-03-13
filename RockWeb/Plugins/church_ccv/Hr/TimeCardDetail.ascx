@@ -15,7 +15,7 @@
                     <asp:Literal ID="lTimeCardPersonName" runat="server" />
                 </h1>
 
-                (<asp:Literal ID="lTitle" runat="server" Text="Pay Period" />)
+                <span>(<asp:Literal ID="lTitle" runat="server" Text="Pay Period" />)</span>
 
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlblSubTitle" runat="server" LabelType="Info" Text="Status" />
@@ -221,7 +221,7 @@
                         <!-- Totals Panel -->
                         <asp:Panel ID="pnlTotals" runat="server">
 
-                            <h4>Totals:</h4>
+                            <h4>Totals</h4>
 
                             <div>
                                 <strong>Worked Hours</strong>
