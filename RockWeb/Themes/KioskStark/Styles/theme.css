@@ -1459,6 +1459,34 @@ fieldset .actions {
 .datepicker table td span.year:first-child {
   margin-left: 0;
 }
+.timepicker-input:before,
+.timepicker-input:after {
+  content: " ";
+  display: table;
+}
+.timepicker-input:after {
+  clear: both;
+}
+.timepicker-input .input-group {
+  float: left;
+}
+.timepicker-input i.fa-times {
+  float: left;
+  margin-top: 4px;
+  padding: 6px;
+  cursor: pointer;
+  opacity: 0;
+  -webkit-transition: opacity 0.2s ease-out;
+  -moz-transition: opacity 0.2s ease-out;
+  -o-transition: opacity 0.2s ease-out;
+  transition: opacity 0.2s ease-out;
+}
+.timepicker-input:hover i.fa-times {
+  opacity: 1;
+}
+.touch .timepicker-input i.fa-times {
+  opacity: 1;
+}
 .bootstrap-timepicker {
   position: relative;
 }
