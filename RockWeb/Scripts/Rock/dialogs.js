@@ -51,12 +51,7 @@
                                 className: 'btn-primary',
                                 callback: function () {
                                     var postbackJs = e.target.href ? e.target.href : e.target.parentElement.href;
-
-                                    // need to do unescape because firefox might put %20 instead of spaces
-                                    postbackJs = unescape(postbackJs);
-
-                                    // Careful!
-                                    eval(postbackJs);
+                                    window.location = postbackJs;
                                 }
                             },
                             cancel: {

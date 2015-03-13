@@ -112,13 +112,7 @@
 
                         Rock.dialogs.confirm("Are you sure this is not a duplicate?", function (result) {
                             if (result) {
-                                var postbackJs = e.target.href ? e.target.href : e.target.parentElement.href;
-
-                                // need to do unescape because firefox might put %20 instead of spaces
-                                postbackJs = unescape(postbackJs);
-
-                                // Careful!
-                                eval(postbackJs);
+                                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                             }
                         })
                     });
@@ -134,13 +128,7 @@
 
                         Rock.dialogs.confirm("This will ignore this potential duplicate until the score changes.  Are you sure you want to ignore this as a duplicate?", function (result) {
                             if (result) {
-                                var postbackJs = e.target.href ? e.target.href : e.target.parentElement.href;
-
-                                // need to do unescape because firefox might put %20 instead of spaces
-                                postbackJs = unescape(postbackJs);
-
-                                // Careful!
-                                eval(postbackJs);
+                                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                             }
                         })
                     });
