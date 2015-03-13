@@ -342,27 +342,64 @@ namespace RockWeb.Blocks.Finance
         //
 
         private void ProcessSwipe(string swipeData) {
-
-            RockContext rockContext = new RockContext();
-
-            // create swipe object
-            SwipePaymentInfo swipeInfo = new SwipePaymentInfo(swipeData);
-            swipeInfo.Amount = this.Amounts.Sum( a => a.Value );
-            
-            // get gateway
-            GatewayComponent gateway = GatewayContainer.GetComponent( GetAttributeValue("CreditCardGateway"));
-            
-            if ( gateway != null )
+            try
             {
-                try
+                RockContext rockContext = new RockContext();
+
+                // create swipe object
+                SwipePaymentInfo swipeInfo = new SwipePaymentInfo(swipeData);
+                swipeInfo.Amount = this.Amounts.Sum( a => a.Value );
+
+                // if not anonymous then add contact info to the gateway transaction
+                if (this.AnonymousGiverPersonAliasId != this.SelectedGivingUnit.PersonAliasId)
                 {
+                    var giver = new PersonAliasService( rockContext).Queryable("Person, Person.PhoneNumbers").Where(p => p.Id == this.SelectedGivingUnit.PersonAliasId).FirstOrDefault();
+                    swipeInfo.FirstName = giver.Person.NickName;
+                    swipeInfo.LastName = giver.Person.LastName;
+
+                    if ( giver.Person.PhoneNumbers != null )
+                    {
+                        Guid homePhoneValueGuid = new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+                        var homephone = giver.Person.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == homePhoneValueGuid ).FirstOrDefault();
+                        if ( homephone != null )
+                        {
+                            swipeInfo.Phone = homephone.NumberFormatted;
+                        }
+                    }
+
+                    var homeLocation = giver.Person.GetHomeLocation();
+
+                    if ( homeLocation != null )
+                    {
+                        swipeInfo.Street1 = homeLocation.Street1;
+
+                        if ( !string.IsNullOrWhiteSpace( homeLocation.Street2 ) )
+                        {
+                            swipeInfo.Street2 = homeLocation.Street2;
+                        }
+
+                        swipeInfo.City = homeLocation.City;
+                        swipeInfo.State = homeLocation.State;
+                        swipeInfo.PostalCode = homeLocation.PostalCode;
+                    }
+                     
+                }
+
+                // add comment to the transation
+                swipeInfo.Comment1 = DefinedValueCache.Read( GetAttributeValue( "Source" ) ).Value;
+            
+                // get gateway
+                GatewayComponent gateway = GatewayContainer.GetComponent( GetAttributeValue("CreditCardGateway"));
+            
+                if ( gateway != null )
+                {
+                
                     string errorMessage = string.Empty;
                     var transaction = gateway.Charge( swipeInfo, out errorMessage );
 
-                    _transactionCode = transaction.TransactionCode;
-
                     if ( transaction != null )
                     {
+                        _transactionCode = transaction.TransactionCode;
                         transaction.TransactionDateTime = RockDateTime.Now;
                         transaction.AuthorizedPersonAliasId = this.SelectedGivingUnit.PersonAliasId;
                         transaction.GatewayEntityTypeId = gateway.TypeId;
@@ -416,15 +453,16 @@ namespace RockWeb.Blocks.Finance
                     {
                         lSwipeErrors.Text = String.Format( "<div class='alert alert-danger'>An error occurred while process this transaction. Message: {0}</div>", errorMessage );
                     }
+                
+                } else {
+                    lSwipeErrors.Text = "<div class='alert alert-danger'>Invalid gateway provided. Please provide a gateway. Transaction not processed.</div>";
                 }
-                catch ( Exception ex )
-                {
-                    lSwipeErrors.Text = String.Format( "<div class='alert alert-danger'>An error occurred while process this transaction. Message: {0}</div>", ex.Message );
-                }
-            } else {
-                lSwipeErrors.Text = "<div class='alert alert-danger'>Invalid gateway provided. Please provide a gateway. Transaction not processed.</div>";
-            }
 
+            }
+            catch ( Exception ex )
+            {
+                lSwipeErrors.Text = String.Format( "<div class='alert alert-danger'>An error occurred while process this transaction. Message: {0}</div>", ex.Message );
+            }
             
         }
 
