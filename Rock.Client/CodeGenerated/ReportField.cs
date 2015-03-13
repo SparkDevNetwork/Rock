@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for ReportField
-    /// </summary>
-    public partial class ReportField
+    public partial class ReportFieldEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -39,9 +36,6 @@ namespace Rock.Client
 
         /// <summary />
         public int ColumnOrder { get; set; }
-
-        /// <summary />
-        public EntityType DataSelectComponentEntityType { get; set; }
 
         /// <summary />
         public int? DataSelectComponentEntityTypeId { get; set; }
@@ -65,6 +59,22 @@ namespace Rock.Client
         public int? SortOrder { get; set; }
 
         /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for ReportField
+    /// </summary>
+    public partial class ReportField : ReportFieldEntity
+    {
+        /// <summary />
+        public EntityType DataSelectComponentEntityType { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />
@@ -77,17 +87,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

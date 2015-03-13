@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for AuditDetail
-    /// </summary>
-    public partial class AuditDetail
+    public partial class AuditDetailEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -52,5 +49,12 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+    }
+
+    /// <summary>
+    /// Simple Client Model for AuditDetail
+    /// </summary>
+    public partial class AuditDetail : AuditDetailEntity
+    {
     }
 }

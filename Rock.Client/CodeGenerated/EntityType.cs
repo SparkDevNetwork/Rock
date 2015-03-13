@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for EntityType
-    /// </summary>
-    public partial class EntityType
+    public partial class EntityTypeEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -64,5 +61,12 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+    }
+
+    /// <summary>
+    /// Simple Client Model for EntityType
+    /// </summary>
+    public partial class EntityType : EntityTypeEntity
+    {
     }
 }

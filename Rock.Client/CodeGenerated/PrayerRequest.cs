@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for PrayerRequest
-    /// </summary>
-    public partial class PrayerRequest
+    public partial class PrayerRequestEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -41,16 +38,10 @@ namespace Rock.Client
         public string Answer { get; set; }
 
         /// <summary />
-        public PersonAlias ApprovedByPersonAlias { get; set; }
-
-        /// <summary />
         public int? ApprovedByPersonAliasId { get; set; }
 
         /// <summary />
         public DateTime? ApprovedOnDateTime { get; set; }
-
-        /// <summary />
-        public Category Category { get; set; }
 
         /// <summary />
         public int? CategoryId { get; set; }
@@ -92,13 +83,32 @@ namespace Rock.Client
         public int? PrayerCount { get; set; }
 
         /// <summary />
-        public PersonAlias RequestedByPersonAlias { get; set; }
-
-        /// <summary />
         public int? RequestedByPersonAliasId { get; set; }
 
         /// <summary />
         public string Text { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for PrayerRequest
+    /// </summary>
+    public partial class PrayerRequest : PrayerRequestEntity
+    {
+        /// <summary />
+        public PersonAlias ApprovedByPersonAlias { get; set; }
+
+        /// <summary />
+        public Category Category { get; set; }
+
+        /// <summary />
+        public PersonAlias RequestedByPersonAlias { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -113,17 +123,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

@@ -26,16 +26,10 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for Layout
-    /// </summary>
-    public partial class Layout
+    public partial class LayoutEntity
     {
         /// <summary />
         public int Id { get; set; }
-
-        /// <summary />
-        public ICollection<Block> Blocks { get; set; }
 
         /// <summary />
         public string Description { get; set; }
@@ -53,6 +47,22 @@ namespace Rock.Client
         public int SiteId { get; set; }
 
         /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for Layout
+    /// </summary>
+    public partial class Layout : LayoutEntity
+    {
+        /// <summary />
+        public ICollection<Block> Blocks { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />
@@ -65,17 +75,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

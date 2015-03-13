@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for BenevolenceResult
-    /// </summary>
-    public partial class BenevolenceResult
+    public partial class BenevolenceResultEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -38,19 +35,32 @@ namespace Rock.Client
         public decimal? Amount { get; set; }
 
         /// <summary />
-        public BenevolenceRequest BenevolenceRequest { get; set; }
-
-        /// <summary />
         public int BenevolenceRequestId { get; set; }
 
         /// <summary />
         public string ResultSummary { get; set; }
 
         /// <summary />
-        public DefinedValue ResultTypeValue { get; set; }
+        public int ResultTypeValueId { get; set; }
 
         /// <summary />
-        public int ResultTypeValueId { get; set; }
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for BenevolenceResult
+    /// </summary>
+    public partial class BenevolenceResult : BenevolenceResultEntity
+    {
+        /// <summary />
+        public BenevolenceRequest BenevolenceRequest { get; set; }
+
+        /// <summary />
+        public DefinedValue ResultTypeValue { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -65,17 +75,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

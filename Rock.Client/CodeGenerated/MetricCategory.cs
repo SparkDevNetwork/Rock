@@ -26,22 +26,13 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for MetricCategory
-    /// </summary>
-    public partial class MetricCategory
+    public partial class MetricCategoryEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public Category Category { get; set; }
-
-        /// <summary />
         public int CategoryId { get; set; }
-
-        /// <summary />
-        public Metric Metric { get; set; }
 
         /// <summary />
         public int MetricId { get; set; }
@@ -54,6 +45,19 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for MetricCategory
+    /// </summary>
+    public partial class MetricCategory : MetricCategoryEntity
+    {
+        /// <summary />
+        public Category Category { get; set; }
+
+        /// <summary />
+        public Metric Metric { get; set; }
 
     }
 }

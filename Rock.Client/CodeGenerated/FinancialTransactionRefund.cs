@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for FinancialTransactionRefund
-    /// </summary>
-    public partial class FinancialTransactionRefund
+    public partial class FinancialTransactionRefundEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -38,10 +35,23 @@ namespace Rock.Client
         public string RefundReasonSummary { get; set; }
 
         /// <summary />
-        public DefinedValue RefundReasonValue { get; set; }
+        public int? RefundReasonValueId { get; set; }
 
         /// <summary />
-        public int? RefundReasonValueId { get; set; }
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for FinancialTransactionRefund
+    /// </summary>
+    public partial class FinancialTransactionRefund : FinancialTransactionRefundEntity
+    {
+        /// <summary />
+        public DefinedValue RefundReasonValue { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -56,17 +66,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

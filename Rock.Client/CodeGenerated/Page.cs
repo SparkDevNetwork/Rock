@@ -26,16 +26,10 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for Page
-    /// </summary>
-    public partial class Page
+    public partial class PageEntity
     {
         /// <summary />
         public int Id { get; set; }
-
-        /// <summary />
-        public ICollection<Block> Blocks { get; set; }
 
         /// <summary />
         public bool BreadCrumbDisplayIcon { get; set; }
@@ -92,9 +86,6 @@ namespace Rock.Client
         public int OutputCacheDuration { get; set; }
 
         /// <summary />
-        public ICollection<PageContext> PageContexts { get; set; }
-
-        /// <summary />
         public bool PageDisplayBreadCrumb { get; set; }
 
         /// <summary />
@@ -107,12 +98,6 @@ namespace Rock.Client
         public bool PageDisplayTitle { get; set; }
 
         /// <summary />
-        public ICollection<PageRoute> PageRoutes { get; set; }
-
-        /// <summary />
-        public ICollection<Page> Pages { get; set; }
-
-        /// <summary />
         public string PageTitle { get; set; }
 
         /// <summary />
@@ -120,6 +105,31 @@ namespace Rock.Client
 
         /// <summary />
         public bool RequiresEncryption { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for Page
+    /// </summary>
+    public partial class Page : PageEntity
+    {
+        /// <summary />
+        public ICollection<Block> Blocks { get; set; }
+
+        /// <summary />
+        public ICollection<PageContext> PageContexts { get; set; }
+
+        /// <summary />
+        public ICollection<PageRoute> PageRoutes { get; set; }
+
+        /// <summary />
+        public ICollection<Page> Pages { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -134,17 +144,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

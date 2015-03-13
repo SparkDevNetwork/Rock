@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for ContentChannelType
-    /// </summary>
-    public partial class ContentChannelType
+    public partial class ContentChannelTypeEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -47,6 +44,19 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for ContentChannelType
+    /// </summary>
+    public partial class ContentChannelType : ContentChannelTypeEntity
+    {
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />
@@ -59,17 +69,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }
