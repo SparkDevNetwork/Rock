@@ -104,6 +104,11 @@ namespace Rock.Rest
         [Authenticate, Secured]
         public virtual HttpResponseMessage Post( [FromBody]T value )
         {
+            if ( value == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+
             SetProxyCreation( true );
 
             CheckCanEdit( value );
@@ -131,6 +136,11 @@ namespace Rock.Rest
         [Authenticate, Secured]
         public virtual void Put( int id, [FromBody]T value )
         {
+            if (value == null)
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+
             SetProxyCreation( true );
 
             T targetModel;
