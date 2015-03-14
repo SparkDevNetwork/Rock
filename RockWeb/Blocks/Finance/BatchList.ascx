@@ -30,7 +30,7 @@
                             <Rock:RockBoundField DataField="Name" HeaderText="Title" SortExpression="Name" />
                             <Rock:RockBoundField DataField="AccountingSystemCode" HeaderText="Accounting Code" SortExpression="AccountingSystemCode" />
                             <Rock:RockBoundField DataField="TransactionCount" HeaderText="Transactions" SortExpression="TransactionCount" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
-                            <Rock:RockBoundField DataField="TransactionAmount" HeaderText="Transaction Total" SortExpression="TransactionAmount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" />
+                            <Rock:CurrencyField DataField="TransactionAmount" HeaderText="Transaction Total" SortExpression="TransactionAmount" ItemStyle-HorizontalAlign="Right" />
                             <Rock:RockTemplateField HeaderText="Control Variance" ItemStyle-HorizontalAlign="Right">
                                 <ItemTemplate>
                                     <span class='<%# (decimal)Eval("Variance") != 0 ? "label label-danger" : "" %>'><%# ((decimal)Eval("Variance")).ToString("C2") %></span>
@@ -47,22 +47,27 @@
                         </Columns>
                     </Rock:Grid>
 
-                    <div class="batch-list-summary panel-body">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <span>Total:&nbsp;</span><asp:Literal ID="lBatchesTotalAmount" runat="server" />
-
-                                <h5>Accounts</h5>
-                                <Rock:Grid ID="gAccountSummary" runat="server" DisplayType="Light" CssClass="batch-list-account-summary" ShowHeader="false" GridLines="None">
-                                    <Columns>
-                                        <Rock:RockBoundField DataField="Name" />
-                                        <Rock:CurrencyField DataField="TotalAmount" />
-                                    </Columns>
-                                </Rock:Grid>
+                    <div class="col-md-4 col-md-offset-8">
+                        <asp:Panel ID="pnlSummary" runat="server" CssClass="panel panel-block">
+                            <div class="panel-heading">
+                                <h1 class="panel-title">Total Results</h1>
                             </div>
-                            <div class="col-md-8">
+                            <div class="panel-body">
+                                <asp:Repeater ID="rptAccountSummary" runat="server">
+                                    <ItemTemplate>
+                                        <div class='row'>
+                                            <div class='col-xs-8'><%#Eval("Name")%></div>
+                                            <div class='col-xs-4 text-right'><%#Eval("TotalAmount")%></div>
+                                        </div>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                                <div class='row'>
+                                    <div class='col-xs-8'><b>Grand Total: </div>
+                                    <div class='col-xs-4 text-right'>
+                                        <asp:Literal ID="lGrandTotal" runat="server" /></b></div>
+                                </div>
                             </div>
-                        </div>
+                        </asp:Panel>
                     </div>
 
                     <Rock:NotificationBox ID="nbResult" runat="server" Visible="false" Dismissable="true"></Rock:NotificationBox>
