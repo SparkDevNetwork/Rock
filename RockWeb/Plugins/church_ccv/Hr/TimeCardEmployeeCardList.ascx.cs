@@ -72,9 +72,6 @@ namespace RockWeb.Plugins.church_ccv.Hr
 ";
             btnExport.Click += btnExport_Click;
 
-            // Register btnExport as a PostBack control so that it triggers a Full Postback instead of a Partial.  This is so we can respond with a CVS File.
-            ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( btnExport );
-
             var btnApprove = new LinkButton();
             btnApprove.ID = "btnApprove";
             btnApprove.CssClass = "btn btn-default btn-sm";
@@ -91,6 +88,9 @@ namespace RockWeb.Plugins.church_ccv.Hr
             customControls.Controls.Add( btnApprove );
 
             gList.Actions.AddCustomActionControl( customControls );
+
+            // Register btnExport as a PostBack control so that it triggers a Full Postback instead of a Partial.  This is so we can respond with a CVS File.
+            ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( btnExport );
         }
 
         /// <summary>
@@ -270,7 +270,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
                     if ( payrollDepartmentAttribute != null )
                     {
                         var departmentIdValue = timeCard.PersonAlias.Person.GetAttributeValue( payrollDepartmentAttribute.Key );
-                        departmentId = employeeNumberAttribute.FieldType.Field.FormatValue( null, departmentIdValue, payrollDepartmentAttribute.QualifierValues, false );
+                        departmentId = payrollDepartmentAttribute.FieldType.Field.FormatValue( null, departmentIdValue, payrollDepartmentAttribute.QualifierValues, false );
                     }
                 }
 
