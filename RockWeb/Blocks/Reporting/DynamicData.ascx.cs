@@ -339,6 +339,7 @@ namespace RockWeb.Blocks.Reporting
 
                         mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                         mergeFields.Add( "Campuses", CampusCache.All() );
+                        mergeFields.Add( "PageParameter", PageParameters() );
 
                         int i = 1;
                         foreach ( DataTable dataTable in dataSet.Tables )

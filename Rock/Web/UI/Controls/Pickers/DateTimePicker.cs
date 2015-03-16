@@ -438,7 +438,7 @@ namespace Rock.Web.UI.Controls
                 _time.RenderControl( writer );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group-addon" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( "<i class='fa fa-clock-o'></i>" );
+                writer.Write( "<span class='add-on'><i class='fa fa-clock-o'></i></span>" );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 

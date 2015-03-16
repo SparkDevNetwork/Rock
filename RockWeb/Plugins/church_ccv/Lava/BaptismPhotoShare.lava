@@ -1,0 +1,68 @@
+{% if rows == empty %}
+  <div class="alert alert-danger">
+    The baptism photo is not available.
+  </div>
+{% endif %}
+
+{% for row in rows %}
+
+  {% capture currentURL %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}page/{{ row.PageId }}?p={{ row.p }}{% endcapture %}
+  {% capture imageAbsoluteURL %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetImage.ashx?guid={{ row.BaptismPhoto }}{% endcapture %}
+
+  {% capture longCaption %}Check out this photo of {{ row.NickName }} {{ row.LastName }} getting baptized.{% endcapture %}
+
+  {% capture shortCaption %}{{ row.NickName }} {{ row.LastName }} just got baptized at CCV.{% endcapture %}
+  {% capture ogType %}article{% endcapture %}
+  {% capture fbAdmins %}596015969{% endcapture %}
+  {% capture fbAppId %}476409745797650{% endcapture %}
+  {% capture ogSiteName %}CCV{% endcapture %}
+
+  {{ shortCaption | AddMetaTagToHead: 'property', 'og:title' }}
+  {{ currentURL | AddMetaTagToHead: 'property', 'og:url' }}
+  {{ imageAbsoluteURL | AddMetaTagToHead: 'property', 'og:image' }}
+  {{ ogType | AddMetaTagToHead: 'property', 'og:type' }}
+  {{ fbAdmins | AddMetaTagToHead: 'property', 'fb:admins' }}
+  {{ fbAppId | AddMetaTagToHead: 'property', 'fb:app_id' }}
+  {{ ogSiteName | AddMetaTagToHead: 'property', 'og:site_name' }}
+
+  <script>
+    function fbs_click() {
+      u = location.href;
+      t = document.title;
+      window.open('http://www.facebook.com/sharer.php?u=' + encodeURIComponent(u) + '&t=' + encodeURIComponent(t), 'sharer', 'toolbar=0,status=0,width=626,height=436');
+      return false;
+    }
+  </script>
+
+  <h1>The Baptism of {{ row.NickName }} {{ row.LastName }} <small>{{ row.BaptismDate | Date: "M/d/yy" }}</small></h1>
+
+  <div class="row">
+    <div class="col-md-8 col-lg-7 margin-b-lg">
+      <img src="/GetImage.ashx?guid={{ row.BaptismPhoto }}"></img>
+    </div>
+    <div class="col-md-4 col-lg-5">
+      <ul class="list-inline">
+        <li>
+          <iframe class="facebook" src="http://www.facebook.com/plugins/like.php?app_id=476409745797650&amp;href={{ currentURL | url_param_escape }}&amp;send=false&amp;layout=box_count&amp;width=52&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font=verdana&amp;height=90" scrolling="no" frameborder="0" style="border:none; overflow:visible; width:52px; height:62px;" allowTransparency="true"></iframe>
+        </li>
+        <li>
+          <a href="{{ currentURL | url_param_escape }}" class="twitter-share-button" data-count="vertical" data-via="ccvonline">Tweet</a>
+        </li>
+        <li>
+          <div class="g-plusone" data-size="tall" data-count="false" href="{{ currentURL | url_param_escape }}"></div>
+        </li>
+      </ul>
+
+      <a class="btn btn-default margin-b-sm" href="mailto:?Subject={{ shortCaption }}&body={{ longCaption }}%0A%0A{{ currentURL | url_param_escape }}"><i class="fa fa-envelope-o"></i> Email This Page</a>
+
+      <a class="btn btn-default margin-b-sm" href="/GetImage.ashx?guid={{ row.BaptismPhoto }}"><i class="fa fa-download"></i> Download This Photo</a>
+
+      <a class="btn btn-default margin-b-sm" href="http://www.facebook.com/share.php?u=%3Curl%3E" onclick="return fbs_click()" target="_blank"><i class="fa fa-facebook"></i> Share on Facebook</a>
+    </div>
+  </div>
+
+
+  <script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+  <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+
+{% endfor %}

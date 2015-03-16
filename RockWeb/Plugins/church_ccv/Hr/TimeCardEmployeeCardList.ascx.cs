@@ -72,9 +72,6 @@ namespace RockWeb.Plugins.church_ccv.Hr
 ";
             btnExport.Click += btnExport_Click;
 
-            // Register btnExport as a PostBack control so that it triggers a Full Postback instead of a Partial.  This is so we can respond with a CVS File.
-            ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( btnExport );
-
             var btnApprove = new LinkButton();
             btnApprove.ID = "btnApprove";
             btnApprove.CssClass = "btn btn-default btn-sm";
@@ -91,6 +88,9 @@ namespace RockWeb.Plugins.church_ccv.Hr
             customControls.Controls.Add( btnApprove );
 
             gList.Actions.AddCustomActionControl( customControls );
+
+            // Register btnExport as a PostBack control so that it triggers a Full Postback instead of a Partial.  This is so we can respond with a CVS File.
+            ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( btnExport );
         }
 
         /// <summary>
@@ -253,6 +253,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine( "Employee Name,Employee_Number,Department,RegHr,OvtHr,VacHr,Holiday,SickHr" );
+            var definedValueService = new DefinedValueService( new Rock.Data.RockContext() );
 
             foreach ( var timeCard in selectedTimeCardsQry.ToList() )
             {
@@ -264,13 +265,30 @@ namespace RockWeb.Plugins.church_ccv.Hr
                     if ( employeeNumberAttribute != null )
                     {
                         var employeeIdValue = timeCard.PersonAlias.Person.GetAttributeValue( employeeNumberAttribute.Key );
-                        employeeId = employeeNumberAttribute.FieldType.Field.FormatValue( null, employeeIdValue, employeeNumberAttribute.QualifierValues, false );
+
+                        if ( employeeNumberAttribute.FieldType.Field is Rock.Field.Types.DefinedValueFieldType )
+                        {
+                            var definedValue = definedValueService.Get( employeeIdValue.AsGuid() );
+                            employeeId = definedValue != null ? definedValue.Value : null;
+                        }
+                        else
+                        {
+                            employeeId = employeeNumberAttribute.FieldType.Field.FormatValue( null, employeeIdValue, employeeNumberAttribute.QualifierValues, false );
+                        }
                     }
 
                     if ( payrollDepartmentAttribute != null )
                     {
                         var departmentIdValue = timeCard.PersonAlias.Person.GetAttributeValue( payrollDepartmentAttribute.Key );
-                        departmentId = employeeNumberAttribute.FieldType.Field.FormatValue( null, departmentIdValue, payrollDepartmentAttribute.QualifierValues, false );
+                        if ( payrollDepartmentAttribute.FieldType.Field is Rock.Field.Types.DefinedValueFieldType )
+                        {
+                            var definedValue = definedValueService.Get( departmentIdValue.AsGuid() );
+                            departmentId = definedValue != null ? definedValue.Value : null;
+                        }
+                        else
+                        {
+                            departmentId = payrollDepartmentAttribute.FieldType.Field.FormatValue( null, departmentIdValue, payrollDepartmentAttribute.QualifierValues, false );
+                        }
                     }
                 }
 

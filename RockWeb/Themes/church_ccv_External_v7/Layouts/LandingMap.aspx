@@ -55,7 +55,7 @@
 
 <body class="rock-blank">
     <form id="form1" runat="server">
-        <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server" />
+        <asp:ScriptManager ID="sManager" runat="server" />
 
         <asp:UpdateProgress ID="updateProgress" runat="server">
             <ProgressTemplate>

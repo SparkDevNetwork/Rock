@@ -164,14 +164,7 @@ namespace Rock.Model
 
             set
             {
-                if ( string.IsNullOrWhiteSpace( value ) )
-                {
-                    AdditionalMergeFields = new List<string>();
-                }
-                else
-                {
-                    AdditionalMergeFields = JsonConvert.DeserializeObject<List<string>>( value );
-                }
+                AdditionalMergeFields = value.FromJsonOrNull<List<string>>() ?? new List<string>();
             }
         }
 

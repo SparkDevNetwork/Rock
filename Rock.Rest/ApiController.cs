@@ -106,6 +106,11 @@ namespace Rock.Rest
         [Authenticate, Secured]
         public virtual HttpResponseMessage Post( [FromBody]T value )
         {
+            if ( value == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+
             SetProxyCreation( true );
 
             CheckCanEdit( value );
@@ -133,6 +138,11 @@ namespace Rock.Rest
         [Authenticate, Secured]
         public virtual void Put( int id, [FromBody]T value )
         {
+            if (value == null)
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+
             SetProxyCreation( true );
 
             T targetModel;
@@ -219,7 +229,7 @@ namespace Rock.Rest
         [ActionName( "SetContext" )]
         public virtual HttpResponseMessage SetContext( int id )
         {
-            Guid? guid = GetGuid( id );
+            Guid? guid = Service.GetGuid( id );
             if (!guid.HasValue)
             {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
@@ -250,22 +260,6 @@ namespace Rock.Rest
             httpContext.Response.Cookies.Add( contextCookie );
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.OK );
-        }
-
-        /// <summary>
-        /// Gets the unique identifier.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns></returns>
-        protected virtual Guid? GetGuid( int id )
-        {
-            var entity = Service.Get( id );
-            if ( entity != null )
-            {
-                return entity.Guid;
-            }
-
-            return null;
         }
 
         /// <summary>

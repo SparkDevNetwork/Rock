@@ -157,6 +157,11 @@ namespace RockWeb.Plugins.church_ccv.Hr
                 bool isHoliday = _holidayDatesCache.Any( a => a == timeCardDay.StartDateTime.Date );
                 bool isEndOfWeek = timeCardDay.StartDateTime.DayOfWeek == DayOfWeek.Sunday;
 
+                Panel pnlTimeCardRow = repeaterItem.FindControl( "pnlTimeCardRow" ) as Panel;
+                Panel pnlTimeCardSummaryRow = repeaterItem.FindControl( "pnlTimeCardSummaryRow" ) as Panel;
+
+                pnlTimeCardSummaryRow.Visible = isEndOfWeek;
+
                 // Display Only
                 Literal lTimeCardDayName = repeaterItem.FindControl( "lTimeCardDayName" ) as Literal;
                 lTimeCardDayName.Text = timeCardDay.StartDateTime.ToString( "ddd" );
@@ -220,7 +225,6 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
                 if ( isEndOfWeek )
                 {
-                    Literal lSummaryLabel = repeaterItem.FindControl( "lSummaryLabel" ) as Literal;
                     Literal lWorkedRegularHoursSummary = repeaterItem.FindControl( "lWorkedRegularHoursSummary" ) as Literal;
                     Literal lWorkedOvertimeHoursSummary = repeaterItem.FindControl( "lWorkedOvertimeHoursSummary" ) as Literal;
                     Literal lOtherHoursSummary = repeaterItem.FindControl( "lOtherHoursSummary" ) as Literal;
@@ -239,8 +243,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
                             && a.StartDateTime.Date >= timeCardDay.StartDateTime.Date.AddDays( -7 ) )
                             .Sum( a => ( a.PaidHolidayHours ?? 0 ) + ( a.PaidSickHours ?? 0 ) + ( a.PaidVacationHours ?? 0 ) + ( a.EarnedHolidayHours ?? 0 ) );
 
-                    string subtotalItemFormat = "</br><span class='timecard-subtotal-item'>{0}</span>";
-                    lSummaryLabel.Text = string.Format( subtotalItemFormat, "Subtotal:" );
+                    string subtotalItemFormat = "{0}";
                     lWorkedRegularHoursSummary.Text = string.Format( subtotalItemFormat, FormatTimeCardHours( workedRegularSummaryHours ) );
                     lWorkedOvertimeHoursSummary.Text = string.Format( subtotalItemFormat, FormatTimeCardHours( workedOvertimeSummaryHours ) );
                     lOtherHoursSummary.Text = string.Format( subtotalItemFormat, FormatTimeCardHours( otherSummaryHours ) );

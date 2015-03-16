@@ -72,18 +72,24 @@ namespace Rock.Rest.Filters
 
                 foreach ( var item in actionContext.ModelState )
                 {
+                    var msg = new System.Text.StringBuilder();
+
                     foreach ( ModelError error in item.Value.Errors )
                     {
-                        if ( !httpError.ContainsKey( item.Key ) )
+                        if ( !string.IsNullOrWhiteSpace( error.ErrorMessage ) )
                         {
-                            httpError.Add( item.Key, string.Empty );
-                            httpError[item.Key] += error.ErrorMessage;
+                            msg.Append( msg.Length > 0 ? "; " : "" );
+                            msg.Append( error.ErrorMessage );
                         }
-                        else
+
+                        if ( error.Exception != null && !string.IsNullOrWhiteSpace( error.Exception.Message ) )
                         {
-                            httpError[item.Key] += Environment.NewLine + error.ErrorMessage;
+                            msg.Append( msg.Length > 0 ? "; " : "" );
+                            msg.Append( error.Exception.Message );
                         }
                     }
+
+                    httpError.Add( item.Key, msg.ToString() );
                 }
 
                 actionContext.Response = actionContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, httpError );

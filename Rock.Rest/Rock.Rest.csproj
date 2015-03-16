@@ -111,6 +111,8 @@
     <Compile Include="Controllers\AttendancesController.partial.cs" />
     <Compile Include="Controllers\CampusesController.Partial.cs" />
     <Compile Include="Controllers\CampusController.cs" />
+    <Compile Include="Controllers\CodeGenerated\BenevolenceRequestsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\BenevolenceResultsController.cs" />
     <Compile Include="Controllers\CodeGenerated\CampusesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationRecipientActivitiesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplatesController.cs" />

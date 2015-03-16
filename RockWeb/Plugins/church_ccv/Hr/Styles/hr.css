@@ -6,14 +6,12 @@
   border-bottom: 1px solid #efefef;
   padding: 12px 0;
 }
-.gridresponsive-row:nth-child(8) {
-  border-bottom: 24px solid #f4f4f4;
-}
 .gridresponsive-commandcolumn {
   text-align: right;
 }
 
 /* MP */
-.timecard-subtotal-item {
+.timecard-subtotal-row {
+    background-color: #f4f4f4;
     font-weight:bold;
-}
+ }

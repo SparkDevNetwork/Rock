@@ -495,6 +495,7 @@ namespace RockWeb.Blocks.WorkFlow
                         boundField.DataField = dataFieldExpression;
                         boundField.HeaderText = attribute.Name;
                         boundField.SortExpression = string.Empty;
+                        boundField.Condensed = false;
 
                         var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
                         if ( attributeCache != null )

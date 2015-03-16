@@ -196,13 +196,7 @@ namespace Rock.Net
                 {
                     resultContent.ReadAsStringAsync().ContinueWith( s =>
                     {
-#if DEBUG
-                        string debugResult = postTask.Result.ReasonPhrase + "\n\n" + s.Result;
-                        httpError = new HttpError( debugResult );
-#else                            
-                            // just get the simple error message, don't expose exception details to user
-                            httpError = new HttpError( postTask.Result.ReasonPhrase );
-#endif
+                        httpError = GetHttpError( requestUri, httpError, postTask, s );
                     } ).Wait();
                 }
             } ).Wait();
@@ -213,6 +207,26 @@ namespace Rock.Net
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the HTTP error.
+        /// </summary>
+        /// <param name="requestUri">The request URI.</param>
+        /// <param name="httpError">The HTTP error.</param>
+        /// <param name="postTask">The post task.</param>
+        /// <param name="s">The s.</param>
+        /// <returns></returns>
+        private static HttpError GetHttpError( Uri requestUri, HttpError httpError, Task<HttpResponseMessage> postTask, Task<string> s )
+        {
+            string errorMessage = requestUri != null ? requestUri.AbsolutePath : string.Empty;
+            errorMessage += "\n\n" + postTask.Result.ReasonPhrase;
+
+#if DEBUG
+            errorMessage += "\n\n" + s.Result;
+#endif
+            httpError = new HttpError( errorMessage );
+            return httpError;
         }
 
         /// <summary>
@@ -257,13 +271,7 @@ namespace Rock.Net
                     {
                         resultContent.ReadAsStringAsync().ContinueWith( s =>
                         {
-#if DEBUG
-                            string debugResult = postTask.Result.ReasonPhrase + "\n\n" + s.Result;
-                            httpError = new HttpError( debugResult );
-#else                            
-                            // just get the simple error message, don't expose exception details to user
-                            httpError = new HttpError( postTask.Result.ReasonPhrase );
-#endif
+                            httpError = GetHttpError( requestUri, httpError, postTask, s );
                         } ).Wait();
                     }
                 } ).Wait();
@@ -359,13 +367,7 @@ namespace Rock.Net
                 {
                     postTask.Result.Content.ReadAsStringAsync().ContinueWith( s =>
                     {
-#if DEBUG
-                        string debugResult = postTask.Result.ReasonPhrase + "\n\n" + s.Result + "\n\n" + postPath;
-                        httpError = new HttpError( debugResult );
-#else                            
-                            // just get the simple error message, don't expose exception details to user
-                            httpError = new HttpError( postTask.Result.ReasonPhrase );
-#endif
+                        httpError = GetHttpError( requestUri, httpError, postTask, s );
                     } ).Wait();
                 }
             } );
@@ -437,13 +439,7 @@ namespace Rock.Net
                 {
                     postTask.Result.Content.ReadAsStringAsync().ContinueWith( s =>
                     {
-#if DEBUG
-                        string debugResult = postTask.Result.ReasonPhrase + "\n\n" + s.Result + "\n\n" + postPath;
-                        httpError = new HttpError( debugResult );
-#else
-                        // just get the simple error message, don't expose exception details to user
-                        httpError = new HttpError( postTask.Result.ReasonPhrase );
-#endif
+                        httpError = GetHttpError( requestUri, httpError, postTask, s );
                     } ).Wait();
                 }
             } );

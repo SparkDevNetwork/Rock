@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
@@ -287,6 +288,12 @@ namespace RockWeb.Blocks.Finance
                     foreach ( var batch in batchesToUpdate )
                     {
                         batch.Status = newStatus;
+                        if ( !batch.IsValid )
+                        {
+                            string message = string.Format( "Unable to update status for the selected batches.<br/><br/>{0}", batch.ValidationResults.AsDelimited( "<br/>" ) );
+                            maWarningDialog.Show( message, ModalAlertType.Warning );
+                            return;
+                        }
                     }
 
                     rockContext.SaveChanges();
@@ -356,6 +363,8 @@ namespace RockWeb.Blocks.Finance
             campCampus.Campuses = campusi;
             campCampus.Visible = campusi.Any();
             campCampus.SetValue( gfBatchFilter.GetUserPreference( "Campus" ) );
+            
+            drpBatchDate.DelimitedValues = gfBatchFilter.GetUserPreference( "Date Range" );
         }
 
         /// <summary>
@@ -363,11 +372,46 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
-            gBatchList.DataSource = GetData();
+            var qry = GetQuery().AsNoTracking();
+            var batchRowQry = qry.Select( b => new BatchRow
+                {
+                    Id = b.Id,
+                    BatchStartDateTime = b.BatchStartDateTime.Value,
+                    Name = b.Name,
+                    AccountingSystemCode = b.AccountingSystemCode,
+                    TransactionCount = b.Transactions.Count(),
+                    TransactionAmount = b.Transactions.Sum( t => (decimal?)( t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ) ) ?? 0.0M,
+                    ControlAmount = b.ControlAmount,
+                    CampusName = b.Campus != null ? b.Campus.Name : "",
+                    Status = b.Status,
+                    UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue )
+                } );
+
+            var batchRowList = batchRowQry.ToList();
+
+            gBatchList.DataSource = batchRowList;
             gBatchList.DataBind();
+
+            var qryTransactionDetails = qry.SelectMany( a => a.Transactions ).SelectMany( a => a.TransactionDetails );
+            var accountSummaryQry = qryTransactionDetails.GroupBy( a => a.Account ).Select( a => new
+            {
+                a.Key.Name,
+                TotalAmount = (decimal?)a.Sum( d => d.Amount )
+            } ).OrderBy( a => a.Name );
+
+            var summaryList = accountSummaryQry.ToList();
+            var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ?? 0 ) : 0;
+            string currencyFormat = GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0}";
+            lGrandTotal.Text = string.Format( currencyFormat, grandTotalAmount );
+            rptAccountSummary.DataSource = summaryList.Select( a => new { a.Name, TotalAmount = string.Format( currencyFormat, a.TotalAmount ) } ).ToList();
+            rptAccountSummary.DataBind();
         }
 
-        private List<BatchRow> GetData()
+        /// <summary>
+        /// Gets the query.
+        /// </summary>
+        /// <returns></returns>
+        private IOrderedQueryable<FinancialBatch> GetQuery()
         {
             var batchService = new FinancialBatchService( new RockContext() );
             var qry = batchService.Queryable()
@@ -471,21 +515,7 @@ namespace RockWeb.Blocks.Finance
                     .ThenBy( b => b.Name );
             }
 
-            return sortedQry
-                .Select( b => new BatchRow
-                {
-                    Id = b.Id,
-                    BatchStartDateTime = b.BatchStartDateTime.Value,
-                    Name = b.Name,
-                    AccountingSystemCode = b.AccountingSystemCode,
-                    TransactionCount = b.Transactions.Count(),
-                    TransactionAmount = b.Transactions.Sum( t => (decimal?)( t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ) ) ?? 0.0M,
-                    ControlAmount = b.ControlAmount,
-                    CampusName = b.Campus != null ? b.Campus.Name : "",
-                    Status = b.Status,
-                    UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue )
-                } )
-                .ToList();
+            return sortedQry;
         }
 
         #endregion
@@ -558,16 +588,6 @@ namespace RockWeb.Blocks.Finance
                                 if ( UnMatchedTxns )
                                 {
                                     notes.Append( "<span class='label label-warning'>Unmatched Transactions</span><br/>" );
-                                }
-
-                                break;
-                            }
-
-                        case BatchStatus.Closed:
-                            {
-                                if ( ControlAmount != TransactionAmount )
-                                {
-                                    notes.Append( "<span class='label label-danger'>Transaction Total Does Not Match Control Amount</span><br/>" );
                                 }
 
                                 break;
