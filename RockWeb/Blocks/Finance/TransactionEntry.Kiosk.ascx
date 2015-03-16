@@ -14,6 +14,7 @@
             //
             var lastKeyPress = 0;
             var keyboardBuffer = '';
+            var swipeProcessing = false;
 
             $(document).keypress(function (e) {
                 //console.log('Keypressed: ' + e.which + ' - ' + String.fromCharCode(e.which));
@@ -30,10 +31,12 @@
 
                     // if the character is a line break stop buffering and call postback
                     if (e.which == 13 && keyboardBuffer.length != 0) {
-                        //console.log('Bam! Done... ' + keyboardBuffer);
-                        $('#hfSwipe').val(keyboardBuffer);
-                        keyboardBuffer = '';
-                        __doPostBack('hfSwipe', 'Swipe_Complete');
+                        if (!swipeProcessing) {
+                            $('#hfSwipe').val(keyboardBuffer);
+                            keyboardBuffer = '';
+                            swipeProcessing = true;
+                            __doPostBack('hfSwipe', 'Swipe_Complete');
+                        }
                     }
 
                     // stop the keypress
@@ -112,7 +115,6 @@
                 //
                 // register entry
                 //
-
                 if ($(".js-pnlregister").is(":visible")) {
                     $(".input-account .form-control:first").focus();
                 }
@@ -293,13 +295,15 @@
             <main>
                 <asp:Literal id="lSwipeErrors" runat="server" />
 
-                <div>
-                    <i class="fa fa-cc-visa fa-2x"></i>
-                    <i class="fa fa-cc-mastercard fa-2x"></i>
-                    <i class="fa fa-cc-amex fa-2x"></i>
-                    <i class="fa fa-cc-discover fa-2x"></i>
+                <div class="swipe">
+                    <div class="swipe-cards">
+                        <i class="fa fa-cc-visa fa-2x"></i>
+                        <i class="fa fa-cc-mastercard fa-2x"></i>
+                        <i class="fa fa-cc-amex fa-2x"></i>
+                        <i class="fa fa-cc-discover fa-2x"></i>
+                    </div>
+                    <asp:Image ID="imgSwipe" runat="server" ImageUrl="<%$ Fingerprint:~/Assets/Images/Kiosk/card_swipe.png %>" />
                 </div>
-                <asp:Image ID="imgSwipe" runat="server" ImageUrl="<%$ Fingerprint:~/Assets/Images/Kiosk/card_swipe.png %>" />
             </main>
             
             <footer>

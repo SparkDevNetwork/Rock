@@ -999,6 +999,35 @@ fieldset .actions {
 // 16. Time Picker
 // -------------------------
 
+.timepicker-input  {
+    .clearfix();
+    
+    .input-group {
+        float: left;
+    }
+    
+    & i.fa-times {
+        float: left;
+        margin-top: 4px;
+        padding: 6px;
+        cursor: pointer;
+
+        opacity: 0;
+        -webkit-transition: opacity .2s ease-out;
+        -moz-transition: opacity .2s ease-out;
+        -o-transition: opacity .2s ease-out;
+        transition: opacity .2s ease-out;
+    }
+
+    &:hover i.fa-times {
+        opacity: 1;
+    }
+}
+
+.touch .timepicker-input i.fa-times {
+    opacity: 1;
+}
+
 .bootstrap-timepicker {
     position: relative;
 

@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for GroupScheduleExclusion
-    /// </summary>
-    public partial class GroupScheduleExclusion
+    public partial class GroupScheduleExclusionEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -38,13 +35,26 @@ namespace Rock.Client
         public DateTime? EndDate { get; set; }
 
         /// <summary />
-        public GroupType GroupType { get; set; }
-
-        /// <summary />
         public int GroupTypeId { get; set; }
 
         /// <summary />
         public DateTime? StartDate { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for GroupScheduleExclusion
+    /// </summary>
+    public partial class GroupScheduleExclusion : GroupScheduleExclusionEntity
+    {
+        /// <summary />
+        public GroupType GroupType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -59,17 +69,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

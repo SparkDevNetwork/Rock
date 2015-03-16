@@ -35,6 +35,20 @@ namespace Rock.Migrations
             RockMigrationHelper.AddSecurityAuthForRestController( "Rock.Rest.Controllers.CampusesController", 1, Rock.Security.Authorization.VIEW, true, Rock.SystemGuid.Group.GROUP_FINANCE_USERS, Model.SpecialRole.None, "3CC62B43-1E8C-45FF-A731-FF2D41D46E97" );
             RockMigrationHelper.AddSecurityAuthForRestController( "Rock.Rest.Controllers.CampusController", 0, Rock.Security.Authorization.VIEW, true, Rock.SystemGuid.Group.GROUP_FINANCE_ADMINISTRATORS, Model.SpecialRole.None, "29C68393-A3C6-4C2B-9063-E3BFC1CDB8B8" );
             RockMigrationHelper.AddSecurityAuthForRestController( "Rock.Rest.Controllers.CampusController", 1, Rock.Security.Authorization.VIEW, true, Rock.SystemGuid.Group.GROUP_FINANCE_USERS, Model.SpecialRole.None, "99F884F3-23F5-4D23-A0DF-2B5866124D02" );
+
+            // Fix AttributeValue.ValueAsDateTime to only convert ISO-8601 matches on the first 19 chars to avoid an error on non-datetime chars that are after the 19th char 
+            Sql( @"
+alter table AttributeValue drop column ValueAsDateTime
+alter table AttributeValue add ValueAsDateTime as
+case 
+    when len([value])<=(33) then 
+        case when [VALUE] like '____-__-__T__:__:__%' 
+            then CONVERT([datetime],CONVERT([datetimeoffset],left([value], 19))) 
+        when isdate([VALUE])=(1) 
+            then CONVERT([datetime],[VALUE])  
+    end  
+end
+" );
         }
         
         /// <summary>

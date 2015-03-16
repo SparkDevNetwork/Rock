@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for Metric
-    /// </summary>
-    public partial class Metric
+    public partial class MetricEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -42,9 +39,6 @@ namespace Rock.Client
 
         /// <summary />
         public string Description { get; set; }
-
-        /// <summary />
-        public EntityType EntityType { get; set; }
 
         /// <summary />
         public int? EntityTypeId { get; set; }
@@ -62,9 +56,6 @@ namespace Rock.Client
         public DateTime? LastRunDateTime { get; set; }
 
         /// <summary />
-        public ICollection<MetricCategory> MetricCategories { get; set; }
-
-        /// <summary />
         public int? MetricChampionPersonAliasId { get; set; }
 
         /// <summary />
@@ -72,9 +63,6 @@ namespace Rock.Client
 
         /// <summary />
         public string SourceSql { get; set; }
-
-        /// <summary />
-        public DefinedValue SourceValueType { get; set; }
 
         /// <summary />
         public int? SourceValueTypeId { get; set; }
@@ -92,6 +80,28 @@ namespace Rock.Client
         public string YAxisLabel { get; set; }
 
         /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for Metric
+    /// </summary>
+    public partial class Metric : MetricEntity
+    {
+        /// <summary />
+        public EntityType EntityType { get; set; }
+
+        /// <summary />
+        public ICollection<MetricCategory> MetricCategories { get; set; }
+
+        /// <summary />
+        public DefinedValue SourceValueType { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />
@@ -104,17 +114,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }
