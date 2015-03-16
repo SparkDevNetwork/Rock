@@ -16,8 +16,6 @@
 
   {% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
 
-  <script src="//maps.google.com/maps/api/js?v=3"></script>
-
   <!-- @TODO use minified version in production -->
   <script src="~~/Scripts/_map.js"></script>
   <script src="~~/Scripts/map-campus-modal.js"></script>
