@@ -26,28 +26,16 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for BenevolenceRequest
-    /// </summary>
-    public partial class BenevolenceRequest
+    public partial class BenevolenceRequestEntity
     {
         /// <summary />
         public int Id { get; set; }
-
-        /// <summary />
-        public ICollection<BenevolenceResult> BenevolenceResults { get; set; }
-
-        /// <summary />
-        public PersonAlias CaseWorkerPersonAlias { get; set; }
 
         /// <summary />
         public int? CaseWorkerPersonAliasId { get; set; }
 
         /// <summary />
         public string CellPhoneNumber { get; set; }
-
-        /// <summary />
-        public DefinedValue ConnectionStatusValue { get; set; }
 
         /// <summary />
         public int? ConnectionStatusValueId { get; set; }
@@ -68,22 +56,13 @@ namespace Rock.Client
         public string LastName { get; set; }
 
         /// <summary />
-        public Location Location { get; set; }
-
-        /// <summary />
         public int? LocationId { get; set; }
 
         /// <summary />
         public DateTime RequestDateTime { get; set; }
 
         /// <summary />
-        public PersonAlias RequestedByPersonAlias { get; set; }
-
-        /// <summary />
         public int? RequestedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public DefinedValue RequestStatusValue { get; set; }
 
         /// <summary />
         public int? RequestStatusValueId { get; set; }
@@ -98,6 +77,37 @@ namespace Rock.Client
         public string WorkPhoneNumber { get; set; }
 
         /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for BenevolenceRequest
+    /// </summary>
+    public partial class BenevolenceRequest : BenevolenceRequestEntity
+    {
+        /// <summary />
+        public ICollection<BenevolenceResult> BenevolenceResults { get; set; }
+
+        /// <summary />
+        public PersonAlias CaseWorkerPersonAlias { get; set; }
+
+        /// <summary />
+        public DefinedValue ConnectionStatusValue { get; set; }
+
+        /// <summary />
+        public Location Location { get; set; }
+
+        /// <summary />
+        public PersonAlias RequestedByPersonAlias { get; set; }
+
+        /// <summary />
+        public DefinedValue RequestStatusValue { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />
@@ -110,17 +120,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

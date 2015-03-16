@@ -26,19 +26,13 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for Workflow
-    /// </summary>
-    public partial class Workflow
+    public partial class WorkflowEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
         public DateTime? ActivatedDateTime { get; set; }
-
-        /// <summary />
-        public ICollection<WorkflowActivity> Activities { get; set; }
 
         /// <summary />
         public DateTime? CompletedDateTime { get; set; }
@@ -65,6 +59,22 @@ namespace Rock.Client
         public int WorkflowTypeId { get; set; }
 
         /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for Workflow
+    /// </summary>
+    public partial class Workflow : WorkflowEntity
+    {
+        /// <summary />
+        public ICollection<WorkflowActivity> Activities { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />
@@ -77,17 +87,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

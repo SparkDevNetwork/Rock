@@ -26,16 +26,10 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for WorkflowTrigger
-    /// </summary>
-    public partial class WorkflowTrigger
+    public partial class WorkflowTriggerEntity
     {
         /// <summary />
         public int Id { get; set; }
-
-        /// <summary />
-        public EntityType EntityType { get; set; }
 
         /// <summary />
         public int EntityTypeId { get; set; }
@@ -59,9 +53,6 @@ namespace Rock.Client
         public int /* WorkflowTriggerType*/ WorkflowTriggerType { get; set; }
 
         /// <summary />
-        public WorkflowType WorkflowType { get; set; }
-
-        /// <summary />
         public int WorkflowTypeId { get; set; }
 
         /// <summary />
@@ -69,6 +60,19 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for WorkflowTrigger
+    /// </summary>
+    public partial class WorkflowTrigger : WorkflowTriggerEntity
+    {
+        /// <summary />
+        public EntityType EntityType { get; set; }
+
+        /// <summary />
+        public WorkflowType WorkflowType { get; set; }
 
     }
 }

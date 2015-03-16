@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for GroupMember
-    /// </summary>
-    public partial class GroupMember
+    public partial class GroupMemberEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -41,9 +38,6 @@ namespace Rock.Client
         public int /* GroupMemberStatus*/ GroupMemberStatus { get; set; }
 
         /// <summary />
-        public GroupTypeRole GroupRole { get; set; }
-
-        /// <summary />
         public int GroupRoleId { get; set; }
 
         /// <summary />
@@ -53,10 +47,26 @@ namespace Rock.Client
         public bool IsSystem { get; set; }
 
         /// <summary />
-        public Person Person { get; set; }
+        public int PersonId { get; set; }
 
         /// <summary />
-        public int PersonId { get; set; }
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for GroupMember
+    /// </summary>
+    public partial class GroupMember : GroupMemberEntity
+    {
+        /// <summary />
+        public GroupTypeRole GroupRole { get; set; }
+
+        /// <summary />
+        public Person Person { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -71,17 +81,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

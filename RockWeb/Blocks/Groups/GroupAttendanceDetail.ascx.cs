@@ -470,7 +470,7 @@ namespace RockWeb.Blocks.Groups
             var memberName = $(this).parent().find('span').html();
             Rock.dialogs.confirm('Add ' + memberName + ' to your group?', function (result) {{
                 if (result) {{
-                    eval($a.prop('href'));
+                    window.location = $a.prop('href');                    
                 }}
             }});
         }});

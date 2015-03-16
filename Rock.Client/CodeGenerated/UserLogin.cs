@@ -26,19 +26,13 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for UserLogin
-    /// </summary>
-    public partial class UserLogin
+    public partial class UserLoginEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
         public string ApiKey { get; set; }
-
-        /// <summary />
-        public EntityType EntityType { get; set; }
 
         /// <summary />
         public int? EntityTypeId { get; set; }
@@ -74,10 +68,29 @@ namespace Rock.Client
         public DateTime? LastPasswordExpirationWarningDateTime { get; set; }
 
         /// <summary />
+        public string Password { get; set; }
+
+        /// <summary />
         public int? PersonId { get; set; }
 
         /// <summary />
         public string UserName { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for UserLogin
+    /// </summary>
+    public partial class UserLogin : UserLoginEntity
+    {
+        /// <summary />
+        public EntityType EntityType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -92,17 +105,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

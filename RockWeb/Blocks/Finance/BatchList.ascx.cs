@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
@@ -362,6 +363,8 @@ namespace RockWeb.Blocks.Finance
             campCampus.Campuses = campusi;
             campCampus.Visible = campusi.Any();
             campCampus.SetValue( gfBatchFilter.GetUserPreference( "Campus" ) );
+            
+            drpBatchDate.DelimitedValues = gfBatchFilter.GetUserPreference( "Date Range" );
         }
 
         /// <summary>
@@ -369,8 +372,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
-            var qry = GetQuery();
-            var batchRowList = qry.Select( b => new BatchRow
+            var qry = GetQuery().AsNoTracking();
+            var batchRowQry = qry.Select( b => new BatchRow
                 {
                     Id = b.Id,
                     BatchStartDateTime = b.BatchStartDateTime.Value,
@@ -382,8 +385,9 @@ namespace RockWeb.Blocks.Finance
                     CampusName = b.Campus != null ? b.Campus.Name : "",
                     Status = b.Status,
                     UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue )
-                } )
-                .ToList();
+                } );
+
+            var batchRowList = batchRowQry.ToList();
 
             gBatchList.DataSource = batchRowList;
             gBatchList.DataBind();
@@ -397,9 +401,10 @@ namespace RockWeb.Blocks.Finance
 
             var summaryList = accountSummaryQry.ToList();
             var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ?? 0 ) : 0;
-            lBatchesTotalAmount.Text = string.Format( "{0}{1}", GlobalAttributesCache.Value( "CurrencySymbol" ), grandTotalAmount );
-            gAccountSummary.DataSource = summaryList;
-            gAccountSummary.DataBind();
+            string currencyFormat = GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0}";
+            lGrandTotal.Text = string.Format( currencyFormat, grandTotalAmount );
+            rptAccountSummary.DataSource = summaryList.Select( a => new { a.Name, TotalAmount = string.Format( currencyFormat, a.TotalAmount ) } ).ToList();
+            rptAccountSummary.DataBind();
         }
 
         /// <summary>
