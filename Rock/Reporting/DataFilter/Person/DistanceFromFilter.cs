@@ -218,7 +218,7 @@ function() {
                 var selectedLocationGeoPoint = location.GeoPoint;
                 double miles = selectionValues[1].AsDoubleOrNull() ?? 0;
 
-                double meters = miles * 1609.344;
+                double meters = miles * Location.MetersPerMile;
 
                 GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 

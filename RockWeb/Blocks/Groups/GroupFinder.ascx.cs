@@ -776,7 +776,7 @@ namespace RockWeb.Blocks.Groups
                         if ( showProximity && personLocation != null && personLocation.GeoPoint != null )
                         {
                             double meters = groupLocation.Location.GeoPoint.Distance( personLocation.GeoPoint ) ?? 0.0D;
-                            double miles = meters / 1609.344;
+                            double miles = meters * Location.MilesPerMeter;
 
                             // If this group already has a distance calculated, see if this location is closer and if so, use it instead
                             if ( distances.ContainsKey( group.Id ) )
@@ -1307,13 +1307,13 @@ namespace RockWeb.Blocks.Groups
 ";
 
             var locationJson = location != null ?
-                string.Format( "JSON.parse('{0}')", location.ToJson().Replace( Environment.NewLine, "" ).Replace( "\x0A", "" ) ) : "null";
+                string.Format( "JSON.parse('{0}')", location.ToJson().Replace( Environment.NewLine, "" ).EscapeQuotes().Replace( "\x0A", "" ) ) : "null";
 
             var fencesJson = fences != null && fences.Any() ?
-                string.Format( "JSON.parse('{0}')", fences.ToJson().Replace( Environment.NewLine, "" ).Replace( "\x0A", "" ) ) : "null";
+                string.Format( "JSON.parse('{0}')", fences.ToJson().Replace( Environment.NewLine, "" ).EscapeQuotes().Replace( "\x0A", "" ) ) : "null";
 
             var groupsJson = groups != null && groups.Any() ?
-                string.Format( "JSON.parse('{0}')", groups.ToJson().Replace( Environment.NewLine, "" ).Replace( "\x0A", "" ) ) : "null";
+                string.Format( "JSON.parse('{0}')", groups.ToJson().Replace( Environment.NewLine, "" ).EscapeQuotes().Replace( "\x0A", "" ) ) : "null";
 
             string mapScript = string.Format( mapScriptFormat,
                 locationJson,       // 0

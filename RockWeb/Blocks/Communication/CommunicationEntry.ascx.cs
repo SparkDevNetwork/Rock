@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.Communication
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to remove all of the pending recipients from this communication?', function (result) {
             if (result) {
-                eval(e.target.href);
+                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
             }
         });
     });

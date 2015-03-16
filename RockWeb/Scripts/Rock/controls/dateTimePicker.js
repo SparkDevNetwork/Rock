@@ -15,7 +15,6 @@
                 }
 
                 var $dp = $('#' + options.id + " .js-datetime-date");
-                var $tp = $('#' + options.id + " .js-datetime-time");
 
                 // uses https://github.com/eternicode/bootstrap-datepicker
                 $dp.datepicker({
@@ -24,18 +23,10 @@
                     todayBtn: true,
                     startView: options.startView || 'month'
                 });
-
-                // uses https://github.com/jdewit/bootstrap-timepicker
-                $tp.timepicker({
-                    defaultTime: false,
-                    appendWidgetTo: '.bootstrap-timepicker'
-                });
-
-                $tp.on('show.timepicker', function (e) {
-                    var $scrollcontainer = $tp.closest('.scroll-container');
-                    if ($scrollcontainer.length) {
-                        $scrollcontainer.tinyscrollbar_update('relative');
-                    }
+                
+                var $tp = $('#' + options.id + " .js-datetime-time");
+                Rock.controls.timePicker.initialize({
+                    id: $tp.attr('id')
                 });
 
                 var $dateTimePickerContainer = $dp.closest('.js-datetime-picker-container');

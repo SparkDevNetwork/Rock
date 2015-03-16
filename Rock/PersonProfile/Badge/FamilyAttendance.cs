@@ -30,7 +30,6 @@ using Rock.Web.Cache;
 
 namespace Rock.PersonProfile.Badge
 {
-    // TODO: Update to return actual data
 
     /// <summary>
     /// FamilyAttendance Badge

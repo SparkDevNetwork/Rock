@@ -16,9 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.ServiceModel.Channels;
 using System.Web.Http;
 using System.Web.Http.OData;
@@ -104,6 +106,11 @@ namespace Rock.Rest
         [Authenticate, Secured]
         public virtual HttpResponseMessage Post( [FromBody]T value )
         {
+            if ( value == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+
             SetProxyCreation( true );
 
             CheckCanEdit( value );
@@ -131,6 +138,11 @@ namespace Rock.Rest
         [Authenticate, Secured]
         public virtual void Put( int id, [FromBody]T value )
         {
+            if (value == null)
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+
             SetProxyCreation( true );
 
             T targetModel;
@@ -204,6 +216,50 @@ namespace Rock.Rest
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the encrypted context key for an entity.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpPut, HttpOptions]
+        [ActionName( "SetContext" )]
+        public virtual HttpResponseMessage SetContext( int id )
+        {
+            Guid? guid = Service.GetGuid( id );
+            if (!guid.HasValue)
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            string cookieName = "Rock_Context";
+            string typeName = typeof( T ).FullName;
+
+            string identifier =
+                typeName + "|" +
+                id.ToString() + ">" +
+                guid.ToString();
+            string contextValue = Rock.Security.Encryption.EncryptString( identifier );
+
+            var httpContext = System.Web.HttpContext.Current;
+            if ( httpContext == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+
+            var contextCookie = httpContext.Request.Cookies[cookieName];
+            if ( contextCookie == null )
+            {
+                contextCookie = new System.Web.HttpCookie( cookieName );
+            }
+            contextCookie.Values[typeName] = contextValue;
+            contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
+            httpContext.Response.Cookies.Add( contextCookie );
+
+            return ControllerContext.Request.CreateResponse( HttpStatusCode.OK );
         }
 
         /// <summary>

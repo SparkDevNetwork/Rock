@@ -33,13 +33,15 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Security;
 using Rock.Financial;
+using Rock.Communication;
+using System.Threading;
 
 namespace RockWeb.Blocks.Finance
 {
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Kiosk Transaction Entry" )]
+    [DisplayName( "Transaction Entry - Kiosk" )]
     [Category( "Finance" )]
     [Description( "Block used to process giving from a kiosk." )]
 
@@ -58,9 +60,10 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Search Regex", "Regular Expression to run the search input through before searching. Useful for stripping off characters.", false, "", "", 8 )]
     [CodeEditorField( "Receipt Lava", "Lava to display for the receipt panel.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, true, "{% include '~~/Assets/Lava/KioskGivingReceipt.lava' %}", "", 9 )]
     [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 10 )]
+    [SystemEmailField( "Receipt Email", "The system email to use to send the receipt.", false, "", "", 11 )]
     #endregion
 
-    public partial class KioskTransactionEntry : Rock.Web.UI.RockBlock
+    public partial class TransactionEntryKiosk : Rock.Web.UI.RockBlock
     {
         #region Fields
 
@@ -114,6 +117,9 @@ namespace RockWeb.Blocks.Finance
         DefinedValueCache _dvcConnectionStatus = null;
         DefinedValueCache _dvcRecordStatus = null;
 
+        bool _receiptSent = false;
+        string _transactionCode = string.Empty;
+
         #endregion
 
         #region Properties
@@ -165,8 +171,6 @@ namespace RockWeb.Blocks.Finance
                 // set max length of phone
                 int maxLength = int.Parse( GetAttributeValue( "MaximumPhoneNumberLength" ) );
                 tbPhone.MaxLength = maxLength;
-
-                LoadAccounts();
 
                 // todo set campus
                 this.CampusId = 1;
@@ -338,24 +342,64 @@ namespace RockWeb.Blocks.Finance
         //
 
         private void ProcessSwipe(string swipeData) {
-
-            RockContext rockContext = new RockContext();
-
-            // create swipe object
-            SwipePaymentInfo swipeInfo = new SwipePaymentInfo(swipeData);
-            
-            // get gateway
-            GatewayComponent gateway = GatewayContainer.GetComponent( GetAttributeValue("CreditCardGateway"));
-            
-            if ( gateway != null )
+            try
             {
-                try
+                RockContext rockContext = new RockContext();
+
+                // create swipe object
+                SwipePaymentInfo swipeInfo = new SwipePaymentInfo(swipeData);
+                swipeInfo.Amount = this.Amounts.Sum( a => a.Value );
+
+                // if not anonymous then add contact info to the gateway transaction
+                if (this.AnonymousGiverPersonAliasId != this.SelectedGivingUnit.PersonAliasId)
                 {
+                    var giver = new PersonAliasService( rockContext).Queryable("Person, Person.PhoneNumbers").Where(p => p.Id == this.SelectedGivingUnit.PersonAliasId).FirstOrDefault();
+                    swipeInfo.FirstName = giver.Person.NickName;
+                    swipeInfo.LastName = giver.Person.LastName;
+
+                    if ( giver.Person.PhoneNumbers != null )
+                    {
+                        Guid homePhoneValueGuid = new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+                        var homephone = giver.Person.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == homePhoneValueGuid ).FirstOrDefault();
+                        if ( homephone != null )
+                        {
+                            swipeInfo.Phone = homephone.NumberFormatted;
+                        }
+                    }
+
+                    var homeLocation = giver.Person.GetHomeLocation();
+
+                    if ( homeLocation != null )
+                    {
+                        swipeInfo.Street1 = homeLocation.Street1;
+
+                        if ( !string.IsNullOrWhiteSpace( homeLocation.Street2 ) )
+                        {
+                            swipeInfo.Street2 = homeLocation.Street2;
+                        }
+
+                        swipeInfo.City = homeLocation.City;
+                        swipeInfo.State = homeLocation.State;
+                        swipeInfo.PostalCode = homeLocation.PostalCode;
+                    }
+                     
+                }
+
+                // add comment to the transation
+                swipeInfo.Comment1 = DefinedValueCache.Read( GetAttributeValue( "Source" ) ).Value;
+            
+                // get gateway
+                GatewayComponent gateway = GatewayContainer.GetComponent( GetAttributeValue("CreditCardGateway"));
+            
+                if ( gateway != null )
+                {
+                
                     string errorMessage = string.Empty;
                     var transaction = gateway.Charge( swipeInfo, out errorMessage );
 
                     if ( transaction != null )
                     {
+                        _transactionCode = transaction.TransactionCode;
                         transaction.TransactionDateTime = RockDateTime.Now;
                         transaction.AuthorizedPersonAliasId = this.SelectedGivingUnit.PersonAliasId;
                         transaction.GatewayEntityTypeId = gateway.TypeId;
@@ -393,6 +437,15 @@ namespace RockWeb.Blocks.Finance
                         transaction.BatchId = batch.Id;
                         batch.Transactions.Add( transaction );
                         rockContext.SaveChanges();
+
+                        // send receipt in one is configured and not giving anonymously
+                        if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ReceiptEmail" ) ) && (this.AnonymousGiverPersonAliasId != this.SelectedGivingUnit.PersonAliasId))
+                        {
+                            _receiptSent = true;
+                            
+                            SendReceipt();
+                        }
+
                         HidePanels();
                         ShowReceiptPanel();
                     }
@@ -400,16 +453,34 @@ namespace RockWeb.Blocks.Finance
                     {
                         lSwipeErrors.Text = String.Format( "<div class='alert alert-danger'>An error occurred while process this transaction. Message: {0}</div>", errorMessage );
                     }
+                
+                } else {
+                    lSwipeErrors.Text = "<div class='alert alert-danger'>Invalid gateway provided. Please provide a gateway. Transaction not processed.</div>";
                 }
-                catch ( Exception ex )
-                {
-                    lSwipeErrors.Text = String.Format( "<div class='alert alert-danger'>An error occurred while process this transaction. Message: {0}</div>", ex.Message );
-                }
-            } else {
-                lSwipeErrors.Text = "<div class='alert alert-danger'>Invalid gateway provided. Please provide a gateway. Transaction not processed.</div>";
-            }
 
+            }
+            catch ( Exception ex )
+            {
+                lSwipeErrors.Text = String.Format( "<div class='alert alert-danger'>An error occurred while process this transaction. Message: {0}</div>", ex.Message );
+            }
             
+        }
+
+        private void SendReceipt()
+        {
+            RockContext rockContext = new RockContext();
+            var receiptEmail = new SystemEmailService( rockContext ).Get( new Guid( GetAttributeValue( "ReceiptEmail" ) ) );
+
+            if ( receiptEmail != null )
+            {
+                var givingUnit = new PersonAliasService( rockContext ).Get( this.SelectedGivingUnit.PersonAliasId ).Person;
+                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+
+                var recipients = new List<RecipientData>();
+                recipients.Add( new RecipientData( givingUnit.Email, GetMergeFields( givingUnit ) ) );
+
+                Email.Send( receiptEmail.Guid, recipients, appRoot );
+            }
         }
 
         protected void lbSwipeBack_Click( object sender, EventArgs e )
@@ -591,16 +662,36 @@ namespace RockWeb.Blocks.Finance
         // show receipt panel
         private void ShowReceiptPanel()
         {
-            bool receiptEmailed = true;
-            
-            
+            var mergeFields = GetMergeFields(null);
+
+            string template = GetAttributeValue( "ReceiptLava" );
+
+            // show debug info
+            bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
+            if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
+            {
+                lDebug.Visible = true;
+                lDebug.Text = mergeFields.lavaDebugInfo();
+            }
+
+            lReceiptContent.Text = template.ResolveMergeFields( mergeFields );
+            pnlReceipt.Visible = true;
+        }
+
+        private Dictionary<string, object> GetMergeFields(Person givingUnit)
+        {            
             // get giving unit
             RockContext rockContext = new RockContext();
-            var givingUnit = new PersonAliasService( rockContext ).Queryable().Where( p => p.Id == this.SelectedGivingUnit.PersonAliasId ).FirstOrDefault().Person;
-            
-            
+
+            if ( givingUnit == null )
+            {
+                givingUnit = new PersonAliasService( rockContext ).Get( this.SelectedGivingUnit.PersonAliasId ).Person;
+            }
+
             // setup lava
             var mergeFields = new Dictionary<string, object>();
+
+            mergeFields.Add( "Person", givingUnit );
 
             List<Dictionary<String, object>> accountAmounts = new List<Dictionary<String, object>>();
             decimal totalAmount = 0;
@@ -611,7 +702,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     var accountAmount = new Dictionary<String, object>();
                     accountAmount.Add( "AccountId", amount.Key );
-                    accountAmount.Add("AccountName", this.Accounts.Where( a => a.Key == amount.Key ).FirstOrDefault().Value);
+                    accountAmount.Add( "AccountName", this.Accounts.Where( a => a.Key == amount.Key ).FirstOrDefault().Value );
                     accountAmount.Add( "Amount", amount.Value );
 
                     accountAmounts.Add( accountAmount );
@@ -636,29 +727,21 @@ namespace RockWeb.Blocks.Finance
             }
 
             // whether a receipt was emailed
-            mergeFields.Add( "ReceiptEmailed", receiptEmailed.ToString() );
+            mergeFields.Add( "ReceiptEmailed", _receiptSent.ToString() );
 
             // names
             mergeFields.Add( "LastName", this.SelectedGivingUnit.LastName );
-            mergeFields.Add( "FirstNames", this.SelectedGivingUnit.FirstNames );           
-            
+            mergeFields.Add( "FirstNames", this.SelectedGivingUnit.FirstNames );
+
+            // transaction code
+            mergeFields.Add( "TransactionCode", _transactionCode );
+
             mergeFields.Add( "Amounts", accountAmounts );
-            
+
             var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
             globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
-            string template = GetAttributeValue( "ReceiptLava" );
-
-            // show debug info
-            bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
-            if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
-
-            lReceiptContent.Text = template.ResolveMergeFields( mergeFields );
-            pnlReceipt.Visible = true;
+            return mergeFields;
         }
 
         // displays accounts
@@ -743,36 +826,53 @@ namespace RockWeb.Blocks.Finance
             NavigateToLinkedPage( "Homepage" );
         }
 
-        // loads accounts
-        private void LoadAccounts()
-        {
-            // get list of selected accounts filtered by the current campus
-            RockContext rockContext = new RockContext();
-            FinancialAccountService accountService = new FinancialAccountService( rockContext );
-
-            Guid[] selectedAccounts = GetAttributeValue( "Accounts" ).Split( ',' ).Select( s => Guid.Parse( s ) ).ToArray(); ;
-
-            var accounts = accountService.Queryable()
-                            .Where( a => selectedAccounts.Contains( a.Guid ));
-            
-            accounts = accounts.Where(a => a.CampusId.Value == this.CampusId || a.CampusId == null);
-            
-            this.Accounts = new Dictionary<int, string>();
-
-            foreach ( var account in accounts.ToList() )
-            {
-                this.Accounts.Add( account.Id, account.PublicName );
-            }
-        }
-
         // checks the settings provided
         private bool CheckSettings()
         {
             nbBlockConfigErrors.Title = string.Empty;
             nbBlockConfigErrors.Text = string.Empty;
 
-            // get anonymous person
+            // get list of selected accounts filtered by the current campus
             RockContext rockContext = new RockContext();
+            FinancialAccountService accountService = new FinancialAccountService( rockContext );
+
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) ) )
+            {
+                Guid[] selectedAccounts = GetAttributeValue( "Accounts" ).Split( ',' ).Select( s => Guid.Parse( s ) ).ToArray(); ;
+
+                var accounts = accountService.Queryable()
+                                .Where( a => selectedAccounts.Contains( a.Guid ) );
+
+                if ( this.CampusId != 0 )
+                {
+                    accounts = accounts.Where( a => a.CampusId.Value == this.CampusId || a.CampusId == null );
+                }
+
+                this.Accounts = new Dictionary<int, string>();
+
+                foreach ( var account in accounts.ToList() )
+                {
+                    this.Accounts.Add( account.Id, account.PublicName );
+                }
+            }
+            else
+            {
+                nbBlockConfigErrors.Heading = "No Accounts Configured";
+                nbBlockConfigErrors.Text = "<p>There are currently no accounts configured.</p>";
+                return false;
+            }
+
+            // hide cancel buttons if no homepage defined
+            if ( string.IsNullOrWhiteSpace( GetAttributeValue( "Homepage" ) ) )
+            {
+                lbSearchCancel.Visible = false;
+                lbGivingUnitSelectCancel.Visible = false;
+                lbRegisterCancel.Visible = false;
+                lbAccountEntryCancel.Visible = false;
+                lbSwipeCancel.Visible = false;
+            }
+
+            // get anonymous person
             Person anonymousPerson = null;
 
             Guid anonymousPersonAliasGuid;

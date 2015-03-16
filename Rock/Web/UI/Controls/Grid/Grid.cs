@@ -1416,7 +1416,7 @@ namespace Rock.Web.UI.Controls
                                 {
                                     var attrib = dataItem.Attributes[attributeField.DataField];
                                     string rawValue = dataItem.GetAttributeValue( attributeField.DataField );
-                                    string resultHtml = attrib.FieldType.Field.FormatValue( null, rawValue, attrib.QualifierValues, true );
+                                    string resultHtml = attrib.FieldType.Field.FormatValue( null, rawValue, attrib.QualifierValues, false );
                                     worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
                                 }
 

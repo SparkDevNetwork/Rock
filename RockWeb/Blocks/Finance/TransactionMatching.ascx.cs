@@ -43,6 +43,15 @@ namespace RockWeb.Blocks.Finance
     public partial class TransactionMatching : RockBlock, IDetailBlock
     {
 
+        #region Properties
+
+        /// <summary>
+        /// The _focus control
+        /// </summary>
+        private Control _focusControl = null;
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -81,6 +90,22 @@ namespace RockWeb.Blocks.Finance
                 LoadDropDowns();
                 ShowDetail( PageParameter( "BatchId" ).AsInteger() );
             }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnPreRender( EventArgs e )
+        {
+            if ( _focusControl != null )
+            {
+                _focusControl.Focus();
+            }
+
+            //btnNext.AccessKey = new string(new char[] { (char)39 });
+
+            base.OnPreRender( e );
         }
 
         #endregion
@@ -418,7 +443,6 @@ namespace RockWeb.Blocks.Finance
                 int currentTranId = hfTransactionId.Value.AsInteger();
                 int matchedRemainingCount = qryTransactionCount.Count( a => a.AuthorizedPersonAliasId != null && a.Id != currentTranId );
                 int totalBatchItemCount = qryTransactionCount.Count();
-                //hlUnmatchedRemaining.Text = string.Format( "{0} remaining of {1} ", matchedRemainingCount, totalBatchItemCount );
 
                 int percentComplete = (int)Math.Round( (double)(100 * matchedRemainingCount) / totalBatchItemCount );
 
@@ -429,6 +453,8 @@ namespace RockWeb.Blocks.Finance
                 </div>", percentComplete);
 
                 hfBackNextHistory.Value = historyList.AsDelimited( "," );
+
+                _focusControl = rptAccounts.ControlsOfTypeRecursive<Rock.Web.UI.Controls.CurrencyBox>().FirstOrDefault();
             }
         }
 
@@ -641,6 +667,27 @@ namespace RockWeb.Blocks.Finance
             var personId = ddlIndividual.SelectedValue.AsIntegerOrNull();
 
             LoadPersonPreview( personId );
+
+            if (personId.HasValue)
+            {
+                // if a person was selected using the PersonDropDown, set the PersonPicker to unselected
+                ppSelectNew.SetValue( null );
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectPerson event of the ppSelectNew control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ppSelectNew_SelectPerson( object sender, EventArgs e )
+        {
+            if ( ppSelectNew.PersonId.HasValue )
+            {
+                // if a person was selected using the PersonPicker, set the PersonDropDown to unselected
+                ddlIndividual.SetValue( string.Empty );
+                LoadPersonPreview( ppSelectNew.PersonId.Value );
+            }
         }
 
         /// <summary>
@@ -678,5 +725,6 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
-    }
+        
+}
 }
