@@ -26,28 +26,16 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for DefinedType
-    /// </summary>
-    public partial class DefinedType
+    public partial class DefinedTypeEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public Category Category { get; set; }
-
-        /// <summary />
         public int? CategoryId { get; set; }
 
         /// <summary />
-        public ICollection<DefinedValue> DefinedValues { get; set; }
-
-        /// <summary />
         public string Description { get; set; }
-
-        /// <summary />
-        public FieldType FieldType { get; set; }
 
         /// <summary />
         public int? FieldTypeId { get; set; }
@@ -65,6 +53,28 @@ namespace Rock.Client
         public int Order { get; set; }
 
         /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for DefinedType
+    /// </summary>
+    public partial class DefinedType : DefinedTypeEntity
+    {
+        /// <summary />
+        public Category Category { get; set; }
+
+        /// <summary />
+        public ICollection<DefinedValue> DefinedValues { get; set; }
+
+        /// <summary />
+        public FieldType FieldType { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />
@@ -77,17 +87,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

@@ -26,28 +26,16 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for EntitySet
-    /// </summary>
-    public partial class EntitySet
+    public partial class EntitySetEntity
     {
         /// <summary />
         public int Id { get; set; }
-
-        /// <summary />
-        public ICollection<EntitySet> ChildEntitySets { get; set; }
-
-        /// <summary />
-        public EntityType EntityType { get; set; }
 
         /// <summary />
         public int? EntityTypeId { get; set; }
 
         /// <summary />
         public DateTime? ExpireDateTime { get; set; }
-
-        /// <summary />
-        public ICollection<EntitySetItem> Items { get; set; }
 
         /// <summary />
         public string Name { get; set; }
@@ -57,6 +45,28 @@ namespace Rock.Client
 
         /// <summary />
         public int? ParentEntitySetId { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for EntitySet
+    /// </summary>
+    public partial class EntitySet : EntitySetEntity
+    {
+        /// <summary />
+        public ICollection<EntitySet> ChildEntitySets { get; set; }
+
+        /// <summary />
+        public EntityType EntityType { get; set; }
+
+        /// <summary />
+        public ICollection<EntitySetItem> Items { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -71,17 +81,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

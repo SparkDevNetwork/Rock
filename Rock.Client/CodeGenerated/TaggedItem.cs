@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for TaggedItem
-    /// </summary>
-    public partial class TaggedItem
+    public partial class TaggedItemEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -44,10 +41,23 @@ namespace Rock.Client
         public int Quantity { get; set; }
 
         /// <summary />
-        public Tag Tag { get; set; }
+        public int TagId { get; set; }
 
         /// <summary />
-        public int TagId { get; set; }
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for TaggedItem
+    /// </summary>
+    public partial class TaggedItem : TaggedItemEntity
+    {
+        /// <summary />
+        public Tag Tag { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -62,17 +72,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

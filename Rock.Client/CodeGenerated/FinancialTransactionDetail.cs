@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for FinancialTransactionDetail
-    /// </summary>
-    public partial class FinancialTransactionDetail
+    public partial class FinancialTransactionDetailEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -44,9 +41,6 @@ namespace Rock.Client
         public int? EntityId { get; set; }
 
         /// <summary />
-        public EntityType EntityType { get; set; }
-
-        /// <summary />
         public int? EntityTypeId { get; set; }
 
         /// <summary />
@@ -57,6 +51,22 @@ namespace Rock.Client
 
         /// <summary />
         public int TransactionId { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for FinancialTransactionDetail
+    /// </summary>
+    public partial class FinancialTransactionDetail : FinancialTransactionDetailEntity
+    {
+        /// <summary />
+        public EntityType EntityType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -71,17 +81,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

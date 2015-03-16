@@ -55,6 +55,19 @@ namespace Rock.Rest
                     action = "DataView"
                 } );
 
+            // Add API route for setting context
+            config.Routes.MapHttpRoute(
+                name: "SetContextApi",
+                routeTemplate: "api/{controller}/SetContext/{id}",
+                defaults: new
+                {
+                    action = "SetContext"
+                },
+                constraints: new
+                {
+                    httpMethod = new HttpMethodConstraint( new string[] { "PUT", "OPTIONS" } ),
+                } );
+
             // finds all [Route] attributes on REST controllers and creates the routes 
             config.MapHttpAttributeRoutes();
 

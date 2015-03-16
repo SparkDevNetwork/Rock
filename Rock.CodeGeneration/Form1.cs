@@ -789,9 +789,16 @@ order by [parentTable], [columnName]
         /// <param name="type"></param>
         private void WriteRockClientFile( string rootFolder, Type type )
         {
+            var entityProperties = GetEntityProperties( type );
+            entityProperties.Remove( "CreatedDateTime" );
+            entityProperties.Remove( "ModifiedDateTime" );
+            entityProperties.Remove( "CreatedByPersonAliasId" );
+            entityProperties.Remove( "ModifiedByPersonAliasId" );
+
             var dataMembers = type.GetProperties().SortByStandardOrder()
                 .Where( a => a.GetCustomAttribute( typeof( DataMemberAttribute ) ) != null )
-                .Where( a => a.GetCustomAttribute( typeof( NotMappedAttribute ) ) == null );
+                .Where( a => a.GetCustomAttribute( typeof( NotMappedAttribute ) ) == null )
+                .Where( a => !entityProperties.Keys.Contains( a.Name ) );
 
             var rockClientIncludeAttribute = type.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>();
             string comments = null;
@@ -801,7 +808,7 @@ order by [parentTable], [columnName]
                 comments = rockClientIncludeAttribute.DocumentationMessage;
             }
             
-            if ( !dataMembers.Any() )
+            if ( !entityProperties.Any() && !dataMembers.Any() )
             {
                 return;
             }
@@ -841,6 +848,21 @@ order by [parentTable], [columnName]
 
             sb.AppendFormat( "namespace Rock.Client" + Environment.NewLine, type.Namespace );
             sb.AppendLine( "{" );
+
+            sb.AppendFormat( "    public partial class {0}Entity" + Environment.NewLine, type.Name );
+            sb.AppendLine( "    {" );
+
+            foreach ( var keyVal in entityProperties )
+            {
+                sb.AppendLine( "        /// <summary />" );
+                sb.AppendFormat( "        public {0} {1} {{ get; set; }}" + Environment.NewLine, keyVal.Value, keyVal.Key );
+                sb.AppendLine( "" );
+            }
+
+            sb.AppendLine( "    }" );
+
+            sb.AppendLine( "" );
+            
             sb.AppendLine( "    /// <summary>" );
 
             if ( !string.IsNullOrWhiteSpace( comments ) )
@@ -854,7 +876,7 @@ order by [parentTable], [columnName]
 
             sb.AppendLine( "    /// </summary>" );
 
-            sb.AppendFormat( "    public partial class {0}" + Environment.NewLine, type.Name );
+            sb.AppendFormat( "    public partial class {0} : {0}Entity" + Environment.NewLine, type.Name );
             sb.AppendLine( "    {" );
 
             foreach ( var dataMember in dataMembers )
@@ -869,10 +891,10 @@ order by [parentTable], [columnName]
             if ( typeof( Rock.Attribute.IHasAttributes ).IsAssignableFrom( type ) )
             {
                 sb.AppendLine( "        /// <summary />" );
-                sb.AppendLine( "        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }" + Environment.NewLine );
+                sb.AppendLine( "        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }" );
                 sb.AppendLine( "" );
                 sb.AppendLine( "        /// <summary />" );
-                sb.AppendLine( "        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }" + Environment.NewLine );
+                sb.AppendLine( "        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }" );
             }
 
             sb.AppendLine( "    }" );

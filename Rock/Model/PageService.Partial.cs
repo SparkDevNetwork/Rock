@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -111,5 +111,20 @@ namespace Rock.Model
             return canDelete;
         }
 
+        /// <summary>
+        /// Gets the Guid for the Page that has the specified Id
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Guid? GetGuid( int id )
+        {
+            var cacheItem = Rock.Web.Cache.PageCache.Read( id );
+            if ( cacheItem != null )
+            {
+                return cacheItem.Guid;
+            }
+
+            return null;
+        }
     }
 }

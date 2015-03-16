@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for Location
-    /// </summary>
-    public partial class Location
+    public partial class LocationEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -38,16 +35,10 @@ namespace Rock.Client
         public string AssessorParcelId { get; set; }
 
         /// <summary />
-        public ICollection<Location> ChildLocations { get; set; }
-
-        /// <summary />
         public string City { get; set; }
 
         /// <summary />
         public string Country { get; set; }
-
-        /// <summary />
-        public double Distance { get; set; }
 
         /// <summary />
         public DateTime? GeocodeAttemptedDateTime { get; set; }
@@ -65,13 +56,7 @@ namespace Rock.Client
         public object GeoFence { get; set; }
 
         /// <summary />
-        public List<Double[]> GeoFenceCoordinates { get; set; }
-
-        /// <summary />
         public object GeoPoint { get; set; }
-
-        /// <summary />
-        public BinaryFile Image { get; set; }
 
         /// <summary />
         public int? ImageId { get; set; }
@@ -83,16 +68,7 @@ namespace Rock.Client
         public bool? IsGeoPointLocked { get; set; }
 
         /// <summary />
-        public double? Latitude { get; set; }
-
-        /// <summary />
-        public DefinedValue LocationTypeValue { get; set; }
-
-        /// <summary />
         public int? LocationTypeValueId { get; set; }
-
-        /// <summary />
-        public double? Longitude { get; set; }
 
         /// <summary />
         public string Name { get; set; }
@@ -102,9 +78,6 @@ namespace Rock.Client
 
         /// <summary />
         public string PostalCode { get; set; }
-
-        /// <summary />
-        public Device PrinterDevice { get; set; }
 
         /// <summary />
         public int? PrinterDeviceId { get; set; }
@@ -131,6 +104,43 @@ namespace Rock.Client
         public string Street2 { get; set; }
 
         /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for Location
+    /// </summary>
+    public partial class Location : LocationEntity
+    {
+        /// <summary />
+        public ICollection<Location> ChildLocations { get; set; }
+
+        /// <summary />
+        public double Distance { get; set; }
+
+        /// <summary />
+        public List<Double[]> GeoFenceCoordinates { get; set; }
+
+        /// <summary />
+        public BinaryFile Image { get; set; }
+
+        /// <summary />
+        public double? Latitude { get; set; }
+
+        /// <summary />
+        public DefinedValue LocationTypeValue { get; set; }
+
+        /// <summary />
+        public double? Longitude { get; set; }
+
+        /// <summary />
+        public Device PrinterDevice { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />
@@ -143,17 +153,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

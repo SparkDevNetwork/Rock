@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for GroupType
-    /// </summary>
-    public partial class GroupType
+    public partial class GroupTypeEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -47,12 +44,6 @@ namespace Rock.Client
         public int /* AttendanceRule*/ AttendanceRule { get; set; }
 
         /// <summary />
-        public ICollection<GroupType> ChildGroupTypes { get; set; }
-
-        /// <summary />
-        public GroupTypeRole DefaultGroupRole { get; set; }
-
-        /// <summary />
         public int? DefaultGroupRoleId { get; set; }
 
         /// <summary />
@@ -66,9 +57,6 @@ namespace Rock.Client
 
         /// <summary />
         public string GroupTerm { get; set; }
-
-        /// <summary />
-        public DefinedValue GroupTypePurposeValue { get; set; }
 
         /// <summary />
         public int? GroupTypePurposeValueId { get; set; }
@@ -86,16 +74,10 @@ namespace Rock.Client
         public int /* GroupLocationPickerMode*/ LocationSelectionMode { get; set; }
 
         /// <summary />
-        public ICollection<GroupTypeLocationType> LocationTypes { get; set; }
-
-        /// <summary />
         public string Name { get; set; }
 
         /// <summary />
         public int Order { get; set; }
-
-        /// <summary />
-        public ICollection<GroupTypeRole> Roles { get; set; }
 
         /// <summary />
         public bool SendAttendanceReminder { get; set; }
@@ -110,6 +92,34 @@ namespace Rock.Client
         public bool TakesAttendance { get; set; }
 
         /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for GroupType
+    /// </summary>
+    public partial class GroupType : GroupTypeEntity
+    {
+        /// <summary />
+        public ICollection<GroupType> ChildGroupTypes { get; set; }
+
+        /// <summary />
+        public GroupTypeRole DefaultGroupRole { get; set; }
+
+        /// <summary />
+        public DefinedValue GroupTypePurposeValue { get; set; }
+
+        /// <summary />
+        public ICollection<GroupTypeLocationType> LocationTypes { get; set; }
+
+        /// <summary />
+        public ICollection<GroupTypeRole> Roles { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />
@@ -122,17 +132,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

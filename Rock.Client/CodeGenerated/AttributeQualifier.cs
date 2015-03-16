@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for AttributeQualifier
-    /// </summary>
-    public partial class AttributeQualifier
+    public partial class AttributeQualifierEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -52,5 +49,12 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+    }
+
+    /// <summary>
+    /// Simple Client Model for AttributeQualifier
+    /// </summary>
+    public partial class AttributeQualifier : AttributeQualifierEntity
+    {
     }
 }

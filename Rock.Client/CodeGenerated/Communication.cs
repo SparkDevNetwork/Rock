@@ -26,16 +26,13 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for Communication
-    /// </summary>
-    public partial class Communication
+    public partial class CommunicationEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public List<string> AdditionalMergeFields { get; set; }
+        public string AdditionalMergeFieldsJson { get; set; }
 
         /// <summary />
         public DateTime? FutureSendDateTime { get; set; }
@@ -44,16 +41,10 @@ namespace Rock.Client
         public bool IsBulkCommunication { get; set; }
 
         /// <summary />
-        public Dictionary<string, string> MediumData { get; set; }
-
-        /// <summary />
-        public EntityType MediumEntityType { get; set; }
+        public string MediumDataJson { get; set; }
 
         /// <summary />
         public int? MediumEntityTypeId { get; set; }
-
-        /// <summary />
-        public ICollection<CommunicationRecipient> Recipients { get; set; }
 
         /// <summary />
         public DateTime? ReviewedDateTime { get; set; }
@@ -62,13 +53,7 @@ namespace Rock.Client
         public string ReviewerNote { get; set; }
 
         /// <summary />
-        public PersonAlias ReviewerPersonAlias { get; set; }
-
-        /// <summary />
         public int? ReviewerPersonAliasId { get; set; }
-
-        /// <summary />
-        public PersonAlias SenderPersonAlias { get; set; }
 
         /// <summary />
         public int? SenderPersonAliasId { get; set; }
@@ -78,6 +63,37 @@ namespace Rock.Client
 
         /// <summary />
         public string Subject { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for Communication
+    /// </summary>
+    public partial class Communication : CommunicationEntity
+    {
+        /// <summary />
+        public List<string> AdditionalMergeFields { get; set; }
+
+        /// <summary />
+        public Dictionary<string, string> MediumData { get; set; }
+
+        /// <summary />
+        public EntityType MediumEntityType { get; set; }
+
+        /// <summary />
+        public ICollection<CommunicationRecipient> Recipients { get; set; }
+
+        /// <summary />
+        public PersonAlias ReviewerPersonAlias { get; set; }
+
+        /// <summary />
+        public PersonAlias SenderPersonAlias { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -92,17 +108,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for Note
-    /// </summary>
-    public partial class Note
+    public partial class NoteEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -47,19 +44,32 @@ namespace Rock.Client
         public bool IsSystem { get; set; }
 
         /// <summary />
-        public NoteType NoteType { get; set; }
-
-        /// <summary />
         public int NoteTypeId { get; set; }
-
-        /// <summary />
-        public DefinedValue SourceType { get; set; }
 
         /// <summary />
         public int? SourceTypeValueId { get; set; }
 
         /// <summary />
         public string Text { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for Note
+    /// </summary>
+    public partial class Note : NoteEntity
+    {
+        /// <summary />
+        public NoteType NoteType { get; set; }
+
+        /// <summary />
+        public DefinedValue SourceType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -74,17 +84,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

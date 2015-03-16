@@ -26,28 +26,16 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for FinancialPersonSavedAccount
-    /// </summary>
-    public partial class FinancialPersonSavedAccount
+    public partial class FinancialPersonSavedAccountEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public DefinedValue CreditCardTypeValue { get; set; }
-
-        /// <summary />
         public int? CreditCardTypeValueId { get; set; }
 
         /// <summary />
-        public DefinedValue CurrencyTypeValue { get; set; }
-
-        /// <summary />
         public int? CurrencyTypeValueId { get; set; }
-
-        /// <summary />
-        public EntityType GatewayEntityType { get; set; }
 
         /// <summary />
         public int? GatewayEntityTypeId { get; set; }
@@ -71,6 +59,28 @@ namespace Rock.Client
         public string TransactionCode { get; set; }
 
         /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for FinancialPersonSavedAccount
+    /// </summary>
+    public partial class FinancialPersonSavedAccount : FinancialPersonSavedAccountEntity
+    {
+        /// <summary />
+        public DefinedValue CreditCardTypeValue { get; set; }
+
+        /// <summary />
+        public DefinedValue CurrencyTypeValue { get; set; }
+
+        /// <summary />
+        public EntityType GatewayEntityType { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />
@@ -83,17 +93,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

@@ -26,19 +26,13 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Use Rock.Client.UserLoginWithPlainTextPassword and set PlainTextPassword to set a new password as part of a api/UserLogins POST or PUT
-    /// </summary>
-    public partial class UserLoginWithPlainTextPassword
+    public partial class UserLoginWithPlainTextPasswordEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
         public string ApiKey { get; set; }
-
-        /// <summary />
-        public EntityType EntityType { get; set; }
 
         /// <summary />
         public int? EntityTypeId { get; set; }
@@ -74,6 +68,9 @@ namespace Rock.Client
         public DateTime? LastPasswordExpirationWarningDateTime { get; set; }
 
         /// <summary />
+        public string Password { get; set; }
+
+        /// <summary />
         public int? PersonId { get; set; }
 
         /// <summary />
@@ -81,6 +78,22 @@ namespace Rock.Client
 
         /// <summary />
         public string UserName { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Use Rock.Client.UserLoginWithPlainTextPassword and set PlainTextPassword to set a new password as part of a api/UserLogins POST or PUT
+    /// </summary>
+    public partial class UserLoginWithPlainTextPassword : UserLoginWithPlainTextPasswordEntity
+    {
+        /// <summary />
+        public EntityType EntityType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -95,17 +108,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

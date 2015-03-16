@@ -192,7 +192,20 @@ namespace Rock.Model
             return this.Get( null, Attribute.SYSTEM_SETTING_QUALIFIER, string.Empty, key );
         }
 
-    }
+        /// <summary>
+        /// Gets the Guid for the Attribute that has the specified Id
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Guid? GetGuid( int id )
+        {
+            var cacheItem = Rock.Web.Cache.AttributeCache.Read( id );
+            if ( cacheItem != null )
+            {
+                return cacheItem.Guid;
+            }
 
-    
+            return null;
+        }
+    }
 }

@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for FinancialBatch
-    /// </summary>
-    public partial class FinancialBatch
+    public partial class FinancialBatchEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -44,9 +41,6 @@ namespace Rock.Client
         public DateTime? BatchStartDateTime { get; set; }
 
         /// <summary />
-        public Campus Campus { get; set; }
-
-        /// <summary />
         public int? CampusId { get; set; }
 
         /// <summary />
@@ -57,6 +51,22 @@ namespace Rock.Client
 
         /// <summary />
         public int /* BatchStatus*/ Status { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for FinancialBatch
+    /// </summary>
+    public partial class FinancialBatch : FinancialBatchEntity
+    {
+        /// <summary />
+        public Campus Campus { get; set; }
 
         /// <summary />
         public ICollection<FinancialTransaction> Transactions { get; set; }
@@ -74,17 +84,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

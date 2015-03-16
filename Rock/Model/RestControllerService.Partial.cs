@@ -14,10 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -107,5 +107,22 @@ namespace Rock.Model
 
             rockContext.SaveChanges();
         }
+
+        /// <summary>
+        /// Gets the Guid for the RestController that has the specified Id
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Guid? GetGuid( int id )
+        {
+            var cacheItem = Rock.Web.Cache.RestControllerCache.Read( id );
+            if ( cacheItem != null )
+            {
+                return cacheItem.Guid;
+            }
+
+            return null;
+        }
+
     }
 }
