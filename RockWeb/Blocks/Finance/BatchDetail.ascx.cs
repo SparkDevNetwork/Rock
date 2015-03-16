@@ -169,9 +169,10 @@ namespace RockWeb.Blocks.Finance
                 batch.ControlAmount = tbControlAmount.Text.AsDecimal();
                 batch.AccountingSystemCode = tbAccountingCode.Text;
 
+                cvBatch.IsValid = batch.IsValid;
                 if ( !Page.IsValid || !batch.IsValid )
                 {
-                    // Controls will render the error messages                    
+                    cvBatch.ErrorMessage = batch.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
                     return;
                 }
 

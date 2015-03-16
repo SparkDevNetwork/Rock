@@ -150,8 +150,6 @@ namespace Rock.Reporting.DataSelect.Person
 
             var groupMemberQuery = new GroupMemberService( context ).Queryable();
 
-            const double milesPerMeter = 1 / 1609.344;
-
             IQueryable<double?> personLocationDistanceQuery;
 
             if ( selectedLocation != null )
@@ -163,7 +161,7 @@ namespace Rock.Reporting.DataSelect.Person
                         .SelectMany( m => m.Group.GroupLocations )
                         .Where( gl => gl.GroupLocationTypeValue.Guid == locationTypeValidGuid )
                         .Where( gl => gl.Location.GeoPoint != null )
-                        .Select( s => DbFunctions.Truncate(s.Location.GeoPoint.Distance( selectedLocation.GeoPoint ) * milesPerMeter, 2) )
+                        .Select( s => DbFunctions.Truncate(s.Location.GeoPoint.Distance( selectedLocation.GeoPoint ) * Location.MilesPerMeter, 2) )
                         .FirstOrDefault() );
             }
             else

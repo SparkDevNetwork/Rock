@@ -85,5 +85,22 @@ namespace Rock.Model
                 .Select( t => t.Id )
                 .FirstOrDefault();
         }
+
+        /// <summary>
+        /// Gets the Guid for the DefinedValue that has the specified Id
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Guid? GetGuid( int id )
+        {
+            var cacheItem = Rock.Web.Cache.DefinedValueCache.Read( id );
+            if ( cacheItem != null )
+            {
+                return cacheItem.Guid;
+            }
+
+            return null;
+
+        }
     }
 }

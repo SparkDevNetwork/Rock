@@ -32,6 +32,18 @@ namespace Rock.Web.UI.Controls
     public class AttributeField : RockBoundField
     {
         /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="AttributeField"/> is condensed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if condensed; otherwise, <c>false</c>.
+        /// </value>
+        public bool Condensed
+        {
+            get { return ViewState["Condensed"] as bool? ?? true; }
+            set { ViewState["Condensed"] = value; }
+        }
+
+        /// <summary>
         /// Retrieves the value of the field bound to the <see cref="T:System.Web.UI.WebControls.BoundField" /> object.
         /// </summary>
         /// <param name="controlContainer">The container for the field value.</param>
@@ -72,7 +84,7 @@ namespace Rock.Web.UI.Controls
                     {
                         var attrib = dataItem.Attributes[this.DataField];
                         string rawValue = dataItem.GetAttributeValue( this.DataField );
-                        string resultHtml = attrib.FieldType.Field.FormatValueAsHtml( controlContainer, rawValue, attrib.QualifierValues, true );
+                        string resultHtml = attrib.FieldType.Field.FormatValueAsHtml( controlContainer, rawValue, attrib.QualifierValues, Condensed );
                         return new HtmlString( resultHtml ?? string.Empty );
                     }
                 }

@@ -51,11 +51,9 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the defined type GUID.
+        /// Occurs when [on format data value].
+        /// This is the callback event that you can use to use custom logic to set the formatted value
         /// </summary>
-        /// <value>
-        /// The defined type unique identifier.
-        /// </value>
         public event EventHandler<CallbackEventArgs> OnFormatDataValue;
 
         /// <summary>
@@ -64,7 +62,7 @@ namespace Rock.Web.UI.Controls
         public class CallbackEventArgs : EventArgs
         {
             /// <summary>
-            /// Gets or sets the data value.
+            /// This is the DataValue. Use this to set the Formatted Value in the OnFormatDataValue callback
             /// </summary>
             /// <value>
             /// The data value.
@@ -72,7 +70,7 @@ namespace Rock.Web.UI.Controls
             public object DataValue { get; set; }
 
             /// <summary>
-            /// Gets or sets the formatted value.
+            /// Set the formatted value in the OnFormatDataValue callback
             /// </summary>
             /// <value>
             /// The formatted value.

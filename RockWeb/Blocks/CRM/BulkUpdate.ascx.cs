@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Crm
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to remove all of the individuals from this update?', function (result) {
             if (result) {
-                eval(e.target.href);
+                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
             }
         });
     });

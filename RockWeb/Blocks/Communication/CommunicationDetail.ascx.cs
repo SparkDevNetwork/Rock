@@ -439,7 +439,7 @@ namespace RockWeb.Blocks.Communication
                 if (mediumEntityType != null)
                 {
                     var medium = MediumContainer.GetComponent( mediumEntityType.Name );
-                    if (medium != null)
+                    if (medium != null && medium.Transport != null)
                     {
                         pnlOpened.Visible = medium.Transport.CanTrackOpens;
                         lDetails.Text = medium.GetMessageDetails( communication );

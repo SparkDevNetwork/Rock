@@ -192,6 +192,24 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the Guid for the entity that has the specified Id
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public virtual Guid? GetGuid( int id )
+        {
+            var result = this.Queryable().Where( a => a.Id == id ).Select( a => a.Guid ).FirstOrDefault();
+            if (result.IsEmpty())
+            {
+                return null;
+            }
+            else
+            {
+                return result;
+            }
+        }
+
+        /// <summary>
         /// Trys to get the model with the id value
         /// </summary>
         /// <returns></returns>

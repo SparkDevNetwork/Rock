@@ -214,19 +214,21 @@ namespace RockWeb.Blocks.Checkin
                 attendanceQuery = attendanceQuery.Where( a => a.GroupId == _group.Id );
                 var attendanceList = attendanceQuery.ToList();
 
-                ddlPeople.DataSource = attendanceList.OrderBy( a => a.PersonAlias.Person.FullName ).Select( a => a.PersonAlias.Person.FullName ).Distinct();
+                ddlPeople.DataSource = attendanceList.Where( a => a.PersonAlias != null && a.PersonAlias.Person != null)
+                    .OrderBy( a => a.PersonAlias.Person.FullName ).Select( a => a.PersonAlias.Person.FullName ).Distinct();
                 ddlPeople.DataBind();
                 ddlPeople.Items.Insert( 0, Rock.Constants.All.ListItem );
-                ddlPeople.Visible = attendanceList.Select( a => a.PersonAlias.Person.FullName ).Distinct().Any();
+                ddlPeople.Visible = attendanceList.Where( a => a.PersonAlias != null && a.PersonAlias.Person != null )
+                    .Select( a => a.PersonAlias.Person.FullName ).Distinct().Any();
                 ddlPeople.SetValue( rFilter.GetUserPreference( "Person" ) );
 
                 ddlGroups.Visible = false;
             }
 
-            ddlSchedules.DataSource = attendanceQuery.OrderBy( a => a.Schedule.Name ).Select( a => a.Schedule.Name ).Distinct().ToList();
+            ddlSchedules.DataSource = attendanceQuery.Where( a => a.Schedule != null ).OrderBy( a => a.Schedule.Name ).Select( a => a.Schedule.Name ).Distinct().ToList();
             ddlSchedules.DataBind();
             ddlSchedules.Items.Insert( 0, Rock.Constants.All.ListItem );
-            ddlSchedules.Visible = attendanceQuery.Select( a => a.Schedule.Name ).Distinct().ToList().Any();
+            ddlSchedules.Visible = attendanceQuery.Where( a => a.Schedule != null ).Select( a => a.Schedule.Name ).Distinct().ToList().Any();
             ddlSchedules.SetValue( rFilter.GetUserPreference( "Schedule" ) );
         }
 
