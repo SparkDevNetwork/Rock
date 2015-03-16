@@ -36,6 +36,7 @@
             this.btnMakeTableOpenXML = new System.Windows.Forms.Button();
             this.btnLabelsOpenXML = new System.Windows.Forms.Button();
             this.btnMakeDocumentOpenXML = new System.Windows.Forms.Button();
+            this.btnMakeUsingNext = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -84,6 +85,7 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.btnMakeUsingNext);
             this.groupBox2.Controls.Add(this.btnMakeTableOpenXML);
             this.groupBox2.Controls.Add(this.btnLabelsOpenXML);
             this.groupBox2.Controls.Add(this.btnMakeDocumentOpenXML);
@@ -96,7 +98,7 @@
             // 
             // btnMakeTableOpenXML
             // 
-            this.btnMakeTableOpenXML.Location = new System.Drawing.Point(17, 87);
+            this.btnMakeTableOpenXML.Location = new System.Drawing.Point(17, 118);
             this.btnMakeTableOpenXML.Name = "btnMakeTableOpenXML";
             this.btnMakeTableOpenXML.Size = new System.Drawing.Size(105, 23);
             this.btnMakeTableOpenXML.TabIndex = 5;
@@ -106,7 +108,7 @@
             // 
             // btnLabelsOpenXML
             // 
-            this.btnLabelsOpenXML.Location = new System.Drawing.Point(17, 58);
+            this.btnLabelsOpenXML.Location = new System.Drawing.Point(17, 89);
             this.btnLabelsOpenXML.Name = "btnLabelsOpenXML";
             this.btnLabelsOpenXML.Size = new System.Drawing.Size(105, 23);
             this.btnLabelsOpenXML.TabIndex = 4;
@@ -116,13 +118,23 @@
             // 
             // btnMakeDocumentOpenXML
             // 
-            this.btnMakeDocumentOpenXML.Location = new System.Drawing.Point(17, 29);
+            this.btnMakeDocumentOpenXML.Location = new System.Drawing.Point(17, 60);
             this.btnMakeDocumentOpenXML.Name = "btnMakeDocumentOpenXML";
             this.btnMakeDocumentOpenXML.Size = new System.Drawing.Size(105, 23);
             this.btnMakeDocumentOpenXML.TabIndex = 3;
             this.btnMakeDocumentOpenXML.Text = "Make Document";
             this.btnMakeDocumentOpenXML.UseVisualStyleBackColor = true;
             this.btnMakeDocumentOpenXML.Click += new System.EventHandler(this.btnMakeDocumentOpenXML_Click);
+            // 
+            // btnMakeUsingNext
+            // 
+            this.btnMakeUsingNext.Location = new System.Drawing.Point(17, 31);
+            this.btnMakeUsingNext.Name = "btnMakeUsingNext";
+            this.btnMakeUsingNext.Size = new System.Drawing.Size(146, 23);
+            this.btnMakeUsingNext.TabIndex = 6;
+            this.btnMakeUsingNext.Text = "Merge Using NextRec";
+            this.btnMakeUsingNext.UseVisualStyleBackColor = true;
+            this.btnMakeUsingNext.Click += new System.EventHandler(this.btnMergeUsingNextRecord_Click);
             // 
             // Form1
             // 
@@ -149,6 +161,7 @@
         private System.Windows.Forms.Button btnMakeTableOpenXML;
         private System.Windows.Forms.Button btnLabelsOpenXML;
         private System.Windows.Forms.Button btnMakeDocumentOpenXML;
+        private System.Windows.Forms.Button btnMakeUsingNext;
     }
 }
 
