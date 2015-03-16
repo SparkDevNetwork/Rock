@@ -350,7 +350,10 @@ namespace DotLiquid
 			if ((obj is IDictionary && ((IDictionary) obj).Contains(part)))
 				return true;
 
-			if ((obj is IList) && (part is int))
+            if ((obj is IDictionary<string, object> && part is string && ( (IDictionary<string, object>)obj ).ContainsKey( (string)part ) ) )
+                return true;
+
+            if ( ( obj is IList ) && ( part is int ) )
 				return true;
 
 			if (TypeUtility.IsAnonymousType(obj.GetType()) && obj.GetType().GetProperty((string) part) != null)
@@ -365,16 +368,18 @@ namespace DotLiquid
 		private object LookupAndEvaluate(object obj, object key)
 		{
 			object value;
-			if (obj is IDictionary)
-				value = ((IDictionary) obj)[key];
-			else if (obj is IList)
-				value = ((IList) obj)[(int) key];
-			else if (TypeUtility.IsAnonymousType(obj.GetType()))
-				value = obj.GetType().GetProperty((string) key).GetValue(obj, null);
-			else if (obj is IIndexable)
-				value = ((IIndexable) obj)[key];
-			else
-				throw new NotSupportedException();
+            if ( obj is IDictionary )
+                value = ( (IDictionary)obj )[key];
+            else if ( obj is IDictionary<string, object> && key is string )
+                value = ( (IDictionary<string, object>)obj )[(string)key];
+            else if ( obj is IList )
+                value = ( (IList)obj )[(int)key];
+            else if ( TypeUtility.IsAnonymousType( obj.GetType() ) )
+                value = obj.GetType().GetProperty( (string)key ).GetValue( obj, null );
+            else if ( obj is IIndexable )
+                value = ( (IIndexable)obj )[key];
+            else
+                throw new NotSupportedException();
 
 			if (value is Proc)
 			{
