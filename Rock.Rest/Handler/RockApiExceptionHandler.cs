@@ -28,6 +28,18 @@ namespace Rock.Rest
     public class RockApiExceptionHandler : ExceptionHandler 
     {
         /// <summary>
+        /// Determines whether the exception should be handled.
+        /// </summary>
+        /// <param name="context">The exception handler context.</param>
+        /// <returns>
+        /// true if the exception should be handled; otherwise, false.
+        /// </returns>
+        public override bool ShouldHandle( ExceptionHandlerContext context )
+        {
+            return true;
+        }
+
+        /// <summary>
         /// When overridden in a derived class, handles the exception synchronously.
         /// </summary>
         /// <param name="context">The exception handler context.</param>
