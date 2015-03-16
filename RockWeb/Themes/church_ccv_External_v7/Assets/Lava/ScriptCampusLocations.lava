@@ -8,7 +8,7 @@ CCV.findCampusById = function (campusId) {
 CCV.locations = [
 {% for campus in Campuses %}
   {
-    id: '{{ campus.LocationId }}',
+    id: '{{ campus.Id }}',
     name: '{{ campus.Name }}',
     {% if campus.Location.Latitude and campus.Location.Longitude %}
     geo: {
@@ -16,7 +16,7 @@ CCV.locations = [
       lng: {{ campus.Location.Longitude }},
     },
     {% endif %}
-    phone: '{{ campus.PhoneNumber }},',
+    phone: '{{ campus.PhoneNumber }}',
     street: '{{ campus.Location.Street1 }}',
     city: '{{ campus.Location.City }}',
     state: '{{ campus.Location.State }}',

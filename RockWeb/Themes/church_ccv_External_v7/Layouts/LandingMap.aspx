@@ -2,6 +2,29 @@
 
 <!DOCTYPE html>
 
+<script runat="server">
+
+    protected override void OnLoad( EventArgs e )
+    {
+        base.OnLoad( e );
+
+        var campusEntityType = Rock.Web.Cache.EntityTypeCache.Read("Rock.Model.Campus");
+        var currentCampus = GetCurrentContext(campusEntityType) as Rock.Model.Campus;
+
+        var homePageRoute = "home";
+
+        if (currentCampus != null)
+        {
+            Response.Redirect("/"+homePageRoute);
+        }
+        else
+        {
+            AddScriptToHead(this.Page, "var CCV = CCV || {}; CCV.homePageRoute ='"+homePageRoute+"';", true);
+        }
+    }
+
+</script>
+
 <html class="no-js">
 <head runat="server">
 
@@ -12,7 +35,7 @@
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>" ></script>
     <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js", true) %>"></script>
 
-    <script src="//maps.google.com/maps/api/js?v=3&amp;sensor=false"></script>
+    <script src="//maps.google.com/maps/api/js?v=3"></script>
 
     <!-- Set the viewport width to device width for mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">

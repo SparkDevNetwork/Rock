@@ -109,6 +109,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Constraints\ValidControllerNameConstraint.cs" />
     <Compile Include="Controllers\AttendancesController.partial.cs" />
+    <Compile Include="Controllers\CampusesController.Partial.cs" />
     <Compile Include="Controllers\CampusController.cs" />
     <Compile Include="Controllers\CodeGenerated\BenevolenceRequestsController.cs" />
     <Compile Include="Controllers\CodeGenerated\BenevolenceResultsController.cs" />

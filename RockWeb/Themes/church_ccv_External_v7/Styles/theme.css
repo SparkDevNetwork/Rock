@@ -706,7 +706,7 @@ Copyright (c) 2012 Dan Eden*/
 .modal-backdrop.fade.in {
   opacity: 0.7;
   filter: alpha(opacity=70);
-  background: rgba(0, 0, 0, 0.3);
+  background: #000000;
 }
 .modal-dialog {
   margin: 0;
@@ -1458,6 +1458,34 @@ fieldset .actions {
 }
 .datepicker table td span.year:first-child {
   margin-left: 0;
+}
+.timepicker-input:before,
+.timepicker-input:after {
+  content: " ";
+  display: table;
+}
+.timepicker-input:after {
+  clear: both;
+}
+.timepicker-input .input-group {
+  float: left;
+}
+.timepicker-input i.fa-times {
+  float: left;
+  margin-top: 4px;
+  padding: 6px;
+  cursor: pointer;
+  opacity: 0;
+  -webkit-transition: opacity 0.2s ease-out;
+  -moz-transition: opacity 0.2s ease-out;
+  -o-transition: opacity 0.2s ease-out;
+  transition: opacity 0.2s ease-out;
+}
+.timepicker-input:hover i.fa-times {
+  opacity: 1;
+}
+.touch .timepicker-input i.fa-times {
+  opacity: 1;
 }
 .bootstrap-timepicker {
   position: relative;
@@ -3148,6 +3176,7 @@ table.attribute-grid tr th:nth-child(3) {
     15. Photo Upload
     16. Duplicate Pages
     17. DISC
+    19. Edit Person
 */
 .personprofile {
   margin-top: -15px;
@@ -3647,7 +3676,7 @@ span.field-value {
   margin-top: 0;
 }
 #fluidbox-overlay {
-  background: rgba(0, 0, 0, 0.3);
+  background: #000000;
 }
 /* Small devices (tablets, 768px and up) */
 @media (min-width: 768px), print {
@@ -3866,6 +3895,14 @@ tr.inactive td {
   width: 100%;
   font-size: 30px;
   position: absolute;
+}
+.phonegroup-label {
+  margin-bottom: 5px;
+}
+@media (min-width: 768px) {
+  .phonegroup-label {
+    padding-top: 4px;
+  }
 }
 /*
     Used to manage styles for specific blocks.
@@ -5587,6 +5624,80 @@ html[xmlns] .slides {
   padding-bottom: .25em;
   text-align: center;
   font-weight: 800;
+}
+.campusmodal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1040;
+}
+.campusmodal-wrapper {
+  z-index: 1050;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  -webkit-box-shadow: 0 2.5px 9px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2.5px 9px rgba(0, 0, 0, 0.5);
+}
+@media (min-width: 992px) {
+  .campusmodal-wrapper {
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    right: 5%;
+    bottom: 5%;
+  }
+}
+.campusmodal-holder {
+  background: #eeeeee;
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 138px;
+}
+@media (min-width: 992px) {
+  .campusmodal-holder {
+    bottom: 69px;
+  }
+}
+.campusmodal-footer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: #222222;
+  color: #fff;
+  height: 138px;
+  padding: 11.5px;
+}
+@media (min-width: 992px) {
+  .campusmodal-footer {
+    height: 69px;
+    padding: 0;
+  }
+}
+.campusmodal-footertitle {
+  margin-top: 0;
+}
+@media (min-width: 992px) {
+  .campusmodal-footertitle,
+  .campusmodal-footertext {
+    float: left;
+    margin: 0;
+    line-height: 23px;
+    padding: 23px;
+  }
+  .campusmodal-footertitle {
+    background: #7a1315;
+  }
+  .campusmodal-footertext {
+    padding-right: 0;
+  }
 }
 html {
   box-sizing: border-box;

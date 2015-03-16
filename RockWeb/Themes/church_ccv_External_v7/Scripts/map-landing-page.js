@@ -1,7 +1,7 @@
 
 
 //
-// Map Landing Page
+// MAP LANDING PAGE
 // --------------------------------------------------
 
 
@@ -33,8 +33,17 @@ landingMap.bindUi = function() {
 
 // New methods
 landingMap.selectCampus = function (campusId) {
-  var campus = CCV.findCampusById(campusId)
-  alert(campus.name)
+  Rock.utility.setContext('campuses', campusId)
+
+  // wait until API adds the cookie
+  $(document).ajaxComplete(function( event, xhr, settings ) {
+    if (settings.url.indexOf('/api/campuses/SetContext/') > -1) {
+      // using location.replace removes the current page from history
+      // .homePageRoute is set in LandingMap.aspx
+      if (CCV.homePageRoute)
+        window.location.replace('/'+CCV.homePageRoute)
+    }
+  })
 }
 landingMap.openInfoWindow = function (campus) {
   var marker = this.markers.filter(function (marker) {
