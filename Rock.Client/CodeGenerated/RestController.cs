@@ -26,22 +26,32 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for RestController
-    /// </summary>
-    public partial class RestController
+    public partial class RestControllerEntity
     {
         /// <summary />
         public int Id { get; set; }
-
-        /// <summary />
-        public ICollection<RestAction> Actions { get; set; }
 
         /// <summary />
         public string ClassName { get; set; }
 
         /// <summary />
         public string Name { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for RestController
+    /// </summary>
+    public partial class RestController : RestControllerEntity
+    {
+        /// <summary />
+        public ICollection<RestAction> Actions { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -56,17 +66,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

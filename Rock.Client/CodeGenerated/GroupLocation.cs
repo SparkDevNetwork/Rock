@@ -26,19 +26,13 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for GroupLocation
-    /// </summary>
-    public partial class GroupLocation
+    public partial class GroupLocationEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
         public int GroupId { get; set; }
-
-        /// <summary />
-        public DefinedValue GroupLocationTypeValue { get; set; }
 
         /// <summary />
         public int? GroupLocationTypeValueId { get; set; }
@@ -53,10 +47,26 @@ namespace Rock.Client
         public bool IsMappedLocation { get; set; }
 
         /// <summary />
-        public Location Location { get; set; }
+        public int LocationId { get; set; }
 
         /// <summary />
-        public int LocationId { get; set; }
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for GroupLocation
+    /// </summary>
+    public partial class GroupLocation : GroupLocationEntity
+    {
+        /// <summary />
+        public DefinedValue GroupLocationTypeValue { get; set; }
+
+        /// <summary />
+        public Location Location { get; set; }
 
         /// <summary />
         public ICollection<Schedule> Schedules { get; set; }
@@ -74,17 +84,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for Campus
-    /// </summary>
-    public partial class Campus
+    public partial class CampusEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -44,13 +41,7 @@ namespace Rock.Client
         public bool IsSystem { get; set; }
 
         /// <summary />
-        public PersonAlias LeaderPersonAlias { get; set; }
-
-        /// <summary />
         public int? LeaderPersonAliasId { get; set; }
-
-        /// <summary />
-        public Location Location { get; set; }
 
         /// <summary />
         public int? LocationId { get; set; }
@@ -71,6 +62,25 @@ namespace Rock.Client
         public string Url { get; set; }
 
         /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for Campus
+    /// </summary>
+    public partial class Campus : CampusEntity
+    {
+        /// <summary />
+        public PersonAlias LeaderPersonAlias { get; set; }
+
+        /// <summary />
+        public Location Location { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />
@@ -83,17 +93,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

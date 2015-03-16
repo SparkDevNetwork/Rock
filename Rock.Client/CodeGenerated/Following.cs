@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for Following
-    /// </summary>
-    public partial class Following
+    public partial class FollowingEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -38,16 +35,29 @@ namespace Rock.Client
         public int EntityId { get; set; }
 
         /// <summary />
-        public EntityType EntityType { get; set; }
-
-        /// <summary />
         public int EntityTypeId { get; set; }
 
         /// <summary />
-        public PersonAlias PersonAlias { get; set; }
+        public int PersonAliasId { get; set; }
 
         /// <summary />
-        public int PersonAliasId { get; set; }
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for Following
+    /// </summary>
+    public partial class Following : FollowingEntity
+    {
+        /// <summary />
+        public EntityType EntityType { get; set; }
+
+        /// <summary />
+        public PersonAlias PersonAlias { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -62,17 +72,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

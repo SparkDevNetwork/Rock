@@ -26,16 +26,10 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for BinaryFile
-    /// </summary>
-    public partial class BinaryFile
+    public partial class BinaryFileEntity
     {
         /// <summary />
         public int Id { get; set; }
-
-        /// <summary />
-        public BinaryFileType BinaryFileType { get; set; }
 
         /// <summary />
         public int? BinaryFileTypeId { get; set; }
@@ -62,6 +56,25 @@ namespace Rock.Client
         public string Path { get; set; }
 
         /// <summary />
+        public string StorageEntitySettings { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for BinaryFile
+    /// </summary>
+    public partial class BinaryFile : BinaryFileEntity
+    {
+        /// <summary />
+        public BinaryFileType BinaryFileType { get; set; }
+
+        /// <summary />
         public int? StorageEntityTypeId { get; set; }
 
         /// <summary />
@@ -77,17 +90,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

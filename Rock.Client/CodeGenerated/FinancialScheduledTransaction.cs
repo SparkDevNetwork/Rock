@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for FinancialScheduledTransaction
-    /// </summary>
-    public partial class FinancialScheduledTransaction
+    public partial class FinancialScheduledTransactionEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -41,22 +38,13 @@ namespace Rock.Client
         public DateTime? CardReminderDate { get; set; }
 
         /// <summary />
-        public DefinedValue CreditCardTypeValue { get; set; }
-
-        /// <summary />
         public int? CreditCardTypeValueId { get; set; }
-
-        /// <summary />
-        public DefinedValue CurrencyTypeValue { get; set; }
 
         /// <summary />
         public int? CurrencyTypeValueId { get; set; }
 
         /// <summary />
         public DateTime? EndDate { get; set; }
-
-        /// <summary />
-        public EntityType GatewayEntityType { get; set; }
 
         /// <summary />
         public int? GatewayEntityTypeId { get; set; }
@@ -80,19 +68,41 @@ namespace Rock.Client
         public int? NumberOfPayments { get; set; }
 
         /// <summary />
-        public ICollection<FinancialScheduledTransactionDetail> ScheduledTransactionDetails { get; set; }
-
-        /// <summary />
         public DateTime StartDate { get; set; }
 
         /// <summary />
         public string TransactionCode { get; set; }
 
         /// <summary />
-        public DefinedValue TransactionFrequencyValue { get; set; }
+        public int TransactionFrequencyValueId { get; set; }
 
         /// <summary />
-        public int TransactionFrequencyValueId { get; set; }
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for FinancialScheduledTransaction
+    /// </summary>
+    public partial class FinancialScheduledTransaction : FinancialScheduledTransactionEntity
+    {
+        /// <summary />
+        public DefinedValue CreditCardTypeValue { get; set; }
+
+        /// <summary />
+        public DefinedValue CurrencyTypeValue { get; set; }
+
+        /// <summary />
+        public EntityType GatewayEntityType { get; set; }
+
+        /// <summary />
+        public ICollection<FinancialScheduledTransactionDetail> ScheduledTransactionDetails { get; set; }
+
+        /// <summary />
+        public DefinedValue TransactionFrequencyValue { get; set; }
 
         /// <summary />
         public ICollection<FinancialTransaction> Transactions { get; set; }
@@ -110,17 +120,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

@@ -26,10 +26,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
-    /// <summary>
-    /// Simple Client Model for PhoneNumber
-    /// </summary>
-    public partial class PhoneNumber
+    public partial class PhoneNumberEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -59,13 +56,26 @@ namespace Rock.Client
         public string NumberFormatted { get; set; }
 
         /// <summary />
-        public DefinedValue NumberTypeValue { get; set; }
-
-        /// <summary />
         public int? NumberTypeValueId { get; set; }
 
         /// <summary />
         public int PersonId { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Simple Client Model for PhoneNumber
+    /// </summary>
+    public partial class PhoneNumber : PhoneNumberEntity
+    {
+        /// <summary />
+        public DefinedValue NumberTypeValue { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -80,17 +90,9 @@ namespace Rock.Client
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
 
         /// <summary />
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }
