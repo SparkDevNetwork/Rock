@@ -24,10 +24,10 @@ namespace DocXSample
         private string[] relations = { "son", "daughter", "uncle", "aunt" };
         private string[] seasons = { "spring", "summer", "fall", "winter is a great season that lasts a long time in many areas of the world, especially in the north" };
         private object[] letterMergeObjects = {
-            new { Name = "Ted Decker", Birthdate = new DateTime(1960, 5, 15) }, 
-            new { Name = "Sally Seashell", Birthdate = new DateTime(1970, 1, 9) }, 
-            new { Name = "Noah Lot", Birthdate = new DateTime(2007, 11, 12) }, 
-            new { Name = "Alex Trebek", Birthdate = new DateTime(2010, 2, 28) }, 
+            new { Name = "Ted Decker", Birthdate = new DateTime(1960, 5, 15), Street1 = "100 1st St", City = "Phoenix", State = "AZ", ZipCode = "85083" }, 
+            new { Name = "Sally Seashell", Birthdate = new DateTime(1970, 1, 9), Street1 = "200 1st St", City = "Phoenix", State = "AZ", ZipCode = "85084"  }, 
+            new { Name = "Noah Lot", Birthdate = new DateTime(2007, 11, 12), Street1 = "300 1st St", City = "Phoenix", State = "AZ", ZipCode = "85085"  }, 
+            new { Name = "Alex Trebek", Birthdate = new DateTime(2010, 2, 28), Street1 = "400 1st St", City = "Phoenix", State = "AZ", ZipCode = "85086"  }, 
         };
 
         // labels
@@ -519,10 +519,11 @@ namespace DocXSample
 
                 using ( WordprocessingDocument outputDoc = WordprocessingDocument.Open( outputDocStream, true ) )
                 {
-                    var newDocBody = outputDoc.MainDocumentPart.Document.Body;
+                    var xdoc = outputDoc.MainDocumentPart.GetXDocument();
+                    var newDocBodyX = xdoc.DescendantNodes().OfType<XElement>().FirstOrDefault( a => a.Name.LocalName.Equals( "body" ) );
 
-                    // start with a clean body
-                    newDocBody.RemoveAllChildren();
+                    // start with a clean body for the output doc (we'll get the template body later)
+                    newDocBodyX.RemoveNodes();
 
                     //for ( int j = 0; j < 100; j++ )
                     {
@@ -533,15 +534,16 @@ namespace DocXSample
                             letterTemplateStream.Position = 0;
                             letterTemplateStream.CopyTo( tempMergeDocStream );
                             tempMergeDocStream.Position = 0;
-                            var tempMergeDoc = WordprocessingDocument.Open( tempMergeDocStream, true );
+                            var tempMergeWordDoc = WordprocessingDocument.Open( tempMergeDocStream, true );
 
-                            MarkupSimplifier.SimplifyMarkup( tempMergeDoc, settings );
+                            MarkupSimplifier.SimplifyMarkup( tempMergeWordDoc, settings );
+                            var tempMergeDocX = tempMergeWordDoc.MainDocumentPart.GetXDocument();
 
                             // figure out which part of the doc should be considred the RecordNode
                             // Examples are: Body, Table Cells (Labels), Partial Page (Half Page baptism certificates), etc)
                             XElement nextIndicatorNode = null;
 
-                            OpenXmlRegex.Match( tempMergeDoc.MainDocumentPart.GetXDocument().Elements(), nextRecordRegEx, ( x, m ) =>
+                            OpenXmlRegex.Match( tempMergeDocX.Elements(), nextRecordRegEx, ( x, m ) =>
                             {
                                 nextIndicatorNode = x;
                             } );
@@ -553,8 +555,7 @@ namespace DocXSample
                             }
                             else
                             {
-                                // TODO, find the body element...
-                                recordNode = tempMergeDoc.MainDocumentPart.GetXDocument();
+                                recordNode = newDocBodyX;
                             }
 
                             var localVariables = new DotLiquid.Hash();
@@ -585,53 +586,49 @@ namespace DocXSample
                             var mergedXRecord = XElement.Parse( mergedXml ) as XContainer;
                             if ( recordNode.Parent == null )
                             {
-                                foreach ( var childNode in recordNode.Nodes() )
+                                foreach ( var childNode in mergedXRecord.Nodes() )
                                 {
                                     var xchildNode = childNode as XElement;
-                                    //newDocBody.AppendChild( xchildNode );
+                                    newDocBodyX.Add( xchildNode );
                                 }
 
                                 // add page break
-                                newDocBody.AppendChild( new DocumentFormat.OpenXml.Wordprocessing.Break() { Type = BreakValues.Page } );
+                                var pageBreakXml = new DocumentFormat.OpenXml.Wordprocessing.Break() { Type = BreakValues.Page }.OuterXml;
+                                newDocBodyX.Add( XElement.Parse( pageBreakXml ) );
                             }
                             else
                             {
                                 var parentNode = recordNode.Parent;
+                                foreach ( var childNode in mergedXRecord.Nodes() )
+                                {
+                                    var xchildNode = childNode as XElement;
+                                    parentNode.Add( xchildNode );
+                                }
+
+                                /*
                                 recordNode.Remove();
-                                parentNode.Add( mergedXRecord );
+                                parentNode.Add( mergedXRecord );*/
                             }
-
-                            /*if ( ( mergedXRecord as XElement ).Name.LocalName == "body" )
-                            {
-
-                            }
-                            */
-
-
-                            /*
-
-                            foreach ( var childBodyItem in tempMergeDoc.MainDocumentPart.Document.Body )
-                            {
-                                var clonedChild = childBodyItem.CloneNode( true );
-                                recordNode.Add( clonedChild );
-                            }
-
-                             */
-
                         }
                     }
 
                     // remove last page break
-                    var lastBr = newDocBody.LastChild as DocumentFormat.OpenXml.Wordprocessing.Break;
+                    var lastBr = newDocBodyX.LastNode as XElement;
                     if ( lastBr != null )
                     {
-                        newDocBody.RemoveChild( lastBr );
+                        if ( lastBr.Name.LocalName == "br" )
+                        {
+                            lastBr.Remove();
+                        }
                     }
 
+
+                    outputDoc.MainDocumentPart.PutXDocument();
                 }
             }
 
             // Save to disk
+            
             File.WriteAllBytes( outputDocPath, outputDocStream.ToArray() );
             System.Diagnostics.Process.Start( outputDocPath );
         }
