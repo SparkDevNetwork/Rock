@@ -475,19 +475,39 @@ namespace DocXSample
         private void btnMergeLabelsUsingNextRecord_Click( object sender, EventArgs e )
         {
             var path = GetOutputFolder();
-            string templatePath = path + @"\label-template - next record.docx";
+            string templatePath = path + @"\label-template.docx";
             string outputDocPath = path + @"\LabelOut_OpenXML.docx";
             var mergeObjectsList = GetSampleMergeObjectsList( 100 );
 
             DoMergeDoc( templatePath, outputDocPath, mergeObjectsList );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnMergeLetterUsingNextRecord control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void btnMergeLetterUsingNextRecord_Click( object sender, EventArgs e )
         {
             var path = GetOutputFolder();
             string templatePath = path + @"\letter-template - next record.docx";
             string outputDocPath = path + @"\LetterOut_OpenXML.docx";
             var mergeObjectsList = GetSampleMergeObjectsList();
+
+            DoMergeDoc( templatePath, outputDocPath, mergeObjectsList );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnMergeHalfPageUsingNextRecord control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void btnMergeHalfPageUsingNextRecord_Click( object sender, EventArgs e )
+        {
+            var path = GetOutputFolder();
+            string templatePath = path + @"\Certificate-template - next record.docx";
+            string outputDocPath = path + @"\CertificateOut_OpenXML.docx";
+            var mergeObjectsList = GetSampleMergeObjectsList( 10 );
 
             DoMergeDoc( templatePath, outputDocPath, mergeObjectsList );
         }
@@ -501,6 +521,8 @@ namespace DocXSample
         private void DoMergeDoc( string templatePath, string outputDocPath, List<Dictionary<string, object>> mergeObjectsList )
         {
             Regex nextRecordRegEx = new Regex( @"{&\s*\bnext\b\s*&}", RegexOptions.IgnoreCase );
+            Regex nextRecordEncodedRegEx = new Regex( @"{&amp;\s*\bnext\b\s*&amp;}", RegexOptions.IgnoreCase );
+            Regex regExDot = new Regex( "." );
             MemoryStream outputDocStream = new MemoryStream();
 
             using ( var sourceTemplateStream = new FileStream( templatePath, FileMode.Open, FileAccess.Read ) )
@@ -537,10 +559,9 @@ namespace DocXSample
                         OpenXmlRegex.Match( tempMergeDocX.Elements(), nextRecordRegEx, ( x, m ) =>
                         {
                             nextIndicatorNodes.Add( x );
-
-                            // once we know the indicator node, we can clear out the "{& next &}" text
-                            OpenXmlRegex.Replace( new XElement[] { x }, nextRecordRegEx, string.Empty, ( xx, mm ) => { return true; } );
                         } );
+
+                        var allSameParent = nextIndicatorNodes.Count > 1 && nextIndicatorNodes.Select( a => a.Parent ).Distinct().Count() == 1;
 
                         foreach ( var nextIndicatorNode in nextIndicatorNodes )
                         {
@@ -557,20 +578,55 @@ namespace DocXSample
                                 continue;
                             }
 
-                            var xml = recordContainerNode.ToString().ReplaceWordChars();
                             XContainer mergedXRecord;
 
                             if ( recordIndex >= recordCount )
                             {
                                 // out of records, so clear out any remaining template nodes that haven't been merged
+                                string xml = recordContainerNode.ToString().ReplaceWordChars();
                                 mergedXRecord = XElement.Parse( xml ) as XContainer;
-                                OpenXmlRegex.Replace( mergedXRecord.Nodes().OfType<XElement>(), new Regex( "." ), string.Empty, ( a, b ) => { return true; } );
+                                OpenXmlRegex.Replace( mergedXRecord.Nodes().OfType<XElement>(), regExDot, string.Empty, ( a, b ) => { return true; } );
+
+                                recordIndex++;
                             }
                             else
                             {
-                                DotLiquid.Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-                                DotLiquid.Template template = DotLiquid.Template.Parse( xml );
-                                var mergedXml = template.Render( DotLiquid.Hash.FromDictionary( mergeObjectsList[recordIndex] ) );
+                                List<string> xmlChunks = new List<string>();
+
+                                if ( allSameParent )
+                                {
+                                    // if all the nextRecord nodes have the same parent, just split the XML for each record and reassemble it when done
+                                    xmlChunks.AddRange( nextRecordEncodedRegEx.Split( recordContainerNode.ToString().ReplaceWordChars() ) );
+                                }
+                                else
+                                {
+                                    xmlChunks.Add( recordContainerNode.ToString().ReplaceWordChars() );
+                                }
+
+                                string mergedXml = string.Empty;
+
+                                foreach ( var xml in xmlChunks )
+                                {
+                                    if ( recordIndex < recordCount )
+                                    {
+                                        if ( xml.HasMergeFields() )
+                                        {
+                                            DotLiquid.Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+                                            DotLiquid.Template template = DotLiquid.Template.Parse( xml );
+                                            mergedXml += template.Render( DotLiquid.Hash.FromDictionary( mergeObjectsList[recordIndex] ) );
+                                            recordIndex++;
+                                        }
+                                        else
+                                        {
+                                            mergedXml += xml;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        mergedXml += xml;
+                                    }
+                                }
+
                                 mergedXRecord = XElement.Parse( mergedXml ) as XContainer;
                             }
 
@@ -606,8 +662,6 @@ namespace DocXSample
                                     recordContainerNode.Add( pageBreak );
                                 }
                             }
-
-                            recordIndex++;
                         }
 
                         foreach ( var childNode in tempMergeDocBodyNode.Nodes() )
@@ -615,7 +669,10 @@ namespace DocXSample
                             outputBodyNode.Add( childNode );
                         }
                     }
-                    
+
+                    // remove all the 'next' delimiters
+                    OpenXmlRegex.Replace( outputBodyNode.Nodes().OfType<XElement>(), nextRecordRegEx, string.Empty, ( xx, mm ) => { return true; } );
+
                     // remove the last pagebreak if there is nothing after it
                     var lastBodyElement = outputBodyNode.Nodes().OfType<XElement>().LastOrDefault();
                     if ( lastBodyElement != null && lastBodyElement.Name.LocalName == "br" )
@@ -625,7 +682,7 @@ namespace DocXSample
                             lastBodyElement.Remove();
                         }
                     }
-                    
+
                     // pop the xdoc back
                     outputDoc.MainDocumentPart.PutXDocument();
                 }
@@ -720,6 +777,18 @@ public static class Extensions
         s = Regex.Replace( s, "[\u02DC\u00A0]", " " );
 
         return s;
+    }
+
+    public static bool HasMergeFields( this string content )
+    {
+        if ( content == null )
+            return false;
+
+        // If there's no merge codes, just return the content
+        if ( !Regex.IsMatch( content, @".*\{.+\}.*" ) )
+            return false;
+
+        return true;
     }
 }
 
