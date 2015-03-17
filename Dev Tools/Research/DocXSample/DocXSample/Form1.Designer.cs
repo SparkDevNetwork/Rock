@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.btnMergeHalfPageUsingNextRecord = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.btnMakeUsingNext = new System.Windows.Forms.Button();
             this.btnMakeTableOpenXML = new System.Windows.Forms.Button();
@@ -39,6 +40,7 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.btnMergeHalfPageUsingNextRecord);
             this.groupBox2.Controls.Add(this.button1);
             this.groupBox2.Controls.Add(this.btnMakeUsingNext);
             this.groupBox2.Controls.Add(this.btnMakeTableOpenXML);
@@ -50,6 +52,16 @@
             this.groupBox2.TabIndex = 7;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "OpenXML";
+            // 
+            // btnMergeHalfPageUsingNextRecord
+            // 
+            this.btnMergeHalfPageUsingNextRecord.Location = new System.Drawing.Point(17, 89);
+            this.btnMergeHalfPageUsingNextRecord.Name = "btnMergeHalfPageUsingNextRecord";
+            this.btnMergeHalfPageUsingNextRecord.Size = new System.Drawing.Size(191, 23);
+            this.btnMergeHalfPageUsingNextRecord.TabIndex = 8;
+            this.btnMergeHalfPageUsingNextRecord.Text = "Merge Half Page Using NextRec";
+            this.btnMergeHalfPageUsingNextRecord.UseVisualStyleBackColor = true;
+            this.btnMergeHalfPageUsingNextRecord.Click += new System.EventHandler(this.btnMergeHalfPageUsingNextRecord_Click);
             // 
             // button1
             // 
@@ -107,6 +119,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(650, 327);
             this.Controls.Add(this.groupBox2);
+            this.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "Form1";
             this.Text = "Form1";
             this.groupBox2.ResumeLayout(false);
@@ -122,6 +135,7 @@
         private System.Windows.Forms.Button btnMakeDocumentOpenXML;
         private System.Windows.Forms.Button btnMakeUsingNext;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnMergeHalfPageUsingNextRecord;
     }
 }
 
