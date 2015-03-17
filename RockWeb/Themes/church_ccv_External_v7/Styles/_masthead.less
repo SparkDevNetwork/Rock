@@ -69,10 +69,11 @@
             display: inline-block;
             padding: 0 @grid-gutter-width/2;
             .transition(opacity .5s);
-            color: #aaa;
+            color: #ccc;
 
             &:first-child {
               color: #fff;
+              font-weight: 700;
             }
 
             &:hover {
@@ -92,6 +93,7 @@
             cursor: pointer;
             display: none;
             color: #fff;
+            font-weight: 700;
             @media @sm { display: inline-block; }
             .menu-icon {
               display: inline-block;
@@ -225,7 +227,7 @@
       }
     }
     .masthead-lower .loginstatus a {
-      color: @gray-light;
+      color: @gray;
       font-style: italic;
       padding: 0 @grid-gutter-width/4;
     }

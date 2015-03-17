@@ -1,0 +1,32 @@
+.students-about {
+  padding: 30px;
+  background: #e2231a;
+  background-size: 55%;
+  color: #fff;
+  font-size: 1.5em;
+  padding: 30px 0;
+}
+@media (min-width: 768px) {
+  .students-about {
+    background: #e2231a url(https://s3.amazonaws.com/media.ccvonline.com/external_site_v7/students/Students-Bird.svg) no-repeat -45% 40%;
+    background-size: 55%;
+    padding: 120px 0;
+  }
+}
+@media (min-width: 992px) {
+  .students-about {
+    background-position: -40% 40%;
+    background-size: 50%;
+  }
+}
+@media (min-width: 1200px) {
+  .students-about {
+    background-position: -15% 40%;
+    background-size: 45%;
+  }
+}
+@media (min-width: 768px) {
+  .students-about .container p {
+    margin-left: 35%;
+  }
+}

@@ -4,6 +4,10 @@
 // CUSTOM TYPE STYLES
 // --------------------------------------------------
 
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
 h1, h2, h3, h4, h5, h6,
 .h1, .h2, .h3, .h4, .h5, .h6 {
@@ -13,4 +17,10 @@ h1, h2, h3, h4, h5, h6,
 .underline {
   border-bottom: 1px solid @gray-lighter;
   padding-bottom: .25em;
+}
+
+.text-large {
+  line-height: @line-height-base;
+  font-size: @font-size-large;
+  margin-bottom: 1em;
 }

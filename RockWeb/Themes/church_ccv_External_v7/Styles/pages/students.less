@@ -1,0 +1,56 @@
+
+
+//
+// STUDENTS PAGE
+// --------------------------------------------------
+
+
+// Imports
+// -------------------------
+@import "../../../../Styles/Bootstrap/variables.less";
+@import "../../../../Styles/Bootstrap/mixins.less";
+@import "../../../../Styles/_rock-variables.less";
+
+@import "../_variables";
+
+@xs: ~"(min-width: @{screen-xs-min})";
+@sm: ~"(min-width: @{screen-sm-min})";
+@md: ~"(min-width: @{screen-md-min})";
+@lg: ~"(min-width: @{screen-lg-min})";
+
+
+// Custom
+// -------------------------
+
+.students-header {}
+
+.students-about {
+  padding: @grid-gutter-width;
+  background: #e2231a;
+  background-size: 55%;
+  color: #fff;
+  font-size: 1.5em;
+  padding: @grid-gutter-width 0;
+
+  @media @sm {
+    background: #e2231a url(https://s3.amazonaws.com/media.ccvonline.com/external_site_v7/students/Students-Bird.svg) no-repeat -45% 40%;
+    background-size: 55%;
+    padding: @grid-gutter-width*4 0;
+  }
+  @media @md {
+    background-position: -40% 40%;
+    background-size: 50%;
+  }
+  @media @lg {
+    background-position: -15% 40%;
+    background-size: 45%;
+  }
+}
+
+  .students-about .container {}
+
+    .students-about .container p {
+      @media @sm {
+        margin-left: 35%;
+      }
+    }

@@ -5102,6 +5102,10 @@ body {
 main {
   margin-bottom: 60px;
 }
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 h1,
 h2,
 h3,
@@ -5119,6 +5123,11 @@ h6,
 .underline {
   border-bottom: 1px solid #eeeeee;
   padding-bottom: .25em;
+}
+.text-large {
+  line-height: 1.3;
+  font-size: 23px;
+  margin-bottom: 1em;
 }
 @media print {
   @page {
@@ -5213,10 +5222,11 @@ h6,
   -webkit-transition: opacity 0.5s;
   -o-transition: opacity 0.5s;
   transition: opacity 0.5s;
-  color: #aaa;
+  color: #ccc;
 }
 .masthead-navitem:first-child {
   color: #fff;
+  font-weight: 700;
 }
 .masthead-navitem:hover {
   opacity: 0.75;
@@ -5232,6 +5242,7 @@ h6,
   cursor: pointer;
   display: none;
   color: #fff;
+  font-weight: 700;
 }
 @media (min-width: 768px) {
   .menu-btn {
@@ -5383,7 +5394,7 @@ h6,
   }
 }
 .masthead-lower .loginstatus a {
-  color: #777777;
+  color: #555555;
   font-style: italic;
   padding: 0 7.5px;
 }
@@ -5396,8 +5407,6 @@ h6,
   background: #151515;
   background-image: url("../Assets/Images/cloth.png");
   color: #fff;
-  letter-spacing: .5px;
-  font-weight: 300;
   padding-top: 30px;
   padding-bottom: 30px;
 }
@@ -5412,7 +5421,7 @@ h6,
 }
 .footernav {
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: .75px;
   font-size: .91em;
   margin-top: 44.1px;
 }
@@ -5532,6 +5541,7 @@ h6,
   margin: 15px 0;
   height: 100%;
   cursor: pointer;
+  font-weight: 700;
   -webkit-transition: opacity 0.6s;
   -o-transition: opacity 0.6s;
   transition: opacity 0.6s;
@@ -5540,11 +5550,6 @@ h6,
   -webkit-backface-visibility: hidden;
   -moz-backface-visibility: hidden;
   backface-visibility: hidden;
-}
-@media (min-width: 768px) {
-  .slide-control li {
-    font-size: 1em;
-  }
 }
 .slide-control li.flex-active {
   opacity: 1;
@@ -5616,6 +5621,20 @@ html[xmlns] .slides {
 }
 .cursor {
   cursor: pointer;
+}
+.hide-if-empty:empty {
+  display: none!important;
+}
+.announcement-list {
+  margin-bottom: -60px;
+  background: #e9e9e9;
+  padding-top: 30px;
+}
+.announcement-list .announcement {
+  margin-bottom: 30px;
+}
+.announcement-list .announcement img {
+  border-radius: 6px;
 }
 .brandlist {
   list-style: none;
@@ -5825,4 +5844,21 @@ html[xmlns] .slides {
 }
 .social-icon-md {
   font-size: 1.5em;
+}
+.flexbg {
+  min-height: 50vh;
+  background-size: cover;
+  background-position: center center;
+}
+.fleximg {
+  overflow: hidden;
+  min-height: 320px;
+  max-height: 700px;
+  position: relative;
+}
+.fleximg img {
+  position: absolute;
+  top: -50%;
+  bottom: -50%;
+  margin: 50% 0;
 }

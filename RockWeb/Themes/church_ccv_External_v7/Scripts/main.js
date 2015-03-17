@@ -5,3 +5,9 @@
 $(function () {
   $('[data-toggle="tooltip"]').tooltip()
 })
+
+$(function () {
+  $('.flexbg').css('background-image', function() {
+    return 'url(' + $(this).attr('data-flexbg') + ')'
+  })
+})
