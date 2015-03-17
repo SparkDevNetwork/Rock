@@ -1298,6 +1298,36 @@ namespace Rock
             return false;
         }
 
+        /// <summary>
+        /// Replaces special Microsoft Word chars with standard chars
+        /// For example, smart quotes will be replaced with apostrophes
+        /// from http://www.andornot.com/blog/post/Replace-MS-Word-special-characters-in-javascript-and-C.aspx
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <returns></returns>
+        public static string ReplaceWordChars( this string text )
+        {
+            var s = text;
+            // smart single quotes and apostrophe
+            s = Regex.Replace( s, "[\u2018\u2019\u201A]", "'" );
+            // smart double quotes
+            s = Regex.Replace( s, "[\u201C\u201D\u201E]", "\"" );
+            // ellipsis
+            s = Regex.Replace( s, "\u2026", "..." );
+            // dashes
+            s = Regex.Replace( s, "[\u2013\u2014]", "-" );
+            // circumflex
+            s = Regex.Replace( s, "\u02C6", "^" );
+            // open angle bracket
+            s = Regex.Replace( s, "\u2039", "<" );
+            // close angle bracket
+            s = Regex.Replace( s, "\u203A", ">" );
+            // spaces
+            s = Regex.Replace( s, "[\u02DC\u00A0]", " " );
+
+            return s;
+        }
+
         #endregion String Extensions
 
         #region Int Extensions
