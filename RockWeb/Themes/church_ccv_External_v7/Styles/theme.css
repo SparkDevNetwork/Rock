@@ -5108,7 +5108,7 @@ div.aspNetDisabled {
   }
 }
 .masthead-upper a {
-  color: #fff;
+  color: inherit;
 }
 .masthead .navbar-toggle {
   margin: 0;
@@ -5167,6 +5167,10 @@ div.aspNetDisabled {
   -webkit-transition: opacity 0.5s;
   -o-transition: opacity 0.5s;
   transition: opacity 0.5s;
+  color: #aaa;
+}
+.masthead-navitem:first-child {
+  color: #fff;
 }
 .masthead-navitem:hover {
   opacity: 0.75;
@@ -5181,6 +5185,7 @@ div.aspNetDisabled {
 .menu-btn {
   cursor: pointer;
   display: none;
+  color: #fff;
 }
 @media (min-width: 768px) {
   .menu-btn {

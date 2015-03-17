@@ -173,7 +173,6 @@
   if (typeof google == 'object' && typeof google.maps == 'object')
     loadMap()
   else {
-    // debugger;
     $(window).on('googleMapsIsLoaded', function(){
       loadMap()
     })
