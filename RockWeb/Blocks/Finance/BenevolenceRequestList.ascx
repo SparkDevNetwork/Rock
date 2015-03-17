@@ -2,9 +2,8 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        <div class="col-md-12">
-            <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-
+        <asp:Panel ID="pnlView" runat="server" CssClass="">
+            <div class="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-paste"></i>Benevolence Requests</h1>
                 </div>
@@ -59,18 +58,20 @@
                     </div>
 
                 </div>
-
-            </asp:Panel>
-        </div>
-        <div class="col-md-4 col-md-offset-8">
-            <asp:Panel ID="pnlSummary" runat="server" CssClass="panel panel-block">
-                <div class="panel-heading">
-                    <h1 class="panel-title">Total Results</h1>
-                </div>
-                <div class="panel-body">
-                    <asp:PlaceHolder ID="phSummary" runat="server" />
-                </div>
-            </asp:Panel>
+            </div>
+        </asp:Panel>
+        
+        <div class="row">
+            <div class="col-md-4 col-md-offset-8 margin-t-md">
+                <asp:Panel ID="pnlSummary" runat="server" CssClass="panel panel-block">
+                    <div class="panel-heading">
+                        <h1 class="panel-title">Total Results</h1>
+                    </div>
+                    <div class="panel-body">
+                        <asp:PlaceHolder ID="phSummary" runat="server" />
+                    </div>
+                </asp:Panel>
+            </div>
         </div>
     </ContentTemplate>
 </asp:UpdatePanel>
