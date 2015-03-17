@@ -78,8 +78,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NuGet.Core.2.8.3\lib\net40-Client\NuGet.Core.dll</HintPath>
     </Reference>
-    <Reference Include="OpenXmlPowerTools">
-      <HintPath>..\packages\OpenXmlPowerTools.3.0.0\lib\OpenXmlPowerTools.dll</HintPath>
+    <Reference Include="OpenXmlPowerTools, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\OpenXmlPowerTools.3.1.07.0\lib\OpenXmlPowerTools.dll</HintPath>
     </Reference>
     <Reference Include="Quartz">
       <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
@@ -257,6 +258,9 @@
     <Compile Include="Jobs\SendAttendanceReminders.cs" />
     <Compile Include="Lava\ILiquidizable.cs" />
     <Compile Include="Lava\RockFilters.cs" />
+    <Compile Include="MergeDoc\HtmlMergeDocProvider.cs" />
+    <Compile Include="MergeDoc\MergeDocProvider.cs" />
+    <Compile Include="MergeDoc\WordDocumentMergeDocProvider.cs" />
     <Compile Include="Model\BenevolenceRequest.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -290,6 +294,7 @@
     <Compile Include="Model\EntitySet.cs" />
     <Compile Include="Model\EntitySetItem.cs" />
     <Compile Include="Model\GroupScheduleExclusion.cs" />
+    <Compile Include="Model\MergeDoc.cs" />
     <Compile Include="Model\PersonBadgeService.partial.cs" />
     <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PluginMigration.cs" />
@@ -346,7 +351,6 @@
     <Compile Include="Transactions\UpdateFacebookFriends.cs" />
     <Compile Include="Utility\AttributeCacheJsonConverter.cs" />
     <Compile Include="Utility\AttributeValueJsonConverter.cs" />
-    <Compile Include="Utility\MergeDocHelper.cs" />
     <Compile Include="Utility\RockJsonMediaTypeFormatter.cs" />
     <Compile Include="Utility\RockJsonTextWriter.cs" />
     <Compile Include="Utility\RockSemanticVersion.cs" />
