@@ -25,7 +25,7 @@
 
                                 <Rock:DataTextBox ID="dtbEmail" runat="server" Label="Email" TextMode="Email" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="Email" />
                     
-                                <Rock:RockDropDownList ID="bddlCategory" runat="server" Label="Category"></Rock:RockDropDownList>
+                                <Rock:RockDropDownList ID="bddlCategory" runat="server" Required="true" Label="Category"></Rock:RockDropDownList>
 
                                 <em ID="lblCount" runat="server" class="pull-right badge"></em>
                                 <Rock:DataTextBox ID="dtbRequest" runat="server" Label="Request" TextMode="MultiLine" Rows="3" MaxLength="10" ValidateRequestMode="Disabled" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="Text" placeholder="Please pray that..."></Rock:DataTextBox>
