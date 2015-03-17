@@ -1,0 +1,54 @@
+
+
+//
+// FOOTER
+// --------------------------------------------------
+
+
+.mainfooter {
+  background: #151515;
+  .img-retina('../Assets/Images/cloth.png'; '../Assets/Images/cloth@2x.png'; 100px; 100px);
+  color: #fff;
+  letter-spacing: .5px;
+  font-weight: 300;
+  padding-top: @grid-gutter-width;
+  padding-bottom: @grid-gutter-width;
+
+  & a { color: inherit; }
+}
+
+.footernav {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: .91em;
+  margin-top: (@font-size-h3 * @headings-line-height) + @grid-gutter-width/2 - 5px; // align with map
+  @media @sm {
+    text-align: right;
+  }
+}
+  .footernav-col {
+    display: inline-block;
+    text-align: left;
+    vertical-align: top;
+    padding-left: @grid-gutter-width;
+    max-width: 35%;
+  }
+  .footernav-col-main {
+    padding-left: 0;
+    font-weight: @headings-font-weight;
+  }
+    .footernav-header {
+      margin-top: 0;
+      font-size: inherit;
+    }
+    .footernav-items {
+      padding-left: 0;
+      list-style-type: none;
+    }
+      .footernav-item {
+        margin-bottom: @grid-gutter-width/2;
+        line-height: @headings-line-height;
+      }
+      .footernav-item-sub {
+        opacity: .5;
+      }

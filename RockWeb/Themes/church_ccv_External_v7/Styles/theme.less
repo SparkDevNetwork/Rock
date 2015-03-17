@@ -14,165 +14,19 @@
 @ccv-font-path: "../Assets/Fonts/DIN/";
 
 @import "_variables";
+
+@import "_global";
+@import "_type";
 @import "_print";
+
 @import "_masthead";
+@import "_footer";
 @import "_slider";
+
 @import "_helpers";
 
 @import "modules/_brandlist";
+@import "modules/_campusmodal";
 @import "modules/_gridlist";
 @import "modules/_maps";
-@import "modules/_campusmodal";
-
-
-// Styles that should be moved later
-// -------------------------
-
-html {
-  box-sizing: border-box;
-}
-*, *:before, *:after {
-  box-sizing: inherit;
-}
-
-body {
-  position: relative; // required by full menu overlay
-}
-
-h1, h2, h3, h4, h5, h6,
-.h1, .h2, .h3, .h4, .h5, .h6 {
-    text-transform: uppercase;
-}
-
-img { .img-responsive(); }
-// Fix Google Map infowindow close mark being affected by img-responsive
-.gm-style img { max-width: none; }
-
-body {
-  max-width: 1920px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-main {
-  margin-bottom: @grid-gutter-width*2;
-}
-
-.mainfooter {
-  background: #151515;
-  .img-retina('../Assets/Images/cloth.png'; '../Assets/Images/cloth@2x.png'; 100px; 100px);
-  color: #fff;
-  letter-spacing: .5px;
-  font-weight: 300;
-  padding-top: @grid-gutter-width;
-  padding-bottom: @grid-gutter-width;
-
-  & a { color: inherit; }
-}
-
-.footernav {
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-size: .91em;
-  // margin-top: 3px; // align with campus name
-  margin-top: (@font-size-h3 * @headings-line-height) + @grid-gutter-width/2 - 5px; // align with map
-  @media @sm {
-    text-align: right;
-  }
-}
-  .footernav-col {
-    display: inline-block;
-    text-align: left;
-    vertical-align: top;
-    padding-left: @grid-gutter-width;
-    max-width: 35%;
-    // @media @sm {
-    //   max-width: 30%;
-    // }
-  }
-  .footernav-col-main {
-    // text-align: left;
-    padding-left: 0;
-    font-weight: @headings-font-weight;
-  }
-    .footernav-header {
-      margin-top: 0;
-      font-size: inherit;
-    }
-    .footernav-items {
-      padding-left: 0;
-      list-style-type: none;
-    }
-      .footernav-item {
-        margin-bottom: @grid-gutter-width/2;
-        line-height: @headings-line-height;
-      }
-      .footernav-item-sub {
-        opacity: .5;
-      }
-
-.announcement-rotator {
-    margin-bottom: @spacing-lg-px;
-}
-
-.announcement-list {
-    margin-bottom: -@grid-gutter-width*2; // to remove main tag bottom padding
-    background: #e9e9e9;
-    padding-top: @grid-gutter-width;
-    // padding-bottom: @grid-gutter-width;
-}
-    .announcement-list .announcement {
-        margin-bottom: @grid-gutter-width;
-        img { border-radius: @border-radius-large; }
-    }
-
-.social {
-  a { text-decoration: none; }
-}
-  .social-fade {
-    a { opacity: .5; .transition(.3s); }
-    a:hover { opacity: 1; }
-  }
-  .social-dark {}
-  .social-dark .fa-inverse {
-    color: @gray-dark;
-  }
-  .social-icon-md {
-    font-size: 1.5em;
-  }
-
-// Undo appearance of block panels
-.panel.panel-block {
-    border: 0;
-    box-shadow: none;
-
-    & > .panel-heading {
-        display: none;
-    }
-
-    & > .panel-body {
-        padding: 0;
-
-        .grid.grid-panel {
-            margin: 0;
-        }
-    }
-}
-
-.well {
-  margin-bottom: @grid-gutter-width/2; // override bs default of 20px
-}
-  .well-dark {
-    background: rgba(255,255,255,.075);
-    border-color: rgba(255,255,255,.15);
-    color: @gray-lighter;
-  }
-  .well-borderless {
-    border: none;
-  }
-
-// Type things
-.underline {
-  border-bottom: 1px solid @gray-lighter;
-  padding-bottom: .25em;
-}
+@import "modules/_social";

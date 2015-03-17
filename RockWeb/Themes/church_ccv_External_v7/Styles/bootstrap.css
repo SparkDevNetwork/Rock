@@ -7198,7 +7198,7 @@ button.close {
   bottom: 0;
   left: 0;
   z-index: 1040;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: #000000;
 }
 .modal-backdrop.fade {
   opacity: 0;
@@ -7965,4 +7965,28 @@ button.close {
   .hidden-print {
     display: none !important;
   }
+}
+.panel.panel-block {
+  border: 0;
+  box-shadow: none;
+}
+.panel.panel-block > .panel-heading {
+  display: none;
+}
+.panel.panel-block > .panel-body {
+  padding: 0;
+}
+.panel.panel-block > .panel-body .grid.grid-panel {
+  margin: 0;
+}
+.well {
+  margin-bottom: 15px;
+}
+.well-dark {
+  background: rgba(255, 255, 255, 0.075);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #eeeeee;
+}
+.well-borderless {
+  border: none;
 }

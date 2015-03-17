@@ -1,7 +1,44 @@
+
+
+// Imports
+// -------------------------
+
 @import "../../../Styles/FontAwesome/font-awesome.less";
-
 @import "../../../Styles/Bootstrap/bootstrap.less";
-
 @fa-font-path: '../../../Assets/Fonts/FontAwesome';
-
 @import "_variables";
+
+
+// Bootstrap Overrides & Extensions
+// -------------------------
+
+// Undo appearance of block panels
+.panel.panel-block {
+  border: 0;
+  box-shadow: none;
+
+  & > .panel-heading {
+    display: none;
+  }
+
+  & > .panel-body {
+    padding: 0;
+
+    .grid.grid-panel {
+      margin: 0;
+    }
+  }
+}
+
+// well-dark used in footer for service times
+.well {
+  margin-bottom: @grid-gutter-width/2; // override bs default of 20px
+}
+  .well-dark {
+    background: rgba(255,255,255,.075);
+    border-color: rgba(255,255,255,.15);
+    color: @gray-lighter;
+  }
+  .well-borderless {
+    border: none;
+  }
