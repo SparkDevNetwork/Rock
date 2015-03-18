@@ -24,7 +24,7 @@ Sys.Application.add_load(function () {
 function resizeBody() {
     var headerHeight = $('.js-kioskscrollpanel header').outerHeight(true);
     var footerHeight = $('.js-kioskscrollpanel footer').outerHeight(true);
-    var bodyWidth = $('.js-kioskscrollpanel main').width();
+    var bodyWidth = $('.js-kioskscrollpanel .js-scrollcontainer').width();
 
     $('.scrollpanel').css('top', headerHeight);
     $('.scrollpanel').css('bottom', footerHeight);

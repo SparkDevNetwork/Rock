@@ -103,7 +103,7 @@
                 <h1>Select Your Profile</h1>
             </header>
 
-            <main class="clearfix">
+            <main class="clearfix js-scrollcontainer">
                 <div class="scrollpanel">
                     <div class="scroller">
                         <asp:PlaceHolder ID="phPeople" runat="server"></asp:PlaceHolder>
@@ -118,6 +118,9 @@
                             <asp:LinkButton ID="lbPersonSelectBack" runat="server" OnClick="lbPersonSelectBack_Click" CssClass="btn btn-default btn-kiosk">Back</asp:LinkButton>
                             <asp:LinkButton ID="lbPersonSelectCancel" runat="server" OnClick="lbPersonSelectCancel_Click" CssClass="btn btn-default btn-kiosk">Cancel</asp:LinkButton>
                         </div>
+                        <div class="col-md-4">
+                            <asp:LinkButton ID="lbAddPerson" runat="server" OnClick="lbAddPerson_Click" CssClass="btn btn-default btn-kiosk btn-kiosk-lg pull-right">Add New Person</asp:LinkButton>
+                        </div>
                     </div>
                 </div>
             </footer>
@@ -129,6 +132,48 @@
             </header>
 
             <main>
+                <asp:HiddenField id="hfPersonId" runat="server" />
+                <div class="row">
+                    <div class="col-md-8">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbFirstName" Label="First Name" runat="server"  Required="true" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbLastName" Label="Last Name" runat="server" Required="true" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-8">
+                                <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" />
+                            </div>
+                            <div class="col-md-4">
+                                <Rock:DatePicker ID="dpBirthdate" runat="server" Label="Birthdate" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:PhoneNumberBox ID="pnbHomePhone" Label="Home Phone" runat="server" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:PhoneNumberBox ID="pnbMobilePhone" Label="Mobile Phone" runat="server" />
+                            </div>
+                        </div>
+
+                        <Rock:AddressControl ID="acAddress" ShowAddressLine2="false" runat="server" />
+
+                        <Rock:RockTextBox ID="tbOtherUpdates" runat="server" Label="Other Updates" TextMode="MultiLine" Rows="3" />
+                    </div>
+                    <div class="col-md-4">
+                        <asp:LinkButton ID="lbProfileNext" runat="server" OnClick="lbProfileNext_Click" CssClass="btn btn-primary btn-kiosk btn-kiosk-lg">Next</asp:LinkButton>
+                        <div class="alert alert-info margin-t-md">
+                            <asp:Literal ID="lUpdateMessage" runat="server" />
+                        </div>
+                    </div>
+                </div>
 
             </main>
 
@@ -142,6 +187,29 @@
                     </div>
                 </div>
             </footer>
+        </asp:Panel>
+
+         <asp:Panel ID="pnlComplete" runat="server" Visible="false">
+            <header>
+                <h1>Update Sent</h1>
+            </header>
+
+            <main>
+
+            </main>
+                <div class="row">
+                    <div class="col-md-8">
+                        <asp:Literal ID="lCompleteMessage" runat="server" />
+
+                        <asp:Literal ID="lDebug" runat="server" />
+                    </div>
+                    <div class="col-md-4">
+                        <asp:LinkButton ID="lbCompleteDone" runat="server" OnClick="lbCompleteDone_Click" CssClass="btn btn-primary btn-kiosk btn-kiosk-lg">Done</asp:LinkButton>
+                    </div>
+                </div>
+             <footer>
+
+             </footer>
         </asp:Panel>
 
     </ContentTemplate>
