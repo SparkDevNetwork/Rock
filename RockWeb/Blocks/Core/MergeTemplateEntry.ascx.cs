@@ -29,16 +29,15 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 
-namespace RockWeb.Blocks.MergeDoc
+namespace RockWeb.Blocks.Core
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// 
     /// </summary>
-    [DisplayName( "Stark Detail" )]
-    [Category( "Utility" )]
-    [Description( "Template block for developers to use to start a new detail block." )]
-    [EmailField("Email")]
-    public partial class MergeDocDetail : Rock.Web.UI.RockBlock
+    [DisplayName( "Merge Template Entry" )]
+    [Category( "Merge Template" )]
+    [Description( "Used for merging data into output documents, such as Word, Html, using a pre-defined template." )]
+    public partial class MergeTemplateEntry : Rock.Web.UI.RockBlock
     {
         #region Fields
 

@@ -20,31 +20,31 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Validation;
 using DocumentFormat.OpenXml.Wordprocessing;
 using OpenXmlPowerTools;
-
 using Rock.Data;
 using Rock.Model;
 
-namespace Rock.MergeDoc
+namespace Rock.MergeTemplate
 {
     /// <summary>
     /// 
     /// </summary>
-    public class WordDocumentMergeDocProvider : MergeDocProvider
+    public class WordDocumentMergeTemplateProvider : MergeTemplateProvider
     {
         /// <summary>
         /// Creates the document.
         /// </summary>
-        /// <param name="mergeDoc">The merge document.</param>
+        /// <param name="mergeTemplate">The merge template.</param>
         /// <param name="mergeObjectsList">The merge objects list.</param>
         /// <returns></returns>
-        public override BinaryFile CreateDocument( Rock.Model.MergeDoc mergeDoc, List<Dictionary<string, object>> mergeObjectsList )
+        public override BinaryFile CreateDocument( Rock.Model.MergeTemplate mergeTemplate, List<Dictionary<string, object>> mergeObjectsList )
         {
             var rockContext = new RockContext();
             var binaryFileService = new BinaryFileService( rockContext );
             MemoryStream outputDocStream = new MemoryStream();
-            var templateBinaryFile = binaryFileService.Get( mergeDoc.TemplateBinaryFileId );
+            var templateBinaryFile = binaryFileService.Get( mergeTemplate.TemplateBinaryFileId );
             if ( templateBinaryFile == null )
             {
                 return null;
@@ -66,21 +66,21 @@ namespace Rock.MergeDoc
                 int recordCount = mergeObjectsList.Count();
                 while ( recordIndex < recordCount )
                 {
-                    var tempMergeDocStream = new MemoryStream();
+                    var tempMergeTemplateStream = new MemoryStream();
                     sourceTemplateStream.Position = 0;
-                    sourceTemplateStream.CopyTo( tempMergeDocStream );
-                    tempMergeDocStream.Position = 0;
-                    var tempMergeWordDoc = WordprocessingDocument.Open( tempMergeDocStream, true );
+                    sourceTemplateStream.CopyTo( tempMergeTemplateStream );
+                    tempMergeTemplateStream.Position = 0;
+                    var tempMergeWordDoc = WordprocessingDocument.Open( tempMergeTemplateStream, true );
 
                     MarkupSimplifier.SimplifyMarkup( tempMergeWordDoc, this.simplifyMarkupSettingsAll );
-                    var tempMergeDocX = tempMergeWordDoc.MainDocumentPart.GetXDocument();
-                    var tempMergeDocBodyNode = tempMergeDocX.DescendantNodes().OfType<XElement>().FirstOrDefault( a => a.Name.LocalName.Equals( "body" ) );
+                    var tempMergeTemplateX = tempMergeWordDoc.MainDocumentPart.GetXDocument();
+                    var tempMergeTemplateBodyNode = tempMergeTemplateX.DescendantNodes().OfType<XElement>().FirstOrDefault( a => a.Name.LocalName.Equals( "body" ) );
 
                     // find all the Nodes that have a {& next &}.  
                     List<XElement> nextIndicatorNodes = new List<XElement>();
 
-                    OpenXmlRegex.Match( 
-                        tempMergeDocX.Elements(), 
+                    OpenXmlRegex.Match(
+                        tempMergeTemplateX.Elements(),
                         this.nextRecordRegEx,
                         ( x, m ) =>
                         {
@@ -190,7 +190,7 @@ namespace Rock.MergeDoc
                         }
                     }
 
-                    foreach ( var childNode in tempMergeDocBodyNode.Nodes() )
+                    foreach ( var childNode in tempMergeTemplateBodyNode.Nodes() )
                     {
                         outputBodyNode.Add( childNode );
                     }

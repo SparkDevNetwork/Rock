@@ -160,6 +160,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<MergeTemplate>( Context ).Queryable().Any( a => a.MergeTemplateProviderEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, MergeTemplate.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Metric>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Metric.FriendlyTypeName );

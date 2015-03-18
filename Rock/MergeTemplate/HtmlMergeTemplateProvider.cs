@@ -21,21 +21,21 @@ using System.Text;
 using System.Threading.Tasks;
 using Rock.Model;
 
-namespace Rock.MergeDoc
+namespace Rock.MergeTemplate
 {
     /// <summary>
     /// 
     /// </summary>
-    public class HtmlMergeDocProvider : MergeDocProvider
+    public class HtmlMergeTemplateProvider : MergeTemplateProvider
     {
         /// <summary>
         /// Creates the document.
         /// </summary>
-        /// <param name="mergeDoc">The merge document.</param>
+        /// <param name="mergeTemplate">The merge template.</param>
         /// <param name="mergeObjectsList">The merge objects list.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override BinaryFile CreateDocument( Rock.Model.MergeDoc mergeDoc, List<Dictionary<string, object>> mergeObjectsList )
+        public override BinaryFile CreateDocument( Rock.Model.MergeTemplate mergeTemplate, List<Dictionary<string, object>> mergeObjectsList )
         {
             throw new NotImplementedException();
         }

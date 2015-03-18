@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MergeDocEntry.ascx.cs" Inherits="RockWeb.Blocks.MergeDoc.MergeDocEntry" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MergeTemplateEntry.ascx.cs" Inherits="RockWeb.Blocks.Core.MergeTemplateEntry" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>

@@ -18,19 +18,19 @@ using System.Collections.Generic;
 using Rock.Extension;
 using Rock.Model;
 
-namespace Rock.MergeDoc
+namespace Rock.MergeTemplate
 {
     /// <summary>
     /// 
     /// </summary>
-    public abstract class MergeDocProvider : Component
+    public abstract class MergeTemplateProvider : Component
     {
         /// <summary>
         /// Creates the document.
         /// </summary>
-        /// <param name="mergeDoc">The merge document.</param>
+        /// <param name="mergeTemplate">The merge template.</param>
         /// <param name="mergeObjectsList">The merge objects list.</param>
         /// <returns></returns>
-        public abstract BinaryFile CreateDocument( Rock.Model.MergeDoc mergeDoc, List<Dictionary<string, object>> mergeObjectsList );
+        public abstract BinaryFile CreateDocument( Rock.Model.MergeTemplate mergeTemplate, List<Dictionary<string, object>> mergeObjectsList );
     }
 }

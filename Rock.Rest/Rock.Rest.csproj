@@ -122,6 +122,7 @@
     <Compile Include="Controllers\CodeGenerated\EntitySetsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FollowingsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupScheduleExclusionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\MergeTemplatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetricCategoriesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PageViewsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonDuplicatesController.cs" />
