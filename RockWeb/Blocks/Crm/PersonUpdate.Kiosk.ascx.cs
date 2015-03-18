@@ -28,6 +28,8 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using Rock.Communication;
+using Rock.Security;
 using System.Text.RegularExpressions;
 
 namespace RockWeb.Blocks.Crm
@@ -43,6 +45,26 @@ namespace RockWeb.Blocks.Crm
     [IntegerField( "Minimum Phone Number Length", "Minimum length for phone number searches (defaults to 4).", false, 4, "", 6 )]
     [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10, "", 7 )]
     [TextField( "Search Regex", "Regular Expression to run the search input through before searching. Useful for stripping off characters.", false, "", "", 8 )]
+    [MemoField( "Update Message", "Message to show on the profile form. Leaving this blank will hide the message.", false, "Please provide only the information that needs to be updated.", "", 9 )]
+    [CodeEditorField("Complete Message Lava", "Message to display when complete.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, true, @"<div class='alert alert-success'>We have recuived your updated information. Thank you for helping us keep your information current.</div>", "", 10)]
+    [SystemEmailField( "Update Email", "The system email to use to send the updated information.", false, "", "", 11 )]
+    [WorkflowTypeField("Workflow Type", @"The workflow type to launch when an update is made. The following attribute keys should be available on the workflow:
+                            <ul>
+                                <li>PersonId (Integer)</li>
+                                <li>FirstName (Text)</li>
+                                <li>LastName (Text)</li>
+                                <li>Email (Email)</li>
+                                <li>BirthDate (Date)</li>
+                                <li>StreetAddress (Text)</li>
+                                <li>City (Text)</li>
+                                <li>State (Text)</li>
+                                <li>PostalCode (Text)</li>
+                                <li>Country (Text - optional)</li>
+                                <li>HomePhone (Text)</li>
+                                <li>MobilePhone (Text)</li>
+                                <li>OtherUpdates (Memo)</li>
+                            </ul>", false, false, "", "", 12)]
+    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 13 )]
     public partial class PersonUpdateKiosk : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -151,6 +173,7 @@ namespace RockWeb.Blocks.Crm
             pnlSearch.Visible = false;
             pnlPersonSelect.Visible = false;
             pnlProfilePanel.Visible = false;
+            pnlComplete.Visible = false;
         }
 
         //
@@ -189,7 +212,7 @@ namespace RockWeb.Blocks.Crm
 
                 foreach ( var person in people.ToList() )
                 {
-                    searchResults.Add( new PersonDto( person.PrimaryAliasId.Value, person.LastName, person.NickName ) );
+                    searchResults.Add( new PersonDto( person.Id, person.LastName, person.NickName ) );
                 }
 
                 this.PeopleResults = searchResults;
@@ -227,6 +250,11 @@ namespace RockWeb.Blocks.Crm
             GoHome();
         }
 
+        protected void lbAddPerson_Click( object sender, EventArgs e )
+        {
+            HidePanels();
+            ShowProfilePanel();
+        }
 
         // called when a giving unit is selected
         void personName_Click( object sender, EventArgs e )
@@ -246,7 +274,7 @@ namespace RockWeb.Blocks.Crm
                 foreach ( var unit in this.PeopleResults )
                 {
                     LinkButton lb = new LinkButton();
-                    lb.ID = "lbUnit_" + unit.PersonAliasId.ToString();
+                    lb.ID = "lbUnit_" + unit.PersonId.ToString();
                     lb.CssClass = "btn btn-primary btn-kioskselect";
                     phPeople.Controls.Add( lb );
                     lb.CommandArgument = unit.CommandArg;
@@ -256,6 +284,7 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
+                // todo update description of how to add someone
                 phPeople.Controls.Add( new LiteralControl(
                     "<div class='alert alert-info'>There were not any families found with the phone number you entered. You can add your family using the 'Register Your Family' button below.</div>" ) );
             }
@@ -271,14 +300,24 @@ namespace RockWeb.Blocks.Crm
         {
             HidePanels();
             pnlProfilePanel.Visible = true;
+
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "UpdateMessage" ) ) )
+            {
+                lUpdateMessage.Text = GetAttributeValue( "UpdateMessage" );
+            }
+            else
+            {
+                lUpdateMessage.Visible = false;
+            }
+
+            if ( this.SelectedPerson != null )
+            {
+                tbFirstName.Text = this.SelectedPerson.FirstName;
+                tbLastName.Text = this.SelectedPerson.LastName;
+                hfPersonId.Value = this.SelectedPerson.PersonId.ToString();
+            }
         }
 
-        #endregion
-
-        //
-        // Profile Methods
-        //
-        #region profile methods
         protected void lbProfileBack_Click( object sender, EventArgs e )
         {
             HidePanels();
@@ -288,28 +327,139 @@ namespace RockWeb.Blocks.Crm
         {
             GoHome();
         }
+
+        protected void lbProfileNext_Click( object sender, EventArgs e )
+        {
+            // setup merge fields
+            var mergeFields = new Dictionary<string, object>();
+            mergeFields.Add( "PersonId", hfPersonId.Value );
+            mergeFields.Add( "FirstName", tbFirstName.Text );
+            mergeFields.Add( "LastName", tbLastName.Text );
+            mergeFields.Add( "StreetAddress", acAddress.Street1 );
+            mergeFields.Add( "City", acAddress.City );
+            mergeFields.Add( "State", acAddress.State );
+            mergeFields.Add( "PostalCode", acAddress.PostalCode );
+            mergeFields.Add( "Country", acAddress.Country );
+            mergeFields.Add( "Email", tbEmail.Text );
+            mergeFields.Add( "HomePhone", pnbHomePhone.Text );
+            mergeFields.Add( "MobilePhone", pnbHomePhone.Text );
+            mergeFields.Add( "BirthDate", dpBirthdate.Text );
+            mergeFields.Add( "OtherUpdates", tbOtherUpdates.Text );
+
+            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+
+            // if an email was provided email results
+            RockContext rockContext = new RockContext();
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "UpdateEmail" ) ) )
+            {
+                var receiptEmail = new SystemEmailService( rockContext ).Get( new Guid( GetAttributeValue( "UpdateEmail" ) ) );
+
+                if ( receiptEmail != null )
+                {
+                    var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+
+                    var recipients = new List<RecipientData>();
+                    recipients.Add( new RecipientData( receiptEmail.To, mergeFields ) );
+
+                    Email.Send( receiptEmail.Guid, recipients, appRoot );
+                }
+            }
+
+            // launch workflow if configured
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "WorkflowType" ) ) )
+            {
+                var workflowTypeService = new WorkflowTypeService( rockContext );
+                var workflowType = workflowTypeService.Get( new Guid( GetAttributeValue( "WorkflowType" ) ) );
+
+                if ( workflowType != null )
+                {
+                    var workflow = Rock.Model.Workflow.Activate( workflowType, "Kiosk Update Info" );
+
+                    // set attributes
+                    workflow.SetAttributeValue( "PersonId", hfPersonId.Value );
+                    workflow.SetAttributeValue( "FirstName", tbFirstName.Text );
+                    workflow.SetAttributeValue( "LastName", tbLastName.Text );
+                    workflow.SetAttributeValue( "StreetAddress", acAddress.Street1 );
+                    workflow.SetAttributeValue( "City", acAddress.City );
+                    workflow.SetAttributeValue( "State", acAddress.State );
+                    workflow.SetAttributeValue( "PostalCode", acAddress.PostalCode );
+                    workflow.SetAttributeValue( "Country", acAddress.Country );
+                    workflow.SetAttributeValue( "Email", tbEmail.Text );
+                    workflow.SetAttributeValue( "HomePhone", pnbHomePhone.Text );
+                    workflow.SetAttributeValue( "MobilePhone", pnbHomePhone.Text );
+                    workflow.SetAttributeValue( "BirthDate", dpBirthdate.Text );
+                    workflow.SetAttributeValue( "OtherUpdates", tbOtherUpdates.Text );
+
+                    // lauch workflow
+                    List<string> workflowErrors;
+                    if ( workflow.Process( rockContext, out workflowErrors ) )
+                    {
+                        if ( workflow.IsPersisted || workflowType.IsPersisted )
+                        {
+                            var workflowService = new Rock.Model.WorkflowService( rockContext );
+                            workflowService.Add( workflow );
+
+                            rockContext.WrapTransaction( () =>
+                            {
+                                rockContext.SaveChanges();
+                                workflow.SaveAttributeValues( rockContext );
+                                foreach ( var activity in workflow.Activities )
+                                {
+                                    activity.SaveAttributeValues( rockContext );
+                                }
+                            } );
+                        }
+                    }
+                }
+            }
+
+            HidePanels();
+            pnlComplete.Visible = true;
+
+            lCompleteMessage.Text = GetAttributeValue( "CompleteMessageLava" ).ResolveMergeFields( mergeFields );
+
+            bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
+            if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
+            {
+                lDebug.Visible = true;
+                lDebug.Text = mergeFields.lavaDebugInfo();
+            }
+        }
+
         #endregion
 
+        //
+        // Complete Panel Methods
+        //
+        #region complete panel methods
+
+        protected void lbCompleteDone_Click( object sender, EventArgs e )
+        {
+            GoHome();
+        }
 
         #endregion
 
-    }
+        #endregion
+
+}
 
     [Serializable]
     class PersonDto
     {
-        public int PersonAliasId { get; set; }
+        public int PersonId { get; set; }
         public string LastName { get; set; }
         public string FirstName { get; set; }
 
         public string CommandArg
         {
-            get { return string.Format( "{0}|{1}|{2}", PersonAliasId, LastName, FirstName ); }
+            get { return string.Format( "{0}|{1}|{2}", PersonId, LastName, FirstName ); }
         }
 
         public PersonDto( int personAliasId, string lastName, string firstNames )
         {
-            PersonAliasId = personAliasId;
+            PersonId = personAliasId;
             LastName = lastName;
             FirstName = firstNames;
         }
@@ -318,7 +468,7 @@ namespace RockWeb.Blocks.Crm
         {
             string[] parts = commandArg.Split( '|' );
 
-            PersonAliasId = Convert.ToInt32( parts[0] );
+            PersonId = Convert.ToInt32( parts[0] );
             LastName = parts[1];
             FirstName = parts[2];
         }

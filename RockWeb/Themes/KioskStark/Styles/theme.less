@@ -21,13 +21,20 @@
 // 1. HTML Overrides
 // -------------------------
 
+body {
+    display: none;
+}
+
+
 main {
     display: block;
 }
 
 // 2. Bootstrap Overrides
 // -------------------------
-
+.input-group.input-width-md {
+    width: 100%;
+}
 
 // 3. Theme Styling
 // -------------------------
@@ -47,7 +54,6 @@ footer {
     font-size: 32px;
     height: 64px;
     font-weight: @font-weight-bold;
-    --padding: 20px;
 }
 
 .swipe {
