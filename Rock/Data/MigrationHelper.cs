@@ -1901,16 +1901,16 @@ namespace Rock.Data
         #region BinaryFile Methods
 
         /// <summary>
-        /// Updates the type of the binary file.
+        /// Updates (or Adds) the binary file type
         /// </summary>
-        /// <param name="storageEntityTypeId">The storage entity type identifier.</param>
+        /// <param name="storageEntityTypeGuid">The storage entity type unique identifier.</param>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="iconCssClass">The icon CSS class.</param>
         /// <param name="guid">The unique identifier.</param>
         /// <param name="allowCaching">if set to <c>true</c> [allow caching].</param>
         /// <param name="requiresViewSecurity">if set to <c>true</c> [requires view security].</param>
-        public void UpdateBinaryFileType( string storageEntityTypeId, string name, string description,string iconCssClass, string guid, bool allowCaching = false, bool requiresViewSecurity = false )
+        public void UpdateBinaryFileType( string storageEntityTypeGuid, string name, string description,string iconCssClass, string guid, bool allowCaching = false, bool requiresViewSecurity = false )
         {
             Migration.Sql( string.Format( @"
                 
@@ -1937,7 +1937,7 @@ namespace Rock.Data
                     VALUES( 1,'{1}','{2}','{3}',@StorageEntityTypeId,{5},{6},'{4}' )  
                 END
 ",
-                    storageEntityTypeId,
+                    storageEntityTypeGuid,
                     name,
                     description.Replace( "'", "''" ),
                     iconCssClass,
