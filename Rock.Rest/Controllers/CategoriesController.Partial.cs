@@ -122,11 +122,14 @@ namespace Rock.Rest.Controllers
             {
                 // if id is zero and we have a rootCategory, show the children of that rootCategory (but don't show the rootCategory)
                 int parentItemId = id == 0 ? rootCategoryId : id;
-                
-                var items = GetCategorizedItems( serviceInstance, parentItemId, showUnnamedEntityItems ).ToList();
-                if ( items != null )
+
+                var itemsQry = GetCategorizedItems( serviceInstance, parentItemId, showUnnamedEntityItems );
+                if ( itemsQry != null )
                 {
-                    foreach ( var categorizedItem in items.OrderBy( i => i.Name ) )
+                    // do a ToList to load from database prior to ordering by name, just in case Name is a virtual property
+                    var itemsList = itemsQry.ToList();
+
+                    foreach ( var categorizedItem in itemsList.OrderBy( i => i.Name ) )
                     {
                         if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
                         {
