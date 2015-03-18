@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Rock.Extension;
 
-namespace Rock.MergeTemplate
+namespace Rock.MergeTemplates
 {
     /*public class MergeTemplateProviderContainer : Container<MergeTemplateProvider, IComponentData>
     {

@@ -26,7 +26,7 @@ using OpenXmlPowerTools;
 using Rock.Data;
 using Rock.Model;
 
-namespace Rock.MergeTemplate
+namespace Rock.MergeTemplates
 {
     /// <summary>
     /// 
@@ -39,7 +39,7 @@ namespace Rock.MergeTemplate
         /// <param name="mergeTemplate">The merge template.</param>
         /// <param name="mergeObjectsList">The merge objects list.</param>
         /// <returns></returns>
-        public override BinaryFile CreateDocument( Rock.Model.MergeTemplate mergeTemplate, List<Dictionary<string, object>> mergeObjectsList )
+        public override BinaryFile CreateDocument( MergeTemplate mergeTemplate, List<Dictionary<string, object>> mergeObjectsList )
         {
             var rockContext = new RockContext();
             var binaryFileService = new BinaryFileService( rockContext );
