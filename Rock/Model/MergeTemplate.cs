@@ -25,9 +25,9 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    [Table( "MergeDoc" )]
+    [Table( "MergeTemplate" )]
     [DataContract]
-    public partial class MergeDoc : Model<MergeDoc>, ICategorized
+    public partial class MergeTemplate : Model<MergeTemplate>, ICategorized
     {
         #region Entity Properties
 
@@ -61,13 +61,13 @@ namespace Rock.Model
         public int TemplateBinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the merge document provider entity type identifier.
+        /// Gets or sets the merge template provider entity type identifier.
         /// </summary>
         /// <value>
-        /// The merge document provider entity type identifier.
+        /// The merge template provider entity type identifier.
         /// </value>
         [DataMember]
-        public int MergeDocProviderEntityTypeId { get; set; }
+        public int MergeTemplateProviderEntityTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the category id.
@@ -100,12 +100,12 @@ namespace Rock.Model
         public virtual BinaryFile TemplateBinaryFile { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the merge document provider entity.
+        /// Gets or sets the type of the merge template provider entity.
         /// </summary>
         /// <value>
-        /// The type of the merge document provider entity.
+        /// The type of the merge template provider entity.
         /// </value>
-        public virtual EntityType MergeDocProviderEntityType { get; set; }
+        public virtual EntityType MergeTemplateProviderEntityType { get; set; }
 
         /// <summary>
         /// Gets or sets the category.
@@ -148,7 +148,7 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Returns the Name of the MergeDoc 
+        /// Returns the Name of the MergeTemplate 
         /// </summary>
         /// <returns>
         /// A <see cref="System.String" /> that represents this instance.
@@ -172,17 +172,17 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// MergeDoc configuration class
+    /// MergeTemplate configuration class
     /// </summary>
-    public partial class MergeDocConfiguration : EntityTypeConfiguration<MergeDoc>
+    public partial class MergeTemplateConfiguration : EntityTypeConfiguration<MergeTemplate>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MergeDocConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="MergeTemplateConfiguration"/> class.
         /// </summary>
-        public MergeDocConfiguration()
+        public MergeTemplateConfiguration()
         {
             this.HasRequired( c => c.TemplateBinaryFile ).WithMany().HasForeignKey( c => c.TemplateBinaryFileId ).WillCascadeOnDelete( false );
-            this.HasRequired( c => c.MergeDocProviderEntityType ).WithMany().HasForeignKey( c => c.MergeDocProviderEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( c => c.MergeTemplateProviderEntityType ).WithMany().HasForeignKey( c => c.MergeTemplateProviderEntityTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( c => c.Category ).WithMany().HasForeignKey( c => c.CategoryId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.PersonAlias ).WithMany().HasForeignKey( c => c.PersonAliasId ).WillCascadeOnDelete( false );
         }

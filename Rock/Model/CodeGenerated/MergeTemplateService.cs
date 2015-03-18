@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// BinaryFile Service class
+    /// MergeTemplate Service class
     /// </summary>
-    public partial class BinaryFileService : Service<BinaryFile>
+    public partial class MergeTemplateService : Service<MergeTemplate>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BinaryFileService"/> class
+        /// Initializes a new instance of the <see cref="MergeTemplateService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public BinaryFileService(RockContext context) : base(context)
+        public MergeTemplateService(RockContext context) : base(context)
         {
         }
 
@@ -48,33 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( BinaryFile item, out string errorMessage )
+        public bool CanDelete( MergeTemplate item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<FinancialTransactionImage>( Context ).Queryable().Any( a => a.BinaryFileId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<Location>( Context ).Queryable().Any( a => a.ImageId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Location.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<MergeTemplate>( Context ).Queryable().Any( a => a.TemplateBinaryFileId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, MergeTemplate.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<Person>( Context ).Queryable().Any( a => a.PhotoId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Person.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -82,45 +58,42 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class BinaryFileExtensionMethods
+    public static partial class MergeTemplateExtensionMethods
     {
         /// <summary>
-        /// Clones this BinaryFile object to a new BinaryFile object
+        /// Clones this MergeTemplate object to a new MergeTemplate object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static BinaryFile Clone( this BinaryFile source, bool deepCopy )
+        public static MergeTemplate Clone( this MergeTemplate source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as BinaryFile;
+                return source.Clone() as MergeTemplate;
             }
             else
             {
-                var target = new BinaryFile();
+                var target = new MergeTemplate();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another BinaryFile object to this BinaryFile object
+        /// Copies the properties from another MergeTemplate object to this MergeTemplate object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this BinaryFile target, BinaryFile source )
+        public static void CopyPropertiesFrom( this MergeTemplate target, MergeTemplate source )
         {
             target.Id = source.Id;
-            target.BinaryFileTypeId = source.BinaryFileTypeId;
-            target.ContentLastModified = source.ContentLastModified;
+            target.CategoryId = source.CategoryId;
             target.Description = source.Description;
-            target.FileName = source.FileName;
-            target.IsSystem = source.IsSystem;
-            target.IsTemporary = source.IsTemporary;
-            target.MimeType = source.MimeType;
-            target.Path = source.Path;
-            target.StorageEntitySettings = source.StorageEntitySettings;
+            target.MergeTemplateProviderEntityTypeId = source.MergeTemplateProviderEntityTypeId;
+            target.Name = source.Name;
+            target.PersonAliasId = source.PersonAliasId;
+            target.TemplateBinaryFileId = source.TemplateBinaryFileId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
