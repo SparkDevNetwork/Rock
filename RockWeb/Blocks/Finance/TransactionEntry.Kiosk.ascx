@@ -180,7 +180,7 @@
             
         </asp:Panel>
 
-        <asp:Panel ID="pnlGivingUnitSelect" runat="server" Visible="false" CssClass="js-pnlgivingunitselect">
+        <asp:Panel ID="pnlGivingUnitSelect" runat="server" Visible="false" CssClass="js-pnlgivingunitselect js-kioskscrollpanel">
             <header>
                 <h1>Select Your Family</h1>
             </header>
