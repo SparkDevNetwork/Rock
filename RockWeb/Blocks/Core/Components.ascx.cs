@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Core
     [System.ComponentModel.Category( "Core" )]
     [System.ComponentModel.Description( "Block to administrate MEF plugins." )]
 
-    [TextField( "Component Container", "The Rock Extension Managed Component Container to manage", true, "", "", 1 )]
+    [TextField( "Component Container", "The Rock Extension Managed Component Container to manage. For example: 'Rock.Search.SearchContainer, Rock'", true, "", "", 1 )]
     [BooleanField( "Support Ordering", "Should user be allowed to re-order list of components?", true, "", 2 )]
     public partial class Components : RockBlock
     {
