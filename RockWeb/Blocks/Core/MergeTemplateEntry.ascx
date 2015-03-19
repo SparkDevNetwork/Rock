@@ -1,39 +1,50 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MergeTemplateEntry.ascx.cs" Inherits="RockWeb.Blocks.Core.MergeTemplateEntry" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
+    <Triggers>
+        <asp:PostBackTrigger ControlID="btnMerge" />
+    </Triggers>
     <ContentTemplate>
+        <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
-        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-        
+        <asp:Panel ID="pnlEntry" runat="server" CssClass="panel panel-block">
+
+            <asp:HiddenField ID="hfEntitySetId" runat="server" />
+
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-star"></i> Blank Detail Block</h1>
+                <h1 class="panel-title"><i class="fa fa-files-o"></i>
+                    <asp:Literal ID="lActionTitle" runat="server" Text="Create Merge Document" /></h1>
 
                 <div class="panel-labels">
-                    <Rock:HighlightLabel ID="hlblTest" runat="server" LabelType="Info" Text="Label" />
+                    <Rock:HighlightLabel ID="hlblInfo" runat="server" LabelType="Info" Text="" />
                 </div>
             </div>
+
             <div class="panel-body">
 
-                <div class="alert alert-info">
-                    <h4>Stark Template Block</h4>
-                    <p>This block serves as a starting point for creating new blocks. After copy/pasting it and renaming the resulting file be sure to make the following changes:</p>
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-                    <strong>Changes to the Codebehind (ascx.cs) File</strong>
-                    <ul>
-                        <li>Update the namespace to match your directory</li>
-                        <li>Update the class name</li>
-                        <li>Fill in the DisplayName, Category and Description attributes</li>
-                    </ul>
 
-                    <strong>Changes to the Usercontrol (.ascx) File</strong>
-                    <ul>
-                        <li>Update the Inherhits to match the namespace and class file</li>
-                        <li>Remove this text... unless you really like it...</li>
-                    </ul>
-                </div>
+                <fieldset>
 
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:NotificationBox ID="nbNumberOfRecords" runat="server" NotificationBoxType="Info" />
+                            <Rock:RockCheckBox ID="cbCombineFamilyMembers" runat="server" Text="Combine Family Members" Help="Set this to true to include the family members of the selected people" />
+                            <Rock:RockDropDownList ID="ddlMergeTemplate" runat="server" Label="Merge Template" Required="true" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:HelpBlock ID="hbShowDataRows" runat="server" Text="TODO" />
+                            <Rock:HelpBlock ID="hbShowMergeFields" runat="server" Text="TODO" />
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <asp:LinkButton ID="btnMerge" runat="server" Text="Merge" CssClass="btn btn-primary" OnClick="btnMerge_Click" />
+                    </div>
+                </fieldset>
             </div>
-        
+
         </asp:Panel>
 
     </ContentTemplate>
