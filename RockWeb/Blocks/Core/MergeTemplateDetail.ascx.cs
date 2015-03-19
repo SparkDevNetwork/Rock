@@ -18,11 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Web.UI;
-
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.MergeTemplates;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -36,7 +37,7 @@ namespace RockWeb.Blocks.Core
     /// </summary>
     [DisplayName( "Merge Template Detail" )]
     [Category( "Core" )]
-    [Description( "Block for administrating a MergeTemplate template" )]
+    [Description( "Block for administrating a Merge Template" )]
 
     [BooleanField( "Allow Personal", "Set this to true to allow the merge template to be configured as a personal one.", false )]
     public partial class MergeTemplateDetail : RockBlock, IDetailBlock
@@ -151,7 +152,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Rock.Model.MergeTemplate mergeTemplate;
+            MergeTemplate mergeTemplate;
             var rockContext = new RockContext();
             MergeTemplateService mergeTemplateService = new MergeTemplateService( rockContext );
 
@@ -159,7 +160,7 @@ namespace RockWeb.Blocks.Core
 
             if ( mergeTemplateId == 0 )
             {
-                mergeTemplate = new Rock.Model.MergeTemplate();
+                mergeTemplate = new MergeTemplate();
                 mergeTemplateService.Add( mergeTemplate );
             }
             else
@@ -183,7 +184,6 @@ namespace RockWeb.Blocks.Core
             rockContext.SaveChanges();
 
             var qryParams = new Dictionary<string, string>();
-            qryParams["CategoryId"] = PageParameter( "ParentCategoryId" );
             qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
             qryParams["MergeTemplateId"] = mergeTemplate.Id.ToString();
             NavigateToPage( RockPage.Guid, qryParams );
@@ -252,7 +252,7 @@ namespace RockWeb.Blocks.Core
             var rockContext = new RockContext();
             var mergeTemplateService = new MergeTemplateService( rockContext );
 
-            Rock.Model.MergeTemplate mergeTemplate = null;
+            MergeTemplate mergeTemplate = null;
 
             if ( !mergeTemplateId.Equals( 0 ) )
             {
@@ -261,7 +261,7 @@ namespace RockWeb.Blocks.Core
 
             if ( mergeTemplate == null )
             {
-                mergeTemplate = new Rock.Model.MergeTemplate();
+                mergeTemplate = new MergeTemplate();
                 mergeTemplate.CategoryId = parentCategoryId ?? 0;
             }
 
@@ -275,7 +275,7 @@ namespace RockWeb.Blocks.Core
             if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Rock.Model.MergeTemplate.FriendlyTypeName );
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( MergeTemplate.FriendlyTypeName );
             }
 
             if ( readOnly )
@@ -301,10 +301,28 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Loads the drop downs.
+        /// </summary>
+        private void LoadDropDowns()
+        {
+            ddlMergeTemplateProvider.Items.Clear();
+            ddlMergeTemplateProvider.Items.Add( new ListItem() );
+
+            foreach (var item in MergeTemplateProviderContainer.Instance.Components.Values)
+            {
+                if ( item.Value.IsActive )
+                {
+                    var entityType = item.Value.EntityType;
+                    ddlMergeTemplateProvider.Items.Add( new ListItem(entityType.FriendlyName, entityType.Id.ToString() ) );
+                }
+            }
+        }
+
+        /// <summary>
         /// Shows the edit details.
         /// </summary>
         /// <param name="mergeTemplate">The merge template.</param>
-        public void ShowEditDetails( Rock.Model.MergeTemplate mergeTemplate )
+        public void ShowEditDetails( MergeTemplate mergeTemplate )
         {
             if ( mergeTemplate.Id > 0 )
             {
@@ -312,7 +330,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( Rock.Model.MergeTemplate.FriendlyTypeName ).FormatAsHtmlTitle();
+                lActionTitle.Text = ActionTitle.Add( MergeTemplate.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             SetEditMode( true );
@@ -320,6 +338,9 @@ namespace RockWeb.Blocks.Core
             bool allowPersonal = this.GetAttributeValue( "AllowPersonal" ).AsBooleanOrNull() ?? false;
             tbName.Text = mergeTemplate.Name;
             tbDescription.Text = mergeTemplate.Description;
+
+            LoadDropDowns();
+
             ddlMergeTemplateProvider.SetValue( mergeTemplate.MergeTemplateProviderEntityTypeId );
 
             fuTemplateBinaryFile.BinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.MERGE_TEMPLATE.AsGuid();
@@ -344,13 +365,14 @@ namespace RockWeb.Blocks.Core
         /// Shows the readonly details.
         /// </summary>
         /// <param name="mergeTemplate">The merge template.</param>
-        private void ShowReadonlyDetails( Rock.Model.MergeTemplate mergeTemplate )
+        private void ShowReadonlyDetails( MergeTemplate mergeTemplate )
         {
             SetEditMode( false );
             hfMergeTemplateId.SetValue( mergeTemplate.Id );
             lReadOnlyTitle.Text = mergeTemplate.Name.FormatAsHtmlTitle();
 
             DescriptionList descriptionList = new DescriptionList()
+                .Add( "Template File", string.Format("<a href='{0}'>{1}</a>",  mergeTemplate.TemplateBinaryFile.Url, mergeTemplate.TemplateBinaryFile.FileName ))
                 .Add( "Description", mergeTemplate.Description ?? string.Empty )
                 .Add( "Provider", mergeTemplate.MergeTemplateProviderEntityType )
                 .Add( "Category", mergeTemplate.Category != null ? mergeTemplate.Category.Name : string.Empty )
