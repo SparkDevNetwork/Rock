@@ -21,10 +21,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.ServiceModel.Channels;
 using System.Web.Http;
 using System.Web.Http.OData;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -50,6 +50,7 @@ namespace Rock.Rest
             get { return _service; }
             set { _service = value; }
         }
+
         private Service<T> _service;
 
         /// <summary>
@@ -138,7 +139,7 @@ namespace Rock.Rest
         [Authenticate, Secured]
         public virtual void Put( int id, [FromBody]T value )
         {
-            if (value == null)
+            if ( value == null )
             {
                 throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
@@ -155,6 +156,96 @@ namespace Rock.Rest
 
             Service.SetValues( value, targetModel );
 
+            if ( targetModel.IsValid )
+            {
+                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+                Service.Context.SaveChanges();
+            }
+            else
+            {
+                var response = ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    string.Join( ",", targetModel.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+                throw new HttpResponseException( response );
+            }
+        }
+
+        // PATCH api/<controller>/5  (update subset of atttributes)
+        [Authenticate, Secured]
+        public virtual void Patch( int id, [FromBody]Dictionary<string, object> values )
+        {
+            // Check that something was sent in the body
+            if ( values == null || !values.Keys.Any() )
+            {
+                var response = ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest, "No values were sent in the body" );
+                throw new HttpResponseException( response );
+            }
+            else if ( values.ContainsKey( "Id" ) )
+            {
+                var response = ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest, "Cannot set Id" );
+                throw new HttpResponseException( response );
+            }
+
+            SetProxyCreation( true );
+
+            T targetModel;
+            if ( !Service.TryGet( id, out targetModel ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            CheckCanEdit( targetModel );
+            var type = targetModel.GetType();
+            var properties = type.GetProperties().ToList();
+
+            // Same functionality as Service.SetValues but for a subset of properties
+            foreach ( var key in values.Keys )
+            {
+                if ( properties.Any( p => p.Name.Equals( key ) ) )
+                {
+                    var currentValue = values[key];
+                    var property = type.GetProperty( key, BindingFlags.Public | BindingFlags.Instance );
+
+                    if ( property != null )
+                    {
+                        if ( property.GetValue( targetModel ) == currentValue )
+                        {
+                            continue;
+                        }
+                        else if ( property.CanWrite )
+                        {
+                            property.SetValue( targetModel, currentValue );
+                        }
+                        else
+                        {
+                            var response = ControllerContext.Request.CreateErrorResponse(
+                                HttpStatusCode.BadRequest,
+                                string.Format( "Cannot write {0}", key ) );
+                            throw new HttpResponseException( response );
+                        }
+                    }
+                    else
+                    {
+                        // This shouldn't happen because we are checking that the property exists.
+                        // Just to make sure reflection doesn't fail
+                        var response = ControllerContext.Request.CreateErrorResponse(
+                            HttpStatusCode.BadRequest,
+                            string.Format( "Cannot find property {0}", key ) );
+                        throw new HttpResponseException( response );
+                    }
+                }
+                else
+                {
+                    var response = ControllerContext.Request.CreateErrorResponse(
+                        HttpStatusCode.BadRequest,
+                        string.Format( "{0} does not have attribute {1}", type.BaseType.Name, key ) );
+                    throw new HttpResponseException( response );
+                }
+            }
+
+            // Verify model is valid before saving
             if ( targetModel.IsValid )
             {
                 System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
@@ -230,7 +321,7 @@ namespace Rock.Rest
         public virtual HttpResponseMessage SetContext( int id )
         {
             Guid? guid = Service.GetGuid( id );
-            if (!guid.HasValue)
+            if ( !guid.HasValue )
             {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
             }
@@ -335,6 +426,5 @@ namespace Rock.Rest
         {
             return type != null && System.Data.Entity.Core.Objects.ObjectContext.GetObjectType( type.GetType() ) != type.GetType();
         }
-
     }
 }
