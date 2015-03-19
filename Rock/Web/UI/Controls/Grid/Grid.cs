@@ -1194,6 +1194,7 @@ namespace Rock.Web.UI.Controls
         /// <exception cref="System.NotImplementedException"></exception>
         protected void Actions_MergeTemplateClick( object sender, EventArgs e )
         {
+            OnGridRebind( e );
             int? entitySetId = GetEntitySetFromGrid( e );
             if ( entitySetId.HasValue )
             {
@@ -1626,6 +1627,13 @@ namespace Rock.Web.UI.Controls
             columns.Add( idCol );
 
             columns.AddRange( displayColumns.Count > 0 ? displayColumns : allColumns );
+
+            if (columns.Count == 1)
+            {
+                // if the only column is the Id column, show it
+                idCol.HeaderText = "Id";
+                idCol.Visible = true;
+            }
 
             return columns;
         }
