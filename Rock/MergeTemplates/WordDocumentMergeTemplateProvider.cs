@@ -21,7 +21,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Validation;
 using DocumentFormat.OpenXml.Wordprocessing;
 using OpenXmlPowerTools;
 using Rock.Data;
@@ -60,6 +59,13 @@ namespace Rock.MergeTemplates
             sourceTemplateStream.CopyTo( outputDocStream );
             outputDocStream.Seek( 0, SeekOrigin.Begin );
 
+            // now that we have the outputdoc started, simplify the sourceTemplate
+            var simplifiedDoc = WordprocessingDocument.Open( sourceTemplateStream, true );
+            MarkupSimplifier.SimplifyMarkup( simplifiedDoc, this.simplifyMarkupSettingsAll );
+            sourceTemplateStream.Seek( 0, SeekOrigin.Begin );
+
+            bool? allSameParent = null;
+
             using ( WordprocessingDocument outputDoc = WordprocessingDocument.Open( outputDocStream, true ) )
             {
                 var xdoc = outputDoc.MainDocumentPart.GetXDocument();
@@ -75,8 +81,6 @@ namespace Rock.MergeTemplates
                     sourceTemplateStream.CopyTo( tempMergeTemplateStream );
                     tempMergeTemplateStream.Position = 0;
                     var tempMergeWordDoc = WordprocessingDocument.Open( tempMergeTemplateStream, true );
-
-                    MarkupSimplifier.SimplifyMarkup( tempMergeWordDoc, this.simplifyMarkupSettingsAll );
                     var tempMergeTemplateX = tempMergeWordDoc.MainDocumentPart.GetXDocument();
                     var tempMergeTemplateBodyNode = tempMergeTemplateX.DescendantNodes().OfType<XElement>().FirstOrDefault( a => a.Name.LocalName.Equals( "body" ) );
 
@@ -91,7 +95,7 @@ namespace Rock.MergeTemplates
                             nextIndicatorNodes.Add( x );
                         } );
 
-                    var allSameParent = nextIndicatorNodes.Count > 1 && nextIndicatorNodes.Select( a => a.Parent ).Distinct().Count() == 1;
+                    allSameParent = allSameParent ?? nextIndicatorNodes.Count > 1 && nextIndicatorNodes.Select( a => a.Parent ).Distinct().Count() == 1;
 
                     foreach ( var nextIndicatorNode in nextIndicatorNodes )
                     {
@@ -105,15 +109,18 @@ namespace Rock.MergeTemplates
                         else
                         {
                             // shouldn't happen
+                            recordIndex++;
                             continue;
                         }
 
                         XContainer mergedXRecord;
 
+                        var recordContainerNodeXml = recordContainerNode.ToString( SaveOptions.DisableFormatting | SaveOptions.OmitDuplicateNamespaces ).ReplaceWordChars();
+
                         if ( recordIndex >= recordCount )
                         {
                             // out of records, so clear out any remaining template nodes that haven't been merged
-                            string xml = recordContainerNode.ToString().ReplaceWordChars();
+                            string xml = recordContainerNodeXml;
                             mergedXRecord = XElement.Parse( xml ) as XContainer;
                             OpenXmlRegex.Replace( mergedXRecord.Nodes().OfType<XElement>(), this.regExDot, string.Empty, ( a, b ) => { return true; } );
 
@@ -123,14 +130,14 @@ namespace Rock.MergeTemplates
                         {
                             List<string> xmlChunks = new List<string>();
 
-                            if ( allSameParent )
+                            if ( allSameParent.Value )
                             {
                                 // if all the nextRecord nodes have the same parent, just split the XML for each record and reassemble it when done
-                                xmlChunks.AddRange( this.nextRecordEncodedRegEx.Split( recordContainerNode.ToString().ReplaceWordChars() ) );
+                                xmlChunks.AddRange( this.nextRecordEncodedRegEx.Split( recordContainerNodeXml ) );
                             }
                             else
                             {
-                                xmlChunks.Add( recordContainerNode.ToString().ReplaceWordChars() );
+                                xmlChunks.Add( recordContainerNodeXml );
                             }
 
                             string mergedXml = string.Empty;
@@ -139,17 +146,8 @@ namespace Rock.MergeTemplates
                             {
                                 if ( recordIndex < recordCount )
                                 {
-                                    if ( xml.HasMergeFields() )
-                                    {
-                                        DotLiquid.Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-                                        DotLiquid.Template template = DotLiquid.Template.Parse( xml );
-                                        mergedXml += template.Render( DotLiquid.Hash.FromDictionary( mergeObjectsList[recordIndex] ) );
-                                        recordIndex++;
-                                    }
-                                    else
-                                    {
-                                        mergedXml += xml;
-                                    }
+                                    mergedXml += xml.ResolveMergeFields( mergeObjectsList[recordIndex] );
+                                    recordIndex++;
                                 }
                                 else
                                 {
@@ -162,14 +160,9 @@ namespace Rock.MergeTemplates
 
                         // remove the orig nodes and replace with merged nodes
                         recordContainerNode.RemoveNodes();
-                        foreach ( var childNode in mergedXRecord.Nodes() )
-                        {
-                            var xchildNode = childNode as XElement;
-                            recordContainerNode.Add( xchildNode );
-                        }
+                        recordContainerNode.Add( mergedXRecord.Nodes().OfType<XElement>() );
 
-                        var mergedRecordContainer = XElement.Parse( recordContainerNode.ToString() );
-                        var nextNode = recordContainerNode.NextNode;
+                        var mergedRecordContainer = XElement.Parse( recordContainerNode.ToString( SaveOptions.DisableFormatting ) );
                         if ( recordContainerNode.Parent != null )
                         {
                             // the recordContainerNode is some child/descendent of <body>
@@ -179,10 +172,7 @@ namespace Rock.MergeTemplates
                         {
                             // the recordContainerNode is the <body>
                             recordContainerNode.RemoveNodes();
-                            foreach ( var node in mergedRecordContainer.Nodes() )
-                            {
-                                recordContainerNode.Add( node );
-                            }
+                            recordContainerNode.Add( mergedRecordContainer.Nodes() );
 
                             if ( recordIndex < recordCount )
                             {
@@ -194,10 +184,7 @@ namespace Rock.MergeTemplates
                         }
                     }
 
-                    foreach ( var childNode in tempMergeTemplateBodyNode.Nodes() )
-                    {
-                        outputBodyNode.Add( childNode );
-                    }
+                    outputBodyNode.Add( tempMergeTemplateBodyNode.Nodes() );
                 }
 
                 // remove all the 'next' delimiters
@@ -220,9 +207,9 @@ namespace Rock.MergeTemplates
             var outputBinaryFile = new BinaryFile();
             outputBinaryFile.IsTemporary = false;
             outputBinaryFile.ContentStream = outputDocStream;
-            // TODO
-
-
+            outputBinaryFile.FileName = "MergeTemplateOutput" + Path.GetExtension( templateBinaryFile.FileName );
+            outputBinaryFile.MimeType = templateBinaryFile.MimeType;
+            outputBinaryFile.BinaryFileTypeId = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid() ).Id;
 
             binaryFileService.Add( outputBinaryFile );
             rockContext.SaveChanges();
