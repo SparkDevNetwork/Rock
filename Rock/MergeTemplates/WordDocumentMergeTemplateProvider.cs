@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -31,6 +32,9 @@ namespace Rock.MergeTemplates
     /// <summary>
     /// 
     /// </summary>
+    [System.ComponentModel.Description( "A Word Document merge template" )]
+    [Export( typeof( MergeTemplateProvider ) )]
+    [ExportMetadata( "ComponentName", "Word Document" )]
     public class WordDocumentMergeTemplateProvider : MergeTemplateProvider
     {
         /// <summary>
