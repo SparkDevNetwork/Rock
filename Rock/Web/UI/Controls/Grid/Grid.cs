@@ -343,15 +343,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the merge page route.
+        /// Gets or sets the person merge page route.
         /// </summary>
         /// <value>
         /// The merge page route.
         /// </value>
-        public virtual string MergePageRoute
+        public virtual string PersonMergePageRoute
         {
-            get { return ViewState["MergePageRoute"] as string ?? "~/PersonMerge/{0}"; }
-            set { ViewState["MergePageRoute"] = value; }
+            get { return ViewState["PersonMergePageRoute"] as string ?? "~/PersonMerge/{0}"; }
+            set { ViewState["PersonMergePageRoute"] = value; }
         }
 
         /// <summary>
@@ -376,6 +376,18 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["CommunicationPageRoute"] as string; }
             set { ViewState["CommunicationPageRoute"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the merge template page route.
+        /// </summary>
+        /// <value>
+        /// The merge template page route.
+        /// </value>
+        public virtual string MergeTemplatePageRoute
+        {
+            get { return ViewState["MergeTemplatePageRoute"] as string ?? "~/MergeTemplate/{0}"; }
+            set { ViewState["MergeTemplatePageRoute"] = value; }
         }
 
         private Dictionary<int, string> RowSelectedColumns
@@ -524,10 +536,11 @@ namespace Rock.Web.UI.Controls
 
             this.Sorting += Grid_Sorting;
 
-            this.Actions.MergeClick += Actions_MergeClick;
+            this.Actions.PersonMergeClick += Actions_PersonMergeClick;
             this.Actions.BulkUpdateClick += Actions_BulkUpdateClick;
             this.Actions.CommunicateClick += Actions_CommunicateClick;
             this.Actions.ExcelExportClick += Actions_ExcelExportClick;
+            this.Actions.MergeTemplateClick += Actions_MergeTemplateClick;
 
             var rockPage = this.Page as RockPage;
             if ( rockPage != null )
@@ -1077,12 +1090,12 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void Actions_MergeClick( object sender, EventArgs e )
+        void Actions_PersonMergeClick( object sender, EventArgs e )
         {
             int? entitySetId = GetPersonEntitySet( e );
             if ( entitySetId.HasValue )
             {
-                Page.Response.Redirect( string.Format( MergePageRoute, entitySetId.Value ), false );
+                Page.Response.Redirect( string.Format( PersonMergePageRoute, entitySetId.Value ), false );
                 Context.ApplicationInstance.CompleteRequest();
             }
         }
@@ -1171,6 +1184,23 @@ namespace Rock.Web.UI.Controls
                     Context.ApplicationInstance.CompleteRequest();
                 }
             }
+        }
+
+        /// <summary>
+        /// Handles the MergeTemplateClick event of the Actions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void Actions_MergeTemplateClick( object sender, EventArgs e )
+        {
+            int? entitySetId = GetEntitySetFromGrid( e );
+            if ( entitySetId.HasValue )
+            {
+                Page.Response.Redirect( string.Format( MergeTemplatePageRoute, entitySetId.Value ), false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
+
         }
 
         /// <summary>
@@ -1264,18 +1294,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                // get access to the List<> and its properties
-                IList data = (IList)this.DataSource;
-                Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
-
-                // if the list is just List<object>, try to find out what the properties of specific type of object are by examining the first item in the list
-                if ( oType == typeof( object ) || oType.IsInterface )
-                {
-                    if ( data.Count > 0 )
-                    {
-                        oType = data[0].GetType();
-                    }
-                }
+                var oType = GetDataSourceEntityType();
 
                 // get all properties of the objects in the grid
                 IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
@@ -1324,6 +1343,8 @@ namespace Rock.Web.UI.Controls
 
                 // print data
                 int dataIndex = 0;
+                
+                IList data = (IList)this.DataSource;
                 foreach ( var item in data )
                 {
                     columnCounter = 0;
@@ -1496,6 +1517,27 @@ namespace Rock.Web.UI.Controls
             this.Page.Response.BinaryWrite( byteArray );
             this.Page.Response.Flush();
             this.Page.Response.End();
+        }
+
+        /// <summary>
+        /// Gets the Type of the data source entity.
+        /// </summary>
+        /// <returns></returns>
+        private Type GetDataSourceEntityType()
+        {
+            IList data = (IList)this.DataSource;
+            Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
+
+            // if the list is just List<object>, try to find out what the properties of specific type of object are by examining the first item in the list
+            if ( oType == typeof( object ) || oType.IsInterface )
+            {
+                if ( data.Count > 0 )
+                {
+                    oType = data[0].GetType();
+                }
+            }
+
+            return oType;
         }
 
         #endregion
@@ -1697,7 +1739,7 @@ namespace Rock.Web.UI.Controls
             if ( keys.Any() )
             {
                 var entitySet = new Rock.Model.EntitySet();
-                entitySet.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                entitySet.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read<Rock.Model.Person>().Id;
                 entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
 
                 foreach ( var key in keys )
@@ -1706,6 +1748,54 @@ namespace Rock.Web.UI.Controls
                     {
                         var item = new Rock.Model.EntitySetItem();
                         item.EntityId = (int)key.Key;
+                        entitySet.Items.Add( item );
+                    }
+                    catch { }
+                }
+
+                if ( entitySet.Items.Any() )
+                {
+                    var rockContext = new RockContext();
+                    var service = new Rock.Model.EntitySetService( rockContext );
+                    service.Add( entitySet );
+                    rockContext.SaveChanges();
+                    return entitySet.Id;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the entity set from grid.
+        /// </summary>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <returns></returns>
+        private int? GetEntitySetFromGrid( EventArgs e)
+        {
+            if ( !string.IsNullOrWhiteSpace( this.PersonIdField ) )
+            {
+                return GetPersonEntitySet( e );
+            }
+            else
+            {
+                var entityType = this.GetDataSourceEntityType();
+                var entitySet = new Rock.Model.EntitySet();
+                entitySet.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read(entityType).Id;
+                entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
+
+                var selectedKeys = this.SelectedKeys.Select( a => a as int? ).Where( a => a.HasValue ).Select( a => a.Value ).Distinct();
+                if (selectedKeys == null || !selectedKeys.Any())
+                {
+                    selectedKeys = ( (IList)this.DataSource ).OfType<IEntity>().Select( a => a.Id ).Distinct();
+                }
+
+                foreach ( var key in selectedKeys )
+                {
+                    try
+                    {
+                        var item = new Rock.Model.EntitySetItem();
+                        item.EntityId = key;
                         entitySet.Items.Add( item );
                     }
                     catch { }
