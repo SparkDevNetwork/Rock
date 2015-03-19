@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,6 +27,9 @@ namespace Rock.MergeTemplates
     /// <summary>
     /// 
     /// </summary>
+    [System.ComponentModel.Description( "An HTML Document merge template" )]
+    [Export( typeof( MergeTemplateProvider ) )]
+    [ExportMetadata( "ComponentName", "HTML Document" )]
     public class HtmlMergeTemplateProvider : MergeTemplateProvider
     {
         /// <summary>

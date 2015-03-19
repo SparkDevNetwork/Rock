@@ -15,13 +15,14 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using Rock.Attribute;
 using Rock.Extension;
 using Rock.Model;
 
 namespace Rock.MergeTemplates
 {
     /// <summary>
-    /// 
+    /// Base class for merge template providers (i.e. Word Document, HTML, etc) 
     /// </summary>
     public abstract class MergeTemplateProvider : Component
     {
