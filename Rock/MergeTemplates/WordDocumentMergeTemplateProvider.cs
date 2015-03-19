@@ -205,7 +205,7 @@ namespace Rock.MergeTemplates
             }
 
             var outputBinaryFile = new BinaryFile();
-            outputBinaryFile.IsTemporary = false;
+            outputBinaryFile.IsTemporary = true;
             outputBinaryFile.ContentStream = outputDocStream;
             outputBinaryFile.FileName = "MergeTemplateOutput" + Path.GetExtension( templateBinaryFile.FileName );
             outputBinaryFile.MimeType = templateBinaryFile.MimeType;
