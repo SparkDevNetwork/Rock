@@ -720,6 +720,24 @@ namespace Rock
         }
 
         /// <summary>
+        /// Pluralizes if the condition is true
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="condition">if set to <c>true</c> [condition].</param>
+        /// <returns></returns>
+        public static string PluralizeIf( this string str, bool condition )
+        {
+            if (condition)
+            {
+                return str.Pluralize();
+            }
+            else
+            {
+                return str;
+            }
+        }
+
+        /// <summary>
         /// Singularizes the specified string.
         /// </summary>
         /// <param name="str">The string to singularize.</param>
