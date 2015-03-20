@@ -176,8 +176,8 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            var providerEntityType = EntityTypeCache.Read( mergeTemplate.MergeTemplateProviderEntityTypeId );
-            if ( providerEntityType == null )
+            var mergeTemplateTypeEntityType = EntityTypeCache.Read( mergeTemplate.MergeTemplateTypeEntityTypeId );
+            if ( mergeTemplateTypeEntityType == null )
             {
                 nbWarningMessage.Text = "Unable to get merge template";
                 nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
@@ -185,16 +185,16 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            var mergeTemplateProvider = MergeTemplateProviderContainer.GetComponent( providerEntityType.Name );
-            if ( mergeTemplateProvider == null )
+            var mergeTemplateType = MergeTemplateTypeContainer.GetComponent( mergeTemplateTypeEntityType.Name );
+            if ( mergeTemplateType == null )
             {
-                nbWarningMessage.Text = "Unable to get merge template provider";
+                nbWarningMessage.Text = "Unable to get merge template type";
                 nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
                 nbWarningMessage.Visible = true;
                 return;
             }
 
-            var outputBinaryFileDoc = mergeTemplateProvider.CreateDocument( mergeTemplate, mergeObjectsList );
+            var outputBinaryFileDoc = mergeTemplateType.CreateDocument( mergeTemplate, mergeObjectsList );
 
             Response.Redirect( outputBinaryFileDoc.Url, false );
             Context.ApplicationInstance.CompleteRequest();

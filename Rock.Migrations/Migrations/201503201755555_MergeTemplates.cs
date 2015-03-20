@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class MergeTemplate : Rock.Migrations.RockMigration
+    public partial class MergeTemplates : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -37,7 +37,7 @@ namespace Rock.Migrations
                         Name = c.String(nullable: false, maxLength: 100),
                         Description = c.String(),
                         TemplateBinaryFileId = c.Int(nullable: false),
-                        MergeTemplateProviderEntityTypeId = c.Int(nullable: false),
+                        MergeTemplateTypeEntityTypeId = c.Int(nullable: false),
                         CategoryId = c.Int(nullable: false),
                         PersonAliasId = c.Int(),
                         CreatedDateTime = c.DateTime(),
@@ -50,12 +50,12 @@ namespace Rock.Migrations
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.Category", t => t.CategoryId)
                 .ForeignKey("dbo.PersonAlias", t => t.CreatedByPersonAliasId)
-                .ForeignKey("dbo.EntityType", t => t.MergeTemplateProviderEntityTypeId)
+                .ForeignKey("dbo.EntityType", t => t.MergeTemplateTypeEntityTypeId)
                 .ForeignKey("dbo.PersonAlias", t => t.ModifiedByPersonAliasId)
                 .ForeignKey("dbo.PersonAlias", t => t.PersonAliasId)
                 .ForeignKey("dbo.BinaryFile", t => t.TemplateBinaryFileId)
                 .Index(t => t.TemplateBinaryFileId)
-                .Index(t => t.MergeTemplateProviderEntityTypeId)
+                .Index(t => t.MergeTemplateTypeEntityTypeId)
                 .Index(t => t.CategoryId)
                 .Index(t => t.PersonAliasId)
                 .Index(t => t.CreatedByPersonAliasId)
@@ -66,6 +66,9 @@ namespace Rock.Migrations
             RockMigrationHelper.AddSecurityAuthForBinaryFileType( Rock.SystemGuid.BinaryFiletype.MERGE_TEMPLATE, 0, "Edit", true, Rock.SystemGuid.Group.GROUP_ADMINISTRATORS, Model.SpecialRole.None, "D5D0FB59-993D-4B70-851C-18787AE8DE09" );
             RockMigrationHelper.AddSecurityAuthForBinaryFileType( Rock.SystemGuid.BinaryFiletype.MERGE_TEMPLATE, 1, "Edit", true, Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS, Model.SpecialRole.None, "00615556-29EB-4085-A774-F1D203ECE9D0" );
             RockMigrationHelper.AddSecurityAuthForBinaryFileType( Rock.SystemGuid.BinaryFiletype.MERGE_TEMPLATE, 2, "Edit", true, Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS, Model.SpecialRole.None, "E7300CED-B48F-4803-B27C-8851B2905668" );
+
+            RockMigrationHelper.UpdateEntityType( "Rock.MergeTemplates.HtmlMergeTemplateType", "Html", "Rock.MergeTemplates.HtmlMergeTemplateType, Rock, Version=1.3.0.0, Culture=neutral, PublicKeyToken=null", false, true, "5fbff041-9edc-41a3-8a92-d7ac4ff88221" );
+            RockMigrationHelper.UpdateEntityType( "Rock.MergeTemplates.WordDocumentMergeTemplateType", "Word Document", "Rock.MergeTemplates.WordDocumentMergeTemplateType, Rock, Version=1.3.0.0, Culture=neutral, PublicKeyToken=null", false, true, "7b86e093-3eb8-46ca-8ca7-068d699e7811" );
         }
         
         /// <summary>
@@ -76,7 +79,7 @@ namespace Rock.Migrations
             DropForeignKey("dbo.MergeTemplate", "TemplateBinaryFileId", "dbo.BinaryFile");
             DropForeignKey("dbo.MergeTemplate", "PersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.MergeTemplate", "ModifiedByPersonAliasId", "dbo.PersonAlias");
-            DropForeignKey("dbo.MergeTemplate", "MergeTemplateProviderEntityTypeId", "dbo.EntityType");
+            DropForeignKey("dbo.MergeTemplate", "MergeTemplateTypeEntityTypeId", "dbo.EntityType");
             DropForeignKey("dbo.MergeTemplate", "CreatedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.MergeTemplate", "CategoryId", "dbo.Category");
             DropIndex("dbo.MergeTemplate", new[] { "Guid" });
@@ -84,7 +87,7 @@ namespace Rock.Migrations
             DropIndex("dbo.MergeTemplate", new[] { "CreatedByPersonAliasId" });
             DropIndex("dbo.MergeTemplate", new[] { "PersonAliasId" });
             DropIndex("dbo.MergeTemplate", new[] { "CategoryId" });
-            DropIndex("dbo.MergeTemplate", new[] { "MergeTemplateProviderEntityTypeId" });
+            DropIndex("dbo.MergeTemplate", new[] { "MergeTemplateTypeEntityTypeId" });
             DropIndex("dbo.MergeTemplate", new[] { "TemplateBinaryFileId" });
             DropTable("dbo.MergeTemplate");
         }

@@ -90,7 +90,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.CategoryId = source.CategoryId;
             target.Description = source.Description;
-            target.MergeTemplateProviderEntityTypeId = source.MergeTemplateProviderEntityTypeId;
+            target.MergeTemplateTypeEntityTypeId = source.MergeTemplateTypeEntityTypeId;
             target.Name = source.Name;
             target.PersonAliasId = source.PersonAliasId;
             target.TemplateBinaryFileId = source.TemplateBinaryFileId;

@@ -5,13 +5,16 @@ using Rock.Extension;
 
 namespace Rock.MergeTemplates
 {
-    public class MergeTemplateProviderContainer : Container<MergeTemplateProvider, IComponentData>
+    /// <summary>
+    /// 
+    /// </summary>
+    public class MergeTemplateTypeContainer : Container<MergeTemplateType, IComponentData>
     {
         /// <summary>
         /// Singleton instance
         /// </summary>
-        private static readonly Lazy<MergeTemplateProviderContainer> instance =
-            new Lazy<MergeTemplateProviderContainer>( () => new MergeTemplateProviderContainer() );
+        private static readonly Lazy<MergeTemplateTypeContainer> instance =
+            new Lazy<MergeTemplateTypeContainer>( () => new MergeTemplateTypeContainer() );
 
         /// <summary>
         /// Gets the instance.
@@ -19,7 +22,7 @@ namespace Rock.MergeTemplates
         /// <value>
         /// The instance.
         /// </value>
-        public static MergeTemplateProviderContainer Instance
+        public static MergeTemplateTypeContainer Instance
         {
             get { return instance.Value; }
         }
@@ -29,7 +32,7 @@ namespace Rock.MergeTemplates
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <returns></returns>
-        public static MergeTemplateProvider GetComponent( string entityType )
+        public static MergeTemplateType GetComponent( string entityType )
         {
             return Instance.GetComponentByEntity( entityType );
         }
@@ -45,12 +48,12 @@ namespace Rock.MergeTemplates
         }
 
         /// <summary>
-        /// Gets or sets the MergeTemplateProvider MEF components.
+        /// Gets or sets the MergeTemplateType MEF components.
         /// </summary>
         /// <value>
         /// The MEF components.
         /// </value>
-        [ImportMany( typeof( MergeTemplateProvider ) )]
-        protected override IEnumerable<Lazy<MergeTemplateProvider, IComponentData>> MEFComponents { get; set; }
+        [ImportMany( typeof( MergeTemplateType ) )]
+        protected override IEnumerable<Lazy<MergeTemplateType, IComponentData>> MEFComponents { get; set; }
     }
 }

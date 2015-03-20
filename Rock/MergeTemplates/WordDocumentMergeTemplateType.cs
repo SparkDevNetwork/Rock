@@ -32,9 +32,9 @@ namespace Rock.MergeTemplates
     /// 
     /// </summary>
     [System.ComponentModel.Description( "A Word Document merge template" )]
-    [Export( typeof( MergeTemplateProvider ) )]
+    [Export( typeof( MergeTemplateType ) )]
     [ExportMetadata( "ComponentName", "Word Document" )]
-    public class WordDocumentMergeTemplateProvider : MergeTemplateProvider
+    public class WordDocumentMergeTemplateType : MergeTemplateType
     {
         /// <summary>
         /// Creates the document.

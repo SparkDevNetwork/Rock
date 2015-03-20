@@ -258,10 +258,10 @@
     <Compile Include="Jobs\SendAttendanceReminders.cs" />
     <Compile Include="Lava\ILiquidizable.cs" />
     <Compile Include="Lava\RockFilters.cs" />
-    <Compile Include="MergeTemplates\HtmlMergeTemplateProvider.cs" />
-    <Compile Include="MergeTemplates\MergeTemplateProvider.cs" />
-    <Compile Include="MergeTemplates\MergeTemplateProviderContainer.cs" />
-    <Compile Include="MergeTemplates\WordDocumentMergeTemplateProvider.cs" />
+    <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
+    <Compile Include="MergeTemplates\MergeTemplateType.cs" />
+    <Compile Include="MergeTemplates\MergeTemplateTypeContainer.cs" />
+    <Compile Include="MergeTemplates\WordDocumentMergeTemplateType.cs" />
     <Compile Include="Model\BenevolenceRequest.cs">
       <SubType>Code</SubType>
     </Compile>
