@@ -20,9 +20,12 @@ using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Http;
+using System.Net.Http;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.UI.Controls;
+using System.Net;
+using System;
 
 namespace Rock.Rest.Controllers
 {
@@ -40,7 +43,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Workflows/WorkflowEntry/{workflowTypeId}" )]
-        public void WorkflowEntry( int workflowTypeId )
+        public Rock.Model.Workflow WorkflowEntry( int workflowTypeId )
         {
             var rockContext = new Rock.Data.RockContext();
             var workflowTypeService = new WorkflowTypeService( rockContext );
@@ -75,7 +78,16 @@ namespace Rock.Rest.Controllers
                         } );
                     }
                 }
+
+                var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+                return workflow;
             }
+            else 
+            {
+                var response = ControllerContext.Request.CreateResponse( HttpStatusCode.NotFound );
+            }
+
+            return null;
 
         }
     }
