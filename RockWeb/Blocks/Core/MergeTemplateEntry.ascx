@@ -34,8 +34,11 @@
                             <Rock:RockDropDownList ID="ddlMergeTemplate" runat="server" Label="Merge Template" Required="true" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:HelpBlock ID="hbShowDataRows" runat="server" Text="TODO" />
-                            <Rock:HelpBlock ID="hbShowMergeFields" runat="server" Text="TODO" />
+                            <asp:LinkButton ID="btnShowDataPreview" runat="server" CssClass="btn btn-action btn-xs" OnClick="btnShowDataPreview_Click" Text="Show Data Rows" CausesValidation="false" />
+                            <span class="btn btn-default btn-xs" onclick="$('.js-lava-help').toggleClass('hidden')">Show Merge Fields <i class="fa fa-chevron-down"></i></span>
+                            <div class="js-lava-help hidden">
+                                <Rock:RockLiteral ID="lShowMergeFields" runat="server" />
+                            </div>
                         </div>
                     </div>
 
@@ -46,6 +49,14 @@
             </div>
 
         </asp:Panel>
+
+        <Rock:ModalDialog ID="modalPreview" runat="server" Title="Preview (top 15 rows )" ValidationGroup="Preview">
+            <Content>
+                <div class="grid">
+                    <Rock:Grid ID="gPreview" runat="server" AllowSorting="true" EmptyDataText="No Results" ShowActionRow="false" DisplayType="Light" />
+                </div>
+            </Content>
+        </Rock:ModalDialog>
 
     </ContentTemplate>
 </asp:UpdatePanel>

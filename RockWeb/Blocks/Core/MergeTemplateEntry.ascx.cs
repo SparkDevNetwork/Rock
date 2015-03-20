@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.MergeTemplates;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
@@ -36,7 +37,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Merge Template Entry" )]
     [Category( "Core" )]
     [Description( "Used for merging data into output documents, such as Word, Html, using a pre-defined template." )]
-    public partial class MergeTemplateEntry : Rock.Web.UI.RockBlock
+    public partial class MergeTemplateEntry : RockBlock
     {
         #region Base Control Methods
 
@@ -128,6 +129,13 @@ namespace RockWeb.Blocks.Core
 
             nbNumberOfRecords.Text = string.Format( "There are {0} {1} to merge", itemsCount, entityTypeCache.FriendlyName.PluralizeIf( itemsCount != 1 ) );
 
+            List<Dictionary<string, object>> mergeObjectsList = GetMergeObjectList( rockContext, 1 );
+
+            if ( mergeObjectsList.Count == 1 )
+            {
+                lShowMergeFields.Text = mergeObjectsList[0].lavaDebugInfo();
+            }
+
             LoadDropDowns();
         }
 
@@ -157,80 +165,99 @@ namespace RockWeb.Blocks.Core
         {
             var rockContext = new RockContext();
 
-            var mergeTemplateService = new MergeTemplateService( rockContext );
+            List<Dictionary<string, object>> mergeObjectsList = GetMergeObjectList( rockContext );
 
-            var mergeTemplate = mergeTemplateService.Get( ddlMergeTemplate.SelectedValue.AsInteger() );
-            if ( mergeTemplate != null )
+            var mergeTemplate = new MergeTemplateService( rockContext ).Get( ddlMergeTemplate.SelectedValue.AsInteger() );
+            if ( mergeTemplate == null )
             {
-                List<IEntity> itemList = null;
-                var providerEntityType = EntityTypeCache.Read( mergeTemplate.MergeTemplateProviderEntityTypeId );
-                if ( providerEntityType != null )
-                {
-                    var mergeTemplateProvider = MergeTemplateProviderContainer.GetComponent( providerEntityType.Name );
-
-                    if ( mergeTemplateProvider != null )
-                    {
-                        var entitySetService = new EntitySetService( rockContext );
-                        int entitySetId = hfEntitySetId.Value.AsInteger();
-                        var entitySet = entitySetService.Get( entitySetId );
-
-                        var entitySetItemsService = new EntitySetItemService( rockContext );
-                        var entityItemQry = entitySetItemsService.Queryable().Where( a => a.EntitySetId == entitySetId ).OrderBy( a => a.Order );
-
-                        var itemEntityType = EntityTypeCache.Read( entitySet.EntityTypeId.Value );
-                        bool isPersonEntitySet = itemEntityType.Guid == Rock.SystemGuid.EntityType.PERSON.AsGuid();
-                        bool combineFamilyMembers = cbCombineFamilyMembers.Visible && cbCombineFamilyMembers.Checked;
-                        List<Dictionary<string, object>> mergeObjectsList = new List<Dictionary<string, object>>();
-
-                        if ( itemEntityType.AssemblyName != null )
-                        {
-                            Type entityType = itemEntityType.GetEntityType();
-                            if ( entityType != null )
-                            {
-                                Type[] modelType = { entityType };
-                                Type genericServiceType = typeof( Rock.Data.Service<> );
-                                Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-                                Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
-
-                                MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
-                                var entityQry = qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
-
-                                var joinQry = entityItemQry.Join( entityQry, k => k.EntityId, i => i.Id, ( setItem, item ) => item );
-
-                                itemList = joinQry.ToList();
-                            }
-                        }
-
-                        if ( itemList != null )
-                        {
-                            var globalMergeObjects = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
-                            foreach ( var item in itemList.OfType<Rock.Data.IModel>() )
-                            {
-                                var mergeObjects = new Dictionary<string, object>();
-                                foreach ( var g in globalMergeObjects )
-                                {
-                                    mergeObjects.Add( g.Key, g.Value );
-                                }
-
-                                mergeObjects.Add( "CurrentPerson", this.CurrentPerson );
-                                mergeObjects.Add( itemEntityType.FriendlyName.Replace( " ", string.Empty ), item );
-                                mergeObjectsList.Add( mergeObjects );
-                            }
-
-                            var outputBinaryFileDoc = mergeTemplateProvider.CreateDocument( mergeTemplate, mergeObjectsList );
-
-                            Response.Redirect( outputBinaryFileDoc.Url, false );
-                            Context.ApplicationInstance.CompleteRequest();
-                            return;
-                        }
-                    }
-                }
-
-                nbWarningMessage.Text = "Something went wrong";
+                nbWarningMessage.Text = "Unable to get merge template";
                 nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
                 nbWarningMessage.Visible = true;
                 return;
             }
+
+            var providerEntityType = EntityTypeCache.Read( mergeTemplate.MergeTemplateProviderEntityTypeId );
+            if ( providerEntityType == null )
+            {
+                nbWarningMessage.Text = "Unable to get merge template";
+                nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbWarningMessage.Visible = true;
+                return;
+            }
+
+            var mergeTemplateProvider = MergeTemplateProviderContainer.GetComponent( providerEntityType.Name );
+            if ( mergeTemplateProvider == null )
+            {
+                nbWarningMessage.Text = "Unable to get merge template provider";
+                nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbWarningMessage.Visible = true;
+                return;
+            }
+
+            var outputBinaryFileDoc = mergeTemplateProvider.CreateDocument( mergeTemplate, mergeObjectsList );
+
+            Response.Redirect( outputBinaryFileDoc.Url, false );
+            Context.ApplicationInstance.CompleteRequest();
+            return;
+        }
+
+        /// <summary>
+        /// Gets the merge object list for the current EntitySet
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="fetchCount">The fetch count.</param>
+        /// <returns></returns>
+        private List<Dictionary<string, object>> GetMergeObjectList( RockContext rockContext, int? fetchCount = null )
+        {
+            int entitySetId = hfEntitySetId.Value.AsInteger();
+            var entitySetService = new EntitySetService( rockContext );
+            var qry = entitySetService.GetEntityQuery( entitySetId );
+
+            if ( fetchCount.HasValue )
+            {
+                qry = qry.Take( fetchCount.Value );
+            }
+
+            var globalMergeObjects = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
+            var entitySet = entitySetService.Get( entitySetId );
+            EntityTypeCache itemEntityType = EntityTypeCache.Read( entitySet.EntityTypeId ?? 0 );
+            var itemLavaKey = itemEntityType.FriendlyName.Replace( " ", string.Empty );
+            List<Dictionary<string, object>> mergeObjectsList = new List<Dictionary<string, object>>();
+            foreach ( var item in qry )
+            {
+                var mergeObjects = new Dictionary<string, object>();
+                foreach ( var g in globalMergeObjects )
+                {
+                    mergeObjects.Add( g.Key, g.Value );
+                }
+
+                mergeObjects.Add( "CurrentPerson", this.CurrentPerson );
+                mergeObjects.Add( itemLavaKey, item );
+                mergeObjectsList.Add( mergeObjects );
+            }
+
+            return mergeObjectsList;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnShowDataPreview control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnShowDataPreview_Click( object sender, EventArgs e )
+        {
+            int entitySetId = hfEntitySetId.Value.AsInteger();
+            var entitySetService = new EntitySetService( new RockContext() );
+            var entitySet = entitySetService.Get(entitySetId);
+            var qry = entitySetService.GetEntityQuery( entitySetId ).Take( 15 );
+
+            EntityTypeCache itemEntityType = EntityTypeCache.Read( entitySet.EntityTypeId ?? 0 );
+            gPreview.CreatePreviewColumns( itemEntityType.GetEntityType() );
+
+            gPreview.DataSource = qry.ToList();
+            gPreview.DataBind();
+
+            modalPreview.Show();
         }
 
         #endregion
