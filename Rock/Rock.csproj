@@ -291,6 +291,7 @@
     <Compile Include="Model\ContentChannelType.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\EntitySetService.Partial.cs" />
     <Compile Include="Model\EntitySetItemService.Partial.cs" />
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Model\EntitySet.cs" />
