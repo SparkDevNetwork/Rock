@@ -14,23 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Rock.Attribute;
+using Rock.Extension;
 using Rock.Model;
 
 namespace Rock.MergeTemplates
 {
     /// <summary>
-    /// 
+    /// Base class for merge template types (i.e. Word Document, HTML, etc) 
     /// </summary>
-    [System.ComponentModel.Description( "An HTML Document merge template" )]
-    [Export( typeof( MergeTemplateProvider ) )]
-    [ExportMetadata( "ComponentName", "HTML Document" )]
-    public class HtmlMergeTemplateProvider : MergeTemplateProvider
+    public abstract class MergeTemplateType : Component
     {
         /// <summary>
         /// Creates the document.
@@ -38,10 +32,6 @@ namespace Rock.MergeTemplates
         /// <param name="mergeTemplate">The merge template.</param>
         /// <param name="mergeObjectsList">The merge objects list.</param>
         /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public override BinaryFile CreateDocument( MergeTemplate mergeTemplate, List<Dictionary<string, object>> mergeObjectsList )
-        {
-            throw new NotImplementedException();
-        }
+        public abstract BinaryFile CreateDocument( MergeTemplate mergeTemplate, List<Dictionary<string, object>> mergeObjectsList );
     }
 }

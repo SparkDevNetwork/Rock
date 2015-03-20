@@ -61,13 +61,13 @@ namespace Rock.Model
         public int TemplateBinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the merge template provider entity type identifier.
+        /// Gets or sets the merge template type entity type identifier.
         /// </summary>
         /// <value>
-        /// The merge template provider entity type identifier.
+        /// The merge template type entity type identifier.
         /// </value>
         [DataMember]
-        public int MergeTemplateProviderEntityTypeId { get; set; }
+        public int MergeTemplateTypeEntityTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the category id.
@@ -100,12 +100,12 @@ namespace Rock.Model
         public virtual BinaryFile TemplateBinaryFile { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the merge template provider entity.
+        /// Gets or sets the type of the merge template type entity.
         /// </summary>
         /// <value>
-        /// The type of the merge template provider entity.
+        /// The type of the merge template type entity.
         /// </value>
-        public virtual EntityType MergeTemplateProviderEntityType { get; set; }
+        public virtual EntityType MergeTemplateTypeEntityType { get; set; }
 
         /// <summary>
         /// Gets or sets the category.
@@ -182,7 +182,7 @@ namespace Rock.Model
         public MergeTemplateConfiguration()
         {
             this.HasRequired( c => c.TemplateBinaryFile ).WithMany().HasForeignKey( c => c.TemplateBinaryFileId ).WillCascadeOnDelete( false );
-            this.HasRequired( c => c.MergeTemplateProviderEntityType ).WithMany().HasForeignKey( c => c.MergeTemplateProviderEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( c => c.MergeTemplateTypeEntityType ).WithMany().HasForeignKey( c => c.MergeTemplateTypeEntityTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( c => c.Category ).WithMany().HasForeignKey( c => c.CategoryId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.PersonAlias ).WithMany().HasForeignKey( c => c.PersonAliasId ).WillCascadeOnDelete( false );
         }

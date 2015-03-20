@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.0-30225")]
-    public sealed partial class MergeTemplate : IMigrationMetadata
+    public sealed partial class MergeTemplates : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(MergeTemplate));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(MergeTemplates));
         
         string IMigrationMetadata.Id
         {
-            get { return "201503180017100_MergeTemplate"; }
+            get { return "201503201755555_MergeTemplates"; }
         }
         
         string IMigrationMetadata.Source

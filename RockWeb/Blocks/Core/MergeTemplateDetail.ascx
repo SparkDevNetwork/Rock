@@ -24,7 +24,7 @@
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.MergeTemplate, Rock" PropertyName="Name" />
                                 <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.MergeTemplate, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                                <Rock:RockDropDownList ID="ddlMergeTemplateProvider" runat="server" Label="Provider" Required="true" />
+                                <Rock:RockDropDownList ID="ddlMergeTemplateType" runat="server" Label="Type" Required="true" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:FileUploader ID="fuTemplateBinaryFile" runat="server" Label="Template File" Required="true" />

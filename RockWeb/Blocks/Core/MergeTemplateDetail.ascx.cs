@@ -170,7 +170,7 @@ namespace RockWeb.Blocks.Core
 
             mergeTemplate.Name = tbName.Text;
             mergeTemplate.Description = tbDescription.Text;
-            mergeTemplate.MergeTemplateProviderEntityTypeId = ddlMergeTemplateProvider.SelectedValue.AsInteger();
+            mergeTemplate.MergeTemplateTypeEntityTypeId = ddlMergeTemplateType.SelectedValue.AsInteger();
             mergeTemplate.TemplateBinaryFileId = fuTemplateBinaryFile.BinaryFileId ?? 0;
             mergeTemplate.CategoryId = cpCategory.SelectedValue.AsInteger();
             mergeTemplate.PersonAliasId = ppPerson.PersonAliasId;
@@ -305,15 +305,15 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlMergeTemplateProvider.Items.Clear();
-            ddlMergeTemplateProvider.Items.Add( new ListItem() );
+            ddlMergeTemplateType.Items.Clear();
+            ddlMergeTemplateType.Items.Add( new ListItem() );
 
-            foreach (var item in MergeTemplateProviderContainer.Instance.Components.Values)
+            foreach (var item in MergeTemplateTypeContainer.Instance.Components.Values)
             {
                 if ( item.Value.IsActive )
                 {
                     var entityType = item.Value.EntityType;
-                    ddlMergeTemplateProvider.Items.Add( new ListItem(entityType.FriendlyName, entityType.Id.ToString() ) );
+                    ddlMergeTemplateType.Items.Add( new ListItem(entityType.FriendlyName, entityType.Id.ToString() ) );
                 }
             }
         }
@@ -341,7 +341,7 @@ namespace RockWeb.Blocks.Core
 
             LoadDropDowns();
 
-            ddlMergeTemplateProvider.SetValue( mergeTemplate.MergeTemplateProviderEntityTypeId );
+            ddlMergeTemplateType.SetValue( mergeTemplate.MergeTemplateTypeEntityTypeId );
 
             fuTemplateBinaryFile.BinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.MERGE_TEMPLATE.AsGuid();
             fuTemplateBinaryFile.BinaryFileId = mergeTemplate.TemplateBinaryFileId;
@@ -374,7 +374,7 @@ namespace RockWeb.Blocks.Core
             DescriptionList descriptionList = new DescriptionList()
                 .Add( "Template File", string.Format("<a href='{0}'>{1}</a>",  mergeTemplate.TemplateBinaryFile.Url, mergeTemplate.TemplateBinaryFile.FileName ))
                 .Add( "Description", mergeTemplate.Description ?? string.Empty )
-                .Add( "Provider", mergeTemplate.MergeTemplateProviderEntityType )
+                .Add( "Type", mergeTemplate.MergeTemplateTypeEntityType )
                 .Add( "Category", mergeTemplate.Category != null ? mergeTemplate.Category.Name : string.Empty )
                 .Add( "Person", mergeTemplate.PersonAlias, false );
 
