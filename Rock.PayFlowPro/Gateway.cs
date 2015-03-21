@@ -502,6 +502,7 @@ namespace Rock.PayFlowPro
             var recurringBillingParams = new Dictionary<string, string>();
             recurringBillingParams.Add( "start_date", startDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
             recurringBillingParams.Add( "end_date", endDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
+            recurringBillingParams.Add( "include_declines", "false" );
             DataTable recurringBillingTable = reportingApi.GetReport( "RecurringBillingReport", recurringBillingParams, out errorMessage );
             if ( recurringBillingTable != null )
             {
@@ -512,6 +513,7 @@ namespace Rock.PayFlowPro
                 customParams.Add( "start_date", startDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
                 customParams.Add( "end_date", endDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
                 customParams.Add( "maximum_amount", "1000000" );
+                customParams.Add( "results", "Approvals Only" );
                 customParams.Add( "recurring_only", "true" );
                 customParams.Add( "show_order_id", "false" );
                 customParams.Add( "show_transaction_id", "true" );
@@ -520,15 +522,15 @@ namespace Rock.PayFlowPro
                 customParams.Add( "show_tender_type", "true" );
                 customParams.Add( "show_account_number", "false" );
                 customParams.Add( "show_expires", "false" );
-                customParams.Add( "show_aba_routing_num", "false" );
+                customParams.Add( "show_aba_routing_number", "false" );
                 customParams.Add( "show_amount", "true" );
-                customParams.Add( "show_result_code", "false" );
+                customParams.Add( "show_result_code", "true" );
                 customParams.Add( "show_response_msg", "false" );
                 customParams.Add( "show_comment1", "false" );
                 customParams.Add( "show_comment2", "false" );
                 customParams.Add( "show_tax_amount", "false" );
                 customParams.Add( "show_purchase_order", "false" );
-                customParams.Add( "show_original_transactio", "false" );
+                customParams.Add( "show_original_transaction_id", "false" );
                 customParams.Add( "show_avs_street_match", "false" );
                 customParams.Add( "show_avs_zip_match", "false" );
                 customParams.Add( "show_invoice_number", "false" );
@@ -537,15 +539,15 @@ namespace Rock.PayFlowPro
                 customParams.Add( "show_csc_match", "false" );
                 customParams.Add( "show_billing_first_name", "false" );
                 customParams.Add( "show_billing_last_name", "false" );
-                customParams.Add( "show_billing_company_", "false" );
+                customParams.Add( "show_billing_company_name", "false" );
                 customParams.Add( "show_billing_address", "false" );
                 customParams.Add( "show_billing_city", "false" );
                 customParams.Add( "show_billing_state", "false" );
                 customParams.Add( "show_billing_zip", "false" );
                 customParams.Add( "show_billing_email", "false" );
                 customParams.Add( "show_billing_country", "false" );
-                customParams.Add( "show_shipping_first_na", "false" );
-                customParams.Add( "show_shipping_last_na", "false" );
+                customParams.Add( "show_shipping_first_name", "false" );
+                customParams.Add( "show_shipping_last_name", "false" );
                 customParams.Add( "show_shipping_address", "false" );
                 customParams.Add( "show_shipping_city", "false" );
                 customParams.Add( "show_shipping_state", "false" );
