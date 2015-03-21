@@ -1013,8 +1013,9 @@ namespace Rock
         /// </summary>
         /// <param name="content">The content.</param>
         /// <param name="mergeObjects">The merge objects.</param>
+        /// <param name="throwExceptionOnErrors">if set to <c>true</c> [throw exception on errors].</param>
         /// <returns></returns>
-        public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects )
+        public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, bool throwExceptionOnErrors = false )
         {
             try
             {
@@ -1028,7 +1029,14 @@ namespace Rock
             }
             catch ( Exception ex )
             {
-                return "Error resolving Lava merge fields: " + ex.Message;
+                if ( throwExceptionOnErrors )
+                {
+                    throw ex; 
+                }
+                else
+                {
+                    return "Error resolving Lava merge fields: " + ex.Message;
+                }
             }
         }
 
