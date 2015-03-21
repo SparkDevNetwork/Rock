@@ -196,6 +196,22 @@ namespace RockWeb.Blocks.Core
 
             var outputBinaryFileDoc = mergeTemplateType.CreateDocument( mergeTemplate, mergeObjectsList );
 
+            if ( mergeTemplateType.Exceptions != null && mergeTemplateType.Exceptions.Any() )
+            {
+                if ( mergeTemplateType.Exceptions.Count == 1 )
+                {
+                    this.LogException( mergeTemplateType.Exceptions[0] );
+                }
+                else if ( mergeTemplateType.Exceptions.Count > 50 )
+                {
+                    this.LogException( new AggregateException( string.Format( "Exceptions merging template {0}. See InnerExceptions for top 50.", mergeTemplate.Name ), mergeTemplateType.Exceptions.Take( 50 ).ToList() ) );
+                }
+                else
+                {
+                    this.LogException( new AggregateException( string.Format( "Exceptions merging template {0}. See InnerExceptions", mergeTemplate.Name ), mergeTemplateType.Exceptions.ToList() ) );
+                }
+            }
+
             Response.Redirect( outputBinaryFileDoc.Url, false );
             Context.ApplicationInstance.CompleteRequest();
             return;
@@ -248,7 +264,7 @@ namespace RockWeb.Blocks.Core
         {
             int entitySetId = hfEntitySetId.Value.AsInteger();
             var entitySetService = new EntitySetService( new RockContext() );
-            var entitySet = entitySetService.Get(entitySetId);
+            var entitySet = entitySetService.Get( entitySetId );
             var qry = entitySetService.GetEntityQuery( entitySetId ).Take( 15 );
 
             EntityTypeCache itemEntityType = EntityTypeCache.Read( entitySet.EntityTypeId ?? 0 );

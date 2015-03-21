@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using Rock.Attribute;
 using Rock.Extension;
@@ -26,6 +27,14 @@ namespace Rock.MergeTemplates
     /// </summary>
     public abstract class MergeTemplateType : Component
     {
+        /// <summary>
+        /// Gets or sets the exceptions.
+        /// </summary>
+        /// <value>
+        /// The exceptions.
+        /// </value>
+        public abstract List<Exception> Exceptions { get; set; }
+        
         /// <summary>
         /// Creates the document.
         /// </summary>
