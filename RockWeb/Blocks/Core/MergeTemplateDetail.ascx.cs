@@ -140,6 +140,8 @@ namespace RockWeb.Blocks.Core
                         qryParams["CategoryId"] = categoryId.ToString();
                     }
 
+                    qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
             }

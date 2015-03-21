@@ -43,5 +43,13 @@ namespace Rock.MergeTemplates
         {
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Gets or sets the exceptions.
+        /// </summary>
+        /// <value>
+        /// The exceptions.
+        /// </value>
+        public override List<Exception> Exceptions {get; set;}
     }
 }

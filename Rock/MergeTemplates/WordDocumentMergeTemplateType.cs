@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
@@ -21,6 +22,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Validation;
 using DocumentFormat.OpenXml.Wordprocessing;
 using OpenXmlPowerTools;
 using Rock.Data;
@@ -36,6 +38,8 @@ namespace Rock.MergeTemplates
     [ExportMetadata( "ComponentName", "Word Document" )]
     public class WordDocumentMergeTemplateType : MergeTemplateType
     {
+        public override List<Exception> Exceptions { get; set; }
+        
         /// <summary>
         /// Creates the document.
         /// </summary>
@@ -44,6 +48,8 @@ namespace Rock.MergeTemplates
         /// <returns></returns>
         public override BinaryFile CreateDocument( MergeTemplate mergeTemplate, List<Dictionary<string, object>> mergeObjectsList )
         {
+            this.Exceptions = new List<Exception>();
+            
             var rockContext = new RockContext();
             var binaryFileService = new BinaryFileService( rockContext );
             MemoryStream outputDocStream = new MemoryStream();
@@ -97,21 +103,11 @@ namespace Rock.MergeTemplates
 
                     allSameParent = allSameParent ?? nextIndicatorNodes.Count > 1 && nextIndicatorNodes.Select( a => a.Parent ).Distinct().Count() == 1;
 
-                    foreach ( var nextIndicatorNode in nextIndicatorNodes )
+                    foreach ( var nextIndicatorNodeParent in nextIndicatorNodes.Select( a => a.Parent ).Where( a => a != null ) )
                     {
                         // Each of the nextIndicatorNodes will get a record until we run out of nodes or records.  
                         // If we have more records than nodes, we'll jump out to the outer "while" and append another template and keep going
-                        XContainer recordContainerNode = null;
-                        if ( nextIndicatorNode != null && nextIndicatorNode.Parent != null )
-                        {
-                            recordContainerNode = nextIndicatorNode.Parent;
-                        }
-                        else
-                        {
-                            // shouldn't happen
-                            recordIndex++;
-                            continue;
-                        }
+                        XContainer recordContainerNode = nextIndicatorNodeParent;
 
                         XContainer mergedXRecord;
 
@@ -144,10 +140,28 @@ namespace Rock.MergeTemplates
 
                             foreach ( var xml in xmlChunks )
                             {
-                                if ( recordIndex < recordCount )
+                                if ( xml.HasMergeFields() )
                                 {
-                                    mergedXml += xml.ResolveMergeFields( mergeObjectsList[recordIndex] );
-                                    recordIndex++;
+                                    if ( recordIndex < recordCount )
+                                    {
+                                        try
+                                        {
+                                            mergedXml += xml.ResolveMergeFields( mergeObjectsList[recordIndex], true ); ; 
+                                        }
+                                        catch ( Exception ex)
+                                        {
+                                            // if ResolveMergeFields failed, log the exception, then just return the orig xml
+                                            this.Exceptions.Add( ex );
+                                            mergedXml += xml;
+                                        }
+                                        
+                                        recordIndex++;
+                                    }
+                                    else
+                                    {
+                                        // out of records, so just keep it as the templated xml
+                                        mergedXml += xml;
+                                    }
                                 }
                                 else
                                 {
@@ -177,9 +191,14 @@ namespace Rock.MergeTemplates
                             if ( recordIndex < recordCount )
                             {
                                 // add page break
-                                var pageBreakXml = new DocumentFormat.OpenXml.Wordprocessing.Break() { Type = BreakValues.Page }.OuterXml;
-                                var pageBreak = XElement.Parse( pageBreakXml );
-                                recordContainerNode.Add( pageBreak );
+                                var pageBreakXml = new Paragraph( new Run( new Break() { Type = BreakValues.Page } ) ).OuterXml;
+                                var pageBreak = XElement.Parse( pageBreakXml, LoadOptions.None );
+                                var lastParagraph = recordContainerNode.Nodes().OfType<XElement>().Where( a => a.Name.LocalName == "p" ).LastOrDefault();
+                                if ( lastParagraph != null )
+                                {
+                                    lastParagraph.AddAfterSelf( pageBreak );
+                                }
+
                             }
                         }
                     }
@@ -190,18 +209,17 @@ namespace Rock.MergeTemplates
                 // remove all the 'next' delimiters
                 OpenXmlRegex.Replace( outputBodyNode.Nodes().OfType<XElement>(), this.nextRecordRegEx, string.Empty, ( xx, mm ) => { return true; } );
 
-                // remove the last pagebreak if there is nothing after it
-                var lastBodyElement = outputBodyNode.Nodes().OfType<XElement>().LastOrDefault();
-                if ( lastBodyElement != null && lastBodyElement.Name.LocalName == "br" )
-                {
-                    if ( lastBodyElement.Parent != null )
-                    {
-                        lastBodyElement.Remove();
-                    }
-                }
-
                 // pop the xdoc back
                 outputDoc.MainDocumentPart.PutXDocument();
+
+                // remove the last pagebreak
+                MarkupSimplifier.SimplifyMarkup( outputDoc, new SimplifyMarkupSettings { RemoveLastRenderedPageBreak = true } );
+
+                // If you want to see validation errors
+                /*
+                var validator = new OpenXmlValidator();
+                var errors = validator.Validate( outputDoc ).ToList();
+                */ 
             }
 
             var outputBinaryFile = new BinaryFile();
