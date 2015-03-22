@@ -180,12 +180,12 @@
             
         </asp:Panel>
 
-        <asp:Panel ID="pnlGivingUnitSelect" runat="server" Visible="false" CssClass="js-pnlgivingunitselect">
+        <asp:Panel ID="pnlGivingUnitSelect" runat="server" Visible="false" CssClass="js-pnlgivingunitselect js-kioskscrollpanel">
             <header>
                 <h1>Select Your Family</h1>
             </header>
 
-            <main class="clearfix">
+            <main class="clearfix js-scrollcontainer">
                 <div class="scrollpanel">
                     <div class="scroller">
                         <asp:PlaceHolder ID="phGivingUnits" runat="server"></asp:PlaceHolder>

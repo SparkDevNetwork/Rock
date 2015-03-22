@@ -37,6 +37,11 @@ namespace Rock.Web.Cache
         #region Contants
 
         /// <summary>
+        /// The locking object
+        /// </summary>
+        private static readonly Object _obj = new object();
+
+        /// <summary>
         /// This setting is the guid for the organization's location record.
         /// </summary>
         private static readonly string ORG_LOC_GUID = "com.rockrms.orgLocationGuid";
@@ -227,45 +232,48 @@ namespace Rock.Web.Cache
         {
             string cacheKey = GlobalAttributesCache.CacheKey();
 
-            ObjectCache cache = RockMemoryCache.Default;
-            GlobalAttributesCache globalAttributes = cache[cacheKey] as GlobalAttributesCache;
-
-            if ( globalAttributes != null )
+            lock ( _obj )
             {
-                return globalAttributes;
-            }
-            else
-            {
-                globalAttributes = new GlobalAttributesCache();
-                globalAttributes.Attributes = new List<AttributeCache>();
-                globalAttributes.AttributeValues = new Dictionary<string, string>();
-                globalAttributes.AttributeValuesFormatted = new Dictionary<string, string>();
+                ObjectCache cache = RockMemoryCache.Default;
+                GlobalAttributesCache globalAttributes = cache[cacheKey] as GlobalAttributesCache;
 
-                rockContext = rockContext ?? new RockContext();
-                var attributeService = new Rock.Model.AttributeService( rockContext );
-                var attributeValueService = new Rock.Model.AttributeValueService( rockContext );
-
-                var attributes = attributeService.GetGlobalAttributes();
-                var attributeValues = attributeValueService.Queryable()
-                    .Where( v =>
-                        (!v.EntityId.HasValue || v.EntityId.Value == 0) &&
-                        attributes.Select( a => a.Id ).ToList().Contains( v.AttributeId ) )
-                    .ToList();
-
-                foreach ( var attribute in attributes )
+                if ( globalAttributes != null )
                 {
-                    var attributeCache = AttributeCache.Read( attribute );
-                    globalAttributes.Attributes.Add( attributeCache );
-
-                    var attributeValue = attributeValues.FirstOrDefault( v => v.AttributeId == attribute.Id);
-                    string value = ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attributeCache.DefaultValue;
-                    globalAttributes.AttributeValues.Add( attributeCache.Key, value );
-                    globalAttributes.AttributeValuesFormatted.Add( attributeCache.Key, attributeCache.FieldType.Field.FormatValue( null, value, attributeCache.QualifierValues, false ) );
+                    return globalAttributes;
                 }
+                else
+                {
+                    globalAttributes = new GlobalAttributesCache();
+                    globalAttributes.Attributes = new List<AttributeCache>();
+                    globalAttributes.AttributeValues = new Dictionary<string, string>();
+                    globalAttributes.AttributeValuesFormatted = new Dictionary<string, string>();
 
-                cache.Set( cacheKey, globalAttributes, new CacheItemPolicy() );
+                    rockContext = rockContext ?? new RockContext();
+                    var attributeService = new Rock.Model.AttributeService( rockContext );
+                    var attributeValueService = new Rock.Model.AttributeValueService( rockContext );
 
-                return globalAttributes;
+                    var attributes = attributeService.GetGlobalAttributes();
+                    var attributeValues = attributeValueService.Queryable()
+                        .Where( v =>
+                            ( !v.EntityId.HasValue || v.EntityId.Value == 0 ) &&
+                            attributes.Select( a => a.Id ).ToList().Contains( v.AttributeId ) )
+                        .ToList();
+
+                    foreach ( var attribute in attributes )
+                    {
+                        var attributeCache = AttributeCache.Read( attribute );
+                        globalAttributes.Attributes.Add( attributeCache );
+
+                        var attributeValue = attributeValues.FirstOrDefault( v => v.AttributeId == attribute.Id );
+                        string value = ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attributeCache.DefaultValue;
+                        globalAttributes.AttributeValues.Add( attributeCache.Key, value );
+                        globalAttributes.AttributeValuesFormatted.Add( attributeCache.Key, attributeCache.FieldType.Field.FormatValue( null, value, attributeCache.QualifierValues, false ) );
+                    }
+
+                    cache.Set( cacheKey, globalAttributes, new CacheItemPolicy() );
+
+                    return globalAttributes;
+                }
             }
         }
 

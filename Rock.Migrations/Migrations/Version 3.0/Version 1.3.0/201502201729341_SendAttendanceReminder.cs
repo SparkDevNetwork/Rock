@@ -34,10 +34,9 @@ namespace Rock.Migrations
             Sql( @"
     -- Update the 'Participant' connection status value to have the correct guid
     DECLARE @DefinedTypeId int = ( SELECT TOP 1 [Id] FROM [DefinedType] WHERE [Guid] = '2E6540EA-63F0-40FE-BE50-F2A84735E600' )
-    UPDATE [DefinedValue] SET [Guid] = '8EBC0CEB-474D-4C1B-A6BA-734C3A9AB061'
-    WHERE [DefinedTypeId] = @DefinedTypeId
-    AND [Value] = 'Participant'
-");
+    DECLARE @DefinedValueId int = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId AND [Value] = 'Participant' )
+    UPDATE [DefinedValue] SET [Guid] = '8EBC0CEB-474D-4C1B-A6BA-734C3A9AB061' WHERE [Id] = @DefinedValueId
+" );
 
             RockMigrationHelper.AddPage( "4E237286-B715-4109-A578-C1445EC02707", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Group Attendance", "", "7EA94B4F-013B-4A79-8D01-86994EB04604", "" ); // Site:Rock RMS
             RockMigrationHelper.AddPage( "7EA94B4F-013B-4A79-8D01-86994EB04604", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Attendance", "", "D2A75147-B031-4DF7-8E04-FDDEAE2575F1", "" ); // Site:Rock RMS

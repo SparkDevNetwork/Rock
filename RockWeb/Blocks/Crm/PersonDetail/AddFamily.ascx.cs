@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 e.preventDefault();
                 Rock.dialogs.confirm('You have not selected a marital status for the adults in this new family. Are you sure you want to continue?', function (result) {{
                     if (result) {{
-                        eval(e.target.href);
+                        window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                     }}
                 }});
             }}
