@@ -205,8 +205,9 @@ namespace Rock.Rest
             {
                 if ( properties.Any( p => p.Name.Equals( key ) ) )
                 {
-                    var currentValue = values[key];
                     var property = type.GetProperty( key, BindingFlags.Public | BindingFlags.Instance );
+                    var propertyType = Nullable.GetUnderlyingType( property.PropertyType ) ?? property.PropertyType;
+                    var currentValue = values[key];
 
                     if ( property != null )
                     {
@@ -216,7 +217,32 @@ namespace Rock.Rest
                         }
                         else if ( property.CanWrite )
                         {
-                            property.SetValue( targetModel, currentValue );
+                            if ( currentValue == null )
+                            {
+                                // No need to parse anything
+                                property.SetValue( targetModel, null );
+                            }
+                            else if ( propertyType == typeof( int ) || propertyType == typeof( int? ) )
+                            {
+                                // By default, objects that hold integer values, hold int64, so coerce to int32
+                                try
+                                {
+                                    var int32 = Convert.ToInt32( currentValue );
+                                    property.SetValue( targetModel, int32 );
+                                }
+                                catch ( OverflowException )
+                                {
+                                    var response = ControllerContext.Request.CreateErrorResponse(
+                                        HttpStatusCode.BadRequest,
+                                        string.Format( "Cannot cast {0} to int32", key ) );
+                                    throw new HttpResponseException( response );
+                                }
+                            }
+                            else
+                            {
+                                var castedValue = Convert.ChangeType( currentValue, propertyType );
+                                property.SetValue( targetModel, castedValue );
+                            }
                         }
                         else
                         {
