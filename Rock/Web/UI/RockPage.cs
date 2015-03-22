@@ -1372,11 +1372,6 @@ namespace Rock.Web.UI
             return result;
         }
 
-        public void SetCurrentContext( EntityTypeCache entity )
-        {
-
-        }
-
         /// <summary>
         /// Gets the current context object for a given entity type.
         /// </summary>
