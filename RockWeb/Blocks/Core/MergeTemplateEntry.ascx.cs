@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Core
 
             int itemsCount = entitySetItemsService.Queryable().Where( a => a.EntitySetId == entitySetId ).Count();
 
-            nbNumberOfRecords.Text = string.Format( "There are {0} {1} to merge", itemsCount, entityTypeCache.FriendlyName.PluralizeIf( itemsCount != 1 ) );
+            nbNumberOfRecords.Text = string.Format( "There are {0} {1} to merge", itemsCount, "row".PluralizeIf( itemsCount != 1 ) );
 
             List<Dictionary<string, object>> mergeObjectsList = GetMergeObjectList( rockContext, 1 );
 
@@ -235,9 +235,6 @@ namespace RockWeb.Blocks.Core
             }
 
             var globalMergeObjects = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
-            var entitySet = entitySetService.Get( entitySetId );
-            EntityTypeCache itemEntityType = EntityTypeCache.Read( entitySet.EntityTypeId ?? 0 );
-            var itemLavaKey = itemEntityType.FriendlyName.Replace( " ", string.Empty );
             List<Dictionary<string, object>> mergeObjectsList = new List<Dictionary<string, object>>();
             foreach ( var item in qry )
             {
@@ -248,7 +245,7 @@ namespace RockWeb.Blocks.Core
                 }
 
                 mergeObjects.Add( "CurrentPerson", this.CurrentPerson );
-                mergeObjects.Add( itemLavaKey, item );
+                mergeObjects.Add( "Row", item );
                 mergeObjectsList.Add( mergeObjects );
             }
 
@@ -262,6 +259,12 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnShowDataPreview_Click( object sender, EventArgs e )
         {
+            if ( pnlPreview.Visible )
+            {
+                pnlPreview.Visible = false;
+                return;
+            }
+            
             int entitySetId = hfEntitySetId.Value.AsInteger();
             var entitySetService = new EntitySetService( new RockContext() );
             var entitySet = entitySetService.Get( entitySetId );
@@ -273,7 +276,17 @@ namespace RockWeb.Blocks.Core
             gPreview.DataSource = qry.ToList();
             gPreview.DataBind();
 
-            modalPreview.Show();
+            pnlPreview.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnShowMergeFieldsHelp control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnShowMergeFieldsHelp_Click( object sender, EventArgs e )
+        {
+            pnlMergeFieldsHelp.Visible = !pnlMergeFieldsHelp.Visible;
         }
 
         #endregion

@@ -35,10 +35,18 @@
                         </div>
                         <div class="col-md-6">
                             <asp:LinkButton ID="btnShowDataPreview" runat="server" CssClass="btn btn-action btn-xs" OnClick="btnShowDataPreview_Click" Text="Show Data Rows" CausesValidation="false" />
-                            <span class="btn btn-default btn-xs" onclick="$('.js-lava-help').toggleClass('hidden')">Show Merge Fields <i class="fa fa-chevron-down"></i></span>
-                            <div class="js-lava-help hidden">
+                            <asp:Panel ID="pnlPreview" runat="server" Visible="false">
+                                <h4>Preview (top 15 rows)</h4>
+                                <div class="grid">
+                                    <Rock:Grid ID="gPreview" runat="server" AllowSorting="true" EmptyDataText="No Results" ShowActionRow="false" DisplayType="Light" />
+                                </div>
+                            </asp:Panel>
+
+                            <asp:LinkButton ID="btnShowMergeFieldsHelp" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnShowMergeFieldsHelp_Click" CausesValidation="false"> Show Merge Fields <i class="fa fa-chevron-down"></i></asp:LinkButton>
+                            <asp:Panel ID="pnlMergeFieldsHelp" runat="server" Visible="false">
                                 <Rock:RockLiteral ID="lShowMergeFields" runat="server" />
-                            </div>
+                            </asp:Panel>
+
                         </div>
                     </div>
 
@@ -50,13 +58,7 @@
 
         </asp:Panel>
 
-        <Rock:ModalDialog ID="modalPreview" runat="server" Title="Preview (top 15 rows )" ValidationGroup="Preview">
-            <Content>
-                <div class="grid">
-                    <Rock:Grid ID="gPreview" runat="server" AllowSorting="true" EmptyDataText="No Results" ShowActionRow="false" DisplayType="Light" />
-                </div>
-            </Content>
-        </Rock:ModalDialog>
+
 
     </ContentTemplate>
 </asp:UpdatePanel>
