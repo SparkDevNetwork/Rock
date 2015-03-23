@@ -5625,8 +5625,12 @@ html[xmlns] .slides {
 .hide-if-empty:empty {
   display: none!important;
 }
+@media (max-width: 767px) {
+  .display-b-xs {
+    display: block!important;
+  }
+}
 .announcement-list {
-  margin-bottom: -60px;
   background: #e9e9e9;
   padding-top: 30px;
 }
@@ -5635,6 +5639,22 @@ html[xmlns] .slides {
 }
 .announcement-list .announcement img {
   border-radius: 6px;
+}
+.bigblock {
+  padding-top: 30px;
+  padding-bottom: 30px;
+  margin-bottom: 30px;
+}
+.bigblock-graydarker {
+  background-color: #222222;
+  color: #fff;
+}
+.bigblock-graydarker .page-header {
+  border-bottom: 1px solid #333333;
+}
+.bigblock-flexbg {
+  background-size: cover;
+  background-position: center center;
 }
 .brandlist {
   list-style: none;

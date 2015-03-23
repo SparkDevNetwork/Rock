@@ -706,7 +706,7 @@ Copyright (c) 2012 Dan Eden*/
 .modal-backdrop.fade.in {
   opacity: 0.7;
   filter: alpha(opacity=70);
-  background: rgba(0, 0, 0, 0.3);
+  background: #000000;
 }
 .modal-dialog {
   margin: 0;
@@ -1458,6 +1458,34 @@ fieldset .actions {
 }
 .datepicker table td span.year:first-child {
   margin-left: 0;
+}
+.timepicker-input:before,
+.timepicker-input:after {
+  content: " ";
+  display: table;
+}
+.timepicker-input:after {
+  clear: both;
+}
+.timepicker-input .input-group {
+  float: left;
+}
+.timepicker-input i.fa-times {
+  float: left;
+  margin-top: 4px;
+  padding: 6px;
+  cursor: pointer;
+  opacity: 0;
+  -webkit-transition: opacity 0.2s ease-out;
+  -moz-transition: opacity 0.2s ease-out;
+  -o-transition: opacity 0.2s ease-out;
+  transition: opacity 0.2s ease-out;
+}
+.timepicker-input:hover i.fa-times {
+  opacity: 1;
+}
+.touch .timepicker-input i.fa-times {
+  opacity: 1;
 }
 .bootstrap-timepicker {
   position: relative;
@@ -3148,6 +3176,7 @@ table.attribute-grid tr th:nth-child(3) {
     15. Photo Upload
     16. Duplicate Pages
     17. DISC
+    19. Edit Person
 */
 .personprofile {
   margin-top: -15px;
@@ -3647,7 +3676,7 @@ span.field-value {
   margin-top: 0;
 }
 #fluidbox-overlay {
-  background: rgba(0, 0, 0, 0.3);
+  background: #000000;
 }
 /* Small devices (tablets, 768px and up) */
 @media (min-width: 768px), print {
@@ -3866,6 +3895,14 @@ tr.inactive td {
   width: 100%;
   font-size: 30px;
   position: absolute;
+}
+.phonegroup-label {
+  margin-bottom: 5px;
+}
+@media (min-width: 768px) {
+  .phonegroup-label {
+    padding-top: 4px;
+  }
 }
 /*
     Used to manage styles for specific blocks.
@@ -4138,6 +4175,12 @@ iframe.email-body {
   background-color: #7a1315;
   color: #ecf0f3;
   border: 1px solid #4e0c0d;
+}
+.bg-color {
+  background-color: #ffffff;
+}
+.text-color {
+  color: #333333;
 }
 .padding-all-none {
   padding: 0 !important;
@@ -5061,6 +5104,14 @@ div.aspNetDisabled {
 }
 .cursor {
   cursor: pointer;
+}
+.hide-if-empty:empty {
+  display: none!important;
+}
+@media (max-width: 767px) {
+  .display-b-xs {
+    display: block!important;
+  }
 }
 .gridlist {
   padding-left: 0;
