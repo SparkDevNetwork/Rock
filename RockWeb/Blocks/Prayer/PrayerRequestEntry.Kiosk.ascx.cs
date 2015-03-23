@@ -48,12 +48,13 @@ namespace RockWeb.Blocks.Prayer
     [BooleanField( "Enable Comments Flag", "If enabled, requestors will be able set whether or not they want to allow comments on their requests.", false, "Features", 7 )]
     [BooleanField( "Enable Public Display Flag", "If enabled, requestors will be able set whether or not they want their request displayed on the public website.", false, "Features", 8 )]
     [IntegerField( "Character Limit", "If set to something other than 0, this will limit the number of characters allowed when entering a new prayer request.", false, 250, "Features", 9 )]
-    
-    // On Save Behavior
-    [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 10 )]
-    [CodeEditorField( "Save Success Text", "Text to display upon successful save. (Only applies if not navigating to parent page on save.) <span class='tip tip-html'>", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 11 )]
+    [BooleanField( "Autofill User Info", "When enabled will autofill the user's info. This is generally no wanted on a public kioks.", false, "", 10)]
 
-    [LinkedPage( "Homepage", "Homepage of the kiosk.", true, "", "", 12 )]
+    // On Save Behavior
+    [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 11 )]
+    [CodeEditorField( "Save Success Text", "Text to display upon successful save. (Only applies if not navigating to parent page on save.) <span class='tip tip-html'>", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 12 )]
+
+    [LinkedPage( "Homepage", "Homepage of the kiosk.", true, "", "", 13 )]
     public partial class PrayerRequestEntryKiosk : RockBlock
     {
         #region Properties
@@ -136,7 +137,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( ! Page.IsPostBack )
             {
-                if ( CurrentPerson != null )
+                if ( CurrentPerson != null && (GetAttributeValue( "AutofillUserInfo" ).AsBoolean()) )
                 {
                     dtbFirstName.Text = CurrentPerson.FirstName;
                     dtbLastName.Text = CurrentPerson.LastName;
@@ -290,6 +291,8 @@ namespace RockWeb.Blocks.Prayer
             bddlCategory.DataTextField = "Name";
             bddlCategory.DataValueField = "Id";
             bddlCategory.DataBind();
+
+            bddlCategory.Items.Insert( 0, "" );
         }
 
         /// <summary>

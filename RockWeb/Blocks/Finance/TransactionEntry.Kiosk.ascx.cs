@@ -157,6 +157,15 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
+            // set campus
+            var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+            var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+
+            if ( contextCampus != null )
+            {
+                this.CampusId = contextCampus.Id;
+            }
+
             if ( !Page.IsPostBack )
             {
                 if ( !CheckSettings() )
@@ -171,9 +180,6 @@ namespace RockWeb.Blocks.Finance
                 // set max length of phone
                 int maxLength = int.Parse( GetAttributeValue( "MaximumPhoneNumberLength" ) );
                 tbPhone.MaxLength = maxLength;
-
-                // todo set campus
-                this.CampusId = 1;
             }
             else
             {
@@ -607,27 +613,36 @@ namespace RockWeb.Blocks.Finance
                                                     .OrderBy( g => g.GroupRole.Order )
                                                     .ThenBy( g => g.Person.Gender )
                                                     .ThenBy( g => g.Person.Age );
-
+                        
                         if ( givingGroupMembers.ToList().Count == 1 )
                         {
                             // only one person in the giving group display as an individual
-                            searchResults.Add( new GivingUnit( person.PrimaryAliasId.Value, person.LastName, person.FirstName ) );
+                            if ( searchResults.Where( s => s.PersonAliasId == person.PrimaryAliasId.Value ).Count() == 0 )
+                            {
+                                searchResults.Add( new GivingUnit( person.PrimaryAliasId.Value, person.LastName, person.FirstName ) );
+                            }
                         }
                         else
                         {
                             // display as a family
-                            string firstNameList = string.Join( ", ", givingGroupMembers.Select( g => g.Person.NickName ) ).ReplaceLastOccurrence(",", " &");
+                            string firstNameList = string.Join( ", ", givingGroupMembers.Select( g => g.Person.NickName ) ).ReplaceLastOccurrence( ",", " &" );
                             int headOfHousePersonAliasId = givingGroupMembers.Select( g => g.Person.PrimaryAliasId.Value ).FirstOrDefault();
                             string lastName = givingGroupMembers.Select( g => g.Person.LastName ).FirstOrDefault();
-                            searchResults.Add( new GivingUnit( headOfHousePersonAliasId, person.LastName, firstNameList ) );
+                            
+                            // only add them if this giving unit is not already in collection
+                            if ( searchResults.Where( s => s.PersonAliasId == headOfHousePersonAliasId ).Count() == 0 )
+                            {
+                                searchResults.Add( new GivingUnit( headOfHousePersonAliasId, person.LastName, firstNameList ) );
+                            }
                         }
+                        
                     }
                 }
 
                 this.GivingUnits = searchResults;
 
                 BuildGivingUnitControls();
-
+                
                 HidePanels();
                 pnlGivingUnitSelect.Visible = true;
             }
@@ -785,7 +800,7 @@ namespace RockWeb.Blocks.Finance
         private void BuildGivingUnitControls()
         {           
             // display results
-            if ( this.GivingUnits.Count > 0 )
+            if ( this.GivingUnits != null && this.GivingUnits.Count > 0 )
             {
 
                 foreach ( var unit in this.GivingUnits )

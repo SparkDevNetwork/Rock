@@ -25,9 +25,14 @@
                 });
                 
                 var $tp = $('#' + options.id + " .js-datetime-time");
-                Rock.controls.timePicker.initialize({
-                    id: $tp.attr('id')
-                });
+                if ($tp) {
+                    var $tpid = $tp.attr('id');
+                    if ($tpid) {
+                        Rock.controls.timePicker.initialize({
+                            id: $tpid
+                        });
+                    }
+                }
 
                 var $dateTimePickerContainer = $dp.closest('.js-datetime-picker-container');
                 
