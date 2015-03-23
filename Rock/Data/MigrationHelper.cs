@@ -722,7 +722,7 @@ namespace Rock.Data
         #region Category Methods
 
         /// <summary>
-        /// Updates the category.
+        /// Updates (or Adds) the category.
         /// </summary>
         /// <param name="entityTypeGuid">The entity type unique identifier.</param>
         /// <param name="name">The name.</param>
