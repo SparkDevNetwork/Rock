@@ -36,10 +36,31 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             ItemRestUrlExtraParams = "?getCategorizedItems=true&showUnnamedEntityItems=false&showCategoriesThatHaveNoChildren=false";
+            if ( this.MergeTemplateOwnership == MergeTemplateOwnership.Global )
+            {
+                ItemRestUrlExtraParams += string.Format( "&excludedCategoryIds={0}", CategoryCache.Read( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Id );
+            }
+            else if ( this.MergeTemplateOwnership == MergeTemplateOwnership.Personal )
+            {
+                ItemRestUrlExtraParams += string.Format( "&includedCategoryIds={0}", CategoryCache.Read( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Id );
+            }
+            else if ( this.MergeTemplateOwnership == MergeTemplateOwnership.PersonalAndGlobal )
+            {
+                //
+            }
+
             ItemRestUrlExtraParams += "&entityTypeId=" + EntityTypeCache.Read( Rock.SystemGuid.EntityType.MERGE_TEMPLATE.AsGuid() ).Id;
             this.IconCssClass = "fa fa-files-o";
             base.OnInit( e );
         }
+
+        /// <summary>
+        /// Gets or sets the personal merge templates.
+        /// </summary>
+        /// <value>
+        /// The personal merge templates.
+        /// </value>
+        public MergeTemplateOwnership MergeTemplateOwnership { get; set; }
 
         /// <summary>
         /// Sets the value.

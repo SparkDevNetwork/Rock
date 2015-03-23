@@ -27,6 +27,7 @@ using Rock.MergeTemplates;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -39,7 +40,7 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Block for administrating a Merge Template" )]
 
-    [BooleanField( "Allow Personal", "Set this to true to allow the merge template to be configured as a personal one.", false )]
+    [EnumField( "Merge Templates Ownership", "Set this to restrict if the merge template must be a Personal or Global merge template.", typeof(MergeTemplateOwnership), true, "Global" )]
     public partial class MergeTemplateDetail : RockBlock, IDetailBlock
     {
         #region Base Control Methods
@@ -55,6 +56,8 @@ namespace RockWeb.Blocks.Core
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            cpCategory.EntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.MERGE_TEMPLATE.AsGuid() ).Id;
         }
 
         /// <summary>
@@ -174,10 +177,36 @@ namespace RockWeb.Blocks.Core
             mergeTemplate.Description = tbDescription.Text;
             mergeTemplate.MergeTemplateTypeEntityTypeId = ddlMergeTemplateType.SelectedValue.AsInteger();
             mergeTemplate.TemplateBinaryFileId = fuTemplateBinaryFile.BinaryFileId ?? 0;
-            mergeTemplate.CategoryId = cpCategory.SelectedValue.AsInteger();
             mergeTemplate.PersonAliasId = ppPerson.PersonAliasId;
+            mergeTemplate.CategoryId = cpCategory.SelectedValue.AsInteger();
+            
+            int personalMergeTemplateCategoryId = CategoryCache.Read(Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid()).Id;
+            if (mergeTemplate.PersonAliasId.HasValue)
+            {
+                if ( mergeTemplate.CategoryId == 0)
+                {
+                    // if the category picker isn't shown and/or the category isn't selected, and it's a personal filter...
+                    mergeTemplate.CategoryId = personalMergeTemplateCategoryId;
+                }
+                
+                // ensure Personal templates are only in the Personal merge template category
+                if ( mergeTemplate.CategoryId != personalMergeTemplateCategoryId )
+                {
+                    // prohibit global templates from being in Personal category
+                    cpCategory.Visible = true;
+                    cpCategory.ShowErrorMessage( "Personal Merge Templates must be in Personal category" );
+                }
+            }
+            else
+            {
+                if (mergeTemplate.CategoryId == personalMergeTemplateCategoryId)
+                {
+                    // prohibit global templates from being in Personal category
+                    cpCategory.ShowErrorMessage("Person is required when using the Personal category");
+                }
+            }
 
-            if ( !mergeTemplate.IsValid )
+            if ( !mergeTemplate.IsValid || !Page.IsValid )
             {
                 // Controls will render the error messages
                 return;
@@ -337,7 +366,24 @@ namespace RockWeb.Blocks.Core
 
             SetEditMode( true );
 
-            bool allowPersonal = this.GetAttributeValue( "AllowPersonal" ).AsBooleanOrNull() ?? false;
+            var mergeTemplateOwnership = this.GetAttributeValue( "MergeTemplatesOwnership" ).ConvertToEnum<MergeTemplateOwnership>( MergeTemplateOwnership.Global );
+            if ( mergeTemplateOwnership == MergeTemplateOwnership.Global )
+            {
+                cpCategory.ExcludedCategoryIds = CategoryCache.Read( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Id.ToString();
+            }
+            else if ( mergeTemplateOwnership == MergeTemplateOwnership.Personal )
+            {
+                // if ONLY personal merge templates are permitted, hide the category since it'll always be saved in the personal category
+                cpCategory.Visible = false;
+
+                // require Person if only Personal merge templates are allowed
+                ppPerson.Required = true;
+            }
+            else
+            {
+                cpCategory.ExcludedCategoryIds = string.Empty;
+            }
+
             tbName.Text = mergeTemplate.Name;
             tbDescription.Text = mergeTemplate.Description;
 
@@ -350,7 +396,7 @@ namespace RockWeb.Blocks.Core
 
             cpCategory.AllowMultiSelect = false;
             cpCategory.SetValue( mergeTemplate.CategoryId );
-            ppPerson.Visible = allowPersonal;
+            ppPerson.Visible = mergeTemplateOwnership != MergeTemplateOwnership.Global;
             if ( mergeTemplate.PersonAliasId.HasValue )
             {
                 // if it is already set as a Personal merge template, show the person picker regardless of the AllowPersonal setting
