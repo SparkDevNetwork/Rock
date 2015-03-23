@@ -142,6 +142,16 @@ namespace Rock.Model
                 {
                     LogExceptions( ex.InnerException, exceptionLog, false );
                 }
+
+                if (ex is AggregateException)
+                {
+                    // if an AggregateException occurs, log the exceptions individually
+                    var aggregateException = ( ex as AggregateException );
+                    foreach ( var innerException in aggregateException.InnerExceptions )
+                    {
+                        LogExceptions( innerException, exceptionLog, false );
+                    }
+                }
             }
             catch ( Exception )
             {
