@@ -490,10 +490,7 @@ namespace Rock.Web.UI.Controls
             _ddlCountry.SetValue( defaultCountry );
 
             BindStates( defaultCountry );
-            if ( _ddlState.Visible )
-            {
-                _ddlState.SetValue( defaultState );
-            }
+            _ddlState.SetValue( defaultState );
 
             _tbState.Text = defaultState;
         }
