@@ -69,6 +69,8 @@ namespace Rock.Migrations
 
             RockMigrationHelper.UpdateEntityType( "Rock.MergeTemplates.HtmlMergeTemplateType", "Html", "Rock.MergeTemplates.HtmlMergeTemplateType, Rock, Version=1.3.0.0, Culture=neutral, PublicKeyToken=null", false, true, "5fbff041-9edc-41a3-8a92-d7ac4ff88221" );
             RockMigrationHelper.UpdateEntityType( "Rock.MergeTemplates.WordDocumentMergeTemplateType", "Word Document", "Rock.MergeTemplates.WordDocumentMergeTemplateType, Rock, Version=1.3.0.0, Culture=neutral, PublicKeyToken=null", false, true, "7b86e093-3eb8-46ca-8ca7-068d699e7811" );
+
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.MergeTemplate", "Merge Template", "Rock.Model.MergeTemplate, Rock, Version=1.3.0.0, Culture=neutral, PublicKeyToken=null", true, true, "CD1DB988-6891-4B0F-8D1B-B0A311A3BC3E" );
         }
         
         /// <summary>

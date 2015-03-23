@@ -135,25 +135,6 @@ namespace RockWeb.Blocks.Core
             {
                 lShowMergeFields.Text = mergeObjectsList[0].lavaDebugInfo();
             }
-
-            LoadDropDowns();
-        }
-
-        /// <summary>
-        /// Loads the drop downs.
-        /// </summary>
-        protected void LoadDropDowns()
-        {
-            var rockContext = new RockContext();
-            var mergeTemplateService = new MergeTemplateService( rockContext );
-            var list = mergeTemplateService.Queryable().OrderBy( a => a.Name ).ToList();
-            ddlMergeTemplate.Items.Clear();
-            ddlMergeTemplate.Items.Add( new ListItem() );
-
-            foreach ( var item in list )
-            {
-                ddlMergeTemplate.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
-            }
         }
 
         /// <summary>
@@ -167,7 +148,7 @@ namespace RockWeb.Blocks.Core
 
             List<Dictionary<string, object>> mergeObjectsList = GetMergeObjectList( rockContext );
 
-            var mergeTemplate = new MergeTemplateService( rockContext ).Get( ddlMergeTemplate.SelectedValue.AsInteger() );
+            var mergeTemplate = new MergeTemplateService( rockContext ).Get( mtPicker.SelectedValue.AsInteger() );
             if ( mergeTemplate == null )
             {
                 nbWarningMessage.Text = "Unable to get merge template";
