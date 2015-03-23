@@ -49,10 +49,11 @@ namespace Rock.MergeTemplates
         public override BinaryFile CreateDocument( MergeTemplate mergeTemplate, List<Dictionary<string, object>> mergeObjectsList )
         {
             this.Exceptions = new List<Exception>();
-            
+            BinaryFile outputBinaryFile = null;
+
             var rockContext = new RockContext();
             var binaryFileService = new BinaryFileService( rockContext );
-            MemoryStream outputDocStream = new MemoryStream();
+            
             var templateBinaryFile = binaryFileService.Get( mergeTemplate.TemplateBinaryFileId );
             if ( templateBinaryFile == null )
             {
@@ -62,175 +63,207 @@ namespace Rock.MergeTemplates
             var sourceTemplateStream = templateBinaryFile.ContentStream;
 
             // Start by creating a new document with the contents of the Template (so that Styles, etc get included)
-            sourceTemplateStream.CopyTo( outputDocStream );
-            outputDocStream.Seek( 0, SeekOrigin.Begin );
-
-            // now that we have the outputdoc started, simplify the sourceTemplate
-            var simplifiedDoc = WordprocessingDocument.Open( sourceTemplateStream, true );
-            MarkupSimplifier.SimplifyMarkup( simplifiedDoc, this.simplifyMarkupSettingsAll );
-            sourceTemplateStream.Seek( 0, SeekOrigin.Begin );
-
-            bool? allSameParent = null;
-
-            using ( WordprocessingDocument outputDoc = WordprocessingDocument.Open( outputDocStream, true ) )
+            using ( MemoryStream outputDocStream = new MemoryStream() )
             {
-                var xdoc = outputDoc.MainDocumentPart.GetXDocument();
-                var outputBodyNode = xdoc.DescendantNodes().OfType<XElement>().FirstOrDefault( a => a.Name.LocalName.Equals( "body" ) );
-                outputBodyNode.RemoveNodes();
+                sourceTemplateStream.CopyTo( outputDocStream );
+                outputDocStream.Seek( 0, SeekOrigin.Begin );
 
-                int recordIndex = 0;
-                int recordCount = mergeObjectsList.Count();
-                while ( recordIndex < recordCount )
+                // now that we have the outputdoc started, simplify the sourceTemplate
+                var simplifiedDoc = WordprocessingDocument.Open( sourceTemplateStream, true );
+                MarkupSimplifier.SimplifyMarkup( simplifiedDoc, this.simplifyMarkupSettingsAll );
+                sourceTemplateStream.Seek( 0, SeekOrigin.Begin );
+
+                bool? allSameParent = null;
+
+                using ( WordprocessingDocument outputDoc = WordprocessingDocument.Open( outputDocStream, true ) )
                 {
-                    var tempMergeTemplateStream = new MemoryStream();
-                    sourceTemplateStream.Position = 0;
-                    sourceTemplateStream.CopyTo( tempMergeTemplateStream );
-                    tempMergeTemplateStream.Position = 0;
-                    var tempMergeWordDoc = WordprocessingDocument.Open( tempMergeTemplateStream, true );
-                    var tempMergeTemplateX = tempMergeWordDoc.MainDocumentPart.GetXDocument();
-                    var tempMergeTemplateBodyNode = tempMergeTemplateX.DescendantNodes().OfType<XElement>().FirstOrDefault( a => a.Name.LocalName.Equals( "body" ) );
+                    var xdoc = outputDoc.MainDocumentPart.GetXDocument();
+                    var outputBodyNode = xdoc.DescendantNodes().OfType<XElement>().FirstOrDefault( a => a.Name.LocalName.Equals( "body" ) );
+                    outputBodyNode.RemoveNodes();
 
-                    // find all the Nodes that have a {& next &}.  
-                    List<XElement> nextIndicatorNodes = new List<XElement>();
-
-                    OpenXmlRegex.Match(
-                        tempMergeTemplateX.Elements(),
-                        this.nextRecordRegEx,
-                        ( x, m ) =>
-                        {
-                            nextIndicatorNodes.Add( x );
-                        } );
-
-                    allSameParent = allSameParent ?? nextIndicatorNodes.Count > 1 && nextIndicatorNodes.Select( a => a.Parent ).Distinct().Count() == 1;
-
-                    foreach ( var nextIndicatorNodeParent in nextIndicatorNodes.Select( a => a.Parent ).Where( a => a != null ) )
+                    int recordIndex = 0;
+                    int recordCount = mergeObjectsList.Count();
+                    while ( recordIndex < recordCount )
                     {
-                        // Each of the nextIndicatorNodes will get a record until we run out of nodes or records.  
-                        // If we have more records than nodes, we'll jump out to the outer "while" and append another template and keep going
-                        XContainer recordContainerNode = nextIndicatorNodeParent;
-
-                        XContainer mergedXRecord;
-
-                        var recordContainerNodeXml = recordContainerNode.ToString( SaveOptions.DisableFormatting | SaveOptions.OmitDuplicateNamespaces ).ReplaceWordChars();
-
-                        if ( recordIndex >= recordCount )
+                        using ( var tempMergeTemplateStream = new MemoryStream() )
                         {
-                            // out of records, so clear out any remaining template nodes that haven't been merged
-                            string xml = recordContainerNodeXml;
-                            mergedXRecord = XElement.Parse( xml ) as XContainer;
-                            OpenXmlRegex.Replace( mergedXRecord.Nodes().OfType<XElement>(), this.regExDot, string.Empty, ( a, b ) => { return true; } );
+                            sourceTemplateStream.Position = 0;
+                            sourceTemplateStream.CopyTo( tempMergeTemplateStream );
+                            tempMergeTemplateStream.Position = 0;
+                            var tempMergeWordDoc = WordprocessingDocument.Open( tempMergeTemplateStream, true );
+                            var tempMergeTemplateX = tempMergeWordDoc.MainDocumentPart.GetXDocument();
+                            var tempMergeTemplateBodyNode = tempMergeTemplateX.DescendantNodes().OfType<XElement>().FirstOrDefault( a => a.Name.LocalName.Equals( "body" ) );
 
-                            recordIndex++;
-                        }
-                        else
-                        {
-                            List<string> xmlChunks = new List<string>();
+                            // find all the Nodes that have a {% next %}.  
+                            List<XElement> nextIndicatorNodes = new List<XElement>();
 
-                            if ( allSameParent.Value )
-                            {
-                                // if all the nextRecord nodes have the same parent, just split the XML for each record and reassemble it when done
-                                xmlChunks.AddRange( this.nextRecordEncodedRegEx.Split( recordContainerNodeXml ) );
-                            }
-                            else
-                            {
-                                xmlChunks.Add( recordContainerNodeXml );
-                            }
-
-                            string mergedXml = string.Empty;
-
-                            foreach ( var xml in xmlChunks )
-                            {
-                                if ( xml.HasMergeFields() )
+                            OpenXmlRegex.Match(
+                                tempMergeTemplateX.Elements(),
+                                this.nextRecordRegEx,
+                                ( x, m ) =>
                                 {
-                                    if ( recordIndex < recordCount )
+                                    nextIndicatorNodes.Add( x );
+                                } );
+
+                            allSameParent = allSameParent ?? nextIndicatorNodes.Count > 1 && nextIndicatorNodes.Select( a => a.Parent ).Distinct().Count() == 1;
+
+                            List<XContainer> recordContainerNodes = new List<XContainer>();
+
+                            foreach ( var nextIndicatorNodeParent in nextIndicatorNodes.Select( a => a.Parent ).Where( a => a != null ) )
+                            {
+                                XContainer recordContainerNode = nextIndicatorNodeParent;
+                                if ( !allSameParent.Value )
+                                {
+                                    // go up the parent nodes until we have more than one "Next" descendent so that we know what to consider our record container
+                                    while ( recordContainerNode.Parent != null )
                                     {
-                                        try
+                                        if ( this.nextRecordRegEx.Matches( recordContainerNode.Parent.Value ).Count == 1 )
                                         {
-                                            mergedXml += xml.ResolveMergeFields( mergeObjectsList[recordIndex], true ); ; 
+                                            // still just the one "next" indicator, so go out another parent
+                                            recordContainerNode = recordContainerNode.Parent;
                                         }
-                                        catch ( Exception ex)
+                                        else
                                         {
-                                            // if ResolveMergeFields failed, log the exception, then just return the orig xml
-                                            this.Exceptions.Add( ex );
-                                            mergedXml += xml;
+                                            // we went too far up the parents and found multiple "next" children, so use this node as the recordContainerNode
+                                            break;
                                         }
-                                        
-                                        recordIndex++;
+
                                     }
-                                    else
-                                    {
-                                        // out of records, so just keep it as the templated xml
-                                        mergedXml += xml;
-                                    }
+                                }
+
+                                recordContainerNodes.Add( recordContainerNode );
+                            }
+
+                            foreach ( var recordContainerNode in recordContainerNodes )
+                            {
+                                // loop thru each of the recordContainerNodes
+                                // If we have more records than nodes, we'll jump out to the outer "while" and append another template and keep going
+
+                                XContainer mergedXRecord;
+
+                                var recordContainerNodeXml = recordContainerNode.ToString( SaveOptions.DisableFormatting | SaveOptions.OmitDuplicateNamespaces ).ReplaceWordChars();
+
+                                if ( recordIndex >= recordCount )
+                                {
+                                    // out of records, so clear out any remaining template nodes that haven't been merged
+                                    string xml = recordContainerNodeXml;
+                                    mergedXRecord = XElement.Parse( xml ) as XContainer;
+                                    OpenXmlRegex.Replace( mergedXRecord.Nodes().OfType<XElement>(), this.regExDot, string.Empty, ( a, b ) => { return true; } );
+
+                                    recordIndex++;
                                 }
                                 else
                                 {
-                                    mergedXml += xml;
+                                    List<string> xmlChunks = new List<string>();
+
+                                    if ( allSameParent.Value )
+                                    {
+                                        // if all the nextRecord nodes have the same parent, just split the XML for each record and reassemble it when done
+                                        xmlChunks.AddRange( this.nextRecordRegEx.Split( recordContainerNodeXml ) );
+                                    }
+                                    else
+                                    {
+                                        string xmlChunk = nextRecordRegEx.Replace( recordContainerNodeXml, string.Empty );
+                                        xmlChunks.Add( xmlChunk );
+                                    }
+
+                                    string mergedXml = string.Empty;
+
+                                    foreach ( var xml in xmlChunks )
+                                    {
+                                        if ( xml.HasMergeFields() )
+                                        {
+                                            if ( recordIndex < recordCount )
+                                            {
+                                                try
+                                                {
+                                                    mergedXml += xml.ResolveMergeFields( mergeObjectsList[recordIndex], true ); ;
+                                                }
+                                                catch ( Exception ex )
+                                                {
+                                                    // if ResolveMergeFields failed, log the exception, then just return the orig xml
+                                                    this.Exceptions.Add( ex );
+                                                    mergedXml += xml;
+                                                }
+
+                                                recordIndex++;
+                                            }
+                                            else
+                                            {
+                                                // out of records, so just keep it as the templated xml
+                                                mergedXml += xml;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            mergedXml += xml;
+                                        }
+                                    }
+
+                                    mergedXRecord = XElement.Parse( mergedXml ) as XContainer;
                                 }
-                            }
 
-                            mergedXRecord = XElement.Parse( mergedXml ) as XContainer;
-                        }
+                                // remove the orig nodes and replace with merged nodes
+                                recordContainerNode.RemoveNodes();
+                                recordContainerNode.Add( mergedXRecord.Nodes().OfType<XElement>() );
 
-                        // remove the orig nodes and replace with merged nodes
-                        recordContainerNode.RemoveNodes();
-                        recordContainerNode.Add( mergedXRecord.Nodes().OfType<XElement>() );
-
-                        var mergedRecordContainer = XElement.Parse( recordContainerNode.ToString( SaveOptions.DisableFormatting ) );
-                        if ( recordContainerNode.Parent != null )
-                        {
-                            // the recordContainerNode is some child/descendent of <body>
-                            recordContainerNode.ReplaceWith( mergedRecordContainer );
-                        }
-                        else
-                        {
-                            // the recordContainerNode is the <body>
-                            recordContainerNode.RemoveNodes();
-                            recordContainerNode.Add( mergedRecordContainer.Nodes() );
-
-                            if ( recordIndex < recordCount )
-                            {
-                                // add page break
-                                var pageBreakXml = new Paragraph( new Run( new Break() { Type = BreakValues.Page } ) ).OuterXml;
-                                var pageBreak = XElement.Parse( pageBreakXml, LoadOptions.None );
-                                var lastParagraph = recordContainerNode.Nodes().OfType<XElement>().Where( a => a.Name.LocalName == "p" ).LastOrDefault();
-                                if ( lastParagraph != null )
+                                var mergedRecordContainer = XElement.Parse( recordContainerNode.ToString( SaveOptions.DisableFormatting ) );
+                                if ( recordContainerNode.Parent != null )
                                 {
-                                    lastParagraph.AddAfterSelf( pageBreak );
+                                    // the recordContainerNode is some child/descendent of <body>
+                                    recordContainerNode.ReplaceWith( mergedRecordContainer );
                                 }
+                                else
+                                {
+                                    // the recordContainerNode is the <body>
+                                    recordContainerNode.RemoveNodes();
+                                    recordContainerNode.Add( mergedRecordContainer.Nodes() );
 
+                                    if ( recordIndex < recordCount )
+                                    {
+                                        // add page break
+                                        var pageBreakXml = new Paragraph( new Run( new Break() { Type = BreakValues.Page } ) ).OuterXml;
+                                        var pageBreak = XElement.Parse( pageBreakXml, LoadOptions.None );
+                                        var lastParagraph = recordContainerNode.Nodes().OfType<XElement>().Where( a => a.Name.LocalName == "p" ).LastOrDefault();
+                                        if ( lastParagraph != null )
+                                        {
+                                            lastParagraph.AddAfterSelf( pageBreak );
+                                        }
+
+                                    }
+                                }
                             }
+
+                            outputBodyNode.Add( tempMergeTemplateBodyNode.Nodes() );
                         }
                     }
 
-                    outputBodyNode.Add( tempMergeTemplateBodyNode.Nodes() );
+                    // remove all the 'next' delimiters
+                    OpenXmlRegex.Replace( outputBodyNode.Nodes().OfType<XElement>(), this.nextRecordRegEx, string.Empty, ( xx, mm ) => { return true; } );
+
+                    // pop the xdoc back
+                    outputDoc.MainDocumentPart.PutXDocument();
+
+                    // remove the last pagebreak
+                    MarkupSimplifier.SimplifyMarkup( outputDoc, new SimplifyMarkupSettings { RemoveLastRenderedPageBreak = true } );
+
+                    // If you want to see validation errors
+                    /*
+                    var validator = new OpenXmlValidator();
+                    var errors = validator.Validate( outputDoc ).ToList();
+                    */
                 }
 
-                // remove all the 'next' delimiters
-                OpenXmlRegex.Replace( outputBodyNode.Nodes().OfType<XElement>(), this.nextRecordRegEx, string.Empty, ( xx, mm ) => { return true; } );
+                outputBinaryFile = new BinaryFile();
+                outputBinaryFile.IsTemporary = true;
+                outputBinaryFile.ContentStream = outputDocStream;
+                outputBinaryFile.FileName = "MergeTemplateOutput" + Path.GetExtension( templateBinaryFile.FileName );
+                outputBinaryFile.MimeType = templateBinaryFile.MimeType;
+                outputBinaryFile.BinaryFileTypeId = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid() ).Id;
 
-                // pop the xdoc back
-                outputDoc.MainDocumentPart.PutXDocument();
-
-                // remove the last pagebreak
-                MarkupSimplifier.SimplifyMarkup( outputDoc, new SimplifyMarkupSettings { RemoveLastRenderedPageBreak = true } );
-
-                // If you want to see validation errors
-                /*
-                var validator = new OpenXmlValidator();
-                var errors = validator.Validate( outputDoc ).ToList();
-                */ 
+                binaryFileService.Add( outputBinaryFile );
+                rockContext.SaveChanges();
             }
-
-            var outputBinaryFile = new BinaryFile();
-            outputBinaryFile.IsTemporary = true;
-            outputBinaryFile.ContentStream = outputDocStream;
-            outputBinaryFile.FileName = "MergeTemplateOutput" + Path.GetExtension( templateBinaryFile.FileName );
-            outputBinaryFile.MimeType = templateBinaryFile.MimeType;
-            outputBinaryFile.BinaryFileTypeId = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid() ).Id;
-
-            binaryFileService.Add( outputBinaryFile );
-            rockContext.SaveChanges();
 
             return outputBinaryFile;
         }
@@ -261,12 +294,7 @@ namespace Rock.MergeTemplates
         /// <summary>
         /// The RegEx for finding the "next" delimiter/indicator
         /// </summary>
-        private Regex nextRecordRegEx = new Regex( @"{&\s*\bnext\b\s*&}", RegexOptions.IgnoreCase );
-
-        /// <summary>
-        /// The RegEx for finding the "next" delimiter/indicator (for Xml Encoded strings)
-        /// </summary>
-        private Regex nextRecordEncodedRegEx = new Regex( @"{&amp;\s*\bnext\b\s*&amp;}", RegexOptions.IgnoreCase );
+        private Regex nextRecordRegEx = new Regex( @"{%\s*\bnext\b\s*%}", RegexOptions.IgnoreCase );
 
         /// <summary>
         /// The RegEx of "." that matches anything
