@@ -189,4 +189,29 @@ namespace Rock.Model
     }
 
     #endregion
+
+    #region enums
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum MergeTemplateOwnership
+    {
+        /// <summary>
+        /// Show only global merge templates
+        /// </summary>
+        Global,
+
+        /// <summary>
+        /// Only show personal merge templates
+        /// </summary>
+        Personal,
+
+        /// <summary>
+        /// Show both personal and global merge templates
+        /// </summary>
+        PersonalAndGlobal
+    }
+
+    #endregion
 }

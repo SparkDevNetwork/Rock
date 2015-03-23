@@ -89,5 +89,14 @@ namespace Rock.SystemGuid
         public const string SYSTEM_EMAIL_WORKFLOW = "C7B9B5F1-9D90-485F-93E4-5D7D81EC2B12";
 
         #endregion
+
+        #region Merge Template Categories
+
+        /// <summary>
+        /// The Personal Merge Template Category guid
+        /// </summary>
+        public const string PERSONAL_MERGE_TEMPLATE = "A9F2F544-660B-4176-ACAD-88898416A66E";
+        
+        #endregion
     }
 }
