@@ -9,7 +9,7 @@
         <ul class="gridlist gridlist-inverse gridlist-actions hidden-xs margin-b-lg">
           {% for campus in Campuses %}
             <li>
-              <a class="cursor" onclick="landingMap.selectCampus({{ campus.LocationId }})">{{ campus.Name }}</a>
+              <a class="cursor" onclick="landingMap.selectCampus({{ campus.Id }})">{{ campus.Name }}</a>
             </li>
           {% endfor %}
         </ul>

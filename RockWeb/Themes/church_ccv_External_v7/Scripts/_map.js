@@ -155,7 +155,7 @@
     CCV.infoWindowMap.prototype.buildInfoWindow = function(campus) {
       var result
       result  = '<div class="infowindow">'
-      result += '  <div class="name">'+campus.name+'</div>'
+      result += '  <div class="name">'+campus.name+' Campus</div>'
       result += '  <div class="group">'
       result += '    <img class="photo" src="'+campus.photo+'&width=75" style="width: 75px; height: 75px;">'
       result += '    <div class="details">'
