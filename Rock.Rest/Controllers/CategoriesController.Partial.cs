@@ -43,12 +43,27 @@ namespace Rock.Rest.Controllers
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="showUnnamedEntityItems">if set to <c>true</c> [show unnamed entity items].</param>
         /// <param name="showCategoriesThatHaveNoChildren">if set to <c>true</c> [show categories that have no children].</param>
+        /// <param name="includedCategoryIds">The included category ids.</param>
+        /// <param name="excludedCategoryIds">The excluded category ids.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Categories/GetChildren/{id}" )]
-        public IQueryable<CategoryItem> GetChildren( int id, int rootCategoryId = 0, bool getCategorizedItems = false, int entityTypeId = 0, string entityQualifier = null, string entityQualifierValue = null, bool showUnnamedEntityItems = true, bool showCategoriesThatHaveNoChildren = true )
+        public IQueryable<CategoryItem> GetChildren(
+            int id,
+            int rootCategoryId = 0,
+            bool getCategorizedItems = false,
+            int entityTypeId = 0,
+            string entityQualifier = null,
+            string entityQualifierValue = null,
+            bool showUnnamedEntityItems = true,
+            bool showCategoriesThatHaveNoChildren = true,
+            string includedCategoryIds = null,
+            string excludedCategoryIds = null )
         {
             Person currentPerson = GetPerson();
+
+            var includedCategoryIdList = includedCategoryIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
+            var excludedCategoryIdList = excludedCategoryIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
 
             IQueryable<Category> qry = Get();
 
@@ -68,6 +83,17 @@ namespace Rock.Rest.Controllers
                 qry = qry.Where( a => a.ParentCategoryId == id );
             }
 
+            
+            if ( includedCategoryIdList.Any() )
+            {
+                // if includedCategoryIdList is specified, only get categories that are in the includedCategoryIdList
+                // NOTE: no need to factor in excludedCategoryIdList since included would take precendance and the excluded ones would already not be included
+                qry = qry.Where( a => includedCategoryIdList.Contains( a.Id ) );
+            }
+            else if ( excludedCategoryIdList.Any() )
+            {
+                qry = qry.Where( a => !excludedCategoryIdList.Contains( a.Id ) );
+            }
 
             IService serviceInstance = null;
 
