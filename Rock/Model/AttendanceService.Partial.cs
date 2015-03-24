@@ -85,23 +85,11 @@ namespace Rock.Model
         /// <returns></returns>
         public void DidNotAttend( DateTime date, int locationId, int scheduleId, int groupId, int personId )
         {
-            DateTime beginDate = date.Date;
-            DateTime endDate = beginDate.AddDays( 1 );
-
-            var attendance = Queryable( "Group,Schedule,PersonAlias.Person" )
-                .Where( a =>
-                    a.StartDateTime >= beginDate &&
-                    a.StartDateTime < endDate &&
-                    a.LocationId == locationId &&
-                    a.ScheduleId == scheduleId &&
-                    a.GroupId == groupId &&
-                    a.PersonAlias.PersonId == personId )
-                .FirstOrDefault();
-
+            var attendance = Get( date, locationId, scheduleId, groupId, personId );
             if ( attendance != null )
             {
                 attendance.DidAttend = false;
-                this.Context.SaveChanges();
+                Context.SaveChanges();
             }
         }
 
