@@ -10,16 +10,16 @@
   padding-left: 0;
   list-style: none;
 
-  li {
+  > li {
     float: left;
     width: 50%;
     text-align: center;
     vertical-align: middle;
-    line-height: @line-height-base*1.5;
-    border-bottom: 1px solid @gray-light;
+    padding: .25em;
+    border-bottom: 1px solid @panel-inner-border;
 
     &:nth-child(odd) {
-      border-right: 1px solid @gray-light;
+      border-right: 1px solid @panel-inner-border;
     }
     &:last-child,
     &:nth-last-child(2):nth-child(odd) {
@@ -28,12 +28,69 @@
   }
 }
 
-.gridlist-actions {}
+    .gridlist-header {
+      text-transform: uppercase;
+      font-weight: @headings-font-weight;
+      // float: left;
+    }
 
-    .gridlist-actions li a {
+
+
+
+// Modifiers
+// -------------------------
+
+.gridlist-lg {
+  > li {
+    padding: @panel-body-padding;
+  }
+}
+
+.gridlist-textleft {
+  > li {
+    text-align: left;
+  }
+}
+
+.gridlist-responsive-sm {
+  > li {
+    float: none;
+    width: 100%;
+    &:nth-child(odd) {
+      border-right: none;
+    }
+    &:nth-last-child(2):nth-child(odd) {
+      border-bottom: 1px solid @panel-inner-border;
+    }
+    &:last-child {
+      border-bottom: none;
+    }
+
+    @media @sm {
+      float: left;
+      width: 50%;
+
+      &:nth-child(odd) {
+        border-right: 1px solid @panel-inner-border;
+      }
+      &:last-child,
+      &:nth-last-child(2):nth-child(odd) {
+        border-bottom: none;
+      }
+    }
+  }
+}
+
+// Like landing map
+.gridlist-actions {}
+  .gridlist-actions > li {
+    padding: 0;
+  }
+    .gridlist-actions > li a {
       .opacity(.6);
       .transition(opacity .3s);
       display: block;
+      padding: .25em;
       text-transform: uppercase;
       font-weight: 800;
       font-size: @font-size-small;
@@ -46,8 +103,7 @@
 
 
 .gridlist-inverse {}
-
-  .gridlist-inverse li {
+  .gridlist-inverse > li {
     border-bottom: 1px solid @gray-dark;
 
     &:nth-child(odd) {

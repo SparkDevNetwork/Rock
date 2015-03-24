@@ -1,5 +1,8 @@
-﻿<div class="announcement-list">
-  <div class="container">
+﻿{% capture useGrayBgSetting %}{{ useGrayBg | Default: true }}{% endcapture%}
+{% capture useContainerSetting %}{{ useContainer | Default: true }}{% endcapture%}
+
+<div class="announcement-list{% if useGrayBgSetting == true %} announcement-list-gray{% endif %}">
+  {% if useContainerSetting == true %}<div class="container">{% endif %}
     <div class="row">
       {% for item in Items %}
       <div class="col-md-3 col-xs-6 announcement">
@@ -17,5 +20,5 @@
         {% endif -%}
       {% endfor -%}
     </div>
-  </div>
+  {% if useContainerSetting == true %}</div>{% endif %}
 </div>

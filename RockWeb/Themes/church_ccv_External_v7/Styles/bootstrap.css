@@ -7994,3 +7994,8 @@ button.close {
   text-transform: uppercase;
   font-weight: 700;
 }
+.container-sm {
+  max-width: 40em;
+  margin-left: auto;
+  margin-right: auto;
+}
