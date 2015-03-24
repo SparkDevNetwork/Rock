@@ -61,6 +61,8 @@ namespace Rock.Migrations
                 .Index(t => t.CreatedByPersonAliasId)
                 .Index(t => t.ModifiedByPersonAliasId)
                 .Index(t => t.Guid, unique: true);
+            
+            AddColumn("dbo.EntitySetItem", "AdditionalMergeValuesJson", c => c.String());
 
             RockMigrationHelper.UpdateBinaryFileType( Rock.SystemGuid.EntityType.STORAGE_PROVIDER_DATABASE, "Merge Template", "Usually either a MS Word Docx or Html file", "fa fa-files-o", Rock.SystemGuid.BinaryFiletype.MERGE_TEMPLATE, false, true );
             RockMigrationHelper.AddSecurityAuthForBinaryFileType( Rock.SystemGuid.BinaryFiletype.MERGE_TEMPLATE, 0, "Edit", true, Rock.SystemGuid.Group.GROUP_ADMINISTRATORS, Model.SpecialRole.None, "D5D0FB59-993D-4B70-851C-18787AE8DE09" );
@@ -93,6 +95,7 @@ namespace Rock.Migrations
             DropIndex("dbo.MergeTemplate", new[] { "CategoryId" });
             DropIndex("dbo.MergeTemplate", new[] { "MergeTemplateTypeEntityTypeId" });
             DropIndex("dbo.MergeTemplate", new[] { "TemplateBinaryFileId" });
+            DropColumn("dbo.EntitySetItem", "AdditionalMergeValuesJson");
             DropTable("dbo.MergeTemplate");
         }
     }
