@@ -172,7 +172,7 @@ namespace Rock.Data
             );
         }
 
-        #endregion Entity Type Methods
+        #endregion
 
         #region Field Type Methods
 
@@ -226,7 +226,7 @@ namespace Rock.Data
             DeleteByGuid( guid, "FieldType" );
         }
 
-        #endregion Field Type Methods
+        #endregion
 
         #region Block Type Methods
 
@@ -309,7 +309,7 @@ namespace Rock.Data
             DeleteByGuid( guid, "BlockType" );
         }
 
-        #endregion Block Type Methods
+        #endregion
 
         #region Site Methods
 
@@ -362,7 +362,7 @@ namespace Rock.Data
             DeleteByGuid( guid, "Site" );
         }
 
-        #endregion Site Methods
+        #endregion
 
         #region Layout Methods
 
@@ -403,7 +403,7 @@ namespace Rock.Data
             DeleteByGuid( guid, "Layout" );
         }
 
-        #endregion Layout Methods
+        #endregion
 
         #region Page Methods
 
@@ -577,7 +577,7 @@ namespace Rock.Data
             Migration.Sql( string.Format( @"DELETE FROM [PageContext] WHERE [Guid] = '{0}'", guid ) );
         }
 
-        #endregion Page Methods
+        #endregion
 
         #region Block Methods
 
@@ -705,7 +705,7 @@ namespace Rock.Data
                     ) );
         }
 
-        #endregion Block Methods
+        #endregion
 
         #region Category Methods
 
@@ -808,7 +808,7 @@ namespace Rock.Data
             DeleteByGuid( guid, "Category" );
         }
 
-        #endregion Category Methods
+        #endregion
 
         #region Attribute Methods
 
@@ -1429,7 +1429,7 @@ namespace Rock.Data
                 )", workflowActionGuid ) );
         }
 
-        #endregion Attribute Methods
+        #endregion
 
         #region Block Attribute Value Methods
 
@@ -1508,7 +1508,7 @@ namespace Rock.Data
             );
         }
 
-        #endregion Block Attribute Value Methods
+        #endregion
 
         #region DefinedType Methods
 
@@ -1647,7 +1647,7 @@ namespace Rock.Data
             );
         }
 
-        #endregion DefinedType Methods
+        #endregion
 
         #region DefinedValue Methods
 
@@ -1897,7 +1897,7 @@ namespace Rock.Data
             );
         }
 
-        #endregion DefinedValue Methods
+        #endregion
 
         #region BinaryFile Methods
 
@@ -1948,7 +1948,7 @@ namespace Rock.Data
             ) );
         }
 
-        #endregion BinaryFile Methods
+        #endregion
 
         #region Security/Auth
 
@@ -2694,7 +2694,7 @@ END
                 authGuid ) );                   // 8
         }
 
-        #endregion Security/Auth
+        #endregion
 
         #region Group Type
 
@@ -3053,7 +3053,7 @@ END
                     ) );
         }
 
-        #endregion Group Type
+        #endregion
 
         #region Group
 
@@ -3162,7 +3162,7 @@ END
             ) );
         }
 
-        #endregion Group
+        #endregion
 
         #region PersonAttribute
 
@@ -3300,7 +3300,7 @@ END
             );
         }
 
-        #endregion PersonAttribute
+        #endregion
 
         #region PersonBadge
 
@@ -3436,7 +3436,7 @@ END
             );
         }
 
-        #endregion PersonBadge
+        #endregion
 
         #region SystemEmail
 
@@ -3520,7 +3520,7 @@ END
             DeleteByGuid( guid, "SystemEmail" );
         }
 
-        #endregion SystemEmail
+        #endregion
 
         #region Workflow Methods
 
@@ -4141,7 +4141,7 @@ END
             DeleteByGuid( guid, "WorkflowActionType" );
         }
 
-        #endregion Workflow Methods
+        #endregion
 
         #region REST Methods
 
@@ -4200,7 +4200,7 @@ END
                     ) );
         }
 
-        #endregion REST Methods
+        #endregion
 
         #region Deprecated Methods
 
@@ -4503,7 +4503,7 @@ END
                     guid ) );
         }
 
-        #endregion Deprecated Methods
+        #endregion
 
         #region Reports
 
@@ -4643,6 +4643,6 @@ END
             Migration.Sql( string.Format( "DELETE FROM [ReportField] where [Guid] = '{0}'", guid ) );
         }
 
-        #endregion Reports
+        #endregion
     }
 }
