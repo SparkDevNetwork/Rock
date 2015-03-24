@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -54,7 +55,6 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
-            BindFilter();
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
             rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
 
@@ -76,6 +76,7 @@ namespace RockWeb.Blocks.Communication
         {
             if ( !Page.IsPostBack )
             {
+                SetFilter();
                 BindGrid();
             }
 
@@ -96,12 +97,17 @@ namespace RockWeb.Blocks.Communication
             rFilter.SaveUserPreference( "Subject", tbSubject.Text );
             rFilter.SaveUserPreference( "Medium", cpMedium.SelectedValue );
             rFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
-            if ( canApprove )
+            int personId = ppSender.PersonId ?? 0;
+            rFilter.SaveUserPreference( "Created By", canApprove ? personId.ToString() : "" );
+
+            if ( !drpDates.LowerValue.HasValue && !drpDates.UpperValue.HasValue )
             {
-                rFilter.SaveUserPreference( "Created By", ppSender.PersonId.ToString() );
+                // If a date range has not been selected, default to last 7 days
+                drpDates.LowerValue = RockDateTime.Today.AddDays( -7 );
             }
-            rFilter.SaveUserPreference( "Content", tbContent.Text );
             rFilter.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
+
+            rFilter.SaveUserPreference( "Content", tbContent.Text );
 
             BindGrid();
         }
@@ -137,16 +143,23 @@ namespace RockWeb.Blocks.Communication
                     }
                 case "Created By":
                     {
-                        int personId = 0;
-                        if ( int.TryParse( e.Value, out personId ) && personId != 0 )
+                        string personName = string.Empty;
+
+                        if ( canApprove )
                         {
-                            var personService = new PersonService( new RockContext() );
-                            var person = personService.Get( personId );
-                            if ( person != null )
+                            int? personId = e.Value.AsIntegerOrNull();
+                            if ( personId.HasValue )
                             {
-                                e.Value = person.FullName;
+                                var personService = new PersonService( new RockContext() );
+                                var person = personService.Get( personId.Value );
+                                if ( person != null )
+                                {
+                                    personName = person.FullName;
+                                }
                             }
                         }
+
+                        e.Value = personName;
 
                         break;
                     }
@@ -170,26 +183,6 @@ namespace RockWeb.Blocks.Communication
                 var communicationItem = e.Row.DataItem as CommunicationItem;
                 if ( communicationItem != null )
                 {
-                    var bPending = e.Row.FindControl( "bPending" ) as Badge;
-                    bPending.Visible = communicationItem.PendingRecipients > 0;
-                    bPending.Text = communicationItem.PendingRecipients.ToString( "N0" );
-
-                    var bCancelled = e.Row.FindControl( "bCancelled" ) as Badge;
-                    bCancelled.Visible = communicationItem.CancelledRecipients > 0;
-                    bCancelled.Text = communicationItem.CancelledRecipients.ToString( "N0" );
-
-                    var bFailed = e.Row.FindControl( "bFailed" ) as Badge;
-                    bFailed.Visible = communicationItem.FailedRecipients > 0;
-                    bFailed.Text = communicationItem.FailedRecipients.ToString( "N0" );
-
-                    var bDelivered = e.Row.FindControl( "bDelivered" ) as Badge;
-                    bDelivered.Visible = communicationItem.DeliveredRecipients > 0;
-                    bDelivered.Text = communicationItem.DeliveredRecipients.ToString( "N0" );
-
-                    var bOpened = e.Row.FindControl( "bOpened" ) as Badge;
-                    bOpened.Visible = communicationItem.OpenedRecipients > 0;
-                    bOpened.Text = communicationItem.OpenedRecipients.ToString( "N0" );
-
                     // Hide delete button if there are any successful recipients
                     e.Row.Cells[7].Controls[0].Visible = communicationItem.DeliveredRecipients <= 0;
                 }
@@ -250,44 +243,48 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Binds the filter.
         /// </summary>
-        private void BindFilter()
+        private void SetFilter()
         {
+            tbSubject.Text = rFilter.GetUserPreference( "Subject" );
+
             if ( cpMedium.Items[0].Value != string.Empty )
             {
                 cpMedium.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
             }
+            cpMedium.SelectedValue = rFilter.GetUserPreference( "Medium" );
 
             ddlStatus.BindToEnum<CommunicationStatus>();
-            // Replace the Transient status with an emtyp value (need an empty one, and don't need transient value)
+            // Replace the Transient status with an empty value (need an empty one, and don't need transient value)
             ddlStatus.Items[0].Text = string.Empty;
             ddlStatus.Items[0].Value = string.Empty;
+            ddlStatus.SelectedValue = rFilter.GetUserPreference( "Status" );
 
-            if ( !Page.IsPostBack )
+            int? personId = rFilter.GetUserPreference( "Created By" ).AsIntegerOrNull();
+            if ( !canApprove || !personId.HasValue )
             {
-                if ( !canApprove )
-                {
-                    rFilter.SaveUserPreference( "Created By", string.Empty );
-                }
-
-                tbSubject.Text = rFilter.GetUserPreference( "Subject" );
-                cpMedium.SelectedValue = rFilter.GetUserPreference( "Medium" );
-                ddlStatus.SelectedValue = rFilter.GetUserPreference( "Status" );
-
-                int personId = 0;
-                if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) )
-                {
-                    var personService = new PersonService( new RockContext() );
-                    var person = personService.Get( personId );
-                    if ( person != null )
-                    {
-                        ppSender.SetValue( person );
-                    }
-                }
-
-                drpDates.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
-
-                tbContent.Text = rFilter.GetUserPreference( "Content" );
+                personId = CurrentPersonId;
+                rFilter.SaveUserPreference( "Created By", personId.Value.ToString() );
             }
+
+            if ( personId.HasValue && personId.Value != 0 )
+            {
+                var personService = new PersonService( new RockContext() );
+                var person = personService.Get( personId.Value );
+                if ( person != null )
+                {
+                    ppSender.SetValue( person );
+                }
+            }
+
+            drpDates.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
+            if ( !drpDates.LowerValue.HasValue && !drpDates.UpperValue.HasValue )
+            {
+                // If a date range has not been selected, default to last 7 days
+                drpDates.LowerValue = RockDateTime.Today.AddDays( -7 );
+                rFilter.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
+            }
+
+            tbContent.Text = rFilter.GetUserPreference( "Content" );
         }
 
         /// <summary>
@@ -298,22 +295,22 @@ namespace RockWeb.Blocks.Communication
             var rockContext = new RockContext();
 
             var communications = new CommunicationService( rockContext )
-                    .Queryable( "MediumEntityType,Sender,Reviewer" )
+                    .Queryable().AsNoTracking()
                     .Where( c => c.Status != CommunicationStatus.Transient );
 
-            string subject = rFilter.GetUserPreference( "Subject" );
+            string subject = tbSubject.Text;
             if ( !string.IsNullOrWhiteSpace( subject ) )
             {
                 communications = communications.Where( c => c.Subject.Contains( subject ) );
             }
 
-            Guid entityTypeGuid = Guid.Empty;
-            if ( Guid.TryParse( rFilter.GetUserPreference( "Medium" ), out entityTypeGuid ) )
+            Guid? entityTypeGuid = cpMedium.SelectedValue.AsGuidOrNull();
+            if ( entityTypeGuid.HasValue )
             {
-                communications = communications.Where( c => c.MediumEntityType != null && c.MediumEntityType.Guid.Equals( entityTypeGuid ) );
+                communications = communications.Where( c => c.MediumEntityType != null && c.MediumEntityType.Guid.Equals( entityTypeGuid.Value ) );
             }
 
-            string status = rFilter.GetUserPreference( "Status" );
+            string status = ddlStatus.SelectedValue;
             if ( !string.IsNullOrWhiteSpace( status ) )
             {
                 var communicationStatus = (CommunicationStatus)System.Enum.Parse( typeof( CommunicationStatus ), status );
@@ -322,69 +319,58 @@ namespace RockWeb.Blocks.Communication
 
             if ( canApprove )
             {
-                int personId = 0;
-                if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) && personId != 0 )
+                if ( ppSender.PersonId.HasValue )
                 {
                     communications = communications
                         .Where( c => 
                             c.SenderPersonAlias != null && 
-                            c.SenderPersonAlias.PersonId == personId );
+                            c.SenderPersonAlias.PersonId == ppSender.PersonId.Value );
                 }
             }
             else
             {
+                // If can't approve, only show current person's communications
                 communications = communications
                     .Where( c => 
-                        c.SenderPersonAliasId.HasValue && 
-                        c.SenderPersonAliasId.Value == CurrentPersonAliasId );
+                        c.SenderPersonAlias != null && 
+                        c.SenderPersonAlias.PersonId == CurrentPersonId );
             }
 
-            string content = rFilter.GetUserPreference( "Content" );
+            if ( drpDates.LowerValue.HasValue )
+            {
+                communications = communications.Where( a => a.ReviewedDateTime >= drpDates.LowerValue.Value );
+            }
+
+            if ( drpDates.UpperValue.HasValue )
+            {
+                DateTime upperDate = drpDates.UpperValue.Value.Date.AddDays( 1 );
+                communications = communications.Where( a => a.ReviewedDateTime < upperDate );
+            }
+
+            string content = tbContent.Text;
             if ( !string.IsNullOrWhiteSpace( content ) )
             {
                 communications = communications.Where( c => c.MediumDataJson.Contains( content ) );
             }
 
-            var drp = new DateRangePicker();
-            drp.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
-            if ( drp.LowerValue.HasValue )
-            {
-                communications = communications.Where( a => a.ReviewedDateTime >= drp.LowerValue.Value );
-            }
-
-            if ( drp.UpperValue.HasValue )
-            {
-                DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
-                communications = communications.Where( a => a.ReviewedDateTime < upperDate );
-            }
-
             var recipients = new CommunicationRecipientService( rockContext ).Queryable();
 
             var queryable = communications
-                .Select( c => new CommunicationItem
-                {
+                .Select( c => new CommunicationItem {
                     Id = c.Id,
-                    Communication = c,
-                    Recipients = recipients
-                        .Where( r => r.CommunicationId == c.Id)
-                        .Count(),
-                    PendingRecipients = recipients
-                        .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Pending)
-                        .Count(),
-                    CancelledRecipients = recipients
-                        .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Cancelled)
-                        .Count(),
-                    FailedRecipients = recipients
-                        .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Failed)
-                        .Count(),
-                    DeliveredRecipients = recipients
-                        .Where( r => r.CommunicationId == c.Id && 
-                            (r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Opened))
-                        .Count(),
-                    OpenedRecipients = recipients
-                        .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Opened)
-                        .Count()
-                } );
+                    MediumEntityTypeId = c.MediumEntityTypeId,
+                    Subject = c.Subject,
+                    Sender = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person : null,
+                    Reviewer = c.ReviewerPersonAlias != null ? c.ReviewerPersonAlias.Person : null,
+                    ReviewedDateTime = c.ReviewedDateTime,
+                    Status = c.Status,
+                    Recipients = recipients.Where( r => r.CommunicationId == c.Id ).Count(),
+                    PendingRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Pending ).Count(),
+                    CancelledRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Cancelled ).Count(),
+                    FailedRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Failed ).Count(),
+                    DeliveredRecipients = recipients.Where( r => r.CommunicationId == c.Id && ( r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Opened ) ).Count(),
+                    OpenedRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Opened ).Count()
+                });
 
             var sortProperty = gCommunication.SortProperty;
             if ( sortProperty != null )
@@ -393,8 +379,10 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                queryable = queryable.OrderByDescending( c => c.Communication.Id );
+                queryable = queryable.OrderByDescending( c => c.ReviewedDateTime );
             }
+
+            var communicationItems = queryable.ToList();
 
             // Get the medium names
             var mediums = new Dictionary<int, string>();
@@ -403,13 +391,9 @@ namespace RockWeb.Blocks.Communication
                 var entityType = item.Value.EntityType;
                 mediums.Add( entityType.Id, item.Metadata.ComponentName );
             }
-
-            var communicationItems = queryable.ToList();
-            foreach( var c in communicationItems)
+            foreach ( var c in communicationItems )
             {
-                c.MediumName = mediums.ContainsKey( c.Communication.MediumEntityTypeId ?? 0 ) ?
-                    mediums[c.Communication.MediumEntityTypeId ?? 0] :
-                    c.Communication.MediumEntityType.FriendlyName;
+                c.MediumName = c.MediumEntityTypeId.HasValue && mediums.ContainsKey( c.MediumEntityTypeId.Value ) ? mediums[c.MediumEntityTypeId.Value] : "Unknown";
             }
 
             gCommunication.DataSource = communicationItems;
@@ -422,8 +406,13 @@ namespace RockWeb.Blocks.Communication
         protected class CommunicationItem
         {
             public int Id { get; set; }
-            public Rock.Model.Communication Communication { get; set; }
+            public int? MediumEntityTypeId { get; set; }
             public string MediumName { get; set; }
+            public string Subject { get; set; }
+            public Person Sender { get; set; }
+            public Person Reviewer { get; set; }
+            public DateTime? ReviewedDateTime { get; set; }
+            public CommunicationStatus Status { get; set; }
             public int Recipients { get; set; }
             public int PendingRecipients { get; set; }
             public int CancelledRecipients { get; set; }
