@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -62,9 +62,43 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public int EntityId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the AdditionalMergeValues as a Json string.
+        /// </summary>
+        /// <value>
+        /// A Json formatted <see cref="System.String"/> containing the AdditionalMergeValues for the EntitySet Item
+        /// </value>
+        [DataMember]
+        public string AdditionalMergeValuesJson
+        {
+            get
+            {
+                return AdditionalMergeValues.ToJson();
+            }
+
+            set
+            {
+                AdditionalMergeValues = value.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+            }
+        }
+
         #endregion
 
         #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets a dictionary containing the Additional Merge values for this EntitySet Item
+        /// </summary>
+        /// <value>
+        ///  A <see cref="System.Collections.Generic.Dictionary&lt;String,String&gt;"/> of <see cref="System.String"/> objects containing additional merge values for the <see cref="Rock.Model.EntitySetItem"/>
+        /// </value>
+        [DataMember]
+        public virtual Dictionary<string, string> AdditionalMergeValues
+        {
+            get { return _additionalMergeValues; }
+            set { _additionalMergeValues = value; }
+        }
+        private Dictionary<string, string> _additionalMergeValues = new Dictionary<string, string>();
 
         /// <summary>
         /// Gets or sets the metric.
