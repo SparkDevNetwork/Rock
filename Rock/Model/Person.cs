@@ -449,11 +449,21 @@ namespace Rock.Model
 
                 fullName.AppendFormat( "{0} {1}", NickName, LastName );
 
-                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Value ) )
-                    fullName.AppendFormat( " {0}", SuffixValue.Value );
+                // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so 
+                // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
+                if ( SuffixValueId.HasValue )
+                {
+                    var suffix = DefinedValueCache.Read( SuffixValueId.Value );
+                    if ( suffix != null )
+                    {
+                        fullName.AppendFormat( " {0}", suffix.Value );
+                    }
+                }
 
                 return fullName.ToString();
+
             }
+
             private set { }
         }
 
@@ -493,8 +503,16 @@ namespace Rock.Model
 
                 fullName.Append( LastName );
 
-                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Value ) )
-                    fullName.AppendFormat( " {0}", SuffixValue.Value );
+                // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so 
+                // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
+                if ( SuffixValueId.HasValue )
+                {
+                    var suffix = DefinedValueCache.Read( SuffixValueId.Value );
+                    if ( suffix != null )
+                    {
+                        fullName.AppendFormat( " {0}", suffix.Value );
+                    }
+                }
 
                 fullName.AppendFormat( ", {0}", NickName );
                 return fullName.ToString();
