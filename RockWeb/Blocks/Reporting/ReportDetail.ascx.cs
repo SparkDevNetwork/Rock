@@ -883,6 +883,13 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 Type entityType = EntityTypeCache.Read( report.EntityTypeId.Value, rockContext ).GetEntityType();
+                if (entityType == null)
+                {
+                    nbEditModeMessage.NotificationBoxType = NotificationBoxType.Danger;
+                    nbEditModeMessage.Text = string.Format("Unable to determine entityType for {0}", report.EntityType);
+                    nbEditModeMessage.Visible = true;
+                    return; 
+                }
 
                 bool isPersonDataSet = report.EntityTypeId == EntityTypeCache.Read( typeof( Rock.Model.Person ), true, rockContext ).Id;
 
