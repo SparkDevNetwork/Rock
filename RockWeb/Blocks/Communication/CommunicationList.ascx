@@ -19,27 +19,25 @@
                         <Rock:ComponentPicker ID="cpMedium" runat="server" ContainerType="Rock.Communication.MediumContainer, Rock" Label="Medium" />
                         <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
                         <Rock:PersonPicker ID="ppSender" runat="server" Label="Created By" />
-                        <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" />
+                        <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" Help="Note: Leaving dates blank will default to last 7 days." />
                         <Rock:RockTextBox ID="tbContent" runat="server" Label="Content" />
                     </Rock:GridFilter>
 
                     <Rock:Grid ID="gCommunication" runat="server" AllowSorting="true" OnRowSelected="gCommunication_RowSelected" OnRowDataBound="gCommunication_RowDataBound">
                         <Columns>
-                            <Rock:RockBoundField DataField="Communication.Subject" SortExpression="Communication.Subject" TruncateLength="28" HeaderText="Subject" />
+                            <Rock:RockBoundField DataField="Subject" SortExpression="Subject" TruncateLength="28" HeaderText="Subject" />
                             <Rock:RockBoundField DataField="MediumName" SortExpression="MediumName" HeaderText="Medium" />
-                            <Rock:RockBoundField DataField="Communication.SenderPersonAlias.Person.FullName" HeaderText="Created By"
-                                SortExpression="Communication.SenderPersonAlias.Person.LastName,Communication.SenderPersonAlias.Person.NickName" />
-                            <Rock:RockBoundField DataField="Communication.ReviewerPersonAlias.Person.FullName" HeaderText="Reviewed By" ColumnPriority="DesktopLarge"
-                                SortExpression="Communication.ReviewerPersonAlias.Person.LastName,Communication.ReviewerPersonAlias.Person.NickName"  />
-                            <Rock:DateTimeField DataField="Communication.ReviewedDateTime" SortExpression="Communication.ReviewedDateTime" ColumnPriority="DesktopLarge" HeaderText="Date Reviewed" />
-                            <Rock:EnumField DataField="Communication.Status" SortExpression="Communication.Status" HeaderText="Communication Status" />
+                            <Rock:RockBoundField DataField="Sender.FullName" HeaderText="Created By" SortExpression="Sender.LastName,Sender.NickName" />
+                            <Rock:RockBoundField DataField="Reviewer.FullName" HeaderText="Reviewed By" ColumnPriority="DesktopLarge" SortExpression="Reviewer.LastName,Reviewer.NickName"  />
+                            <Rock:DateTimeField DataField="ReviewedDateTime" SortExpression="ReviewedDateTime" ColumnPriority="DesktopLarge" HeaderText="Date Reviewed" />
+                            <Rock:EnumField DataField="Status" SortExpression="Status" HeaderText="Communication Status" />
                             <Rock:RockTemplateField HeaderText="Recipients" ItemStyle-HorizontalAlign="Center" SortExpression="Recipients">
                                 <ItemTemplate>
-                                    <Rock:Badge ID="bOpened" runat="server" Tooltip="Opened" BadgeType="Success"></Rock:Badge>
-                                    <Rock:Badge ID="bDelivered" runat="server" ToolTip="Delivered" BadgeType="info"></Rock:Badge>
-                                    <Rock:Badge ID="bPending" runat="server" ToolTip="Pending" BadgeType="None"></Rock:Badge>
-                                    <Rock:Badge ID="bCancelled" runat="server" ToolTip="Cancelled" BadgeType="Warning"></Rock:Badge>
-                                    <Rock:Badge ID="bFailed" runat="server" Tooltip="Failed" BadgeType="Danger"></Rock:Badge>
+                                    <span class="badge badge-success" title="Opened" data-toggle="tooltip" style='<%# (int)Eval("OpenedRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("OpenedRecipients") %></span>
+                                    <span class="badge badge-info" title="Opened" data-toggle="tooltip" style='<%# (int)Eval("DeliveredRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("DeliveredRecipients") %></span>
+                                    <span class="badge badge-none" title="Opened" data-toggle="tooltip" style='<%# (int)Eval("PendingRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("PendingRecipients") %></span>
+                                    <span class="badge badge-warning" title="Opened" data-toggle="tooltip" style='<%# (int)Eval("CancelledRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("CancelledRecipients") %></span>
+                                    <span class="badge badge-danger" title="Opened" data-toggle="tooltip" style='<%# (int)Eval("FailedRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("FailedRecipients") %></span>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
                             <Rock:DeleteField OnClick="gCommunication_Delete" />
