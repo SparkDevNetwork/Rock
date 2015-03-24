@@ -692,7 +692,7 @@ namespace Rock.Web.UI.Controls
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
-            
+
             this.AddCssClass( "grid-table" );
             this.AddCssClass( "table" );
 
@@ -960,12 +960,12 @@ namespace Rock.Web.UI.Controls
                 string desc = SortDirection.Descending.ToString();
 
                 // Remove the sort css classes and add the data priority
-                for ( int i = 0; i < e.Row.Cells.Count ; i++)
+                for ( int i = 0; i < e.Row.Cells.Count; i++ )
                 {
                     var cell = e.Row.Cells[i];
                     cell.RemoveCssClass( asc );
                     cell.RemoveCssClass( desc );
-                    cell.Attributes.Add( "data-priority", _columnDataPriorities[i]);
+                    cell.Attributes.Add( "data-priority", _columnDataPriorities[i] );
                 }
 
                 // Add the new sort css class
@@ -1162,7 +1162,7 @@ namespace Rock.Web.UI.Controls
 
                     // Get the URL to communication page
                     string url = CommunicationPageRoute;
-                    if ( string.IsNullOrWhiteSpace(url) )
+                    if ( string.IsNullOrWhiteSpace( url ) )
                     {
                         var pageRef = rockPage.Site.CommunicationPageReference;
                         if ( pageRef.PageId > 0 )
@@ -1175,7 +1175,7 @@ namespace Rock.Web.UI.Controls
                             url = "~/Communication/{0}";
                         }
                     }
-                    if ( url.Contains("{0}"))
+                    if ( url.Contains( "{0}" ) )
                     {
                         url = string.Format( url, communication.Id );
                     }
@@ -1306,7 +1306,7 @@ namespace Rock.Web.UI.Controls
                 // figure out which properties we can get data from and put those in the grid
                 foreach ( PropertyInfo prop in allprops )
                 {
-                    if ( !gridDataFields.Any( a => a.DataField == prop.Name || a.DataField.StartsWith(prop.Name + ".")) && prop.GetGetMethod().IsVirtual )
+                    if ( !gridDataFields.Any( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) ) && prop.GetGetMethod().IsVirtual )
                     {
                         // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
                         continue;
@@ -1318,7 +1318,7 @@ namespace Rock.Web.UI.Controls
                 // print column headings
                 foreach ( PropertyInfo prop in props )
                 {
-                    var gridDataField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith(prop.Name + "."));
+                    var gridDataField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
                     if ( gridDataField != null )
                     {
                         worksheet.Cells[3, columnCounter].Value = gridDataField.HeaderText;
@@ -1327,7 +1327,7 @@ namespace Rock.Web.UI.Controls
                     {
                         worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();
                     }
-                    
+
                     columnCounter++;
                 }
 
@@ -1344,7 +1344,7 @@ namespace Rock.Web.UI.Controls
 
                 // print data
                 int dataIndex = 0;
-                
+
                 IList data = (IList)this.DataSource;
                 foreach ( var item in data )
                 {
@@ -1628,7 +1628,7 @@ namespace Rock.Web.UI.Controls
 
             columns.AddRange( displayColumns.Count > 0 ? displayColumns : allColumns );
 
-            if (columns.Count == 1)
+            if ( columns.Count == 1 )
             {
                 // if the only column is the Id column, show it
                 idCol.HeaderText = "Id";
@@ -1739,7 +1739,7 @@ namespace Rock.Web.UI.Controls
             return personData;
         }
 
-        private int? GetPersonEntitySet( EventArgs e)
+        private int? GetPersonEntitySet( EventArgs e )
         {
             OnGridRebind( e );
 
@@ -1779,7 +1779,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         /// <returns></returns>
-        private int? GetEntitySetFromGrid( EventArgs e)
+        private int? GetEntitySetFromGrid( EventArgs e )
         {
             if ( !string.IsNullOrWhiteSpace( this.PersonIdField ) )
             {
@@ -1789,11 +1789,11 @@ namespace Rock.Web.UI.Controls
             {
                 var entityType = this.GetDataSourceEntityType();
                 var entitySet = new Rock.Model.EntitySet();
-                entitySet.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read(entityType).Id;
+                entitySet.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType ).Id;
                 entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
 
                 var selectedKeys = this.SelectedKeys.Select( a => a as int? ).Where( a => a.HasValue ).Select( a => a.Value ).Distinct();
-                if (selectedKeys == null || !selectedKeys.Any())
+                if ( selectedKeys == null || !selectedKeys.Any() )
                 {
                     selectedKeys = ( (IList)this.DataSource ).OfType<IEntity>().Select( a => a.Id ).Distinct();
                 }
@@ -1930,7 +1930,7 @@ namespace Rock.Web.UI.Controls
         public static BoundField GetGridField( PropertyInfo propertyInfo )
         {
             var specifiedBoundFieldType = propertyInfo.GetCustomAttribute<BoundFieldTypeAttribute>();
-            if (specifiedBoundFieldType != null)
+            if ( specifiedBoundFieldType != null )
             {
                 return Activator.CreateInstance( specifiedBoundFieldType.BoundFieldType ) as BoundField;
             }
