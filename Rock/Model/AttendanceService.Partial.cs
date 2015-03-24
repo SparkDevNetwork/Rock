@@ -75,6 +75,37 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Sets the DidAttend to false.
+        /// </summary>
+        /// <param name="date">The date.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public void DidNotAttend( DateTime date, int locationId, int scheduleId, int groupId, int personId )
+        {
+            DateTime beginDate = date.Date;
+            DateTime endDate = beginDate.AddDays( 1 );
+
+            var attendance = Queryable( "Group,Schedule,PersonAlias.Person" )
+                .Where( a =>
+                    a.StartDateTime >= beginDate &&
+                    a.StartDateTime < endDate &&
+                    a.LocationId == locationId &&
+                    a.ScheduleId == scheduleId &&
+                    a.GroupId == groupId &&
+                    a.PersonAlias.PersonId == personId )
+                .FirstOrDefault();
+
+            if ( attendance != null )
+            {
+                attendance.DidAttend = false;
+                this.Context.SaveChanges();
+            }
+        }
+
+        /// <summary>
         /// Gets the chart data.
         /// </summary>
         /// <param name="groupBy">The group by.</param>
@@ -111,21 +142,21 @@ namespace Rock.Model
             }
 
             //// for Date SQL functions, borrowed some ideas from http://stackoverflow.com/a/1177529/1755417 and http://stackoverflow.com/a/133101/1755417 and http://stackoverflow.com/a/607837/1755417
-            
-            var knownSunday = new DateTime(1966, 1, 30);    // Because we can't use the @@DATEFIRST option in Linq to query how DATEPART("weekday",) will work, use a known Sunday date instead.
+
+            var knownSunday = new DateTime( 1966, 1, 30 );    // Because we can't use the @@DATEFIRST option in Linq to query how DATEPART("weekday",) will work, use a known Sunday date instead.
             var qryWithSundayDate = qry.Select( a => new
             {
                 Attendance = a,
-                SundayDate = SqlFunctions.DateAdd( 
+                SundayDate = SqlFunctions.DateAdd(
                         "day",
-                        SqlFunctions.DateDiff( "day", 
-                            "1900-01-01", 
-                            SqlFunctions.DateAdd( "day", 
-                                ((( SqlFunctions.DatePart( "weekday", knownSunday ) + 7 ) - SqlFunctions.DatePart( "weekday", a.StartDateTime ) ) % 7),
-                                a.StartDateTime 
-                            ) 
+                        SqlFunctions.DateDiff( "day",
+                            "1900-01-01",
+                            SqlFunctions.DateAdd( "day",
+                                ( ( ( SqlFunctions.DatePart( "weekday", knownSunday ) + 7 ) - SqlFunctions.DatePart( "weekday", a.StartDateTime ) ) % 7 ),
+                                a.StartDateTime
+                            )
                         ),
-                        "1900-01-01" 
+                        "1900-01-01"
                     )
             } );
 
@@ -137,7 +168,7 @@ namespace Rock.Model
                     // GroupBy Week with Monday as FirstDayOfWeek ( +1 ) and Sunday as Summary Date ( +6 )
                     groupBy == AttendanceGroupBy.Week ? a.SundayDate :
 
-                    // GroupBy Month 
+                    // GroupBy Month
                     groupBy == AttendanceGroupBy.Month ? SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "day", a.SundayDate ) + 1, a.SundayDate ) :
 
                     // GroupBy Year
@@ -214,7 +245,7 @@ namespace Rock.Model
                 } ).ToList();
             }
 
-            if (result.Count == 1)
+            if ( result.Count == 1 )
             {
                 var dummyZeroDate = startDate ?? DateTime.MinValue;
                 result.Insert( 0, new AttendanceSummaryData { DateTime = dummyZeroDate, DateTimeStamp = dummyZeroDate.ToJavascriptMilliseconds(), SeriesId = result[0].SeriesId, YValue = 0 } );
@@ -225,7 +256,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class AttendanceSummaryData : IChartData
     {
