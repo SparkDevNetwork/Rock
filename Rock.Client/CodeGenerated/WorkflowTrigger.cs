@@ -26,6 +26,9 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
+    /// <summary>
+    /// Base client model for WorkflowTrigger that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// </summary>
     public partial class WorkflowTriggerEntity
     {
         /// <summary />
@@ -64,7 +67,7 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Simple Client Model for WorkflowTrigger
+    /// Client model for WorkflowTrigger that includes all the fields that are available for GETs. Use this for GETs (use WorkflowTriggerEntity for POST/PUTs)
     /// </summary>
     public partial class WorkflowTrigger : WorkflowTriggerEntity
     {

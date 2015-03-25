@@ -26,6 +26,9 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
+    /// <summary>
+    /// Base client model for Metaphone that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// </summary>
     public partial class MetaphoneEntity
     {
         /// <summary />
@@ -40,7 +43,7 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Simple Client Model for Metaphone
+    /// Client model for Metaphone that includes all the fields that are available for GETs. Use this for GETs (use MetaphoneEntity for POST/PUTs)
     /// </summary>
     public partial class Metaphone : MetaphoneEntity
     {

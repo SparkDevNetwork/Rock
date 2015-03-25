@@ -26,6 +26,9 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
+    /// <summary>
+    /// Base client model for EntityType that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// </summary>
     public partial class EntityTypeEntity
     {
         /// <summary />
@@ -64,7 +67,7 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Simple Client Model for EntityType
+    /// Client model for EntityType that includes all the fields that are available for GETs. Use this for GETs (use EntityTypeEntity for POST/PUTs)
     /// </summary>
     public partial class EntityType : EntityTypeEntity
     {

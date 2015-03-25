@@ -26,6 +26,9 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
+    /// <summary>
+    /// Base client model for AttendanceCode that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// </summary>
     public partial class AttendanceCodeEntity
     {
         /// <summary />
@@ -46,7 +49,7 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Simple Client Model for AttendanceCode
+    /// Client model for AttendanceCode that includes all the fields that are available for GETs. Use this for GETs (use AttendanceCodeEntity for POST/PUTs)
     /// </summary>
     public partial class AttendanceCode : AttendanceCodeEntity
     {
