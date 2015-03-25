@@ -78,7 +78,7 @@ namespace Rock.Model
 
             set
             {
-                AdditionalMergeValues = value.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+                AdditionalMergeValues = value.FromJsonOrNull<Dictionary<string, object>>() ?? new Dictionary<string, object>();
             }
         }
 
@@ -93,12 +93,12 @@ namespace Rock.Model
         ///  A <see cref="System.Collections.Generic.Dictionary&lt;String,String&gt;"/> of <see cref="System.String"/> objects containing additional merge values for the <see cref="Rock.Model.EntitySetItem"/>
         /// </value>
         [DataMember]
-        public virtual Dictionary<string, string> AdditionalMergeValues
+        public virtual Dictionary<string, object> AdditionalMergeValues
         {
             get { return _additionalMergeValues; }
             set { _additionalMergeValues = value; }
         }
-        private Dictionary<string, string> _additionalMergeValues = new Dictionary<string, string>();
+        private Dictionary<string, object> _additionalMergeValues = new Dictionary<string, object>();
 
         /// <summary>
         /// Gets or sets the metric.
