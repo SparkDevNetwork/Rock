@@ -117,25 +117,6 @@ namespace Rock.Field
         }
 
         /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <param name="context">The context to use</param>
-        /// <returns></returns>
-        public virtual string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed, RockContext context)
-        {
-            if (condensed)
-            {
-                return value.Truncate(100);
-            }
-
-            return value;
-        }
-
-        /// <summary>
         /// Formats the value as HTML.
         /// </summary>
         /// <param name="parentControl">The parent control.</param>

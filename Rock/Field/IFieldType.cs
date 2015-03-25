@@ -77,21 +77,6 @@ namespace Rock.Field
         string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed );
 
         /// <summary>
-        /// Formats the value based on the type and qualifiers
-        /// </summary>
-        /// <remarks>
-        /// Sometimes, the save of an attribute value must occur on a certain context because the value may be currently being saved
-        /// on a transaction in another context.  No deadlock errors, please.
-        /// </remarks>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
-        /// <param name="context">A context to use</param>
-        /// <returns></returns>
-        string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed, RockContext context);
-        
-        /// <summary>
         /// Formats the value as HTML.
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
