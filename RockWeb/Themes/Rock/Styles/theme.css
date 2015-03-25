@@ -2838,10 +2838,6 @@ tr.row-highlight td {
 .panel-noteentry > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #dbd5cb;
 }
-.panel-noteentry .createDate {
-  margin-top:10px;
-  width:50%;
-}
 .panel-noteentry .settings {
   margin-top: 4px;
 }

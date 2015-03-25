@@ -252,20 +252,6 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        public bool ShowCreateDateInput
-        {
-            get
-            {
-                EnsureChildControls();
-                return _noteNew.ShowCreateDateInput;
-            }
-            set
-            {
-                EnsureChildControls();
-                _noteNew.ShowCreateDateInput = value;
-            }
-        }
-
         /// <summary>
         /// Gets or sets the allow anonymous.
         /// </summary>
@@ -495,7 +481,6 @@ namespace Rock.Web.UI.Controls
                         noteEditor.ShowAlertCheckBox = this.ShowAlertCheckBox;
                         noteEditor.ShowPrivateCheckBox = this.ShowPrivateCheckBox;
                         noteEditor.ShowSecurityButton = this.ShowSecurityButton;
-                        noteEditor.ShowCreateDateInput = this.ShowCreateDateInput;
                         noteEditor.UsePersonIcon = this.UsePersonIcon;
                         control.RenderControl( writer );
                     }

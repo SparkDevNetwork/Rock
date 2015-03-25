@@ -42,7 +42,6 @@ namespace Rock.Web.UI.Controls
         private LinkButton _lbEditNote;
         private LinkButton _lbDeleteNote;
         private SecurityButton _sbSecurity;
-        private RockTextBox _tbCreateDate;
 
         #endregion
 
@@ -334,18 +333,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [show create date input]
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [show create date input]; otherwise <c>false</c>.
-        /// </value>
-        public bool ShowCreateDateInput
-        {
-            get { return ViewState["ShowCreateDateInput"] as bool? ?? false; }
-            set { ViewState["ShowCreateDateInput"] = value; }
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating whether person icon should used instead of icon representing the source.
         /// </summary>
         /// <value>
@@ -430,7 +417,6 @@ namespace Rock.Web.UI.Controls
             _lbEditNote = new LinkButton();
             _lbDeleteNote = new LinkButton();
             _sbSecurity = new SecurityButton();
-            _tbCreateDate = new RockTextBox();
         }
 
         #endregion
@@ -503,12 +489,6 @@ namespace Rock.Web.UI.Controls
             _sbSecurity.Attributes["class"] = "btn btn-security btn-xs security pull-right";
             _sbSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Note ) ).Id;
 
-            _tbCreateDate.ID = this.ID + "_tbCreateDate";
-            _tbCreateDate.TextMode = TextBoxMode.DateTime;
-            _tbCreateDate.Label = "Note Created Date";
-            _tbCreateDate.Placeholder = RockDateTime.Now.ToString();
-            Controls.Add(_tbCreateDate);
-
             Controls.Add( _sbSecurity );
         }
 
@@ -555,16 +535,7 @@ namespace Rock.Web.UI.Controls
             _tbNote.RenderControl( writer );
             writer.RenderEndTag();
 
-            // The optional create date text box, but only for new notes...
-            if (ShowCreateDateInput && !NoteId.HasValue)
-            {
-                writer.AddAttribute(HtmlTextWriterAttribute.Class, "createDate clearfix");
-                writer.RenderBeginTag(HtmlTextWriterTag.Div);
-                _tbCreateDate.RenderControl(writer);
-                writer.RenderEndTag();  // createDate div
-            }
-
-            if (DisplayType == NoteDisplayType.Full)
+            if ( DisplayType == NoteDisplayType.Full )
             {
                 // Options
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "settings clearfix" );
@@ -749,11 +720,6 @@ namespace Rock.Web.UI.Controls
                 note.Caption = IsPrivate ? "You - Personal Note" : string.Empty;
                 note.Text = Text;
                 note.IsAlert = IsAlert;
-
-                if (ShowCreateDateInput)
-                {
-                    note.CreatedDateTime = _tbCreateDate.Text.AsDateTime();
-                }
 
                 rockContext.SaveChanges();
 

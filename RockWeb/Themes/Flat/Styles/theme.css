@@ -2840,10 +2840,6 @@ tr.row-highlight td {
 .panel-noteentry > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #acf4e6;
 }
-.panel-noteentry .createDate {
-  margin-top:10px;
-  width:50%;
-}
 .panel-noteentry .settings {
   margin-top: 4px;
 }
