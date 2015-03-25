@@ -288,7 +288,14 @@ namespace Rock.Web.Cache
 
             var entityTypeService = new EntityTypeService( rockContext ?? new RockContext() );
             var entityTypeModel = entityTypeService.Get( type, createIfNotFound, null );
-            return Read( entityTypeModel );
+            if ( entityTypeModel != null )
+            {
+                return Read( entityTypeModel );
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
