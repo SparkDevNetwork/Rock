@@ -156,6 +156,51 @@ namespace Rock.Field.Types
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <param name="context">The RockContext to use for the operation.</param>
+        /// <returns></returns>
+        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed, RockContext context)
+        {
+            string formattedValue = string.Empty;
+
+            Guid? guid = value.AsGuid();
+            if (guid.HasValue)
+            {
+                var binaryFileInfo = new BinaryFileService(context)
+                    .Queryable()
+                    .Where(f => f.Guid == guid.Value)
+                    .Select(f =>
+                        new
+                        {
+                            f.Id,
+                            f.FileName,
+                            f.Guid
+                        })
+                    .FirstOrDefault();
+
+                if (binaryFileInfo != null)
+                {
+                    if (condensed)
+                    {
+                        return binaryFileInfo.FileName;
+                    }
+                    else
+                    {
+                        var filePath = System.Web.VirtualPathUtility.ToAbsolute("~/GetFile.ashx");
+                        return string.Format("<a href='{0}?guid={1}' title={2} class='btn btn-sm btn-default'>View</a>", filePath, binaryFileInfo.Guid, binaryFileInfo.FileName);
+                    }
+                }
+            }
+
+            return base.FormatValue(parentControl, formattedValue, null, condensed);
+        }
+
         #endregion
 
         #region Edit Control

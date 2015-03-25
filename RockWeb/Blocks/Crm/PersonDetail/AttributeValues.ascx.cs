@@ -251,7 +251,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         string formattedNewValue = string.Empty;
                                         if ( !string.IsNullOrWhiteSpace( newValue ) )
                                         {
-                                            formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
+                                            formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false, rockContext );
                                         }
 
                                         History.EvaluateChange( changes, attribute.Name, formattedOriginalValue, formattedNewValue );
