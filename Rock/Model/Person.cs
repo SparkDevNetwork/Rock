@@ -418,6 +418,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [NotMapped]
+        [RockClientInclude("")]
         public virtual int? PrimaryAliasId
         {
             get
