@@ -184,7 +184,7 @@ namespace RockWeb.Blocks.Communication
                 if ( communicationItem != null )
                 {
                     // Hide delete button if there are any successful recipients
-                    e.Row.Cells[7].Controls[0].Visible = communicationItem.DeliveredRecipients <= 0;
+                    e.Row.Cells[8].Controls[0].Visible = communicationItem.DeliveredRecipients <= 0;
                 }
             }
         }
@@ -338,13 +338,13 @@ namespace RockWeb.Blocks.Communication
 
             if ( drpDates.LowerValue.HasValue )
             {
-                communications = communications.Where( a => a.ReviewedDateTime >= drpDates.LowerValue.Value );
+                communications = communications.Where( a => a.CreatedDateTime >= drpDates.LowerValue.Value );
             }
 
             if ( drpDates.UpperValue.HasValue )
             {
                 DateTime upperDate = drpDates.UpperValue.Value.Date.AddDays( 1 );
-                communications = communications.Where( a => a.ReviewedDateTime < upperDate );
+                communications = communications.Where( a => a.CreatedDateTime < upperDate );
             }
 
             string content = tbContent.Text;
@@ -360,9 +360,10 @@ namespace RockWeb.Blocks.Communication
                     Id = c.Id,
                     MediumEntityTypeId = c.MediumEntityTypeId,
                     Subject = c.Subject,
+                    CreatedDateTime = c.CreatedDateTime,
                     Sender = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person : null,
-                    Reviewer = c.ReviewerPersonAlias != null ? c.ReviewerPersonAlias.Person : null,
                     ReviewedDateTime = c.ReviewedDateTime,
+                    Reviewer = c.ReviewerPersonAlias != null ? c.ReviewerPersonAlias.Person : null,
                     Status = c.Status,
                     Recipients = recipients.Where( r => r.CommunicationId == c.Id ).Count(),
                     PendingRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Pending ).Count(),
@@ -379,7 +380,7 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                queryable = queryable.OrderByDescending( c => c.ReviewedDateTime );
+                queryable = queryable.OrderByDescending( c => c.CreatedDateTime );
             }
 
             var communicationItems = queryable.ToList();
@@ -409,9 +410,10 @@ namespace RockWeb.Blocks.Communication
             public int? MediumEntityTypeId { get; set; }
             public string MediumName { get; set; }
             public string Subject { get; set; }
+            public DateTime? CreatedDateTime { get; set; }
             public Person Sender { get; set; }
-            public Person Reviewer { get; set; }
             public DateTime? ReviewedDateTime { get; set; }
+            public Person Reviewer { get; set; }
             public CommunicationStatus Status { get; set; }
             public int Recipients { get; set; }
             public int PendingRecipients { get; set; }

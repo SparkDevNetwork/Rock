@@ -25,19 +25,20 @@
 
                     <Rock:Grid ID="gCommunication" runat="server" AllowSorting="true" OnRowSelected="gCommunication_RowSelected" OnRowDataBound="gCommunication_RowDataBound">
                         <Columns>
-                            <Rock:RockBoundField DataField="Subject" SortExpression="Subject" TruncateLength="28" HeaderText="Subject" />
+                            <Rock:RockBoundField DataField="Subject" SortExpression="Subject" HeaderText="Subject" />
                             <Rock:RockBoundField DataField="MediumName" SortExpression="MediumName" HeaderText="Medium" />
+                            <Rock:DateTimeField DataField="CreatedDateTime" SortExpression="CreatedDateTime" ColumnPriority="DesktopLarge" HeaderText="Created" />
                             <Rock:RockBoundField DataField="Sender.FullName" HeaderText="Created By" SortExpression="Sender.LastName,Sender.NickName" />
+                            <Rock:EnumField DataField="Status" SortExpression="Status" HeaderText="Status" />
+                            <Rock:DateTimeField DataField="ReviewedDateTime" SortExpression="ReviewedDateTime" ColumnPriority="DesktopLarge" HeaderText="Reviewed" />
                             <Rock:RockBoundField DataField="Reviewer.FullName" HeaderText="Reviewed By" ColumnPriority="DesktopLarge" SortExpression="Reviewer.LastName,Reviewer.NickName"  />
-                            <Rock:DateTimeField DataField="ReviewedDateTime" SortExpression="ReviewedDateTime" ColumnPriority="DesktopLarge" HeaderText="Date Reviewed" />
-                            <Rock:EnumField DataField="Status" SortExpression="Status" HeaderText="Communication Status" />
                             <Rock:RockTemplateField HeaderText="Recipients" ItemStyle-HorizontalAlign="Center" SortExpression="Recipients">
                                 <ItemTemplate>
                                     <span class="badge badge-success" title="Opened" data-toggle="tooltip" style='<%# (int)Eval("OpenedRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("OpenedRecipients") %></span>
-                                    <span class="badge badge-info" title="Opened" data-toggle="tooltip" style='<%# (int)Eval("DeliveredRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("DeliveredRecipients") %></span>
-                                    <span class="badge badge-none" title="Opened" data-toggle="tooltip" style='<%# (int)Eval("PendingRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("PendingRecipients") %></span>
-                                    <span class="badge badge-warning" title="Opened" data-toggle="tooltip" style='<%# (int)Eval("CancelledRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("CancelledRecipients") %></span>
-                                    <span class="badge badge-danger" title="Opened" data-toggle="tooltip" style='<%# (int)Eval("FailedRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("FailedRecipients") %></span>
+                                    <span class="badge badge-info" title="Delivered" data-toggle="tooltip" style='<%# (int)Eval("DeliveredRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("DeliveredRecipients") %></span>
+                                    <span class="badge badge-none" title="Pending" data-toggle="tooltip" style='<%# (int)Eval("PendingRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("PendingRecipients") %></span>
+                                    <span class="badge badge-warning" title="Cancelled" data-toggle="tooltip" style='<%# (int)Eval("CancelledRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("CancelledRecipients") %></span>
+                                    <span class="badge badge-danger" title="Failed" data-toggle="tooltip" style='<%# (int)Eval("FailedRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("FailedRecipients") %></span>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
                             <Rock:DeleteField OnClick="gCommunication_Delete" />
