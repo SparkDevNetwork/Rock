@@ -7999,3 +7999,16 @@ button.close {
   margin-left: auto;
   margin-right: auto;
 }
+.dropdown-campus {
+  display: inline-block;
+}
+.dropdown-campus a {
+  text-decoration: none;
+}
+.dropdown-campus .dropdown-menu a {
+  text-transform: uppercase;
+  font-size: .9em;
+  font-weight: 700;
+  line-height: 30px;
+  color: #555555;
+}

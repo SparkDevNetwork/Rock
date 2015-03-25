@@ -1,6 +1,16 @@
 {% if Context.Campus %}
 
-  <h3 class="margin-t-none">{{ Context.Campus.Name }} Campus</h3>
+  <div class="dropdown dropdown-campus">
+    <a id="dCampusLabel" data-target="#" href="http://example.com" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">
+      <h3 class="margin-t-none">{{ Context.Campus.Name }} Campus <i class="fa fa-caret-down text-muted"></i></h3>
+    </a>
+
+    <ul class="dropdown-menu" role="menu" aria-labelledby="dCampusLabel">
+      {% for campus in Campuses %}
+      <li><a class="cursor" onclick="CCV.selectCampus({{ campus.Id }})">{{ campus.Name }} Campus</a></li>
+      {% endfor %}
+    </ul>
+  </div>
   <div class="row">
 
     <div class="col-sm-6">

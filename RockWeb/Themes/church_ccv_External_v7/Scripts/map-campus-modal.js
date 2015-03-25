@@ -23,15 +23,7 @@ $(window).on('googleMapsIsLoaded', function(){
   window.campusModalMap = new CCV.infoWindowMap(document.getElementById('campusmodal-holder'))
 
   campusModalMap.selectCampus = function (campusId) {
-    Rock.utility.setContext('campuses', campusId)
-
-    // wait until API adds the cookie
-    $(document).ajaxComplete(function( event, xhr, settings ) {
-      if (settings.url.indexOf('/api/campuses/SetContext/') > -1) {
-        // reloads page from cache
-        location.reload();
-      }
-    })
+    CCV.selectCampus(campusId)
   }
 
   campusModalMap.draw()
