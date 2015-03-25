@@ -360,7 +360,7 @@ namespace RockWeb.Blocks.Crm
                     var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
 
                     var recipients = new List<RecipientData>();
-                    recipients.Add( new RecipientData( receiptEmail.To, mergeFields ) );
+                    recipients.Add( new RecipientData( null, mergeFields ) );
 
                     Email.Send( receiptEmail.Guid, recipients, appRoot );
                 }

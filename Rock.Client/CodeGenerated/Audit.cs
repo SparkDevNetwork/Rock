@@ -26,6 +26,9 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
+    /// <summary>
+    /// Base client model for Audit that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// </summary>
     public partial class AuditEntity
     {
         /// <summary />
@@ -58,7 +61,7 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Simple Client Model for Audit
+    /// Client model for Audit that includes all the fields that are available for GETs. Use this for GETs (use AuditEntity for POST/PUTs)
     /// </summary>
     public partial class Audit : AuditEntity
     {

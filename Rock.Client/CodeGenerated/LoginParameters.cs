@@ -26,6 +26,9 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
+    /// <summary>
+    /// Use this as the Content of a api/Auth/Login POST
+    /// </summary>
     public partial class LoginParametersEntity
     {
         /// <summary />
