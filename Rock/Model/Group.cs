@@ -164,6 +164,46 @@ namespace Rock.Model
         [DataMember]
         public bool? AllowGuests { get; set; }
 
+        /// <summary>
+        /// Gets or sets the welcome system email template.
+        /// </summary>
+        /// <value>
+        /// The welcome system email.
+        /// </value>
+        [HideFromReporting]
+        [DataMember]
+        public int? WelcomeSystemEmailId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the exit system email template.
+        /// </summary>
+        /// <value>
+        /// The exit system email.
+        /// </value>
+        [HideFromReporting]
+        [DataMember]
+        public int? ExitSystemEmailId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data view to sync with.
+        /// </summary>
+        /// <value>
+        /// The sync data view.
+        /// </value>
+        [HideFromReporting]
+        [DataMember]
+        public int? SyncDataViewId { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether a user account should be generated when a person is added through the sync.
+        /// </summary>
+        /// <value>
+        /// The add user accounts through sync.
+        /// </value>
+        [HideFromReporting]
+        [DataMember]
+        public bool? AddUserAccountsDuringSync { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -202,6 +242,33 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Rock.Model.Schedule Schedule { get; set; }
+
+        /// <summary>
+        /// Gets or sets the welcome system email.
+        /// </summary>
+        /// <value>
+        /// The welcome system email.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.SystemEmail WelcomeSystemEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the exit system email.
+        /// </summary>
+        /// <value>
+        /// The exit system email.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.SystemEmail ExitSystemEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data view to sync with.
+        /// </summary>
+        /// <value>
+        /// The sync data view.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.DataView SyncDataView { get; set; }
 
         /// <summary>
         /// Gets or sets a collection the Groups that are children of this group.
@@ -361,6 +428,9 @@ namespace Rock.Model
             this.HasRequired( p => p.GroupType ).WithMany( p => p.Groups ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.WelcomeSystemEmail ).WithMany().HasForeignKey( p => p.WelcomeSystemEmailId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ExitSystemEmail ).WithMany().HasForeignKey( p => p.ExitSystemEmailId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.SyncDataView ).WithMany().HasForeignKey( p => p.SyncDataViewId ).WillCascadeOnDelete( false );
         }
     }
 
