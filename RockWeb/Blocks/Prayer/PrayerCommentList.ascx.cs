@@ -314,7 +314,7 @@ namespace RockWeb.Blocks.Prayer
             }
             else
             {
-                gPrayerComments.DataSource = prayerComments.OrderBy( n => n.CreatedDateTime ).ToList();
+                gPrayerComments.DataSource = prayerComments.OrderByDescending( n => n.CreatedDateTime ).ToList();
             }
 
             gPrayerComments.DataBind();
