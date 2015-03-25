@@ -28,18 +28,23 @@ namespace Rock.Model
     public partial class EntitySetService
     {
         /// <summary>
-        /// Gets the entity query
+        /// Gets the entity query, ordered by the EntitySetItem.Order
         /// For example: If the EntitySet.EntityType is Person, this will return a Person Query of the items in this set
         /// </summary>
         /// <param name="entitySetId">The entity set identifier.</param>
         /// <returns></returns>
         public IQueryable<IEntity> GetEntityQuery( int entitySetId )
         {
-            var rockContext = this.Context as RockContext;
-            
             var entitySet = this.Get( entitySetId );
-            EntityTypeCache itemEntityType = EntityTypeCache.Read( entitySet.EntityTypeId ?? 0 );
+            if (!entitySet.EntityTypeId.HasValue)
+            {
+                // the EntitySet Items are not IEntity items
+                return null;
+            }
 
+            EntityTypeCache itemEntityType = EntityTypeCache.Read( entitySet.EntityTypeId.Value );
+
+            var rockContext = this.Context as RockContext;
             var entitySetItemsService = new EntitySetItemService( rockContext );
             var entityItemQry = entitySetItemsService.Queryable().Where( a => a.EntitySetId == entitySetId ).OrderBy( a => a.Order );
 
@@ -58,9 +63,14 @@ namespace Rock.Model
                     MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
                     var entityQry = qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
 
-                    var joinQry = entityItemQry.Join( entityQry, k => k.EntityId, i => i.Id, ( setItem, item ) => item );
+                    var joinQry = entityItemQry.Join( entityQry, k => k.EntityId, i => i.Id, ( setItem, item ) => new
+                    {
+                        Item = item,
+                        ItemOrder = setItem.Order
+                    }
+                    ).OrderBy( a => a.ItemOrder ).ThenBy( a => a.Item.Id );
 
-                    return joinQry;
+                    return joinQry.Select( a => a.Item );
                 }
             }
 
