@@ -42,7 +42,7 @@ namespace Rock.Web.UI.Controls
         private LinkButton _lbEditNote;
         private LinkButton _lbDeleteNote;
         private SecurityButton _sbSecurity;
-        private RockTextBox _tbCreateDate;
+        private DateTimePicker _dtCreateDate;
 
         #endregion
 
@@ -430,7 +430,7 @@ namespace Rock.Web.UI.Controls
             _lbEditNote = new LinkButton();
             _lbDeleteNote = new LinkButton();
             _sbSecurity = new SecurityButton();
-            _tbCreateDate = new RockTextBox();
+            _dtCreateDate = new DateTimePicker();
         }
 
         #endregion
@@ -503,11 +503,9 @@ namespace Rock.Web.UI.Controls
             _sbSecurity.Attributes["class"] = "btn btn-security btn-xs security pull-right";
             _sbSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Note ) ).Id;
 
-            _tbCreateDate.ID = this.ID + "_tbCreateDate";
-            _tbCreateDate.TextMode = TextBoxMode.DateTime;
-            _tbCreateDate.Label = "Note Created Date";
-            _tbCreateDate.Placeholder = RockDateTime.Now.ToString();
-            Controls.Add(_tbCreateDate);
+            _dtCreateDate.ID = this.ID + "_tbCreateDate";
+            _dtCreateDate.Label = "Note Created Date";
+            Controls.Add(_dtCreateDate);
 
             Controls.Add( _sbSecurity );
         }
@@ -560,7 +558,7 @@ namespace Rock.Web.UI.Controls
             {
                 writer.AddAttribute(HtmlTextWriterAttribute.Class, "createDate clearfix");
                 writer.RenderBeginTag(HtmlTextWriterTag.Div);
-                _tbCreateDate.RenderControl(writer);
+                _dtCreateDate.RenderControl(writer);
                 writer.RenderEndTag();  // createDate div
             }
 
@@ -752,7 +750,7 @@ namespace Rock.Web.UI.Controls
 
                 if (ShowCreateDateInput)
                 {
-                    note.CreatedDateTime = _tbCreateDate.Text.AsDateTime();
+                    note.CreatedDateTime = _dtCreateDate.SelectedDateTime;
                 }
 
                 rockContext.SaveChanges();
