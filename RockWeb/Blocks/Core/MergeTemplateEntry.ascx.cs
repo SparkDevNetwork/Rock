@@ -18,9 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.MergeTemplates;
@@ -112,18 +110,16 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            if ( !entitySet.EntityTypeId.HasValue )
+            if ( entitySet.EntityTypeId.HasValue )
             {
-                nbWarningMessage.Text = "Unable to determine Entity Type";
-                nbWarningMessage.Title = "Error";
-                nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
-                pnlEntry.Visible = false;
-                return;
+                var entityTypeCache = EntityTypeCache.Read( entitySet.EntityTypeId.Value );
+                bool isPersonEntitySet = entityTypeCache.Guid == Rock.SystemGuid.EntityType.PERSON.AsGuid();
+                cbCombineFamilyMembers.Visible = isPersonEntitySet;
             }
-
-            var entityTypeCache = EntityTypeCache.Read( entitySet.EntityTypeId.Value );
-            bool isPersonEntitySet = entityTypeCache.Guid == Rock.SystemGuid.EntityType.PERSON.AsGuid();
-            cbCombineFamilyMembers.Visible = isPersonEntitySet;
+            else
+            {
+                cbCombineFamilyMembers.Visible = false;
+            }
 
             int itemsCount = entitySetItemsService.Queryable().Where( a => a.EntitySetId == entitySetId ).Count();
 
@@ -208,29 +204,69 @@ namespace RockWeb.Blocks.Core
         {
             int entitySetId = hfEntitySetId.Value.AsInteger();
             var entitySetService = new EntitySetService( rockContext );
-            var qry = entitySetService.GetEntityQuery( entitySetId );
+            var entitySet = entitySetService.Get( entitySetId );
+            Dictionary<int, Dictionary<string, object>> mergeObjectsDictionary = new Dictionary<int, Dictionary<string, object>>();
 
-            if ( fetchCount.HasValue )
+            // If this EntitySet contains IEntity Items, add those first
+            if ( entitySet.EntityTypeId.HasValue )
             {
-                qry = qry.Take( fetchCount.Value );
-            }
+                var qryEntity = entitySetService.GetEntityQuery( entitySetId );
 
-            var globalMergeObjects = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
-            List<Dictionary<string, object>> mergeObjectsList = new List<Dictionary<string, object>>();
-            foreach ( var item in qry )
-            {
-                var mergeObjects = new Dictionary<string, object>();
-                foreach ( var g in globalMergeObjects )
+                if ( fetchCount.HasValue )
                 {
-                    mergeObjects.Add( g.Key, g.Value );
+                    qryEntity = qryEntity.Take( fetchCount.Value );
                 }
 
-                mergeObjects.Add( "CurrentPerson", this.CurrentPerson );
-                mergeObjects.Add( "Row", item );
-                mergeObjectsList.Add( mergeObjects );
+                var globalMergeObjects = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
+
+                foreach ( var item in qryEntity )
+                {
+                    var mergeObjects = new Dictionary<string, object>();
+                    foreach ( var g in globalMergeObjects )
+                    {
+                        mergeObjects.Add( g.Key, g.Value );
+                    }
+
+                    mergeObjects.Add( "CurrentPerson", this.CurrentPerson );
+                    mergeObjects.Add( "Row", item );
+                    mergeObjectsDictionary.Add( item.Id, mergeObjects );
+                }
             }
 
-            return mergeObjectsList;
+            var entitySetItemService = new EntitySetItemService( rockContext );
+            var entitySetItemMergeValuesQry = entitySetItemService.GetByEntitySetId( entitySetId, true ).Where( a => a.AdditionalMergeValuesJson != "" );
+            if ( fetchCount.HasValue )
+            {
+                entitySetItemMergeValuesQry = entitySetItemMergeValuesQry.Take( fetchCount.Value );
+            }
+
+            // now, add the additional MergeValues regardless of if the EntitySet contains IEntity items or just Non-IEntity items
+            foreach ( var additionalMergeValuesItem in entitySetItemMergeValuesQry )
+            {
+                Dictionary<string, object> mergeObjects;
+                if ( mergeObjectsDictionary.ContainsKey( additionalMergeValuesItem.EntityId ) )
+                {
+                    mergeObjects = mergeObjectsDictionary[additionalMergeValuesItem.EntityId];
+                }
+                else
+                {
+                    mergeObjects = new Dictionary<string, object>();
+                    mergeObjectsDictionary.Add( additionalMergeValuesItem.EntityId, mergeObjects );
+                }
+
+                foreach ( var additionalMergeValue in additionalMergeValuesItem.AdditionalMergeValues )
+                {
+                    mergeObjects.AddOrIgnore( additionalMergeValue.Key, additionalMergeValue.Value );
+                }
+            }
+
+            var result = mergeObjectsDictionary.Select( a => a.Value );
+            if ( fetchCount.HasValue )
+            {
+                result = result.Take( fetchCount.Value );
+            }
+
+            return result.ToList();
         }
 
         /// <summary>
@@ -245,17 +281,42 @@ namespace RockWeb.Blocks.Core
                 pnlPreview.Visible = false;
                 return;
             }
-            
+
+            var rockContext = new RockContext();
+
             int entitySetId = hfEntitySetId.Value.AsInteger();
-            var entitySetService = new EntitySetService( new RockContext() );
+            var entitySetService = new EntitySetService( rockContext );
             var entitySet = entitySetService.Get( entitySetId );
-            var qry = entitySetService.GetEntityQuery( entitySetId ).Take( 15 );
+            if ( entitySet.EntityTypeId.HasValue )
+            {
+                var qry = entitySetService.GetEntityQuery( entitySetId ).Take( 15 );
 
-            EntityTypeCache itemEntityType = EntityTypeCache.Read( entitySet.EntityTypeId ?? 0 );
-            gPreview.CreatePreviewColumns( itemEntityType.GetEntityType() );
+                EntityTypeCache itemEntityType = EntityTypeCache.Read( entitySet.EntityTypeId ?? 0 );
+                gPreview.CreatePreviewColumns( itemEntityType.GetEntityType() );
 
-            gPreview.DataSource = qry.ToList();
-            gPreview.DataBind();
+                gPreview.DataSource = qry.ToList();
+                gPreview.DataBind();
+            }
+            else
+            {
+                var entitySetItemService = new EntitySetItemService( rockContext );
+                var qry = entitySetItemService.GetByEntitySetId( entitySetId, true ).Take( 15 );
+                var list = qry.ToList().Select( a => a.AdditionalMergeValuesJson.FromJsonOrNull<Dictionary<string, object>>() ).ToList();
+                if ( list.Any() )
+                {
+                    gPreview.Columns.Clear();
+                    foreach ( var s in list[0] )
+                    {
+                        var gridField = Grid.GetGridField( s.Value != null ? s.Value.GetType() : typeof( string ) );
+                        gridField.HeaderText = s.Key.SplitCase();
+                        gridField.DataField = s.Key;
+                        gPreview.Columns.Add( gridField );
+                    }
+
+                    gPreview.DataSource = qry.ToList().Select( a => a.AdditionalMergeValuesJson.FromJsonOrNull<object>() ).ToList(); ;
+                    gPreview.DataBind();
+                }
+            }
 
             pnlPreview.Visible = true;
         }
