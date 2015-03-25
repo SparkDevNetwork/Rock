@@ -797,7 +797,7 @@ order by [parentTable], [columnName]
 
             var dataMembers = type.GetProperties().SortByStandardOrder()
                 .Where( a => a.GetCustomAttribute( typeof( DataMemberAttribute ) ) != null )
-                .Where( a => a.GetCustomAttribute( typeof( NotMappedAttribute ) ) == null )
+                .Where( a => (a.GetCustomAttribute( typeof( NotMappedAttribute ) ) == null || a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null) )
                 .Where( a => !entityProperties.Keys.Contains( a.Name ) );
 
             var rockClientIncludeAttribute = type.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>();
