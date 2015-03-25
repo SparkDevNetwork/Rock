@@ -150,6 +150,9 @@ namespace Rock.Client
         public BinaryFile Photo { get; set; }
 
         /// <summary />
+        public int? PrimaryAliasId { get; set; }
+
+        /// <summary />
         public DefinedValue RecordStatusReasonValue { get; set; }
 
         /// <summary />
