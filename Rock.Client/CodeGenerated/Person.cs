@@ -26,6 +26,9 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
+    /// <summary>
+    /// Base client model for Person that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// </summary>
     public partial class PersonEntity
     {
         /// <summary />
@@ -130,7 +133,7 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Simple Client Model for Person
+    /// Client model for Person that includes all the fields that are available for GETs. Use this for GETs (use PersonEntity for POST/PUTs)
     /// </summary>
     public partial class Person : PersonEntity
     {
@@ -149,7 +152,9 @@ namespace Rock.Client
         /// <summary />
         public BinaryFile Photo { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// The Primary PersonAliasId of the Person
+        /// </summary>
         public int? PrimaryAliasId { get; set; }
 
         /// <summary />
@@ -185,10 +190,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }
