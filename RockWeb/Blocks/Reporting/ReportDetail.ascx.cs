@@ -891,6 +891,8 @@ namespace RockWeb.Blocks.Reporting
                     return; 
                 }
 
+                gReport.EntityTypeId = report.EntityTypeId;
+
                 bool isPersonDataSet = report.EntityTypeId == EntityTypeCache.Read( typeof( Rock.Model.Person ), true, rockContext ).Id;
 
                 if ( isPersonDataSet )
