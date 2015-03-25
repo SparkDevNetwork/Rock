@@ -10,9 +10,52 @@
 }
   .announcement-list .announcement {
     margin-bottom: @grid-gutter-width;
-    img { border-radius: @border-radius-large; }
+    img {
+      border-radius: @border-radius-large;
+    }
   }
+    .announcement-list .announcement a {
+      color: inherit;
+    }
+      .announcement-list .announcement .announcement-title {
+        .opacity(.5);
+        margin: 0;
+        padding-top: .5em;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+      }
 
 .announcement-list-gray {
   background: #e9e9e9;
+}
+
+.no-touch {
+  .announcement-list .announcement {
+    position: relative;
+    border-radius: @border-radius-large;
+    overflow: hidden;
+    // below is to make chrome (consistantly) hide overflow according to border radius
+    -webkit-transform: translateZ(0);
+        -ms-transform: translateZ(0);
+         -o-transform: translateZ(0);
+            transform: translateZ(0);
+  }
+
+  .announcement-list .announcement .announcement-title {
+    .opacity(1);
+    .transition(height .07s);
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    color: #fff;
+    padding: 0 .5em;
+    line-height: 2em;
+    height: 0;
+  }
+  .announcement-list .announcement:hover .announcement-title {
+    height: 2em;
+  }
 }
