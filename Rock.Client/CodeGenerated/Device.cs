@@ -26,6 +26,9 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
+    /// <summary>
+    /// Base client model for Device that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// </summary>
     public partial class DeviceEntity
     {
         /// <summary />
@@ -64,7 +67,7 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Simple Client Model for Device
+    /// Client model for Device that includes all the fields that are available for GETs. Use this for GETs (use DeviceEntity for POST/PUTs)
     /// </summary>
     public partial class Device : DeviceEntity
     {
@@ -83,10 +86,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

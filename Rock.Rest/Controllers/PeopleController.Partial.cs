@@ -23,6 +23,7 @@ using System.Net.Http;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.OData;
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -38,25 +39,32 @@ namespace Rock.Rest.Controllers
         #region Get
 
         /// <summary>
-        /// Overrides base Get api controller to add option to include Person records for deceased individuals.
+        /// Returns a Queryable of Person records
         /// </summary>
-        /// <returns>A queryable collection of Person records that matches the supplied Odata query.</returns>
+        /// <returns>
+        /// A queryable collection of Person records that matches the supplied Odata query.
+        /// </returns>
         [Authenticate, Secured]
         [EnableQuery]
         public override IQueryable<Person> Get()
         {
-            string queryString = Request.RequestUri.Query;
-            string includeDeceased = System.Web.HttpUtility.ParseQueryString( queryString ).Get( "IncludeDeceased" );
+            // NOTE: We want PrimaryAliasId to be populated, so call this.Get( false ) which includes "Aliases"
+            return this.Get( false );
+        }
 
-            if ( includeDeceased.AsBoolean( false ) )
-            {
-                var rockContext = new Rock.Data.RockContext();
-                return new PersonService( rockContext ).Queryable( true );
-            }
-            else
-            {
-                return base.Get();
-            }
+        /// <summary>
+        /// Get api controller with option to include Person records for deceased individuals.
+        /// </summary>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [EnableQuery]
+        public IQueryable<Person> Get( bool includeDeceased)
+        {
+            var rockContext = this.Service.Context as RockContext;
+
+            // NOTE: We want PrimaryAliasId to be populated, so include "Aliases"
+            return new PersonService( rockContext ).Queryable( "Aliases", includeDeceased);
         }
 
         /// <summary>

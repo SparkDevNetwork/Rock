@@ -26,6 +26,9 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
+    /// <summary>
+    /// Base client model for FinancialAccount that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// </summary>
     public partial class FinancialAccountEntity
     {
         /// <summary />
@@ -76,7 +79,7 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Simple Client Model for FinancialAccount
+    /// Client model for FinancialAccount that includes all the fields that are available for GETs. Use this for GETs (use FinancialAccountEntity for POST/PUTs)
     /// </summary>
     public partial class FinancialAccount : FinancialAccountEntity
     {
@@ -98,10 +101,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }
