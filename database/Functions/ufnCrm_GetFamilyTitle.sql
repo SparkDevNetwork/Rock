@@ -28,19 +28,20 @@ ALTER FUNCTION [dbo].[ufnCrm_GetFamilyTitle] (
     @PersonId INT
     ,@GroupId INT
     ,@GroupPersonIds VARCHAR(max) = NULL
+    ,@UseNickName BIT = 0
     )
 RETURNS @PersonNamesTable TABLE (PersonNames VARCHAR(max))
 AS
 BEGIN
     DECLARE @PersonNames VARCHAR(max);
     DECLARE @AdultLastNameCount INT;
-    DECLARE @GroupFirstNames VARCHAR(max) = '';
+    DECLARE @GroupFirstOrNickNames VARCHAR(max) = '';
     DECLARE @GroupLastName VARCHAR(max);
     DECLARE @GroupAdultFullNames VARCHAR(max) = '';
     DECLARE @GroupNonAdultFullNames VARCHAR(max) = '';
     DECLARE @GroupMemberTable TABLE (
         LastName VARCHAR(max)
-        ,FirstName VARCHAR(max)
+        ,FirstOrNickName VARCHAR(max)
         ,FullName VARCHAR(max)
         ,Gender INT
         ,GroupRoleGuid UNIQUEIDENTIFIER
@@ -50,7 +51,11 @@ BEGIN
     IF (@PersonId IS NOT NULL)
     BEGIN
         -- just getting the Person Names portion of the address for an individual person
-        SELECT @PersonNames = ISNULL([p].[NickName], '') + ' ' + ISNULL([p].[LastName], '') + ' ' + ISNULL([dv].[Value], '')
+        SELECT @PersonNames = CASE @UseNickName
+                WHEN 1
+                    THEN ISNULL([p].[NickName], '')
+                ELSE ISNULL([p].[FirstName], '')
+                END + ' ' + ISNULL([p].[LastName], '') + ' ' + ISNULL([dv].[Value], '')
         FROM [Person] [p]
         LEFT OUTER JOIN [DefinedValue] [dv] ON [dv].[Id] = [p].[SuffixValueId]
         WHERE [p].[Id] = @PersonId;
@@ -61,8 +66,16 @@ BEGIN
         -- if GroupPersonIds is set (comma-delimited) only a subset of the family members should be combined
         INSERT INTO @GroupMemberTable
         SELECT [p].[LastName]
-            ,[p].[FirstName]
-            ,ISNULL([p].[NickName], '') + ' ' + ISNULL([p].[LastName], '') + ' ' + ISNULL([dv].[Value], '') AS [FullName]
+            ,CASE @UseNickName
+                WHEN 1
+                    THEN ISNULL([p].[NickName], '')
+                ELSE ISNULL([p].[FirstName], '')
+                END [FirstName]
+            ,CASE @UseNickName
+                WHEN 1
+                    THEN ISNULL([p].[NickName], '')
+                ELSE ISNULL([p].[FirstName], '')
+                END + ' ' + ISNULL([p].[LastName], '') + ' ' + ISNULL([dv].[Value], '') [FullName]
             ,[p].Gender
             ,[gr].[Guid]
         FROM [GroupMember] [gm]
@@ -89,18 +102,18 @@ BEGIN
         IF @AdultLastNameCount > 0
         BEGIN
             -- get the FirstNames and Adult FullNames for use in the cases of families with Adults
-            SELECT @GroupFirstNames = @GroupFirstNames + [FirstName] + ' & '
+            SELECT @GroupFirstOrNickNames = @GroupFirstOrNickNames + [FirstOrNickName] + ' & '
                 ,@GroupAdultFullNames = @GroupAdultFullNames + [FullName] + ' & '
             FROM @GroupMemberTable g
             WHERE g.[GroupRoleGuid] = @cGROUPTYPEROLE_FAMILY_MEMBER_ADULT
             ORDER BY g.Gender
-                ,g.FirstName
+                ,g.FirstOrNickName
 
             -- cleanup the trailing ' &'s
-            IF len(@GroupFirstNames) > 2
+            IF len(@GroupFirstOrNickNames) > 2
             BEGIN
                 -- trim the extra ' &' off the end 
-                SET @GroupFirstNames = SUBSTRING(@GroupFirstNames, 0, len(@GroupFirstNames) - 1)
+                SET @GroupFirstOrNickNames = SUBSTRING(@GroupFirstOrNickNames, 0, len(@GroupFirstOrNickNames) - 1)
             END
 
             IF len(@GroupAdultFullNames) > 2
@@ -127,7 +140,7 @@ BEGIN
         IF (@AdultLastNameCount = 1)
         BEGIN
             -- just one lastname and at least one adult. Get the Person Names portion of the address in the format <MaleAdult> & <FemaleAdult> <LastName>
-            SET @PersonNames = @GroupFirstNames + ' ' + @GroupLastName;
+            SET @PersonNames = @GroupFirstOrNickNames + ' ' + @GroupLastName;
         END
         ELSE IF (@AdultLastNameCount = 0)
         BEGIN
