@@ -124,13 +124,6 @@ namespace RockWeb.Blocks.Core
             int itemsCount = entitySetItemsService.Queryable().Where( a => a.EntitySetId == entitySetId ).Count();
 
             nbNumberOfRecords.Text = string.Format( "There are {0} {1} to merge", itemsCount, "row".PluralizeIf( itemsCount != 1 ) );
-
-            List<Dictionary<string, object>> mergeObjectsList = GetMergeObjectList( rockContext, 1 );
-
-            if ( mergeObjectsList.Count == 1 )
-            {
-                lShowMergeFields.Text = mergeObjectsList[0].lavaDebugInfo();
-            }
         }
 
         /// <summary>
@@ -219,17 +212,71 @@ namespace RockWeb.Blocks.Core
 
                 var globalMergeObjects = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
 
-                foreach ( var item in qryEntity )
-                {
-                    var mergeObjects = new Dictionary<string, object>();
-                    foreach ( var g in globalMergeObjects )
-                    {
-                        mergeObjects.Add( g.Key, g.Value );
-                    }
+                var entityTypeCache = EntityTypeCache.Read( entitySet.EntityTypeId.Value );
+                bool isPersonEntityType = entityTypeCache != null && entityTypeCache.Guid == Rock.SystemGuid.EntityType.PERSON.AsGuid();
+                bool combineFamilyMembers = cbCombineFamilyMembers.Visible && cbCombineFamilyMembers.Checked;
 
-                    mergeObjects.Add( "CurrentPerson", this.CurrentPerson );
-                    mergeObjects.Add( "Row", item );
-                    mergeObjectsDictionary.Add( item.Id, mergeObjects );
+                if ( isPersonEntityType && combineFamilyMembers )
+                {
+                    var qryPersons = qryEntity;
+                    Guid familyGroupType = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                    var qryFamilyGroupMembers = new GroupMemberService( rockContext ).Queryable()
+                        .Where( a => a.Group.GroupType.Guid == familyGroupType )
+                        .Where( a => qryPersons.Any( aa => aa.Id == a.PersonId ) );
+
+                    var qryCombined = qryFamilyGroupMembers.Join( 
+                        qryPersons, 
+                        m => m.PersonId,
+                        p => p.Id,
+                        ( m, p ) => new { GroupMember = m, Person = p } )
+                        .GroupBy( a => a.GroupMember.GroupId )
+                        .Select( x => new
+                        {
+                            GroupId = x.Key,
+                            CombinedPerson = x.FirstOrDefault().Person,
+                            Persons = x.Select( xx => xx.Person )
+                        } );
+
+                    foreach ( var combinedFamilyItem in qryCombined )
+                    {
+                        var mergeObjects = new Dictionary<string, object>();
+                        foreach ( var g in globalMergeObjects )
+                        {
+                            mergeObjects.Add( g.Key, g.Value );
+                        }
+
+                        string commaPersonIds = combinedFamilyItem.Persons.Select( a => a.Id ).Distinct().ToList().AsDelimited( "," );
+
+                        int combinedPersonId = combinedFamilyItem.CombinedPerson != null ? combinedFamilyItem.CombinedPerson.Id : 0;
+
+                        var familyTitle = RockUdfHelper.ufnCrm_GetFamilyTitle( rockContext, null, combinedFamilyItem.GroupId, commaPersonIds );
+
+                        //TODO, have Lava do this
+                        familyTitle = familyTitle.EncodeHtml();
+
+                        mergeObjects.Add( "CurrentPerson", this.CurrentPerson );
+                        var combinedPerson = combinedFamilyItem.CombinedPerson.Clone() as Person;
+                        combinedPerson.FirstName = familyTitle;
+                        combinedPerson.NickName = familyTitle;
+                        combinedPerson.LastName = null;
+                        mergeObjects.Add( "Row", combinedPerson );
+                        mergeObjectsDictionary.AddOrIgnore( combinedPersonId, mergeObjects );
+                    }
+                }
+                else
+                {
+                    foreach ( var item in qryEntity )
+                    {
+                        var mergeObjects = new Dictionary<string, object>();
+                        foreach ( var g in globalMergeObjects )
+                        {
+                            mergeObjects.Add( g.Key, g.Value );
+                        }
+
+                        mergeObjects.Add( "CurrentPerson", this.CurrentPerson );
+                        mergeObjects.Add( "Row", item );
+                        mergeObjectsDictionary.Add( item.Id, mergeObjects );
+                    }
                 }
             }
 
@@ -263,6 +310,7 @@ namespace RockWeb.Blocks.Core
             var result = mergeObjectsDictionary.Select( a => a.Value );
             if ( fetchCount.HasValue )
             {
+                // make sure the result is limited to fetchCount (even though the above queries are also limited to fetch count)
                 result = result.Take( fetchCount.Value );
             }
 
@@ -313,7 +361,7 @@ namespace RockWeb.Blocks.Core
                         gPreview.Columns.Add( gridField );
                     }
 
-                    gPreview.DataSource = qry.ToList().Select( a => a.AdditionalMergeValuesJson.FromJsonOrNull<object>() ).ToList(); ;
+                    gPreview.DataSource = qry.ToList().Select( a => a.AdditionalMergeValuesJson.FromJsonOrNull<object>() ).ToList();
                     gPreview.DataBind();
                 }
             }
@@ -329,6 +377,16 @@ namespace RockWeb.Blocks.Core
         protected void btnShowMergeFieldsHelp_Click( object sender, EventArgs e )
         {
             pnlMergeFieldsHelp.Visible = !pnlMergeFieldsHelp.Visible;
+
+            if ( pnlMergeFieldsHelp.Visible )
+            {
+                List<Dictionary<string, object>> mergeObjectsList = GetMergeObjectList( new RockContext(), 1 );
+
+                if ( mergeObjectsList.Count == 1 )
+                {
+                    lShowMergeFields.Text = mergeObjectsList[0].lavaDebugInfo();
+                }
+            }
         }
 
         #endregion

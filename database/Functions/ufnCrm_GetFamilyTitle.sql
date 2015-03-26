@@ -18,8 +18,9 @@
 		[ufnCrm_GetFamilyTitle] is used by spFinance_ContributionStatementQuery as part of generating Contribution Statements
 	</remarks>
 	<code>
-		SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](2, null) -- Single Person
-        SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](null, 3) -- Family
+		SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](2, null, default) -- Single Person
+        SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](null, 44, default) -- Family
+        SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](null, 44, '2,3') -- Family, limited to the specified PersonIds
 	</code>
 </doc>
 */
@@ -27,6 +28,7 @@ ALTER FUNCTION [dbo].[ufnCrm_GetFamilyTitle]
 ( 
     @PersonId int
     , @GroupId int
+    , @GroupPersonIds varchar(max) = null
 )
 RETURNS @PersonNamesTable TABLE ( PersonNames varchar(max))
 AS
@@ -55,6 +57,7 @@ BEGIN
     ELSE
     BEGIN
         -- populate a table variable with the data we'll need for the different cases
+        -- if GroupPersonIds is set (comma-delimited) only a subset of the family members should be combined
         INSERT INTO @GroupMemberTable 
         SELECT 
             [p].[LastName] 
@@ -73,7 +76,10 @@ BEGIN
         JOIN 
             [GroupTypeRole] [gr] ON [gm].[GroupRoleId] = [gr].[Id]
         WHERE 
-            [GroupId] = @GroupId;
+            [GroupId] = @GroupId
+        AND 
+            (ISNULL(@GroupPersonIds, '') = '' OR (p.[Id] in (select * from ufnUtility_CsvToTable(@GroupPersonIds))) )
+
         
         -- determine adultCount and if we can use the same lastname for all adults, and get lastname while we are at it
         SELECT 

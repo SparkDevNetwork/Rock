@@ -14,12 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
+using System.Data.SqlClient;
+using System.Linq;
 
 namespace Rock.Data
 {
     // NOTE: Namespace for these need to literally be 'CodeFirstDatabaseSchema', not the namespace of the function or schema
-    
+
     /// <summary>
     /// pattern from https://github.com/divega/UdfCodeFirstSample
     /// </summary>
@@ -37,6 +41,25 @@ namespace Rock.Data
         {
             // this in-memory implementation will not be invoked when working on LINQ to Entities
             return null;
+        }
+
+        /// <summary>
+        /// calls database function ufnCrm_GetFamilyTitle.  
+        /// </summary>
+        /// <param name="PersonId">The PersonId. NULL means use GroupId parameter</param>
+        /// <param name="GroupId">The GroupId of the Family. NULL means use PersonId parameter</param>
+        /// <param name="GroupPersonIds">If GroupId is specified, set this as a comma-delimited list of PersonIds that you want to limit the family members to. NULL means don't restrict. </param>
+        /// <returns></returns>
+        public static string ufnCrm_GetFamilyTitle( RockContext rockContext, int? PersonId, int? GroupId, string GroupPersonIds )
+        {
+            var result = rockContext.Database.SqlQuery(
+                typeof( string ),
+                "SELECT TOP 1 [PersonNames] FROM dbo.ufnCrm_GetFamilyTitle(null, @GroupId, @GroupPersonIds)",
+                //new SqlParameter( "@PersonId", PersonId ) { SqlDbType = SqlDbType.Int, IsNullable = true },
+                new SqlParameter( "@GroupId", GroupId ) { SqlDbType = SqlDbType.Int, IsNullable = true },
+                new SqlParameter( "@GroupPersonIds", GroupPersonIds )
+                ).OfType<string>().FirstOrDefault();
+            return result;
         }
     }
 }
