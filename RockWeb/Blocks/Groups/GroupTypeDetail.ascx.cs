@@ -46,17 +46,17 @@ namespace RockWeb.Blocks.Groups
         /// Gets the child group types dictionary.
         /// </summary>
         /// <returns></returns>
-        private Dictionary<int, string> ChildGroupTypesDictionary
+        private List<int> ChildGroupTypesList
         {
             get
             {
-                Dictionary<int, string> childGroupTypesDictionary = ViewState["ChildGroupTypesDictionary"] as Dictionary<int, string>;
-                return childGroupTypesDictionary;
+                List<int> childGroupTypesList = ViewState["ChildGroupTypesList"] as List<int>;
+                return childGroupTypesList;
             }
 
             set
             {
-                ViewState["ChildGroupTypesDictionary"] = value;
+                ViewState["ChildGroupTypesList"] = value;
             }
         }
 
@@ -277,7 +277,7 @@ namespace RockWeb.Blocks.Groups
             gGroupTypeRoles.GridRebind += gGroupTypeRoles_GridRebind;
             gGroupTypeRoles.GridReorder += gGroupTypeRoles_GridReorder;
 
-            gChildGroupTypes.DataKeyNames = new string[] { "key" };
+            gChildGroupTypes.DataKeyNames = new string[] { "Id" };
             gChildGroupTypes.Actions.ShowAdd = true;
             gChildGroupTypes.Actions.AddClick += gChildGroupTypes_Add;
             gChildGroupTypes.GridRebind += gChildGroupTypes_GridRebind;
@@ -514,9 +514,9 @@ namespace RockWeb.Blocks.Groups
 
             groupType.ChildGroupTypes = new List<GroupType>();
             groupType.ChildGroupTypes.Clear();
-            foreach ( var item in ChildGroupTypesDictionary )
+            foreach ( var item in ChildGroupTypesList )
             {
-                var childGroupType = groupTypeService.Get( item.Key );
+                var childGroupType = groupTypeService.Get( item );
                 if ( childGroupType != null )
                 {
                     groupType.ChildGroupTypes.Add( childGroupType );
@@ -747,8 +747,8 @@ namespace RockWeb.Blocks.Groups
             ddlGroupTypePurpose.Enabled = !groupType.IsSystem;
             ddlGroupTypePurpose.SetValue( groupType.GroupTypePurposeValueId );
 
-            ChildGroupTypesDictionary = new Dictionary<int, string>();
-            groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesDictionary.Add( a.Id, a.Name ) );
+            ChildGroupTypesList = new List<int>();
+            groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesList.Add( a.Id ) );
             BindChildGroupTypesGrid();
 
             // Display
@@ -1406,23 +1406,20 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gChildGroupTypes_Add( object sender, EventArgs e )
         {
-            GroupTypeService groupTypeService = new GroupTypeService( new RockContext() );
-            int currentGroupTypeId = int.Parse( hfGroupTypeId.Value );
-
             // populate dropdown with all grouptypes that aren't already childgroups
-            var qry = from gt in groupTypeService.Queryable()
-                      where !( from cgt in ChildGroupTypesDictionary.Keys
-                               select cgt ).Contains( gt.Id )
-                      select gt;
+            var groupTypeList = new GroupTypeService( new RockContext() )
+                .Queryable()
+                .Where( t => !ChildGroupTypesList.Contains( t.Id ) )
+                .OrderBy( t => t.Order )
+                .ToList();
 
-            List<GroupType> list = qry.ToList();
-            if ( list.Count == 0 )
+            if ( groupTypeList.Count == 0 )
             {
                 modalAlert.Show( "There are not any other group types that can be added", ModalAlertType.Warning );
             }
             else
             {
-                ddlChildGroupType.DataSource = list;
+                ddlChildGroupType.DataSource = groupTypeList;
                 ddlChildGroupType.DataBind();
                 ShowDialog( "ChildGroupTypes" );
             }
@@ -1436,7 +1433,7 @@ namespace RockWeb.Blocks.Groups
         protected void gChildGroupTypes_Delete( object sender, RowEventArgs e )
         {
             int childGroupTypeId = e.RowKeyId;
-            ChildGroupTypesDictionary.Remove( childGroupTypeId );
+            ChildGroupTypesList.Remove( childGroupTypeId );
             BindChildGroupTypesGrid();
         }
 
@@ -1455,7 +1452,13 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindChildGroupTypesGrid()
         {
-            gChildGroupTypes.DataSource = ChildGroupTypesDictionary.OrderBy( a => a.Value ).ToList();
+            var groupTypeList = new GroupTypeService( new RockContext() )
+                .Queryable()
+                .Where( t => ChildGroupTypesList.Contains( t.Id ) )
+                .OrderBy( t => t.Order )
+                .ToList();
+
+            gChildGroupTypes.DataSource = groupTypeList;
             gChildGroupTypes.DataBind();
         }
 
@@ -1466,7 +1469,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgChildGroupType_SaveClick( object sender, EventArgs e )
         {
-            ChildGroupTypesDictionary.Add( int.Parse( ddlChildGroupType.SelectedValue ), ddlChildGroupType.SelectedItem.Text );
+            ChildGroupTypesList.Add( ddlChildGroupType.SelectedValueAsId() ?? 0 );
             BindChildGroupTypesGrid();
             HideDialog();
         }
