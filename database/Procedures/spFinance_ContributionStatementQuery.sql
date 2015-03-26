@@ -137,7 +137,7 @@ BEGIN
 		AND [p].[Id] IN (SELECT * FROM tranListCTE)
 	) [pg]
 	CROSS APPLY 
-		[ufnCrm_GetFamilyTitle]([pg].[PersonId], [pg].[GroupId], default) [pn]
+		[ufnCrm_GetFamilyTitle]([pg].[PersonId], [pg].[GroupId], default, default) [pn]
 	LEFT OUTER JOIN (
     SELECT l.*, gl.GroupId from
 		[GroupLocation] [gl] 
