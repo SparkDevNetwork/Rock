@@ -1013,9 +1013,10 @@ namespace Rock
         /// </summary>
         /// <param name="content">The content.</param>
         /// <param name="mergeObjects">The merge objects.</param>
+        /// <param name="encodeStrings">if set to <c>true</c>, string values will be XML Encoded. For example, if you are creating an XML doc (not HTML), you probably want to set this to true.</param>
         /// <param name="throwExceptionOnErrors">if set to <c>true</c> [throw exception on errors].</param>
         /// <returns></returns>
-        public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, bool throwExceptionOnErrors = false )
+        public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, bool encodeStrings = false, bool throwExceptionOnErrors = false )
         {
             try
             {
@@ -1025,6 +1026,37 @@ namespace Rock
                 }
 
                 Template template = Template.Parse( content );
+                
+                // if encodeStrings = true, we want any string values to be XML Encoded ( 
+                var stringTransformer = Template.GetValueTypeTransformer( typeof( string ) );
+                if ( encodeStrings )
+                {
+                    // if the stringTransformer hasn't been registered yet, register it
+                    if ( stringTransformer == null )
+                    {
+                        Template.RegisterValueTypeTransformer( typeof( string ), (s) => {
+                            string val = (s as string);
+                            if (val != null)
+                            {
+                                // we techically want to XML encode, but Html Encode does the trick
+                                return val.EncodeHtml(); 
+                            }
+                            else
+                            {
+                                return s;
+                            }
+                        });
+                    }
+                }
+                else
+                {
+                    // if the stringTransformer is registered, un-register it
+                    if (stringTransformer != null)
+                    {
+                        Template.RegisterValueTypeTransformer( typeof( string ), null );
+                    }
+                }
+                
                 return template.Render( Hash.FromDictionary( mergeObjects ) );
             }
             catch ( Exception ex )
@@ -2258,18 +2290,33 @@ namespace Rock
         #region GenericCollection Extensions
 
         /// <summary>
-        /// Concatonate the items.
+        /// Concatonate the items into a Delimited string
         /// </summary>
+        /// <example>
+        /// FirstNamesList.AsDelimited(",") would be "Ted,Suzy,Noah"
+        /// FirstNamesList.AsDelimited(", ", " and ") would be "Ted, Suzy and Noah"
+        /// </example>
         /// <typeparam name="T"></typeparam>
         /// <param name="items">The items.</param>
         /// <param name="delimiter">The delimiter.</param>
+        /// <param name="finalDelimiter">The final delimiter. Set this if the finalDelimiter should be a different delimiter</param>
         /// <returns></returns>
-        public static string AsDelimited<T>( this List<T> items, string delimiter )
+        public static string AsDelimited<T>( this List<T> items, string delimiter, string finalDelimiter = null )
         {
             List<string> strings = new List<string>();
             foreach ( T item in items )
+            {
                 strings.Add( item.ToString() );
-            return String.Join( delimiter, strings.ToArray() );
+            }
+
+            if ( finalDelimiter != null && strings.Count > 1)
+            {
+                return String.Join( delimiter, strings.Take( strings.Count - 1 ).ToArray() ) + string.Format( "{0}{1}", finalDelimiter, strings.Last() );
+            }
+            else
+            {
+                return String.Join( delimiter, strings.ToArray() );
+            }
         }
 
         /// <summary>

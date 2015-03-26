@@ -177,7 +177,7 @@ namespace Rock.MergeTemplates
                                             {
                                                 try
                                                 {
-                                                    mergedXml += xml.ResolveMergeFields( mergeObjectsList[recordIndex], true ); ;
+                                                    mergedXml += xml.ResolveMergeFields( mergeObjectsList[recordIndex], true, true ); ;
                                                 }
                                                 catch ( Exception ex )
                                                 {
