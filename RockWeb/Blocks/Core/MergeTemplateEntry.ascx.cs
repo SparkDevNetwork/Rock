@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Web.UI;
 using Rock;
 using Rock.Data;
@@ -224,8 +225,8 @@ namespace RockWeb.Blocks.Core
                         .Where( a => a.Group.GroupType.Guid == familyGroupType )
                         .Where( a => qryPersons.Any( aa => aa.Id == a.PersonId ) );
 
-                    var qryCombined = qryFamilyGroupMembers.Join( 
-                        qryPersons, 
+                    var qryCombined = qryFamilyGroupMembers.Join(
+                        qryPersons,
                         m => m.PersonId,
                         p => p.Id,
                         ( m, p ) => new { GroupMember = m, Person = p } )
@@ -233,7 +234,6 @@ namespace RockWeb.Blocks.Core
                         .Select( x => new
                         {
                             GroupId = x.Key,
-                            CombinedPerson = x.FirstOrDefault().Person,
                             Persons = x.Select( xx => xx.Person )
                         } );
 
@@ -247,20 +247,45 @@ namespace RockWeb.Blocks.Core
 
                         string commaPersonIds = combinedFamilyItem.Persons.Select( a => a.Id ).Distinct().ToList().AsDelimited( "," );
 
-                        int combinedPersonId = combinedFamilyItem.CombinedPerson != null ? combinedFamilyItem.CombinedPerson.Id : 0;
+                        var primaryGroupPerson = combinedFamilyItem.Persons.FirstOrDefault() as Person;
 
-                        var familyTitle = RockUdfHelper.ufnCrm_GetFamilyTitle( rockContext, null, combinedFamilyItem.GroupId, commaPersonIds );
-
-                        //TODO, have Lava do this
-                        familyTitle = familyTitle.EncodeHtml();
+                        if ( mergeObjectsDictionary.ContainsKey( primaryGroupPerson.Id ) )
+                        {
+                            foreach ( var person in combinedFamilyItem.Persons )
+                            {
+                                if ( !mergeObjectsDictionary.ContainsKey( person.Id ) )
+                                {
+                                    primaryGroupPerson = person as Person;
+                                    break;
+                                }
+                            }
+                        }
 
                         mergeObjects.Add( "CurrentPerson", this.CurrentPerson );
-                        var combinedPerson = combinedFamilyItem.CombinedPerson.Clone() as Person;
-                        combinedPerson.FirstName = familyTitle;
-                        combinedPerson.NickName = familyTitle;
-                        combinedPerson.LastName = null;
-                        mergeObjects.Add( "Row", combinedPerson );
-                        mergeObjectsDictionary.AddOrIgnore( combinedPersonId, mergeObjects );
+
+                        if ( combinedFamilyItem.Persons.Count() > 1 )
+                        {
+                            var combinedPerson = primaryGroupPerson.ToJson().FromJsonOrNull<MergeTemplateCombinedPerson>();
+
+                            var familyTitle = RockUdfHelper.ufnCrm_GetFamilyTitle( rockContext, null, combinedFamilyItem.GroupId, commaPersonIds, true );
+                            combinedPerson.FullName = familyTitle;
+
+                            var firstNameList = combinedFamilyItem.Persons.Select( a => ( a as Person ).FirstName ).ToList();
+                            var nickNameList = combinedFamilyItem.Persons.Select( a => ( a as Person ).NickName ).ToList();
+
+                            combinedPerson.FirstName = firstNameList.AsDelimited( ", ", " & " );
+                            combinedPerson.NickName = firstNameList.AsDelimited( ", ", " & " );
+                            combinedPerson.LastName = primaryGroupPerson.LastName;
+                            combinedPerson.SuffixValueId = null;
+                            combinedPerson.SuffixValue = null;
+                            mergeObjects.Add( "Row", combinedPerson );
+                        }
+                        else
+                        {
+                            mergeObjects.Add( "Row", primaryGroupPerson );
+                        }
+
+                        mergeObjectsDictionary.Add( primaryGroupPerson.Id, mergeObjects );
                     }
                 }
                 else
@@ -281,7 +306,9 @@ namespace RockWeb.Blocks.Core
             }
 
             var entitySetItemService = new EntitySetItemService( rockContext );
-            var entitySetItemMergeValuesQry = entitySetItemService.GetByEntitySetId( entitySetId, true ).Where( a => a.AdditionalMergeValuesJson != "" );
+            string[] emptyJson = new string[] { "", "{}" };
+            var entitySetItemMergeValuesQry = entitySetItemService.GetByEntitySetId( entitySetId, true ).Where( a => !emptyJson.Contains( a.AdditionalMergeValuesJson ) );
+
             if ( fetchCount.HasValue )
             {
                 entitySetItemMergeValuesQry = entitySetItemMergeValuesQry.Take( fetchCount.Value );
@@ -297,6 +324,12 @@ namespace RockWeb.Blocks.Core
                 }
                 else
                 {
+                    if ( entitySet.EntityTypeId.HasValue )
+                    {
+                        // if already have real entities in our list, don't add additional items to the mergeObjectsDictionary
+                        continue;
+                    }
+                    
                     mergeObjects = new Dictionary<string, object>();
                     mergeObjectsDictionary.Add( additionalMergeValuesItem.EntityId, mergeObjects );
                 }
@@ -387,6 +420,22 @@ namespace RockWeb.Blocks.Core
                     lShowMergeFields.Text = mergeObjectsList[0].lavaDebugInfo();
                 }
             }
+        }
+
+        /// <summary>
+        /// Special class that overrides Person so that FullName can be set (vs readonly/derived)
+        /// The class is specifically for MergeTemplates
+        /// </summary>
+        public class MergeTemplateCombinedPerson : Person
+        {
+            /// <summary>
+            /// Overide of FullName that should be set to whatever the FamilyTitle should be
+            /// </summary>
+            /// <value>
+            /// A <see cref="System.String" /> representing the Family Title of a combined person
+            /// </value>
+            [DataMember]
+            public new string FullName { get; set; }
         }
 
         #endregion
