@@ -26,6 +26,9 @@ using System.Collections.Generic;
 
 namespace Rock.Client
 {
+    /// <summary>
+    /// Base client model for MetricCategory that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// </summary>
     public partial class MetricCategoryEntity
     {
         /// <summary />
@@ -49,7 +52,7 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Simple Client Model for MetricCategory
+    /// Client model for MetricCategory that includes all the fields that are available for GETs. Use this for GETs (use MetricCategoryEntity for POST/PUTs)
     /// </summary>
     public partial class MetricCategory : MetricCategoryEntity
     {

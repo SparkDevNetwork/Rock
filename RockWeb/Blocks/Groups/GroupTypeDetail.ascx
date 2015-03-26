@@ -65,7 +65,7 @@
                                     <div class="grid">
                                         <Rock:Grid ID="gChildGroupTypes" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Group Type">
                                             <Columns>
-                                                <Rock:RockBoundField DataField="Value" />
+                                                <Rock:RockBoundField DataField="Name" />
                                                 <Rock:DeleteField OnClick="gChildGroupTypes_Delete" />
                                             </Columns>
                                         </Rock:Grid>

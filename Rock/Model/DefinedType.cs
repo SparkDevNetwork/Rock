@@ -52,6 +52,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the FieldTypeId of the <see cref="Rock.Model.FieldType"/> that is used to set/select, and at times display the <see cref="Rock.Model.DefinedValue">DefinedValues</see> that are associated with
+        /// NOTE: Currently, Text is the only supported fieldType for DefinedTypes.
         /// this DefinedType. 
         /// </summary>
         /// <value>
