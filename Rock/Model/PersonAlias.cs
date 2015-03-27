@@ -151,7 +151,7 @@ namespace Rock.Model
         /// </summary>
         public PersonAliasConfiguration()
         {
-            HasRequired( a => a.Person ).WithMany( p => p.Aliases ).HasForeignKey( a => a.PersonId ).WillCascadeOnDelete( true );
+            HasRequired( a => a.Person ).WithMany( p => p.Aliases ).HasForeignKey( a => a.PersonId ).WillCascadeOnDelete( false );
         }
     }
 

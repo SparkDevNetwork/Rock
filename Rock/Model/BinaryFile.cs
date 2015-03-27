@@ -404,7 +404,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Reads the file's content stream and conversts to a string.
+        /// Reads the file's content stream and converts to a string.
         /// </summary>
         /// <returns></returns>
         public string ContentsToString()
