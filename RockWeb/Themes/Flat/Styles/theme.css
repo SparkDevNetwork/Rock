@@ -3073,6 +3073,9 @@ table.inherited-attribute-grid tr td:nth-child(2),
 table.attribute-grid tr th:nth-child(3) {
   width: 550px;
 }
+.group-detail .panel-heading {
+  cursor: pointer;
+}
 /*
     Used to manage styles for specific blocks.
 
