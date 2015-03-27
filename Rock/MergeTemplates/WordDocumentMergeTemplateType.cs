@@ -22,7 +22,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Validation;
 using DocumentFormat.OpenXml.Wordprocessing;
 using OpenXmlPowerTools;
 using Rock.Data;
@@ -127,7 +126,6 @@ namespace Rock.MergeTemplates
                                             // we went too far up the parents and found multiple "next" children, so use this node as the recordContainerNode
                                             break;
                                         }
-
                                     }
                                 }
 
@@ -136,8 +134,8 @@ namespace Rock.MergeTemplates
 
                             foreach ( var recordContainerNode in recordContainerNodes )
                             {
-                                // loop thru each of the recordContainerNodes
-                                // If we have more records than nodes, we'll jump out to the outer "while" and append another template and keep going
+                                //// loop thru each of the recordContainerNodes
+                                //// If we have more records than nodes, we'll jump out to the outer "while" and append another template and keep going
 
                                 XContainer mergedXRecord;
 
@@ -177,7 +175,7 @@ namespace Rock.MergeTemplates
                                             {
                                                 try
                                                 {
-                                                    mergedXml += xml.ResolveMergeFields( mergeObjectsList[recordIndex], true, true ); ;
+                                                    mergedXml += xml.ResolveMergeFields( mergeObjectsList[recordIndex], true, true );
                                                 }
                                                 catch ( Exception ex )
                                                 {
@@ -229,7 +227,6 @@ namespace Rock.MergeTemplates
                                         {
                                             lastParagraph.AddAfterSelf( pageBreak );
                                         }
-
                                     }
                                 }
                             }
@@ -290,15 +287,5 @@ namespace Rock.MergeTemplates
             RemoveSoftHyphens = true,
             ReplaceTabsWithSpaces = true
         };
-
-        /// <summary>
-        /// The RegEx for finding the "next" delimiter/indicator
-        /// </summary>
-        private Regex nextRecordRegEx = new Regex( @"{%\s*\bnext\b\s*%}", RegexOptions.IgnoreCase );
-
-        /// <summary>
-        /// The RegEx of "." that matches anything
-        /// </summary>
-        private Regex regExDot = new Regex( "." );
     }
 }
