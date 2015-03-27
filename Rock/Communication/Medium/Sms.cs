@@ -213,12 +213,12 @@ namespace Rock.Communication.Medium
 
                         if ( recipient != null && recipient.Communication.SenderPersonAliasId.HasValue )
                         {
-                            CreateCommunication( fromPerson.Id, fromPerson.FullName, recipient.Communication.SenderPersonAliasId.Value, message.Replace(responseCode, ""), transportPhone, "", rockContext );
+                            CreateCommunication( fromPerson.PrimaryAliasId.Value, fromPerson.FullName, recipient.Communication.SenderPersonAliasId.Value, message.Replace(responseCode, ""), transportPhone, "", rockContext );
                         }
                         else // send a warning message back to the medium recipient
                         {
                             string warningMessage = string.Format( "A conversation could not be found with the response token {0}.", responseCode );
-                            CreateCommunication( fromPerson.Id, fromPerson.FullName, fromPerson.PrimaryAliasId.Value, warningMessage, transportPhone, "", rockContext );
+                            CreateCommunication( fromPerson.PrimaryAliasId.Value, fromPerson.FullName, fromPerson.PrimaryAliasId.Value, warningMessage, transportPhone, "", rockContext );
                         }
                     }
                 }
@@ -226,7 +226,7 @@ namespace Rock.Communication.Medium
                 {
                     string messageId = GenerateResponseCode( rockContext );
                     message = string.Format( "-{0}-\n{1}\n( {2} )", fromPerson.FullName, message, messageId );
-                    CreateCommunication( fromPerson.Id, fromPerson.FullName, toPerson.PrimaryAliasId.Value, message, transportPhone, messageId, rockContext );
+                    CreateCommunication( fromPerson.PrimaryAliasId.Value, fromPerson.FullName, toPerson.PrimaryAliasId.Value, message, transportPhone, messageId, rockContext );
                 }
             }
             else
