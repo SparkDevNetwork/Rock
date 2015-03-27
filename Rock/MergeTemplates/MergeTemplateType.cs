@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Rock.Attribute;
 using Rock.Extension;
 using Rock.Model;
@@ -42,5 +43,15 @@ namespace Rock.MergeTemplates
         /// <param name="mergeObjectsList">The merge objects list.</param>
         /// <returns></returns>
         public abstract BinaryFile CreateDocument( MergeTemplate mergeTemplate, List<Dictionary<string, object>> mergeObjectsList );
+
+        /// <summary>
+        /// The RegEx for finding the "next" delimiter/indicator
+        /// </summary>
+        internal Regex nextRecordRegEx = new Regex( @"{%\s*\bnext\b\s*%}", RegexOptions.IgnoreCase );
+
+        /// <summary>
+        /// The RegEx of "." that matches anything
+        /// </summary>
+        internal Regex regExDot = new Regex( "." );
     }
 }
