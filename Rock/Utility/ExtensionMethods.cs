@@ -149,7 +149,7 @@ namespace Rock
             lavaDebugPanel.Append( formatLavaDebugInfo( lavaObject.LiquidizeChildren( 0, rockContext ) ) );
 
             // Add a 'GlobalAttribute' entry if it wasn't part of the LavaObject
-            if ( !( lavaObject is Dictionary<string, object> ) || !( (Dictionary<string, object>)lavaObject ).Keys.Contains( "GlobalAttribute" ) )
+            if ( !( lavaObject is IDictionary<string, object> ) || !( (IDictionary<string, object>)lavaObject ).Keys.Contains( "GlobalAttribute" ) )
             {
                 var globalAttributes = new Dictionary<string, object>();
                 globalAttributes.Add( "GlobalAttribute", Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null ) );
@@ -206,8 +206,10 @@ namespace Rock
 
             // Get the object's type ( checking for a proxy object )
             Type entityType = myObject.GetType();
-            if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+            if ( entityType.IsDynamicProxyType() )
+            {
                 entityType = entityType.BaseType;
+            }
 
             // If the object is a Liquid Drop object, return a list of all of the object's properties
             if ( myObject is Drop )
@@ -361,7 +363,7 @@ namespace Rock
                 return string.Format( "<span class='lava-debug-value'> - {0}</span>", liquidizedObject.ToString() );
             }
 
-            if ( liquidizedObject is Dictionary<string, object> )
+            if ( liquidizedObject is IDictionary<string, object> )
             {
                 var sb = new StringBuilder();
 
@@ -372,7 +374,7 @@ namespace Rock
                     sb.AppendFormat( "{0}<ul>{0}", Environment.NewLine );
                 }
 
-                foreach ( var keyVal in (Dictionary<string, object>)liquidizedObject )
+                foreach ( var keyVal in (IDictionary<string, object>)liquidizedObject )
                 {
                     if ( isTopLevel )
                     {
@@ -474,7 +476,7 @@ namespace Rock
                 return "Item";
             }
 
-            if ( type.Namespace.Equals( "System.Data.Entity.DynamicProxies" ) )
+            if ( type.IsDynamicProxyType() )
             {
                 type = type.BaseType;
             }
@@ -494,6 +496,23 @@ namespace Rock
             else
             {
                 return SplitCase( type.Name );
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the type is a DynamicProxy of the type (type is from System.Data.Entity.DynamicProxies)
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        public static bool IsDynamicProxyType( this Type type )
+        {
+            if ( type != null )
+            {
+                return type.Namespace == "System.Data.Entity.DynamicProxies";
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -727,7 +746,7 @@ namespace Rock
         /// <returns></returns>
         public static string PluralizeIf( this string str, bool condition )
         {
-            if (condition)
+            if ( condition )
             {
                 return str.Pluralize();
             }
@@ -1026,7 +1045,7 @@ namespace Rock
                 }
 
                 Template template = Template.Parse( content );
-                
+
                 // if encodeStrings = true, we want any string values to be XML Encoded ( 
                 var stringTransformer = Template.GetValueTypeTransformer( typeof( string ) );
                 if ( encodeStrings )
@@ -1034,36 +1053,37 @@ namespace Rock
                     // if the stringTransformer hasn't been registered yet, register it
                     if ( stringTransformer == null )
                     {
-                        Template.RegisterValueTypeTransformer( typeof( string ), (s) => {
-                            string val = (s as string);
-                            if (val != null)
+                        Template.RegisterValueTypeTransformer( typeof( string ), ( s ) =>
+                        {
+                            string val = ( s as string );
+                            if ( val != null )
                             {
                                 // we techically want to XML encode, but Html Encode does the trick
-                                return val.EncodeHtml(); 
+                                return val.EncodeHtml();
                             }
                             else
                             {
                                 return s;
                             }
-                        });
+                        } );
                     }
                 }
                 else
                 {
                     // if the stringTransformer is registered, un-register it
-                    if (stringTransformer != null)
+                    if ( stringTransformer != null )
                     {
                         Template.RegisterValueTypeTransformer( typeof( string ), null );
                     }
                 }
-                
+
                 return template.Render( Hash.FromDictionary( mergeObjects ) );
             }
             catch ( Exception ex )
             {
                 if ( throwExceptionOnErrors )
                 {
-                    throw ex; 
+                    throw ex;
                 }
                 else
                 {
@@ -1741,7 +1761,7 @@ namespace Rock
         public static string ToTimeString( this TimeSpan timespan )
         {
             // since the comments on this say HH:MM AM/PM, make sure to return the time in that format
-            return RockDateTime.Today.Add( timespan ).ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
+            return RockDateTime.Today.Add( timespan ).ToString( "h:mm tt", System.Globalization.CultureInfo.InvariantCulture );
         }
 
         #endregion TimeSpan Extensions
@@ -1971,7 +1991,7 @@ namespace Rock
             try
             {
                 var valueItem = listControl.Items.FindByValue( value );
-                if (valueItem == null && defaultValue != null)
+                if ( valueItem == null && defaultValue != null )
                 {
                     valueItem = listControl.Items.FindByValue( defaultValue );
                 }
@@ -2309,7 +2329,7 @@ namespace Rock
                 strings.Add( item.ToString() );
             }
 
-            if ( finalDelimiter != null && strings.Count > 1)
+            if ( finalDelimiter != null && strings.Count > 1 )
             {
                 return String.Join( delimiter, strings.Take( strings.Count - 1 ).ToArray() ) + string.Format( "{0}{1}", finalDelimiter, strings.Last() );
             }
@@ -2638,7 +2658,7 @@ namespace Rock
         /// <returns></returns>
         public static int PageId( this Route route )
         {
-            if ( route.DataTokens != null && route.DataTokens["PageId"] != null  )
+            if ( route.DataTokens != null && route.DataTokens["PageId"] != null )
             {
                 return ( route.DataTokens["PageId"] as string ).AsIntegerOrNull() ?? -1;
             }
@@ -2706,6 +2726,23 @@ namespace Rock
             if ( item != null )
             {
                 list.Remove( item );
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the Entity is an EF Proxy of the Entity
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <returns></returns>
+        public static bool IsDynamicProxyEntity(this IEntity entity)
+        {
+            if ( entity != null )
+            {
+                return entity.GetType().IsDynamicProxyType();
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -2808,7 +2845,7 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        public static void AddOrIgnore<TKey, TValue>( this Dictionary<TKey, TValue> dictionary, TKey key, TValue value )
+        public static void AddOrIgnore<TKey, TValue>( this IDictionary<TKey, TValue> dictionary, TKey key, TValue value )
         {
             if ( !dictionary.ContainsKey( key ) )
             {
@@ -2824,7 +2861,7 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public static TValue GetValueOrNull<TKey, TValue>( this Dictionary<TKey, TValue> dictionary, TKey key)
+        public static TValue GetValueOrNull<TKey, TValue>( this IDictionary<TKey, TValue> dictionary, TKey key )
         {
             if ( dictionary.ContainsKey( key ) )
             {
@@ -2832,7 +2869,7 @@ namespace Rock
             }
             else
             {
-                return default(TValue);
+                return default( TValue );
             }
         }
 
@@ -2843,7 +2880,7 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public static string GetValueOrNull<TKey>( this Dictionary<TKey, Rock.Field.ConfigurationValue> dictionary, TKey key )
+        public static string GetValueOrNull<TKey>( this IDictionary<TKey, Rock.Field.ConfigurationValue> dictionary, TKey key )
         {
             if ( dictionary.ContainsKey( key ) && dictionary[key] != null )
             {

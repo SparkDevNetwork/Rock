@@ -268,7 +268,7 @@ namespace Rock.Web.Cache
         {
             int? entityTypeId = null;
 
-            if ( type.Namespace == "System.Data.Entity.DynamicProxies" )
+            if ( type.IsDynamicProxyType() )
             {
                 type = type.BaseType;
             }
