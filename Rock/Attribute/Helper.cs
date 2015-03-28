@@ -301,8 +301,10 @@ namespace Rock.Attribute
                 Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
 
                 Type entityType = entity.GetType();
-                if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+                if ( entityType.IsDynamicProxyType() )
+                {
                     entityType = entityType.BaseType;
+                }
 
                 rockContext = rockContext ?? new RockContext();
 
