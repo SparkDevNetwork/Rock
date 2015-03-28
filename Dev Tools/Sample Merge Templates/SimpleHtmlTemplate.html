@@ -1,11 +1,26 @@
 <html>
-<head></head>
+<head>
+    <title>Html Merge</title>
+</head>
 <body>
+    Here is a list of people and their pictures
 
-<h1>{{ Row.FullName }}</h1>
-<h4>{{ Row }}</h4>
-<strong>{{ Row.NickName }} </strong>
-<strong>{{ Row.LastName }} </strong>
+    {% for row in Rows %}
+
+    <div class="row">
+        <div class="col-md-6">
+            {{ row.NickName }} {{ row.LastName }}
+            <div class="address">
+                {{ row | Address:'Home' }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <img src="{{ row.PhotoUrl }}" width="100" height="100" />
+        </div>
+    </div>
+
+    {% endfor %}
+
 
 </body>
 </html>

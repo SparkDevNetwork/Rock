@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
@@ -38,14 +37,15 @@ namespace Rock.MergeTemplates
     public class WordDocumentMergeTemplateType : MergeTemplateType
     {
         public override List<Exception> Exceptions { get; set; }
-        
+
         /// <summary>
         /// Creates the document.
         /// </summary>
         /// <param name="mergeTemplate">The merge template.</param>
-        /// <param name="mergeObjectsList">The merge objects list.</param>
+        /// <param name="mergeObjectList">The merge object list.</param>
+        /// <param name="globalMergeFields">The global merge fields.</param>
         /// <returns></returns>
-        public override BinaryFile CreateDocument( MergeTemplate mergeTemplate, List<Dictionary<string, object>> mergeObjectsList )
+        public override BinaryFile CreateDocument( MergeTemplate mergeTemplate, List<object> mergeObjectList, Dictionary<string, object> globalMergeFields )
         {
             this.Exceptions = new List<Exception>();
             BinaryFile outputBinaryFile = null;
@@ -81,7 +81,7 @@ namespace Rock.MergeTemplates
                     outputBodyNode.RemoveNodes();
 
                     int recordIndex = 0;
-                    int recordCount = mergeObjectsList.Count();
+                    int recordCount = mergeObjectList.Count();
                     while ( recordIndex < recordCount )
                     {
                         using ( var tempMergeTemplateStream = new MemoryStream() )
@@ -175,7 +175,15 @@ namespace Rock.MergeTemplates
                                             {
                                                 try
                                                 {
-                                                    mergedXml += xml.ResolveMergeFields( mergeObjectsList[recordIndex], true, true );
+                                                    DotLiquid.Hash wordMergeObjects = new DotLiquid.Hash();
+                                                    wordMergeObjects.Add( "Row", mergeObjectList[recordIndex] );
+
+                                                    foreach(var field in globalMergeFields)
+                                                    {
+                                                        wordMergeObjects.Add( field.Key, field.Value );
+                                                    }
+
+                                                    mergedXml += xml.ResolveMergeFields( wordMergeObjects, true, true );
                                                 }
                                                 catch ( Exception ex )
                                                 {
