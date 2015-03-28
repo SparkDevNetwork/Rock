@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.UI;
@@ -136,9 +137,9 @@ namespace RockWeb.Blocks.Core
         {
             var rockContext = new RockContext();
 
-            List<Dictionary<string, object>> mergeObjectsList = GetMergeObjectList( rockContext );
+            List<object> mergeObjectsList = GetMergeObjectList( rockContext );
 
-            var mergeTemplate = new MergeTemplateService( rockContext ).Get( mtPicker.SelectedValue.AsInteger() );
+            MergeTemplate mergeTemplate = new MergeTemplateService( rockContext ).Get( mtPicker.SelectedValue.AsInteger() );
             if ( mergeTemplate == null )
             {
                 nbWarningMessage.Text = "Unable to get merge template";
@@ -147,16 +148,7 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            var mergeTemplateTypeEntityType = EntityTypeCache.Read( mergeTemplate.MergeTemplateTypeEntityTypeId );
-            if ( mergeTemplateTypeEntityType == null )
-            {
-                nbWarningMessage.Text = "Unable to get merge template";
-                nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
-                nbWarningMessage.Visible = true;
-                return;
-            }
-
-            var mergeTemplateType = MergeTemplateTypeContainer.GetComponent( mergeTemplateTypeEntityType.Name );
+            MergeTemplateType mergeTemplateType = this.GetMergeTemplateType( rockContext, mergeTemplate );
             if ( mergeTemplateType == null )
             {
                 nbWarningMessage.Text = "Unable to get merge template type";
@@ -165,7 +157,10 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            var outputBinaryFileDoc = mergeTemplateType.CreateDocument( mergeTemplate, mergeObjectsList );
+            var globalMergeFields = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
+            globalMergeFields.Add( "CurrentPerson", this.CurrentPerson );
+
+            var outputBinaryFileDoc = mergeTemplateType.CreateDocument( mergeTemplate, mergeObjectsList, globalMergeFields );
 
             if ( mergeTemplateType.Exceptions != null && mergeTemplateType.Exceptions.Any() )
             {
@@ -183,9 +178,37 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-            Response.Redirect( outputBinaryFileDoc.Url, false );
+            var uri = new UriBuilder( outputBinaryFileDoc.Url );
+            var qry = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            qry["attachment"] = true.ToTrueFalse();
+            uri.Query = qry.ToString();
+            Response.Redirect( uri.ToString(), false );
             Context.ApplicationInstance.CompleteRequest();
+            
             return;
+        }
+
+        /// <summary>
+        /// Gets the type of the merge template.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="mergeTemplate">The merge template.</param>
+        /// <returns></returns>
+        private MergeTemplateType GetMergeTemplateType( RockContext rockContext, MergeTemplate mergeTemplate )
+        {
+            mergeTemplate = new MergeTemplateService( rockContext ).Get( mtPicker.SelectedValue.AsInteger() );
+            if ( mergeTemplate == null )
+            {
+                return null;
+            }
+
+            var mergeTemplateTypeEntityType = EntityTypeCache.Read( mergeTemplate.MergeTemplateTypeEntityTypeId );
+            if ( mergeTemplateTypeEntityType == null )
+            {
+                return null;
+            }
+
+            return MergeTemplateTypeContainer.GetComponent( mergeTemplateTypeEntityType.Name );
         }
 
         /// <summary>
@@ -194,12 +217,12 @@ namespace RockWeb.Blocks.Core
         /// <param name="rockContext">The rock context.</param>
         /// <param name="fetchCount">The fetch count.</param>
         /// <returns></returns>
-        private List<Dictionary<string, object>> GetMergeObjectList( RockContext rockContext, int? fetchCount = null )
+        private List<object> GetMergeObjectList( RockContext rockContext, int? fetchCount = null )
         {
             int entitySetId = hfEntitySetId.Value.AsInteger();
             var entitySetService = new EntitySetService( rockContext );
             var entitySet = entitySetService.Get( entitySetId );
-            Dictionary<int, Dictionary<string, object>> mergeObjectsDictionary = new Dictionary<int, Dictionary<string, object>>();
+            Dictionary<int, object> mergeObjectsDictionary = new Dictionary<int, object>();
 
             // If this EntitySet contains IEntity Items, add those first
             if ( entitySet.EntityTypeId.HasValue )
@@ -210,8 +233,6 @@ namespace RockWeb.Blocks.Core
                 {
                     qryEntity = qryEntity.Take( fetchCount.Value );
                 }
-
-                var globalMergeObjects = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
 
                 var entityTypeCache = EntityTypeCache.Read( entitySet.EntityTypeId.Value );
                 bool isPersonEntityType = entityTypeCache != null && entityTypeCache.Guid == Rock.SystemGuid.EntityType.PERSON.AsGuid();
@@ -239,11 +260,7 @@ namespace RockWeb.Blocks.Core
 
                     foreach ( var combinedFamilyItem in qryCombined )
                     {
-                        var mergeObjects = new Dictionary<string, object>();
-                        foreach ( var g in globalMergeObjects )
-                        {
-                            mergeObjects.Add( g.Key, g.Value );
-                        }
+                        object mergeObject;
 
                         string commaPersonIds = combinedFamilyItem.Persons.Select( a => a.Id ).Distinct().ToList().AsDelimited( "," );
 
@@ -261,8 +278,6 @@ namespace RockWeb.Blocks.Core
                             }
                         }
 
-                        mergeObjects.Add( "CurrentPerson", this.CurrentPerson );
-
                         if ( combinedFamilyItem.Persons.Count() > 1 )
                         {
                             var combinedPerson = primaryGroupPerson.ToJson().FromJsonOrNull<MergeTemplateCombinedPerson>();
@@ -278,35 +293,27 @@ namespace RockWeb.Blocks.Core
                             combinedPerson.LastName = primaryGroupPerson.LastName;
                             combinedPerson.SuffixValueId = null;
                             combinedPerson.SuffixValue = null;
-                            mergeObjects.Add( "Row", combinedPerson );
+                            mergeObject = combinedPerson;
                         }
                         else
                         {
-                            mergeObjects.Add( "Row", primaryGroupPerson );
+                            mergeObject = primaryGroupPerson;
                         }
 
-                        mergeObjectsDictionary.Add( primaryGroupPerson.Id, mergeObjects );
+                        mergeObjectsDictionary.Add( primaryGroupPerson.Id, mergeObject );
                     }
                 }
                 else
                 {
-                    foreach ( var item in qryEntity )
+                    foreach ( var item in qryEntity.AsNoTracking() )
                     {
-                        var mergeObjects = new Dictionary<string, object>();
-                        foreach ( var g in globalMergeObjects )
-                        {
-                            mergeObjects.Add( g.Key, g.Value );
-                        }
-
-                        mergeObjects.Add( "CurrentPerson", this.CurrentPerson );
-                        mergeObjects.Add( "Row", item );
-                        mergeObjectsDictionary.Add( item.Id, mergeObjects );
+                        mergeObjectsDictionary.Add( item.Id, item );
                     }
                 }
             }
 
             var entitySetItemService = new EntitySetItemService( rockContext );
-            string[] emptyJson = new string[] { "", "{}" };
+            string[] emptyJson = new string[] { string.Empty, "{}" };
             var entitySetItemMergeValuesQry = entitySetItemService.GetByEntitySetId( entitySetId, true ).Where( a => !emptyJson.Contains( a.AdditionalMergeValuesJson ) );
 
             if ( fetchCount.HasValue )
@@ -315,12 +322,12 @@ namespace RockWeb.Blocks.Core
             }
 
             // now, add the additional MergeValues regardless of if the EntitySet contains IEntity items or just Non-IEntity items
-            foreach ( var additionalMergeValuesItem in entitySetItemMergeValuesQry )
+            foreach ( var additionalMergeValuesItem in entitySetItemMergeValuesQry.AsNoTracking() )
             {
-                Dictionary<string, object> mergeObjects;
+                object mergeObject;
                 if ( mergeObjectsDictionary.ContainsKey( additionalMergeValuesItem.EntityId ) )
                 {
-                    mergeObjects = mergeObjectsDictionary[additionalMergeValuesItem.EntityId];
+                    mergeObject = mergeObjectsDictionary[additionalMergeValuesItem.EntityId];
                 }
                 else
                 {
@@ -329,14 +336,34 @@ namespace RockWeb.Blocks.Core
                         // if already have real entities in our list, don't add additional items to the mergeObjectsDictionary
                         continue;
                     }
-                    
-                    mergeObjects = new Dictionary<string, object>();
-                    mergeObjectsDictionary.Add( additionalMergeValuesItem.EntityId, mergeObjects );
+
+                    mergeObject = new object();
+                    mergeObjectsDictionary.Add( additionalMergeValuesItem.EntityId, mergeObject );
                 }
 
                 foreach ( var additionalMergeValue in additionalMergeValuesItem.AdditionalMergeValues )
                 {
-                    mergeObjects.AddOrIgnore( additionalMergeValue.Key, additionalMergeValue.Value );
+                    // if we have additionalMergeValues, convert the MergeObject into a Hash (instead of IEntity) and add the additional fields
+                    DotLiquid.Hash mergeObjectHash;
+                    if (mergeObject is DotLiquid.Hash)
+                    {
+                        mergeObjectHash = mergeObject as DotLiquid.Hash;
+                    }
+                    else if ( mergeObject is IDictionary<string, object> )
+                    {
+                        mergeObjectHash = DotLiquid.Hash.FromDictionary( mergeObject as IDictionary<string, object> );
+                    }
+                    else
+                    {
+                        // convert the object to a Dictionary so we can add additional fields to it
+                        mergeObjectHash = DotLiquid.Hash.FromDictionary( (mergeObject as IEntity).ToDictionary() );
+                    }
+
+                    mergeObjectHash.AddOrIgnore( additionalMergeValue.Key, additionalMergeValue.Value );
+                    
+                    // ensure the mergeObject is updated in case it was converted to a mergeObjectHash
+                    mergeObjectsDictionary[additionalMergeValuesItem.EntityId] = mergeObjectHash;
+                    mergeObject = mergeObjectsDictionary[additionalMergeValuesItem.EntityId];
                 }
             }
 
@@ -413,12 +440,49 @@ namespace RockWeb.Blocks.Core
 
             if ( pnlMergeFieldsHelp.Visible )
             {
-                List<Dictionary<string, object>> mergeObjectsList = GetMergeObjectList( new RockContext(), 1 );
+                ShowLavaHelp();
+            }
+        }
 
-                if ( mergeObjectsList.Count == 1 )
-                {
-                    lShowMergeFields.Text = mergeObjectsList[0].lavaDebugInfo();
-                }
+        /// <summary>
+        /// Shows the lava help.
+        /// </summary>
+        private void ShowLavaHelp()
+        {
+            var rockContext = new RockContext();
+            List<object> mergeObjectsList = GetMergeObjectList( rockContext, 1 );
+            var globalMergeFields = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
+            globalMergeFields.Add( "CurrentPerson", this.CurrentPerson );
+
+            MergeTemplate mergeTemplate = new MergeTemplateService( rockContext ).Get( mtPicker.SelectedValue.AsInteger() );
+            MergeTemplateType mergeTemplateType = null;
+            if ( mergeTemplate != null )
+            {
+                mergeTemplateType = this.GetMergeTemplateType( rockContext, mergeTemplate );
+            }
+
+            if ( mergeTemplateType != null )
+            {
+                // have the mergeTemplateType generate the help text
+                lShowMergeFields.Text = mergeTemplateType.GetLavaDebugInfo( mergeObjectsList, globalMergeFields );
+            }
+            else
+            {
+                string preText = "<div class='alert alert-warning'>Select a Merge Template to see Merge Fields help for that template type.</div>";
+                lShowMergeFields.Text = MergeTemplateType.GetDefaultLavaDebugInfo( mergeObjectsList, globalMergeFields, preText );
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectItem event of the mtPicker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mtPicker_SelectItem( object sender, EventArgs e )
+        {
+            if ( pnlMergeFieldsHelp.Visible )
+            {
+                ShowLavaHelp();
             }
         }
 

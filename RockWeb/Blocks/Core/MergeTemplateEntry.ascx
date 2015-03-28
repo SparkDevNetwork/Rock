@@ -31,7 +31,7 @@
                         <div class="col-md-6">
                             <Rock:NotificationBox ID="nbNumberOfRecords" runat="server" NotificationBoxType="Info" />
                             <Rock:RockCheckBox ID="cbCombineFamilyMembers" runat="server" Text="Combine Family Members" Help="Set this to combine family members into a single row. For example, Ted Decker and Cindy Decker would be combined into 'Ted & Cindy Decker'" />
-                            <Rock:MergeTemplatePicker ID="mtPicker" runat="server" Label="Merge Template" Required="true" />
+                            <Rock:MergeTemplatePicker ID="mtPicker" runat="server" Label="Merge Template" Required="true" OnSelectItem="mtPicker_SelectItem" />
                         </div>
                         <div class="col-md-6">
                             <asp:LinkButton ID="btnShowDataPreview" runat="server" CssClass="btn btn-action btn-xs" OnClick="btnShowDataPreview_Click" Text="Show Data Rows" CausesValidation="false" />
