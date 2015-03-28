@@ -387,7 +387,7 @@ namespace Rock.Data
         {
             // Get the base class (not the proxy class)
             Type rockEntityType = item.Entity.GetType();
-            if ( rockEntityType.Namespace == "System.Data.Entity.DynamicProxies" )
+            if ( rockEntityType.IsDynamicProxyType() )
             {
                 rockEntityType = rockEntityType.BaseType;
             }

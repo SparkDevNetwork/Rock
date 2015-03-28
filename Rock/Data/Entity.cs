@@ -379,10 +379,11 @@ namespace Rock.Data
         private Type GetBaseType()
         {
             Type entityType = this.GetType();
-            if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+            if ( entityType.IsDynamicProxyType() )
             {
                 entityType = entityType.BaseType;
             }
+
             return entityType;
         }
 
