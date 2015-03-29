@@ -107,5 +107,10 @@ namespace Rock.Data
         /// <returns></returns>
         IEntity Clone();
 
+        /// <summary>
+        /// Creates a dictionary containing the majority of the entity object's properties
+        /// </summary>
+        /// <returns></returns>
+        Dictionary<string, object> ToDictionary();
     }
 }

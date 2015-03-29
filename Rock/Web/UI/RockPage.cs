@@ -1464,8 +1464,10 @@ namespace Rock.Web.UI
             }
 
             Type entityType = entity.GetType();
-            if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+            if ( entityType.IsDynamicProxyType() )
+            {
                 entityType = entityType.BaseType;
+            }
 
             contextCookie.Values[entityType.FullName] = HttpUtility.UrlDecode( entity.ContextKey );
             contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
