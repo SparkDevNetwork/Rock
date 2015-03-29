@@ -5,12 +5,4 @@
 #    System.Spatial.dll
 /*.pdb
 
-#specific files
-/Rock.Migrations.dll
-/Rock.Rest.dll
-/Rock.Version.dll
-/Rock.dll
-
-/Rock.Plugin.dll
-*.PayFlowPro.dll
-/DotLiquid.dll
+/*.xml
