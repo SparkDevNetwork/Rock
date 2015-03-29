@@ -164,10 +164,11 @@ namespace Rock.Communication.Medium
         {
             errorMessage = string.Empty;
             
-            int toPersonId = -1;
             string transportPhone = string.Empty;
 
             Rock.Data.RockContext rockContext = new Rock.Data.RockContext();
+
+            Person toPerson = null;
 
             // get from person
             var fromPerson = new PersonService( rockContext ).Queryable()
@@ -183,21 +184,22 @@ namespace Rock.Communication.Medium
                     var matchValue = definedType.DefinedValues.Where( v => v.Value == toPhone ).OrderBy( v => v.Order ).FirstOrDefault();
                     if ( matchValue != null )
                     {
-                        var toPersonGuid = matchValue.GetAttributeValue( "ResponseRecipient" );
                         transportPhone = matchValue.Id.ToString();
-
-                        if ( toPersonGuid != null )
+                        var toPersonAliasGuid = matchValue.GetAttributeValue( "ResponseRecipient" ).AsGuidOrNull();
+                        if ( toPersonAliasGuid.HasValue )
                         {
-                            var toPerson = new PersonAliasService( rockContext ).Get( new Guid( toPersonGuid ) );
-                            toPersonId = toPerson.PersonId;
+                            toPerson = new PersonAliasService( rockContext )
+                                .Queryable().Where( p => p.Guid.Equals( toPersonAliasGuid.Value ) )
+                                .Select( p => p.Person )
+                                .FirstOrDefault();
                         }
                     }
                 }
             }
 
-            if ( fromPerson != null && toPersonId != -1 )
+            if ( fromPerson != null && toPerson != null && fromPerson.PrimaryAliasId.HasValue && toPerson.PrimaryAliasId.HasValue )
             {
-                if ( toPersonId == fromPerson.Id ) // message from the medium recipient
+                if ( toPerson.Id == fromPerson.Id ) // message from the medium recipient
                 {
                     // look for response code in the message
                     Match match = Regex.Match( message, @"@\d{3}" );
@@ -211,12 +213,12 @@ namespace Rock.Communication.Medium
 
                         if ( recipient != null && recipient.Communication.SenderPersonAliasId.HasValue )
                         {
-                            CreateCommunication( fromPerson.Id, fromPerson.FullName, recipient.Communication.SenderPersonAliasId.Value, message.Replace(responseCode, ""), transportPhone, "", rockContext );
+                            CreateCommunication( fromPerson.PrimaryAliasId.Value, fromPerson.FullName, recipient.Communication.SenderPersonAliasId.Value, message.Replace(responseCode, ""), transportPhone, "", rockContext );
                         }
                         else // send a warning message back to the medium recipient
                         {
                             string warningMessage = string.Format( "A conversation could not be found with the response token {0}.", responseCode );
-                            CreateCommunication( fromPerson.Id, fromPerson.FullName, fromPerson.Id, warningMessage, transportPhone, "", rockContext );
+                            CreateCommunication( fromPerson.PrimaryAliasId.Value, fromPerson.FullName, fromPerson.PrimaryAliasId.Value, warningMessage, transportPhone, "", rockContext );
                         }
                     }
                 }
@@ -224,7 +226,7 @@ namespace Rock.Communication.Medium
                 {
                     string messageId = GenerateResponseCode( rockContext );
                     message = string.Format( "-{0}-\n{1}\n( {2} )", fromPerson.FullName, message, messageId );
-                    CreateCommunication( fromPerson.Id, fromPerson.FullName, toPersonId, message, transportPhone, messageId, rockContext );
+                    CreateCommunication( fromPerson.PrimaryAliasId.Value, fromPerson.FullName, toPerson.PrimaryAliasId.Value, message, transportPhone, messageId, rockContext );
                 }
             }
             else
