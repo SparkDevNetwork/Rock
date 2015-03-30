@@ -1,23 +1,26 @@
 <html>
 <head>
     <title>Html Merge</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 </head>
 <body>
-    Here is a list of people and their pictures
+    <h1>People</h1>
 
     {% for row in Rows %}
 
     <div class="row">
         <div class="col-md-6">
             {{ row.NickName }} {{ row.LastName }}
-            <div class="address">
+            <address>
                 {{ row | Address:'Home' }}
-            </div>
+            </address>
         </div>
         <div class="col-md-6">
-            <img src="{{ row.PhotoUrl }}" width="100" height="100" />
+            <img src="{{ 'Global' | Attribute:'InternalApplicationRoot' }}{{ row.PhotoUrl }}" width="100" height="100" />
         </div>
     </div>
+	
+	<br />
 
     {% endfor %}
 
