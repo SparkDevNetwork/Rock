@@ -84,16 +84,22 @@ namespace Rock.Jobs
                         List<string> errorMessages = new List<string>();
 
                         var sourceItems = syncSource.GetQuery( sortById, 180, out errorMessages ).Select( q => q.Id ).ToList();
-                        var targetItems = groupMemberService.Queryable().Where( gm => gm.GroupId == syncGroup.Id );
+                        var targetItems = groupMemberService.Queryable("Person").Where( gm => gm.GroupId == syncGroup.Id ).ToList();
 
                         // delete items from the target not in the source
                         foreach ( var targetItem in targetItems.Where( t => !sourceItems.Contains( t.PersonId ) ) )
                         {
+                            // made a clone of the person as it will be detached when the group member is deleted. Also
+                            // saving the delete before the email is sent in case an exception occurs so the user doesn't
+                            // get an email everytime the agent runs.
+                            Person recipient = (Person)targetItem.Person.Clone();
                             groupMemberService.Delete( targetItem );
 
-                            if ( syncGroup.WelcomeSystemEmailId.HasValue )
+                            rockContext.SaveChanges();
+
+                            if ( syncGroup.ExitSystemEmailId.HasValue )
                             {
-                                SendExitEmail( syncGroup.WelcomeSystemEmailId.Value, targetItem.Person, syncGroup );
+                                SendExitEmail( syncGroup.ExitSystemEmailId.Value, recipient, syncGroup );
                             }
                         }
 
@@ -153,20 +159,23 @@ namespace Rock.Jobs
                 {
                     if ( createLogin && recipient.Users.Count == 0 )
                     {
-                        newPassword = System.Web.Security.Membership.GeneratePassword( 9, 4 );
+                        newPassword = System.Web.Security.Membership.GeneratePassword( 9, 1 );
                         
                         // create user
+                        string username = Rock.Security.Authentication.Database.GenerateUsername( recipient.NickName, recipient.LastName );
+
                         UserLogin login = UserLoginService.Create(
                             rockContext,
                             recipient,
                             Rock.Model.AuthenticationServiceType.Internal,
                             EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
-                            tbUserName.Text,
+                            username,
                             newPassword,
                             true );
                     }
                     mergeFields.Add( "Person", recipient );
                     mergeFields.Add( "NewPassword", newPassword );
+                    mergeFields.Add( "CreateLogin", createLogin );
 
                     var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
 
@@ -185,23 +194,26 @@ namespace Rock.Jobs
         /// <param name="recipient">The recipient.</param>
         private void SendExitEmail( int systemEmailId, Person recipient, Group syncGroup )
         {
-            RockContext rockContext = new RockContext();
-            SystemEmailService emailService = new SystemEmailService( rockContext );
-
-            var systemEmail = emailService.Get( systemEmailId );
-
-            if ( systemEmail != null )
+            if ( !string.IsNullOrWhiteSpace( recipient.Email ) )
             {
-                var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "Group", syncGroup );
-                mergeFields.Add( "Person", recipient );
+                RockContext rockContext = new RockContext();
+                SystemEmailService emailService = new SystemEmailService( rockContext );
 
-                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                var systemEmail = emailService.Get( systemEmailId );
 
-                var recipients = new List<RecipientData>();
-                recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
+                if ( systemEmail != null )
+                {
+                    var mergeFields = new Dictionary<string, object>();
+                    mergeFields.Add( "Group", syncGroup );
+                    mergeFields.Add( "Person", recipient );
 
-                Email.Send( systemEmail.Guid, recipients, appRoot );
+                    var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+
+                    var recipients = new List<RecipientData>();
+                    recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
+
+                    Email.Send( systemEmail.Guid, recipients, appRoot );
+                }
             }
         }
     }
