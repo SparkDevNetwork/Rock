@@ -1,0 +1,70 @@
+<!DOCTYPE html> <html class=no-js> <head> <meta charset=utf-8> <meta http-equiv=X-UA-Compatible content="IE=edge"> <title>Welcome to CCV — Christ's Church of the Valley</title> <meta name=description content="CCV (Christ&#39;s Church of the Valley) is one church
+with many locations. Currently in Peoria, Surprise, Scottsdale, East Valley &amp; Anthem."> <meta name=viewport content="width=device-width"> <link rel="shortcut icon" href=/68e822a1.favicon.ico> <!-- Place favicon.ico and apple-touch-icon.png in the root directory --> <link rel=stylesheet href=styles/88611127.main.css>  <body> <!--[if lt IE 10]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]--> <section class="slide one selected current js-slide"> <div class="brochure element"> <div class=delayed-image-load data-src=../Content/ccv.church/NewHerePage/generated/brochure-{width}{pixel_ratio}.png></div> </div> <div class="map element"> <div class=delayed-image-load data-src=../Content/ccv.church/NewHerePage/generated/map-{width}{pixel_ratio}.png></div> </div> <div class="text-ph element"> <img src=../Content/ccv.church/NewHerePage/one-text-placeholder.png alt="Christ's Church of the Valley is one church in many locations. With campuses across the Phoenix Valley, there is sure to be one near you."> </div> <div class="black lower stripes element"></div> </section> <section class="black slide two js-slide"> <div class="white upper stripes element"></div> <div class="centered group"> <div class="photo-strip element"> <div class=delayed-image-load data-src=../Content/ccv.church/NewHerePage/generated/photo-strip-two-{width}{pixel_ratio}.png></div> </div> <div class="bottom right text element"> <h1>High Energy <span class=thin>Music Experience</span></h1> <p> Our services are designed to excite and challenge you with high-energy music. </p> </div> </div> </section> <section class="black slide three js-slide"> <div class="white upper stripes element"></div> <div class="centered group"> <div class="photo-strip element"> <div class=delayed-image-load data-src=../Content/ccv.church/NewHerePage/generated/photo-strip-three-{width}{pixel_ratio}.png></div> </div> <div class="bottom right text element"> <h1>Weekend <span class=thin>Experience</span></h1> <p> We strive to deliver dynamic and challenging messages with practical applications to your daily life. <br class=flex> You will walk away each week with a modern-day take-away of what you have learned. </p> <a href=//www.ccvonline.com/watch class=action>Watch a Message</a> </div> </div> </section> <section class="slide four js-slide"> <div class="black lower stripes element"></div> <div class="centered group"> <div class="top left text element"> <h1>Children <span class=thin>&amp; Students</span></h1> <p> We have exciting, safe programs for kids and teens from birth through high school. </p> <a class=action href=//www.ccvonline.com/children>About Children</a> <a class=action href=//www.ccvonline.com/students>About Students</a> </div> <div class="photo-strip element"> <div class=delayed-image-load data-src=../Content/ccv.church/NewHerePage/generated/photo-strip-four-{width}{pixel_ratio}.png></div> </div> </div> </section> <section class="slide five js-slide"> <div class="black lower stripes element"></div> <div class="centered group"> <div class="about-ccv video"> <iframe src=//player.vimeo.com/video/64237446 width=500 height=281 frameborder=0 webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe> </div> <div class="campus section"> <script id=entry-template type=text/x-handlebars-template><div class="specific-campus">
+              <div class="header-wrap">
+                <div class="dropdown">
+                  <a data-toggle="dropdown">
+                    <h2>{{Name}} Campus <span class="caret"></span></h2>
+                  </a>
+                  <ul class="dropdown-menu js-select-campus-list">
+                    {{#each otherCampuses}}
+                      <li><a data-campusId="{{Id}}">{{Name}} Campus</a></li>
+                    {{/each}}
+                  </ul>
+                </div>
+              </div>
+              <div class="details">
+                <div class="service-times">
+                  {{#if customMessage}}
+                  <p><em>{{customMessage}}</em></p>
+                  {{/if}}
+                  {{#if ServiceTimes}}
+                  <h3>Service Times</h3>
+                  {{/if}}
+                  {{#if ServiceTimes.saturday}}
+                  <div>
+                    <strong>Saturday</strong>
+                    <ul>
+                      {{#each ServiceTimes.saturday}}
+                        <li>{{this}}</li>
+                      {{/each}}
+                    </ul>
+                  </div>
+                  {{/if}}
+                  {{#if ServiceTimes.sunday}}
+                  <div>
+                    <strong>Sunday</strong>
+                    <ul>
+                      {{#each ServiceTimes.sunday}}
+                        <li>{{this}}</li>
+                      {{/each}}
+                    </ul>
+                  </div>
+                  {{/if}}
+                </div>
+              </div>
+              <div class="map">
+                <a href="http://maps.apple.com/maps?q={{Location.Street1}} {{Location.City}},{{Location.State}}">
+                  {{map}}
+                </a>
+              </div>
+              <a class="action block" href="/{{toLowerCase Name}}" class="learn-more">Learn More</a>
+            </div></script> <script id=no-campus-template type=text/x-handlebars-template><div class="no-campus">
+              <div class="header-wrap">
+                <h2>Select A Campus</h2>
+              </div>
+              <ul class="button-list js-select-campus-list">
+              {{#each this}}
+                <li><a data-campusId="{{Id}}">{{Name}}</a></li>
+              {{/each}}
+              </ul>
+            </div></script> </div> </div> </section> <nav class=js-slide role=main> <ul> <li><a href=/home>Home</a></li> <li><a href=/nextsteps>Next Steps</a></li> <li><a href=/give>Give</a></li> <li><a href=/watch>Watch</a></li> <li><a href=/events>Events</a></li> </ul> </nav> <script src=scripts/cfafb2b9.vendor.js></script> <script src=//www.ccvonline.com/Arena/Include/v6/min/ccv-nav.src.min.js></script> <!-- Google Analytics: TODO change UA-XXXXX-X to be your site's ID. --> <script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+      function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+      e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+      e.src='//www.google-analytics.com/analytics.js';
+      r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+      ga('create','UA-273941-1');ga('send','pageview');</script> <script src=scripts/85817baf.main.js></script> <script>var imager = new Imager({
+            availableWidths: [320, 640, 1024, 2048],
+            availablePixelRatios: [1, 2]
+          });</script>  
