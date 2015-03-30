@@ -129,7 +129,10 @@ namespace Rock.MergeTemplates
                                     }
                                 }
 
-                                recordContainerNodes.Add( recordContainerNode );
+                                if ( !recordContainerNodes.Contains( recordContainerNode ) )
+                                {
+                                    recordContainerNodes.Add( recordContainerNode );
+                                }
                             }
 
                             foreach ( var recordContainerNode in recordContainerNodes )
@@ -178,7 +181,7 @@ namespace Rock.MergeTemplates
                                                     DotLiquid.Hash wordMergeObjects = new DotLiquid.Hash();
                                                     wordMergeObjects.Add( "Row", mergeObjectList[recordIndex] );
 
-                                                    foreach(var field in globalMergeFields)
+                                                    foreach ( var field in globalMergeFields )
                                                     {
                                                         wordMergeObjects.Add( field.Key, field.Value );
                                                     }
@@ -245,6 +248,13 @@ namespace Rock.MergeTemplates
 
                     // remove all the 'next' delimiters
                     OpenXmlRegex.Replace( outputBodyNode.Nodes().OfType<XElement>(), this.nextRecordRegEx, string.Empty, ( xx, mm ) => { return true; } );
+
+                    // remove all but the last SectionProperties element (there should only be one per section (body))
+                    var sectPrItems = outputBodyNode.Nodes().OfType<XElement>().Where( a => a.Name.LocalName == "sectPr" );
+                    foreach ( var extra in sectPrItems.Where( a => a != sectPrItems.Last() ).ToList() )
+                    {
+                        extra.Remove();
+                    }
 
                     // pop the xdoc back
                     outputDoc.MainDocumentPart.PutXDocument();
