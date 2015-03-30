@@ -22,24 +22,29 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to display instances of the specified BinaryFileFieldType
+    /// Field Attribute to select a binary file
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class BinaryFileFieldTypeFieldAttribute : FieldAttribute
+    public class BinaryFileFieldAttribute : FieldAttribute
     {
+        private const string BINARY_FILE_TYPE = "binaryFileType";
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="BinaryFileFieldTypeFieldAttribute"/> class.
+        /// Initializes a new instance of the <see cref="BinaryFileFieldAttribute"/> class.
         /// </summary>
+        /// <param name="binaryFileTypeGuid">The guid of the type of files</param>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultBinaryFileFieldType">Default type of the binary file field.</param>
+        /// <param name="defaultBinaryFileGuid">The default binary file guid.</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public BinaryFileFieldTypeFieldAttribute( string name = "Binary File Field Type", string description = "", bool required = true, string defaultBinaryFileFieldType = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultBinaryFileFieldType, category, order, key, typeof( Rock.Field.Types.BinaryFileFieldType ).FullName )
+        public BinaryFileFieldAttribute( string binaryFileTypeGuid, string name = "Binary File", string description = "", bool required = true, string defaultBinaryFileGuid = "", string category = "", int order = 0, string key = null )
+            : base( name, description, required, defaultBinaryFileGuid, category, order, key, typeof( Rock.Field.Types.BinaryFileFieldType ).FullName )
         {
+            var configValue = new Field.ConfigurationValue( binaryFileTypeGuid );
+            FieldConfigurationValues.Add( BINARY_FILE_TYPE, configValue );
         }
     }
 }
