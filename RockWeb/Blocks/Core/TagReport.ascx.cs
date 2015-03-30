@@ -189,7 +189,7 @@ namespace RockWeb.Blocks.Core
         {
             var guids = new TaggedItemService( new RockContext() ).Queryable().Where( t => t.TagId == TagId.Value ).Select( t => t.EntityGuid ).ToList();
 
-            gReport.DataSource = InvokeServiceMethod( "GetByGuids", new Type[] { typeof( List<Guid> ) }, new object[] { guids } );
+            gReport.DataSource = InvokeServiceMethod( "GetListByGuids", new Type[] { typeof( List<Guid> ) }, new object[] { guids } );
             gReport.DataBind();
         }
 
