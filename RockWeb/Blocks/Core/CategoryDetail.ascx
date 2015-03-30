@@ -69,3 +69,17 @@
 
     </ContentTemplate>
 </asp:UpdatePanel>
+
+<asp:UpdatePanel ID="upCategoryDetailConfig" runat="server">
+    <ContentTemplate>
+        <Rock:ModalDialog ID="mdCategoryDetailConfig" runat="server" ValidationGroup="vg_ConfigDetail" OnSaveClick="mdCategoryDetailConfig_SaveClick">
+            <Content>
+                <Rock:NotificationBox ID="nbRootCategoryEntityTypeWarning" runat="server" Text="Entity Type must be set in Block Settings before setting Root Category." NotificationBoxType="Warning" />
+                <Rock:CategoryPicker ID="cpRootCategoryDetail" ValidationGroup="vg_ConfigDetail" runat="server" Label="Root Category" />
+
+                <Rock:CategoryPicker ID="cpExcludeCategoriesDetail" ValidationGroup="vg_ConfigDetail" runat="server" Label="Exclude Categories" AllowMultiSelect="true" />
+            </Content>
+        </Rock:ModalDialog>
+    </ContentTemplate>
+</asp:UpdatePanel>
+

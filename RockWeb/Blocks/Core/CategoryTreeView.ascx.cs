@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Core
         {
             get
             {
-                return "Set Root Category";
+                return "Set Category Options";
             }
         }
 
