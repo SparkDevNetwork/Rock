@@ -136,6 +136,14 @@ namespace RockWeb.Blocks.Core
                     service.Delete( item );
                     rockContext.SaveChanges();
 
+                    // set IsTemporary to true so that the file will eventually get cleaned up
+                    BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                    var binaryFile = binaryFileService.Get( item.TemplateBinaryFileId );
+                    if ( binaryFile != null && binaryFile.IsTemporary )
+                    {
+                        binaryFile.IsTemporary = false;
+                    }
+
                     // reload page, selecting the deleted item's parent
                     var qryParams = new Dictionary<string, string>();
                     if ( categoryId != null )
@@ -162,6 +170,7 @@ namespace RockWeb.Blocks.Core
             MergeTemplateService mergeTemplateService = new MergeTemplateService( rockContext );
 
             int mergeTemplateId = hfMergeTemplateId.Value.AsInteger();
+            int? origBinaryFileId = null;
 
             if ( mergeTemplateId == 0 )
             {
@@ -171,6 +180,7 @@ namespace RockWeb.Blocks.Core
             else
             {
                 mergeTemplate = mergeTemplateService.Get( mergeTemplateId );
+                origBinaryFileId = mergeTemplate.TemplateBinaryFileId;
             }
 
             mergeTemplate.Name = tbName.Text;
@@ -210,6 +220,24 @@ namespace RockWeb.Blocks.Core
             {
                 // Controls will render the error messages
                 return;
+            }
+
+            BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+            if (origBinaryFileId.HasValue && origBinaryFileId.Value != mergeTemplate.TemplateBinaryFileId)
+            {
+                // if a new the binaryFile was uploaded, mark the old one as Temporary so that it gets cleaned up
+                var oldBinaryFile = binaryFileService.Get( origBinaryFileId.Value );
+                if ( oldBinaryFile != null && !oldBinaryFile.IsTemporary )
+                {
+                    oldBinaryFile.IsTemporary = true;
+                }
+            }
+            
+            // ensure the IsTemporary is set to false on binaryFile associated with this MergeTemplate
+            var binaryFile = binaryFileService.Get( mergeTemplate.TemplateBinaryFileId );
+            if ( binaryFile != null && binaryFile.IsTemporary )
+            {
+                binaryFile.IsTemporary = false;
             }
 
             rockContext.SaveChanges();
