@@ -19,11 +19,11 @@
 		* CustomMessage1
 		* CustomMessage2
 	</returns>
-	<param name="StartDate" datatype="datetime">The starting date of the date range</param>
-	<param name="EndDate" datatype="datetime">The ending date of the date range</param>
-	<param name="AccountIds" datatype="varchar(max)">Comma delimited list of account ids. NULL means all</param>
-	<param name="PersonId" datatype="int">Person the statement if for. NULL means all persons that have transactions for the date range</param>
-	<param name="OrderByPostalCode" datatype="int">Set to 1 to have the results sorted by PostalCode, 0 for no particular order</param>
+	<param name='StartDate' datatype='datetime'>The starting date of the date range</param>
+	<param name='EndDate' datatype='datetime'>The ending date of the date range</param>
+	<param name='AccountIds' datatype='varchar(max)'>Comma delimited list of account ids. NULL means all</param>
+	<param name='PersonId' datatype='int'>Person the statement if for. NULL means all persons that have transactions for the date range</param>
+	<param name='OrderByPostalCode' datatype='int'>Set to 1 to have the results sorted by PostalCode, 0 for no particular order</param>
 	<remarks>	
 		Uses the following constants:
 			* Group Type - Family: 790E3215-3B10-442B-AF69-616C0DCB998E
