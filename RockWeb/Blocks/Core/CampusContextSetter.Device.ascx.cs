@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Core
     /// </summary>
     [DisplayName( "Campus Context Setter - Device" )]
     [Category( "Core" )]
-    [Description( "Block that can be used to set the campus context for the site based ont he location of the device." )]
+    [Description( "Block that can be used to set the campus context for the site based on the location of the device." )]
     [CodeEditorField( "Display Lava", "The Lava template to use when displaying the current campus.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, true, "Campus: {{Campus.Name}}" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.DEVICE_TYPE, "Device Type", "Optional filter to limit to specific device types.", false )]
     [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.")]
