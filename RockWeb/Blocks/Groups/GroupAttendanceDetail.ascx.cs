@@ -93,6 +93,7 @@ namespace RockWeb.Blocks.Groups
 
                 if ( _canEdit )
                 {
+                    BindLocations();
                     ShowDetails();
                 }
                 else
@@ -124,14 +125,17 @@ namespace RockWeb.Blocks.Groups
                 var personAliasService = new PersonAliasService( rockContext );
 
                 var existingAttendees = attendanceService.Queryable()
-                        .Where( a =>
-                            a.GroupId == _group.Id &&
-                            a.ScheduleId == _group.ScheduleId &&
-                            a.StartDateTime >= _occurrence.StartDateTime &&
-                            a.StartDateTime < _occurrence.EndDateTime )
-                        .ToList();
+                    .Where( a =>
+                        a.GroupId == _group.Id &&
+                        a.StartDateTime >= _occurrence.StartDateTime &&
+                        a.StartDateTime < _occurrence.EndDateTime )
+                    .ToList()
+                    .Where( a =>
+                        a.LocationId.Equals( _occurrence.LocationId ) &&
+                        a.ScheduleId.Equals( _occurrence.ScheduleId ) )
+                    .ToList();
 
-                // If did not meet was selected and this was a manually entered occurrence (not based on a schedule)
+                // If did not meet was selected and this was a manually entered occurrence (not based on a schedule/location)
                 // then just delete all the attendance records instead of tracking a 'did not meet' value
                 if ( cbDidNotMeet.Checked && !_occurrence.ScheduleId.HasValue )
                 {
@@ -175,6 +179,8 @@ namespace RockWeb.Blocks.Groups
                                     attendance.ScheduleId = _group.ScheduleId;
                                     attendance.PersonAliasId = personAliasId;
                                     attendance.StartDateTime = _occurrence.StartDateTime;
+                                    attendance.LocationId = _occurrence.LocationId;
+                                    attendance.ScheduleId = _occurrence.ScheduleId;
                                     attendanceService.Add( attendance );
                                 }
                             }
@@ -260,7 +266,17 @@ namespace RockWeb.Blocks.Groups
                 NavigateToParentPage( new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } } );
             }
         }
-        
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlLocation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlLocation_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            BindSchedules( ddlLocation.SelectedValueAsInt() );
+        }
+
         /// <summary>
         /// Handles the ItemCommand event of the lvPendingMembers control.
         /// </summary>
@@ -298,15 +314,26 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private ScheduleOccurrence GetOccurrence()
         {
-            DateTime? occurrenceDate = PageParameter( "Occurrence" ).AsDateTime();
+            DateTime? occurrenceDate = PageParameter( "Date" ).AsDateTime();
+            int? locationId = PageParameter( "LocationId" ).AsIntegerOrNull();
+            int? scheduleId = PageParameter( "ScheduleId" ).AsIntegerOrNull();
 
-            // If an occurrence date was not specified in query string, use the selected date
-            if ( !occurrenceDate.HasValue && 
-                Page.IsPostBack &&
-                _allowAdd &&
-                dpOccurrenceDate.SelectedDate.HasValue )
+            if ( Page.IsPostBack && _allowAdd )
             {
-                occurrenceDate = dpOccurrenceDate.SelectedDate;
+                if ( !occurrenceDate.HasValue && dpOccurrenceDate.SelectedDate.HasValue )
+                {
+                    occurrenceDate = dpOccurrenceDate.SelectedDate;
+                }
+
+                if ( !locationId.HasValue && ddlLocation.SelectedValueAsInt().HasValue )
+                {
+                    locationId = ddlLocation.SelectedValueAsInt();
+                }
+
+                if ( !scheduleId.HasValue && ddlSchedule.SelectedValueAsInt().HasValue )
+                {
+                    scheduleId = ddlSchedule.SelectedValueAsInt();
+                }
             }
 
             if ( occurrenceDate.HasValue )
@@ -317,16 +344,9 @@ namespace RockWeb.Blocks.Groups
                     lHeading.Text = _group.Name + " Attendance";
 
                     // Get all the occurrences for this group ( without loading attendance yet )
-                    var occurrences = new ScheduleService( _rockContext )
-                        .GetGroupOccurrences( _group, false )
+                    var occurrence = new ScheduleService( _rockContext )
+                        .GetGroupOccurrences( _group, occurrenceDate.Value.Date, occurrenceDate.Value.AddDays(1), locationId ?? 0, scheduleId ?? 0, false )
                         .OrderBy( o => o.StartDateTime )
-                        .ToList();
-
-                    // If occurrences were found, loop through them looking for the selected occurrence
-                    var occurrence = occurrences
-                        .Where( o =>
-                            occurrenceDate.Value >= o.StartDateTime &&
-                            occurrenceDate.Value < o.EndDateTime )
                         .FirstOrDefault();
 
                     if ( occurrence != null )
@@ -339,11 +359,61 @@ namespace RockWeb.Blocks.Groups
                 // occurrences can be added, create a new one
                 if ( _allowAdd )
                 {
-                    return new ScheduleOccurrence( occurrenceDate.Value, occurrenceDate.Value.Date.AddDays(1) );
+                    return new ScheduleOccurrence( occurrenceDate.Value, occurrenceDate.Value.Date.AddDays(1), scheduleId, string.Empty, locationId, string.Empty );
                 }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Loads the dropdowns.
+        /// </summary>
+        private void BindLocations()
+        {
+            var locations = new Dictionary<int, string> { { 0, "" } };
+
+            if ( _group != null )
+            {
+                _group.GroupLocations
+                    .Where( l =>
+                        l.Location.Name != null &&
+                        l.Location.Name != "" )
+                    .Select( l => l.Location )
+                    .OrderBy( l => l.Name )
+                    .ToList()
+                    .ForEach( l => locations.AddOrIgnore( l.Id, l.Name ) );
+            }
+
+            if ( locations.Any() )
+            {
+                ddlLocation.DataSource = locations;
+                ddlLocation.DataBind();
+            }
+        }
+
+        private void BindSchedules( int? locationId )
+        {
+            var schedules = new Dictionary<int, string> { { 0, "" } };
+            
+            if ( _group != null && locationId.HasValue )
+            {
+                _group.GroupLocations
+                    .Where( l => l.LocationId == locationId.Value )
+                    .SelectMany( l => l.Schedules )
+                    .OrderBy( s => s.Name )
+                    .ToList()
+                    .ForEach( s => schedules.AddOrIgnore( s.Id, s.Name ) );
+            }
+
+            if ( schedules.Any() )
+            {
+                ddlSchedule.DataSource = schedules;
+                ddlSchedule.DataBind();
+            }
+
+            ddlSchedule.Visible = ddlSchedule.Items.Count > 1;
+
         }
 
         /// <summary>
@@ -366,15 +436,29 @@ namespace RockWeb.Blocks.Groups
             {
                 if ( existingOccurrence )
                 {
-                    lOccurrenceDate.Visible = existingOccurrence;
+                    lOccurrenceDate.Visible = true;
                     lOccurrenceDate.Text = _occurrence.StartDateTime.ToShortDateString();
                     dpOccurrenceDate.Visible = false;
+
+                    lLocation.Visible = !string.IsNullOrWhiteSpace(_occurrence.LocationName);
+                    lLocation.Text = _occurrence.LocationName;
+                    ddlLocation.Visible = false;
+
+                    lSchedule.Visible = !string.IsNullOrWhiteSpace( _occurrence.ScheduleName );
+                    lSchedule.Text = _occurrence.ScheduleName;
+                    ddlSchedule.Visible = false;
                 }
                 else
                 {
                     lOccurrenceDate.Visible = false;
                     dpOccurrenceDate.Visible = true;
                     dpOccurrenceDate.SelectedDate = RockDateTime.Today;
+
+                    lLocation.Visible = false;
+                    ddlLocation.Visible = ddlLocation.Items.Count > 1;
+
+                    lSchedule.Visible = false;
+                    ddlSchedule.Visible = ddlSchedule.Items.Count > 1;
                 }
 
                 lMembers.Text = _group.GroupType.GroupMemberTerm.Pluralize();
@@ -484,6 +568,6 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
-    }
+}
 
 }
