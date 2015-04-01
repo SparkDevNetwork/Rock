@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -51,37 +52,83 @@ namespace Rock.Workflow.Action.CheckIn
             {
                 var personService = new PersonService( rockContext );
                 var memberService = new GroupMemberService( rockContext );
-                IQueryable<Person> people = null;
+
+                Guid familyGroupTypeGuid = SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
 
                 if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) ) )
                 {
-                    people = personService.GetByPhonePartial( checkInState.CheckIn.SearchValue );
+                    string numericPhone = checkInState.CheckIn.SearchValue.AsNumeric();
+
+                    // Find the families with any member who has a phone number that contains selected value
+                    var familyIds = memberService
+                        .Queryable().AsNoTracking()
+                        .Where( m => 
+                            m.Group.GroupType.Guid.Equals( familyGroupTypeGuid ) &&
+                            m.Person.PhoneNumbers.Any( n => n.Number.Contains( numericPhone ) ) )
+                        .Select( m => m.GroupId )
+                        .Distinct()
+                        .ToList();
+
+                    // Load the family members
+                    var familyMembers = memberService
+                        .Queryable( "Group,GroupRole,Person" ).AsNoTracking()
+                        .Where( m => familyIds.Contains(m.GroupId) )
+                        .ToList();
+
+                    // Add each family
+                    foreach ( int familyId in familyIds )
+                    {
+                        // Get each of the members for this family
+                        var thisFamilyMembers = familyMembers
+                            .Where( m => m.GroupId == familyId )
+                            .ToList();
+
+                        if ( thisFamilyMembers.Any() )
+                        {
+                            var group = thisFamilyMembers
+                                .Select( m => m.Group )
+                                .FirstOrDefault();
+
+                            var firstNames = thisFamilyMembers
+                                .OrderBy( m => m.GroupRole.Order )
+                                .ThenBy( m => m.Person.BirthYear )
+                                .ThenBy( m => m.Person.BirthMonth )
+                                .ThenBy( m => m.Person.BirthDay )
+                                .ThenBy( m => m.Person.Gender )
+                                .Select( m => m.Person.NickName )
+                                .ToList();
+
+                            var family = new CheckInFamily();
+                            family.Group = group.Clone( false );
+                            family.Caption = group.ToString();
+                            family.SubCaption = firstNames.AsDelimited( ", " );
+                            checkInState.CheckIn.Families.Add( family );
+                        }
+                    }
                 }
                 else if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME ) ) )
                 {
-                    people = personService.GetByFullName( checkInState.CheckIn.SearchValue, false );
+                    foreach ( var person in personService.GetByFullName( checkInState.CheckIn.SearchValue, false ) )
+                    {
+                        foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid.Equals( familyGroupTypeGuid ) ).Select( m => m.Group ).ToList() )
+                        {
+                            var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
+                            if ( family == null )
+                            {
+                                family = new CheckInFamily();
+                                family.Group = group.Clone( false );
+                                family.Group.LoadAttributes();
+                                family.Caption = group.ToString();
+                                family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
+                                checkInState.CheckIn.Families.Add( family );
+                            }
+                        }
+                    }
                 }
                 else
                 {
                     errorMessages.Add( "Invalid Search Type" );
                     return false;
-                }
-
-                foreach ( var person in people.ToList() )
-                {
-                    foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == new Guid( SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Select( m => m.Group ).ToList() )
-                    {
-                        var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
-                        if ( family == null )
-                        {
-                            family = new CheckInFamily();
-                            family.Group = group.Clone( false );
-                            family.Group.LoadAttributes();
-                            family.Caption = group.ToString();
-                            family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
-                            checkInState.CheckIn.Families.Add( family );
-                        }
-                    }
                 }
 
                 return true;
