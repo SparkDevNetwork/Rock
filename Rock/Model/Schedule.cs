@@ -587,7 +587,6 @@ namespace Rock.Model
     /// </summary>
     public class ScheduleOccurrence
     {
-
         /// <summary>
         /// Gets or sets the logical occurrence start date time.
         /// </summary>
@@ -611,6 +610,30 @@ namespace Rock.Model
         /// The schedule identifier.
         /// </value>
         public int? ScheduleId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the schedule.
+        /// </summary>
+        /// <value>
+        /// The name of the schedule.
+        /// </value>
+        public string ScheduleName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location identifier.
+        /// </summary>
+        /// <value>
+        /// The location identifier.
+        /// </value>
+        public int? LocationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the location.
+        /// </summary>
+        /// <value>
+        /// The name of the location.
+        /// </value>
+        public string LocationName { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether attendance has been entered for this occurrence.
@@ -719,29 +742,41 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ScheduleOccurrence" /> class.
+        /// Initializes a new instance of the <see cref="ScheduleOccurrence"/> class.
         /// </summary>
         /// <param name="occurrence">The occurrence.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
-        public ScheduleOccurrence( DDay.iCal.Occurrence occurrence, int? scheduleId = null )
+        /// <param name="scheduleName">Name of the schedule.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="locationName">Name of the location.</param>
+        public ScheduleOccurrence( DDay.iCal.Occurrence occurrence, int? scheduleId = null, string scheduleName = "", int? locationId = null, string locationName = "" )
         {
             StartDateTime = occurrence.Period.StartTime.Value;
             EndDateTime = occurrence.Period.EndTime.Value;
             ScheduleId = scheduleId;
+            ScheduleName = scheduleName;
+            LocationId = locationId;
+            LocationName = locationName;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ScheduleOccurrence" /> class.
+        /// Initializes a new instance of the <see cref="ScheduleOccurrence"/> class.
         /// </summary>
         /// <param name="startDateTime">The start date time.</param>
         /// <param name="endDateTime">The end date time.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
-        public ScheduleOccurrence( DateTime startDateTime, DateTime endDateTime, int? scheduleId = null )
+        /// <param name="scheduleName">Name of the schedule.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="locationName">Name of the location.</param>
+        public ScheduleOccurrence( DateTime startDateTime, DateTime endDateTime, int? scheduleId = null, string scheduleName = "", int? locationId = null, string locationName = "" )
         {
             StartDateTime = startDateTime;
             EndDateTime = endDateTime;
             ScheduleId = scheduleId;
-		}
+            ScheduleName = scheduleName;
+            LocationId = locationId;
+            LocationName = locationName;
+        }
 	}
 
     /// <summary>

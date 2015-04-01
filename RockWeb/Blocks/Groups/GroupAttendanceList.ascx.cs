@@ -62,19 +62,24 @@ namespace RockWeb.Blocks.Groups
 
             _rockContext = new RockContext();
 
-            _group = new GroupService( _rockContext ).Get( PageParameter( "GroupId" ).AsInteger() );
+            int groupId = PageParameter( "GroupId" ).AsInteger();
+            _group = new GroupService( _rockContext )
+                .Queryable( "GroupLocations" ).AsNoTracking()
+                .FirstOrDefault( g => g.Id == groupId );
+
             if ( _group != null && _group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 _group.LoadAttributes( _rockContext );
                 _canView = true;
 
-                gOccurrences.DataKeyNames = new string[] { "StartDateTime" };
+                rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+                gOccurrences.DataKeyNames = new string[] { "StartDateTime", "ScheduleId", "LocationId" };
                 gOccurrences.Actions.AddClick += gOccurrences_Add;
                 gOccurrences.GridRebind += gOccurrences_GridRebind;
 
                 // make sure they have Auth to edit the block OR edit to the Group
                 bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
-                gOccurrences.Actions.ShowAdd = canEditBlock && GetAttributeValue("AllowAdd").AsBoolean();
+                gOccurrences.Actions.ShowAdd = canEditBlock && GetAttributeValue( "AllowAdd" ).AsBoolean();
                 gOccurrences.IsDeleteEnabled = canEditBlock;
 
             }
@@ -92,6 +97,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack && _canView )
             {
+                BindFilter();
                 BindGrid();
             }
         }
@@ -101,6 +107,56 @@ namespace RockWeb.Blocks.Groups
         #region GroupMembers Grid
 
         /// <summary>
+        /// Handles the ApplyFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            rFilter.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
+            rFilter.SaveUserPreference( "Schedule", ddlSchedule.SelectedValue );
+            rFilter.SaveUserPreference( "Location", ddlLocation.SelectedValue );
+
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Rs the filter_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            if ( e.Key == "Date Range" )
+            {
+                e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+            }
+            else if ( e.Key == "Schedule" )
+            {
+                int scheduleId = e.Value.AsInteger();
+                if ( scheduleId != 0 )
+                {
+                    var schedule = new ScheduleService( _rockContext ).Get( scheduleId );
+                    e.Value = schedule != null ? schedule.Name : "";
+                }
+                else
+                {
+                    e.Value = "";
+                }
+            }
+            else if ( e.Key == "Location" )
+            {
+                int locationId = e.Value.AsInteger();
+                var location = new LocationService( _rockContext ).Get( locationId );
+                e.Value = location != null ? location.Name : "";
+            }
+            else
+            {
+                e.Value = string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Handles the Edit event of the gOccurrences control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -108,11 +164,24 @@ namespace RockWeb.Blocks.Groups
         protected void gOccurrences_Edit( object sender, RowEventArgs e )
         {
             // The iCalendar date format is returned as UTC kind date, so we need to manually format it instead of using 'o'
-            string occurrenceDate = ( (DateTime)e.RowKeyValue ).ToString( "yyyy-MM-ddTHH:mm:ss" );
-
+            string occurrenceDate = ( (DateTime)e.RowKeyValues["StartDateTime"] ).ToString( "yyyy-MM-ddTHH:mm:ss" );
             var qryParams = new Dictionary<string, string> { 
                 { "GroupId", _group.Id.ToString() },
-                { "Occurrence", occurrenceDate } };
+                { "Date", occurrenceDate },
+            };
+
+            var locationId = e.RowKeyValues["LocationId"] as int?;
+            if ( locationId.HasValue )
+            {
+                qryParams.Add( "LocationId", locationId.Value.ToString() );
+            }
+
+            var scheduleId = e.RowKeyValues["ScheduleId"] as int?;
+            if ( scheduleId.HasValue )
+            {
+                qryParams.Add( "ScheduleId", scheduleId.Value.ToString() );
+            }
+
             NavigateToLinkedPage( "DetailPage", qryParams );
         }
 
@@ -124,7 +193,20 @@ namespace RockWeb.Blocks.Groups
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gOccurrences_Add( object sender, EventArgs e )
         {
-            var qryParams = new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } };
+            var qryParams = new Dictionary<string, string> { 
+                { "GroupId", _group.Id.ToString() } 
+            };
+
+            if ( ddlSchedule.Visible && ddlSchedule.SelectedValue != "0" )
+            {
+                qryParams.Add( "ScheduleId", ddlSchedule.SelectedValue );
+            }
+
+            if ( ddlLocation.Visible && ddlLocation.SelectedValue != "0" )
+            {
+                qryParams.Add( "LocationId", ddlLocation.SelectedValue );
+            }
+
             NavigateToLinkedPage( "DetailPage", qryParams );
         }
 
@@ -143,6 +225,57 @@ namespace RockWeb.Blocks.Groups
 
         #region Internal Methods
 
+        private void BindFilter()
+        {
+            drpDates.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
+
+            if ( _group != null )
+            {
+                var grouplocations = _group.GroupLocations
+                    .Where( l =>
+                        l.Location.Name != null &&
+                        l.Location.Name != "" )
+                    .ToList();
+
+                var locations = new Dictionary<int, string> { { 0, "" } };
+                grouplocations.Select( l => l.Location ).OrderBy( l => l.Name ).ToList()
+                    .ForEach( l => locations.AddOrIgnore( l.Id, l.Name ) );
+
+                if ( locations.Any() )
+                {
+                    ddlLocation.Visible = true;
+                    gOccurrences.Columns[2].Visible = true;
+                    ddlLocation.DataSource = locations;
+                    ddlLocation.DataBind();
+                    ddlLocation.SetValue( rFilter.GetUserPreference( "Location" ) );
+                }
+                else
+                {
+                    ddlLocation.Visible = false;
+                    gOccurrences.Columns[2].Visible = false;
+                }
+
+                var schedules = new Dictionary<int, string> { { 0, "" } };
+                grouplocations.SelectMany( l => l.Schedules ).OrderBy( s => s.Name ).ToList()
+                    .ForEach( s => schedules.AddOrIgnore( s.Id, s.Name ) );
+
+                if ( schedules.Any() )
+                {
+                    ddlSchedule.Visible = true;
+                    gOccurrences.Columns[1].Visible = true;
+                    ddlSchedule.DataSource = schedules;
+                    ddlSchedule.DataBind();
+                    ddlSchedule.SetValue( rFilter.GetUserPreference( "Schedule" ) );
+                }
+                else
+                {
+                    ddlSchedule.Visible = false;
+                    gOccurrences.Columns[1].Visible = false;
+                }
+
+            }
+        }
+
         /// <summary>
         /// Binds the group members grid.
         /// </summary>
@@ -152,7 +285,24 @@ namespace RockWeb.Blocks.Groups
             {
                 lHeading.Text = _group.Name;
 
-                var qry = new ScheduleService( _rockContext ).GetGroupOccurrences( _group ).AsQueryable();
+                DateTime? fromDateTime = drpDates.LowerValue;
+                DateTime? toDateTime = drpDates.UpperValue;
+                int? locationId = null;
+                int? scheduleId = null;
+
+                // Location Filter
+                if ( ddlLocation.Visible && ddlLocation.SelectedValue != "0" )
+                {
+                    locationId = ddlLocation.SelectedValueAsInt();
+                }
+
+                // Schedule Filter
+                if ( ddlSchedule.Visible && ddlSchedule.SelectedValue != "0" )
+                {
+                    scheduleId = ddlSchedule.SelectedValueAsInt();
+                }
+
+                var qry = new ScheduleService( _rockContext ).GetGroupOccurrences( _group, fromDateTime, toDateTime, locationId, scheduleId ).AsQueryable();
 
                 SortProperty sortProperty = gOccurrences.SortProperty;
                 List<ScheduleOccurrence> occurrences = null;
