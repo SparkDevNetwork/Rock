@@ -13,7 +13,9 @@
     Rock Customizations
     1) change 'fa fa-chevron-up' to 'fa fa-chevron-up'
     2) change 'fa fa-chevron-down' to 'fa fa-chevron-down'
-    3) disable focus.timepicker': $.proxy(this.showWidget, this)
+    3) disable 
+        focus.timepicker': $.proxy(this.showWidget, this)
+        click.timepicker': $.proxy(this.showWidget, this)
     4) added 'if (hour.length == 4) ..' and 'if (hour.length == 3) { ..' to let keyboard input of stuff like 445p and 1030a to work
 */
 (function($, window, document, undefined) {
@@ -62,7 +64,7 @@
           if (this.template) {
             this.$element.on({
             // 'focus.timepicker': $.proxy(this.showWidget, this),
-            'click.timepicker': $.proxy(this.showWidget, this),
+            // 'click.timepicker': $.proxy(this.showWidget, this),
             'blur.timepicker': $.proxy(this.blurElement, this),
             'mousewheel.timepicker DOMMouseScroll.timepicker': $.proxy(this.mousewheel, this)
           });
