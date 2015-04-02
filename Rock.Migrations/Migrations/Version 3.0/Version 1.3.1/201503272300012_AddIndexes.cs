@@ -42,6 +42,12 @@ namespace Rock.Migrations
             CreateIndex( "dbo.PersonDuplicate", "DuplicatePersonAliasId" );
 
             Sql( @"
+    CREATE NONCLUSTERED INDEX [IX_Number]
+    ON [dbo].[PhoneNumber] ([Number])
+    INCLUDE ([PersonId])
+" );
+
+            Sql( @"
 	/*
 	<doc>
 		<summary>
@@ -328,6 +334,10 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            Sql( @"
+    DROP INDEX [IX_Number] ON [dbo].[PhoneNumber]
+" );
+
             DropIndex( "dbo.Audit", new string[] { "EntityTypeId", "EntityId" } );
             DropIndex( "dbo.Auth", new string[] { "EntityTypeId", "EntityId" } );
             DropIndex( "dbo.Following", new string[] { "EntityTypeId", "EntityId" } );
