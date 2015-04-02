@@ -400,6 +400,17 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlAttrEntityType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlAttrEntityType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            edtAttribute.AttributeEntityTypeId = ddlAttrEntityType.SelectedValueAsInt( false );
+            edtAttribute.CategoryIds = new List<int>();
+        }
+
+        /// <summary>
         /// Handles the SaveClick event of the mdAttribute control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -595,6 +606,12 @@ namespace RockWeb.Blocks.Core
                         attributeModel.EntityTypeId = entityTypeId;
                     }
                 }
+                else
+                {
+                    attributeModel.EntityTypeId = _entityTypeId;
+                    attributeModel.EntityTypeQualifierColumn = _entityQualifierColumn;
+                    attributeModel.EntityTypeQualifierValue = _entityQualifierValue;
+                }
 
                 List<int> selectedCategoryIds = cpCategoriesFilter.SelectedValuesAsInt().ToList();
                 new CategoryService( rockContext ).Queryable().Where( c => selectedCategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>
@@ -608,10 +625,10 @@ namespace RockWeb.Blocks.Core
             }
 
             Type type = null;
-            if ( _entityTypeId.HasValue )
+            if ( attributeModel.EntityTypeId.HasValue )
             {
-                type = EntityTypeCache.Read( _entityTypeId.Value ).GetEntityType();
-                edtAttribute.ReservedKeyNames = attributeService.Get( _entityTypeId, _entityQualifierColumn, _entityQualifierValue )
+                type = EntityTypeCache.Read( attributeModel.EntityTypeId.Value ).GetEntityType();
+                edtAttribute.ReservedKeyNames = attributeService.Get( attributeModel.EntityTypeId, attributeModel.EntityTypeQualifierColumn, attributeModel.EntityTypeQualifierValue )
                     .Where( a => a.Id != attributeId )
                     .Select( a => a.Key )
                     .Distinct()
@@ -619,6 +636,7 @@ namespace RockWeb.Blocks.Core
             }
 
             edtAttribute.SetAttributeProperties( attributeModel, type );
+            edtAttribute.AttributeEntityTypeId = attributeModel.EntityTypeId;
 
             if ( _configuredType )
             {
@@ -718,5 +736,5 @@ namespace RockWeb.Blocks.Core
         }
 
         #endregion
-    }
+}
 }
