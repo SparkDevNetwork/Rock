@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -59,11 +60,14 @@ namespace Rock.Workflow.Action.CheckIn
                 {
                     string numericPhone = checkInState.CheckIn.SearchValue.AsNumeric();
 
+                    var personRecordTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+
                     // Find the families with any member who has a phone number that contains selected value
                     var familyIds = memberService
                         .Queryable().AsNoTracking()
                         .Where( m => 
                             m.Group.GroupType.Guid.Equals( familyGroupTypeGuid ) &&
+                            m.Person.RecordTypeValueId == personRecordTypeId &&
                             m.Person.PhoneNumbers.Any( n => n.Number.Contains( numericPhone ) ) )
                         .Select( m => m.GroupId )
                         .Distinct()
@@ -80,7 +84,9 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         // Get each of the members for this family
                         var thisFamilyMembers = familyMembers
-                            .Where( m => m.GroupId == familyId )
+                            .Where( m => 
+                                m.GroupId == familyId && 
+                                m.Person.NickName != null )
                             .ToList();
 
                         if ( thisFamilyMembers.Any() )
