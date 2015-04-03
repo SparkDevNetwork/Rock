@@ -284,16 +284,41 @@ namespace Rock.Model
                 DDay.iCal.Event calEvent = GetCalenderEvent();
                 if ( calEvent != null )
                 {
-                    var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime, beginDateTime.AddMonths( 1 ) );
-                    if ( occurrences.Count > 0 )
+                    var scheduledStartTimes = this.GetScheduledStartTimes( beginDateTime, beginDateTime.AddMonths( 1 ) );
+                    if ( scheduledStartTimes.Count > 0 )
                     {
-                        var nextOccurance = occurrences[0];
-                        nextStartTime = DateTime.SpecifyKind( nextOccurance.Period.StartTime.Value.AddMinutes( 0 - CheckInStartOffsetMinutes.Value ), DateTimeKind.Local );
+                        var nextScheduledStartTime = scheduledStartTimes[0];
+                        nextStartTime = nextScheduledStartTime.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
                     }
                 }
             }
 
             return nextStartTime;
+        }
+
+        /// <summary>
+        /// Gets a list of scheduled start datetimes between the two specified dates, sorted by datetime.
+        /// </summary>
+        /// <param name="beginDateTime">The begin date time.</param>
+        /// <param name="endDateTime">The end date time.</param>
+        /// <returns></returns>
+        public virtual List<DateTime> GetScheduledStartTimes( DateTime beginDateTime, DateTime endDateTime )
+        {
+            var result = new List<DateTime>();
+            DDay.iCal.Event calEvent = GetCalenderEvent();
+            if ( calEvent != null )
+            {
+                // use ThreadSafe helper method to get occurrences
+                var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime, endDateTime );
+                
+                foreach ( var startDateTime in occurrences.Where( a => a.Period != null && a.Period.StartTime != null ).Select( a => a.Period.StartTime.Value ) )
+                {
+                    // ensure the the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
+                    result.Add( DateTime.SpecifyKind( startDateTime, DateTimeKind.Local ) );
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -307,7 +332,7 @@ namespace Rock.Model
             string result = this.Name;
 
             DDay.iCal.Event calendarEvent = this.GetCalenderEvent();
-            if ( calendarEvent != null && calendarEvent.DTStart != null)
+            if ( calendarEvent != null && calendarEvent.DTStart != null )
             {
                 string startTimeText = calendarEvent.DTStart.Value.TimeOfDay.ToTimeString();
                 if ( calendarEvent.RecurrenceRules.Any() )
@@ -351,7 +376,7 @@ namespace Rock.Model
                                 result = string.Format( "Day {0} of every ", monthDay );
                                 if ( rrule.Interval > 1 )
                                 {
-                                    result += string.Format("{0} months", rrule.Interval);
+                                    result += string.Format( "{0} months", rrule.Interval );
                                 }
                                 else
                                 {
@@ -384,7 +409,7 @@ namespace Rock.Model
 
                         default:
                             // some other type of recurring type (probably specific dates).  Just return the Name of the schedule
-                            
+
                             break;
                     }
                 }
@@ -446,7 +471,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="time">The time.</param>
         /// <returns></returns>
-        public bool WasCheckInActive(DateTime time)
+        public bool WasCheckInActive( DateTime time )
         {
             if ( !IsCheckInEnabled )
             {
@@ -708,13 +733,14 @@ namespace Rock.Model
             get
             {
                 var people = new Dictionary<int, bool>();
-                foreach( var person in Attendance
+                foreach ( var person in Attendance
                     .Where( a =>
                         a.PersonAlias != null &&
                         a.DidAttend.HasValue )
-                    .Select( a => new { 
-                        PersonId = a.PersonAlias.PersonId, 
-                        DidAttend = a.DidAttend.Value 
+                    .Select( a => new
+                    {
+                        PersonId = a.PersonAlias.PersonId,
+                        DidAttend = a.DidAttend.Value
                     } )
                     .Distinct() )
                 {
@@ -777,7 +803,7 @@ namespace Rock.Model
             LocationId = locationId;
             LocationName = locationName;
         }
-	}
+    }
 
     /// <summary>
     /// DDay.ical LoadFromStream is not threadsafe, so use locking
@@ -801,7 +827,7 @@ namespace Rock.Model
         {
             string trimmedContent = iCalendarContent.Trim();
 
-            if ( string.IsNullOrWhiteSpace(trimmedContent))
+            if ( string.IsNullOrWhiteSpace( trimmedContent ) )
             {
                 return null;
             }
@@ -840,9 +866,9 @@ namespace Rock.Model
         /// <param name="icalEvent">The ical event.</param>
         /// <param name="startTime">The start time.</param>
         /// <returns></returns>
-        public static IList<Occurrence> GetOccurrences( DDay.iCal.Event icalEvent, DateTime startTime)
+        public static IList<Occurrence> GetOccurrences( DDay.iCal.Event icalEvent, DateTime startTime )
         {
-            lock( ScheduleICalHelper._initLock)
+            lock ( ScheduleICalHelper._initLock )
             {
                 return icalEvent.GetOccurrences( startTime );
             }
