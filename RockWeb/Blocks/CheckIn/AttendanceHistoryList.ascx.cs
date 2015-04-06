@@ -310,6 +310,7 @@ namespace RockWeb.Blocks.Checkin
                 qry = qry.OrderByDescending( p => p.StartDateTime );
             }
 
+            gHistory.EntityTypeId = EntityTypeCache.Read<Attendance>().Id;
             gHistory.DataSource = qry.ToList();
             gHistory.DataBind();
         }
