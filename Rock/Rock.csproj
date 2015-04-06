@@ -139,6 +139,7 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
     <Compile Include="Attribute\CurrencyFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelFieldAttribute.cs" />
@@ -169,7 +170,7 @@
     <Compile Include="Attribute\SiteFieldAttribute.cs" />
     <Compile Include="Attribute\PersonBadgesAttribute.cs" />
     <Compile Include="Attribute\CampusFieldAttribute.cs" />
-    <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\BinaryFileFieldAttribute.cs" />
     <Compile Include="Attribute\ComponentFieldAttribute.cs" />
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
@@ -254,6 +255,7 @@
     <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
     <Compile Include="Field\Types\WorkflowTypeFieldType.cs" />
     <Compile Include="Financial\TestGateway.cs" />
+    <Compile Include="Jobs\CalculateMetrics.cs" />
     <Compile Include="Jobs\GetScheduledPayments.cs" />
     <Compile Include="Jobs\SendAttendanceReminders.cs" />
     <Compile Include="Lava\ILiquidizable.cs" />
