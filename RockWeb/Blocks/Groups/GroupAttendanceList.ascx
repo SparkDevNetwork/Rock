@@ -15,9 +15,17 @@
             <div class="panel-body">
 
                 <div class="grid grid-panel">
+                    <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
+                        <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" />
+                        <Rock:RockDropDownList ID="ddlLocation" runat="server" Label="Location" DataValueField="Key" DataTextField="Value" />
+                        <Rock:RockDropDownList ID="ddlSchedule" runat="server" Label="Schedule" DataValueField="Key" DataTextField="Value"  />
+                    </Rock:GridFilter>
+
                     <Rock:Grid ID="gOccurrences" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Occurrence" OnRowSelected="gOccurrences_Edit" >
                         <Columns>
                             <Rock:DateField DataField="StartDateTime" HeaderText="Date" ItemStyle-HorizontalAlign="Left" SortExpression="StartDateTime" />
+                            <Rock:RockBoundField DataField="LocationName" HeaderText="Location" SortExpression="LocationName" />
+                            <Rock:RockBoundField DataField="ScheduleName" HeaderText="Schedule" SortExpression="ScheduleName" />
                             <Rock:BoolField DataField="AttendanceEntered" HeaderText="Attendance Entered" SortExpression="AttendanceEntered" />
                             <Rock:BoolField DataField="DidNotOccur" HeaderText="Didn't Meet" SortExpression="DidNotOccur" />
                             <Rock:RockBoundField DataField="NumberAttended" HeaderText="Attendance Count" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:N0}" SortExpression="NumberAttended" />
