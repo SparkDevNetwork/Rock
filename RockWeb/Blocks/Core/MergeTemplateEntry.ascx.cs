@@ -66,6 +66,7 @@ namespace RockWeb.Blocks.Core
             {
                 int? entitySetId = this.PageParameter( "Set" ).AsIntegerOrNull();
                 pnlEntry.Visible = entitySetId.HasValue;
+                mtPicker.MergeTemplateOwnership = MergeTemplateOwnership.PersonalAndGlobal;
 
                 if ( entitySetId.HasValue )
                 {
@@ -179,12 +180,12 @@ namespace RockWeb.Blocks.Core
             }
 
             var uri = new UriBuilder( outputBinaryFileDoc.Url );
-            var qry = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            var qry = System.Web.HttpUtility.ParseQueryString( uri.Query );
             qry["attachment"] = true.ToTrueFalse();
             uri.Query = qry.ToString();
             Response.Redirect( uri.ToString(), false );
             Context.ApplicationInstance.CompleteRequest();
-            
+
             return;
         }
 
@@ -345,7 +346,7 @@ namespace RockWeb.Blocks.Core
                 {
                     // if we have additionalMergeValues, convert the MergeObject into a Hash (instead of IEntity) and add the additional fields
                     DotLiquid.Hash mergeObjectHash;
-                    if (mergeObject is DotLiquid.Hash)
+                    if ( mergeObject is DotLiquid.Hash )
                     {
                         mergeObjectHash = mergeObject as DotLiquid.Hash;
                     }
@@ -353,14 +354,19 @@ namespace RockWeb.Blocks.Core
                     {
                         mergeObjectHash = DotLiquid.Hash.FromDictionary( mergeObject as IDictionary<string, object> );
                     }
-                    else
+                    else if ( mergeObject is IEntity )
                     {
                         // convert the object to a Dictionary so we can add additional fields to it
-                        mergeObjectHash = DotLiquid.Hash.FromDictionary( (mergeObject as IEntity).ToDictionary() );
+                        mergeObjectHash = DotLiquid.Hash.FromDictionary( ( mergeObject as IEntity ).ToDictionary() );
+                    }
+                    else
+                    {
+                        // anonymous object with no fields yet
+                        mergeObjectHash = new DotLiquid.Hash();
                     }
 
                     mergeObjectHash.AddOrIgnore( additionalMergeValue.Key, additionalMergeValue.Value );
-                    
+
                     // ensure the mergeObject is updated in case it was converted to a mergeObjectHash
                     mergeObjectsDictionary[additionalMergeValuesItem.EntityId] = mergeObjectHash;
                     mergeObject = mergeObjectsDictionary[additionalMergeValuesItem.EntityId];

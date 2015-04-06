@@ -35,6 +35,16 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
+            UpdateItemRestUrlExtraParams();
+            this.IconCssClass = "fa fa-files-o";
+            base.OnInit( e );
+        }
+
+        /// <summary>
+        /// Updates the item rest URL extra parameters.
+        /// </summary>
+        private void UpdateItemRestUrlExtraParams()
+        {
             ItemRestUrlExtraParams = "?getCategorizedItems=true&showUnnamedEntityItems=false&showCategoriesThatHaveNoChildren=false";
             if ( this.MergeTemplateOwnership == MergeTemplateOwnership.Global )
             {
@@ -50,8 +60,6 @@ namespace Rock.Web.UI.Controls
             }
 
             ItemRestUrlExtraParams += "&entityTypeId=" + EntityTypeCache.Read( Rock.SystemGuid.EntityType.MERGE_TEMPLATE.AsGuid() ).Id;
-            this.IconCssClass = "fa fa-files-o";
-            base.OnInit( e );
         }
 
         /// <summary>
@@ -60,7 +68,19 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The personal merge templates.
         /// </value>
-        public MergeTemplateOwnership MergeTemplateOwnership { get; set; }
+        public MergeTemplateOwnership MergeTemplateOwnership
+        {
+            get
+            {
+                return _mergeTemplateOwnership;
+            }
+            set
+            {
+                _mergeTemplateOwnership = value;
+                UpdateItemRestUrlExtraParams();
+            }
+        }
+        private MergeTemplateOwnership _mergeTemplateOwnership;
 
         /// <summary>
         /// Sets the value.
