@@ -382,12 +382,12 @@ namespace RockWeb.Blocks.WorkFlow
 
                             _actionType = _action.ActionType;
                             ActionTypeId = _actionType.Id;
-                            return true;
+                            return true; 
                         }
                     }
                 }
 
-                var canEdit = IsUserAuthorized( Authorization.EDIT );
+                var canEdit = UserCanEdit || _workflow.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                 // Find first active action form
                 int personId = CurrentPerson != null ? CurrentPerson.Id : 0;
@@ -395,6 +395,7 @@ namespace RockWeb.Blocks.WorkFlow
                     .Where( a =>
                         a.IsActive &&
                         (
+                            ( canEdit ) ||
                             ( !a.AssignedGroupId.HasValue && !a.AssignedPersonAliasId.HasValue ) ||
                             ( a.AssignedPersonAlias != null && a.AssignedPersonAlias.PersonId == personId ) ||
                             ( a.AssignedGroup != null && a.AssignedGroup.Members.Any( m => m.PersonId == personId ) )
