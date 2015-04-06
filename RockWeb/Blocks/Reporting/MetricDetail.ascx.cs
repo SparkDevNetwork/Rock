@@ -576,6 +576,11 @@ namespace RockWeb.Blocks.Reporting
             ppMetricChampionPerson.SetValue( metric.MetricChampionPersonAlias != null ? metric.MetricChampionPersonAlias.Person : null );
             ppAdminPerson.SetValue( metric.AdminPersonAlias != null ? metric.AdminPersonAlias.Person : null );
             ceSourceSql.Text = metric.SourceSql;
+            ceSourceSql.Help = @"Specify the SQL that will return the Y Value for each scheduled Date. Example: <pre>SELECT COUNT(*) FROM [Attendance] </pre> 
+If this is a metric is partitioned, the 2nd column will be the EntityId value. Example: <pre>SELECT COUNT(*), [CampusId] FROM [Attendance] GROUP BY [CampusId] </pre>
+The SQL can include Lava merge fields:";
+            ceSourceSql.Help += metric.GetMergeObjects( RockDateTime.Now ).lavaDebugInfo();
+
             if ( metric.Schedule != null )
             {
                 sbSchedule.iCalendarContent = metric.Schedule.iCalendarContent;
@@ -738,5 +743,6 @@ namespace RockWeb.Blocks.Reporting
         }
 
         #endregion
-    }
+        
+}
 }
