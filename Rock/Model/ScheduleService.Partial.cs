@@ -33,9 +33,10 @@ namespace Rock.Model
         /// Gets occurrence data for the selected group
         /// </summary>
         /// <param name="group">The group.</param>
-        /// <param name="dateTime">The date time.</param>
-        /// <param name="scheduleId">The schedule identifier. Use a value of 0 to limit occurrences to those without a schedule ( a null value will not filter by schedule ).</param>
+        /// <param name="fromDateTime">From date time.</param>
+        /// <param name="toDateTime">To date time.</param>
         /// <param name="locationId">The location identifier. Use a value of 0 to limit occurrences to those without a location ( a null value will not filter by location ).</param>
+        /// <param name="scheduleId">The schedule identifier. Use a value of 0 to limit occurrences to those without a schedule ( a null value will not filter by schedule ).</param>
         /// <param name="loadAttendanceData">if set to <c>true</c> [load attendance data].</param>
         /// <returns></returns>
         public List<ScheduleOccurrence> GetGroupOccurrences( Group group, DateTime? fromDateTime = null, DateTime? toDateTime = null, 
