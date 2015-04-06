@@ -68,7 +68,6 @@ namespace Rock.Jobs
                                     var qry = metric.DataView.GetQuery( null, null, out errorMessages );
                                     if ( metric.EntityTypeId.HasValue )
                                     {
-                                        // TODO
                                         throw new NotImplementedException( "Partitioned Metrics using DataViews is not supported." );
                                     }
                                     else
@@ -92,23 +91,23 @@ namespace Rock.Jobs
                                         {
                                             if ( tableResult.Columns.Contains( "EntityId" ) )
                                             {
-                                                entityId = (int)row["EntityId"];
+                                                entityId = Convert.ToInt32( row["EntityId"] );
                                             }
                                             else
                                             {
                                                 // assume SQL is in the form "SELECT Count(*), EntityId FROM ..."
-                                                entityId = (int)row[1];
+                                                entityId = Convert.ToInt32( row[1] );
                                             }
                                         }
 
                                         if ( tableResult.Columns.Contains( "Value" ) )
                                         {
-                                            countValue = (decimal)row["Value"];
+                                            countValue = Convert.ToDecimal( row["Value"] );
                                         }
                                         else
                                         {
                                             // assume SQL is in the form "SELECT Count(*), EntityId FROM ..."
-                                            countValue = (decimal)row[0];
+                                            countValue = Convert.ToDecimal( row[0] );
                                         }
 
                                         resultValues.Add( entityId, countValue );
@@ -126,6 +125,7 @@ namespace Rock.Jobs
                                     metricValue.MetricId = metric.Id;
                                     metricValue.MetricValueDateTime = scheduleDateTime;
                                     metricValue.MetricValueType = MetricValueType.Measure;
+                                    metricValue.YValue = resultValue.Value;
                                     metricValue.EntityId = resultValue.Key > 0 ? resultValue.Key : (int?)null;
 
                                     metricValueService.Add( metricValue );
