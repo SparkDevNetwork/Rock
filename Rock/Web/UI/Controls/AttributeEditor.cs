@@ -124,7 +124,7 @@ namespace Rock.Web.UI.Controls
             {
                 ViewState["AttributeEntityTypeId"] = value;
                 EnsureChildControls();
-                _cpCategories.EntityTypeQualifierValue = value.HasValue ? value.ToString() : string.Empty;
+                _cpCategories.EntityTypeQualifierValue = value.HasValue && value.Value != 0 ? value.ToString() : string.Empty;
             }
         }
 

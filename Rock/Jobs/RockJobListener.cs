@@ -22,7 +22,6 @@ using Rock.Model;
 
 namespace Rock.Jobs
 {
-
     /// <summary>
     /// Summary description for JobListener
     /// </summary>
@@ -45,7 +44,7 @@ namespace Rock.Jobs
         public RockJobListener()
         {
         }
-        
+
         /// <summary>
         /// Called by the <see cref="IScheduler"/> when a <see cref="IJobDetail"/>
         /// is about to be executed (an associated <see cref="ITrigger"/>
@@ -84,27 +83,29 @@ namespace Rock.Jobs
         {
             StringBuilder message = new StringBuilder();
             bool sendMessage = false;
-            
+
             // get job type id
-            int jobId = Convert.ToInt16(context.JobDetail.Description);
+            int jobId = Convert.ToInt16( context.JobDetail.Description );
 
             // load job
             var rockContext = new RockContext();
             var jobService = new ServiceJobService( rockContext );
-            var job = jobService.Get(jobId);
-            
+            var job = jobService.Get( jobId );
+
             // format the message
-            message.Append( String.Format( "The job {0} ran for {1} seconds on {2}.  Below is the results:<p>" , job.Name, context.JobRunTime.TotalSeconds, context.FireTimeUtc.Value.DateTime.ToLocalTime()) );
+            message.Append( string.Format( "The job {0} ran for {1} seconds on {2}.  Below is the results:<p>", job.Name, context.JobRunTime.TotalSeconds, context.FireTimeUtc.Value.DateTime.ToLocalTime() ) );
 
             // if noticiation staus is all set flag to send message
             if ( job.NotificationStatus == JobNotificationStatus.All )
+            {
                 sendMessage = true;
+            }
 
             // set last run date
             job.LastRunDateTime = RockDateTime.Now; // context.FireTimeUtc.Value.DateTime.ToLocalTime();
 
             // set run time
-            job.LastRunDurationSeconds = Convert.ToInt32(context.JobRunTime.TotalSeconds);
+            job.LastRunDurationSeconds = Convert.ToInt32( context.JobRunTime.TotalSeconds );
 
             // set the scheduler name
             job.LastRunSchedulerName = context.Scheduler.SchedulerName;
@@ -114,29 +115,37 @@ namespace Rock.Jobs
             {
                 job.LastSuccessfulRunDateTime = job.LastRunDateTime;
                 job.LastStatus = "Success";
-                job.LastStatusMessage = "";
-                
+                job.LastStatusMessage = string.Empty;
+
                 message.Append( "Result: Success" );
 
                 // determine if message should be sent
                 if ( job.NotificationStatus == JobNotificationStatus.Success )
+                {
                     sendMessage = true;
+                }
             }
             else
             {
+                // log the exception to the database
+                ExceptionLogService.LogException( jobException, null );
+
                 // put the exception into the status
                 job.LastStatus = "Exception";
-                job.LastStatusMessage = jobException.Message;
+                job.LastStatusMessage = "An Exception occurred.  See the Exception Log for more details. " + jobException.Message;
 
-                message.Append( "Result: Exception<p>Message:<br>" + jobException.Message );
+                message.Append( "Result: Exception<p>Message:<br>" + job.LastStatusMessage );
 
-                if ( jobException.InnerException != null ) {
+                if ( jobException.InnerException != null )
+                {
                     job.LastStatusMessage += " Inner Exception: " + jobException.InnerException.Message;
                     message.Append( "<p>Inner Exception:<br>" + jobException.InnerException.Message );
                 }
 
                 if ( job.NotificationStatus == JobNotificationStatus.Error )
+                {
                     sendMessage = true;
+                }
             }
 
             rockContext.SaveChanges();
@@ -146,8 +155,6 @@ namespace Rock.Jobs
             {
                 // TODO: implement email send once it's available 
             }
-
-
         }
     }
 }
