@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Block for administrating a Merge Template" )]
 
-    [EnumField( "Merge Templates Ownership", "Set this to restrict if the merge template must be a Personal or Global merge template.", typeof(MergeTemplateOwnership), true, "Global" )]
+    [EnumField( "Merge Templates Ownership", "Set this to restrict if the merge template must be a Personal or Global merge template. Note: If the user has EDIT authorization to this block, both Global and Personal templates can be edited regardless of this setting.", typeof( MergeTemplateOwnership ), true, "Global" )]
     public partial class MergeTemplateDetail : RockBlock, IDetailBlock
     {
         #region Base Control Methods
@@ -189,30 +189,30 @@ namespace RockWeb.Blocks.Core
             mergeTemplate.TemplateBinaryFileId = fuTemplateBinaryFile.BinaryFileId ?? 0;
             mergeTemplate.PersonAliasId = ppPerson.PersonAliasId;
             mergeTemplate.CategoryId = cpCategory.SelectedValue.AsInteger();
-            
-            int personalMergeTemplateCategoryId = CategoryCache.Read(Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid()).Id;
-            if (mergeTemplate.PersonAliasId.HasValue)
+
+            int personalMergeTemplateCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Id;
+            if ( mergeTemplate.PersonAliasId.HasValue )
             {
-                if ( mergeTemplate.CategoryId == 0)
+                if ( mergeTemplate.CategoryId == 0 )
                 {
                     // if the category picker isn't shown and/or the category isn't selected, and it's a personal filter...
                     mergeTemplate.CategoryId = personalMergeTemplateCategoryId;
                 }
-                
+
                 // ensure Personal templates are only in the Personal merge template category
                 if ( mergeTemplate.CategoryId != personalMergeTemplateCategoryId )
                 {
-                    // prohibit global templates from being in Personal category
+                    // prohibit personal templates from being in something other than the Personal category
                     cpCategory.Visible = true;
                     cpCategory.ShowErrorMessage( "Personal Merge Templates must be in Personal category" );
                 }
             }
             else
             {
-                if (mergeTemplate.CategoryId == personalMergeTemplateCategoryId)
+                if ( mergeTemplate.CategoryId == personalMergeTemplateCategoryId )
                 {
                     // prohibit global templates from being in Personal category
-                    cpCategory.ShowErrorMessage("Person is required when using the Personal category");
+                    cpCategory.ShowErrorMessage( "Person is required when using the Personal category" );
                 }
             }
 
@@ -223,7 +223,7 @@ namespace RockWeb.Blocks.Core
             }
 
             BinaryFileService binaryFileService = new BinaryFileService( rockContext );
-            if (origBinaryFileId.HasValue && origBinaryFileId.Value != mergeTemplate.TemplateBinaryFileId)
+            if ( origBinaryFileId.HasValue && origBinaryFileId.Value != mergeTemplate.TemplateBinaryFileId )
             {
                 // if a new the binaryFile was uploaded, mark the old one as Temporary so that it gets cleaned up
                 var oldBinaryFile = binaryFileService.Get( origBinaryFileId.Value );
@@ -232,7 +232,7 @@ namespace RockWeb.Blocks.Core
                     oldBinaryFile.IsTemporary = true;
                 }
             }
-            
+
             // ensure the IsTemporary is set to false on binaryFile associated with this MergeTemplate
             var binaryFile = binaryFileService.Get( mergeTemplate.TemplateBinaryFileId );
             if ( binaryFile != null && binaryFile.IsTemporary )
@@ -318,10 +318,18 @@ namespace RockWeb.Blocks.Core
                 mergeTemplate = mergeTemplateService.Get( mergeTemplateId );
             }
 
+            var mergeTemplateOwnership = this.GetAttributeValue( "MergeTemplatesOwnership" ).ConvertToEnum<MergeTemplateOwnership>( MergeTemplateOwnership.Global );
+
             if ( mergeTemplate == null )
             {
                 mergeTemplate = new MergeTemplate();
                 mergeTemplate.CategoryId = parentCategoryId ?? 0;
+
+                if ( mergeTemplateOwnership == MergeTemplateOwnership.Personal )
+                {
+                    mergeTemplate.PersonAliasId = this.CurrentPersonAliasId;
+                    mergeTemplate.PersonAlias = this.CurrentPersonAlias;
+                }
             }
 
             pnlDetails.Visible = true;
@@ -331,7 +339,11 @@ namespace RockWeb.Blocks.Core
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            if ( mergeTemplate.PersonAliasId.HasValue && mergeTemplate.PersonAlias.PersonId == this.CurrentPersonId )
+            {
+                // Allow Person to edit their own Merge Templates
+            }
+            else if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( MergeTemplate.FriendlyTypeName );
@@ -367,12 +379,12 @@ namespace RockWeb.Blocks.Core
             ddlMergeTemplateType.Items.Clear();
             ddlMergeTemplateType.Items.Add( new ListItem() );
 
-            foreach (var item in MergeTemplateTypeContainer.Instance.Components.Values)
+            foreach ( var item in MergeTemplateTypeContainer.Instance.Components.Values )
             {
                 if ( item.Value.IsActive )
                 {
                     var entityType = item.Value.EntityType;
-                    ddlMergeTemplateType.Items.Add( new ListItem(entityType.FriendlyName, entityType.Id.ToString() ) );
+                    ddlMergeTemplateType.Items.Add( new ListItem( entityType.FriendlyName, entityType.Id.ToString() ) );
                 }
             }
         }
@@ -395,8 +407,19 @@ namespace RockWeb.Blocks.Core
             SetEditMode( true );
 
             var mergeTemplateOwnership = this.GetAttributeValue( "MergeTemplatesOwnership" ).ConvertToEnum<MergeTemplateOwnership>( MergeTemplateOwnership.Global );
-            if ( mergeTemplateOwnership == MergeTemplateOwnership.Global )
+            if ( this.IsUserAuthorized( Authorization.EDIT ) )
             {
+                // If Authorized to EDIT, owner should be able to be changed, or converted to Global
+                ppPerson.Visible = true;
+                ppPerson.Required = false;
+                cpCategory.Visible = true;
+                cpCategory.ExcludedCategoryIds = string.Empty;
+            }
+            else if ( mergeTemplateOwnership == MergeTemplateOwnership.Global )
+            {
+                ppPerson.Visible = false;
+                ppPerson.Required = false;
+                cpCategory.Visible = true;
                 cpCategory.ExcludedCategoryIds = CategoryCache.Read( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Id.ToString();
             }
             else if ( mergeTemplateOwnership == MergeTemplateOwnership.Personal )
@@ -404,11 +427,17 @@ namespace RockWeb.Blocks.Core
                 // if ONLY personal merge templates are permitted, hide the category since it'll always be saved in the personal category
                 cpCategory.Visible = false;
 
-                // require Person if only Personal merge templates are allowed
-                ppPerson.Required = true;
+                // merge template should be only for the current person, so hide the person picker
+                ppPerson.Visible = false;
+
+                // it is required, but not shown..
+                ppPerson.Required = false;
             }
-            else
+            else if ( mergeTemplateOwnership == MergeTemplateOwnership.PersonalAndGlobal )
             {
+                ppPerson.Visible = true;
+                ppPerson.Required = false;
+                cpCategory.Visible = true;
                 cpCategory.ExcludedCategoryIds = string.Empty;
             }
 
@@ -424,11 +453,8 @@ namespace RockWeb.Blocks.Core
 
             cpCategory.AllowMultiSelect = false;
             cpCategory.SetValue( mergeTemplate.CategoryId );
-            ppPerson.Visible = mergeTemplateOwnership != MergeTemplateOwnership.Global;
             if ( mergeTemplate.PersonAliasId.HasValue )
             {
-                // if it is already set as a Personal merge template, show the person picker regardless of the AllowPersonal setting
-                ppPerson.Visible = true;
                 ppPerson.SetValue( mergeTemplate.PersonAlias.Person );
             }
             else
@@ -448,7 +474,7 @@ namespace RockWeb.Blocks.Core
             lReadOnlyTitle.Text = mergeTemplate.Name.FormatAsHtmlTitle();
 
             DescriptionList descriptionList = new DescriptionList()
-                .Add( "Template File", string.Format("<a href='{0}'>{1}</a>",  mergeTemplate.TemplateBinaryFile.Url, mergeTemplate.TemplateBinaryFile.FileName ))
+                .Add( "Template File", string.Format( "<a href='{0}'>{1}</a>", mergeTemplate.TemplateBinaryFile.Url, mergeTemplate.TemplateBinaryFile.FileName ) )
                 .Add( "Description", mergeTemplate.Description ?? string.Empty )
                 .Add( "Type", mergeTemplate.MergeTemplateTypeEntityType )
                 .Add( "Category", mergeTemplate.Category != null ? mergeTemplate.Category.Name : string.Empty )

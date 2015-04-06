@@ -32,7 +32,7 @@ namespace RockWeb.Blocks.Core
     [Description( "Displays a list of all merge templates." )]
 
     [LinkedPage( "Detail Page" )]
-    [EnumField( "Merge Templates Ownership", "Set this to limit to merge templates depending on ownership type", typeof( MergeTemplateOwnership ), true, "Personal" )]
+    [EnumField( "Merge Templates Ownership", "Set this to limit to merge templates depending on ownership type. Note: If the user has EDIT authorization to this block, both Global and Personal templates will be shown regardless of this setting.", typeof( MergeTemplateOwnership ), true, "Personal" )]
     public partial class MergeTemplateList : RockBlock
     {
         #region Control Methods
@@ -49,13 +49,20 @@ namespace RockWeb.Blocks.Core
             gMergeTemplates.Actions.AddClick += gMergeTemplates_Add;
             gMergeTemplates.GridRebind += gMergeTemplates_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of View)
-            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
+            var mergeTemplateOwnership = this.GetAttributeValue( "MergeTemplatesOwnership" ).ConvertToEnum<MergeTemplateOwnership>( MergeTemplateOwnership.Personal );
+
+            //// Block Security and special attributes (RockPage takes care of View)
+            //// NOTE: If MergeTemplatesOwnership = Person, the CurrentPerson can edit their own templates regardess of Authorization.EDIT
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT ) || mergeTemplateOwnership == MergeTemplateOwnership.Personal;
             gMergeTemplates.Actions.ShowAdd = canAddEditDelete;
             gMergeTemplates.IsDeleteEnabled = canAddEditDelete;
 
             this.BlockUpdated += MergeTemplateList_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upMergeTemplateList );
+
+            // only show the filter if both Global and Personal templates are shown (or if all personal templates will be shown)
+            gfSettings.Visible = IsUserAuthorized( Authorization.EDIT ) || mergeTemplateOwnership == MergeTemplateOwnership.PersonalAndGlobal;
+            BindFilter();
         }
 
         /// <summary>
@@ -80,6 +87,26 @@ namespace RockWeb.Blocks.Core
             }
 
             base.OnLoad( e );
+        }
+
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
+        private void BindFilter()
+        {
+            // nothing  to do
+        }
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the gfSettings control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
+        {
+            gfSettings.SaveUserPreference( "Person", ppPersonFilter.PersonId.HasValue ? ppPersonFilter.PersonId.ToString() : string.Empty );
+            gfSettings.SaveUserPreference( "Show Global Merge Templates", cbShowGlobalMergeTemplates.Checked.ToTrueFalse() );
+            BindGrid();
         }
 
         #endregion
@@ -161,18 +188,45 @@ namespace RockWeb.Blocks.Core
             var personColumn = gMergeTemplates.Columns.OfType<PersonField>().FirstOrDefault();
             personColumn.Visible = false;
 
-            if ( this.IsUserAuthorized( Authorization.EDIT ) )
+            // Only Authorization.EDIT should be able to use the grid filter
+            if ( this.IsUserAuthorized( Authorization.EDIT ) && gfSettings.Visible )
             {
                 // show all merge templates regardless of block settings
                 personColumn.Visible = true;
+
+                int? personIdFilter = gfSettings.GetUserPreference( "Person" ).AsIntegerOrNull();
+                bool showGlobalMergeTemplates = gfSettings.GetUserPreference( "Show Global Merge Templates" ).AsBooleanOrNull() ?? true;
+
+                if ( personIdFilter.HasValue )
+                {
+                    if ( showGlobalMergeTemplates )
+                    {
+                        qry = qry.Where( a => !a.PersonAliasId.HasValue || a.PersonAlias.PersonId == personIdFilter );
+                    }
+                    else
+                    {
+                        qry = qry.Where( a => a.PersonAliasId.HasValue && a.PersonAlias.PersonId == personIdFilter );
+                    }
+                }
+                else
+                {
+                    if ( showGlobalMergeTemplates )
+                    {
+                        qry = qry.Where( a => !a.PersonAliasId.HasValue );
+                    }
+                    else
+                    {
+                        qry = qry.Where( a => a.PersonAliasId.HasValue );
+                    }
+                }
             }
             else if ( mergeTemplateOwnership == MergeTemplateOwnership.Personal )
             {
-                qry = qry.Where( a => a.PersonAliasId == this.CurrentPersonAliasId );
+                qry = qry.Where( a => a.PersonAlias.PersonId == this.CurrentPersonId );
             }
             else if ( mergeTemplateOwnership == MergeTemplateOwnership.PersonalAndGlobal )
             {
-                qry = qry.Where( a => a.PersonAliasId == this.CurrentPersonAliasId || !a.PersonAliasId.HasValue );
+                qry = qry.Where( a => !a.PersonAliasId.HasValue || a.PersonAlias.PersonId == this.CurrentPersonId );
                 personColumn.Visible = true;
             }
             else if ( mergeTemplateOwnership == MergeTemplateOwnership.Global )
