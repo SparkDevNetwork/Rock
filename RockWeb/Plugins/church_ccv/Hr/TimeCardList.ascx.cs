@@ -114,7 +114,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
             var currentPayPeriod = timeCardPayPeriodService.EnsureCurrentPayPeriod( firstPayPeriodStartDate.Value );
             SortProperty sortProperty = gList.SortProperty;
 
-            var qry = timeCardService.Queryable().Where( a => a.PersonAliasId == this.CurrentPersonAliasId );
+            var qry = timeCardService.Queryable().Where( a => a.PersonAlias.PersonId == this.CurrentPersonId );
 
             // ensure that employee has a timecard for the current pay period
             var currentEmployeeTimeCard = qry.Where( a => a.TimeCardPayPeriodId == currentPayPeriod.Id ).FirstOrDefault();
