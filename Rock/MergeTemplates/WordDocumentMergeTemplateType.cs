@@ -256,8 +256,14 @@ namespace Rock.MergeTemplates
                         extra.Remove();
                     }
 
-                    // pop the xdoc back
-                    outputDoc.MainDocumentPart.PutXDocument();
+                    // renumber all the ids to make sure they are unique
+                    var idAttrs = xdoc.DescendantNodes().OfType<XElement>().Where( a => a.HasAttributes ).Select( a => a.Attribute( "id" ) ).Where( s => s != null );
+                    int lastId = 1;
+                    foreach ( var attr in idAttrs )
+                    {
+                        attr.Value = lastId.ToString();
+                        lastId++;
+                    }
 
                     // remove the last pagebreak
                     MarkupSimplifier.SimplifyMarkup( outputDoc, new SimplifyMarkupSettings { RemoveLastRenderedPageBreak = true } );
