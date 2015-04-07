@@ -223,6 +223,41 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the selected time, even if Date is not set yet
+        /// </summary>
+        /// <value>
+        /// The selected time.
+        /// </value>
+        public TimeSpan? SelectedTime
+        {
+            get
+            {
+                EnsureChildControls();
+
+                DateTime? timeResult = _time.Text.AsDateTime();
+                if ( timeResult.HasValue )
+                {
+                    return timeResult.Value.TimeOfDay;
+                }
+
+                return null;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                if ( value.HasValue )
+                {
+                    _time.Text = value.Value.ToTimeString();
+                }
+                else
+                {
+                    _time.Text = string.Empty;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether [selected date time is blank].
         /// </summary>
         /// <value>
