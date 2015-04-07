@@ -209,7 +209,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             if ( guid.HasValue )
                             {
                                 var workflowType = workflowTypeService.Get( guid.Value );
-                                if ( workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson, rockContext ) )
+                                if ( workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                                 {
                                     string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, Person.Id );
                                     sbActions.AppendFormat( "<li><a href='{0}'><i class='{1}'></i> {2}</a></li>",

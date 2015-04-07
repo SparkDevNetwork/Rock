@@ -72,11 +72,10 @@ namespace Rock.Security
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        bool IsAuthorized( string action, Rock.Model.Person person, RockContext rockContext = null );
+        bool IsAuthorized( string action, Rock.Model.Person person );
 
         /// <summary>
         /// If a user or role is not specifically allowed or denied to perform the selected action,
@@ -91,11 +90,10 @@ namespace Rock.Security
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        bool IsPrivate( string action, Person person, RockContext rockContext = null );
+        bool IsPrivate( string action, Person person );
 
         /// <summary>
         /// Makes the action on the current entity private (Only the current user will have access).

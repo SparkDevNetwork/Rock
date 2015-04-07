@@ -166,25 +166,44 @@ namespace Rock.Web.Cache
         {
             string cacheKey = LayoutCache.CacheKey( id );
             ObjectCache cache = RockMemoryCache.Default;
-            LayoutCache Layout = cache[cacheKey] as LayoutCache;
+            LayoutCache layout = cache[cacheKey] as LayoutCache;
 
-            if ( Layout == null )
+            if ( layout == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var LayoutService = new LayoutService( rockContext );
-                var LayoutModel = LayoutService.Get( id );
-                if ( LayoutModel != null )
+                if ( rockContext != null )
                 {
-                    LayoutModel.LoadAttributes( rockContext );
-                    Layout = new LayoutCache( LayoutModel );
+                    layout = LoadById( id, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        layout = LoadById( id, myRockContext );
+                    }
+                }
 
+                if ( layout != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
-                    cache.Set( cacheKey, Layout, cachePolicy );
-                    cache.Set( Layout.Guid.ToString(), Layout.Id, cachePolicy );
+                    cache.Set( cacheKey, layout, cachePolicy );
+                    cache.Set( layout.Guid.ToString(), layout.Id, cachePolicy );
                 }
             }
 
-            return Layout;
+            return layout;
+        }
+
+        private static LayoutCache LoadById( int id, RockContext rockContext )
+        {
+            var LayoutService = new LayoutService( rockContext );
+            var LayoutModel = LayoutService.Get( id );
+            if ( LayoutModel != null )
+            {
+                LayoutModel.LoadAttributes( rockContext );
+                return new LayoutCache( LayoutModel );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -206,14 +225,20 @@ namespace Rock.Web.Cache
 
             if ( layout == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var LayoutService = new LayoutService( rockContext );
-                var LayoutModel = LayoutService.Get( guid );
-                if ( LayoutModel != null )
+                if ( rockContext != null )
                 {
-                    LayoutModel.LoadAttributes( rockContext );
-                    layout = new LayoutCache( LayoutModel );
+                    layout = LoadByGuid( guid, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        layout = LoadByGuid( guid, myRockContext );
+                    }
+                }
 
+                if ( layout != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( LayoutCache.CacheKey( layout.Id ), layout, cachePolicy );
                     cache.Set( layout.Guid.ToString(), layout.Id, cachePolicy );
@@ -221,6 +246,19 @@ namespace Rock.Web.Cache
             }
 
             return layout;
+        }
+
+        private static LayoutCache LoadByGuid( Guid guid, RockContext rockContext = null )
+        {
+            var LayoutService = new LayoutService( rockContext );
+            var LayoutModel = LayoutService.Get( guid );
+            if ( LayoutModel != null )
+            {
+                LayoutModel.LoadAttributes( rockContext );
+                return new LayoutCache( LayoutModel );
+            }
+
+            return null;
         }
 
         /// <summary>

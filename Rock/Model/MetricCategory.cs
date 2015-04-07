@@ -158,15 +158,14 @@ namespace Rock.Model
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsAuthorized( string action, Person person, RockContext rockContext = null )
+        public virtual bool IsAuthorized( string action, Person person )
         {
             if ( this.Metric != null )
             {
-                return this.Metric.IsAuthorized( action, person, rockContext );
+                return this.Metric.IsAuthorized( action, person );
             }
             else
             {
@@ -190,13 +189,12 @@ namespace Rock.Model
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsPrivate( string action, Person person, RockContext rockContext = null )
+        public virtual bool IsPrivate( string action, Person person )
         {
-            return this.Metric.IsPrivate( action, person, rockContext );
+            return this.Metric.IsPrivate( action, person );
         }
 
         /// <summary>

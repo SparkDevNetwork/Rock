@@ -46,6 +46,7 @@ namespace Rock.Communication
             {
                 if ( recipients != null && recipients.Any() )
                 {
+
                     var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
                     if ( mediumEntity != null )
                     {
@@ -55,21 +56,24 @@ namespace Rock.Communication
                             var transport = medium.Transport;
                             if ( transport != null && transport.IsActive )
                             {
-                                var template = new SystemEmailService( new RockContext() ).Get( emailTemplateGuid );
-                                if ( template != null )
+                                using ( var rockContext = new RockContext() )
                                 {
-                                    try
+                                    var template = new SystemEmailService( rockContext ).Get( emailTemplateGuid );
+                                    if ( template != null )
                                     {
-                                        transport.Send( template, recipients, appRoot, themeRoot );
+                                        try
+                                        {
+                                            transport.Send( template, recipients, appRoot, themeRoot );
+                                        }
+                                        catch ( Exception ex1 )
+                                        {
+                                            throw new Exception( string.Format( "Error sending System Email ({0}).", template.Title ), ex1 );
+                                        }
                                     }
-                                    catch ( Exception ex1 )
+                                    else
                                     {
-                                        throw new Exception( string.Format( "Error sending System Email ({0}).", template.Title ), ex1 );
+                                        throw new Exception( string.Format( "Error sending System Email: An invalid System Email Identifier was provided ({0}).", emailTemplateGuid.ToString() ) );
                                     }
-                                }
-                                else
-                                {
-                                    throw new Exception( string.Format( "Error sending System Email: An invalid System Email Identifier was provided ({0}).", emailTemplateGuid.ToString() ) );
                                 }
                             }
                             else
@@ -138,15 +142,20 @@ namespace Rock.Communication
         {
             try
             {
+                List<string> recipients = null;
+
                 Guid adminGroup = Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid();
-                var recipients = new GroupMemberService( new RockContext() ).Queryable()
-                    .Where( m =>
-                        m.Group.Guid.Equals( adminGroup ) &&
-                        m.GroupMemberStatus == GroupMemberStatus.Active &&
-                        m.Person.Email != null &&
-                        m.Person.Email != "" )
-                    .Select( m => m.Person.Email )
-                    .ToList();
+                using ( var rockContext = new RockContext() )
+                {
+                    recipients = new GroupMemberService( rockContext ).Queryable()
+                        .Where( m =>
+                            m.Group.Guid.Equals( adminGroup ) &&
+                            m.GroupMemberStatus == GroupMemberStatus.Active &&
+                            m.Person.Email != null &&
+                            m.Person.Email != "" )
+                        .Select( m => m.Person.Email )
+                        .ToList();
+                }
 
                 if ( recipients != null && recipients.Any() )
                 {

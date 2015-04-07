@@ -87,9 +87,11 @@ namespace Rock.Web.Cache
             get
             {
                 if ( EntityTypeId.HasValue )
+                {
                     return EntityTypeCache.Read( EntityTypeId.Value );
-                else
-                    return null;
+                }
+
+                return null;
             }
         }
 
@@ -169,14 +171,20 @@ namespace Rock.Web.Cache
 
             if ( personBadge == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var personBadgeService = new PersonBadgeService( rockContext );
-                var personBadgeModel = personBadgeService.Get( id );
-                if ( personBadgeModel != null )
+                if ( rockContext != null )
                 {
-                    personBadgeModel.LoadAttributes( rockContext );
-                    personBadge = new PersonBadgeCache( personBadgeModel );
+                    personBadge = LoadById( id, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        personBadge = LoadById( id, myRockContext );
+                    }
+                }
 
+                if ( personBadge != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, personBadge, cachePolicy );
                     cache.Set( personBadge.Guid.ToString(), personBadge.Id, cachePolicy );
@@ -184,6 +192,19 @@ namespace Rock.Web.Cache
             }
 
             return personBadge;
+        }
+
+        private static PersonBadgeCache LoadById( int id, RockContext rockContext )
+        {
+            var personBadgeService = new PersonBadgeService( rockContext );
+            var personBadgeModel = personBadgeService.Get( id );
+            if ( personBadgeModel != null )
+            {
+                personBadgeModel.LoadAttributes( rockContext );
+                return new PersonBadgeCache( personBadgeModel );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -205,14 +226,20 @@ namespace Rock.Web.Cache
 
             if ( personBadge == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var personBadgeService = new PersonBadgeService( rockContext );
-                var personBadgeModel = personBadgeService.Get( guid );
-                if ( personBadgeModel != null )
+                if ( rockContext != null )
                 {
-                    personBadgeModel.LoadAttributes( rockContext );
-                    personBadge = new PersonBadgeCache( personBadgeModel );
+                    personBadge = LoadByGuid( guid, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        personBadge = LoadByGuid( guid, myRockContext );
+                    }
+                }
 
+                if ( personBadge != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( PersonBadgeCache.CacheKey( personBadge.Id ), personBadge, cachePolicy );
                     cache.Set( personBadge.Guid.ToString(), personBadge.Id, cachePolicy );
@@ -220,6 +247,19 @@ namespace Rock.Web.Cache
             }
 
             return personBadge;
+        }
+
+        private static PersonBadgeCache LoadByGuid( Guid guid, RockContext rockContext )
+        {
+            var personBadgeService = new PersonBadgeService( rockContext );
+            var personBadgeModel = personBadgeService.Get( guid );
+            if ( personBadgeModel != null )
+            {
+                personBadgeModel.LoadAttributes( rockContext );
+                return new PersonBadgeCache( personBadgeModel );
+            }
+
+            return null;
         }
 
         /// <summary>

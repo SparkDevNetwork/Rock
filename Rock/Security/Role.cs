@@ -93,33 +93,38 @@ namespace Rock.Security
             Role role = cache[cacheKey] as Role;
 
             if ( role != null )
+            {
                 return role;
+            }
             else
             {
-                Rock.Model.GroupService groupService = new Rock.Model.GroupService( new RockContext() );
-                Rock.Model.Group groupModel = groupService.Get( id );
-
-                if ( groupModel != null && groupModel.IsSecurityRole == true )
+                using ( var rockContext = new RockContext() )
                 {
-                    role = new Role();
-                    role.Id = groupModel.Id;
-                    role.Name = groupModel.Name;
-                    role.Users = new List<string>();
-                    role.IsSecurityTypeGroup = groupModel.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+                    Rock.Model.GroupService groupService = new Rock.Model.GroupService( rockContext );
+                    Rock.Model.Group groupModel = groupService.Get( id );
 
-                    foreach ( Rock.Model.GroupMember member in groupModel.Members )
+                    if ( groupModel != null && groupModel.IsSecurityRole == true )
                     {
-                        role.Users.Add( member.Person.Guid.ToString() );
+                        role = new Role();
+                        role.Id = groupModel.Id;
+                        role.Name = groupModel.Name;
+                        role.Users = new List<string>();
+                        role.IsSecurityTypeGroup = groupModel.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+
+                        foreach ( Rock.Model.GroupMember member in groupModel.Members )
+                        {
+                            role.Users.Add( member.Person.Guid.ToString() );
+                        }
+
+                        cache.Set( cacheKey, role, new CacheItemPolicy() );
+
+                        return role;
                     }
-
-                    cache.Set( cacheKey, role, new CacheItemPolicy() );
-
-                    return role;
                 }
-                else
-                    return null;
-
             }
+
+            return null;
+
         }
 
         /// <summary>

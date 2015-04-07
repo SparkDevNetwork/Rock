@@ -291,9 +291,10 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets a List of child <see cref="PageCache"/> objects.
+        /// Gets a List of child <see cref="PageCache" /> objects.
         /// </summary>
-        public List<PageCache> GetPages(RockContext rockContext)
+        /// <returns></returns>
+        public List<PageCache> GetPages( RockContext rockContext )
         {
             List<PageCache> pages = new List<PageCache>();
 
@@ -309,7 +310,6 @@ namespace Rock.Web.Cache
                 pageIds = new List<int>();
 
                 PageService pageService = new PageService( rockContext );
-
                 foreach ( Page page in pageService.GetByParentPageId( this.Id, "PageRoutes,PageContexts" ) )
                 {
                     page.LoadAttributes( rockContext );
@@ -329,31 +329,32 @@ namespace Rock.Web.Cache
         {
             get
             {
-
                 if ( blockIds == null )
                 {
                     blockIds = new List<int>();
 
-                    var rockContext = new RockContext();
-                    BlockService blockService = new BlockService( rockContext );
+                    using ( var rockContext = new RockContext() )
+                    {
+                        BlockService blockService = new BlockService( rockContext );
 
-                    // Load Layout Blocks
-                    blockService
-                        .GetByLayout( this.LayoutId )
-                        .Select( b => b.Id )
-                        .ToList()
-                        .ForEach( b => blockIds.Add( b ) );
+                        // Load Layout Blocks
+                        blockService
+                            .GetByLayout( this.LayoutId )
+                            .Select( b => b.Id )
+                            .ToList()
+                            .ForEach( b => blockIds.Add( b ) );
 
-                    // Load Page Blocks
-                    blockService
-                        .GetByPage( this.Id )
-                        .Select( b => b.Id )
-                        .ToList()
-                        .ForEach( b => blockIds.Add( b ) );
+                        // Load Page Blocks
+                        blockService
+                            .GetByPage( this.Id )
+                            .Select( b => b.Id )
+                            .ToList()
+                            .ForEach( b => blockIds.Add( b ) );
+                    }
                 }
 
                 var blocks = new List<BlockCache>();
-                foreach( int id in blockIds)
+                foreach ( int id in blockIds )
                 {
                     var block = BlockCache.Read( id );
                     if ( block != null )
@@ -789,14 +790,20 @@ namespace Rock.Web.Cache
 
             if ( page == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var pageService = new PageService( rockContext );
-                var pageModel = pageService.Queryable("PageContexts,PageRoutes").FirstOrDefault(a => a.Id == id);
-                if ( pageModel != null )
+                if ( rockContext != null )
                 {
-                    pageModel.LoadAttributes( rockContext );
-                    page = new PageCache( pageModel );
+                    page = LoadById( id, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        page = LoadById( id, myRockContext );
+                    }
+                }
 
+                if ( page != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, page, cachePolicy );
                     cache.Set( page.Guid.ToString(), page.Id, cachePolicy );
@@ -804,6 +811,19 @@ namespace Rock.Web.Cache
             }
 
             return page;
+        }
+
+        private static PageCache LoadById( int id, RockContext rockContext = null )
+        {
+            var pageService = new PageService( rockContext );
+            var pageModel = pageService.Queryable( "PageContexts,PageRoutes" ).FirstOrDefault( a => a.Id == id );
+            if ( pageModel != null )
+            {
+                pageModel.LoadAttributes( rockContext );
+                return new PageCache( pageModel );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -825,14 +845,20 @@ namespace Rock.Web.Cache
 
             if ( page == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var pageService = new PageService( rockContext );
-                var pageModel = pageService.Get( guid );
-                if ( pageModel != null )
+                if ( rockContext != null )
                 {
-                    pageModel.LoadAttributes( rockContext );
-                    page = new PageCache( pageModel );
+                    page = LoadByGuid( guid, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        page = LoadByGuid( guid, myRockContext );
+                    }
+                }
 
+                if ( page != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( PageCache.CacheKey( page.Id ), page, cachePolicy );
                     cache.Set( page.Guid.ToString(), page.Id, cachePolicy );
@@ -840,6 +866,19 @@ namespace Rock.Web.Cache
             }
 
             return page;
+        }
+
+        private static PageCache LoadByGuid( Guid guid, RockContext rockContext )
+        {
+            var pageService = new PageService( rockContext );
+            var pageModel = pageService.Get( guid );
+            if ( pageModel != null )
+            {
+                pageModel.LoadAttributes( rockContext );
+                return new PageCache( pageModel );
+            }
+
+            return null;
         }
 
         /// <summary>

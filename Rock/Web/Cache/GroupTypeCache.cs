@@ -297,17 +297,20 @@ namespace Rock.Web.Cache
             {
                 if ( childGroupTypeIds == null )
                 {
-                    childGroupTypeIds = new GroupTypeService( new RockContext() )
-                        .GetChildGroupTypes( this.Id )
-                        .Select( t => t.Id )
-                        .ToList();
+                    using ( var rockContext = new RockContext() )
+                    {
+                        childGroupTypeIds = new GroupTypeService( rockContext )
+                            .GetChildGroupTypes( this.Id )
+                            .Select( t => t.Id )
+                            .ToList();
+                    }
                 }
 
                 var childGroupTypes = new List<GroupTypeCache>();
-                foreach( int id in childGroupTypeIds)
-                { 
+                foreach ( int id in childGroupTypeIds )
+                {
                     var groupType = GroupTypeCache.Read( id );
-                    if (groupType != null)
+                    if ( groupType != null )
                     {
                         childGroupTypes.Add( groupType );
                     }
@@ -329,10 +332,13 @@ namespace Rock.Web.Cache
             {
                 if ( parentGroupTypeIds == null )
                 {
-                    parentGroupTypeIds = new GroupTypeService( new RockContext() )
+                    using ( var rockContext = new RockContext() )
+                    {
+                        parentGroupTypeIds = new GroupTypeService( rockContext )
                         .GetParentGroupTypes( this.Id )
                         .Select( t => t.Id )
                         .ToList();
+                    }
                 }
 
                 var parentGroupTypes = new List<GroupTypeCache>();
@@ -367,7 +373,6 @@ namespace Rock.Web.Cache
                     {
                         locationTypeValues.Add( DefinedValueCache.Read( id ) );
                     }
-
                     return locationTypeValues;
                 }
 
@@ -463,14 +468,20 @@ namespace Rock.Web.Cache
 
             if ( groupType == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var groupTypeService = new GroupTypeService( rockContext );
-                var groupTypeModel = groupTypeService.Get( id );
-                if ( groupTypeModel != null )
+                if ( rockContext != null )
                 {
-                    groupTypeModel.LoadAttributes( rockContext );
-                    groupType = new GroupTypeCache( groupTypeModel );
+                    groupType = LoadById( id, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        groupType = LoadById( id, myRockContext );
+                    }
+                }
 
+                if ( groupType != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, groupType, cachePolicy );
                     cache.Set( groupType.Guid.ToString(), groupType.Id, cachePolicy );
@@ -478,6 +489,19 @@ namespace Rock.Web.Cache
             }
 
             return groupType;
+        }
+
+        private static GroupTypeCache LoadById( int id, RockContext rockContext )
+        {
+            var groupTypeService = new GroupTypeService( rockContext );
+            var groupTypeModel = groupTypeService.Get( id );
+            if ( groupTypeModel != null )
+            {
+                groupTypeModel.LoadAttributes( rockContext );
+                return new GroupTypeCache( groupTypeModel );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -509,14 +533,20 @@ namespace Rock.Web.Cache
 
             if ( groupType == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var groupTypeService = new GroupTypeService( rockContext );
-                var groupTypeModel = groupTypeService.Get( guid );
-                if ( groupTypeModel != null )
+                if ( rockContext != null )
                 {
-                    groupTypeModel.LoadAttributes( rockContext );
-                    groupType = new GroupTypeCache( groupTypeModel );
+                    groupType = LoadByGuid( guid, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        groupType = LoadByGuid( guid, myRockContext );
+                    }
+                }
 
+                if ( groupType != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( GroupTypeCache.CacheKey( groupType.Id ), groupType, cachePolicy );
                     cache.Set( groupType.Guid.ToString(), groupType.Id, cachePolicy );
@@ -524,6 +554,19 @@ namespace Rock.Web.Cache
             }
 
             return groupType;
+        }
+
+        private static GroupTypeCache LoadByGuid( Guid guid, RockContext rockContext )
+        {
+            var groupTypeService = new GroupTypeService( rockContext );
+            var groupTypeModel = groupTypeService.Get( guid );
+            if ( groupTypeModel != null )
+            {
+                groupTypeModel.LoadAttributes( rockContext );
+                return new GroupTypeCache( groupTypeModel );
+            }
+
+            return null;
         }
 
         /// <summary>
