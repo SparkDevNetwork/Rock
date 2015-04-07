@@ -66,7 +66,7 @@
                 </div>
 
                 <fieldset id="fieldsetViewDetails" runat="server">
-
+                    <Rock:HighlightLabel ID="lMetricChartSummary" runat="server" Text="Summary of Values" />
                     <Rock:LineChart ID="lcMetricsChart" runat="server" />
 
                     <div class="row">
