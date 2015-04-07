@@ -322,20 +322,21 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Determines whether [is empty schedule].
+        /// Determines whether this instance has a non-empty schedule.
         /// </summary>
         /// <returns></returns>
-        public virtual bool IsEmptySchedule()
+        public virtual bool HasSchedule()
         {
             DDay.iCal.Event calEvent = GetCalenderEvent();
-            bool hasCalEvent = ( calEvent != null && calEvent.DTStart != null );
-            if (!hasCalEvent)
+            if ( calEvent != null && calEvent.DTStart != null )
+            {
+                return true;
+            }
+            else
             {
                 // if there is no CalEvent, it might be scheduled using WeeklyDayOfWeek
-                return !WeeklyDayOfWeek.HasValue;
+                return WeeklyDayOfWeek.HasValue;
             }
-
-            return hasCalEvent;
         }
 
         /// <summary>
