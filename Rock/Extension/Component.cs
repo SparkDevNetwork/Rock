@@ -207,8 +207,11 @@ namespace Rock.Extension
         public Component()
         {
             var type = this.GetType();
-            Rock.Attribute.Helper.UpdateAttributes(type, Rock.Web.Cache.EntityTypeCache.GetId(type.FullName));
-            this.LoadAttributes();
+            using ( var rockContext = new RockContext() )
+            {
+                Rock.Attribute.Helper.UpdateAttributes( type, Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ), rockContext );
+                this.LoadAttributes( rockContext );
+            }
         }
 
         /// <summary>
@@ -299,13 +302,12 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public bool IsAuthorized( string action, Model.Person person, RockContext rockContext = null )
+        public bool IsAuthorized( string action, Model.Person person )
         {
-            return Security.Authorization.Authorized( this, action, person, rockContext );
+            return Security.Authorization.Authorized( this, action, person );
         }
 
         /// <summary>
@@ -324,13 +326,12 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        public bool IsPrivate( string action, Model.Person person, RockContext rockContext = null )
+        public bool IsPrivate( string action, Model.Person person )
         {
-            return Security.Authorization.IsPrivate( this, action, person, rockContext );
+            return Security.Authorization.IsPrivate( this, action, person );
         }
 
         /// <summary>

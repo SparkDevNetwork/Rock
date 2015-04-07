@@ -58,35 +58,37 @@ namespace Rock.Model
         {
             var fieldTypes = new Dictionary<string, EntityType>();
 
-            var rockContext = new RockContext();
-            var fieldTypeService = new FieldTypeService( rockContext );
-
-            var existingFieldTypes = fieldTypeService.Queryable().ToList();
-
-            foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Field.IFieldType ) ) )
+            using ( var rockContext = new RockContext() )
             {
-                string assemblyName = type.Value.Assembly.GetName().Name;
-                string className = type.Value.FullName;
+                var fieldTypeService = new FieldTypeService( rockContext );
 
-                if ( !existingFieldTypes.Where( f =>
-                    f.Assembly == assemblyName &&
-                    f.Class == className ).Any() )
+                var existingFieldTypes = fieldTypeService.Queryable().ToList();
+
+                foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Field.IFieldType ) ) )
                 {
-                    string fieldTypeName = type.Value.Name.SplitCase();
-                    if (fieldTypeName.EndsWith(" Field Type"))
-                    {
-                        fieldTypeName = fieldTypeName.Substring( 0, fieldTypeName.Length - 11 );
-                    }
-                    var fieldType = new FieldType();
-                    fieldType.Name = fieldTypeName;
-                    fieldType.Assembly = assemblyName;
-                    fieldType.Class = className;
-                    fieldType.IsSystem = false;
-                    fieldTypeService.Add( fieldType );
-                }
-            }
+                    string assemblyName = type.Value.Assembly.GetName().Name;
+                    string className = type.Value.FullName;
 
-            rockContext.SaveChanges();
+                    if ( !existingFieldTypes.Where( f =>
+                        f.Assembly == assemblyName &&
+                        f.Class == className ).Any() )
+                    {
+                        string fieldTypeName = type.Value.Name.SplitCase();
+                        if ( fieldTypeName.EndsWith( " Field Type" ) )
+                        {
+                            fieldTypeName = fieldTypeName.Substring( 0, fieldTypeName.Length - 11 );
+                        }
+                        var fieldType = new FieldType();
+                        fieldType.Name = fieldTypeName;
+                        fieldType.Assembly = assemblyName;
+                        fieldType.Class = className;
+                        fieldType.IsSystem = false;
+                        fieldTypeService.Add( fieldType );
+                    }
+                }
+
+                rockContext.SaveChanges();
+            }
         }
     }
 }

@@ -57,49 +57,51 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            var rockContext = new RockContext();
-            var jobService = new ServiceJobService( rockContext );
-            
-            ServiceJob job = jobService.Get( JobId );
-            if ( job != null )
+            using ( var rockContext = new RockContext() )
             {
-                try
+                var jobService = new ServiceJobService( rockContext );
+
+                ServiceJob job = jobService.Get( JobId );
+                if ( job != null )
                 {
-                    // create a scheduler
-                    var scheduleConfig = new System.Collections.Specialized.NameValueCollection();
-                    scheduleConfig.Add( "org.quartz.scheduler.instanceName", "RunNow");
-                    var sched = new StdSchedulerFactory( scheduleConfig ).GetScheduler();
+                    try
+                    {
+                        // create a scheduler
+                        var scheduleConfig = new System.Collections.Specialized.NameValueCollection();
+                        scheduleConfig.Add( "org.quartz.scheduler.instanceName", "RunNow" );
+                        var sched = new StdSchedulerFactory( scheduleConfig ).GetScheduler();
 
-                    // create the quartz job and trigger
-                    IJobDetail jobDetail = jobService.BuildQuartzJob( job );
-                    var jobTrigger = TriggerBuilder.Create()
-                        .WithIdentity( job.Guid.ToString(), job.Name )
-                        .StartNow()
-                        .Build();
+                        // create the quartz job and trigger
+                        IJobDetail jobDetail = jobService.BuildQuartzJob( job );
+                        var jobTrigger = TriggerBuilder.Create()
+                            .WithIdentity( job.Guid.ToString(), job.Name )
+                            .StartNow()
+                            .Build();
 
-                    // schedule the job
-                    sched.ScheduleJob( jobDetail, jobTrigger );
+                        // schedule the job
+                        sched.ScheduleJob( jobDetail, jobTrigger );
 
-                    // set up the listener to report back from the job when it completes
-                    sched.ListenerManager.AddJobListener( new RockJobListener(), EverythingMatcher<JobKey>.AllJobs() );
+                        // set up the listener to report back from the job when it completes
+                        sched.ListenerManager.AddJobListener( new RockJobListener(), EverythingMatcher<JobKey>.AllJobs() );
 
-                    // start the scheduler
-                    sched.Start();
+                        // start the scheduler
+                        sched.Start();
 
-                    // Wait 10secs to give job chance to start
-                    Thread.Sleep( new TimeSpan( 0, 0, 10 ) );
+                        // Wait 10secs to give job chance to start
+                        Thread.Sleep( new TimeSpan( 0, 0, 10 ) );
 
-                    // stop the scheduler when done with job
-                    sched.Shutdown( true );
-                }
+                        // stop the scheduler when done with job
+                        sched.Shutdown( true );
+                    }
 
-                catch ( Exception ex )
-                {
-                    // create a friendly error message
-                    string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assembly, ex.Message );
-                    job.LastStatusMessage = message;
-                    job.LastStatus = "Error Loading Job";
-                    rockContext.SaveChanges();
+                    catch ( Exception ex )
+                    {
+                        // create a friendly error message
+                        string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assembly, ex.Message );
+                        job.LastStatusMessage = message;
+                        job.LastStatus = "Error Loading Job";
+                        rockContext.SaveChanges();
+                    }
                 }
             }
         }

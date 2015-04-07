@@ -98,13 +98,12 @@ namespace Rock.Security
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public bool IsAuthorized( string action, Rock.Model.Person person, RockContext rockContext = null )
+        public bool IsAuthorized( string action, Rock.Model.Person person )
         {
-            return Security.Authorization.Authorized( this, action, person, rockContext );
+            return Security.Authorization.Authorized( this, action, person );
         }
 
         /// <summary>
@@ -123,13 +122,12 @@ namespace Rock.Security
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsPrivate( string action, Person person, RockContext rockContext = null )
+        public virtual bool IsPrivate( string action, Person person )
         {
-            return Security.Authorization.IsPrivate( this, action, person, rockContext );
+            return Security.Authorization.IsPrivate( this, action, person );
         }
 
         /// <summary>

@@ -830,58 +830,60 @@ namespace Rock.Model
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
-            var rockContext = new RockContext();
-            var attributeService = new Model.AttributeService( rockContext );
-            var attribute = attributeService.Get( PersonEntityTypeId, string.Empty, string.Empty, key );
-
-            if ( attribute == null )
+            using ( var rockContext = new RockContext() )
             {
-                var fieldTypeService = new Model.FieldTypeService( rockContext );
-                var fieldType = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() );
+                var attributeService = new Model.AttributeService( rockContext );
+                var attribute = attributeService.Get( PersonEntityTypeId, string.Empty, string.Empty, key );
 
-                attribute = new Model.Attribute();
-                attribute.IsSystem = false;
-                attribute.EntityTypeId = PersonEntityTypeId;
-                attribute.EntityTypeQualifierColumn = string.Empty;
-                attribute.EntityTypeQualifierValue = string.Empty;
-                attribute.Key = key;
-                attribute.Name = key;
-                attribute.IconCssClass = string.Empty;
-                attribute.DefaultValue = string.Empty;
-                attribute.IsMultiValue = false;
-                attribute.IsRequired = false;
-                attribute.Description = string.Empty;
-                attribute.FieldTypeId = fieldType.Id;
-                attribute.Order = 0;
+                if ( attribute == null )
+                {
+                    var fieldTypeService = new Model.FieldTypeService( rockContext );
+                    var fieldType = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() );
 
-                attributeService.Add( attribute );
+                    attribute = new Model.Attribute();
+                    attribute.IsSystem = false;
+                    attribute.EntityTypeId = PersonEntityTypeId;
+                    attribute.EntityTypeQualifierColumn = string.Empty;
+                    attribute.EntityTypeQualifierValue = string.Empty;
+                    attribute.Key = key;
+                    attribute.Name = key;
+                    attribute.IconCssClass = string.Empty;
+                    attribute.DefaultValue = string.Empty;
+                    attribute.IsMultiValue = false;
+                    attribute.IsRequired = false;
+                    attribute.Description = string.Empty;
+                    attribute.FieldTypeId = fieldType.Id;
+                    attribute.Order = 0;
+
+                    attributeService.Add( attribute );
+                    rockContext.SaveChanges();
+                }
+
+                var attributeValueService = new Model.AttributeValueService( rockContext );
+                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id );
+
+                if ( string.IsNullOrWhiteSpace( value ) )
+                {
+                    // Delete existing value if no existing value
+                    if ( attributeValue != null )
+                    {
+                        attributeValueService.Delete( attributeValue );
+                    }
+                }
+                else
+                {
+                    if ( attributeValue == null )
+                    {
+                        attributeValue = new Model.AttributeValue();
+                        attributeValue.AttributeId = attribute.Id;
+                        attributeValue.EntityId = person.Id;
+                        attributeValueService.Add( attributeValue );
+                    }
+                    attributeValue.Value = value;
+                }
+
                 rockContext.SaveChanges();
             }
-
-            var attributeValueService = new Model.AttributeValueService( rockContext );
-            var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id );
-
-            if ( string.IsNullOrWhiteSpace( value ) )
-            {
-                // Delete existing value if no existing value
-                if ( attributeValue != null )
-                {
-                    attributeValueService.Delete( attributeValue );
-                }
-            }
-            else
-            {
-                if ( attributeValue == null )
-                {
-                    attributeValue = new Model.AttributeValue();
-                    attributeValue.AttributeId = attribute.Id;
-                    attributeValue.EntityId = person.Id;
-                    attributeValueService.Add( attributeValue );
-                }
-                attributeValue.Value = value;
-            }
-
-            rockContext.SaveChanges();
         }
 
         /// <summary>
@@ -894,17 +896,19 @@ namespace Rock.Model
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
-            var rockContext = new Rock.Data.RockContext();
-            var attributeService = new Model.AttributeService( rockContext );
-            var attribute = attributeService.Get( PersonEntityTypeId, string.Empty, string.Empty, key );
-
-            if (attribute != null)
+            using ( var rockContext = new Rock.Data.RockContext() )
             {
-                var attributeValueService = new Model.AttributeValueService( rockContext );
-                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId(attribute.Id, person.Id);
-                if ( attributeValue != null )
+                var attributeService = new Model.AttributeService( rockContext );
+                var attribute = attributeService.Get( PersonEntityTypeId, string.Empty, string.Empty, key );
+
+                if ( attribute != null )
                 {
-                    return attributeValue.Value;
+                    var attributeValueService = new Model.AttributeValueService( rockContext );
+                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id );
+                    if ( attributeValue != null )
+                    {
+                        return attributeValue.Value;
+                    }
                 }
             }
 
@@ -922,15 +926,17 @@ namespace Rock.Model
 
             var values = new Dictionary<string, string>();
 
-            var rockContext = new Rock.Data.RockContext();
-            foreach ( var attributeValue in new Model.AttributeValueService( rockContext ).Queryable()
-                .Where( v =>
-                    v.Attribute.EntityTypeId == PersonEntityTypeId &&
-                    ( v.Attribute.EntityTypeQualifierColumn == null || v.Attribute.EntityTypeQualifierColumn == string.Empty ) &&
-                    ( v.Attribute.EntityTypeQualifierValue == null || v.Attribute.EntityTypeQualifierValue == string.Empty ) &&
-                    v.EntityId == person.Id ) )
+            using ( var rockContext = new Rock.Data.RockContext() )
             {
-                values.Add(attributeValue.Attribute.Key, attributeValue.Value);
+                foreach ( var attributeValue in new Model.AttributeValueService( rockContext ).Queryable()
+                    .Where( v =>
+                        v.Attribute.EntityTypeId == PersonEntityTypeId &&
+                        ( v.Attribute.EntityTypeQualifierColumn == null || v.Attribute.EntityTypeQualifierColumn == string.Empty ) &&
+                        ( v.Attribute.EntityTypeQualifierValue == null || v.Attribute.EntityTypeQualifierValue == string.Empty ) &&
+                        v.EntityId == person.Id ) )
+                {
+                    values.Add( attributeValue.Attribute.Key, attributeValue.Value );
+                }
             }
 
             return values;
