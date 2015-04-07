@@ -266,7 +266,7 @@ namespace RockWeb.Blocks.Reporting
 
                 schedule.iCalendarContent = sbSchedule.iCalendarContent;
 
-                if ( schedule.IsEmptySchedule() )
+                if ( !schedule.HasSchedule() )
                 {
                     schedule = null;
                 }
@@ -691,8 +691,10 @@ The SQL can include Lava merge fields:";
                 descriptionListMain.Add( "Categories", metric.MetricCategories.Select( s => s.Category.ToString() ).OrderBy( o => o ).ToList().AsDelimited( "," ) );
             }
 
-            // only show LastRun label if SourceValueType is not Manual
-            ltLastRunDateTime.Visible = metric.SourceValueTypeId != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
+            // only show LastRun and Schedule label if SourceValueType is not Manual
+            int manualSourceType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
+            ltLastRunDateTime.Visible = metric.SourceValueTypeId != manualSourceType;
+            hlScheduleFriendlyText.Visible = metric.SourceValueTypeId != manualSourceType;
 
             if ( metric.LastRunDateTime != null )
             {
@@ -704,6 +706,18 @@ The SQL can include Lava merge fields:";
                 ltLastRunDateTime.LabelType = LabelType.Warning;
                 ltLastRunDateTime.Text = "Never Run";
             }
+
+            if (metric.Schedule != null)
+            {
+                hlScheduleFriendlyText.LabelType = metric.Schedule.HasSchedule() ? LabelType.Info : LabelType.Danger;
+                hlScheduleFriendlyText.Text = "<i class='fa fa-clock-o'></i> " + metric.Schedule.FriendlyScheduleText;
+            }
+            else
+            {
+                hlScheduleFriendlyText.LabelType = LabelType.Danger;
+                hlScheduleFriendlyText.Text = "<i class='fa fa-clock-o'></i> " + "Not Scheduled";
+            }
+
 
             lblMainDetails.Text = descriptionListMain.Html;
         }
