@@ -14,7 +14,7 @@
                 var chartSeriesList = [];
 
                 var chartGoalPoints = {
-                    label: yaxisLabelText + ' goal',
+                    label: yaxisLabelText + ' Goal',
                     chartData: [],
                     data: []
                 }

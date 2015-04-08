@@ -594,7 +594,24 @@ END:VCALENDAR
 
             if ( _dpStartDateTime.SelectedDateTimeIsBlank )
             {
-                return iCalendarContentEmptyEvent;
+                if ( _radRecurring.Checked )
+                {
+                    if ( _dpStartDateTime.SelectedTime.HasValue )
+                    {
+                        // if they set the Time but not the Date, assume Today and let the recurring rules figure out the dates from that
+                        _dpStartDateTime.SelectedDateTime = RockDateTime.Today.Add( _dpStartDateTime.SelectedTime.Value );
+                    }
+                    else
+                    {
+                        // no date or time set, so no schedule
+                        return iCalendarContentEmptyEvent;
+                    }
+                }
+                else
+                {
+                    // no date or time set, so no schedule
+                    return iCalendarContentEmptyEvent;
+                }
             }
 
             DDay.iCal.Event calendarEvent = new DDay.iCal.Event();
@@ -1054,6 +1071,7 @@ END:VCALENDAR
             _dpStartDateTime.ClientIDMode = ClientIDMode.Static;
             _dpStartDateTime.ID = "dpStartDateTime_" + this.ClientID;
             _dpStartDateTime.Label = "Start Date / Time";
+            _dpStartDateTime.Help = "Select the Date and Time to base the schedule on. Make sure to set this if you want the schedule to work. Set to blank if you want to leave this unscheduled.";
             _dpStartDateTime.Required = false;
             _dpStartDateTime.ValidationGroup = validationGroup;
 
