@@ -43,7 +43,7 @@
 	</div>
 
 	{% if AllowedActions.Edit == true %}
-	<div class="actions margin-v-md clearfix">
+	<div class="actions margin-t-md clearfix">
 		<a class="btn btn-default btn-sm pull-right" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}">Edit</a>
 	</div>
 	{% endif %}
@@ -66,6 +66,8 @@
 				{% endif %}
 			{% endif %}
 		</ul>
+	{% else %}
+		<hr>
 	{% endif %}
 
 	{% if LinkedPages.RosterPage == CurrentPage.Path %}
@@ -88,6 +90,8 @@
 
 
 		{% if countPending > -1 %}
+			<div class="well">
+				<h4>Pending Members</h4>
 			{% assign icountPending = 0 %}
 
 
@@ -99,8 +103,6 @@
 					{% assign loopcycle = icountPending | Modulo:2 %}
 
 					{% if loopcycle == 0 %}
-					<div class="well">
-						<h4>Pending Members</h4>
 						<div class="row">
 					{% endif %}
 
@@ -108,7 +110,7 @@
 						{% if LinkedPages.PersonDetailPage != '' %}
 							<a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
 						{% endif %}
-						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" />
+						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" width="60" class="pull-left margin-r-sm" />
 						<div class="pull-left">
 							<strong>{{ member.Person.FullName }}</strong>
 							<small>({{ member.GroupRole.Name}})</small>
@@ -144,7 +146,6 @@
 
 					{% if loopcycle != 0 or icountPending == countPending %}
 						</div>
-						</div>
 					{% endif %}
 
 					{% assign icountPending = icountPending | Plus: 1 %}
@@ -152,6 +153,8 @@
 				{% endif %}
 
 			{% endfor %}
+
+			</div>
 
 		{% endif %}
 
@@ -176,7 +179,7 @@
 						{% if LinkedPages.PersonDetailPage != '' %}
 							<a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
 						{% endif %}
-						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" />
+						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" width="60" class="pull-left margin-r-sm" />
 						<div class="pull-left">
 							<strong>{{ member.Person.FullName }}</strong>
 							<small>({{ member.GroupRole.Name}})</small>
@@ -243,7 +246,7 @@
 						{% if LinkedPages.PersonDetailPage != '' %}
 							<a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
 						{% endif %}
-						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" />
+						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" width="60" class="pull-left margin-r-sm" />
 						<div class="pull-left">
 							<strong>{{ member.Person.FullName }}</strong>
 							<small>({{ member.GroupRole.Name}})</small>
