@@ -298,6 +298,18 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Reads the specified type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="createIfNotFound">if set to <c>true</c> [create if not found].</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static EntityTypeCache Read<T>( bool createIfNotFound = true, RockContext rockContext = null )
+        {
+            return EntityTypeCache.Read( typeof( T ), createIfNotFound, rockContext );
+        }
+
+        /// <summary>
         /// Returns EntityType object from cache.  If entityBlockType does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
