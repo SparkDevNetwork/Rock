@@ -322,6 +322,24 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Determines whether this instance has a non-empty schedule.
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool HasSchedule()
+        {
+            DDay.iCal.Event calEvent = GetCalenderEvent();
+            if ( calEvent != null && calEvent.DTStart != null )
+            {
+                return true;
+            }
+            else
+            {
+                // if there is no CalEvent, it might be scheduled using WeeklyDayOfWeek
+                return WeeklyDayOfWeek.HasValue;
+            }
+        }
+
+        /// <summary>
         /// Gets the Friendly Text of the Calendar Event.
         /// For example, "Every 3 days at 10:30am", "Monday, Wednesday, Friday at 5:00pm", "Saturday at 4:30pm"
         /// </summary>
