@@ -88,5 +88,10 @@ namespace Rock.MergeTemplates
         /// The RegEx of "." that matches anything
         /// </summary>
         protected Regex regExDot = new Regex( "." );
+
+        /// <summary>
+        /// The RegEx to detect if the text has {{ }} tags in it
+        /// </summary>
+        protected Regex lavaRegEx = new Regex( @"\{\{.+?\}\}", RegexOptions.Multiline );
     }
 }

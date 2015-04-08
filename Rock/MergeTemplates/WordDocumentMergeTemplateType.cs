@@ -52,7 +52,7 @@ namespace Rock.MergeTemplates
 
             var rockContext = new RockContext();
             var binaryFileService = new BinaryFileService( rockContext );
-            
+
             var templateBinaryFile = binaryFileService.Get( mergeTemplate.TemplateBinaryFileId );
             if ( templateBinaryFile == null )
             {
@@ -70,6 +70,30 @@ namespace Rock.MergeTemplates
                 // now that we have the outputdoc started, simplify the sourceTemplate
                 var simplifiedDoc = WordprocessingDocument.Open( sourceTemplateStream, true );
                 MarkupSimplifier.SimplifyMarkup( simplifiedDoc, this.simplifyMarkupSettingsAll );
+
+                //// simplify any nodes that have Lava in it that might not have been caught by the MarkupSimplifier
+                //// MarkupSimplifier only merges superfluous runs that are children of a paragraph
+                var simplifiedDocX = simplifiedDoc.MainDocumentPart.GetXDocument();
+                OpenXmlRegex.Match(
+                                simplifiedDocX.Elements(),
+                                this.lavaRegEx,
+                                ( x, m ) =>
+                                {
+                                    foreach ( var nonParagraphRunsParent in x.DescendantNodes().OfType<XElement>().Where( a => a.Parent != null && a.Name != null )
+                                .Where( a => ( a.Name.LocalName == "r" ) ).Select( a => a.Parent ).Distinct().ToList() )
+                                    {
+                                        if ( lavaRegEx.IsMatch( nonParagraphRunsParent.Value ) )
+                                        {
+                                            var tempParent = XElement.Parse( new Paragraph().OuterXml );
+                                            tempParent.Add( nonParagraphRunsParent.Nodes() );
+                                            tempParent = MarkupSimplifier.MergeAdjacentSuperfluousRuns( tempParent );
+                                            nonParagraphRunsParent.ReplaceNodes( tempParent.Nodes() );
+                                        }
+                                    }
+                                } );
+
+                simplifiedDoc.MainDocumentPart.PutXDocument();
+
                 sourceTemplateStream.Seek( 0, SeekOrigin.Begin );
 
                 bool? allSameParent = null;
@@ -81,9 +105,17 @@ namespace Rock.MergeTemplates
                     outputBodyNode.RemoveNodes();
 
                     int recordIndex = 0;
+                    int? lastRecordIndex = null;
                     int recordCount = mergeObjectList.Count();
                     while ( recordIndex < recordCount )
                     {
+                        if ( lastRecordIndex.HasValue && lastRecordIndex == recordIndex )
+                        {
+                            // something went wrong, so throw to avoid spinning infinately
+                            throw new Exception( "Unexpected unchanged recordIndex" );
+                        }
+
+                        lastRecordIndex = recordIndex;
                         using ( var tempMergeTemplateStream = new MemoryStream() )
                         {
                             sourceTemplateStream.Position = 0;
@@ -107,6 +139,13 @@ namespace Rock.MergeTemplates
                             allSameParent = allSameParent ?? nextIndicatorNodes.Count > 1 && nextIndicatorNodes.Select( a => a.Parent ).Distinct().Count() == 1;
 
                             List<XContainer> recordContainerNodes = new List<XContainer>();
+                            if ( !nextIndicatorNodes.Any() )
+                            {
+                                // if there aren't any Next indicators, create one (which means the entire template doc is a record)
+                                var addedNode = XElement.Parse( new Paragraph( new Run( new Text( " {% next %} " ) ) ).OuterXml );
+                                tempMergeTemplateBodyNode.Add( addedNode );
+                                nextIndicatorNodes.Add( addedNode );
+                            }
 
                             foreach ( var nextIndicatorNodeParent in nextIndicatorNodes.Select( a => a.Parent ).Where( a => a != null ) )
                             {
@@ -302,14 +341,14 @@ namespace Rock.MergeTemplates
             RemoveComments = true,
             RemoveContentControls = true,
             RemoveEndAndFootNotes = true,
-            RemoveFieldCodes = false,
+            RemoveFieldCodes = true,
             RemoveLastRenderedPageBreak = true,
             RemovePermissions = true,
             RemoveProof = true,
             RemoveRsidInfo = true,
             RemoveSmartTags = true,
             RemoveSoftHyphens = true,
-            ReplaceTabsWithSpaces = true
+            ReplaceTabsWithSpaces = false
         };
     }
 }
