@@ -281,6 +281,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     if ( group != null )
                     {
+                        lGroupName.Text = group.Name.Pluralize();
+                        phEditActions.Visible = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                        
                         if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                         {
                             phGroupTypeIcon.Controls.Clear();
@@ -291,10 +294,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         string.Format( "<i class='{0}'></i>", group.GroupType.IconCssClass ) ) );
                             }
 
-                            lGroupName.Text = group.Name.Pluralize();
-
-                            phEditActions.Visible = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
-
                             // TODO: How many implied relationships should be displayed
 
                             rGroupMembers.DataSource = new GroupMemberService( rockContext ).GetByGroupId( group.Id )
@@ -304,6 +303,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 .Take( 50 )
                                 .ToList();
                             rGroupMembers.DataBind();
+                        }
+                        else
+                        {
+                            lAccessWarning.Text = string.Format( "<div class='alert alert-info'>You do not have security rights to view {0}.", group.Name.Pluralize() );
                         }
                     }
 
