@@ -16,6 +16,7 @@
             </div>
 
             <div class="panel-body">
+                <asp:Literal ID="lAccessWarning" runat="server" />
                 <ul class="personlist">
                     <asp:Repeater ID="rGroupMembers" runat="server">
                         <ItemTemplate>

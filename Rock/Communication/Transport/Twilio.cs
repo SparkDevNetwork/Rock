@@ -65,7 +65,7 @@ namespace Rock.Communication.Transport
                 int fromValueId = int.MinValue;
                 if ( int.TryParse( fromValue, out fromValueId ) )
                 {
-                    fromPhone = DefinedValueCache.Read( fromValueId ).Value;
+                    fromPhone = DefinedValueCache.Read( fromValueId, rockContext ).Value;
                 }
 
                 if ( !string.IsNullOrWhiteSpace( fromPhone ) )

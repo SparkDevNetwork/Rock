@@ -353,14 +353,17 @@ namespace Rock.Web.UI.Controls
         {
             _ddlGroupType.Items.Clear();
 
-            var groupTypeService = new Rock.Model.GroupTypeService( new RockContext() );
-            
-            // get all group types that have at least one role
-            var groupTypes = groupTypeService.Queryable().Where( a => a.Roles.Any()).OrderBy( a => a.Name ).ToList();
-
-            foreach ( var g in groupTypes )
+            using ( var rockContext = new RockContext() )
             {
-                _ddlGroupType.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) );
+                var groupTypeService = new Rock.Model.GroupTypeService( rockContext );
+
+                // get all group types that have at least one role
+                var groupTypes = groupTypeService.Queryable().Where( a => a.Roles.Any() ).OrderBy( a => a.Name ).ToList();
+
+                foreach ( var g in groupTypes )
+                {
+                    _ddlGroupType.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) );
+                }
             }
         }
 

@@ -193,7 +193,7 @@ namespace Rock.Model
                 authorizationMessage = Rock.Constants.EditModeMessage.ReadOnlyEditActionNotAllowed( DataView.FriendlyTypeName );
             }
 
-            if ( this.EntityType != null && !this.EntityType.IsAuthorized( Authorization.VIEW, person, rockContext ) )
+            if ( this.EntityType != null && !this.EntityType.IsAuthorized( Authorization.VIEW, person ) )
             {
                 isAuthorized = false;
                 authorizationMessage = "INFO: Data view uses an entity type that you do not have access to view.";

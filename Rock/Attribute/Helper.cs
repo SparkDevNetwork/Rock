@@ -290,11 +290,20 @@ namespace Rock.Attribute
         /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object
         /// </summary>
         /// <param name="entity">The item.</param>
+        public static void LoadAttributes( Rock.Attribute.IHasAttributes entity )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                LoadAttributes( entity, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object
+        /// </summary>
+        /// <param name="entity">The item.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <remarks>
-        /// If a rockContext value is included, this method will save any previous changes made to the context
-        /// </remarks>
-        public static void LoadAttributes( Rock.Attribute.IHasAttributes entity, RockContext rockContext = null )
+        public static void LoadAttributes( Rock.Attribute.IHasAttributes entity, RockContext rockContext )
         {
             if ( entity != null )
             {

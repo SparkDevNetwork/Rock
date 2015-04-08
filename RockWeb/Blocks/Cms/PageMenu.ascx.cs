@@ -93,7 +93,6 @@ namespace RockWeb.Blocks.Cms
         {
             try
             {
-                RockContext rockContext = new RockContext();
                 PageCache currentPage = PageCache.Read( RockPage.PageId, rockContext );
                 PageCache rootPage = null;
 
@@ -131,7 +130,10 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 var pageProperties = new Dictionary<string, object>();
-                pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
+                using ( var rockContext = new RockContext() )
+                {
+                    pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
+                }
                 string content = GetTemplate().Render( Hash.FromDictionary( pageProperties ) );
 
                 // check for errors
