@@ -56,13 +56,14 @@ namespace Rock.PersonProfile
 
             // Create any attributes that need to be created
             int personBadgeEntityTypeId = EntityTypeCache.Read( typeof( PersonBadge ) ).Id;
-            var rockContext = new RockContext();
-
-            foreach ( var badge in this.Components )
+            using ( var rockContext = new RockContext() )
             {
-                Type badgeType = badge.Value.Value.GetType();
-                int badgeComponentEntityTypeId = EntityTypeCache.Read( badgeType ).Id;
-                Rock.Attribute.Helper.UpdateAttributes( badgeType, personBadgeEntityTypeId, "EntityTypeId", badgeComponentEntityTypeId.ToString(), rockContext );
+                foreach ( var badge in this.Components )
+                {
+                    Type badgeType = badge.Value.Value.GetType();
+                    int badgeComponentEntityTypeId = EntityTypeCache.Read( badgeType ).Id;
+                    Rock.Attribute.Helper.UpdateAttributes( badgeType, personBadgeEntityTypeId, "EntityTypeId", badgeComponentEntityTypeId.ToString(), rockContext );
+                }
             }
         }
 

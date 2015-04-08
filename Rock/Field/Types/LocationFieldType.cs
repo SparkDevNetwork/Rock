@@ -45,12 +45,14 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var service = new LocationService( new RockContext() );
-                var location = service.Get( new Guid( value ) );
-
-                if ( location != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = location.ToString();
+                    var service = new LocationService( rockContext );
+                    var location = service.Get( new Guid( value ) );
+                    if ( location != null )
+                    {
+                        formattedValue = location.ToString();
+                    }
                 }
             }
 

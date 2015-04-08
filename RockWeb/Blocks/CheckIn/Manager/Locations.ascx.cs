@@ -200,125 +200,127 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         protected void lbSearch_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            using ( var rockContext = new RockContext() )
+            {
 
-            // Get all the schedules that allow checkin
-            var schedules = new ScheduleService( rockContext ).Queryable()
-                    .Where( s => s.CheckInStartOffsetMinutes.HasValue )
+                // Get all the schedules that allow checkin
+                var schedules = new ScheduleService( rockContext ).Queryable()
+                        .Where( s => s.CheckInStartOffsetMinutes.HasValue )
+                        .ToList();
+
+                // Get a lit of the schedule ids
+                var scheduleIds = schedules.Select( s => s.Id ).ToList();
+
+                // Get a list of the schedule id that are currently active for checkin
+                var activeScheduleIds = new List<int>();
+                foreach ( var schedule in schedules )
+                {
+                    if ( schedule.IsScheduleOrCheckInActive )
+                    {
+                        activeScheduleIds.Add( schedule.Id );
+                    }
+                }
+
+                // Get a list of all the groups that we're concerned about 
+                var groupIds = NavData.Groups.Select( g => g.Id ).ToList();
+
+                // Get a list of all the people that are currently checked in
+                var today = RockDateTime.Today;
+                var attendanceService = new AttendanceService( rockContext );
+                var currentAttendeeIds = attendanceService.Queryable()
+                    .Where( a =>
+                        a.ScheduleId.HasValue &&
+                        a.GroupId.HasValue &&
+                        a.LocationId.HasValue &&
+                        a.PersonAlias != null &&
+                        a.DidAttend.HasValue &&
+                        a.DidAttend.Value &&
+                        a.StartDateTime > today &&
+                        activeScheduleIds.Contains( a.ScheduleId.Value ) &&
+                        groupIds.Contains( a.GroupId.Value ) )
+                    .Select( a =>
+                        a.PersonAlias.PersonId )
+                    .Distinct();
+
+                // Create a qry to get the last checkin date (used in next statement's join)
+                var attendanceQry = attendanceService.Queryable()
+                    .Where( a =>
+                        a.ScheduleId.HasValue &&
+                        a.GroupId.HasValue &&
+                        a.LocationId.HasValue &&
+                        a.PersonAliasId.HasValue &&
+                        a.DidAttend.Value &&
+                        scheduleIds.Contains( a.ScheduleId.Value ) &&
+                        groupIds.Contains( a.GroupId.Value ) )
+                    .GroupBy( a => new
+                    {
+                        PersonId = a.PersonAlias.PersonId
+                    } )
+                    .Select( g => new PersonResult
+                    {
+                        Id = g.Key.PersonId,
+                        Guid = Guid.Empty,
+                        Name = "",
+                        PhotoId = null,
+                        LastCheckin = g.Max( a => a.StartDateTime ),
+                        CheckedInNow = false,
+                        GroupName = ""
+                    } );
+
+                // Do the person search
+                bool reversed = false;
+                var results = new PersonService( rockContext ).GetByFullName(
+                    tbSearch.Text, false, false, false, out reversed )
+                    .ToList()
+                    .GroupJoin(
+                        attendanceQry,
+                        p => p.Id,
+                        a => a.Id,
+                        ( p, a ) => a
+                            .Select( c =>
+                                new PersonResult
+                                {
+                                    Id = p.Id,
+                                    Guid = p.Guid,
+                                    Name = ( reversed ?
+                                        p.LastName + ", " + p.NickName :
+                                        p.NickName + " " + p.LastName ),
+                                    PhotoId = p.PhotoId,
+                                    Age = p.Age.ToString() ?? "",
+                                    LastCheckin = c.LastCheckin,
+                                    CheckedInNow = currentAttendeeIds.Contains( p.Id ),
+                                    GroupName = ""
+                                } )
+                            .DefaultIfEmpty(
+                                new PersonResult
+                                {
+                                    Id = p.Id,
+                                    Guid = p.Guid,
+                                    Name = ( reversed ?
+                                        p.LastName + ", " + p.NickName :
+                                        p.NickName + " " + p.LastName ),
+                                    PhotoId = p.PhotoId,
+                                    Age = p.Age.ToString() ?? "",
+                                    LastCheckin = null,
+                                    CheckedInNow = false,
+                                    GroupName = ""
+                                } ) )
+                    .SelectMany( a => a )
+                    .Distinct()
+                    .OrderByDescending( a => a.CheckedInNow )
+                    .ThenByDescending( a => a.LastCheckin )
+                    .ThenBy( a => a.Name )
                     .ToList();
 
-            // Get a lit of the schedule ids
-            var scheduleIds = schedules.Select(s => s.Id).ToList();
+                pnlNavHeading.Attributes["onClick"] = upnlContent.GetPostBackEventReference( CurrentNavPath );
+                lNavHeading.Text = "Back";
 
-            // Get a list of the schedule id that are currently active for checkin
-            var activeScheduleIds = new List<int>();
-            foreach (var schedule in schedules)
-            {
-                if (  schedule.IsScheduleOrCheckInActive )
-                {
-                    activeScheduleIds.Add( schedule.Id );
-                }
+                rptNavItems.Visible = false;
+
+                rptPeople.Visible = true;
+                rptPeople.DataSource = results;
+                rptPeople.DataBind();
             }
-
-            // Get a list of all the groups that we're concerned about 
-            var groupIds = NavData.Groups.Select( g => g.Id ).ToList();
-
-            // Get a list of all the people that are currently checked in
-            var today = RockDateTime.Today;
-            var attendanceService = new AttendanceService(rockContext);
-            var currentAttendeeIds = attendanceService.Queryable()
-                .Where( a =>
-                    a.ScheduleId.HasValue &&
-                    a.GroupId.HasValue &&
-                    a.LocationId.HasValue &&
-                    a.PersonAlias != null &&
-                    a.DidAttend.HasValue &&
-                    a.DidAttend.Value &&
-                    a.StartDateTime > today &&
-                    activeScheduleIds.Contains( a.ScheduleId.Value ) &&
-                    groupIds.Contains( a.GroupId.Value ) )
-                .Select( a =>
-                    a.PersonAlias.PersonId )
-                .Distinct();
-
-            // Create a qry to get the last checkin date (used in next statement's join)
-            var attendanceQry = attendanceService.Queryable()
-                .Where( a =>
-                    a.ScheduleId.HasValue &&
-                    a.GroupId.HasValue &&
-                    a.LocationId.HasValue &&
-                    a.PersonAliasId.HasValue &&
-                    a.DidAttend.Value &&
-                    scheduleIds.Contains( a.ScheduleId.Value) && 
-                    groupIds.Contains( a.GroupId.Value ) )
-                .GroupBy( a => new
-                {
-                    PersonId = a.PersonAlias.PersonId
-                } )
-                .Select( g => new PersonResult 
-                {
-                    Id = g.Key.PersonId,
-                    Guid = Guid.Empty,
-                    Name = "",
-                    PhotoId = null,
-                    LastCheckin = g.Max( a => a.StartDateTime ),
-                    CheckedInNow = false,
-                    GroupName = ""
-                } );
-
-            // Do the person search
-            bool reversed = false;
-            var results = new PersonService( rockContext ).GetByFullName(
-                tbSearch.Text, false, false, false, out reversed )
-                .ToList()
-                .GroupJoin(
-                    attendanceQry,
-                    p => p.Id,
-                    a => a.Id,
-                    ( p, a ) => a
-                        .Select( c =>
-                            new PersonResult
-                            {
-                                Id = p.Id,
-                                Guid = p.Guid,
-                                Name = ( reversed ?
-                                    p.LastName + ", " + p.NickName :
-                                    p.NickName + " " + p.LastName ),
-                                PhotoId = p.PhotoId,
-                                Age = p.Age.ToString() ?? "",
-                                LastCheckin = c.LastCheckin,
-                                CheckedInNow = currentAttendeeIds.Contains( p.Id ),
-                                GroupName = ""
-                            } )
-                        .DefaultIfEmpty(
-                            new PersonResult
-                            {
-                                Id = p.Id,
-                                Guid = p.Guid,
-                                Name = ( reversed ?
-                                    p.LastName + ", " + p.NickName :
-                                    p.NickName + " " + p.LastName ),
-                                PhotoId = p.PhotoId,
-                                Age = p.Age.ToString() ?? "",
-                                LastCheckin = null,
-                                CheckedInNow = false,
-                                GroupName = ""
-                            } ) )
-                .SelectMany( a => a )
-                .Distinct()
-                .OrderByDescending( a => a.CheckedInNow )
-                .ThenByDescending( a => a.LastCheckin )
-                .ThenBy( a => a.Name )
-                .ToList();
-
-            pnlNavHeading.Attributes["onClick"] = upnlContent.GetPostBackEventReference( CurrentNavPath );
-            lNavHeading.Text = "Back";
-
-            rptNavItems.Visible = false;
-
-            rptPeople.Visible = true;
-            rptPeople.DataSource = results;
-            rptPeople.DataBind();
 
             RegisterStartupScript();
         }
@@ -464,14 +466,15 @@ namespace RockWeb.Blocks.CheckIn.Manager
             int? id = tgl.Attributes["data-key"].AsIntegerOrNull();
             if (id.HasValue)
             {
-                var rockContext = new RockContext();
-                var location = new LocationService( rockContext ).Get( id.Value );
-                if (location != null)
+                using ( var rockContext = new RockContext() )
                 {
-                    location.IsActive = tgl.Checked;
-                    rockContext.SaveChanges();
+                    var location = new LocationService( rockContext ).Get( id.Value );
+                    if ( location != null )
+                    {
+                        location.IsActive = tgl.Checked;
+                        rockContext.SaveChanges();
+                    }
                 }
-
                 NavData.Locations.Where( l => l.Id == id.Value ).ToList().ForEach( l => l.IsActive = tgl.Checked );
             }
 
@@ -588,186 +591,187 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         private NavigationData GetNavigationData( CampusCache campus )
         {
-            var rockContext = new RockContext();
-
-            var validLocationids = new List<int>();
-            if ( campus.LocationId.HasValue )
+            using ( var rockContext = new RockContext() )
             {
-                var locationService = new LocationService( rockContext );
-                AddChildLocations( locationService, campus.LocationId.Value, validLocationids );
-            }
-
-            var groupTypeTemplateGuid = PageParameter( "Area" ).AsGuidOrNull();
-            if ( !groupTypeTemplateGuid.HasValue )
-            {
-                groupTypeTemplateGuid = this.GetAttributeValue( "GroupTypeTemplate" ).AsGuidOrNull();
-            }
-
-            if (!groupTypeTemplateGuid.HasValue)
-            {
-                // Check to see if a specific group was specified
-                Guid? guid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
-                int? groupId = PageParameter( "Group" ).AsIntegerOrNull();
-                if (groupId.HasValue && guid.HasValue)
+                var validLocationids = new List<int>();
+                if ( campus.LocationId.HasValue )
                 {
-                    var group = new GroupService( rockContext ).Get( groupId.Value );
-                    if (group != null && group.GroupType != null)
+                    var locationService = new LocationService( rockContext );
+                    AddChildLocations( locationService, campus.LocationId.Value, validLocationids );
+                }
+
+                var groupTypeTemplateGuid = PageParameter( "Area" ).AsGuidOrNull();
+                if ( !groupTypeTemplateGuid.HasValue )
+                {
+                    groupTypeTemplateGuid = this.GetAttributeValue( "GroupTypeTemplate" ).AsGuidOrNull();
+                }
+
+                if ( !groupTypeTemplateGuid.HasValue )
+                {
+                    // Check to see if a specific group was specified
+                    Guid? guid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
+                    int? groupId = PageParameter( "Group" ).AsIntegerOrNull();
+                    if ( groupId.HasValue && guid.HasValue )
                     {
-                        var groupType =  GetParentPurposeGroupType(group.GroupType, guid.Value);
-                        if (groupType != null)
+                        var group = new GroupService( rockContext ).Get( groupId.Value );
+                        if ( group != null && group.GroupType != null )
                         {
-                            groupTypeTemplateGuid = groupType.Guid;
+                            var groupType = GetParentPurposeGroupType( group.GroupType, guid.Value );
+                            if ( groupType != null )
+                            {
+                                groupTypeTemplateGuid = groupType.Guid;
+                            }
                         }
                     }
                 }
-            }
 
-            if ( groupTypeTemplateGuid.HasValue )
-            {
-                pnlContent.Visible = true;
-
-                NavData = new NavigationData();
-
-                var chartTimes = GetChartTimes();
-
-                // Get the group types
-                var parentGroupType = GroupTypeCache.Read( groupTypeTemplateGuid.Value );
-                if ( parentGroupType != null )
+                if ( groupTypeTemplateGuid.HasValue )
                 {
-                    foreach ( var childGroupType in parentGroupType.ChildGroupTypes )
+                    pnlContent.Visible = true;
+
+                    NavData = new NavigationData();
+
+                    var chartTimes = GetChartTimes();
+
+                    // Get the group types
+                    var parentGroupType = GroupTypeCache.Read( groupTypeTemplateGuid.Value );
+                    if ( parentGroupType != null )
                     {
-                        AddGroupType( childGroupType, chartTimes );
+                        foreach ( var childGroupType in parentGroupType.ChildGroupTypes )
+                        {
+                            AddGroupType( childGroupType, chartTimes );
+                        }
                     }
-                }
 
-                // Get the groups
-                var groupTypeIds = NavData.GroupTypes.Select( t => t.Id ).ToList();
-                foreach ( var group in new GroupService( rockContext ).Queryable()
-                    .Where( g =>
-                        groupTypeIds.Contains( g.GroupTypeId ) &&
-                        g.IsActive ) )
-                {
-                    var childLocationIds = group.GroupLocations
-                        .Where( l => validLocationids.Contains( l.LocationId ) )
-                        .Select( l => l.LocationId)
-                        .ToList();
-
-                    if ( childLocationIds.Any() )
+                    // Get the groups
+                    var groupTypeIds = NavData.GroupTypes.Select( t => t.Id ).ToList();
+                    foreach ( var group in new GroupService( rockContext ).Queryable()
+                        .Where( g =>
+                            groupTypeIds.Contains( g.GroupTypeId ) &&
+                            g.IsActive ) )
                     {
-                        var navGroup = new NavigationGroup( group, chartTimes );
-                        navGroup.ChildLocationIds = childLocationIds;
-                        NavData.Groups.Add( navGroup );
-                        NavData.GroupTypes.Where( g => g.Id == group.GroupTypeId ).ToList()
-                            .ForEach( g => g.ChildGroupIds.Add( group.Id ) );
+                        var childLocationIds = group.GroupLocations
+                            .Where( l => validLocationids.Contains( l.LocationId ) )
+                            .Select( l => l.LocationId )
+                            .ToList();
+
+                        if ( childLocationIds.Any() )
+                        {
+                            var navGroup = new NavigationGroup( group, chartTimes );
+                            navGroup.ChildLocationIds = childLocationIds;
+                            NavData.Groups.Add( navGroup );
+                            NavData.GroupTypes.Where( g => g.Id == group.GroupTypeId ).ToList()
+                                .ForEach( g => g.ChildGroupIds.Add( group.Id ) );
+                        }
                     }
-                }
 
-                // Remove any grouptype trees without locations
-                var emptyGroupTypeIds = NavData.GroupTypes
-                    .Where( g => !g.ChildGroupIds.Any() && !g.ChildGroupTypeIds.Any() )
-                    .Select( g => g.Id )
-                    .ToList();
-
-                while ( emptyGroupTypeIds.Any() )
-                {
-                    NavData.GroupTypes = NavData.GroupTypes.Where( g => !emptyGroupTypeIds.Contains( g.Id ) ).ToList();
-
-                    NavData.GroupTypes.ForEach( g =>
-                        g.ChildGroupTypeIds = g.ChildGroupTypeIds.Where( c => !emptyGroupTypeIds.Contains( c ) ).ToList() );
-
-                    emptyGroupTypeIds = NavData.GroupTypes
+                    // Remove any grouptype trees without locations
+                    var emptyGroupTypeIds = NavData.GroupTypes
                         .Where( g => !g.ChildGroupIds.Any() && !g.ChildGroupTypeIds.Any() )
                         .Select( g => g.Id )
                         .ToList();
-                }
 
-                // Still no group types? redirect to area select page
-                if ( NavData.GroupTypes.Count == 0 )
-                {
-                    NavigateToLinkedPage( "AreaSelectPage" );
-                }
-                
-                // Get the locations
-                var locationIds = NavData.Groups.SelectMany( g => g.ChildLocationIds ).Distinct().ToList();
-                foreach ( var location in new LocationService( rockContext ).Queryable( "ParentLocation" )
-                    .Where( l => locationIds.Contains( l.Id ) ) )
-                {
-                    var navLocation = AddLocation( location, chartTimes );
-                    navLocation.HasGroups = true;
-                }
+                    while ( emptyGroupTypeIds.Any() )
+                    {
+                        NavData.GroupTypes = NavData.GroupTypes.Where( g => !emptyGroupTypeIds.Contains( g.Id ) ).ToList();
 
-                // Get the attendance counts
-                var dayStart = RockDateTime.Today;
-                var now = RockDateTime.Now;
-                var groupIds = NavData.Groups.Select( g => g.Id ).ToList();
+                        NavData.GroupTypes.ForEach( g =>
+                            g.ChildGroupTypeIds = g.ChildGroupTypeIds.Where( c => !emptyGroupTypeIds.Contains( c ) ).ToList() );
 
-                var attendances = new AttendanceService( rockContext ).Queryable()
-                    .Where( a =>
-                        a.ScheduleId.HasValue &&
-                        a.GroupId.HasValue &&
-                        a.LocationId.HasValue &&
-                        a.StartDateTime > dayStart &&
-                        a.StartDateTime < now &&
-                        a.DidAttend.HasValue &&
-                        a.DidAttend.Value &&
-                        groupIds.Contains( a.GroupId.Value ) &&
-                        locationIds.Contains( a.LocationId.Value ) )
-                    .ToList();
+                        emptyGroupTypeIds = NavData.GroupTypes
+                            .Where( g => !g.ChildGroupIds.Any() && !g.ChildGroupTypeIds.Any() )
+                            .Select( g => g.Id )
+                            .ToList();
+                    }
 
-                var schedules = new ScheduleService( rockContext ).Queryable()
-                        .Where( s => s.CheckInStartOffsetMinutes.HasValue ) 
+                    // Still no group types? redirect to area select page
+                    if ( NavData.GroupTypes.Count == 0 )
+                    {
+                        NavigateToLinkedPage( "AreaSelectPage" );
+                    }
+
+                    // Get the locations
+                    var locationIds = NavData.Groups.SelectMany( g => g.ChildLocationIds ).Distinct().ToList();
+                    foreach ( var location in new LocationService( rockContext ).Queryable( "ParentLocation" )
+                        .Where( l => locationIds.Contains( l.Id ) ) )
+                    {
+                        var navLocation = AddLocation( location, chartTimes );
+                        navLocation.HasGroups = true;
+                    }
+
+                    // Get the attendance counts
+                    var dayStart = RockDateTime.Today;
+                    var now = RockDateTime.Now;
+                    var groupIds = NavData.Groups.Select( g => g.Id ).ToList();
+
+                    var attendances = new AttendanceService( rockContext ).Queryable()
+                        .Where( a =>
+                            a.ScheduleId.HasValue &&
+                            a.GroupId.HasValue &&
+                            a.LocationId.HasValue &&
+                            a.StartDateTime > dayStart &&
+                            a.StartDateTime < now &&
+                            a.DidAttend.HasValue &&
+                            a.DidAttend.Value &&
+                            groupIds.Contains( a.GroupId.Value ) &&
+                            locationIds.Contains( a.LocationId.Value ) )
                         .ToList();
 
-                foreach ( DateTime chartTime in chartTimes )
-                {
-                    // Get the active schedules
-                    var activeSchedules = new List<int>();
-                    foreach ( var schedule in schedules )
+                    var schedules = new ScheduleService( rockContext ).Queryable()
+                            .Where( s => s.CheckInStartOffsetMinutes.HasValue )
+                            .ToList();
+
+                    foreach ( DateTime chartTime in chartTimes )
                     {
-                        if ( schedule.WasScheduleOrCheckInActive( chartTime ) )
+                        // Get the active schedules
+                        var activeSchedules = new List<int>();
+                        foreach ( var schedule in schedules )
                         {
-                            activeSchedules.Add( schedule.Id );
+                            if ( schedule.WasScheduleOrCheckInActive( chartTime ) )
+                            {
+                                activeSchedules.Add( schedule.Id );
+                            }
+                        }
+
+                        bool current = chartTime.Equals( chartTimes.Max() );
+
+                        foreach ( var groupLocSched in attendances
+                            .Where( a =>
+                                a.StartDateTime < chartTime &&
+                                a.PersonAlias != null &&
+                                activeSchedules.Contains( a.ScheduleId.Value ) )
+                            .GroupBy( a => new
+                            {
+                                ScheduleId = a.ScheduleId.Value,
+                                GroupId = a.GroupId.Value,
+                                LocationId = a.LocationId.Value
+                            } )
+                            .Select( g => new
+                            {
+                                ScheduleId = g.Key.ScheduleId,
+                                GroupId = g.Key.GroupId,
+                                LocationId = g.Key.LocationId,
+                                PersonIds = g.Select( a => a.PersonAlias.PersonId ).Distinct().ToList()
+                            } ) )
+                        {
+                            AddGroupCount( chartTime, groupLocSched.GroupId, groupLocSched.PersonIds, current );
+                            AddLocationCount( chartTime, groupLocSched.LocationId, groupLocSched.PersonIds, current );
                         }
                     }
-
-                    bool current = chartTime.Equals( chartTimes.Max() );
-
-                    foreach ( var groupLocSched in attendances
-                        .Where( a => 
-                            a.StartDateTime < chartTime &&
-                            a.PersonAlias != null &&
-                            activeSchedules.Contains( a.ScheduleId.Value ) )
-                        .GroupBy( a => new
-                        {
-                            ScheduleId = a.ScheduleId.Value,
-                            GroupId = a.GroupId.Value,
-                            LocationId = a.LocationId.Value
-                        } )
-                        .Select( g => new
-                        {
-                            ScheduleId = g.Key.ScheduleId,
-                            GroupId = g.Key.GroupId,
-                            LocationId = g.Key.LocationId,
-                            PersonIds = g.Select( a => a.PersonAlias.PersonId).Distinct().ToList()
-                        } ) )
-                    {
-                        AddGroupCount( chartTime, groupLocSched.GroupId, groupLocSched.PersonIds, current );
-                        AddLocationCount( chartTime, groupLocSched.LocationId, groupLocSched.PersonIds, current );
-                    }
+                    return NavData;
                 }
-                return NavData;
-            }
-            else
-            {
-                if ( string.IsNullOrWhiteSpace( PageParameter( "Area" ) ) )
+                else
                 {
-                    // If could not determine area and did not come from are select, redirect to area select page
-                    NavigateToLinkedPage( "AreaSelectPage" );
-                }
+                    if ( string.IsNullOrWhiteSpace( PageParameter( "Area" ) ) )
+                    {
+                        // If could not determine area and did not come from are select, redirect to area select page
+                        NavigateToLinkedPage( "AreaSelectPage" );
+                    }
 
-                nbWarning.Text = "Please select a valid Check-in type in the block settings.";
-                nbWarning.Visible = true;
-                pnlContent.Visible = false;
+                    nbWarning.Text = "Please select a valid Check-in type in the block settings.";
+                    nbWarning.Visible = true;
+                    pnlContent.Visible = false;
+                }
             }
 
             return null;

@@ -153,10 +153,12 @@ namespace RockWeb.Blocks.Core
             var tags = GetTags();
             if ( tags != null )
             {
-                var rockContext = new RockContext();
-                var tagService = new TagService( rockContext );
-                tagService.Reorder( tags.ToList(), e.OldIndex, e.NewIndex );
-                rockContext.SaveChanges();
+                using ( var rockContext = new RockContext() )
+                {
+                    var tagService = new TagService( rockContext );
+                    tagService.Reorder( tags.ToList(), e.OldIndex, e.NewIndex );
+                    rockContext.SaveChanges();
+                }
             }
 
             BindGrid();
