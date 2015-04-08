@@ -115,8 +115,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 if ( Person != null && Person.Id != 0 )
                 {
-                    var rockContext = new RockContext();
-
                     if ( Person.NickName == Person.FirstName )
                     {
                         lName.Text = Person.FullName.FormatAsHtmlTitle();
@@ -202,19 +200,22 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     var workflowActions = GetAttributeValue( "WorkflowActions" );
                     if ( !string.IsNullOrWhiteSpace( workflowActions ) )
                     {
-                        var workflowTypeService = new WorkflowTypeService( rockContext );
-                        foreach ( string guidValue in workflowActions.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                        using ( var rockContext = new RockContext() )
                         {
-                            Guid? guid = guidValue.AsGuidOrNull();
-                            if ( guid.HasValue )
+                            var workflowTypeService = new WorkflowTypeService( rockContext );
+                            foreach ( string guidValue in workflowActions.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                             {
-                                var workflowType = workflowTypeService.Get( guid.Value );
-                                if ( workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                                Guid? guid = guidValue.AsGuidOrNull();
+                                if ( guid.HasValue )
                                 {
-                                    string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, Person.Id );
-                                    sbActions.AppendFormat( "<li><a href='{0}'><i class='{1}'></i> {2}</a></li>",
-                                        ResolveRockUrl( url ), workflowType.IconCssClass, workflowType.Name );
-                                    sbActions.AppendLine();
+                                    var workflowType = workflowTypeService.Get( guid.Value );
+                                    if ( workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                                    {
+                                        string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, Person.Id );
+                                        sbActions.AppendFormat( "<li><a href='{0}'><i class='{1}'></i> {2}</a></li>",
+                                            ResolveRockUrl( url ), workflowType.IconCssClass, workflowType.Name );
+                                        sbActions.AppendLine();
+                                    }
                                 }
                             }
                         }
@@ -241,13 +242,16 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     // Every person should have an alias record with same id.  If it's missing, create it
                     if ( !Person.Aliases.Any( a => a.AliasPersonId == Person.Id ) )
                     {
-                        var personService = new PersonService( rockContext );
-                        var person = personService.Get( Person.Id );
-                        if ( person != null )
+                        using ( var rockContext = new RockContext() )
                         {
-                            person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
-                            rockContext.SaveChanges();
-                            Person = person;
+                            var personService = new PersonService( rockContext );
+                            var person = personService.Get( Person.Id );
+                            if ( person != null )
+                            {
+                                person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
+                                rockContext.SaveChanges();
+                                Person = person;
+                            }
                         }
                     }
                 }
@@ -320,26 +324,28 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             var personAliasEntityType = EntityTypeCache.Read( "Rock.Model.PersonAlias" );
             if ( Person != null && CurrentPersonId.HasValue && CurrentPersonAlias != null && personAliasEntityType != null )
             {
-                var rockContext = new RockContext();
-                var personAliasService = new PersonAliasService( rockContext );
-                var followingService = new FollowingService( rockContext );
-
-                var paQry = personAliasService.Queryable()
-                    .Where( p => p.PersonId == Person.Id )
-                    .Select( p => p.Id );
-
-                if ( followingService.Queryable()
-                    .Where( f =>
-                        f.EntityTypeId == personAliasEntityType.Id &&
-                        paQry.Contains(f.EntityId) &&
-                        f.PersonAlias.PersonId == CurrentPersonId )
-                    .Any())
+                using ( var rockContext = new RockContext() )
                 {
-                    pnlFollow.AddCssClass( "following" );
-                }
-                else
-                {
-                    pnlFollow.RemoveCssClass( "following" );
+                    var personAliasService = new PersonAliasService( rockContext );
+                    var followingService = new FollowingService( rockContext );
+
+                    var paQry = personAliasService.Queryable()
+                        .Where( p => p.PersonId == Person.Id )
+                        .Select( p => p.Id );
+
+                    if ( followingService.Queryable()
+                        .Where( f =>
+                            f.EntityTypeId == personAliasEntityType.Id &&
+                            paQry.Contains( f.EntityId ) &&
+                            f.PersonAlias.PersonId == CurrentPersonId )
+                        .Any() )
+                    {
+                        pnlFollow.AddCssClass( "following" );
+                    }
+                    else
+                    {
+                        pnlFollow.RemoveCssClass( "following" );
+                    }
                 }
 
                 string script = string.Format( @"

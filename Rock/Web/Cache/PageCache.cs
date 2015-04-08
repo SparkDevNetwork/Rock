@@ -35,13 +35,17 @@ namespace Rock.Web.Cache
     [Serializable]
     public class PageCache : CachedModel<Page>
     {
+        private object _lockObj;
+
         #region Constructors
 
         private PageCache()
         {
+            _lockObj = new object();
         }
 
         private PageCache( Page page )
+            : this()
         {
             CopyFromModel( page );
         }
@@ -298,23 +302,30 @@ namespace Rock.Web.Cache
         {
             List<PageCache> pages = new List<PageCache>();
 
-            if ( pageIds != null )
+            lock ( _lockObj )
             {
-                foreach ( int id in pageIds.ToList() )
+                if ( pageIds != null )
                 {
-                    pages.Add( PageCache.Read( id, rockContext ) );
+                    foreach ( int id in pageIds.ToList() )
+                    {
+                        var page = PageCache.Read( id, rockContext );
+                        if ( page != null )
+                        {
+                            pages.Add( page );
+                        }
+                    }
                 }
-            }
-            else
-            {
-                pageIds = new List<int>();
-
-                PageService pageService = new PageService( rockContext );
-                foreach ( Page page in pageService.GetByParentPageId( this.Id, "PageRoutes,PageContexts" ) )
+                else
                 {
-                    page.LoadAttributes( rockContext );
-                    pageIds.Add( page.Id );
-                    pages.Add( PageCache.Read( page ) );
+                    pageIds = new List<int>();
+
+                    PageService pageService = new PageService( rockContext );
+                    foreach ( Page page in pageService.GetByParentPageId( this.Id, "PageRoutes,PageContexts" ) )
+                    {
+                        page.LoadAttributes( rockContext );
+                        pageIds.Add( page.Id );
+                        pages.Add( PageCache.Read( page ) );
+                    }
                 }
             }
 
@@ -329,39 +340,48 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( blockIds == null )
-                {
-                    blockIds = new List<int>();
-
-                    using ( var rockContext = new RockContext() )
-                    {
-                        BlockService blockService = new BlockService( rockContext );
-
-                        // Load Layout Blocks
-                        blockService
-                            .GetByLayout( this.LayoutId )
-                            .Select( b => b.Id )
-                            .ToList()
-                            .ForEach( b => blockIds.Add( b ) );
-
-                        // Load Page Blocks
-                        blockService
-                            .GetByPage( this.Id )
-                            .Select( b => b.Id )
-                            .ToList()
-                            .ForEach( b => blockIds.Add( b ) );
-                    }
-                }
-
                 var blocks = new List<BlockCache>();
-                foreach ( int id in blockIds )
+
+                lock ( _lockObj )
                 {
-                    var block = BlockCache.Read( id );
-                    if ( block != null )
+                    if ( blockIds != null )
                     {
-                        blocks.Add( block );
+                        foreach ( int id in blockIds )
+                        {
+                            var block = BlockCache.Read( id );
+                            if ( block != null )
+                            {
+                                blocks.Add( block );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        blockIds = new List<int>();
+
+                        using ( var rockContext = new RockContext() )
+                        {
+                            BlockService blockService = new BlockService( rockContext );
+
+                            // Load Layout Blocks
+                            foreach ( var block in blockService.GetByLayout( this.LayoutId ) )
+                            {
+                                blockIds.Add( block.Id );
+                                block.LoadAttributes( rockContext );
+                                blocks.Add( BlockCache.Read( block ) );
+                            }
+
+                            // Load Page Blocks
+                            foreach ( var block in blockService.GetByPage( this.Id ) )
+                            {
+                                blockIds.Add( block.Id );
+                                block.LoadAttributes( rockContext );
+                                blocks.Add( BlockCache.Read( block ) );
+                            }
+                        }
                     }
                 }
+
                 return blocks;
             }
         }

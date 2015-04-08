@@ -247,66 +247,67 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 if ( ownerRoleGuid != Guid.Empty )
                 {
-                    var rockContext = new RockContext();
-                    var memberService = new GroupMemberService( rockContext );
-                    var group = memberService.Queryable()
-                        .Where( m =>
-                            m.PersonId == Person.Id &&
-                            m.GroupRole.Guid == ownerRoleGuid
-                        )
-                        .Select( m => m.Group )
-                        .FirstOrDefault();
-
-                    if ( group == null && bool.Parse( GetAttributeValue( "CreateGroup" ) ) )
+                    using ( var rockContext = new RockContext() )
                     {
-                        var role = new GroupTypeRoleService( rockContext ).Get( ownerRoleGuid );
-                        if ( role != null && role.GroupTypeId.HasValue )
+                        var memberService = new GroupMemberService( rockContext );
+                        var group = memberService.Queryable()
+                            .Where( m =>
+                                m.PersonId == Person.Id &&
+                                m.GroupRole.Guid == ownerRoleGuid
+                            )
+                            .Select( m => m.Group )
+                            .FirstOrDefault();
+
+                        if ( group == null && bool.Parse( GetAttributeValue( "CreateGroup" ) ) )
                         {
-                            var groupMember = new GroupMember();
-                            groupMember.PersonId = Person.Id;
-                            groupMember.GroupRoleId = role.Id;
-
-                            group = new Group();
-                            group.Name = role.GroupType.Name;
-                            group.GroupTypeId = role.GroupTypeId.Value;
-                            group.Members.Add( groupMember );
-
-                            var groupService = new GroupService( rockContext );
-                            groupService.Add( group );
-                            rockContext.SaveChanges();
-
-                            group = groupService.Get( group.Id );
-                        }
-                    }
-
-                    if ( group != null )
-                    {
-                        if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                        {
-                            phGroupTypeIcon.Controls.Clear();
-                            if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
+                            var role = new GroupTypeRoleService( rockContext ).Get( ownerRoleGuid );
+                            if ( role != null && role.GroupTypeId.HasValue )
                             {
-                                phGroupTypeIcon.Controls.Add(
-                                    new LiteralControl(
-                                        string.Format( "<i class='{0}'></i>", group.GroupType.IconCssClass ) ) );
+                                var groupMember = new GroupMember();
+                                groupMember.PersonId = Person.Id;
+                                groupMember.GroupRoleId = role.Id;
+
+                                group = new Group();
+                                group.Name = role.GroupType.Name;
+                                group.GroupTypeId = role.GroupTypeId.Value;
+                                group.Members.Add( groupMember );
+
+                                var groupService = new GroupService( rockContext );
+                                groupService.Add( group );
+                                rockContext.SaveChanges();
+
+                                group = groupService.Get( group.Id );
                             }
+                        }
 
-                            lGroupName.Text = group.Name.Pluralize();
+                        if ( group != null )
+                        {
+                            if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                            {
+                                phGroupTypeIcon.Controls.Clear();
+                                if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
+                                {
+                                    phGroupTypeIcon.Controls.Add(
+                                        new LiteralControl(
+                                            string.Format( "<i class='{0}'></i>", group.GroupType.IconCssClass ) ) );
+                                }
 
-                            phEditActions.Visible = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                                lGroupName.Text = group.Name.Pluralize();
 
-                            // TODO: How many implied relationships should be displayed
+                                phEditActions.Visible = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
-                            rGroupMembers.DataSource = new GroupMemberService( rockContext ).GetByGroupId( group.Id )
-                                .Where( m => m.PersonId != Person.Id )
-                                .OrderBy( m => m.Person.LastName )
-                                .ThenBy( m => m.Person.FirstName )
-                                .Take( 50 )
-                                .ToList();
-                            rGroupMembers.DataBind();
+                                // TODO: How many implied relationships should be displayed
+
+                                rGroupMembers.DataSource = new GroupMemberService( rockContext ).GetByGroupId( group.Id )
+                                    .Where( m => m.PersonId != Person.Id )
+                                    .OrderBy( m => m.Person.LastName )
+                                    .ThenBy( m => m.Person.FirstName )
+                                    .Take( 50 )
+                                    .ToList();
+                                rGroupMembers.DataBind();
+                            }
                         }
                     }
-
                 }
             }
         }

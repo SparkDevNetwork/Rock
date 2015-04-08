@@ -58,7 +58,7 @@ namespace Rock.Workflow.Action.CheckIn
                 foreach ( var role in new GroupTypeRoleService( rockContext ).Queryable()
                     .Where( r => r.GroupType.Guid.Equals( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ) ) ) )
                 {
-                    role.LoadAttributes();
+                    role.LoadAttributes( rockContext );
                     if ( role.Attributes.ContainsKey( "CanCheckin" ) )
                     {
                         bool canCheckIn = false;

@@ -32,13 +32,17 @@ namespace Rock.Web.Cache
     [DataContract]
     public class GroupTypeCache : CachedModel<GroupType>
     {
+        private object _lockObj;
+
         #region Constructors
 
         private GroupTypeCache()
         {
+            _lockObj = new object();
         }
 
         private GroupTypeCache( GroupType groupType )
+            : this()
         {
             CopyFromModel( groupType );
         }
@@ -295,26 +299,38 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( childGroupTypeIds == null )
+                var childGroupTypes = new List<GroupTypeCache>();
+
+                lock ( _lockObj )
                 {
-                    using ( var rockContext = new RockContext() )
+                    if ( childGroupTypeIds != null )
                     {
-                        childGroupTypeIds = new GroupTypeService( rockContext )
-                            .GetChildGroupTypes( this.Id )
-                            .Select( t => t.Id )
-                            .ToList();
+                        foreach ( int id in childGroupTypeIds )
+                        {
+                            var groupType = GroupTypeCache.Read( id );
+                            if ( groupType != null )
+                            {
+                                childGroupTypes.Add( groupType );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        childGroupTypeIds = new List<int>();
+
+                        using ( var rockContext = new RockContext() )
+                        {
+                            foreach ( var childGroupType in new GroupTypeService( rockContext )
+                                .GetChildGroupTypes( this.Id ) )
+                            {
+                                childGroupTypeIds.Add( childGroupType.Id );
+                                childGroupType.LoadAttributes( rockContext );
+                                childGroupTypes.Add( GroupTypeCache.Read( childGroupType ) );
+                            }
+                        }
                     }
                 }
 
-                var childGroupTypes = new List<GroupTypeCache>();
-                foreach ( int id in childGroupTypeIds )
-                {
-                    var groupType = GroupTypeCache.Read( id );
-                    if ( groupType != null )
-                    {
-                        childGroupTypes.Add( groupType );
-                    }
-                }
                 return childGroupTypes;
             }
         }
@@ -330,26 +346,38 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( parentGroupTypeIds == null )
+                var parentGroupTypes = new List<GroupTypeCache>();
+
+                lock ( _lockObj )
                 {
-                    using ( var rockContext = new RockContext() )
+                    if ( parentGroupTypeIds != null )
                     {
-                        parentGroupTypeIds = new GroupTypeService( rockContext )
-                        .GetParentGroupTypes( this.Id )
-                        .Select( t => t.Id )
-                        .ToList();
+                        foreach ( int id in parentGroupTypeIds )
+                        {
+                            var groupType = GroupTypeCache.Read( id );
+                            if ( groupType != null )
+                            {
+                                parentGroupTypes.Add( groupType );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        parentGroupTypeIds = new List<int>();
+
+                        using ( var rockContext = new RockContext() )
+                        {
+                            foreach ( var groupType in new GroupTypeService( rockContext )
+                                .GetParentGroupTypes( this.Id ) )
+                            {
+                                parentGroupTypeIds.Add( groupType.Id );
+                                groupType.LoadAttributes( rockContext );
+                                parentGroupTypes.Add( GroupTypeCache.Read( groupType ) );
+                            }
+                        }
                     }
                 }
 
-                var parentGroupTypes = new List<GroupTypeCache>();
-                foreach ( int id in parentGroupTypeIds )
-                {
-                    var groupType = GroupTypeCache.Read( id );
-                    if ( groupType != null )
-                    {
-                        parentGroupTypes.Add( groupType );
-                    }
-                }
                 return parentGroupTypes;
             }
         }

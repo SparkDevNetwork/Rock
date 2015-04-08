@@ -36,12 +36,14 @@ namespace Rock.Web.UI.Controls
             ChartStyle chartStyle = null;
             if ( chartStyleDefinedValueGuid.HasValue )
             {
-                var rockContext = new Rock.Data.RockContext();
-                var definedValue = new DefinedValueService( rockContext ).Get( chartStyleDefinedValueGuid.Value );
-                if ( definedValue != null )
+                using ( var rockContext = new Rock.Data.RockContext() )
                 {
-                    definedValue.LoadAttributes( rockContext );
-                    chartStyle = ChartStyle.CreateFromJson( definedValue.Value, definedValue.GetAttributeValue( "ChartStyle" ) );
+                    var definedValue = new DefinedValueService( rockContext ).Get( chartStyleDefinedValueGuid.Value );
+                    if ( definedValue != null )
+                    {
+                        definedValue.LoadAttributes( rockContext );
+                        chartStyle = ChartStyle.CreateFromJson( definedValue.Value, definedValue.GetAttributeValue( "ChartStyle" ) );
+                    }
                 }
             }
 

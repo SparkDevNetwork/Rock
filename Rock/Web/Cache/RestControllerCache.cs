@@ -31,13 +31,17 @@ namespace Rock.Web.Cache
     [Serializable]
     public class RestControllerCache : CachedModel<RestController>
     {
+        private object _lockObj;
+
         #region Constructors
 
         private RestControllerCache()
         {
+            _lockObj = new object();
         }
 
         private RestControllerCache( RestController model )
+            : this()
         {
             CopyFromModel( model );
         }
@@ -74,29 +78,36 @@ namespace Rock.Web.Cache
             {
                 var restActions = new List<RestActionCache>();
 
-                if ( restActionIds != null )
+                lock ( _lockObj )
                 {
-                    foreach ( int id in restActionIds.ToList() )
+                    if ( restActionIds != null )
                     {
-                        restActions.Add( RestActionCache.Read( id ) );
-                    }
-                }
-                else
-                {
-                    restActionIds = new List<int>();
-
-                    using ( var rockContext = new RockContext() )
-                    {
-                        var restActionService = new Model.RestActionService( rockContext );
-                        foreach ( var restAction in restActionService.Queryable()
-                            .Where( a => a.ControllerId == this.Id ) )
+                        foreach ( int id in restActionIds.ToList() )
                         {
-                            restActionIds.Add( restAction.Id );
-                            restActions.Add( RestActionCache.Read( restAction ) );
+                            var restAction = RestActionCache.Read( id );
+                            if ( restAction != null )
+                            {
+                                restActions.Add( restAction );
+                            }
                         }
                     }
+                    else
+                    {
+                        restActionIds = new List<int>();
 
+                        using ( var rockContext = new RockContext() )
+                        {
+                            var restActionService = new Model.RestActionService( rockContext );
+                            foreach ( var restAction in restActionService.Queryable()
+                                .Where( a => a.ControllerId == this.Id ) )
+                            {
+                                restActionIds.Add( restAction.Id );
+                                restActions.Add( RestActionCache.Read( restAction ) );
+                            }
+                        }
+                    }
                 }
+
                 return restActions;
             }
         }

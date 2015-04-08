@@ -125,26 +125,28 @@ namespace Rock.CheckIn
             }
             else
             {
-                var rockContext = new Rock.Data.RockContext();
-                var location = new LocationService(rockContext).Get( id );
-                if ( location != null )
+                using ( var rockContext = new Rock.Data.RockContext() )
                 {
-                    locationAttendance = new KioskLocationAttendance();
-                    locationAttendance.LocationId = location.Id;
-                    locationAttendance.LocationName = location.Name;
-                    locationAttendance.Groups = new List<KioskGroupAttendance>();
-
-                    var attendanceService = new AttendanceService(rockContext);
-                    foreach ( var attendance in attendanceService.GetByDateAndLocation( RockDateTime.Today, location.Id ) )
+                    var location = new LocationService( rockContext ).Get( id );
+                    if ( location != null )
                     {
-                        AddAttendanceRecord( locationAttendance, attendance );
+                        locationAttendance = new KioskLocationAttendance();
+                        locationAttendance.LocationId = location.Id;
+                        locationAttendance.LocationName = location.Name;
+                        locationAttendance.Groups = new List<KioskGroupAttendance>();
+
+                        var attendanceService = new AttendanceService( rockContext );
+                        foreach ( var attendance in attendanceService.GetByDateAndLocation( RockDateTime.Today, location.Id ) )
+                        {
+                            AddAttendanceRecord( locationAttendance, attendance );
+                        }
+
+                        var cachePolicy = new CacheItemPolicy();
+                        cachePolicy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( 60 );
+                        cache.Set( cacheKey, locationAttendance, cachePolicy );
+
+                        return locationAttendance;
                     }
-
-                    var cachePolicy = new CacheItemPolicy();
-                    cachePolicy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( 60 );
-                    cache.Set( cacheKey, locationAttendance, cachePolicy );
-
-                    return locationAttendance;
                 }
             }
 

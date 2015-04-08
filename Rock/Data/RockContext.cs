@@ -35,26 +35,26 @@ namespace Rock.Data
     /// </summary>
     public class RockContext : Rock.Data.DbContext
     {
-        private const string APP_LOG_FILENAME = "RockContext";
-        private static string _filePath = string.Empty;
-        private static object _threadlock;
+        //private const string APP_LOG_FILENAME = "RockContext";
+        //private static string _filePath = string.Empty;
+        //private static object _threadlock;
 
-        private string _contextId = string.Empty;
+        //private string _contextId = string.Empty;
 
-        static RockContext()
-        {
-            string directory = AppDomain.CurrentDomain.BaseDirectory;
-            directory = Path.Combine( directory, "App_Data", "Logs" );
+        //static RockContext()
+        //{
+        //    string directory = AppDomain.CurrentDomain.BaseDirectory;
+        //    directory = Path.Combine( directory, "App_Data", "Logs" );
 
-            if ( !Directory.Exists( directory ) )
-            {
-                Directory.CreateDirectory( directory );
-            }
+        //    if ( !Directory.Exists( directory ) )
+        //    {
+        //        Directory.CreateDirectory( directory );
+        //    }
 
-            _filePath = Path.Combine( directory, APP_LOG_FILENAME + ".csv" );
+        //    _filePath = Path.Combine( directory, APP_LOG_FILENAME + ".csv" );
 
-            _threadlock = new object();
-        }
+        //    _threadlock = new object();
+        //}
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RockContext"/> class.
@@ -62,23 +62,23 @@ namespace Rock.Data
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
         public RockContext() : base()
         {
-            try
-            {
-                _contextId = DateTime.Now.Ticks.ToString();
+            //try
+            //{
+            //    _contextId = DateTime.Now.Ticks.ToString();
 
-                var frames = new System.Diagnostics.StackTrace().GetFrames();
+            //    var frames = new System.Diagnostics.StackTrace().GetFrames();
 
-                var sb = new System.Text.StringBuilder();
-                for( int i = 1; i < frames.Length; i++)
-                {
-                    var method = frames[i].GetMethod();
-                    sb.AppendFormat( "{0}:{1}", method.DeclaringType.Name, method.Name );
-                    sb.Append( "; " );
-                }
+            //    var sb = new System.Text.StringBuilder();
+            //    for ( int i = 1; i < frames.Length; i++ )
+            //    {
+            //        var method = frames[i].GetMethod();
+            //        sb.AppendFormat( "{0}:{1}", method.DeclaringType.Name, method.Name );
+            //        sb.Append( "; " );
+            //    }
 
-                LogMessage( _contextId, sb.ToString() );
-            }
-            catch { }
+            //    LogMessage( _contextId, sb.ToString() );
+            //}
+            //catch { }
         }
 
 
@@ -883,25 +883,29 @@ namespace Rock.Data
         /// is by this context or ownership was passed to this context when this context was created.
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose( bool disposing )
-        {
-            LogMessage( _contextId, "Disposed" );
-            base.Dispose( disposing );
-        }
+        //protected override void Dispose( bool disposing )
+        //{
+        //    LogMessage( _contextId, "Disposed" );
+        //    base.Dispose( disposing );
+        //}
 
         /// <summary>
         /// Logs the message.
         /// </summary>
         /// <param name="contextId">The context identifier.</param>
         /// <param name="message">The message.</param>
-        private static void LogMessage( string contextId, string message )
-        {
-            lock ( _threadlock )
-            {
-                string when = RockDateTime.Now.ToString();
-                File.AppendAllText( _filePath, string.Format( "{0},{1},{2}\r\n", contextId, when, message ) );
-            }
-        }
+        //private static void LogMessage( string contextId, string message )
+        //{
+        //    try
+        //    {
+        //        lock ( _threadlock )
+        //        {
+        //            string when = RockDateTime.Now.ToString();
+        //            File.AppendAllText( _filePath, string.Format( "{0},{1},{2}\r\n", contextId, when, message ) );
+        //        }
+        //    }
+        //    catch { }
+        //}
 
     }
 

@@ -31,13 +31,17 @@ namespace Rock.Web.Cache
     [Serializable]
     public class CategoryCache : CachedModel<Category>
     {
+        private object _lockObj;
+
         #region constructors
 
         private CategoryCache()
         {
+            _lockObj = new object();
         }
 
         private CategoryCache( Rock.Model.Category model )
+            : this()
         {
             CopyFromModel( model );
         }
@@ -166,26 +170,37 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( categoryIds == null )
+                var categories = new List<CategoryCache>();
+
+                lock ( _lockObj )
                 {
-                    using ( var rockContext = new RockContext() )
+                    if ( categoryIds != null )
                     {
-                        categoryIds = new Model.CategoryService( rockContext )
-                            .Get( this.Id, this.EntityTypeId )
-                            .Select( v => v.Id )
-                            .ToList();
+                        foreach ( int id in categoryIds )
+                        {
+                            var category = CategoryCache.Read( id );
+                            if ( category != null )
+                            {
+                                categories.Add( category );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        categoryIds = new List<int>();
+
+                        using ( var rockContext = new RockContext() )
+                        {
+                            foreach ( var category in new Model.CategoryService( rockContext )
+                                .Get( this.Id, this.EntityTypeId ) )
+                            {
+                                categoryIds.Add( category.Id );
+                                categories.Add( CategoryCache.Read( category ) );
+                            }
+                        }
                     }
                 }
 
-                var categories = new List<CategoryCache>();
-                foreach ( int id in categoryIds )
-                {
-                    var category = CategoryCache.Read( id );
-                    if ( category != null )
-                    {
-                        categories.Add( category );
-                    }
-                }
                 return categories;
             }
         }
