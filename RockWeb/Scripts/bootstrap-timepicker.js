@@ -17,6 +17,7 @@
         focus.timepicker': $.proxy(this.showWidget, this)
         click.timepicker': $.proxy(this.showWidget, this)
     4) added 'if (hour.length == 4) ..' and 'if (hour.length == 3) { ..' to let keyboard input of stuff like 445p and 1030a to work
+    5) changed how zindex is calculated in place()
 */
 (function($, window, document, undefined) {
   'use strict';
@@ -624,7 +625,18 @@
       var widgetWidth = this.$widget.outerWidth(), widgetHeight = this.$widget.outerHeight(), visualPadding = 10, windowWidth =
         $(window).width(), windowHeight = $(window).height(), scrollTop = $(window).scrollTop();
 
-      var zIndex = parseInt(this.$element.parents().filter(function() {}).first().css('z-index'), 10) + 10;
+
+      //Rock Customization from http://stackoverflow.com/a/1118216/1755417
+
+      //var zIndex = parseInt(this.$element.parents().filter(function () { }).first().css('z-index'), 10) + 10;
+      
+      var maxZ = Math.max.apply(null,
+  $.map($('body > *'), function (e, n) {
+      if ($(e).css('position') != 'static')
+          return parseInt($(e).css('z-index')) || 1;
+  }));
+      var zIndex = maxZ + 10;
+
       var offset = this.component ? this.component.parent().offset() : this.$element.offset();
       var height = this.component ? this.component.outerHeight(true) : this.$element.outerHeight(false);
       var width = this.component ? this.component.outerWidth(true) : this.$element.outerWidth(false);

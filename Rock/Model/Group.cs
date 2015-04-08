@@ -284,12 +284,13 @@ namespace Rock.Model
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public override bool IsAuthorized( string action, Person person, RockContext rockContext = null )
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsAuthorized( string action, Person person )
         {
             // Check to see if user is authorized using normal authorization rules
-            bool authorized = base.IsAuthorized( action, person, rockContext );
+            bool authorized = base.IsAuthorized( action, person );
 
             // If the user is not authorized for group through normal security roles, and this is a logged
             // in user trying to view or edit, check to see if they should be allowed based on their role
@@ -297,30 +298,32 @@ namespace Rock.Model
             if ( !authorized && person != null && ( action == Authorization.VIEW || action == Authorization.EDIT ) )
             {
                 // Get the cached group type
-                rockContext = rockContext ?? new RockContext();
-                var groupType = GroupTypeCache.Read( this.GroupTypeId, rockContext );
+                var groupType = GroupTypeCache.Read( this.GroupTypeId );
                 if ( groupType != null )
                 {
                     // For each occurrence of this person in this group, check to see if their role is valid
                     // for the group type and if the role grants them authorization
-                    foreach ( int roleId in new GroupMemberService(rockContext)
-                        .Queryable().AsNoTracking()
-                        .Where( m =>
-                            m.PersonId == person.Id &&
-                            m.GroupId == this.Id && 
-                            m.GroupMemberStatus == GroupMemberStatus.Active )
-                        .Select( m => m.GroupRoleId ) )
+                    using ( var rockContext = new RockContext() )
                     {
-                        var role = groupType.Roles.FirstOrDefault( r => r.Id == roleId );
-                        if ( role != null )
+                        foreach ( int roleId in new GroupMemberService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( m =>
+                                m.PersonId == person.Id &&
+                                m.GroupId == this.Id &&
+                                m.GroupMemberStatus == GroupMemberStatus.Active )
+                            .Select( m => m.GroupRoleId ) )
                         {
-                            if ( action == Authorization.VIEW && role.CanView )
+                            var role = groupType.Roles.FirstOrDefault( r => r.Id == roleId );
+                            if ( role != null )
                             {
-                                return true;
-                            }
-                            if ( action == Authorization.EDIT && role.CanEdit )
-                            {
-                                return true;
+                                if ( action == Authorization.VIEW && role.CanView )
+                                {
+                                    return true;
+                                }
+                                if ( action == Authorization.EDIT && role.CanEdit )
+                                {
+                                    return true;
+                                }
                             }
                         }
                     }

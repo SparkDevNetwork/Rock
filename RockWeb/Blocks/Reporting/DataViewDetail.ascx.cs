@@ -333,7 +333,7 @@ $(document).ready(function() {
                 var filteredEntityType = EntityTypeCache.Read( entityTypeId.Value );
                 foreach ( var component in DataTransformContainer.GetComponentsByTransformedEntityName( filteredEntityType.Name ).OrderBy( c => c.Title ) )
                 {
-                    if ( component.IsAuthorized( Authorization.VIEW, this.CurrentPerson, rockContext ) )
+                    if ( component.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
                     {
                         var transformEntityType = EntityTypeCache.Read( component.TypeName );
                         ListItem li = new ListItem( component.Title, transformEntityType.Id.ToString() );
@@ -379,7 +379,7 @@ $(document).ready(function() {
                 dataView.Name = string.Empty;
             }
 
-            if ( !dataView.IsAuthorized( Authorization.VIEW, CurrentPerson, rockContext ) )
+            if ( !dataView.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 return;
             }
@@ -405,7 +405,7 @@ $(document).ready(function() {
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( DataView.FriendlyTypeName );
             }
 
-            btnSecurity.Visible = dataView.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
+            btnSecurity.Visible = dataView.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.Title = dataView.Name;
             btnSecurity.EntityId = dataView.Id;
 
@@ -518,7 +518,7 @@ $(document).ready(function() {
         private void ShowReport( DataView dataView )
         {
             var rockContext = new RockContext();
-            if ( dataView.EntityTypeId.HasValue && dataView.IsAuthorized( Authorization.VIEW, CurrentPerson, rockContext ) )
+            if ( dataView.EntityTypeId.HasValue && dataView.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 string authorizationMessage = string.Empty;
 

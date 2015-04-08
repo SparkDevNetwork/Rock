@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         #region Fields
 
         private bool _allowEdit = false;
+        private RockContext _rockContext = null;
 
         #endregion
         #region Base Control Methods
@@ -87,12 +88,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         hlEditFamily.NavigateUrl = string.Format( "~/EditFamily/{0}/{1}", Person.Id, group.Id );
                     }
 
-                    var rockContext = new RockContext();
-
                     Repeater rptrMembers = e.Item.FindControl( "rptrMembers" ) as Repeater;
                     if (rptrMembers != null)
                     {
-                        var members = new GroupMemberService( rockContext ).Queryable( "GroupRole,Person", true )
+                        var members = new GroupMemberService( _rockContext ).Queryable( "GroupRole,Person", true )
                             .Where( m => 
                                 m.GroupId == group.Id &&
                                 m.PersonId != Person.Id )
@@ -127,7 +126,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         rptrAddresses.ItemDataBound += rptrAddresses_ItemDataBound;
                         rptrAddresses.ItemCommand += rptrAddresses_ItemCommand;
-                        rptrAddresses.DataSource = new GroupLocationService( rockContext ).Queryable( "Location,GroupLocationTypeValue" )
+                        rptrAddresses.DataSource = new GroupLocationService( _rockContext ).Queryable( "Location,GroupLocationTypeValue" )
                             .Where( l => l.GroupId == group.Id)
                             .OrderBy( l => l.GroupLocationTypeValue.Order)
                             .ToList();
@@ -234,41 +233,43 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 Guid familyGroupGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
-                var rockContext = new RockContext();
-
-                var memberService = new GroupMemberService( rockContext );
-                var families = memberService.Queryable( true )
-                    .Where( m =>
-                        m.PersonId == Person.Id &&
-                        m.Group.GroupType.Guid == familyGroupGuid
-                    )
-                    .Select( m => m.Group )
-                    .ToList();
-
-                if ( !families.Any() )
+                using ( _rockContext = new RockContext() )
                 {
-                    var familyGroupType = GroupTypeCache.GetFamilyGroupType();
-                    if ( familyGroupType != null )
+
+                    var memberService = new GroupMemberService( _rockContext );
+                    var families = memberService.Queryable( true )
+                        .Where( m =>
+                            m.PersonId == Person.Id &&
+                            m.Group.GroupType.Guid == familyGroupGuid
+                        )
+                        .Select( m => m.Group )
+                        .ToList();
+
+                    if ( !families.Any() )
                     {
-                        var groupMember = new GroupMember();
-                        groupMember.PersonId = Person.Id;
-                        groupMember.GroupRoleId = familyGroupType.DefaultGroupRoleId.Value;
+                        var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+                        if ( familyGroupType != null )
+                        {
+                            var groupMember = new GroupMember();
+                            groupMember.PersonId = Person.Id;
+                            groupMember.GroupRoleId = familyGroupType.DefaultGroupRoleId.Value;
 
-                        var family = new Group();
-                        family.Name = Person.LastName;
-                        family.GroupTypeId = familyGroupType.Id;
-                        family.Members.Add( groupMember );
+                            var family = new Group();
+                            family.Name = Person.LastName;
+                            family.GroupTypeId = familyGroupType.Id;
+                            family.Members.Add( groupMember );
 
-                        var groupService = new GroupService( rockContext );
-                        groupService.Add( family );
-                        rockContext.SaveChanges();
+                            var groupService = new GroupService( _rockContext );
+                            groupService.Add( family );
+                            _rockContext.SaveChanges();
 
-                        families.Add( groupService.Get( family.Id ) );
+                            families.Add( groupService.Get( family.Id ) );
+                        }
                     }
-                }
 
-                rptrFamilies.DataSource = families;
-                rptrFamilies.DataBind();
+                    rptrFamilies.DataSource = families;
+                    rptrFamilies.DataBind();
+                }
             }
         }
 

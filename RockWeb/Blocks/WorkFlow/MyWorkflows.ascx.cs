@@ -277,7 +277,7 @@ namespace RockWeb.Blocks.WorkFlow
                     // If there are not any active assigned activities, and not filtering by active, then also
                     // show any types that user is authorized to edit
                     if ( ( !StatusFilter.HasValue || !StatusFilter.Value ) &&
-                        workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson, rockContext ) )
+                        workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                     {
                         displayedTypes.Add( workflowType );
                     }

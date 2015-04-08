@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.Finance
             var batch = batchService.Get( e.RowKeyId );
             if ( batch != null )
             {
-                if ( UserCanEdit || batch.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson, rockContext ) )
+                if ( UserCanEdit || batch.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) )
                 {
                     string errorMessage;
                     if ( !batchService.CanDelete( batch, out errorMessage ) )

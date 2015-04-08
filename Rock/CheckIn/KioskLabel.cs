@@ -98,50 +98,53 @@ namespace Rock.CheckIn
             }
             else
             {
-                var file = new BinaryFileService( new RockContext() ).Get( guid );
-                if ( file != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    label = new KioskLabel();
-
-                    label.Guid = file.Guid;
-                    label.Url = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
-                    label.MergeFields = new Dictionary<string, string>();
-                    label.FileContent = file.ContentsToString();
-
-                    file.LoadAttributes();
-                    string attributeValue = file.GetAttributeValue( "MergeCodes" );
-                    if ( !string.IsNullOrWhiteSpace( attributeValue ) )
+                    var file = new BinaryFileService( rockContext ).Get( guid );
+                    if ( file != null )
                     {
-                        string[] nameValues = attributeValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-                        foreach ( string nameValue in nameValues )
-                        {
-                            string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-                            if ( nameAndValue.Length == 2 && !label.MergeFields.ContainsKey( nameAndValue[0] ) )
-                            {
-                                label.MergeFields.Add( nameAndValue[0], nameAndValue[1] );
+                        label = new KioskLabel();
 
-                                int definedValueId = int.MinValue;
-                                if ( int.TryParse( nameAndValue[1], out definedValueId ) )
+                        label.Guid = file.Guid;
+                        label.Url = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
+                        label.MergeFields = new Dictionary<string, string>();
+                        label.FileContent = file.ContentsToString();
+
+                        file.LoadAttributes( rockContext );
+                        string attributeValue = file.GetAttributeValue( "MergeCodes" );
+                        if ( !string.IsNullOrWhiteSpace( attributeValue ) )
+                        {
+                            string[] nameValues = attributeValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                            foreach ( string nameValue in nameValues )
+                            {
+                                string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                                if ( nameAndValue.Length == 2 && !label.MergeFields.ContainsKey( nameAndValue[0] ) )
                                 {
-                                    var definedValue = DefinedValueCache.Read( definedValueId );
-                                    if ( definedValue != null )
+                                    label.MergeFields.Add( nameAndValue[0], nameAndValue[1] );
+
+                                    int definedValueId = int.MinValue;
+                                    if ( int.TryParse( nameAndValue[1], out definedValueId ) )
                                     {
-                                        string mergeField = definedValue.GetAttributeValue( "MergeField" );
-                                        if ( mergeField != null )
+                                        var definedValue = DefinedValueCache.Read( definedValueId );
+                                        if ( definedValue != null )
                                         {
-                                            label.MergeFields[nameAndValue[0]] = mergeField;
+                                            string mergeField = definedValue.GetAttributeValue( "MergeField" );
+                                            if ( mergeField != null )
+                                            {
+                                                label.MergeFields[nameAndValue[0]] = mergeField;
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
+
+                        var cachePolicy = new CacheItemPolicy();
+                        cachePolicy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( 60 );
+                        cache.Set( cacheKey, label, cachePolicy );
+
+                        return label;
                     }
-
-                    var cachePolicy = new CacheItemPolicy();
-                    cachePolicy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( 60 );
-                    cache.Set( cacheKey, label, cachePolicy );
-
-                    return label;
                 }
             }
 
