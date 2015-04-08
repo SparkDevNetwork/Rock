@@ -144,13 +144,15 @@ namespace RockWeb.Blocks.CheckIn
                     if ( _personAbilityLevelGuid != selectedAbilityLevelGuid )
                     {
                         // Need to load a fully hydrated person because the person.Person is only a clone.
-                        var rockContext = new RockContext();
-                        Person p = new PersonService( rockContext ).Get( person.Person.Id );
-                        if ( p != null )
+                        using ( var rockContext = new RockContext() )
                         {
-                            p.LoadAttributes( rockContext );
-                            p.SetAttributeValue( "AbilityLevel", selectedAbilityLevelGuid.ToUpperInvariant() );
-                            p.SaveAttributeValues( rockContext );
+                            Person p = new PersonService( rockContext ).Get( person.Person.Id );
+                            if ( p != null )
+                            {
+                                p.LoadAttributes( rockContext );
+                                p.SetAttributeValue( "AbilityLevel", selectedAbilityLevelGuid.ToUpperInvariant() );
+                                p.SaveAttributeValues( rockContext );
+                            }
                         }
                     }
 

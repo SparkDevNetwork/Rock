@@ -154,121 +154,123 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         private void ShowDetail(Guid personGuid)
         {
-            var rockContext = new RockContext();
-            var personService = new PersonService( new RockContext() );
-            
-            var person = personService.Get( personGuid );
-
-            if ( person != null )
+            using ( var rockContext = new RockContext() )
             {
-                lName.Text = person.FullName;
+                var personService = new PersonService( new RockContext() );
 
-                string photoTag = Rock.Model.Person.GetPhotoImageTag( person, 120, 120 );
-                if ( person.PhotoId.HasValue )
+                var person = personService.Get( personGuid );
+
+                if ( person != null )
                 {
-                    lPhoto.Text = string.Format( "<a href='{0}'>{1}</a>", person.PhotoUrl, photoTag );
-                }
-                else
-                {
-                    lPhoto.Text = photoTag;
-                }
+                    lName.Text = person.FullName;
 
-                lEmail.Visible = !string.IsNullOrWhiteSpace( person.Email );
-                lEmail.Text = person.GetEmailTag( ResolveRockUrl( "/" ), "btn btn-default", "<i class='fa fa-envelope'></i>" );
-
-                var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
-                var isFamilyChild = new Dictionary<int, bool>();
-
-                var allFamilyMembers = person.GetFamilyMembers( true ).ToList();
-                allFamilyMembers.Where( m => m.PersonId == person.Id ).ToList().ForEach(
-                    m => isFamilyChild.Add( m.GroupId, m.GroupRole.Guid.Equals( childGuid ) ) );
-
-                string urlRoot = Request.Url.ToString().ReplaceCaseInsensitive( personGuid.ToString(), "" );
-
-                var familyMembers = allFamilyMembers.Where( m => m.PersonId != person.Id )
-                    .OrderBy( m => m.GroupId )
-                    .ThenBy( m => m.Person.BirthDate )
-                    .Select( m => new
+                    string photoTag = Rock.Model.Person.GetPhotoImageTag( person, 120, 120 );
+                    if ( person.PhotoId.HasValue )
                     {
-                        Url = urlRoot + m.Person.Guid.ToString(),
-                        FullName = m.Person.FullName,
-                        Gender = m.Person.Gender,
-                        FamilyRole = m.GroupRole,
-                        Note = isFamilyChild[m.GroupId] ?
-                            ( m.GroupRole.Guid.Equals( childGuid ) ? " (Sibling)" : "(Parent)" ) :
-                            ( m.GroupRole.Guid.Equals( childGuid ) ? " (Child)" : "" )
-                    } )
-                    .ToList();
+                        lPhoto.Text = string.Format( "<a href='{0}'>{1}</a>", person.PhotoUrl, photoTag );
+                    }
+                    else
+                    {
+                        lPhoto.Text = photoTag;
+                    }
 
-                rcwFamily.Visible = familyMembers.Any();
-                rptrFamily.DataSource = familyMembers;
-                rptrFamily.DataBind();
+                    lEmail.Visible = !string.IsNullOrWhiteSpace( person.Email );
+                    lEmail.Text = person.GetEmailTag( ResolveRockUrl( "/" ), "btn btn-default", "<i class='fa fa-envelope'></i>" );
 
-                rptrPhones.DataSource = person.PhoneNumbers.Where( p => !p.IsUnlisted ).ToList();
-                rptrPhones.DataBind();
+                    var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
+                    var isFamilyChild = new Dictionary<int, bool>();
 
-                var schedules = new ScheduleService( rockContext ).Queryable()
-                        .Where( s => s.CheckInStartOffsetMinutes.HasValue )
+                    var allFamilyMembers = person.GetFamilyMembers( true ).ToList();
+                    allFamilyMembers.Where( m => m.PersonId == person.Id ).ToList().ForEach(
+                        m => isFamilyChild.Add( m.GroupId, m.GroupRole.Guid.Equals( childGuid ) ) );
+
+                    string urlRoot = Request.Url.ToString().ReplaceCaseInsensitive( personGuid.ToString(), "" );
+
+                    var familyMembers = allFamilyMembers.Where( m => m.PersonId != person.Id )
+                        .OrderBy( m => m.GroupId )
+                        .ThenBy( m => m.Person.BirthDate )
+                        .Select( m => new
+                        {
+                            Url = urlRoot + m.Person.Guid.ToString(),
+                            FullName = m.Person.FullName,
+                            Gender = m.Person.Gender,
+                            FamilyRole = m.GroupRole,
+                            Note = isFamilyChild[m.GroupId] ?
+                                ( m.GroupRole.Guid.Equals( childGuid ) ? " (Sibling)" : "(Parent)" ) :
+                                ( m.GroupRole.Guid.Equals( childGuid ) ? " (Child)" : "" )
+                        } )
                         .ToList();
 
-                var scheduleIds = schedules.Select( s => s.Id ).ToList();
+                    rcwFamily.Visible = familyMembers.Any();
+                    rptrFamily.DataSource = familyMembers;
+                    rptrFamily.DataBind();
 
-                var activeScheduleIds = new List<int>();
-                foreach ( var schedule in schedules )
-                {
-                    if ( schedule.IsScheduleOrCheckInActive )
+                    rptrPhones.DataSource = person.PhoneNumbers.Where( p => !p.IsUnlisted ).ToList();
+                    rptrPhones.DataBind();
+
+                    var schedules = new ScheduleService( rockContext ).Queryable()
+                            .Where( s => s.CheckInStartOffsetMinutes.HasValue )
+                            .ToList();
+
+                    var scheduleIds = schedules.Select( s => s.Id ).ToList();
+
+                    var activeScheduleIds = new List<int>();
+                    foreach ( var schedule in schedules )
                     {
-                        activeScheduleIds.Add( schedule.Id );
+                        if ( schedule.IsScheduleOrCheckInActive )
+                        {
+                            activeScheduleIds.Add( schedule.Id );
+                        }
                     }
-                }
 
-                int? personAliasId = person.PrimaryAliasId;
-                if ( !personAliasId.HasValue )
-                {
-                    personAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( person.Id );
-                }
-
-                var attendances = new AttendanceService( rockContext )
-                    .Queryable( "Schedule,Group,Location" )
-                    .Where( a =>
-                        a.PersonAliasId.HasValue &&
-                        a.PersonAliasId == personAliasId &&
-                        a.ScheduleId.HasValue &&
-                        a.GroupId.HasValue &&
-                        a.LocationId.HasValue &&
-                        a.DidAttend.HasValue &&
-                        a.DidAttend.Value &&
-                        scheduleIds.Contains( a.ScheduleId.Value ) )
-                    .OrderByDescending( a => a.StartDateTime )
-                    .Take( 20 )
-                    .Select( a => new AttendanceInfo
+                    int? personAliasId = person.PrimaryAliasId;
+                    if ( !personAliasId.HasValue )
                     {
-                        Date = a.StartDateTime,
-                        GroupId = a.Group.Id,
-                        Group = a.Group.Name,
-                        LocationId = a.LocationId.Value,
-                        Location = a.Location.Name,
-                        Schedule = a.Schedule.Name,
-                        IsActive = 
-                            a.StartDateTime > DateTime.Today &&
-                            activeScheduleIds.Contains(a.ScheduleId.Value)
-                    } ).ToList();
+                        personAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( person.Id );
+                    }
 
-                // Set active locations to be a link to the room in manager page
-                var qryParam = new Dictionary<string, string>();
-                qryParam.Add( "Group", "" );
-                qryParam.Add( "Location", "" );
-                foreach ( var attendance in attendances.Where( a => a.IsActive ) )
-                {
-                    qryParam["Group"] = attendance.GroupId.ToString();
-                    qryParam["Location"] = attendance.LocationId.ToString();
-                    attendance.Location = string.Format( "<a href='{0}'>{1}</a>",
-                        LinkedPageUrl( "ManagerPage", qryParam ), attendance.Location );
+                    var attendances = new AttendanceService( rockContext )
+                        .Queryable( "Schedule,Group,Location" )
+                        .Where( a =>
+                            a.PersonAliasId.HasValue &&
+                            a.PersonAliasId == personAliasId &&
+                            a.ScheduleId.HasValue &&
+                            a.GroupId.HasValue &&
+                            a.LocationId.HasValue &&
+                            a.DidAttend.HasValue &&
+                            a.DidAttend.Value &&
+                            scheduleIds.Contains( a.ScheduleId.Value ) )
+                        .OrderByDescending( a => a.StartDateTime )
+                        .Take( 20 )
+                        .Select( a => new AttendanceInfo
+                        {
+                            Date = a.StartDateTime,
+                            GroupId = a.Group.Id,
+                            Group = a.Group.Name,
+                            LocationId = a.LocationId.Value,
+                            Location = a.Location.Name,
+                            Schedule = a.Schedule.Name,
+                            IsActive =
+                                a.StartDateTime > DateTime.Today &&
+                                activeScheduleIds.Contains( a.ScheduleId.Value )
+                        } ).ToList();
+
+                    // Set active locations to be a link to the room in manager page
+                    var qryParam = new Dictionary<string, string>();
+                    qryParam.Add( "Group", "" );
+                    qryParam.Add( "Location", "" );
+                    foreach ( var attendance in attendances.Where( a => a.IsActive ) )
+                    {
+                        qryParam["Group"] = attendance.GroupId.ToString();
+                        qryParam["Location"] = attendance.LocationId.ToString();
+                        attendance.Location = string.Format( "<a href='{0}'>{1}</a>",
+                            LinkedPageUrl( "ManagerPage", qryParam ), attendance.Location );
+                    }
+
+                    rcwCheckinHistory.Visible = attendances.Any();
+                    gHistory.DataSource = attendances;
+                    gHistory.DataBind();
                 }
-
-                rcwCheckinHistory.Visible = attendances.Any();
-                gHistory.DataSource = attendances;
-                gHistory.DataBind();
             }
         }
 
