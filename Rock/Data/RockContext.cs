@@ -876,24 +876,24 @@ namespace Rock.Data
             modelBuilder.Conventions.Add( new GetAddressStoreFunctionInjectionConvention() );
         }
 
-        /// <summary>
-        /// Disposes the context. The underlying <see cref="T:System.Data.Entity.Core.Objects.ObjectContext" /> is also disposed if it was created
-        /// is by this context or ownership was passed to this context when this context was created.
-        /// The connection to the database (<see cref="T:System.Data.Common.DbConnection" /> object) is also disposed if it was created
-        /// is by this context or ownership was passed to this context when this context was created.
-        /// </summary>
-        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        ///// <summary>
+        ///// Disposes the context. The underlying <see cref="T:System.Data.Entity.Core.Objects.ObjectContext" /> is also disposed if it was created
+        ///// is by this context or ownership was passed to this context when this context was created.
+        ///// The connection to the database (<see cref="T:System.Data.Common.DbConnection" /> object) is also disposed if it was created
+        ///// is by this context or ownership was passed to this context when this context was created.
+        ///// </summary>
+        ///// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         //protected override void Dispose( bool disposing )
         //{
         //    LogMessage( _contextId, "Disposed" );
         //    base.Dispose( disposing );
         //}
 
-        /// <summary>
-        /// Logs the message.
-        /// </summary>
-        /// <param name="contextId">The context identifier.</param>
-        /// <param name="message">The message.</param>
+        ///// <summary>
+        ///// Logs the message.
+        ///// </summary>
+        ///// <param name="contextId">The context identifier.</param>
+        ///// <param name="message">The message.</param>
         //private static void LogMessage( string contextId, string message )
         //{
         //    try
