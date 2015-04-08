@@ -68,27 +68,29 @@ namespace RockWeb.Blocks.Core
 
                 string noteTypeName = GetAttributeValue( "NoteType" );
 
-                var rockContext = new RockContext();
-                var service = new NoteTypeService( rockContext );
-                var noteType = service.Get( contextEntity.TypeId, noteTypeName );
-
-                notesTimeline.NoteTypeId = noteType.Id;
-                notesTimeline.EntityId = contextEntity.Id;
-                notesTimeline.Title = GetAttributeValue( "Heading" );
-                if ( string.IsNullOrWhiteSpace( notesTimeline.Title ) )
+                using ( var rockContext = new RockContext() )
                 {
-                    notesTimeline.Title = noteType.Name;
+                    var service = new NoteTypeService( rockContext );
+                    var noteType = service.Get( contextEntity.TypeId, noteTypeName );
+
+                    notesTimeline.NoteTypeId = noteType.Id;
+                    notesTimeline.EntityId = contextEntity.Id;
+                    notesTimeline.Title = GetAttributeValue( "Heading" );
+                    if ( string.IsNullOrWhiteSpace( notesTimeline.Title ) )
+                    {
+                        notesTimeline.Title = noteType.Name;
+                    }
+                    notesTimeline.TitleIconCssClass = GetAttributeValue( "HeadingIcon" );
+                    notesTimeline.Term = GetAttributeValue( "NoteTerm" );
+                    notesTimeline.DisplayType = GetAttributeValue( "DisplayType" ) == "Light" ? NoteDisplayType.Light : NoteDisplayType.Full;
+                    notesTimeline.UsePersonIcon = GetAttributeValue( "UsePersonIcon" ).AsBoolean();
+                    notesTimeline.ShowAlertCheckBox = GetAttributeValue( "ShowAlertCheckbox" ).AsBoolean();
+                    notesTimeline.ShowPrivateCheckBox = GetAttributeValue( "ShowPrivateCheckbox" ).AsBoolean();
+                    notesTimeline.ShowSecurityButton = GetAttributeValue( "ShowSecurityButton" ).AsBoolean();
+                    notesTimeline.AllowAnonymousEntry = GetAttributeValue( "Allow Anonymous" ).AsBoolean();
+                    notesTimeline.AddAlwaysVisible = GetAttributeValue( "AddAlwaysVisible" ).AsBoolean();
+                    notesTimeline.SortDirection = GetAttributeValue( "DisplayOrder" ) == "Ascending" ? ListSortDirection.Ascending : ListSortDirection.Descending;
                 }
-                notesTimeline.TitleIconCssClass = GetAttributeValue( "HeadingIcon" );
-                notesTimeline.Term = GetAttributeValue( "NoteTerm" );
-                notesTimeline.DisplayType = GetAttributeValue( "DisplayType" ) == "Light" ? NoteDisplayType.Light : NoteDisplayType.Full;
-                notesTimeline.UsePersonIcon = GetAttributeValue( "UsePersonIcon" ).AsBoolean();
-                notesTimeline.ShowAlertCheckBox = GetAttributeValue( "ShowAlertCheckbox" ).AsBoolean();
-                notesTimeline.ShowPrivateCheckBox = GetAttributeValue( "ShowPrivateCheckbox" ).AsBoolean();
-                notesTimeline.ShowSecurityButton = GetAttributeValue( "ShowSecurityButton" ).AsBoolean();
-                notesTimeline.AllowAnonymousEntry = GetAttributeValue( "Allow Anonymous" ).AsBoolean();
-                notesTimeline.AddAlwaysVisible = GetAttributeValue( "AddAlwaysVisible" ).AsBoolean();
-                notesTimeline.SortDirection = GetAttributeValue( "DisplayOrder" ) == "Ascending" ? ListSortDirection.Ascending : ListSortDirection.Descending;
             }
             else
             {

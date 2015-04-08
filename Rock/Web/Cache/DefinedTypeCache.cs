@@ -33,11 +33,15 @@ namespace Rock.Web.Cache
     {
         #region Constructors
 
+        private object _lockObj;
+
         private DefinedTypeCache()
         {
+            _lockObj = new object();
         }
 
         private DefinedTypeCache( DefinedType model )
+            : this()
         {
             CopyFromModel( model );
         }
@@ -105,7 +109,9 @@ namespace Rock.Web.Cache
             get
             {
                 if ( CategoryId.HasValue )
+                {
                     return CategoryCache.Read( CategoryId.Value );
+                }
                 return null;
             }
         }
@@ -121,7 +127,10 @@ namespace Rock.Web.Cache
             get
             {
                 if ( FieldTypeId.HasValue )
+                {
                     return FieldTypeCache.Read( FieldTypeId.Value );
+                }
+
                 return null;
             }
         }
@@ -136,23 +145,38 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( definedValueIds == null )
-                {
-                    definedValueIds = new Model.DefinedValueService( new RockContext() )
-                        .GetByDefinedTypeId( this.Id )
-                        .Select( v => v.Id )
-                        .ToList();
-                }
-
                 var definedValues = new List<DefinedValueCache>();
-                foreach( int id in definedValueIds)
-                { 
-                    var definedValue = DefinedValueCache.Read( id );
-                    if (definedValue != null)
+
+                lock ( _lockObj )
+                {
+                    if ( definedValueIds != null )
                     {
-                        definedValues.Add( definedValue );
+                        foreach ( int id in definedValueIds )
+                        {
+                            var definedValue = DefinedValueCache.Read( id );
+                            if ( definedValue != null )
+                            {
+                                definedValues.Add( definedValue );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        definedValueIds = new List<int>();
+
+                        using ( var rockContext = new RockContext() )
+                        {
+                            foreach ( var definedValue in new Model.DefinedValueService( rockContext )
+                                .GetByDefinedTypeId( this.Id ) )
+                            {
+                                definedValueIds.Add( definedValue.Id );
+                                definedValue.LoadAttributes( rockContext );
+                                definedValues.Add( DefinedValueCache.Read( definedValue, rockContext ) );
+                            }
+                        }
                     }
                 }
+
                 return definedValues;
             }
         }
@@ -220,18 +244,20 @@ namespace Rock.Web.Cache
 
             if ( definedType == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var definedTypeService = new DefinedTypeService( rockContext );
-                var definedTypeModel = definedTypeService
-                    .Queryable()
-                    .Where( t => t.Id == id )
-                    .FirstOrDefault();
-
-                if ( definedTypeModel != null )
+                if ( rockContext != null )
                 {
-                    definedTypeModel.LoadAttributes( rockContext );
-                    definedType = new DefinedTypeCache( definedTypeModel );
+                    definedType = LoadById( id, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        definedType = LoadById( id, myRockContext );
+                    }
+                }
 
+                if ( definedType != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, definedType, cachePolicy );
                     cache.Set( definedType.Guid.ToString(), definedType.Id, cachePolicy );
@@ -239,6 +265,23 @@ namespace Rock.Web.Cache
             }
 
             return definedType;
+        }
+
+        private static DefinedTypeCache LoadById( int id, RockContext rockContext )
+        {
+            var definedTypeService = new DefinedTypeService( rockContext );
+            var definedTypeModel = definedTypeService
+                .Queryable()
+                .Where( t => t.Id == id )
+                .FirstOrDefault();
+
+            if ( definedTypeModel != null )
+            {
+                definedTypeModel.LoadAttributes( rockContext );
+                return new DefinedTypeCache( definedTypeModel );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -260,18 +303,20 @@ namespace Rock.Web.Cache
 
             if ( definedType == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var definedTypeService = new DefinedTypeService( rockContext );
-                var definedTypeModel = definedTypeService
-                    .Queryable()
-                    .Where( t => t.Guid == guid )
-                    .FirstOrDefault();
-
-                if ( definedTypeModel != null )
+                if ( rockContext != null )
                 {
-                    definedTypeModel.LoadAttributes( rockContext );
-                    definedType = new DefinedTypeCache( definedTypeModel );
+                    definedType = LoadByGuid( guid, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        definedType = LoadByGuid( guid, myRockContext );
+                    }
+                }
 
+                if ( definedType != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( DefinedTypeCache.CacheKey( definedType.Id ), definedType, cachePolicy );
                     cache.Set( definedType.Guid.ToString(), definedType.Id, cachePolicy );
@@ -279,6 +324,23 @@ namespace Rock.Web.Cache
             }
 
             return definedType;
+        }
+
+        private static DefinedTypeCache LoadByGuid( Guid guid, RockContext rockContext )
+        {
+            var definedTypeService = new DefinedTypeService( rockContext );
+            var definedTypeModel = definedTypeService
+                .Queryable()
+                .Where( t => t.Guid == guid )
+                .FirstOrDefault();
+
+            if ( definedTypeModel != null )
+            {
+                definedTypeModel.LoadAttributes( rockContext );
+                return new DefinedTypeCache( definedTypeModel );
+            }
+
+            return null;
         }
 
         /// <summary>
