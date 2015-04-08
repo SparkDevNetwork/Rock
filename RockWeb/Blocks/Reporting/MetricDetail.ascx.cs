@@ -196,13 +196,32 @@ namespace RockWeb.Blocks.Reporting
 
             metric.EntityTypeId = etpEntityType.SelectedEntityTypeId;
 
+            int sourceTypeDataView = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid() ).Id;
+            int sourceTypeSQL = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid() ).Id;
+
             var personService = new PersonService( rockContext );
             var metricChampionPerson = personService.Get( ppMetricChampionPerson.SelectedValue ?? 0 );
             metric.MetricChampionPersonAliasId = metricChampionPerson != null ? metricChampionPerson.PrimaryAliasId : null;
             var adminPerson = personService.Get( ppAdminPerson.SelectedValue ?? 0 );
             metric.AdminPersonAliasId = adminPerson != null ? adminPerson.PrimaryAliasId : null;
-            metric.SourceSql = ceSourceSql.Text;
-            metric.DataViewId = ddlDataView.SelectedValueAsId();
+
+            if ( metric.SourceValueTypeId == sourceTypeSQL )
+            {
+                metric.SourceSql = ceSourceSql.Text;
+            }
+            else
+            {
+                metric.SourceSql = string.Empty;
+            }
+
+            if ( metric.SourceValueTypeId == sourceTypeDataView )
+            {
+                metric.DataViewId = ddlDataView.SelectedValueAsId();
+            }
+            else
+            {
+                metric.DataViewId = null;
+            }
 
             if ( rblScheduleSelect.SelectedValueAsEnum<ScheduleSelectionType>() == ScheduleSelectionType.NamedSchedule )
             {
@@ -246,15 +265,30 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 schedule.iCalendarContent = sbSchedule.iCalendarContent;
-                if ( schedule.Id == 0 )
-                {
-                    scheduleService.Add( schedule );
 
-                    // save to make sure we have a scheduleId
-                    rockContext.SaveChanges();
+                if ( !schedule.HasSchedule() )
+                {
+                    schedule = null;
+                }
+                else
+                {
+                    if ( schedule.Id == 0 )
+                    {
+                        scheduleService.Add( schedule );
+
+                        // save to make sure we have a scheduleId
+                        rockContext.SaveChanges();
+                    }
                 }
 
-                metric.ScheduleId = schedule.Id;
+                if ( schedule != null )
+                {
+                    metric.ScheduleId = schedule.Id;
+                }
+                else
+                {
+                    metric.ScheduleId = null;
+                }
 
                 if ( metric.Id == 0 )
                 {
@@ -299,8 +333,9 @@ namespace RockWeb.Blocks.Reporting
 
                 // delete any orphaned Unnamed metric schedules
                 var metricIdSchedulesQry = metricService.Queryable().Select( a => a.ScheduleId );
+                int? metricScheduleId = schedule != null ? schedule.Id : (int?)null;
                 var orphanedSchedules = scheduleService.Queryable()
-                    .Where( a => a.CategoryId == metricScheduleCategoryId && a.Name == string.Empty && a.Id != schedule.Id )
+                    .Where( a => a.CategoryId == metricScheduleCategoryId && a.Name == string.Empty && a.Id != ( metricScheduleId ?? 0 ) )
                     .Where( s => !metricIdSchedulesQry.Any( m => m == s.Id ) );
                 foreach ( var item in orphanedSchedules )
                 {
@@ -656,8 +691,10 @@ The SQL can include Lava merge fields:";
                 descriptionListMain.Add( "Categories", metric.MetricCategories.Select( s => s.Category.ToString() ).OrderBy( o => o ).ToList().AsDelimited( "," ) );
             }
 
-            // only show LastRun label if SourceValueType is not Manual
-            ltLastRunDateTime.Visible = metric.SourceValueTypeId != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
+            // only show LastRun and Schedule label if SourceValueType is not Manual
+            int manualSourceType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
+            ltLastRunDateTime.Visible = metric.SourceValueTypeId != manualSourceType;
+            hlScheduleFriendlyText.Visible = metric.SourceValueTypeId != manualSourceType;
 
             if ( metric.LastRunDateTime != null )
             {
@@ -669,6 +706,18 @@ The SQL can include Lava merge fields:";
                 ltLastRunDateTime.LabelType = LabelType.Warning;
                 ltLastRunDateTime.Text = "Never Run";
             }
+
+            if (metric.Schedule != null)
+            {
+                hlScheduleFriendlyText.LabelType = metric.Schedule.HasSchedule() ? LabelType.Info : LabelType.Danger;
+                hlScheduleFriendlyText.Text = "<i class='fa fa-clock-o'></i> " + metric.Schedule.FriendlyScheduleText;
+            }
+            else
+            {
+                hlScheduleFriendlyText.LabelType = LabelType.Danger;
+                hlScheduleFriendlyText.Text = "<i class='fa fa-clock-o'></i> " + "Not Scheduled";
+            }
+
 
             lblMainDetails.Text = descriptionListMain.Html;
         }
@@ -743,6 +792,6 @@ The SQL can include Lava merge fields:";
         }
 
         #endregion
-        
-}
+
+    }
 }

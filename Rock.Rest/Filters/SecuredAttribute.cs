@@ -65,28 +65,30 @@ namespace Rock.Rest.Filters
                 var principal = actionContext.Request.GetUserPrincipal();
                 if ( principal != null && principal.Identity != null )
                 {
-                    var rockContext = new RockContext();
-                    string userName =principal.Identity.Name;
-                    UserLogin userLogin = null;
-                    if ( userName.StartsWith( "rckipid=" ) )
+                    using ( var rockContext = new RockContext() )
                     {
-                        Rock.Model.PersonService personService = new Model.PersonService( rockContext );
-                        Rock.Model.Person impersonatedPerson = personService.GetByEncryptedKey( userName.Substring( 8 ) );
-                        if ( impersonatedPerson != null )
+                        string userName = principal.Identity.Name;
+                        UserLogin userLogin = null;
+                        if ( userName.StartsWith( "rckipid=" ) )
                         {
-                            userLogin = impersonatedPerson.GetImpersonatedUser();
+                            Rock.Model.PersonService personService = new Model.PersonService( rockContext );
+                            Rock.Model.Person impersonatedPerson = personService.GetByEncryptedKey( userName.Substring( 8 ) );
+                            if ( impersonatedPerson != null )
+                            {
+                                userLogin = impersonatedPerson.GetImpersonatedUser();
+                            }
                         }
-                    }
-                    else
-                    {
-                        var userLoginService = new Rock.Model.UserLoginService( rockContext );
-                        userLogin = userLoginService.GetByUserName( userName );
-                    }
+                        else
+                        {
+                            var userLoginService = new Rock.Model.UserLoginService( rockContext );
+                            userLogin = userLoginService.GetByUserName( userName );
+                        }
 
-                    if ( userLogin != null )
-                    {
-                        person = userLogin.Person;
-                        actionContext.Request.Properties.Add( "Person", person );
+                        if ( userLogin != null )
+                        {
+                            person = userLogin.Person;
+                            actionContext.Request.Properties.Add( "Person", person );
+                        }
                     }
                 }
             }

@@ -33,9 +33,17 @@ namespace Rock.Web.UI.Controls
         {
             this.Items.Clear();
             this.Items.Add( new ListItem() );
-            foreach( var item in new BinaryFileTypeService( new RockContext() ).Queryable().OrderBy( f => f.Name ).Select(a => new { a.Id, a.Name }).ToList())
+
+            using ( var rockContext = new RockContext() )
             {
-                this.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+                foreach ( var item in new BinaryFileTypeService( rockContext )
+                    .Queryable()
+                    .OrderBy( f => f.Name )
+                    .Select( a => new { a.Id, a.Name } )
+                    .ToList() )
+                {
+                    this.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+                }
             }
         }
     }

@@ -12,6 +12,7 @@
                 
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
+                    <Rock:HighlightLabel ID="hlScheduleFriendlyText" runat="server" />
                     <Rock:HighlightLabel ID="ltLastRunDateTime" runat="server" />
                 </div>
             </div>
@@ -65,7 +66,7 @@
                 </div>
 
                 <fieldset id="fieldsetViewDetails" runat="server">
-
+                    <Rock:HighlightLabel ID="lMetricChartSummary" runat="server" Text="Summary of Values" />
                     <Rock:LineChart ID="lcMetricsChart" runat="server" />
 
                     <div class="row">

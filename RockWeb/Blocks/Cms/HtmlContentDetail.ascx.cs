@@ -566,67 +566,69 @@ namespace RockWeb.Blocks.Cms
             // if content not cached load it from DB
             if ( cachedContent == null )
             {
-                var rockContext = new RockContext();
-                var htmlContentService = new HtmlContentService( rockContext );
-                HtmlContent content = htmlContentService.GetActiveContent( this.BlockId, entityValue );
-
-                if ( content != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
+                    var htmlContentService = new HtmlContentService( rockContext );
+                    HtmlContent content = htmlContentService.GetActiveContent( this.BlockId, entityValue );
 
-                    if ( content.Content.HasMergeFields() || enableDebug )
+                    if ( content != null )
                     {
-                        var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-                        if ( CurrentPerson != null )
-                        {
-                            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                            mergeFields.Add( "Person", CurrentPerson );
-                            mergeFields.Add( "CurrentPerson", CurrentPerson );
-                        }
+                        bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
 
-                        mergeFields.Add( "Campuses", CampusCache.All() );
-                        mergeFields.Add( "PageParameter", PageParameters() );
-
-                        var contextObjects = new Dictionary<string, object>();
-                        foreach( var contextEntityType in RockPage.GetContextEntityTypes() )
+                        if ( content.Content.HasMergeFields() || enableDebug )
                         {
-                            var contextEntity = RockPage.GetCurrentContext( contextEntityType );
-                            if (contextEntity != null && contextEntity is DotLiquid.ILiquidizable)
+                            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+                            if ( CurrentPerson != null )
                             {
-                                var type = Type.GetType(contextEntityType.AssemblyName ?? contextEntityType.Name);
-                                if (type != null)
-                                {
-                                    contextObjects.Add( type.Name, contextEntity );
-                                }
+                                // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+                                mergeFields.Add( "Person", CurrentPerson );
+                                mergeFields.Add( "CurrentPerson", CurrentPerson );
                             }
 
+                            mergeFields.Add( "Campuses", CampusCache.All() );
+                            mergeFields.Add( "PageParameter", PageParameters() );
+
+                            var contextObjects = new Dictionary<string, object>();
+                            foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
+                            {
+                                var contextEntity = RockPage.GetCurrentContext( contextEntityType );
+                                if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
+                                {
+                                    var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
+                                    if ( type != null )
+                                    {
+                                        contextObjects.Add( type.Name, contextEntity );
+                                    }
+                                }
+
+                            }
+
+                            if ( contextObjects.Any() )
+                            {
+                                mergeFields.Add( "Context", contextObjects );
+                            }
+
+                            mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+
+                            html = content.Content.ResolveMergeFields( mergeFields );
+
+                            // show merge fields if enable debug true
+                            if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
+                            {
+                                // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+                                mergeFields.Remove( "Person" );
+                                html += mergeFields.lavaDebugInfo();
+                            }
                         }
-
-                        if ( contextObjects.Any() )
+                        else
                         {
-                            mergeFields.Add( "Context", contextObjects );
-                        }
-
-                        mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-
-                        html = content.Content.ResolveMergeFields( mergeFields );
-
-                        // show merge fields if enable debug true
-                        if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
-                        {
-                            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                            mergeFields.Remove( "Person" );
-                            html += mergeFields.lavaDebugInfo();
+                            html = content.Content;
                         }
                     }
                     else
                     {
-                        html = content.Content;
+                        html = string.Empty;
                     }
-                }
-                else
-                {
-                    html = string.Empty;
                 }
 
                 // Resolve any dynamic url references

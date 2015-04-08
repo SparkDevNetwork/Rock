@@ -59,6 +59,16 @@ namespace RockWeb.Blocks.Security
 
         #endregion
 
+        #region Properties
+
+        protected string Password
+        {
+            get { return ViewState["Password"] as string ?? string.Empty; }
+            set { ViewState["Password"] = value; }
+        }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -111,6 +121,7 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnUserInfoNext_Click( object sender, EventArgs e )
         {
+            Password = tbPassword.Text;
 
             if ( Page.IsValid )
             {
@@ -569,7 +580,7 @@ namespace RockWeb.Blocks.Security
                 Rock.Model.AuthenticationServiceType.Internal,
                 EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
                 tbUserName.Text, 
-                tbPassword.Text,
+                Password,
                 confirmed );
         }
 

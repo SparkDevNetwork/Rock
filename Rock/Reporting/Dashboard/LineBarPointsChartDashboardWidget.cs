@@ -219,10 +219,13 @@ namespace Rock.Reporting.Dashboard
                     EntityTypeCache entityTypeCache = null;
                     if ( this.MetricId.HasValue )
                     {
-                        var metric = new Rock.Model.MetricService( new Rock.Data.RockContext() ).Get( this.MetricId ?? 0 );
-                        if ( metric != null )
+                        using ( var rockContext = new Rock.Data.RockContext() )
                         {
-                            entityTypeCache = EntityTypeCache.Read( metric.EntityTypeId ?? 0 );
+                            var metric = new Rock.Model.MetricService( rockContext ).Get( this.MetricId ?? 0 );
+                            if ( metric != null )
+                            {
+                                entityTypeCache = EntityTypeCache.Read( metric.EntityTypeId ?? 0 );
+                            }
                         }
                     }
 

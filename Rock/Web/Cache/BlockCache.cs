@@ -141,9 +141,11 @@ namespace Rock.Web.Cache
             get
             {
                 if ( PageId.HasValue )
+                {
                     return PageCache.Read( PageId.Value );
-                else
-                    return null;
+                }
+
+                return null;
             }
         }
 
@@ -158,10 +160,8 @@ namespace Rock.Web.Cache
                 {
                     return LayoutCache.Read( LayoutId.Value );
                 }
-                else
-                {
-                    return null;
-                }
+
+                return null;
             }
         }
 
@@ -272,14 +272,20 @@ namespace Rock.Web.Cache
 
             if ( block == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var blockService = new BlockService( rockContext );
-                var blockModel = blockService.Get( id );
-                if ( blockModel != null )
+                if ( rockContext != null )
                 {
-                    blockModel.LoadAttributes( rockContext );
-                    block = new BlockCache( blockModel );
+                    block = LoadById( id, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        block = LoadById( id, myRockContext );
+                    }
+                }
 
+                if ( block != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, block, cachePolicy );
                     cache.Set( block.Guid.ToString(), block.Id, cachePolicy );
@@ -287,6 +293,19 @@ namespace Rock.Web.Cache
             }
 
             return block;
+        }
+
+        private static BlockCache LoadById( int id, RockContext rockContext )
+        {
+            var blockService = new BlockService( rockContext );
+            var blockModel = blockService.Get( id );
+            if ( blockModel != null )
+            {
+                blockModel.LoadAttributes( rockContext );
+                return new BlockCache( blockModel );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -308,14 +327,20 @@ namespace Rock.Web.Cache
 
             if ( block == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var blockService = new BlockService( rockContext );
-                var blockModel = blockService.Get( guid );
-                if ( blockModel != null )
+                if ( rockContext != null )
                 {
-                    blockModel.LoadAttributes( rockContext );
-                    block = new BlockCache( blockModel );
+                    block = LoadByGuid( guid, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        block = LoadByGuid( guid, myRockContext );
+                    }
+                }
 
+                if ( block != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( BlockCache.CacheKey( block.Id ), block, cachePolicy );
                     cache.Set( block.Guid.ToString(), block.Id, cachePolicy );
@@ -323,6 +348,19 @@ namespace Rock.Web.Cache
             }
 
             return block;
+        }
+
+        private static BlockCache LoadByGuid( Guid guid, RockContext rockContext )
+        {
+            var blockService = new BlockService( rockContext );
+            var blockModel = blockService.Get( guid );
+            if ( blockModel != null )
+            {
+                blockModel.LoadAttributes( rockContext );
+                return new BlockCache( blockModel );
+            }
+
+            return null;
         }
 
         /// <summary>

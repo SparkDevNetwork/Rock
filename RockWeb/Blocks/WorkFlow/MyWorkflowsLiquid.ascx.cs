@@ -296,33 +296,34 @@ as fields on the workflow or activity)...
 
             if ( CurrentPerson != null )
             {
-                var rockContext = new RockContext();
-
-                var categoryIds = GetCategories( rockContext );
-                
-                var qry = new WorkflowService( rockContext ).Queryable()
-                    .Where( w =>
-                        w.ActivatedDateTime.HasValue &&
-                        !w.CompletedDateTime.HasValue &&
-                        w.InitiatorPersonAlias.PersonId == CurrentPerson.Id );
-
-                if ( categoryIds.Any() )
+                using ( var rockContext = new RockContext() )
                 {
-                    qry = qry
+                    var categoryIds = GetCategories( rockContext );
+
+                    var qry = new WorkflowService( rockContext ).Queryable()
                         .Where( w =>
-                            w.WorkflowType.CategoryId.HasValue &&
-                            categoryIds.Contains( w.WorkflowType.CategoryId.Value ) );
-                }
+                            w.ActivatedDateTime.HasValue &&
+                            !w.CompletedDateTime.HasValue &&
+                            w.InitiatorPersonAlias.PersonId == CurrentPerson.Id );
 
-                foreach ( var workflow in qry.OrderBy( w => w.ActivatedDateTime ) )
-                {
-                    var activity = new WorkflowActivity();
-                    activity.Workflow = workflow;
+                    if ( categoryIds.Any() )
+                    {
+                        qry = qry
+                            .Where( w =>
+                                w.WorkflowType.CategoryId.HasValue &&
+                                categoryIds.Contains( w.WorkflowType.CategoryId.Value ) );
+                    }
 
-                    var action = new WorkflowAction();
-                    action.Activity = activity;
+                    foreach ( var workflow in qry.OrderBy( w => w.ActivatedDateTime ) )
+                    {
+                        var activity = new WorkflowActivity();
+                        activity.Workflow = workflow;
 
-                    actions.Add( action );
+                        var action = new WorkflowAction();
+                        action.Activity = activity;
+
+                        actions.Add( action );
+                    }
                 }
             }
 
@@ -335,20 +336,21 @@ as fields on the workflow or activity)...
             
             if ( CurrentPerson != null )
             {
-                var rockContext = new RockContext();
-
-                // Get all of the active form actions that user is assigned to and authorized to view
-                formActions = GetActiveForms( rockContext );
-
-                // If a category filter was specified, filter list by selected categories
-                var categoryIds = GetCategories( rockContext );
-                if ( categoryIds.Any() )
+                using ( var rockContext = new RockContext() )
                 {
-                    formActions = formActions
-                        .Where( a =>
-                            a.ActionType.ActivityType.WorkflowType.CategoryId.HasValue &&
-                            categoryIds.Contains( a.ActionType.ActivityType.WorkflowType.CategoryId.Value ) )
-                        .ToList();
+                    // Get all of the active form actions that user is assigned to and authorized to view
+                    formActions = GetActiveForms( rockContext );
+
+                    // If a category filter was specified, filter list by selected categories
+                    var categoryIds = GetCategories( rockContext );
+                    if ( categoryIds.Any() )
+                    {
+                        formActions = formActions
+                            .Where( a =>
+                                a.ActionType.ActivityType.WorkflowType.CategoryId.HasValue &&
+                                categoryIds.Contains( a.ActionType.ActivityType.WorkflowType.CategoryId.Value ) )
+                            .ToList();
+                    }
                 }
             }
 
