@@ -3383,9 +3383,6 @@ table.attribute-grid tr th:nth-child(3) {
   -o-animation: bar-grow 1s ease-in-out;
   animation: bar-grow 1s ease-in-out;
 }
-.badge-ingroupoftype {
-  width: 45px;
-}
 .badge-attendingduration {
   position: relative;
   color: #686576;
