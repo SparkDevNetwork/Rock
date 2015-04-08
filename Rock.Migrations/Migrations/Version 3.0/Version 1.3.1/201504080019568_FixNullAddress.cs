@@ -126,6 +126,8 @@ BEGIN
 
 	RETURN ''
 END" );
+
+            RockMigrationHelper.UpdateWorkflowActionEntityAttribute( "E2F172A8-88E5-4F84-9805-73164516F5FB", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Max Results", "MaxResults", "The maximum number of families to return ( Default is 100, a value of 0 will not limit results ).", 0, "100", "BC30C3AA-B249-4CC7-A5A3-89A933DE689D" );
         }
 
         /// <summary>
@@ -133,6 +135,7 @@ END" );
         /// </summary>
         public override void Down()
         {
+            RockMigrationHelper.DeleteAttribute( "BC30C3AA-B249-4CC7-A5A3-89A933DE689D" );
         }
     }
 }
