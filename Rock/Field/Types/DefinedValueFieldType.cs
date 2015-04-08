@@ -419,7 +419,11 @@ namespace Rock.Field.Types
                 {
                     if ( allowMultiple )
                     {
-                        base.GetFilterValues( filterControl, configurationValues );
+                        var filterValues = base.GetFilterValues( filterControl, configurationValues );
+                        if ( filterValues != null )
+                        {
+                            filterValues.ForEach( v => values.Add( v ) );
+                        }
                     }
                     else
                     {
