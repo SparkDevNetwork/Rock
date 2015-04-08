@@ -90,10 +90,10 @@ namespace RockWeb.Blocks.Cms
         }
 
         private void Render()
-        {
+        { 
             try
             {
-                PageCache currentPage = PageCache.Read( RockPage.PageId, rockContext );
+                PageCache currentPage = PageCache.Read( RockPage.PageId );
                 PageCache rootPage = null;
 
                 Guid pageGuid = Guid.Empty;
