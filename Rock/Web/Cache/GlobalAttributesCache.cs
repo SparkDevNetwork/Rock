@@ -114,15 +114,29 @@ namespace Rock.Web.Cache
                 var attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
                 if ( attributeCache != null )
                 {
-                    var attributeValue = new AttributeValueService( rockContext ?? new RockContext() ).GetByAttributeIdAndEntityId( attributeCache.Id, null );
-                    string value = ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attributeCache.DefaultValue;
-                    AttributeValues.Add( key, value );
-
-                    return value;
+                    if ( rockContext != null )
+                    {
+                        return GetValue( key, attributeCache, rockContext );
+                    }
+                    else
+                    {
+                        using ( var myRockContext = new RockContext() )
+                        {
+                            return GetValue( key, attributeCache, myRockContext );
+                        }
+                    }
                 }
 
                 return string.Empty;
             }
+        }
+
+        private string GetValue( string key, AttributeCache attributeCache, RockContext rockContext )
+        {
+            var attributeValue = new AttributeValueService( rockContext ).GetByAttributeIdAndEntityId( attributeCache.Id, null );
+            string value = ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attributeCache.DefaultValue;
+            AttributeValues.Add( key, value );
+            return value;
         }
 
         /// <summary>
@@ -161,17 +175,27 @@ namespace Rock.Web.Cache
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         /// <param name="saveValue">if set to <c>true</c> [save value].</param>
+        public void SetValue( string key, string value, bool saveValue )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                SetValue( key, value, saveValue, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="saveValue">if set to <c>true</c> [save value].</param>
         /// <param name="rockContext">The rock context.</param>
-        public void SetValue( string key, string value, bool saveValue, RockContext rockContext = null )
+        public void SetValue( string key, string value, bool saveValue, RockContext rockContext )
         {
             if ( saveValue )
             {
-                if ( rockContext == null )
-                {
-                    rockContext = new RockContext();
-                }
-
                 // Save new value
+                rockContext = rockContext ?? new RockContext();
                 var attributeValueService = new AttributeValueService( rockContext );
                 var attributeValue = attributeValueService.GetGlobalAttributeValue( key );
 
@@ -190,7 +214,8 @@ namespace Rock.Web.Cache
                         attributeService.Add( attribute );
                         rockContext.SaveChanges();
 
-                        Attributes.Add( AttributeCache.Read( attribute.Id ) );
+                        attribute = attributeService.Get( attribute.Id );
+                        Attributes.Add( AttributeCache.Read( attribute ) );
                     }
 
                     attributeValue = new AttributeValue();
@@ -228,7 +253,20 @@ namespace Rock.Web.Cache
         /// will be read and added to cache
         /// </summary>
         /// <returns></returns>
-        public static GlobalAttributesCache Read( RockContext rockContext = null )
+        public static GlobalAttributesCache Read()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return Read( rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Reads the specified rock context.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static GlobalAttributesCache Read( RockContext rockContext )
         {
             string cacheKey = GlobalAttributesCache.CacheKey();
 
@@ -372,7 +410,10 @@ namespace Rock.Web.Cache
                 Guid? locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
                 if ( locGuid.HasValue )
                 {
-                    return new Rock.Model.LocationService( new RockContext() ).Get( locGuid.Value );
+                    using ( var rockContext = new RockContext() )
+                    {
+                        return new Rock.Model.LocationService( rockContext ).Get( locGuid.Value );
+                    }
                 }
                 return null;
             }
@@ -407,21 +448,27 @@ namespace Rock.Web.Cache
                         {
                             // otherwise read the new location and save
                             appSettings[ORG_LOC_GUID] = locGuid.Value;
-                            var location = new Rock.Model.LocationService( new RockContext() ).Get( locGuid.Value );
-                            if ( location != null )
+                            using ( var rockContext = new RockContext() )
                             {
-                                appSettings[ORG_LOC_STATE] = location.State;
-                                appSettings[ORG_LOC_COUNTRY] = location.Country;
-                                return location.State;
+                                var location = new Rock.Model.LocationService( rockContext ).Get( locGuid.Value );
+                                if ( location != null )
+                                {
+                                    appSettings[ORG_LOC_STATE] = location.State;
+                                    appSettings[ORG_LOC_COUNTRY] = location.Country;
+                                    return location.State;
+                                }
                             }
                         }
                     }
                     else
                     {
-                        var location = new Rock.Model.LocationService( new RockContext() ).Get( locGuid.Value );
-                        if ( location != null )
+                        using ( var rockContext = new RockContext() )
                         {
-                            return location.State;
+                            var location = new Rock.Model.LocationService( rockContext ).Get( locGuid.Value );
+                            if ( location != null )
+                            {
+                                return location.State;
+                            }
                         }
                     }
                 }
@@ -460,21 +507,27 @@ namespace Rock.Web.Cache
                         {
                             // otherwise read the new location and save 
                             appSettings[ORG_LOC_GUID] = locGuid.Value;
-                            var location = new Rock.Model.LocationService( new RockContext() ).Get( locGuid.Value );
-                            if ( location != null )
+                            using ( var rockContext = new RockContext() )
                             {
-                                appSettings[ORG_LOC_STATE] = location.State;
-                                appSettings[ORG_LOC_COUNTRY] = location.Country;
-                                return location.Country;
+                                var location = new Rock.Model.LocationService( rockContext ).Get( locGuid.Value );
+                                if ( location != null )
+                                {
+                                    appSettings[ORG_LOC_STATE] = location.State;
+                                    appSettings[ORG_LOC_COUNTRY] = location.Country;
+                                    return location.Country;
+                                }
                             }
                         }
                     }
                     else
                     {
-                        var location = new Rock.Model.LocationService( new RockContext() ).Get( locGuid.Value );
-                        if ( location != null )
+                        using ( var rockContext = new RockContext() )
                         {
-                            return location.Country;
+                            var location = new Rock.Model.LocationService( rockContext ).Get( locGuid.Value );
+                            if ( location != null )
+                            {
+                                return location.Country;
+                            }
                         }
                     }
                 }

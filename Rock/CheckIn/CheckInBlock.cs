@@ -138,39 +138,41 @@ namespace Rock.CheckIn
             Guid? guid = GetAttributeValue( "WorkflowType" ).AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var rockContext = new RockContext();
-                var workflowTypeService = new WorkflowTypeService( rockContext );
-                var workflowType = workflowTypeService.Queryable( "ActivityTypes" )
-                    .Where( w => w.Guid.Equals( guid.Value ) )
-                    .FirstOrDefault();
-
-                if ( workflowType != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    if ( CurrentWorkflow == null )
-                    {
-                        CurrentWorkflow = Rock.Model.Workflow.Activate( workflowType, CurrentCheckInState.Kiosk.Device.Name );
-                    }
+                    var workflowTypeService = new WorkflowTypeService( rockContext );
+                    var workflowType = workflowTypeService.Queryable( "ActivityTypes" )
+                        .Where( w => w.Guid.Equals( guid.Value ) )
+                        .FirstOrDefault();
 
-                    var activityType = workflowType.ActivityTypes.Where( a => a.Name == activityName ).FirstOrDefault();
-                    if ( activityType != null )
+                    if ( workflowType != null )
                     {
-                        WorkflowActivity.Activate( activityType, CurrentWorkflow );
-                        if ( CurrentWorkflow.Process( rockContext, CurrentCheckInState, out errorMessages ) )
+                        if ( CurrentWorkflow == null )
                         {
-                            // Keep workflow active for continued processing
-                            CurrentWorkflow.CompletedDateTime = null;
+                            CurrentWorkflow = Rock.Model.Workflow.Activate( workflowType, CurrentCheckInState.Kiosk.Device.Name, rockContext );
+                        }
 
-                            return true;
+                        var activityType = workflowType.ActivityTypes.Where( a => a.Name == activityName ).FirstOrDefault();
+                        if ( activityType != null )
+                        {
+                            WorkflowActivity.Activate( activityType, CurrentWorkflow, rockContext );
+                            if ( CurrentWorkflow.Process( rockContext, CurrentCheckInState, out errorMessages ) )
+                            {
+                                // Keep workflow active for continued processing
+                                CurrentWorkflow.CompletedDateTime = null;
+
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            errorMessages.Add( string.Format( "Workflow type does not have a '{0}' activity type", activityName ) );
                         }
                     }
                     else
                     {
-                        errorMessages.Add( string.Format( "Workflow type does not have a '{0}' activity type", activityName ) );
+                        errorMessages.Add( "Invalid Workflow Type" );
                     }
-                }
-                else
-                {
-                    errorMessages.Add( "Invalid Workflow Type" );
                 }
             }
 

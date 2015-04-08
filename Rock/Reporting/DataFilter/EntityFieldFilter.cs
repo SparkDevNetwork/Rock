@@ -116,8 +116,6 @@ namespace Rock.Reporting.DataFilter
             string scriptFormat = @"
     function {0}PropertySelection($content){{
 
-        debugger;
-
         var sIndex = $('select.entity-property-selection', $content).find(':selected').index();
         var $selectedContent = $('div.field-criteria', $content).eq(sIndex);
         var result = '';

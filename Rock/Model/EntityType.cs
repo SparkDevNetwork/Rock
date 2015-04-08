@@ -167,9 +167,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public virtual bool IsAuthorized( string action, Rock.Model.Person person, RockContext rockContext = null )
+        public virtual bool IsAuthorized( string action, Rock.Model.Person person )
         {
             if ( this.IsSecured )
             {
@@ -188,7 +187,7 @@ namespace Rock.Model
                 if ( entity is Rock.Security.ISecured )
                 {
                     Rock.Security.ISecured iSecured = (Rock.Security.ISecured)entity;
-                    return iSecured.IsAuthorized( action, person, rockContext );
+                    return iSecured.IsAuthorized( action, person );
                 }
             }
 

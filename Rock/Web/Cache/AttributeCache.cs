@@ -493,13 +493,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsAuthorized( string action, Person person, RockContext rockContext = null )
+        public virtual bool IsAuthorized( string action, Person person )
         {
-            return Security.Authorization.Authorized( this, action, person, rockContext );
+            return Security.Authorization.Authorized( this, action, person );
         }
 
         /// <summary>
@@ -518,13 +517,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsPrivate( string action, Person person, RockContext rockContext = null )
+        public virtual bool IsPrivate( string action, Person person)
         {
-            return Security.Authorization.IsPrivate( this, action, person, rockContext );
+            return Security.Authorization.IsPrivate( this, action, person );
         }
 
         /// <summary>
@@ -535,7 +533,14 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         public virtual void MakePrivate( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakePrivate( this, action, person, rockContext );
+            if ( rockContext != null )
+            {
+                Security.Authorization.MakePrivate( this, action, person, rockContext );
+            }
+            else
+            {
+                Security.Authorization.MakePrivate( this, action, person );
+            }
         }
 
         /// <summary>
@@ -546,7 +551,14 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakePrivate( this, action, person, rockContext );
+            if ( rockContext != null )
+            {
+                Security.Authorization.MakeUnPrivate( this, action, person, rockContext );
+            }
+            else
+            {
+                Security.Authorization.MakeUnPrivate( this, action, person );
+            }
         }
 
         #endregion
@@ -574,13 +586,20 @@ namespace Rock.Web.Cache
 
             if ( attribute == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var attributeService = new Rock.Model.AttributeService( rockContext );
-                var attributeModel = attributeService.Get( id );
-                if ( attributeModel != null )
+                if ( rockContext != null )
                 {
-                    attribute = new AttributeCache( attributeModel );
+                    attribute = LoadById( id, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        attribute = LoadById( id, myRockContext );
+                    }
+                }
 
+                if ( attribute != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, attribute, cachePolicy );
                     cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
@@ -588,6 +607,18 @@ namespace Rock.Web.Cache
             }
 
             return attribute;
+        }
+
+        private static AttributeCache LoadById( int id, RockContext rockContext )
+        {
+            var attributeService = new Rock.Model.AttributeService( rockContext );
+            var attributeModel = attributeService.Get( id );
+            if ( attributeModel != null )
+            {
+                return new AttributeCache( attributeModel );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -609,13 +640,20 @@ namespace Rock.Web.Cache
 
             if ( attribute == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var attributeService = new AttributeService( rockContext );
-                var attributeModel = attributeService.Get( guid );
-                if ( attributeModel != null )
+                if ( rockContext != null )
                 {
-                    attribute = new AttributeCache( attributeModel );
+                    attribute = LoadByGuid( guid, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        attribute = LoadByGuid( guid, myRockContext );
+                    }
+                }
 
+                if ( attribute != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( AttributeCache.CacheKey( attribute.Id ), attribute, cachePolicy );
                     cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
@@ -623,6 +661,18 @@ namespace Rock.Web.Cache
             }
 
             return attribute;
+        }
+
+        private static AttributeCache LoadByGuid( Guid guid, RockContext rockContext )
+        {
+            var attributeService = new AttributeService( rockContext );
+            var attributeModel = attributeService.Get( guid );
+            if ( attributeModel != null )
+            {
+                return new AttributeCache( attributeModel );
+            }
+
+            return null;
         }
 
         /// <summary>

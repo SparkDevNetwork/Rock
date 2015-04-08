@@ -187,7 +187,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( !Page.IsPostBack )
             {
-                cpCampus.Campuses = CampusCache.All( rockContext );
+                cpCampus.Campuses = CampusCache.All();
 
                 Individuals = new List<Individual>();
                 SelectedFields = new List<string>();

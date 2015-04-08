@@ -2618,11 +2618,20 @@ namespace Rock
         #region IHasAttributes extensions
 
         /// <summary>
+        /// Loads the attribute.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity )
+        {
+            Rock.Attribute.Helper.LoadAttributes( entity );
+        }
+
+        /// <summary>
         /// Loads the attributes.
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <param name="rockContext">The rock context.</param>
-        public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity, RockContext rockContext = null )
+        public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity, RockContext rockContext )
         {
             Rock.Attribute.Helper.LoadAttributes( entity, rockContext );
         }

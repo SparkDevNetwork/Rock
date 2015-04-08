@@ -134,12 +134,15 @@ namespace RockWeb.Blocks.CheckIn.Manager
             Guid? guid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
             if ( guid.HasValue )
             {
-                rptNavItems.DataSource = new GroupTypeService( new RockContext() )
-                    .Queryable()
-                    .Where( g => g.GroupTypePurposeValue.Guid.Equals( guid.Value ) )
-                    .OrderBy( g => g.Name )
-                    .ToList();
-                rptNavItems.DataBind();
+                using ( var rockContext = new RockContext() )
+                {
+                    rptNavItems.DataSource = new GroupTypeService( rockContext )
+                        .Queryable()
+                        .Where( g => g.GroupTypePurposeValue.Guid.Equals( guid.Value ) )
+                        .OrderBy( g => g.Name )
+                        .ToList();
+                    rptNavItems.DataBind();
+                }
             }
         }
 
