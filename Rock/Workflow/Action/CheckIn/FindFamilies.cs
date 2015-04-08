@@ -34,7 +34,8 @@ namespace Rock.Workflow.Action.CheckIn
     /// </summary>
     [Description("Finds families based on a given search critieria (i.e. phone, barcode, etc)")]
     [Export(typeof(ActionComponent))]
-    [ExportMetadata( "ComponentName", "Find Families" )]    
+    [ExportMetadata( "ComponentName", "Find Families" )]
+    [IntegerField( "Max Results", "The maximum number of families to return ( Default is 100, a value of 0 will not limit results ).", false, 100 )]
     public class FindFamilies : CheckInActionComponent
     {
         /// <summary>
@@ -63,15 +64,22 @@ namespace Rock.Workflow.Action.CheckIn
                     var personRecordTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
 
                     // Find the families with any member who has a phone number that contains selected value
-                    var familyIds = memberService
+                    var familyQry = memberService
                         .Queryable().AsNoTracking()
                         .Where( m => 
                             m.Group.GroupType.Guid.Equals( familyGroupTypeGuid ) &&
                             m.Person.RecordTypeValueId == personRecordTypeId &&
                             m.Person.PhoneNumbers.Any( n => n.Number.Contains( numericPhone ) ) )
                         .Select( m => m.GroupId )
-                        .Distinct()
-                        .ToList();
+                        .Distinct();
+
+                    int maxResults = GetAttributeValue( action, "MaxResults" ).AsInteger();
+                    if ( maxResults > 0 )
+                    {
+                        familyQry = familyQry.Take( maxResults );
+                    }
+
+                    var familyIds = familyQry.ToList();
 
                     // Load the family members
                     var familyMembers = memberService
