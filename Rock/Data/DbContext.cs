@@ -180,7 +180,7 @@ namespace Rock.Data
                 personAliasId = personAlias.Id;
             }
 
-            var preSavedEntities = new List<Guid>();
+            var preSavedEntities = new HashSet<Guid>();
 
             // First loop through all models calling the PreSaveChanges
             foreach ( var entry in dbContext.ChangeTracker.Entries()
