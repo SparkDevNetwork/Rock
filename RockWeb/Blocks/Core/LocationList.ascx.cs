@@ -185,6 +185,8 @@ namespace RockWeb.Blocks.Core
                     t.Country
                 } ).ToList();
 
+                rGrid.EntityTypeId = EntityTypeCache.Read<Rock.Model.Location>().Id;
+
                 rGrid.DataBind();
             }
             else

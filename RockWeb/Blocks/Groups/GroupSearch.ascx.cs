@@ -20,10 +20,10 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -92,6 +92,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
+                gGroups.EntityTypeId = EntityTypeCache.Read<Group>().Id;
                 gGroups.DataSource = groups
                     .Select( g => new
                     {

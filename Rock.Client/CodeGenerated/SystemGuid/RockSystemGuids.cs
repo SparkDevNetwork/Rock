@@ -42,6 +42,7 @@ namespace Rock.Client.SystemGuid
         public const string DEFAULT = "C1142570-8CD6-4A20-83B1-ACB47C1CD377";
         public const string LOCATION_IMAGE = "DAB74416-3272-4411-BA69-70944B549A4B";
         public const string MEDIA_FILE = "6CBEA3B0-E983-40C1-9712-BD3FA2466EAE";
+        public const string MERGE_TEMPLATE = "BD63EC0C-2DF8-4C55-97E3-616870C67C59";
         public const string PERSON_IMAGE = "03BD8476-8A9F-4078-B628-5B538F967AFC";
     }
 
@@ -298,6 +299,7 @@ namespace Rock.Client.SystemGuid
         public const string GROUP_FINANCE_USERS = "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9";
         public const string GROUP_MOBILE_APP = "EDD336D5-1429-41D9-8D41-2581A05F0E16";
         public const string GROUP_PHOTO_REQUEST = "2108EF9C-10DC-4466-973D-D25AAB7818BE";
+        public const string GROUP_STAFF_LIKE_MEMBERS = "300BA2C8-49A3-44BA-A82A-82E3FD8C3745";
         public const string GROUP_STAFF_MEMBERS = "2C112948-FF4C-46E7-981A-0257681EADF4";
     }
 

@@ -610,6 +610,7 @@ namespace RockWeb.Blocks.Groups
                     // we need to save the workflows into the grid's object list
                     gGroupMembers.ObjectList = new Dictionary<string, object>();
                     groupMembers.ForEach( m => gGroupMembers.ObjectList.Add( m.Id.ToString(), m ) );
+                    gGroupMembers.EntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
 
                     gGroupMembers.DataSource = groupMembers.Select( m => new
                     {

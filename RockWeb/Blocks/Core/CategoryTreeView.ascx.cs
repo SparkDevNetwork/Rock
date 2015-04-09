@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Core
     [TextField( "Page Parameter Key", "The page parameter to look for" )]
 
     [CategoryField( "Root Category", "Select the root category to use as a starting point for the tree view.", false, Category = "CustomSetting" )]
+    [CategoryField( "Exclude Categories", "Select any category that you need to exclude from the tree view", true, Category = "CustomSetting" )]
     public partial class CategoryTreeView : RockBlockCustomSettings
     {
         /// <summary>
@@ -55,7 +56,7 @@ namespace RockWeb.Blocks.Core
         {
             get
             {
-                return "Set Root Category";
+                return "Set Category Options";
             }
         }
 
@@ -144,6 +145,22 @@ namespace RockWeb.Blocks.Core
                     {
                         parms += string.Format( "&entityQualifierValue={0}", entityTypeQualifierValue );
                     }
+                }
+
+                var excludeCategoriesGuids = this.GetAttributeValue( "ExcludeCategories" ).SplitDelimitedValues().AsGuidList();
+                List<int> excludedCategoriesIds = new List<int>();
+                if ( excludeCategoriesGuids != null && excludeCategoriesGuids.Any() )
+                {
+                    foreach ( var excludeCategoryGuid in excludeCategoriesGuids )
+                    {
+                        var excludedCategory = CategoryCache.Read( excludeCategoryGuid );
+                        if (excludedCategory != null)
+                        {
+                            excludedCategoriesIds.Add( excludedCategory.Id );
+                        }
+                    }
+                    
+                    parms += string.Format( "&excludedCategoryIds={0}", excludedCategoriesIds.AsDelimited(",") );
                 }
 
                 RestParms = parms;
@@ -327,8 +344,10 @@ namespace RockWeb.Blocks.Core
         {
             var entityType = EntityTypeCache.Read( this.GetAttributeValue( "EntityType" ).AsGuid() );
             var rootCategory = new CategoryService( new RockContext() ).Get( this.GetAttributeValue( "RootCategory" ).AsGuid() );
+            
 
             cpRootCategory.EntityTypeId = entityType != null ? entityType.Id : 0;
+            
 
             // make sure the rootCategory matches the EntityTypeId (just in case they changed the EntityType after setting RootCategory
             if ( rootCategory != null && cpRootCategory.EntityTypeId == rootCategory.EntityTypeId )
@@ -343,6 +362,19 @@ namespace RockWeb.Blocks.Core
             cpRootCategory.Enabled = entityType != null;
             nbRootCategoryEntityTypeWarning.Visible = entityType == null;
 
+            var excludedCategories = new CategoryService( new RockContext() ).GetByGuids( this.GetAttributeValue( "ExcludeCategories" ).SplitDelimitedValues().AsGuidList() );
+            cpExcludeCategories.EntityTypeId = entityType != null ? entityType.Id : 0;
+
+            // make sure the excluded categories matches the EntityTypeId (just in case they changed the EntityType after setting excluded categories
+            if ( excludedCategories != null && excludedCategories.All( a => a.EntityTypeId == cpExcludeCategories.EntityTypeId)  )
+            {
+                cpExcludeCategories.SetValues( excludedCategories );
+            }
+            else
+            {
+                cpExcludeCategories.SetValue( null );
+            }
+
             mdCategoryTreeConfig.Show();
         }
 
@@ -355,6 +387,20 @@ namespace RockWeb.Blocks.Core
         {
             var selectedCategory = CategoryCache.Read( cpRootCategory.SelectedValue.AsInteger() );
             this.SetAttributeValue( "RootCategory", selectedCategory != null ? selectedCategory.Guid.ToString() : string.Empty );
+
+            var excludedCategoryIds = cpExcludeCategories.SelectedValuesAsInt();
+            var excludedCategoryGuids = new List<Guid>();
+            foreach (int excludedCategoryId in excludedCategoryIds)
+            {
+                var excludedCategory = CategoryCache.Read( excludedCategoryId );
+                if (excludedCategory != null)
+                {
+                    excludedCategoryGuids.Add( excludedCategory.Guid );
+                }
+            }
+
+            this.SetAttributeValue( "ExcludeCategories", excludedCategoryGuids.AsDelimited( "," ) );
+
             this.SaveAttributeValues();
 
             mdCategoryTreeConfig.Hide();

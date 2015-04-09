@@ -76,6 +76,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<MergeTemplate>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, MergeTemplate.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<PrayerRequest>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, PrayerRequest.FriendlyTypeName );
