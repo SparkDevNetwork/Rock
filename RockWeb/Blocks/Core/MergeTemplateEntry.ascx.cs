@@ -237,6 +237,7 @@ namespace RockWeb.Blocks.Core
 
                 var entityTypeCache = EntityTypeCache.Read( entitySet.EntityTypeId.Value );
                 bool isPersonEntityType = entityTypeCache != null && entityTypeCache.Guid == Rock.SystemGuid.EntityType.PERSON.AsGuid();
+                bool isGroupMemberEntityType = entityTypeCache != null && entityTypeCache.Guid == Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid();
                 bool combineFamilyMembers = cbCombineFamilyMembers.Visible && cbCombineFamilyMembers.Checked;
 
                 if ( isPersonEntityType && combineFamilyMembers )
@@ -302,6 +303,26 @@ namespace RockWeb.Blocks.Core
                         }
 
                         mergeObjectsDictionary.Add( primaryGroupPerson.Id, mergeObject );
+                    }
+                }
+                else if ( isGroupMemberEntityType )
+                {
+                    foreach ( var groupMember in qryEntity.AsNoTracking().OfType<GroupMember>() )
+                    {
+                        var mergeObject = groupMember.Person.ToDictionary();
+                        foreach (var item in groupMember.ToDictionary())
+                        {
+                            if ( item.Key == "Id" )
+                            {
+                                mergeObject.AddOrIgnore( "GroupMemberId", item.Value );
+                            }
+                            else
+                            {
+                                mergeObject.AddOrIgnore( item.Key, item.Value );
+                            }
+                        }
+
+                        mergeObjectsDictionary.Add( groupMember.PersonId,  mergeObject);
                     }
                 }
                 else
