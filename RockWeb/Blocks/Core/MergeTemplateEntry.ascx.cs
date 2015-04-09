@@ -309,20 +309,26 @@ namespace RockWeb.Blocks.Core
                 {
                     foreach ( var groupMember in qryEntity.AsNoTracking().OfType<GroupMember>() )
                     {
-                        var mergeObject = groupMember.Person.ToDictionary();
+                        var person = groupMember.Person;
+                        person.AdditionalLavaFields = new Dictionary<string, object>();
+                        
                         foreach (var item in groupMember.ToDictionary())
                         {
                             if ( item.Key == "Id" )
                             {
-                                mergeObject.AddOrIgnore( "GroupMemberId", item.Value );
+                                person.AdditionalLavaFields.AddOrIgnore( "GroupMemberId", item.Value );
+                            }
+                            else if ( item.Key == "Guid" )
+                            {
+                                person.AdditionalLavaFields.AddOrIgnore( "GroupMemberGuid", item.Value.ToStringSafe() );
                             }
                             else
                             {
-                                mergeObject.AddOrIgnore( item.Key, item.Value );
+                                person.AdditionalLavaFields.AddOrIgnore( item.Key, item.Value );
                             }
                         }
 
-                        mergeObjectsDictionary.Add( groupMember.PersonId,  mergeObject);
+                        mergeObjectsDictionary.Add( groupMember.PersonId, person );
                     }
                 }
                 else
@@ -343,13 +349,27 @@ namespace RockWeb.Blocks.Core
                 entitySetItemMergeValuesQry = entitySetItemMergeValuesQry.Take( fetchCount.Value );
             }
 
+            // the entityId to use for NonEntity objects
+            int nonEntityId = 1;
+            
             // now, add the additional MergeValues regardless of if the EntitySet contains IEntity items or just Non-IEntity items
             foreach ( var additionalMergeValuesItem in entitySetItemMergeValuesQry.AsNoTracking() )
             {
                 object mergeObject;
-                if ( mergeObjectsDictionary.ContainsKey( additionalMergeValuesItem.EntityId ) )
+                int entityId;
+                if (additionalMergeValuesItem.EntityId > 0)
                 {
-                    mergeObject = mergeObjectsDictionary[additionalMergeValuesItem.EntityId];
+                    entityId = additionalMergeValuesItem.EntityId;
+                }
+                else
+                {
+                    // not pointing to an actual EntityId, so use the nonEntityId for ti
+                    entityId = nonEntityId++;
+                }
+
+                if ( mergeObjectsDictionary.ContainsKey( entityId ) )
+                {
+                    mergeObject = mergeObjectsDictionary[entityId];
                 }
                 else
                 {
@@ -359,38 +379,30 @@ namespace RockWeb.Blocks.Core
                         continue;
                     }
 
-                    mergeObject = new object();
-                    mergeObjectsDictionary.Add( additionalMergeValuesItem.EntityId, mergeObject );
+                    // non-Entity merge object, so just use Dictionary
+                    mergeObject = new Dictionary<string,object>();
+                    mergeObjectsDictionary.Add( entityId, mergeObject );
                 }
 
                 foreach ( var additionalMergeValue in additionalMergeValuesItem.AdditionalMergeValues )
                 {
-                    // if we have additionalMergeValues, convert the MergeObject into a Hash (instead of IEntity) and add the additional fields
-                    DotLiquid.Hash mergeObjectHash;
-                    if ( mergeObject is DotLiquid.Hash )
-                    {
-                        mergeObjectHash = mergeObject as DotLiquid.Hash;
-                    }
-                    else if ( mergeObject is IDictionary<string, object> )
-                    {
-                        mergeObjectHash = DotLiquid.Hash.FromDictionary( mergeObject as IDictionary<string, object> );
-                    }
-                    else if ( mergeObject is IEntity )
+                    if ( mergeObject is IEntity )
                     {
                         // convert the object to a Dictionary so we can add additional fields to it
-                        mergeObjectHash = DotLiquid.Hash.FromDictionary( ( mergeObject as IEntity ).ToDictionary() );
+                        IEntity mergeEntity = ( mergeObject as IEntity );
+                        mergeEntity.AdditionalLavaFields = mergeEntity.AdditionalLavaFields ?? new Dictionary<string, object>();
+                        mergeEntity.AdditionalLavaFields.AddOrIgnore( additionalMergeValue.Key, additionalMergeValue.Value );
+                    }
+                    else if (mergeObject is IDictionary<string, object>)
+                    {
+                        // anonymous object with no fields yet
+                        IDictionary<string, object> nonEntityObject = mergeObject as IDictionary<string, object>;
+                        nonEntityObject.AddOrIgnore( additionalMergeValue.Key, additionalMergeValue.Value );
                     }
                     else
                     {
-                        // anonymous object with no fields yet
-                        mergeObjectHash = new DotLiquid.Hash();
+                        throw new Exception( string.Format( "Unexpected MergeObject Type: {0}", mergeObject ) );
                     }
-
-                    mergeObjectHash.AddOrIgnore( additionalMergeValue.Key, additionalMergeValue.Value );
-
-                    // ensure the mergeObject is updated in case it was converted to a mergeObjectHash
-                    mergeObjectsDictionary[additionalMergeValuesItem.EntityId] = mergeObjectHash;
-                    mergeObject = mergeObjectsDictionary[additionalMergeValuesItem.EntityId];
                 }
             }
 
