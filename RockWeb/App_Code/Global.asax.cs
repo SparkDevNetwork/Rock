@@ -101,7 +101,7 @@ namespace RockWeb
             try
             {
                 var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-                LogMessage( APP_LOG_FILENAME, "Application Starting..." );
+                LogMessage( APP_LOG_FILENAME, "Application Starting..." ); 
                 
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
@@ -114,39 +114,43 @@ namespace RockWeb
                 // Get a db context
                 using ( var rockContext = new RockContext() )
                 {
-                    //// Run any needed Rock and/or plugin migrations
-                    //// NOTE: MigrateDatabase must be the first thing that touches the database to help prevent EF from creating empty tables for a new database
-                    MigrateDatabase( rockContext );
-
-                    // Preload the commonly used objects
-                    LoadCacheObjects( rockContext );
-                     
-
-                    // Run any plugin migrations
-                    MigratePlugins( rockContext );
-
                     if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                     {
                         try
                         {
                             new AttributeService( rockContext ).Get( 0 );
                             System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
-                            stopwatch.Restart();
                         }
                         catch
                         {
                             // Intentionally Blank
                         }
                     }
-
-                    RegisterRoutes( rockContext, RouteTable.Routes );
-
-                    // Configure Rock Rest API
-                    GlobalConfiguration.Configure( Rock.Rest.WebApiConfig.Register );
+                    
+                    //// Run any needed Rock and/or plugin migrations
+                    //// NOTE: MigrateDatabase must be the first thing that touches the database to help prevent EF from creating empty tables for a new database
+                    MigrateDatabase( rockContext );
+                    
+                    // Preload the commonly used objects
+                    stopwatch.Restart();
+                    LoadCacheObjects( rockContext );
 
                     if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                     {
                         System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
+                    }
+
+                    // Run any plugin migrations
+                    MigratePlugins( rockContext );
+
+                    RegisterRoutes( rockContext, RouteTable.Routes );
+
+                    // Configure Rock Rest API
+                    stopwatch.Restart();
+                    GlobalConfiguration.Configure( Rock.Rest.WebApiConfig.Register );
+                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                    {
+                        System.Diagnostics.Debug.WriteLine( string.Format( "Configure WebApiConfig - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
                         stopwatch.Restart();
                     }
 
@@ -206,7 +210,7 @@ namespace RockWeb
 
                     // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                     AddCallBack();
-
+                    
                     Rock.Security.Authorization.Load();
                 }
 
@@ -220,7 +224,11 @@ namespace RockWeb
 
                 SqlServerTypes.Utilities.LoadNativeAssemblies( Server.MapPath( "~" ) );
 
-                LogMessage( APP_LOG_FILENAME, "Application Started Succesfully" );
+                LogMessage( APP_LOG_FILENAME, "Application Started Successfully" );
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    System.Diagnostics.Debug.WriteLine( string.Format( "Application_Started_Successfully: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                }
             }
             catch (Exception ex)
             {

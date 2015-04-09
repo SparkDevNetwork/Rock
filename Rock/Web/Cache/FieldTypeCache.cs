@@ -160,6 +160,7 @@ namespace Rock.Web.Cache
                         allfieldTypes.Add( Read( fieldType ) );
                     }
                 }
+
                 var cachePolicy = new CacheItemPolicy();
                 cache.Set( cacheKey, allfieldTypes, cachePolicy );
             }
@@ -333,10 +334,11 @@ namespace Rock.Web.Cache
         public static string GetName( int id )
         {
             var fieldType = Read( id );
-            if (fieldType != null)
+            if ( fieldType != null )
             {
                 return fieldType.Name;
             }
+
             return string.Empty;
         }
 
