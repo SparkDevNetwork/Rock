@@ -112,6 +112,7 @@ namespace Rock.Web.Cache
                 {
                     return CategoryCache.Read( CategoryId.Value );
                 }
+
                 return null;
             }
         }
@@ -382,6 +383,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
     }
 }
