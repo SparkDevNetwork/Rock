@@ -131,6 +131,7 @@ namespace Rock.Web.Cache
                 {
                     return BadgeContainer.GetComponent( EntityType.Name );
                 }
+
                 return null;
             }
         }
@@ -309,7 +310,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
     }
-
 }

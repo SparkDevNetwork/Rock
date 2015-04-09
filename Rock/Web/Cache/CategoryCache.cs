@@ -361,8 +361,6 @@ namespace Rock.Web.Cache
             return null;
         }
 
-
-
         /// <summary>
         /// Adds Category model to cache, and returns cached object
         /// </summary>
@@ -400,7 +398,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
-
     }
 }
