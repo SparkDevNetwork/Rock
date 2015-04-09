@@ -401,6 +401,7 @@ namespace Rock.Web.Cache
                     {
                         locationTypeValues.Add( DefinedValueCache.Read( id ) );
                     }
+
                     return locationTypeValues;
                 }
 
@@ -675,6 +676,7 @@ namespace Rock.Web.Cache
         /// The unique identifier.
         /// </value>
         public Guid Guid { get; set; }
+        
         /// <summary>
         /// Gets or sets the name.
         /// </summary>

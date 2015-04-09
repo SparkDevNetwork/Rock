@@ -15,16 +15,11 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.IO;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Caching;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Rock.Web.Cache
 {
@@ -43,10 +38,10 @@ namespace Rock.Web.Cache
 
         // The function that sets the memory cache's last trim gen 2 count to a specific value
         private readonly Action<int> _setMemoryCacheLastTrimGen2CountFunc = null;
-        
+
         // The timer that calls the last trim gen 2 count function
         private readonly Timer _setMemoryCacheLastTrimGen2CountTimer = null;
-        
+
         // The integer incremented as the gen 2 count value
         private int _lastTrimGen2Count = 0;
 
@@ -64,7 +59,8 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Initializes a new instance of the <see cref="RockMemoryCache"/> class.
         /// </summary>
-        public RockMemoryCache() : this("RockDefault", null)
+        public RockMemoryCache()
+            : this( "RockDefault", null )
         {
         }
 
@@ -73,7 +69,8 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="config">The configuration.</param>
-        public RockMemoryCache( string name, NameValueCollection config = null) : base(name, config)
+        public RockMemoryCache( string name, NameValueCollection config = null )
+            : base( name, config )
         {
             // Use lambda expressions to create a set method for MemoryCache._stats._lastTrimGen2Count to circumvent poor functionality of MemoryCache
             // The default MemoryCache does not check for memory pressure except after a Gen 2 Garbage Collection. We want to do this more often than that.
@@ -85,6 +82,7 @@ namespace Rock.Web.Cache
 
             // Define the _stats field on MemoryCache
             var statsField = memoryCacheType.GetField( "_stats", BindingFlags.Instance | BindingFlags.NonPublic );
+
             // Define the _lastTrimGen2Count field on MemoryCacheStatistics
             var lastTrimGen2CountField = memoryCacheStatisticsType.GetField( "_lastTrimGen2Count", BindingFlags.Instance | BindingFlags.NonPublic );
 
@@ -141,16 +139,17 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if (RockMemoryCache.s_defaultCache == null)
+                if ( RockMemoryCache.s_defaultCache == null )
                 {
-                    lock( RockMemoryCache.s_initLock)
+                    lock ( RockMemoryCache.s_initLock )
                     {
-                        if (RockMemoryCache.s_defaultCache == null)
+                        if ( RockMemoryCache.s_defaultCache == null )
                         {
                             RockMemoryCache.s_defaultCache = new RockMemoryCache();
                         }
                     }
                 }
+
                 return RockMemoryCache.s_defaultCache;
             }
         }
@@ -160,15 +159,14 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void Clear()
         {
-            lock( RockMemoryCache.s_initLock)
+            lock ( RockMemoryCache.s_initLock )
             {
-                if (RockMemoryCache.s_defaultCache != null)
+                if ( RockMemoryCache.s_defaultCache != null )
                 {
                     RockMemoryCache.s_defaultCache.Dispose();
                     RockMemoryCache.s_defaultCache = null;
                 }
             }
         }
-
     }
 }

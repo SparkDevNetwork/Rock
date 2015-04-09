@@ -106,6 +106,7 @@ namespace Rock.Web.Cache
                                     {
                                         cookie.Value = theme;
                                     }
+
                                     httpContext.Response.SetCookie( cookie );
 
                                     return theme;
@@ -140,13 +141,13 @@ namespace Rock.Web.Cache
                                 cookie.Value = null;
                                 httpContext.Response.SetCookie( cookie );
                             }
-
                         }
                     }
                 }
 
                 return _theme;
             }
+
             set
             {
                 _theme = value;
@@ -347,7 +348,7 @@ namespace Rock.Web.Cache
                 {
                     return PageCache.Read( DefaultPageId.Value );
                 }
-                
+
                 return null;
             }
         }
@@ -659,6 +660,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
     }
 }

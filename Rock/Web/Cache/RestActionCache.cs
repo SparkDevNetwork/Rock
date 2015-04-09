@@ -123,11 +123,11 @@ namespace Rock.Web.Cache
 
             if ( model is RestAction )
             {
-                var RestAction = (RestAction)model;
-                this.ControllerId = RestAction.ControllerId;
-                this.Method = RestAction.Method;
-                this.ApiId = RestAction.ApiId;
-                this.Path = RestAction.Path;
+                var restAction = (RestAction)model;
+                this.ControllerId = restAction.ControllerId;
+                this.Method = restAction.Method;
+                this.ApiId = restAction.ApiId;
+                this.Path = restAction.Path;
             }
         }
 
@@ -191,11 +191,11 @@ namespace Rock.Web.Cache
 
         private static RestActionCache LoadById( int id, RockContext rockContext )
         {
-            var RestActionService = new RestActionService( rockContext );
-            var RestActionModel = RestActionService.Get( id );
-            if ( RestActionModel != null )
+            var restActionService = new RestActionService( rockContext );
+            var restActionModel = restActionService.Get( id );
+            if ( restActionModel != null )
             {
-                return new RestActionCache( RestActionModel );
+                return new RestActionCache( restActionModel );
             }
 
             return null;
@@ -245,11 +245,11 @@ namespace Rock.Web.Cache
 
         private static RestActionCache LoadByGuid( Guid guid, RockContext rockContext )
         {
-            var RestActionService = new RestActionService( rockContext );
-            var RestActionModel = RestActionService.Get( guid );
-            if ( RestActionModel != null )
+            var restActionService = new RestActionService( rockContext );
+            var restActionModel = restActionService.Get( guid );
+            if ( restActionModel != null )
             {
-                return new RestActionCache( RestActionModel );
+                return new RestActionCache( restActionModel );
             }
 
             return null;
@@ -298,13 +298,13 @@ namespace Rock.Web.Cache
 
         private static RestActionCache LoadByApiId( string apiId, RockContext rockContext )
         {
-            var RestActionService = new RestActionService( rockContext );
-            var RestActionModel = RestActionService.Queryable()
+            var restActionService = new RestActionService( rockContext );
+            var restActionModel = restActionService.Queryable()
                 .Where( a => a.ApiId == apiId )
                 .FirstOrDefault();
-            if ( RestActionModel != null )
+            if ( restActionModel != null )
             {
-                return new RestActionCache( RestActionModel );
+                return new RestActionCache( restActionModel );
             }
 
             return null;
@@ -313,21 +313,21 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Reads the specified defined value model.
         /// </summary>
-        /// <param name="RestActionModel">The defined value model.</param>
+        /// <param name="restActionModel">The defined value model.</param>
         /// <returns></returns>
-        public static RestActionCache Read( RestAction RestActionModel )
+        public static RestActionCache Read( RestAction restActionModel )
         {
-            string cacheKey = RestActionCache.CacheKey( RestActionModel.Id );
+            string cacheKey = RestActionCache.CacheKey( restActionModel.Id );
             ObjectCache cache = RockMemoryCache.Default;
             RestActionCache restAction = cache[cacheKey] as RestActionCache;
 
             if ( restAction != null )
             {
-                restAction.CopyFromModel( RestActionModel );
+                restAction.CopyFromModel( restActionModel );
             }
             else
             {
-                restAction = new RestActionCache( RestActionModel );
+                restAction = new RestActionCache( restActionModel );
                 var cachePolicy = new CacheItemPolicy();
                 cache.Set( cacheKey, restAction, cachePolicy );
                 cache.Set( restAction.Guid.ToString(), restAction.Id, cachePolicy );
@@ -355,10 +355,10 @@ namespace Rock.Web.Cache
         {
             if ( id.HasValue )
             {
-                var RestAction = Read( id.Value );
-                if ( RestAction != null )
+                var restAction = Read( id.Value );
+                if ( restAction != null )
                 {
-                    return RestAction.Method;
+                    return restAction.Method;
                 }
             }
 
@@ -366,6 +366,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
     }
 }
