@@ -26,6 +26,10 @@
 
         <script type="text/javascript">
             // setup player
+
+            // Intentionally not using the latest version of flowplayer.  There are some issues with using version
+            // 3.2.18. The issues are not being able to toggle mute when a live stream in unavailable.  Also, 
+            // the newest version of the httpstreaming plugin is unreliable when passing clip duration parameters.
             flowplayer('<%# Eval("[0]") %>', "/Plugins/church_ccv/CommandCenter/Assets/flowplayer.commercial-3.2.9.swf",
                 {
                     key: '#$392ba7eb81984ddb47a',

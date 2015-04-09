@@ -28,12 +28,6 @@ namespace RockWeb.Plugins.church_ccv.CommandCenter
         {
             base.OnInit( e );
 
-            // Intentionally not using the latest version of flowplayer.  There are some issues with using version
-            // 3.2.18. The issues are not being able to toggle mute when a live stream in unavailable.  Also, 
-            // the newest version of the httpstreaming plugin is unreliable when passing clip duration parameters.
-            RockPage.AddScriptLink( "~/Plugins/church_ccv/CommandCenter/Assets/flowplayer-3.2.9.swf" );
-            RockPage.AddScriptLink( "~/Plugins/church_ccv/CommandCenter/Assets/flowplayer.controls-3.2.9.swf" );
-            RockPage.AddScriptLink( "~/Plugins/church_ccv/CommandCenter/Assets/flowplayer.rtmp-3.2.9.swf" );
             RockPage.AddScriptLink( "~/Plugins/church_ccv/CommandCenter/Scripts/flowplayer-3.2.8.min.js" );
             RockPage.AddCSSLink( "~/Plugins/church_ccv/CommandCenter/Styles/commandcenter.css" );
         }
