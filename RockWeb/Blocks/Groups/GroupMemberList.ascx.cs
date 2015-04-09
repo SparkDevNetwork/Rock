@@ -123,6 +123,14 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.Actions.ShowAdd = canEditBlock;
                     gGroupMembers.IsDeleteEnabled = canEditBlock;
                 }
+
+                // if group is being sync'ed remove ability to add/delete members 
+                if ( _group.SyncDataViewId.HasValue )
+                {
+                    gGroupMembers.IsDeleteEnabled = false;
+                    gGroupMembers.Actions.ShowAdd = false;
+                    hlSyncStatus.Visible = true;
+                }
             }
         }
 

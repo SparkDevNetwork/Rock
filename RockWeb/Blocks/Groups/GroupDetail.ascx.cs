@@ -429,6 +429,15 @@ namespace RockWeb.Blocks.Groups
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
 
+            // save sync settings
+            if ( wpGroupAttributes.Visible )
+            {
+                group.SyncDataViewId = dvpSyncDataview.SelectedItem.Value.AsIntegerOrNull();
+                group.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedItem.Value.AsIntegerOrNull();
+                group.ExitSystemEmailId = ddlExitEmail.SelectedItem.Value.AsIntegerOrNull();
+                group.AddUserAccountsDuringSync = rbCreateLoginDuringSync.Checked;
+            }
+
             string iCalendarContent = string.Empty;
 
             // If unique schedule option was selected, but a schedule was not defined, set option to 'None'
@@ -782,7 +791,7 @@ namespace RockWeb.Blocks.Groups
 
             bool viewAllowed = false;
             bool editAllowed = IsUserAuthorized( Authorization.EDIT );
-
+            
             RockContext rockContext = null;
 
             if ( !groupId.Equals( 0 ) )
@@ -943,6 +952,47 @@ namespace RockWeb.Blocks.Groups
             LoadDropDowns();
 
             gpParentGroup.SetValue( group.ParentGroup ?? groupService.Get( group.ParentGroupId ?? 0 ) );
+
+            // hide sync panel if no admin access
+            wpGroupSync.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+
+            // load system emails
+            if ( wpGroupSync.Visible )
+            {
+                var systemEmails = new SystemEmailService( new RockContext() ).Queryable().OrderBy( e => e.Title );
+
+                // add a blank for the first option
+                ddlWelcomeEmail.Items.Add( new ListItem() );
+                ddlExitEmail.Items.Add( new ListItem() );
+
+                if ( systemEmails.Any() )
+                {
+                    foreach ( var systemEmail in systemEmails )
+                    {
+                        ddlWelcomeEmail.Items.Add( new ListItem( systemEmail.Title, systemEmail.Id.ToString() ) );
+                        ddlExitEmail.Items.Add( new ListItem( systemEmail.Title, systemEmail.Id.ToString() ) );
+                    }
+                }
+
+                // set dataview
+                dvpSyncDataview.EntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                dvpSyncDataview.SetValue( group.SyncDataViewId );
+
+                if ( group.AddUserAccountsDuringSync.HasValue )
+                {
+                    rbCreateLoginDuringSync.Checked = group.AddUserAccountsDuringSync.Value;
+                }
+
+                if ( group.WelcomeSystemEmailId.HasValue )
+                {
+                    ddlWelcomeEmail.SetValue( group.WelcomeSystemEmailId );
+                }
+
+                if ( group.ExitSystemEmailId.HasValue )
+                {
+                    ddlExitEmail.SetValue( group.ExitSystemEmailId );
+                }
+            }
 
             // GroupType depends on Selected ParentGroup
             ddlParentGroup_SelectedIndexChanged( null, null );
