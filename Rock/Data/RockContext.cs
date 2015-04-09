@@ -375,6 +375,14 @@ namespace Rock.Data
         public DbSet<FinancialAccount> FinancialAccounts { get; set; }
 
         /// <summary>
+        /// Gets or sets the financial gateways.
+        /// </summary>
+        /// <value>
+        /// The financial gateways.
+        /// </value>
+        public DbSet<FinancialGateway> FinancialGateways { get; set; }
+
+        /// <summary>
         /// Gets or sets the batches.
         /// </summary>
         /// <value>

@@ -28,7 +28,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of binary file types
     /// </summary>
     [Serializable]
-    public class BinaryFileTypeFieldType : FieldType
+    public class FinancialGatewayFieldType : FieldType
     {
 
         #region Formatting
@@ -45,15 +45,15 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            Guid? binaryFileTypeGuid = value.AsGuidOrNull();
-            if ( binaryFileTypeGuid.HasValue )
+            Guid? financialGatewayGuid = value.AsGuidOrNull();
+            if ( financialGatewayGuid.HasValue )
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var binaryFiletype = new BinaryFileTypeService( rockContext ).Get( binaryFileTypeGuid.Value );
-                    if ( binaryFiletype != null )
+                    var financialGateway = new FinancialGatewayService( rockContext ).Get( financialGatewayGuid.Value );
+                    if ( financialGateway != null )
                     {
-                        formattedValue = binaryFiletype.Name;
+                        formattedValue = financialGateway.Name;
                     }
                 }
             }
@@ -76,7 +76,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new BinaryFileTypePicker { ID = id }; 
+            return new FinancialGatewayPicker { ID = id }; 
         }
 
         /// <summary>
@@ -87,17 +87,17 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is BinaryFileTypePicker )
+            if ( control != null && control is FinancialGatewayPicker )
             {
                 int id = int.MinValue;
-                if ( Int32.TryParse( ( (BinaryFileTypePicker)control ).SelectedValue, out id ) )
+                if ( Int32.TryParse( ( (FinancialGatewayPicker)control ).SelectedValue, out id ) )
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        var binaryFiletype = new BinaryFileTypeService( rockContext ).Get( id );
-                        if ( binaryFiletype != null )
+                        var financialGateway = new FinancialGatewayService( rockContext ).Get( id );
+                        if ( financialGateway != null )
                         {
-                            return binaryFiletype.Guid.ToString();
+                            return financialGateway.Guid.ToString();
                         }
                     }
                 }
@@ -113,17 +113,17 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            Guid binaryFileTypeGuid = Guid.Empty;
-            if (Guid.TryParse( value, out binaryFileTypeGuid ))
+            Guid financialGatewayGuid = Guid.Empty;
+            if (Guid.TryParse( value, out financialGatewayGuid ))
             {
-                if ( control != null && control is BinaryFileTypePicker )
+                if ( control != null && control is FinancialGatewayPicker )
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        var binaryFiletype = new BinaryFileTypeService( rockContext ).Get( binaryFileTypeGuid );
-                        if ( binaryFiletype != null )
+                        var financialGateway = new FinancialGatewayService( rockContext ).Get( financialGatewayGuid );
+                        if ( financialGateway != null )
                         {
-                            ( (BinaryFileTypePicker)control ).SetValue( binaryFiletype.Id.ToString() );
+                            ( (FinancialGatewayPicker)control ).SetValue( financialGateway.Id.ToString() );
                         }
                     }
                 }

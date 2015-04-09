@@ -269,9 +269,9 @@ namespace RockWeb.Blocks.Finance
                     detailsLeft.Add( "Currency Type", currencyType );
                 }
 
-                if ( txn.GatewayEntityType != null )
+                if ( txn.FinancialGateway != null )
                 {
-                    detailsLeft.Add( "Payment Gateway", Rock.Financial.GatewayContainer.GetComponentName( txn.GatewayEntityType.Name ) );
+                    detailsLeft.Add( "Payment Gateway", Rock.Financial.GatewayContainer.GetComponentName( txn.FinancialGateway.Name ) );
                 }
 
                 detailsLeft
@@ -318,29 +318,9 @@ namespace RockWeb.Blocks.Finance
                 var rockContext = new RockContext();
                 var service = new FinancialScheduledTransactionService( rockContext );
                 return service
-                    .Queryable( "ScheduledTransactionDetails,GatewayEntityType,CurrencyTypeValue,CreditCardTypeValue" )
+                    .Queryable( "ScheduledTransactionDetails,Gateway,CurrencyTypeValue,CreditCardTypeValue" )
                     .Where( t => t.Id == txnId.Value )
                     .FirstOrDefault();
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the gateway.
-        /// </summary>
-        /// <param name="scheduledTransaction">The scheduled transaction.</param>
-        /// <returns></returns>
-        private GatewayComponent GetGateway( FinancialScheduledTransaction scheduledTransaction )
-        {
-            if ( scheduledTransaction.GatewayEntityType != null )
-            {
-                Guid gatewayGuid = scheduledTransaction.GatewayEntityType.Guid;
-                var gateway = GatewayContainer.GetComponent( gatewayGuid.ToString() );
-                if ( gateway != null && gateway.IsActive )
-                {
-                    return gateway;
-                }
             }
 
             return null;

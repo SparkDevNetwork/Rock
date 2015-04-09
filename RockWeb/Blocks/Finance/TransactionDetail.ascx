@@ -73,7 +73,7 @@
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source" />
                             <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" />
                             <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
-                            <Rock:ComponentPicker ID="cpPaymentGateway" runat="server" Label="Payment Gateway" ContainerType="Rock.Financial.GatewayContainer" />
+                            <Rock:FinancialGatewayPicker ID="gpPaymentGateway" runat="server" Label="Payment Gateway" />
                             <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code"
                                 SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionCode" />
                         </div>
