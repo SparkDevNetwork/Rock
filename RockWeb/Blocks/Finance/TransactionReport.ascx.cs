@@ -227,6 +227,7 @@ namespace RockWeb.Blocks.Finance
                 pnlSummary.Visible = false;
             }
 
+            gTransactions.EntityTypeId = EntityTypeCache.Read<FinancialTransaction>().Id;
             gTransactions.DataSource = txns.Select( t => new
             {
                 t.Id,

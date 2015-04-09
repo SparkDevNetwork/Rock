@@ -242,6 +242,7 @@ namespace RockWeb.Blocks.Groups
                     a.IsSystem
                 } );
 
+            gGroupType.EntityTypeId = EntityTypeCache.Read<GroupType>().Id;
             gGroupType.DataSource = selectQry.ToList();
             gGroupType.DataBind();
         }

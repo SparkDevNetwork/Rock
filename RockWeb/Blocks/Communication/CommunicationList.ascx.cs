@@ -397,6 +397,7 @@ namespace RockWeb.Blocks.Communication
                 c.MediumName = c.MediumEntityTypeId.HasValue && mediums.ContainsKey( c.MediumEntityTypeId.Value ) ? mediums[c.MediumEntityTypeId.Value] : "Unknown";
             }
 
+            gCommunication.EntityTypeId = EntityTypeCache.Read<Rock.Model.Communication>().Id;
             gCommunication.DataSource = communicationItems;
             gCommunication.DataBind();
 

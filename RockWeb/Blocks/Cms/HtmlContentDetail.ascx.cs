@@ -344,6 +344,7 @@ namespace RockWeb.Blocks.Cms
                     v.ExpireDateTime
                 } ).ToList();
 
+            gVersions.EntityTypeId = EntityTypeCache.Read<HtmlContent>().Id;
             gVersions.DataSource = versions;
             
             gVersions.DataBind();

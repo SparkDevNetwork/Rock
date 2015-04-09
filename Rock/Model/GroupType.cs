@@ -178,7 +178,7 @@ namespace Rock.Model
         /// Gets or sets the <see cref="Rock.Model.AttendanceRule"/> that indicates how attendance is managed a <see cref="Rock.Model.Group"/> of this GroupType
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.AttendanceRule"/> that indicates how attendance is manged for a <see cref="Rock.Model.Group"/> of this GroupType.
+        /// The <see cref="Rock.Model.AttendanceRule"/> that indicates how attendance is managed for a <see cref="Rock.Model.Group"/> of this GroupType.
         /// </value>
         /// <example>
         /// The available options are:

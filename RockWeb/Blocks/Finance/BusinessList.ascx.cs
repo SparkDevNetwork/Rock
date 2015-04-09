@@ -229,6 +229,7 @@ namespace RockWeb.Blocks.Finance
                                 .Select( p => p.Person.LastName + ", " + p.Person.NickName)
             } );
 
+            gBusinessList.EntityTypeId = EntityTypeCache.Read<Person>().Id;
             gBusinessList.DataSource = businessList.ToList();
             gBusinessList.DataBind();
         }
