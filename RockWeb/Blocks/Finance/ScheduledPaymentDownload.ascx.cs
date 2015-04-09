@@ -78,12 +78,12 @@ namespace RockWeb.Blocks.Finance
 
             if ( !Page.IsPostBack )
             {
-                var gateway = GetSelectedGateway();
-                if ( gateway != null )
+                var financialGateway = GetSelectedGateway();
+                if ( financialGateway != null )
                 {
                     var today = RockDateTime.Today;
                     var days = today.DayOfWeek == DayOfWeek.Monday ? new TimeSpan( 3, 0, 0, 0 ) : new TimeSpan( 1, 0, 0, 0 );
-                    var endDateTime = today.Add( gateway.BatchTimeOffset );
+                    var endDateTime = today.Add( financialGateway.GetBatchTimeOffset() );
 
                     drpDates.UpperValue = RockDateTime.Now.CompareTo( endDateTime ) < 0 ? today.AddDays( -1 ) : today;
                     drpDates.LowerValue = drpDates.UpperValue.Value.Subtract( days );
@@ -114,43 +114,50 @@ namespace RockWeb.Blocks.Finance
 
             if (startDateTime.HasValue && endDateTime.HasValue && endDateTime.Value.CompareTo(startDateTime.Value) >= 0)
             {
-                var gateway = GetSelectedGateway();
-                if (gateway != null)
+                var financialGateway = GetSelectedGateway();
+                if ( financialGateway != null )
                 {
-                    DateTime start = startDateTime.Value;
-                    DateTime end = endDateTime.Value.AddDays( 1 );
-
-                    string errorMessage = string.Empty;
-                    var payments = gateway.GetPayments( start, end, out errorMessage );
-
-                    if ( string.IsNullOrWhiteSpace( errorMessage ) )
+                    var gateway = financialGateway.GetGatewayComponent();
+                    if ( gateway != null )
                     {
-                        var qryParam = new Dictionary<string, string>();
-                        qryParam.Add( "batchId", "9999" );
-                        string batchUrlFormat = LinkedPageUrl( "BatchDetailPage", qryParam ).Replace( "9999", "{0}" );
+                        DateTime start = startDateTime.Value;
+                        DateTime end = endDateTime.Value.AddDays( 1 );
 
-                        string resultSummary = FinancialScheduledTransactionService.ProcessPayments( gateway, batchNamePrefix, payments, batchUrlFormat );
+                        string errorMessage = string.Empty;
+                        var payments = gateway.GetPayments( financialGateway, start, end, out errorMessage );
 
-                        if (!string.IsNullOrWhiteSpace(resultSummary))
+                        if ( string.IsNullOrWhiteSpace( errorMessage ) )
                         {
-                            nbSuccess.Text = string.Format( "<ul>{0}</ul>", resultSummary );
+                            var qryParam = new Dictionary<string, string>();
+                            qryParam.Add( "batchId", "9999" );
+                            string batchUrlFormat = LinkedPageUrl( "BatchDetailPage", qryParam ).Replace( "9999", "{0}" );
+
+                            string resultSummary = FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, batchUrlFormat );
+
+                            if ( !string.IsNullOrWhiteSpace( resultSummary ) )
+                            {
+                                nbSuccess.Text = string.Format( "<ul>{0}</ul>", resultSummary );
+                            }
+                            else
+                            {
+                                nbSuccess.Text = string.Format( "There were not any transactions downloaded.", resultSummary );
+
+                            }
+                            nbSuccess.Visible = true;
                         }
                         else
                         {
-                            nbSuccess.Text = string.Format( "There were not any transactions downloaded.", resultSummary );
-                        
+                            ShowError( errorMessage );
                         }
-                        nbSuccess.Visible = true;
-
                     }
                     else
                     {
-                        ShowError( errorMessage );
+                        ShowError( "Selected Payment Gateway does not have a valid payment processor!" );
                     }
                 }
                 else
                 {
-                    ShowError("Please select a valid Payment Gateway!");
+                    ShowError( "Please select a valid Payment Gateway!" );
                 }
             }
             else
@@ -164,13 +171,21 @@ namespace RockWeb.Blocks.Finance
 
         #region Methods
 
-        private GatewayComponent GetSelectedGateway()
+        private FinancialGateway GetSelectedGateway()
         {
-            Guid? gatewayGuid = cpGateway.SelectedValueAsGuid();
+            Guid? gatewayGuid = gpGateway.SelectedValueAsGuid();
             if ( gatewayGuid.HasValue )
             {
-                return GatewayContainer.GetComponent( gatewayGuid.Value.ToString() );
+                using ( var rockContext = new RockContext() )
+                {
+                    var financialGateway = new FinancialGatewayService( rockContext ).Get( gatewayGuid.Value );
+                    if ( financialGateway != null )
+                    {
+                        return financialGateway;
+                    }
+                }
             }
+
             return null;
         }
 

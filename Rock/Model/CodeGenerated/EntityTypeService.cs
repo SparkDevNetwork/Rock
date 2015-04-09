@@ -118,27 +118,9 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<FinancialPersonSavedAccount>( Context ).Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialPersonSavedAccount.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
-                return false;
-            }  
- 
             if ( new Service<FinancialScheduledTransactionDetail>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialScheduledTransactionDetail.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
                 return false;
             }  
  
