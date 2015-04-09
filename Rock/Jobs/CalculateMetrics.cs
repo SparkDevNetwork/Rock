@@ -71,7 +71,8 @@ namespace Rock.Jobs
                     if ( lastRunDateTime.HasValue )
                     {
                         var currentDateTime = RockDateTime.Now;
-                        var scheduledDateTimesToProcess = metric.Schedule.GetScheduledStartTimes( lastRunDateTime.Value, currentDateTime );
+                        // get all the schedule times that were supposed to run since that last time it was scheduled to run
+                        var scheduledDateTimesToProcess = metric.Schedule.GetScheduledStartTimes( lastRunDateTime.Value, currentDateTime ).Where( a => a > lastRunDateTime.Value ).ToList();
                         foreach ( var scheduleDateTime in scheduledDateTimesToProcess )
                         {
                             Dictionary<int, decimal> resultValues = new Dictionary<int, decimal>();
