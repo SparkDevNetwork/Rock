@@ -71,7 +71,7 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<Person> Queryable( bool includeDeceased, bool includeBusinesses = true )
         {
-            return Queryable( includeDeceased, includeBusinesses );
+            return Queryable( null, includeDeceased, includeBusinesses );
         }
 
         /// <summary>
