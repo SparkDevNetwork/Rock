@@ -812,6 +812,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [Column( TypeName = "Date" )]
         public DateTime? BirthDate
         {
             get

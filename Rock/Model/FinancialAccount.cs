@@ -34,7 +34,6 @@ namespace Rock.Model
     [DataContract]
     public partial class FinancialAccount : Model<FinancialAccount>, IOrdered
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -90,12 +89,13 @@ namespace Rock.Model
                     return _publicName;
                 }
             }
+
             set
             {
                 _publicName = value;
             }
         }
-        
+
         private string _publicName = string.Empty;
 
         /// <summary>
@@ -172,7 +172,6 @@ namespace Rock.Model
         [Column( TypeName = "Date" )]
         public DateTime? EndDate { get; set; }
 
-
         /// <summary>
         /// Gets or sets the DefinedValueId of the <see cref="Rock.Model.DefinedValue"/> that represents the FinancialAccountType for this FinancialAccount.
         /// </summary>
@@ -182,6 +181,24 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_ACCOUNT_TYPE )]
         public int? AccountTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Image Id that can be used when displaying this Financial Account
+        /// </summary>
+        /// <value>
+        /// The image binary file identifier.
+        /// </value>
+        [DataMember]
+        public int? ImageBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL which could be used to generate a link to a 'More Info' page
+        /// </summary>
+        /// <value>
+        /// The URL.
+        /// </value>
+        [DataMember]
+        public string Url { get; set; }
 
         #endregion
 
@@ -213,13 +230,22 @@ namespace Rock.Model
         public virtual DefinedValue AccountTypeValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the Image that can be used when displaying this Financial Account
+        /// </summary>
+        /// <value>
+        /// The image binary file.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile ImageBinaryFile { get; set; }
+
+        /// <summary>
         /// Gets or sets a collection containing the FinancialAccounts that are sub accounts/child accounts of this account.  This is not a recursive search.
         /// </summary>
         /// <value>
         /// A collection containing all FinancialAccoutns that are sub accounts/child accounts of this account.
         /// </value>
         [DataMember]
-        public virtual ICollection<FinancialAccount> ChildAccounts 
+        public virtual ICollection<FinancialAccount> ChildAccounts
         {
             get { return _childAccounts ?? ( _childAccounts = new Collection<FinancialAccount>() ); }
             set { _childAccounts = value; }
@@ -242,7 +268,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -260,9 +285,9 @@ namespace Rock.Model
             this.HasOptional( a => a.ParentAccount ).WithMany( a => a.ChildAccounts ).HasForeignKey( a => a.ParentAccountId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.Campus ).WithMany().HasForeignKey( a => a.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AccountTypeValue ).WithMany().HasForeignKey( a => a.AccountTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.ImageBinaryFile ).WithMany().HasForeignKey( a => a.ImageBinaryFileId ).WillCascadeOnDelete( false );
         }
     }
 
     #endregion
-
 }
