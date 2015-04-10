@@ -15,7 +15,9 @@
                     <Rock:Grid ID="rGridGateway" runat="server"  RowItemText="Gateway" OnRowSelected="rGridGateway_Edit" TooltipField="Description" AllowSorting="true">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <Rock:RockBoundField DataField="EntityType.Name" HeaderText="Gateway Type" SortExpression="EntityType.Name" />
+                            <asp:TemplateField HeaderText="Gateway Type" SortExpression="EntityType.Name">
+                                <ItemTemplate><%# GetComponentName( Eval( "EntityType") )%></ItemTemplate>
+                            </asp:TemplateField>
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
                             <Rock:DeleteField OnClick="rGridGateway_Delete" />
                         </Columns>
