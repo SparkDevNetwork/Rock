@@ -318,7 +318,7 @@ namespace RockWeb.Blocks.Finance
                 var rockContext = new RockContext();
                 var service = new FinancialScheduledTransactionService( rockContext );
                 return service
-                    .Queryable( "ScheduledTransactionDetails,Gateway,CurrencyTypeValue,CreditCardTypeValue" )
+                    .Queryable( "ScheduledTransactionDetails,FinancialGateway,CurrencyTypeValue,CreditCardTypeValue" )
                     .Where( t => t.Id == txnId.Value )
                     .FirstOrDefault();
             }
