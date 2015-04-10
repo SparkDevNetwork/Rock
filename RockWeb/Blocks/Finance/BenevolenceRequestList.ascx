@@ -5,7 +5,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="">
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-paste"></i>Benevolence Requests</h1>
+                    <h1 class="panel-title"><i class="fa fa-paste"></i> Benevolence Requests</h1>
                 </div>
                 <div class="panel-body">
 
