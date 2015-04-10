@@ -378,6 +378,7 @@ namespace RockWeb.Blocks.Cms
 
                 gItems.ObjectList = new Dictionary<string, object>();
                 items.ForEach( i => gItems.ObjectList.Add( i.Id.ToString(), i ) );
+                gItems.EntityTypeId = EntityTypeCache.Read<ContentChannelItem>().Id;
 
                 gItems.DataSource = items.Select( i => new
                 {

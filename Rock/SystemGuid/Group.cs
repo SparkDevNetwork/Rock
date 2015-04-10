@@ -61,5 +61,9 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string GROUP_STAFF_MEMBERS = "2C112948-FF4C-46E7-981A-0257681EADF4";
 
+        /// <summary>
+        /// Gets the staff-like member group guid (Staff Users)
+        /// </summary>
+        public const string GROUP_STAFF_LIKE_MEMBERS = "300BA2C8-49A3-44BA-A82A-82E3FD8C3745";
     }
 }

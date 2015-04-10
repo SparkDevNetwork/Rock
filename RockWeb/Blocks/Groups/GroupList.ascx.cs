@@ -443,6 +443,7 @@ namespace RockWeb.Blocks.Groups
                     .ToList();
             }
 
+            gGroups.EntityTypeId = EntityTypeCache.Read<Group>().Id;
             gGroups.DataBind();
 
             // hide the group type column if there's only one type; must come after DataBind()

@@ -461,6 +461,9 @@ namespace RockWeb.Blocks.Examples
 
             } );
 
+            // Clear the static object that contains all auth rules (so that it will be refreshed)
+            Rock.Security.Authorization.Flush();
+
             if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
             {
                 lTime.Text = _sb.ToString();

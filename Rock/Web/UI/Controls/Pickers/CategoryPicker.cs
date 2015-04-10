@@ -17,11 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -39,6 +37,46 @@ namespace Rock.Web.UI.Controls
             SetExtraRestParams();
             this.IconCssClass = "fa fa-folder-open";
             base.OnInit( e );
+        }
+
+        /// <summary>
+        /// Gets or sets the excluded category ids (comma delimited) 
+        /// </summary>
+        /// <value>
+        /// The excluded category ids.
+        /// </value>
+        public string ExcludedCategoryIds
+        {
+            get
+            {
+                return ViewState["ExcludedCategoryIds"] as string ?? string.Empty;
+            }
+
+            set
+            {
+                ViewState["ExcludedCategoryIds"] = value;
+                SetExtraRestParams();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the root category.  This will be the topmost category that can be selected.
+        /// </summary>
+        /// <value>
+        /// The root category identifier.
+        /// </value>
+        public int? RootCategoryId
+        {
+            get
+            {
+                return ViewState["RootCategoryId"] as int?;
+            }
+
+            set
+            {
+                ViewState["RootCategoryId"] = value;
+                SetExtraRestParams();
+            }
         }
 
         /// <summary>
@@ -163,8 +201,8 @@ namespace Rock.Web.UI.Controls
         public int EntityTypeId
         {
             get { return ViewState["EntityTypeId"] as int? ?? 0; }
-            set 
-            { 
+            set
+            {
                 ViewState["EntityTypeId"] = value;
                 SetExtraRestParams();
             }
@@ -179,8 +217,8 @@ namespace Rock.Web.UI.Controls
         public string EntityTypeQualifierColumn
         {
             get { return ViewState["EntityTypeQualifierColumn"] as string; }
-            set 
-            { 
+            set
+            {
                 ViewState["EntityTypeQualifierColumn"] = value;
                 SetExtraRestParams();
             }
@@ -195,8 +233,8 @@ namespace Rock.Web.UI.Controls
         public string EntityTypeQualifierValue
         {
             get { return ViewState["EntityTypeQualifierValue"] as string; }
-            set 
-            { 
+            set
+            {
                 ViewState["EntityTypeQualifierValue"] = value;
                 SetExtraRestParams();
             }
@@ -209,7 +247,7 @@ namespace Rock.Web.UI.Controls
         {
             string parms = "?getCategorizedItems=false";
             parms += string.Format( "&entityTypeId={0}", EntityTypeId );
-            
+
             if ( !string.IsNullOrEmpty( EntityTypeQualifierColumn ) )
             {
                 parms += string.Format( "&entityQualifier={0}", EntityTypeQualifierColumn );
@@ -220,8 +258,21 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
+            if ( !string.IsNullOrEmpty( ExcludedCategoryIds ) )
+            {
+                parms += string.Format( "&excludedCategoryIds={0}", ExcludedCategoryIds);
+            }
+
+            if ( RootCategoryId.HasValue )
+            {
+                var rootCategory = CategoryCache.Read( RootCategoryId.Value );
+                if ( rootCategory.EntityTypeId == this.EntityTypeId )
+                {
+                    parms += string.Format( "&rootCategoryId={0}", rootCategory.Id );
+                }
+            }
+
             ItemRestUrlExtraParams = parms;
         }
-
     }
 }

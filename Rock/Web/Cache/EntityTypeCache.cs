@@ -32,7 +32,7 @@ namespace Rock.Web.Cache
         #region Static Fields
 
         // Locking object
-        private static readonly Object obj = new object();
+        private static readonly object obj = new object();
 
         private static Dictionary<string, int> entityTypes = new Dictionary<string, int>();
 
@@ -167,6 +167,7 @@ namespace Rock.Web.Cache
             {
                 return Type.GetType( this.AssemblyName );
             }
+
             return null;
         }
 
@@ -237,7 +238,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static int? GetId( string name )
         {
-            if ( String.IsNullOrEmpty( name ) )
+            if ( string.IsNullOrEmpty( name ) )
             {
                 return null;
             }
@@ -295,6 +296,18 @@ namespace Rock.Web.Cache
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Reads the specified type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="createIfNotFound">if set to <c>true</c> [create if not found].</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static EntityTypeCache Read<T>( bool createIfNotFound = true, RockContext rockContext = null )
+        {
+            return EntityTypeCache.Read( typeof( T ), createIfNotFound, rockContext );
         }
 
         /// <summary>
@@ -384,7 +397,7 @@ namespace Rock.Web.Cache
 
                 if ( entityType != null )
                 {
-                    var cachePolicy = new CacheItemPolicy(); 
+                    var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, entityType, cachePolicy );
                     cache.Set( entityType.Guid.ToString(), entityType.Id, cachePolicy );
                 }
@@ -401,7 +414,7 @@ namespace Rock.Web.Cache
             {
                 return new EntityTypeCache( entityTypeModel );
             }
-            
+
             return null;
         }
 

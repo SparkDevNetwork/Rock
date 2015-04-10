@@ -148,9 +148,8 @@ namespace Rock.Web.Cache
 
                 if ( !string.IsNullOrWhiteSpace( RawServiceTimes ) )
                 {
-
-                    string[] KeyValues = RawServiceTimes.Split( new char[] { '|' }, System.StringSplitOptions.RemoveEmptyEntries );
-                    foreach ( string keyValue in KeyValues )
+                    string[] keyValues = RawServiceTimes.Split( new char[] { '|' }, System.StringSplitOptions.RemoveEmptyEntries );
+                    foreach ( string keyValue in keyValues )
                     {
                         var dayTime = keyValue.Split( new char[] { '^' } );
                         if ( dayTime.Length == 2 )
@@ -363,7 +362,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        [Obsolete("Use All() method instead. RockContext parameter is no longer needed.")]
+        [Obsolete( "Use All() method instead. RockContext parameter is no longer needed." )]
         public static List<CampusCache> All( RockContext rockContext )
         {
             return All();
@@ -443,7 +442,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Special class for adding service times as available liquid fields
         /// </summary>
-        [DotLiquid.LiquidType("Day", "Time")]
+        [DotLiquid.LiquidType( "Day", "Time" )]
         public class ServiceTime
         {
             /// <summary>
@@ -541,7 +540,6 @@ namespace Rock.Web.Cache
             /// </value>
             public string ImageUrl { get; set; }
 
-
             /// <summary>
             /// Initializes a new instance of the <see cref="CampusLocation"/> class.
             /// </summary>
@@ -571,6 +569,6 @@ namespace Rock.Web.Cache
             }
         }
 
-        #endregion    
+        #endregion
     }
 }

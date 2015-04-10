@@ -390,6 +390,7 @@ namespace RockWeb.Blocks.Finance
             var batchRowList = batchRowQry.ToList();
 
             gBatchList.DataSource = batchRowList;
+            gBatchList.EntityTypeId = EntityTypeCache.Read<Rock.Model.FinancialBatch>().Id;
             gBatchList.DataBind();
 
             var qryTransactionDetails = qry.SelectMany( a => a.Transactions ).SelectMany( a => a.TransactionDetails );

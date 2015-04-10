@@ -238,6 +238,7 @@ namespace Rock.Web.Cache
                 }
             }
         }
+
         /// <summary>
         /// The attribute ids
         /// </summary>
@@ -453,12 +454,12 @@ namespace Rock.Web.Cache
                     string attributeKey = key.ToStringSafe();
                     if ( attributeKey.EndsWith( "_unformatted" ) )
                     {
-                        attributeKey = attributeKey.Replace( "_unformatted", "" );
+                        attributeKey = attributeKey.Replace( "_unformatted", string.Empty );
                         unformatted = true;
                     }
                     else if ( attributeKey.EndsWith( "_url" ) )
                     {
-                        attributeKey = attributeKey.Replace( "_url", "" );
+                        attributeKey = attributeKey.Replace( "_url", string.Empty );
                         url = true;
                     }
 
@@ -518,11 +519,11 @@ namespace Rock.Web.Cache
 
             if ( attributeKey.EndsWith( "_unformatted" ) )
             {
-                attributeKey = attributeKey.Replace( "_unformatted", "" );
+                attributeKey = attributeKey.Replace( "_unformatted", string.Empty );
             }
             else if ( attributeKey.EndsWith( "_url" ) )
             {
-                attributeKey = attributeKey.Replace( "_url", "" );
+                attributeKey = attributeKey.Replace( "_url", string.Empty );
             }
 
             if ( this.Attributes != null && this.Attributes.ContainsKey( attributeKey ) )
@@ -535,10 +536,8 @@ namespace Rock.Web.Cache
             }
 
             return false;
-
         }
 
         #endregion
-
     }
 }

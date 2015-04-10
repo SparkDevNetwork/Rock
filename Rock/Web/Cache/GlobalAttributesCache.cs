@@ -33,19 +33,18 @@ namespace Rock.Web.Cache
     [Serializable]
     public class GlobalAttributesCache
     {
-
         #region Contants
 
         /// <summary>
         /// The locking object
         /// </summary>
-        private static readonly Object _obj = new object();
+        private static readonly object _obj = new object();
 
         /// <summary>
         /// This setting is the guid for the organization's location record.
         /// </summary>
         private static readonly string ORG_LOC_GUID = "com.rockrms.orgLocationGuid";
-        
+
         /// <summary>
         /// This setting is the state for the organization's location record.
         /// </summary>
@@ -63,7 +62,9 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Use Static Read() method to instantiate a new Global Attributes object
         /// </summary>
-        private GlobalAttributesCache() { }
+        private GlobalAttributesCache()
+        {
+        }
 
         #endregion
 
@@ -228,15 +229,15 @@ namespace Rock.Web.Cache
                 rockContext.SaveChanges();
             }
 
-            AttributeValues.AddOrReplace( key, value);
+            AttributeValues.AddOrReplace( key, value );
 
             var attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
             if ( attributeCache != null )
             {
                 value = attributeCache.FieldType.Field.FormatValue( null, value, attributeCache.QualifierValues, false );
             }
-            AttributeValuesFormatted.AddOrReplace( key, value );
 
+            AttributeValuesFormatted.AddOrReplace( key, value );
         }
 
         #endregion
@@ -360,6 +361,7 @@ namespace Rock.Web.Cache
                     globalAttributeValues.Add( attributeCache.Key, globalAttributes.GetValueFormatted( attributeCache.Key ) );
                 }
             }
+
             configValues.Add( "GlobalAttribute", globalAttributeValues );
 
             // Recursively resolve any of the config values that may have other merge codes as part of their value
@@ -373,7 +375,6 @@ namespace Rock.Web.Cache
             }
 
             return configValues;
-
         }
 
         /// <summary>
@@ -405,7 +406,7 @@ namespace Rock.Web.Cache
         /// </value>
         public Location OrganizationLocation
         {
-            get 
+            get
             {
                 Guid? locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
                 if ( locGuid.HasValue )
@@ -415,6 +416,7 @@ namespace Rock.Web.Cache
                         return new Rock.Model.LocationService( rockContext ).Get( locGuid.Value );
                     }
                 }
+
                 return null;
             }
         }
@@ -476,7 +478,6 @@ namespace Rock.Web.Cache
                 return string.Empty;
             }
         }
-
 
         /// <summary>
         /// Gets the organization country.
