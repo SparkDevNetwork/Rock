@@ -248,6 +248,13 @@ namespace Rock.Security.Authentication
             return true;
         }
 
+        /// <summary>
+        /// Generates the username.
+        /// </summary>
+        /// <param name="firstName">The first name.</param>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="tryCount">The try count.</param>
+        /// <returns></returns>
         public static string GenerateUsername( string firstName, string lastName, int tryCount = 0 )
         {
             // create username

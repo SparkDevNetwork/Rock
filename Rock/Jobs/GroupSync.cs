@@ -137,6 +137,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="systemEmailId">The system email identifier.</param>
         /// <param name="personId">The person identifier.</param>
+        /// <param name="syncGroup">The synchronize group.</param>
         /// <param name="createLogin">if set to <c>true</c> [create login].</param>
         private void SendWelcomeEmail( int systemEmailId, int personId, Group syncGroup, bool createLogin )
         {
@@ -192,6 +193,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="systemEmailId">The system email identifier.</param>
         /// <param name="recipient">The recipient.</param>
+        /// <param name="syncGroup">The synchronize group.</param>
         private void SendExitEmail( int systemEmailId, Person recipient, Group syncGroup )
         {
             if ( !string.IsNullOrWhiteSpace( recipient.Email ) )
