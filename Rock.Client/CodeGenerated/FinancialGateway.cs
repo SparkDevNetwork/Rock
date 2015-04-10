@@ -27,57 +27,24 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for FinancialScheduledTransaction that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for FinancialGateway that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class FinancialScheduledTransactionEntity
+    public partial class FinancialGatewayEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int AuthorizedPersonAliasId { get; set; }
+        public string Description { get; set; }
 
         /// <summary />
-        public DateTime? CardReminderDate { get; set; }
-
-        /// <summary />
-        public int? CreditCardTypeValueId { get; set; }
-
-        /// <summary />
-        public int? CurrencyTypeValueId { get; set; }
-
-        /// <summary />
-        public DateTime? EndDate { get; set; }
-
-        /// <summary />
-        public int? FinancialGatewayId { get; set; }
-
-        /// <summary />
-        public string GatewayScheduleId { get; set; }
+        public int? EntityTypeId { get; set; }
 
         /// <summary />
         public bool IsActive { get; set; }
 
         /// <summary />
-        public DateTime? LastRemindedDate { get; set; }
-
-        /// <summary />
-        public DateTime? LastStatusUpdateDateTime { get; set; }
-
-        /// <summary />
-        public DateTime? NextPaymentDate { get; set; }
-
-        /// <summary />
-        public int? NumberOfPayments { get; set; }
-
-        /// <summary />
-        public DateTime StartDate { get; set; }
-
-        /// <summary />
-        public string TransactionCode { get; set; }
-
-        /// <summary />
-        public int TransactionFrequencyValueId { get; set; }
+        public string Name { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -88,27 +55,15 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for FinancialScheduledTransaction that includes all the fields that are available for GETs. Use this for GETs (use FinancialScheduledTransactionEntity for POST/PUTs)
+    /// Client model for FinancialGateway that includes all the fields that are available for GETs. Use this for GETs (use FinancialGatewayEntity for POST/PUTs)
     /// </summary>
-    public partial class FinancialScheduledTransaction : FinancialScheduledTransactionEntity
+    public partial class FinancialGateway : FinancialGatewayEntity
     {
         /// <summary />
-        public DefinedValue CreditCardTypeValue { get; set; }
+        public long BatchTimeOffsetTicks { get; set; }
 
         /// <summary />
-        public DefinedValue CurrencyTypeValue { get; set; }
-
-        /// <summary />
-        public FinancialGateway FinancialGateway { get; set; }
-
-        /// <summary />
-        public ICollection<FinancialScheduledTransactionDetail> ScheduledTransactionDetails { get; set; }
-
-        /// <summary />
-        public DefinedValue TransactionFrequencyValue { get; set; }
-
-        /// <summary />
-        public ICollection<FinancialTransaction> Transactions { get; set; }
+        public EntityType EntityType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

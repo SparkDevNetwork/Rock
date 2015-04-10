@@ -51,7 +51,24 @@ namespace Rock.Model
         public bool CanDelete( FinancialGateway item, out string errorMessage )
         {
             errorMessage = string.Empty;
-
+ 
+            if ( new Service<FinancialPersonSavedAccount>( Context ).Queryable().Any( a => a.FinancialGatewayId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialGateway.FriendlyTypeName, FinancialPersonSavedAccount.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.FinancialGatewayId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialGateway.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.FinancialGatewayId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialGateway.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -88,7 +105,17 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this FinancialGateway target, FinancialGateway source )
         {
-
+            target.Id = source.Id;
+            target.Description = source.Description;
+            target.EntityTypeId = source.EntityTypeId;
+            target.IsActive = source.IsActive;
+            target.Name = source.Name;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
+            target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

@@ -88,6 +88,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this EntitySetItem target, EntitySetItem source )
         {
             target.Id = source.Id;
+            target.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
             target.EntityId = source.EntityId;
             target.EntitySetId = source.EntitySetId;
             target.Order = source.Order;
