@@ -36,6 +36,12 @@ namespace Rock.MergeTemplates
     [ExportMetadata( "ComponentName", "Word Document" )]
     public class WordDocumentMergeTemplateType : MergeTemplateType
     {
+        /// <summary>
+        /// Gets or sets the exceptions.
+        /// </summary>
+        /// <value>
+        /// The exceptions.
+        /// </value>
         public override List<Exception> Exceptions { get; set; }
 
         /// <summary>
