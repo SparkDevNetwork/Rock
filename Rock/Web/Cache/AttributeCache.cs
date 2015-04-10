@@ -319,7 +319,9 @@ namespace Rock.Web.Cache
 
             this.QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )
+            {
                 this.QualifierValues.Add( qualifier.Key, new ConfigurationValue( qualifier.Value ) );
+            }
 
             this.categoryIds = attribute.Categories.Select( c => c.Id ).ToList();
         }
@@ -337,7 +339,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public Control AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null, string labelText = null )
         {
-            if (labelText == null)
+            if ( labelText == null )
             {
                 labelText = this.Name;
             }
@@ -363,8 +365,8 @@ namespace Rock.Web.Cache
                 }
                 else
                 {
-                    bool renderLabel = ( !string.IsNullOrEmpty( labelText ) );
-                    bool renderHelp = ( !string.IsNullOrWhiteSpace( Description ) );
+                    bool renderLabel = !string.IsNullOrEmpty( labelText );
+                    bool renderHelp = !string.IsNullOrWhiteSpace( Description );
 
                     if ( renderLabel || renderHelp )
                     {
@@ -377,6 +379,7 @@ namespace Rock.Web.Cache
                         {
                             div.AddCssClass( "required" );
                         }
+
                         div.ClientIDMode = ClientIDMode.AutoID;
 
                         if ( renderLabel )
@@ -388,13 +391,15 @@ namespace Rock.Web.Cache
                             label.CssClass = "control-label";
                             label.AssociatedControlID = attributeControl.ID;
                         }
+
                         if ( renderHelp )
                         {
-                            var HelpBlock = new Rock.Web.UI.Controls.HelpBlock();
-                            div.Controls.Add( HelpBlock );
-                            HelpBlock.ClientIDMode = ClientIDMode.AutoID;
-                            HelpBlock.Text = this.Description;
+                            var helpBlock = new Rock.Web.UI.Controls.HelpBlock();
+                            div.Controls.Add( helpBlock );
+                            helpBlock.ClientIDMode = ClientIDMode.AutoID;
+                            helpBlock.Text = this.Description;
                         }
+
                         div.Controls.Add( attributeControl );
                     }
                     else
@@ -425,6 +430,7 @@ namespace Rock.Web.Cache
             {
                 return attributeControl;
             }
+
             {
                 return attributeControl.FindControl( id );
             }
@@ -520,7 +526,7 @@ namespace Rock.Web.Cache
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsPrivate( string action, Person person)
+        public virtual bool IsPrivate( string action, Person person )
         {
             return Security.Authorization.IsPrivate( this, action, person );
         }
@@ -821,6 +827,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
     }
 }

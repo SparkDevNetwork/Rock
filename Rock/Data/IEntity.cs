@@ -112,5 +112,13 @@ namespace Rock.Data
         /// </summary>
         /// <returns></returns>
         Dictionary<string, object> ToDictionary();
+
+        /// <summary>
+        /// Gets or sets the additional lava fields.
+        /// </summary>
+        /// <value>
+        /// The additional lava fields.
+        /// </value>
+        Dictionary<string, object> AdditionalLavaFields { get; set; }
     }
 }

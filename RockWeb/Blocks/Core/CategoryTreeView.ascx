@@ -176,6 +176,8 @@
             <Content>
                 <Rock:NotificationBox ID="nbRootCategoryEntityTypeWarning" runat="server" Text="Entity Type must be set in Block Settings before setting Root Category." NotificationBoxType="Warning" />
                 <Rock:CategoryPicker ID="cpRootCategory" runat="server" Label="Root Category" />
+
+                <Rock:CategoryPicker ID="cpExcludeCategories" runat="server" Label="Exclude Categories" AllowMultiSelect="true" />
             </Content>
         </Rock:ModalDialog>
     </ContentTemplate>

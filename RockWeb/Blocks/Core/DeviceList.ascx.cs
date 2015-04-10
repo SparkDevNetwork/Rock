@@ -248,6 +248,7 @@ namespace RockWeb.Blocks.Core
         {
             var deviceService = new DeviceService( new RockContext() );
             var sortProperty = gDevice.SortProperty;
+            gDevice.EntityTypeId = EntityTypeCache.Read<Device>().Id;
 
             var queryable = deviceService.Queryable().Select( a =>
                 new
@@ -309,6 +310,7 @@ namespace RockWeb.Blocks.Core
                 gDevice.DataSource = queryable.OrderBy( d => d.Name ).ToList();
             }
 
+            gDevice.EntityTypeId = EntityTypeCache.Read<Rock.Model.Device>().Id;
             gDevice.DataBind();
         }
 

@@ -43,12 +43,27 @@ namespace Rock.Rest.Controllers
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="showUnnamedEntityItems">if set to <c>true</c> [show unnamed entity items].</param>
         /// <param name="showCategoriesThatHaveNoChildren">if set to <c>true</c> [show categories that have no children].</param>
+        /// <param name="includedCategoryIds">The included category ids.</param>
+        /// <param name="excludedCategoryIds">The excluded category ids.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Categories/GetChildren/{id}" )]
-        public IQueryable<CategoryItem> GetChildren( int id, int rootCategoryId = 0, bool getCategorizedItems = false, int entityTypeId = 0, string entityQualifier = null, string entityQualifierValue = null, bool showUnnamedEntityItems = true, bool showCategoriesThatHaveNoChildren = true )
+        public IQueryable<CategoryItem> GetChildren(
+            int id,
+            int rootCategoryId = 0,
+            bool getCategorizedItems = false,
+            int entityTypeId = 0,
+            string entityQualifier = null,
+            string entityQualifierValue = null,
+            bool showUnnamedEntityItems = true,
+            bool showCategoriesThatHaveNoChildren = true,
+            string includedCategoryIds = null,
+            string excludedCategoryIds = null )
         {
             Person currentPerson = GetPerson();
+
+            var includedCategoryIdList = includedCategoryIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
+            var excludedCategoryIdList = excludedCategoryIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
 
             IQueryable<Category> qry = Get();
 
@@ -68,6 +83,17 @@ namespace Rock.Rest.Controllers
                 qry = qry.Where( a => a.ParentCategoryId == id );
             }
 
+            
+            if ( includedCategoryIdList.Any() )
+            {
+                // if includedCategoryIdList is specified, only get categories that are in the includedCategoryIdList
+                // NOTE: no need to factor in excludedCategoryIdList since included would take precendance and the excluded ones would already not be included
+                qry = qry.Where( a => includedCategoryIdList.Contains( a.Id ) );
+            }
+            else if ( excludedCategoryIdList.Any() )
+            {
+                qry = qry.Where( a => !excludedCategoryIdList.Contains( a.Id ) );
+            }
 
             IService serviceInstance = null;
 
@@ -122,11 +148,14 @@ namespace Rock.Rest.Controllers
             {
                 // if id is zero and we have a rootCategory, show the children of that rootCategory (but don't show the rootCategory)
                 int parentItemId = id == 0 ? rootCategoryId : id;
-                
-                var items = GetCategorizedItems( serviceInstance, parentItemId, showUnnamedEntityItems ).ToList();
-                if ( items != null )
+
+                var itemsQry = GetCategorizedItems( serviceInstance, parentItemId, showUnnamedEntityItems );
+                if ( itemsQry != null )
                 {
-                    foreach ( var categorizedItem in items.OrderBy( i => i.Name ) )
+                    // do a ToList to load from database prior to ordering by name, just in case Name is a virtual property
+                    var itemsList = itemsQry.ToList();
+
+                    foreach ( var categorizedItem in itemsList.OrderBy( i => i.Name ) )
                     {
                         if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
                         {

@@ -139,6 +139,7 @@ namespace RockWeb.Blocks.Administration
                 qry = qry.OrderBy( c => c.Name);
             }
 
+            gControllers.EntityTypeId = EntityTypeCache.Read<RestController>().Id;
             gControllers.DataSource = qry.ToList();
             gControllers.DataBind();
         }

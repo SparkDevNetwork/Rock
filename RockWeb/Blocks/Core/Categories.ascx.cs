@@ -358,6 +358,7 @@ namespace RockWeb.Blocks.Core
                     ChildCount = c.ChildCategories.Count()
                 } ).ToList();
 
+            gCategories.EntityTypeId = EntityTypeCache.Read<Rock.Model.Category>().Id;
             gCategories.DataBind();
         }
 

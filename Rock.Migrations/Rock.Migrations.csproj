@@ -51,13 +51,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Migrations\Version 3.0\Version 1.3.1\201504080019568_FixNullAddress.cs" />
-    <Compile Include="Migrations\Version 3.0\Version 1.3.1\201504080019568_FixNullAddress.Designer.cs">
-      <DependentUpon>201504080019568_FixNullAddress.cs</DependentUpon>
+    <Compile Include="Migrations\201504091807354_MergeTemplates.cs" />
+    <Compile Include="Migrations\201504091807354_MergeTemplates.Designer.cs">
+      <DependentUpon>201504091807354_MergeTemplates.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\Version 3.0\Version 1.3.1\201503272300012_AddIndexes.cs" />
-    <Compile Include="Migrations\Version 3.0\Version 1.3.1\201503272300012_AddIndexes.Designer.cs">
-      <DependentUpon>201503272300012_AddIndexes.cs</DependentUpon>
+    <Compile Include="Migrations\201504092126443_BadgeFixes.cs" />
+    <Compile Include="Migrations\201504092126443_BadgeFixes.Designer.cs">
+      <DependentUpon>201504092126443_BadgeFixes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201504092142301_GroupSync.cs" />
+    <Compile Include="Migrations\201504092142301_GroupSync.Designer.cs">
+      <DependentUpon>201504092142301_GroupSync.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.cs" />
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.Designer.cs">
@@ -1500,11 +1504,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.1\201504080019568_FixNullAddress.resx">
-      <DependentUpon>201504080019568_FixNullAddress.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201504091807354_MergeTemplates.resx">
+      <DependentUpon>201504091807354_MergeTemplates.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.1\201503272300012_AddIndexes.resx">
-      <DependentUpon>201503272300012_AddIndexes.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201504092126443_BadgeFixes.resx">
+      <DependentUpon>201504092126443_BadgeFixes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201504092142301_GroupSync.resx">
+      <DependentUpon>201504092142301_GroupSync.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
