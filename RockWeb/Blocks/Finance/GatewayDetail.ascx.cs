@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Rock;
@@ -104,9 +105,11 @@ namespace RockWeb.Blocks.Finance
                 gateway.EntityTypeId = cpGatewayType.SelectedEntityTypeId;
                 gateway.SetBatchTimeOffset( tpBatchTimeOffset.SelectedTime );
 
-                Rock.Attribute.Helper.GetEditValues( phAttributes, gateway );
-
                 rockContext.SaveChanges();
+
+                gateway.LoadAttributes( rockContext );
+                Rock.Attribute.Helper.GetEditValues( phAttributes, gateway );
+                gateway.SaveAttributeValues( rockContext );
             }
 
             NavigateToParentPage();
@@ -249,6 +252,7 @@ namespace RockWeb.Blocks.Finance
 
         private void BuildDynamicControls( FinancialGateway gateway, bool SetValues )
         {
+            GatewayEntityTypeId = gateway.EntityTypeId;
             if ( gateway.EntityTypeId.HasValue )
             {
                 var GatewayComponentEntityType = EntityTypeCache.Read( gateway.EntityTypeId.Value );
@@ -264,7 +268,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( gateway, phAttributes, SetValues, BlockValidationGroup );
+            Rock.Attribute.Helper.AddEditControls( gateway, phAttributes, SetValues, BlockValidationGroup, new List<string> { "Active", "Order" } );
         }
 
         #endregion

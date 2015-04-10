@@ -167,6 +167,21 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        protected string GetComponentName( object entityTypeObject )
+        {
+            var entityType = entityTypeObject as EntityType;
+            if ( entityType != null )
+            {
+                string name = Rock.Financial.GatewayContainer.GetComponentName( entityType.Name );
+                if ( !string.IsNullOrWhiteSpace(name))
+                {
+                    return name.SplitCase();
+                }
+            }
+
+            return string.Empty;
+        }
+
         #endregion
     }
 }

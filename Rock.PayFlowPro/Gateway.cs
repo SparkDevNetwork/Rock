@@ -43,7 +43,6 @@ namespace Rock.PayFlowPro
     [TextField( "PayPal User", "", false, "", "", 2, "User" )]
     [TextField( "PayPal Password", "", true, "", "", 3, "Password", true )]
     [CustomRadioListField( "Mode", "Mode to use for transactions", "Live,Test", true, "Live", "", 4 )]
-    [TimeField( "Batch Process Time", "The Paypal Batch processing cut-off time.  When batches are created by Rock, they will use this for the start/stop when creating new batches", false, "00:00:00", "", 5 )]
 
     public class Gateway : GatewayComponent
     {

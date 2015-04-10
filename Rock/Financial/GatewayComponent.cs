@@ -29,6 +29,24 @@ namespace Rock.Financial
     /// </summary>
     public abstract class GatewayComponent : Component
     {
+
+        /// <summary>
+        /// Gets the attribute value defaults.
+        /// </summary>
+        /// <value>
+        /// The attribute defaults.
+        /// </value>
+        public override Dictionary<string, string> AttributeValueDefaults
+        {
+            get
+            {
+                var defaults = new Dictionary<string, string>();
+                defaults.Add( "Active", "True" );
+                defaults.Add( "Order", "0" );
+                return defaults;
+            }
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ActionComponent" /> class.
         /// </summary>
@@ -70,6 +88,34 @@ namespace Rock.Financial
             throw new Exception( "Gateway Component attributes are saved specific to the financial gateway, which requires that the current financial gateway is included in order to load or retrieve values. Use the GetAttributeValue( FinancialGateway financialGateway, string key ) method instead." );
         }
 
+        /// <summary>
+        /// Always returns 0.  (Ordering of actions is configured through the workflow admin and stored as property of WorkflowActionType)
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public override int Order
+        {
+            get
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Always returns true.  (Activating of actions is configured through the workflow admin and stored as a WorkflowActionType)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsActive
+        {
+            get
+            {
+                return true; ;
+            }
+        }
+        
         /// <summary>
         /// Gets the attribute value for the gateway action
         /// </summary>

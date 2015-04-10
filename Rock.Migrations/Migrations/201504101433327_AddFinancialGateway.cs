@@ -60,8 +60,16 @@ namespace Rock.Migrations
                 .Index(t => t.CreatedByPersonAliasId)
                 .Index(t => t.ModifiedByPersonAliasId)
                 .Index(t => t.Guid, unique: true);
-
-            RockMigrationHelper.UpdateEntityType( "Rock.Model.FinancialGateway", "122EFE60-84A6-4C7A-A852-30E4BD89A662", true, true );
+            
+            AddColumn("dbo.FinancialTransaction", "FinancialGatewayId", c => c.Int());
+            AddColumn("dbo.FinancialScheduledTransaction", "FinancialGatewayId", c => c.Int());
+            AddColumn("dbo.FinancialPersonSavedAccount", "FinancialGatewayId", c => c.Int());
+            CreateIndex("dbo.FinancialTransaction", "FinancialGatewayId");
+            CreateIndex("dbo.FinancialScheduledTransaction", "FinancialGatewayId");
+            CreateIndex("dbo.FinancialPersonSavedAccount", "FinancialGatewayId");
+            AddForeignKey("dbo.FinancialTransaction", "FinancialGatewayId", "dbo.FinancialGateway", "Id");
+            AddForeignKey("dbo.FinancialScheduledTransaction", "FinancialGatewayId", "dbo.FinancialGateway", "Id");
+            AddForeignKey("dbo.FinancialPersonSavedAccount", "FinancialGatewayId", "dbo.FinancialGateway", "Id");
 
             Sql( @"
     DECLARE @PayFlowProGatewayEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.PayFlowPro.Gateway' )
@@ -136,20 +144,33 @@ namespace Rock.Migrations
 	    [EntityTypeQualifierValue] = CAST( [EntityTypeId] AS VARCHAR )
     WHERE [EntityTypeId] IN ( @PayFlowProGatewayEntityTypeId, @TestGatewayEntityTypeId )
 " );
+            
+            DropColumn("dbo.FinancialTransaction", "GatewayEntityTypeId");
+            DropColumn("dbo.FinancialScheduledTransaction", "GatewayEntityTypeId");
+            DropColumn("dbo.FinancialPersonSavedAccount", "GatewayEntityTypeId");
 
-            AddColumn("dbo.FinancialTransaction", "FinancialGatewayId", c => c.Int());
-            AddColumn("dbo.FinancialScheduledTransaction", "FinancialGatewayId", c => c.Int());
-            AddColumn("dbo.FinancialPersonSavedAccount", "FinancialGatewayId", c => c.Int());
-            CreateIndex("dbo.FinancialTransaction", "FinancialGatewayId");
-            CreateIndex("dbo.FinancialScheduledTransaction", "FinancialGatewayId");
-            CreateIndex("dbo.FinancialPersonSavedAccount", "FinancialGatewayId");
-            AddForeignKey("dbo.FinancialTransaction", "FinancialGatewayId", "dbo.FinancialGateway", "Id");
-            AddForeignKey("dbo.FinancialScheduledTransaction", "FinancialGatewayId", "dbo.FinancialGateway", "Id");
-            AddForeignKey("dbo.FinancialPersonSavedAccount", "FinancialGatewayId", "dbo.FinancialGateway", "Id");
+            RockMigrationHelper.UpdateFieldType( "Financial Gateway", "", "Rock", "Rock.Field.Types.FinancialGatewayFieldType", "7B34F9D8-6BBA-423E-B50E-525ABB3A1013" );
 
-            DropColumn( "dbo.FinancialTransaction", "GatewayEntityTypeId" );
-            DropColumn( "dbo.FinancialScheduledTransaction", "GatewayEntityTypeId" );
-            DropColumn( "dbo.FinancialPersonSavedAccount", "GatewayEntityTypeId" );
+            RockMigrationHelper.AddPage( "C831428A-6ACD-4D49-9B2D-046D399E3123", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Financial Gateways", "", "F65AA215-8B46-4E34-B709-FA956BF62C30", "fa fa-credit-card" ); // Site:Rock RMS
+            RockMigrationHelper.AddPage( "F65AA215-8B46-4E34-B709-FA956BF62C30", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Gateway Detail", "", "24DE6092-CE91-468C-8E49-94DB3875B9B7", "" ); // Site:Rock RMS
+            RockMigrationHelper.UpdateBlockType( "Gateway Detail", "Displays the details of the given financial gateway.", "~/Blocks/Finance/GatewayDetail.ascx", "Finance", "B4D8CBCA-00F6-4D81-B8B6-170373D28128" );
+            RockMigrationHelper.UpdateBlockType( "Gateway List", "Block for viewing list of financial gateways.", "~/Blocks/Finance/GatewayList.ascx", "Finance", "32E89BAE-C085-40B3-B872-B62E25A62BDB" );
+            // Add Block to Page: Financial Gateways, Site: Rock RMS
+            RockMigrationHelper.AddBlock( "F65AA215-8B46-4E34-B709-FA956BF62C30", "", "32E89BAE-C085-40B3-B872-B62E25A62BDB", "Gateway List", "Main", "", "", 0, "80D93241-AB5D-46EC-BC12-0E32C3CA784C" );
+            // Add Block to Page: Gateway Detail, Site: Rock RMS
+            RockMigrationHelper.AddBlock( "24DE6092-CE91-468C-8E49-94DB3875B9B7", "", "B4D8CBCA-00F6-4D81-B8B6-170373D28128", "Gateway Detail", "Main", "", "", 0, "CB7AF6BA-4A89-4653-B4A2-A73999BC7236" );
+            // Attrib for BlockType: Gateway List:Detail Page
+            RockMigrationHelper.AddBlockTypeAttribute( "32E89BAE-C085-40B3-B872-B62E25A62BDB", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPage", "", "", 0, @"", "CBDD5D38-07EE-4ED5-8904-AF18F4161037" );
+            // Attrib Value for Block:Gateway List, Attribute:Detail Page Page: Financial Gateways, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "80D93241-AB5D-46EC-BC12-0E32C3CA784C", "CBDD5D38-07EE-4ED5-8904-AF18F4161037", @"24de6092-ce91-468c-8e49-94db3875b9b7" );
+
+            Sql( @"
+    DECLARE @Order int = ( SELECT TOP 1 [Order] FROM [Page] WHERE [Guid] = '6F8EC649-FDED-4805-B7AF-42A6901C197F' )
+    UPDATE [Page] SET [Order] = @Order WHERE [Guid] = 'F65AA215-8B46-4E34-B709-FA956BF62C30'
+" );
+
+            RockMigrationHelper.DeleteBlock( "8C707818-ECB1-4E40-8F2C-6E9802E6BA73" );
+            RockMigrationHelper.DeletePage( "6F8EC649-FDED-4805-B7AF-42A6901C197F" );
         }
         
         /// <summary>
@@ -157,6 +178,17 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            // Attrib for BlockType: Gateway List:Detail Page
+            RockMigrationHelper.DeleteAttribute( "CBDD5D38-07EE-4ED5-8904-AF18F4161037" );
+            // Remove Block: Gateway Detail, from Page: Gateway Detail, Site: Rock RMS
+            RockMigrationHelper.DeleteBlock( "CB7AF6BA-4A89-4653-B4A2-A73999BC7236" );
+            // Remove Block: Gateway List, from Page: Financial Gateways, Site: Rock RMS
+            RockMigrationHelper.DeleteBlock( "80D93241-AB5D-46EC-BC12-0E32C3CA784C" );
+            RockMigrationHelper.DeleteBlockType( "32E89BAE-C085-40B3-B872-B62E25A62BDB" ); // Gateway List
+            RockMigrationHelper.DeleteBlockType( "B4D8CBCA-00F6-4D81-B8B6-170373D28128" ); // Gateway Detail
+            RockMigrationHelper.DeletePage( "24DE6092-CE91-468C-8E49-94DB3875B9B7" ); //  Page: Gateway Detail, Layout: Full Width, Site: Rock RMS
+            RockMigrationHelper.DeletePage( "F65AA215-8B46-4E34-B709-FA956BF62C30" ); //  Page: Financial Gateways, Layout: Full Width, Site: Rock RMS
+            
             AddColumn("dbo.FinancialPersonSavedAccount", "GatewayEntityTypeId", c => c.Int());
             AddColumn("dbo.FinancialScheduledTransaction", "GatewayEntityTypeId", c => c.Int());
             AddColumn("dbo.FinancialTransaction", "GatewayEntityTypeId", c => c.Int());
