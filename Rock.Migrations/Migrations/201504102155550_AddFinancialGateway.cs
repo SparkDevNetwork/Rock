@@ -72,11 +72,13 @@ namespace Rock.Migrations
             AddForeignKey( "dbo.FinancialPersonSavedAccount", "FinancialGatewayId", "dbo.FinancialGateway", "Id" );
 
             RockMigrationHelper.UpdateEntityType( "Rock.Model.FinancialGateway", "122EFE60-84A6-4C7A-A852-30E4BD89A662", true, true );
+            RockMigrationHelper.UpdateFieldType( "Financial Gateway", "", "Rock", "Rock.Field.Types.FinancialGatewayFieldType", "7B34F9D8-6BBA-423E-B50E-525ABB3A1013" );
 
             Sql( @"
     DECLARE @PayFlowProGatewayEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.PayFlowPro.Gateway' )
     DECLARE @TestGatewayEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Financial.TestGateway' )
     DECLARE @GatewayEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '122EFE60-84A6-4C7A-A852-30E4BD89A662' )
+    DECLARE @GatewayFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Guid] = '7B34F9D8-6BBA-423E-B50E-525ABB3A1013' )
     DECLARE @PayFlowProGatewayId int
     DECLARE @TestGatewayId int
 
@@ -145,13 +147,29 @@ namespace Rock.Migrations
 	    [EntityTypeQualifierColumn] = 'EntityTypeId',
 	    [EntityTypeQualifierValue] = CAST( [EntityTypeId] AS VARCHAR )
     WHERE [EntityTypeId] IN ( @PayFlowProGatewayEntityTypeId, @TestGatewayEntityTypeId )
+
+    UPDATE A SET 
+	    [FieldTypeId] = @GatewayFieldTypeId,
+	    [DefaultValue] = '6432D2D2-32FF-443D-B5B3-FB6C8414C3AD'
+    FROM [Attribute] A
+    INNER JOIN [FieldType] F ON F.[Id] = A.[FieldTypeId]
+    WHERE F.[Guid] = 'A7486B0E-4CA2-4E00-A987-5544C7DABA76' 
+    AND [Key] IN ( 'CCGateway', 'ACHGateway' )
+
+    UPDATE AV SET [Value] = ( CASE WHEN T.[Name] = 'Rock.PayFlowPro.Gateway' THEN '420747BE-640C-406E-B382-CEE4BB377F29' ELSE '6432D2D2-32FF-443D-B5B3-FB6C8414C3AD' END )
+    FROM [Attribute] A 
+    INNER JOIN [AttributeValue] AV
+	    ON AV.[AttributeId] = A.[Id]
+    LEFT OUTER JOIN [EntityType] T	
+	    ON CAST( T.[Guid] as varchar(60) ) = AV.[Value]
+    WHERE A.[FieldTypeId] = @GatewayFieldTypeId 
+    AND A.[Key] IN ( 'CCGateway', 'ACHGateway' )
+
 " );
 
             DropColumn( "dbo.FinancialTransaction", "GatewayEntityTypeId" );
             DropColumn( "dbo.FinancialScheduledTransaction", "GatewayEntityTypeId" );
             DropColumn( "dbo.FinancialPersonSavedAccount", "GatewayEntityTypeId" );
-
-            RockMigrationHelper.UpdateFieldType( "Financial Gateway", "", "Rock", "Rock.Field.Types.FinancialGatewayFieldType", "7B34F9D8-6BBA-423E-B50E-525ABB3A1013" );
 
             RockMigrationHelper.AddPage( "C831428A-6ACD-4D49-9B2D-046D399E3123", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Financial Gateways", "", "F65AA215-8B46-4E34-B709-FA956BF62C30", "fa fa-credit-card" ); // Site:Rock RMS
             RockMigrationHelper.AddPage( "F65AA215-8B46-4E34-B709-FA956BF62C30", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Gateway Detail", "", "24DE6092-CE91-468C-8E49-94DB3875B9B7", "" ); // Site:Rock RMS
