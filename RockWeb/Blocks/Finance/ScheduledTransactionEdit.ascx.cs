@@ -550,7 +550,7 @@ achieve our mission.  We are so grateful for your commitment.
                     if ( int.TryParse( PageParameter( "ScheduledTransactionId" ), out txnId ) )
                     {
                         var service = new FinancialScheduledTransactionService( rockContext );
-                        var scheduledTransaction = service.Queryable( "AuthorizedPersonAlias.Person,ScheduledTransactionDetails,Gateway,CurrencyTypeValue,CreditCardTypeValue" )
+                        var scheduledTransaction = service.Queryable( "AuthorizedPersonAlias.Person,ScheduledTransactionDetails,FinancialGateway,CurrencyTypeValue,CreditCardTypeValue" )
                             .Where( t =>
                                 t.Id == txnId &&
                                 ( t.AuthorizedPersonAlias.PersonId == targetPerson.Id || t.AuthorizedPersonAlias.Person.GivingGroupId == targetPerson.GivingGroupId ) )
