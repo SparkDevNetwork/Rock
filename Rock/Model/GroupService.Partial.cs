@@ -119,6 +119,8 @@ namespace Rock.Model
 
             if ( groupTypeIncludedIds.Any() )
             {
+                // if groupTypeIncludedIds is specified, only get grouptypes that are in the groupTypeIncludedIds
+                // NOTE: no need to factor in groupTypeExcludedIds since included would take precendance and the excluded ones would already not be included
                 qry = qry.Where( a => groupTypeIncludedIds.Contains( a.GroupTypeId ) );
             }
             else if (groupTypeExcludedIds.Any() )

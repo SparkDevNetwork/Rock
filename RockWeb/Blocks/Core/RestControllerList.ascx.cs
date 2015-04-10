@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -139,6 +139,7 @@ namespace RockWeb.Blocks.Administration
                 qry = qry.OrderBy( c => c.Name);
             }
 
+            gControllers.EntityTypeId = EntityTypeCache.Read<RestController>().Id;
             gControllers.DataSource = qry.ToList();
             gControllers.DataBind();
         }

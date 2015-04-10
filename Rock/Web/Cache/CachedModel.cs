@@ -144,13 +144,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsAuthorized( string action, Person person, RockContext rockContext = null )
+        public virtual bool IsAuthorized( string action, Person person )
         {
-            return Security.Authorization.Authorized( this, action, person, rockContext );
+            return Security.Authorization.Authorized( this, action, person );
         }
 
         /// <summary>
@@ -169,13 +168,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsPrivate( string action, Person person, RockContext rockContext = null )
+        public virtual bool IsPrivate( string action, Person person )
         {
-            return Security.Authorization.IsPrivate( this, action, person, rockContext );
+            return Security.Authorization.IsPrivate( this, action, person );
         }
 
         /// <summary>
@@ -195,7 +193,7 @@ namespace Rock.Web.Cache
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
-        public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
+        public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext )
         {
             Security.Authorization.MakeUnPrivate( this, action, person, rockContext );
         }
@@ -240,6 +238,7 @@ namespace Rock.Web.Cache
                 }
             }
         }
+
         /// <summary>
         /// The attribute ids
         /// </summary>
@@ -354,15 +353,18 @@ namespace Rock.Web.Cache
         /// </summary>
         public virtual void ReloadAttributeValues()
         {
-            var service = new Rock.Data.Service<T>( new RockContext() );
-            var model = service.Get( this.Id );
-
-            if ( model != null )
+            using ( var rockContext = new RockContext() )
             {
-                model.LoadAttributes();
+                var service = new Rock.Data.Service<T>( rockContext );
+                var model = service.Get( this.Id );
 
-                this.AttributeValues = model.AttributeValues;
-                this.Attributes = model.Attributes;
+                if ( model != null )
+                {
+                    model.LoadAttributes( rockContext );
+
+                    this.AttributeValues = model.AttributeValues;
+                    this.Attributes = model.Attributes;
+                }
             }
         }
 
@@ -452,12 +454,12 @@ namespace Rock.Web.Cache
                     string attributeKey = key.ToStringSafe();
                     if ( attributeKey.EndsWith( "_unformatted" ) )
                     {
-                        attributeKey = attributeKey.Replace( "_unformatted", "" );
+                        attributeKey = attributeKey.Replace( "_unformatted", string.Empty );
                         unformatted = true;
                     }
                     else if ( attributeKey.EndsWith( "_url" ) )
                     {
-                        attributeKey = attributeKey.Replace( "_url", "" );
+                        attributeKey = attributeKey.Replace( "_url", string.Empty );
                         url = true;
                     }
 
@@ -517,11 +519,11 @@ namespace Rock.Web.Cache
 
             if ( attributeKey.EndsWith( "_unformatted" ) )
             {
-                attributeKey = attributeKey.Replace( "_unformatted", "" );
+                attributeKey = attributeKey.Replace( "_unformatted", string.Empty );
             }
             else if ( attributeKey.EndsWith( "_url" ) )
             {
-                attributeKey = attributeKey.Replace( "_url", "" );
+                attributeKey = attributeKey.Replace( "_url", string.Empty );
             }
 
             if ( this.Attributes != null && this.Attributes.ContainsKey( attributeKey ) )
@@ -534,10 +536,8 @@ namespace Rock.Web.Cache
             }
 
             return false;
-
         }
 
         #endregion
-
     }
 }

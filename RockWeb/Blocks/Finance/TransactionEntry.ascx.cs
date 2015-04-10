@@ -359,15 +359,12 @@ namespace RockWeb.Blocks.Finance
                 btnAddAccount.Title = GetAttributeValue( "AddAccountText" );
 
                 bool displayEmail = GetAttributeValue( "DisplayEmail" ).AsBoolean();
-
                 txtEmail.Visible = displayEmail;
-                txtEmail.Required = displayEmail;
                 tdEmailConfirm.Visible = displayEmail;
                 tdEmailReceipt.Visible = displayEmail;
 
                 bool displayPhone = GetAttributeValue( "DisplayPhone" ).AsBoolean();
                 pnbPhone.Visible = displayPhone;
-                pnbPhone.Required = displayPhone;
                 tdPhoneConfirm.Visible = displayPhone;
                 tdPhoneReceipt.Visible = displayPhone;
 
@@ -1137,7 +1134,14 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            if ( string.IsNullOrWhiteSpace( txtEmail.Text ) )
+            bool displayPhone = GetAttributeValue( "DisplayPhone" ).AsBoolean();
+            if ( displayPhone && string.IsNullOrWhiteSpace( pnbPhone.Number ) )
+            {
+                errorMessages.Add( "Make sure to enter a valid phone number.  A phone number is required for us to process this transaction" );
+            }
+
+            bool displayEmail = GetAttributeValue( "DisplayEmail" ).AsBoolean();
+            if ( displayEmail && string.IsNullOrWhiteSpace( txtEmail.Text ) )
             {
                 errorMessages.Add( "Make sure to enter a valid email address.  An email address is required for us to send you a payment confirmation" );
             }
@@ -1641,7 +1645,7 @@ namespace RockWeb.Blocks.Finance
             if ( !string.IsNullOrWhiteSpace( text ) )
             {
                 nbMessage.Text = text;
-                nbMessage.Title = title;
+                nbMessage.Title = string.Format( "<p>{0}</p>", title );
                 nbMessage.NotificationBoxType = type;
                 nbMessage.Visible = true;
             }

@@ -45,14 +45,17 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            var communication = new CommunicationService( new RockContext() ).Get( CommunicationId );
-
-            if ( communication != null && communication.Status == CommunicationStatus.Approved )
+            using ( var rockContext = new RockContext() )
             {
-                var medium = communication.Medium;
-                if ( medium != null )
+                var communication = new CommunicationService( rockContext ).Get( CommunicationId );
+
+                if ( communication != null && communication.Status == CommunicationStatus.Approved )
                 {
-                    medium.Send( communication );
+                    var medium = communication.Medium;
+                    if ( medium != null )
+                    {
+                        medium.Send( communication );
+                    }
                 }
             }
         }

@@ -32,13 +32,17 @@ namespace Rock.Web.Cache
     [DataContract]
     public class GroupTypeCache : CachedModel<GroupType>
     {
+        private object _lockObj;
+
         #region Constructors
 
         private GroupTypeCache()
         {
+            _lockObj = new object();
         }
 
         private GroupTypeCache( GroupType groupType )
+            : this()
         {
             CopyFromModel( groupType );
         }
@@ -295,23 +299,38 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( childGroupTypeIds == null )
-                {
-                    childGroupTypeIds = new GroupTypeService( new RockContext() )
-                        .GetChildGroupTypes( this.Id )
-                        .Select( t => t.Id )
-                        .ToList();
-                }
-
                 var childGroupTypes = new List<GroupTypeCache>();
-                foreach( int id in childGroupTypeIds)
-                { 
-                    var groupType = GroupTypeCache.Read( id );
-                    if (groupType != null)
+
+                lock ( _lockObj )
+                {
+                    if ( childGroupTypeIds != null )
                     {
-                        childGroupTypes.Add( groupType );
+                        foreach ( int id in childGroupTypeIds )
+                        {
+                            var groupType = GroupTypeCache.Read( id );
+                            if ( groupType != null )
+                            {
+                                childGroupTypes.Add( groupType );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        childGroupTypeIds = new List<int>();
+
+                        using ( var rockContext = new RockContext() )
+                        {
+                            foreach ( var childGroupType in new GroupTypeService( rockContext )
+                                .GetChildGroupTypes( this.Id ) )
+                            {
+                                childGroupTypeIds.Add( childGroupType.Id );
+                                childGroupType.LoadAttributes( rockContext );
+                                childGroupTypes.Add( GroupTypeCache.Read( childGroupType ) );
+                            }
+                        }
                     }
                 }
+
                 return childGroupTypes;
             }
         }
@@ -327,23 +346,38 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( parentGroupTypeIds == null )
-                {
-                    parentGroupTypeIds = new GroupTypeService( new RockContext() )
-                        .GetParentGroupTypes( this.Id )
-                        .Select( t => t.Id )
-                        .ToList();
-                }
-
                 var parentGroupTypes = new List<GroupTypeCache>();
-                foreach ( int id in parentGroupTypeIds )
+
+                lock ( _lockObj )
                 {
-                    var groupType = GroupTypeCache.Read( id );
-                    if ( groupType != null )
+                    if ( parentGroupTypeIds != null )
                     {
-                        parentGroupTypes.Add( groupType );
+                        foreach ( int id in parentGroupTypeIds )
+                        {
+                            var groupType = GroupTypeCache.Read( id );
+                            if ( groupType != null )
+                            {
+                                parentGroupTypes.Add( groupType );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        parentGroupTypeIds = new List<int>();
+
+                        using ( var rockContext = new RockContext() )
+                        {
+                            foreach ( var groupType in new GroupTypeService( rockContext )
+                                .GetParentGroupTypes( this.Id ) )
+                            {
+                                parentGroupTypeIds.Add( groupType.Id );
+                                groupType.LoadAttributes( rockContext );
+                                parentGroupTypes.Add( GroupTypeCache.Read( groupType ) );
+                            }
+                        }
                     }
                 }
+
                 return parentGroupTypes;
             }
         }
@@ -463,14 +497,20 @@ namespace Rock.Web.Cache
 
             if ( groupType == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var groupTypeService = new GroupTypeService( rockContext );
-                var groupTypeModel = groupTypeService.Get( id );
-                if ( groupTypeModel != null )
+                if ( rockContext != null )
                 {
-                    groupTypeModel.LoadAttributes( rockContext );
-                    groupType = new GroupTypeCache( groupTypeModel );
+                    groupType = LoadById( id, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        groupType = LoadById( id, myRockContext );
+                    }
+                }
 
+                if ( groupType != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, groupType, cachePolicy );
                     cache.Set( groupType.Guid.ToString(), groupType.Id, cachePolicy );
@@ -478,6 +518,19 @@ namespace Rock.Web.Cache
             }
 
             return groupType;
+        }
+
+        private static GroupTypeCache LoadById( int id, RockContext rockContext )
+        {
+            var groupTypeService = new GroupTypeService( rockContext );
+            var groupTypeModel = groupTypeService.Get( id );
+            if ( groupTypeModel != null )
+            {
+                groupTypeModel.LoadAttributes( rockContext );
+                return new GroupTypeCache( groupTypeModel );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -509,14 +562,20 @@ namespace Rock.Web.Cache
 
             if ( groupType == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var groupTypeService = new GroupTypeService( rockContext );
-                var groupTypeModel = groupTypeService.Get( guid );
-                if ( groupTypeModel != null )
+                if ( rockContext != null )
                 {
-                    groupTypeModel.LoadAttributes( rockContext );
-                    groupType = new GroupTypeCache( groupTypeModel );
+                    groupType = LoadByGuid( guid, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        groupType = LoadByGuid( guid, myRockContext );
+                    }
+                }
 
+                if ( groupType != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( GroupTypeCache.CacheKey( groupType.Id ), groupType, cachePolicy );
                     cache.Set( groupType.Guid.ToString(), groupType.Id, cachePolicy );
@@ -524,6 +583,19 @@ namespace Rock.Web.Cache
             }
 
             return groupType;
+        }
+
+        private static GroupTypeCache LoadByGuid( Guid guid, RockContext rockContext )
+        {
+            var groupTypeService = new GroupTypeService( rockContext );
+            var groupTypeModel = groupTypeService.Get( guid );
+            if ( groupTypeModel != null )
+            {
+                groupTypeModel.LoadAttributes( rockContext );
+                return new GroupTypeCache( groupTypeModel );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -604,6 +676,7 @@ namespace Rock.Web.Cache
         /// The unique identifier.
         /// </value>
         public Guid Guid { get; set; }
+        
         /// <summary>
         /// Gets or sets the name.
         /// </summary>

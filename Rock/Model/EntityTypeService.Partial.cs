@@ -59,14 +59,16 @@ namespace Rock.Model
             if ( createIfNotFound )
             {
                 // Create a new context so type can be saved independing of current context
-                var rockContext = new RockContext();
-                var EntityTypeService = new EntityTypeService( rockContext );
-                entityType = new EntityType();
-                entityType.Name = type.FullName;
-                entityType.FriendlyName = type.Name.SplitCase();
-                entityType.AssemblyName = type.AssemblyQualifiedName;
-                EntityTypeService.Add( entityType );
-                rockContext.SaveChanges();
+                using ( var rockContext = new RockContext() )
+                {
+                    var EntityTypeService = new EntityTypeService( rockContext );
+                    entityType = new EntityType();
+                    entityType.Name = type.FullName;
+                    entityType.FriendlyName = type.Name.SplitCase();
+                    entityType.AssemblyName = type.AssemblyQualifiedName;
+                    EntityTypeService.Add( entityType );
+                    rockContext.SaveChanges();
+                }
 
                 // Read type using current context
                 return this.Get( entityType.Id );
@@ -124,7 +126,7 @@ namespace Rock.Model
         public IEnumerable<EntityType> GetReportableEntities(Person currentPerson)
         {
             return this.GetEntities()
-                .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson, this.Context as RockContext ) )
+                .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
                 .Where( a => !Rock.Web.Cache.EntityTypeCache.Read( a ).GetEntityType().GetCustomAttributes( typeof( HideFromReportingAttribute ), true ).Any() );
         }
 
@@ -196,58 +198,60 @@ namespace Rock.Model
                 }
             }
 
-            var rockContext = new RockContext();
-            var entityTypeService = new EntityTypeService( rockContext );
-
-            // Find any existing EntityTypes marked as an entity or secured that are no longer an entity or secured
-            foreach ( var oldEntityType in entityTypeService.Queryable()
-                .Where( e => e.IsEntity || e.IsSecured )
-                .ToList() )
+            using ( var rockContext = new RockContext() )
             {
-                if ( !entityTypes.Keys.Contains( oldEntityType.Name.ToLower() ) )
+                var entityTypeService = new EntityTypeService( rockContext );
+
+                // Find any existing EntityTypes marked as an entity or secured that are no longer an entity or secured
+                foreach ( var oldEntityType in entityTypeService.Queryable()
+                    .Where( e => e.IsEntity || e.IsSecured )
+                    .ToList() )
                 {
-                    oldEntityType.IsSecured = false;
-                    oldEntityType.IsEntity = false;
-                    oldEntityType.AssemblyName = null;
+                    if ( !entityTypes.Keys.Contains( oldEntityType.Name.ToLower() ) )
+                    {
+                        oldEntityType.IsSecured = false;
+                        oldEntityType.IsEntity = false;
+                        oldEntityType.AssemblyName = null;
+                    }
                 }
-            }
 
-            // Update any existing entities
-            foreach ( var existingEntityType in entityTypeService.Queryable()
-                .Where( e => entityTypes.Keys.Contains( e.Name ) )
-                .ToList() )
-            {
-                var key = existingEntityType.Name.ToLower();
-
-                var entityType = entityTypes[key];
-
-                if ( existingEntityType.Name != entityType.Name || 
-                    existingEntityType.IsEntity != entityType.IsEntity ||
-                    existingEntityType.IsSecured != entityType.IsSecured ||
-                    existingEntityType.FriendlyName != ( existingEntityType.FriendlyName ?? entityType.FriendlyName ) ||
-                    existingEntityType.AssemblyName != entityType.AssemblyName )
+                // Update any existing entities
+                foreach ( var existingEntityType in entityTypeService.Queryable()
+                    .Where( e => entityTypes.Keys.Contains( e.Name ) )
+                    .ToList() )
                 {
-                    existingEntityType.Name = entityType.Name;
-                    existingEntityType.IsEntity = entityType.IsEntity;
-                    existingEntityType.IsSecured = entityType.IsSecured;
-                    existingEntityType.FriendlyName = existingEntityType.FriendlyName ?? entityType.FriendlyName;
-                    existingEntityType.AssemblyName = entityType.AssemblyName;
-                }
-                entityTypes.Remove( key );
-            }
+                    var key = existingEntityType.Name.ToLower();
 
-            // Add the newly discovered entities 
-            foreach ( var entityTypeInfo in entityTypes )
-            {
-                // Don't add the EntityType entity as it will probably have been automatically 
-                // added by the audit on a previous save in this method.
-                if ( entityTypeInfo.Value.Name != "Rock.Model.EntityType" )
+                    var entityType = entityTypes[key];
+
+                    if ( existingEntityType.Name != entityType.Name ||
+                        existingEntityType.IsEntity != entityType.IsEntity ||
+                        existingEntityType.IsSecured != entityType.IsSecured ||
+                        existingEntityType.FriendlyName != ( existingEntityType.FriendlyName ?? entityType.FriendlyName ) ||
+                        existingEntityType.AssemblyName != entityType.AssemblyName )
+                    {
+                        existingEntityType.Name = entityType.Name;
+                        existingEntityType.IsEntity = entityType.IsEntity;
+                        existingEntityType.IsSecured = entityType.IsSecured;
+                        existingEntityType.FriendlyName = existingEntityType.FriendlyName ?? entityType.FriendlyName;
+                        existingEntityType.AssemblyName = entityType.AssemblyName;
+                    }
+                    entityTypes.Remove( key );
+                }
+
+                // Add the newly discovered entities 
+                foreach ( var entityTypeInfo in entityTypes )
                 {
-                    entityTypeService.Add( entityTypeInfo.Value );
+                    // Don't add the EntityType entity as it will probably have been automatically 
+                    // added by the audit on a previous save in this method.
+                    if ( entityTypeInfo.Value.Name != "Rock.Model.EntityType" )
+                    {
+                        entityTypeService.Add( entityTypeInfo.Value );
+                    }
                 }
-            }
 
-            rockContext.SaveChanges();
+                rockContext.SaveChanges();
+            }
         }
 
         /// <summary>

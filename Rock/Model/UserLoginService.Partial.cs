@@ -335,13 +335,17 @@ namespace Rock.Model
 
                     userLoginService.Add( user );
 
+                    var historyCategory = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), rockContext );
                     rockContext.WrapTransaction( () =>
                     {
                         rockContext.SaveChanges();
 
-                        var changes = new List<string>();
-                        History.EvaluateChange( changes, "User Login", string.Empty, username );
-                        HistoryService.SaveChanges( rockContext, typeof( Person ), CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid() ).Guid, person.Id, changes );
+                        if ( historyCategory != null )
+                        {
+                            var changes = new List<string>();
+                            History.EvaluateChange( changes, "User Login", string.Empty, username );
+                            HistoryService.SaveChanges( rockContext, typeof( Person ), historyCategory.Guid, person.Id, changes );
+                        }
                     } );
 
                     return user;
@@ -363,40 +367,42 @@ namespace Rock.Model
         /// <param name="userName">Name of the user.</param>
         public static void UpdateLastLogin( string userName )
         {
-            var rockContext = new RockContext();
-            var userLoginService = new UserLoginService( rockContext );
-            var historyService = new HistoryService( rockContext );
-
-            var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-            var activityCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), rockContext ).Id;
-
-            if ( !string.IsNullOrWhiteSpace( userName ) && !userName.StartsWith( "rckipid=" ) )
+            using ( var rockContext = new RockContext() )
             {
-                var userLogin = userLoginService.GetByUserName( userName );
-                if ( userLogin != null )
+                var userLoginService = new UserLoginService( rockContext );
+                var historyService = new HistoryService( rockContext );
+
+                var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                var activityCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), rockContext ).Id;
+
+                if ( !string.IsNullOrWhiteSpace( userName ) && !userName.StartsWith( "rckipid=" ) )
                 {
-                    userLogin.LastLoginDateTime = RockDateTime.Now;
-
-                    if ( userLogin.PersonId.HasValue )
+                    var userLogin = userLoginService.GetByUserName( userName );
+                    if ( userLogin != null )
                     {
-                        var summary = new System.Text.StringBuilder();
-                        summary.AppendFormat( "User logged in with <span class='field-name'>{0}</span> username", userLogin.UserName );
-                        if ( HttpContext.Current != null && HttpContext.Current.Request != null )
-                        {
-                            summary.AppendFormat( ", to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
-                                HttpContext.Current.Request.Url.AbsoluteUri, HttpContext.Current.Request.UserHostAddress );
-                        }
-                        summary.Append( "." );
+                        userLogin.LastLoginDateTime = RockDateTime.Now;
 
-                        historyService.Add( new History
+                        if ( userLogin.PersonId.HasValue )
                         {
-                            EntityTypeId = personEntityTypeId,
-                            CategoryId = activityCategoryId,
-                            EntityId = userLogin.PersonId.Value,
-                            Summary = summary.ToString()
-                        } );
+                            var summary = new System.Text.StringBuilder();
+                            summary.AppendFormat( "User logged in with <span class='field-name'>{0}</span> username", userLogin.UserName );
+                            if ( HttpContext.Current != null && HttpContext.Current.Request != null )
+                            {
+                                summary.AppendFormat( ", to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
+                                    HttpContext.Current.Request.Url.AbsoluteUri, HttpContext.Current.Request.UserHostAddress );
+                            }
+                            summary.Append( "." );
+
+                            historyService.Add( new History
+                            {
+                                EntityTypeId = personEntityTypeId,
+                                CategoryId = activityCategoryId,
+                                EntityId = userLogin.PersonId.Value,
+                                Summary = summary.ToString()
+                            } );
+                        }
+                        rockContext.SaveChanges();
                     }
-                    rockContext.SaveChanges();
                 }
             }
         }

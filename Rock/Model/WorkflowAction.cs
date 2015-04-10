@@ -196,7 +196,7 @@ namespace Rock.Model
                 throw new SystemException( string.Format( "The '{0}' component does not exist, or is not active", workflowAction));
             }
 
-            this.ActionType.LoadAttributes();
+            this.ActionType.LoadAttributes( rockContext );
 
             if ( IsCriteriaValid )
             {
@@ -374,17 +374,36 @@ namespace Rock.Model
         #region Static Methods
 
         /// <summary>
-        /// Activates the specified <see cref="Rock.Model.WorkflowAction"/>.
+        /// Activates the specified <see cref="Rock.Model.WorkflowAction" />.
         /// </summary>
-        /// <param name="actionType">The <see cref="Rock.Model.WorkflowActionType"/> to be activated.</param>
-        /// <param name="activity">The <see cref="Rock.Model.WorkflowActivity"/> that this WorkflowAction belongs to..</param>
-        /// <returns>The <see cref="Rock.Model.WorkflowAction"/></returns>
-        internal static WorkflowAction Activate( WorkflowActionType actionType, WorkflowActivity activity)
+        /// <param name="actionType">The <see cref="Rock.Model.WorkflowActionType" /> to be activated.</param>
+        /// <param name="activity">The <see cref="Rock.Model.WorkflowActivity" /> that this WorkflowAction belongs to..</param>
+        /// <returns>
+        /// The <see cref="Rock.Model.WorkflowAction" />
+        /// </returns>        
+        internal static WorkflowAction Activate( WorkflowActionType actionType, WorkflowActivity activity )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return Activate( actionType, activity, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Activates the specified <see cref="Rock.Model.WorkflowAction" />.
+        /// </summary>
+        /// <param name="actionType">The <see cref="Rock.Model.WorkflowActionType" /> to be activated.</param>
+        /// <param name="activity">The <see cref="Rock.Model.WorkflowActivity" /> that this WorkflowAction belongs to..</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// The <see cref="Rock.Model.WorkflowAction" />
+        /// </returns>
+        internal static WorkflowAction Activate( WorkflowActionType actionType, WorkflowActivity activity, RockContext rockContext )
         {
             var action = new WorkflowAction();
             action.Activity = activity;
             action.ActionType = actionType;
-            action.LoadAttributes();
+            action.LoadAttributes( rockContext );
 
             action.AddLogEntry( "Activated" );
 

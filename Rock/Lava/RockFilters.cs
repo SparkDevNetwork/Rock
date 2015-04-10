@@ -813,8 +813,7 @@ namespace Rock.Lava
             if ( input != null && input is Person )
             {
                 var person = (Person)input;
-                
-
+               
                 Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
                 var location = new GroupMemberService( GetRockContext(context) )
                     .Queryable( "GroupLocations.Location" )

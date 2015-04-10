@@ -166,75 +166,76 @@ namespace Rock.Communication.Medium
             
             string transportPhone = string.Empty;
 
-            Rock.Data.RockContext rockContext = new Rock.Data.RockContext();
-
-            Person toPerson = null;
-
-            // get from person
-            var fromPerson = new PersonService( rockContext ).Queryable()
-                                .Where( p => p.PhoneNumbers.Any( n => (n.CountryCode + n.Number) == fromPhone.Replace( "+", "" ) ) )
-                                .OrderBy( p => p.Id ).FirstOrDefault(); // order by person id to get the oldest person to help with duplicate records of the response recipient
-
-            // get recipient from defined value
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
-            if ( definedType != null )
+            using ( Rock.Data.RockContext rockContext = new Rock.Data.RockContext() )
             {
-                if ( definedType.DefinedValues != null && definedType.DefinedValues.Any() )
+                Person toPerson = null;
+
+                // get from person
+                var fromPerson = new PersonService( rockContext ).Queryable()
+                                    .Where( p => p.PhoneNumbers.Any( n => ( n.CountryCode + n.Number ) == fromPhone.Replace( "+", "" ) ) )
+                                    .OrderBy( p => p.Id ).FirstOrDefault(); // order by person id to get the oldest person to help with duplicate records of the response recipient
+
+                // get recipient from defined value
+                var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
+                if ( definedType != null )
                 {
-                    var matchValue = definedType.DefinedValues.Where( v => v.Value == toPhone ).OrderBy( v => v.Order ).FirstOrDefault();
-                    if ( matchValue != null )
+                    if ( definedType.DefinedValues != null && definedType.DefinedValues.Any() )
                     {
-                        transportPhone = matchValue.Id.ToString();
-                        var toPersonAliasGuid = matchValue.GetAttributeValue( "ResponseRecipient" ).AsGuidOrNull();
-                        if ( toPersonAliasGuid.HasValue )
+                        var matchValue = definedType.DefinedValues.Where( v => v.Value == toPhone ).OrderBy( v => v.Order ).FirstOrDefault();
+                        if ( matchValue != null )
                         {
-                            toPerson = new PersonAliasService( rockContext )
-                                .Queryable().Where( p => p.Guid.Equals( toPersonAliasGuid.Value ) )
-                                .Select( p => p.Person )
-                                .FirstOrDefault();
+                            transportPhone = matchValue.Id.ToString();
+                            var toPersonAliasGuid = matchValue.GetAttributeValue( "ResponseRecipient" ).AsGuidOrNull();
+                            if ( toPersonAliasGuid.HasValue )
+                            {
+                                toPerson = new PersonAliasService( rockContext )
+                                    .Queryable().Where( p => p.Guid.Equals( toPersonAliasGuid.Value ) )
+                                    .Select( p => p.Person )
+                                    .FirstOrDefault();
+                            }
                         }
                     }
                 }
-            }
 
-            if ( fromPerson != null && toPerson != null && fromPerson.PrimaryAliasId.HasValue && toPerson.PrimaryAliasId.HasValue )
-            {
-                if ( toPerson.Id == fromPerson.Id ) // message from the medium recipient
+                if ( fromPerson != null && toPerson != null && fromPerson.PrimaryAliasId.HasValue && toPerson.PrimaryAliasId.HasValue )
                 {
-                    // look for response code in the message
-                    Match match = Regex.Match( message, @"@\d{3}" );
-                    if ( match.Success )
+                    if ( toPerson.Id == fromPerson.Id ) // message from the medium recipient
                     {
-                        string responseCode = match.ToString();
-
-                        var recipient = new CommunicationRecipientService( rockContext ).Queryable("Communication")
-                                            .Where( r => r.ResponseCode == responseCode )
-                                            .OrderByDescending(r => r.CreatedDateTime).FirstOrDefault();
-
-                        if ( recipient != null && recipient.Communication.SenderPersonAliasId.HasValue )
+                        // look for response code in the message
+                        Match match = Regex.Match( message, @"@\d{3}" );
+                        if ( match.Success )
                         {
-                            CreateCommunication( fromPerson.PrimaryAliasId.Value, fromPerson.FullName, recipient.Communication.SenderPersonAliasId.Value, message.Replace(responseCode, ""), transportPhone, "", rockContext );
-                        }
-                        else // send a warning message back to the medium recipient
-                        {
-                            string warningMessage = string.Format( "A conversation could not be found with the response token {0}.", responseCode );
-                            CreateCommunication( fromPerson.PrimaryAliasId.Value, fromPerson.FullName, fromPerson.PrimaryAliasId.Value, warningMessage, transportPhone, "", rockContext );
+                            string responseCode = match.ToString();
+
+                            var recipient = new CommunicationRecipientService( rockContext ).Queryable( "Communication" )
+                                                .Where( r => r.ResponseCode == responseCode )
+                                                .OrderByDescending( r => r.CreatedDateTime ).FirstOrDefault();
+
+                            if ( recipient != null && recipient.Communication.SenderPersonAliasId.HasValue )
+                            {
+                                CreateCommunication( fromPerson.PrimaryAliasId.Value, fromPerson.FullName, recipient.Communication.SenderPersonAliasId.Value, message.Replace( responseCode, "" ), transportPhone, "", rockContext );
+                            }
+                            else // send a warning message back to the medium recipient
+                            {
+                                string warningMessage = string.Format( "A conversation could not be found with the response token {0}.", responseCode );
+                                CreateCommunication( fromPerson.PrimaryAliasId.Value, fromPerson.FullName, fromPerson.PrimaryAliasId.Value, warningMessage, transportPhone, "", rockContext );
+                            }
                         }
                     }
+                    else // response from someone other than the medium recipient
+                    {
+                        string messageId = GenerateResponseCode( rockContext );
+                        message = string.Format( "-{0}-\n{1}\n( {2} )", fromPerson.FullName, message, messageId );
+                        CreateCommunication( fromPerson.PrimaryAliasId.Value, fromPerson.FullName, toPerson.PrimaryAliasId.Value, message, transportPhone, messageId, rockContext );
+                    }
                 }
-                else // response from someone other than the medium recipient
+                else
                 {
-                    string messageId = GenerateResponseCode( rockContext );
-                    message = string.Format( "-{0}-\n{1}\n( {2} )", fromPerson.FullName, message, messageId );
-                    CreateCommunication( fromPerson.PrimaryAliasId.Value, fromPerson.FullName, toPerson.PrimaryAliasId.Value, message, transportPhone, messageId, rockContext );
-                }
-            }
-            else
-            {
-                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-                string organizationName = globalAttributes.GetValue( "OrganizationName" );
+                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                    string organizationName = globalAttributes.GetValue( "OrganizationName" );
 
-                errorMessage = string.Format( "Could not deliver message. This phone number is not registered in the {0} database.", organizationName);
+                    errorMessage = string.Format( "Could not deliver message. This phone number is not registered in the {0} database.", organizationName );
+                }
             }
         }
 

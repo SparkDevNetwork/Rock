@@ -134,7 +134,9 @@ namespace Rock.Workflow
         /// <returns></returns>
         protected string GetAttributeValue( WorkflowAction action, string key )
         {
-            var values = action.ActionType.AttributeValues;
+            var actionType = action.ActionType;
+
+            var values = actionType.AttributeValues;
             if ( values.ContainsKey( key ) )
             {
                 var keyValues = values[key];
@@ -142,6 +144,12 @@ namespace Rock.Workflow
                 {
                     return keyValues.Value;
                 }
+            }
+
+            if ( actionType.Attributes != null &&
+                actionType.Attributes.ContainsKey( key ))
+            {
+                return actionType.Attributes[key].DefaultValue;
             }
 
             return string.Empty;

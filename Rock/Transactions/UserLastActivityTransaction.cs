@@ -70,24 +70,26 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            var rockContext = new RockContext();
-            var userLoginService = new UserLoginService( rockContext );
-            var user = userLoginService.Get( UserId );
-
-            if ( user != null )
+            using ( var rockContext = new RockContext() )
             {
-                user.LastActivityDateTime = LastActivityDate;
-                user.IsOnLine = IsOnLine;
+                var userLoginService = new UserLoginService( rockContext );
+                var user = userLoginService.Get( UserId );
 
-                // check if this session had a previous account on-line
-                if ( IsOnLine && SessionUserId.HasValue && SessionUserId != user.Id )
+                if ( user != null )
                 {
-                    // mark old session offline
-                    var oldUser = userLoginService.Get( SessionUserId.Value );
-                    oldUser.IsOnLine = false;
-                }
+                    user.LastActivityDateTime = LastActivityDate;
+                    user.IsOnLine = IsOnLine;
 
-                rockContext.SaveChanges();
+                    // check if this session had a previous account on-line
+                    if ( IsOnLine && SessionUserId.HasValue && SessionUserId != user.Id )
+                    {
+                        // mark old session offline
+                        var oldUser = userLoginService.Get( SessionUserId.Value );
+                        oldUser.IsOnLine = false;
+                    }
+
+                    rockContext.SaveChanges();
+                }
             }
         }
     }
