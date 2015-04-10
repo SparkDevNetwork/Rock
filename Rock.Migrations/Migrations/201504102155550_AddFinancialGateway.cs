@@ -29,47 +29,49 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            DropForeignKey("dbo.FinancialTransaction", "GatewayEntityTypeId", "dbo.EntityType");
-            DropForeignKey("dbo.FinancialScheduledTransaction", "GatewayEntityTypeId", "dbo.EntityType");
-            DropForeignKey("dbo.FinancialPersonSavedAccount", "GatewayEntityTypeId", "dbo.EntityType");
-            DropIndex("dbo.FinancialTransaction", new[] { "GatewayEntityTypeId" });
-            DropIndex("dbo.FinancialScheduledTransaction", new[] { "GatewayEntityTypeId" });
-            DropIndex("dbo.FinancialPersonSavedAccount", new[] { "GatewayEntityTypeId" });
+            DropForeignKey( "dbo.FinancialTransaction", "GatewayEntityTypeId", "dbo.EntityType" );
+            DropForeignKey( "dbo.FinancialScheduledTransaction", "GatewayEntityTypeId", "dbo.EntityType" );
+            DropForeignKey( "dbo.FinancialPersonSavedAccount", "GatewayEntityTypeId", "dbo.EntityType" );
+            DropIndex( "dbo.FinancialTransaction", new[] { "GatewayEntityTypeId" } );
+            DropIndex( "dbo.FinancialScheduledTransaction", new[] { "GatewayEntityTypeId" } );
+            DropIndex( "dbo.FinancialPersonSavedAccount", new[] { "GatewayEntityTypeId" } );
             CreateTable(
                 "dbo.FinancialGateway",
                 c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        Name = c.String(nullable: false, maxLength: 50),
-                        Description = c.String(),
-                        EntityTypeId = c.Int(nullable: false),
-                        BatchTimeOffsetTicks = c.Long(nullable: false),
-                        IsActive = c.Boolean(nullable: false),
-                        CreatedDateTime = c.DateTime(),
-                        ModifiedDateTime = c.DateTime(),
-                        CreatedByPersonAliasId = c.Int(),
-                        ModifiedByPersonAliasId = c.Int(),
-                        Guid = c.Guid(nullable: false),
-                        ForeignId = c.String(maxLength: 50),
-                    })
-                .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.PersonAlias", t => t.CreatedByPersonAliasId)
-                .ForeignKey("dbo.EntityType", t => t.EntityTypeId)
-                .ForeignKey("dbo.PersonAlias", t => t.ModifiedByPersonAliasId)
-                .Index(t => t.EntityTypeId)
-                .Index(t => t.CreatedByPersonAliasId)
-                .Index(t => t.ModifiedByPersonAliasId)
-                .Index(t => t.Guid, unique: true);
-            
-            AddColumn("dbo.FinancialTransaction", "FinancialGatewayId", c => c.Int());
-            AddColumn("dbo.FinancialScheduledTransaction", "FinancialGatewayId", c => c.Int());
-            AddColumn("dbo.FinancialPersonSavedAccount", "FinancialGatewayId", c => c.Int());
-            CreateIndex("dbo.FinancialTransaction", "FinancialGatewayId");
-            CreateIndex("dbo.FinancialScheduledTransaction", "FinancialGatewayId");
-            CreateIndex("dbo.FinancialPersonSavedAccount", "FinancialGatewayId");
-            AddForeignKey("dbo.FinancialTransaction", "FinancialGatewayId", "dbo.FinancialGateway", "Id");
-            AddForeignKey("dbo.FinancialScheduledTransaction", "FinancialGatewayId", "dbo.FinancialGateway", "Id");
-            AddForeignKey("dbo.FinancialPersonSavedAccount", "FinancialGatewayId", "dbo.FinancialGateway", "Id");
+                {
+                    Id = c.Int( nullable: false, identity: true ),
+                    Name = c.String( nullable: false, maxLength: 50 ),
+                    Description = c.String(),
+                    EntityTypeId = c.Int( nullable: false ),
+                    BatchTimeOffsetTicks = c.Long( nullable: false ),
+                    IsActive = c.Boolean( nullable: false ),
+                    CreatedDateTime = c.DateTime(),
+                    ModifiedDateTime = c.DateTime(),
+                    CreatedByPersonAliasId = c.Int(),
+                    ModifiedByPersonAliasId = c.Int(),
+                    Guid = c.Guid( nullable: false ),
+                    ForeignId = c.String( maxLength: 50 ),
+                } )
+                .PrimaryKey( t => t.Id )
+                .ForeignKey( "dbo.PersonAlias", t => t.CreatedByPersonAliasId )
+                .ForeignKey( "dbo.EntityType", t => t.EntityTypeId )
+                .ForeignKey( "dbo.PersonAlias", t => t.ModifiedByPersonAliasId )
+                .Index( t => t.EntityTypeId )
+                .Index( t => t.CreatedByPersonAliasId )
+                .Index( t => t.ModifiedByPersonAliasId )
+                .Index( t => t.Guid, unique: true );
+
+            AddColumn( "dbo.FinancialTransaction", "FinancialGatewayId", c => c.Int() );
+            AddColumn( "dbo.FinancialScheduledTransaction", "FinancialGatewayId", c => c.Int() );
+            AddColumn( "dbo.FinancialPersonSavedAccount", "FinancialGatewayId", c => c.Int() );
+            CreateIndex( "dbo.FinancialTransaction", "FinancialGatewayId" );
+            CreateIndex( "dbo.FinancialScheduledTransaction", "FinancialGatewayId" );
+            CreateIndex( "dbo.FinancialPersonSavedAccount", "FinancialGatewayId" );
+            AddForeignKey( "dbo.FinancialTransaction", "FinancialGatewayId", "dbo.FinancialGateway", "Id" );
+            AddForeignKey( "dbo.FinancialScheduledTransaction", "FinancialGatewayId", "dbo.FinancialGateway", "Id" );
+            AddForeignKey( "dbo.FinancialPersonSavedAccount", "FinancialGatewayId", "dbo.FinancialGateway", "Id" );
+
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.FinancialGateway", "122EFE60-84A6-4C7A-A852-30E4BD89A662", true, true );
 
             Sql( @"
     DECLARE @PayFlowProGatewayEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.PayFlowPro.Gateway' )
@@ -144,10 +146,10 @@ namespace Rock.Migrations
 	    [EntityTypeQualifierValue] = CAST( [EntityTypeId] AS VARCHAR )
     WHERE [EntityTypeId] IN ( @PayFlowProGatewayEntityTypeId, @TestGatewayEntityTypeId )
 " );
-            
-            DropColumn("dbo.FinancialTransaction", "GatewayEntityTypeId");
-            DropColumn("dbo.FinancialScheduledTransaction", "GatewayEntityTypeId");
-            DropColumn("dbo.FinancialPersonSavedAccount", "GatewayEntityTypeId");
+
+            DropColumn( "dbo.FinancialTransaction", "GatewayEntityTypeId" );
+            DropColumn( "dbo.FinancialScheduledTransaction", "GatewayEntityTypeId" );
+            DropColumn( "dbo.FinancialPersonSavedAccount", "GatewayEntityTypeId" );
 
             RockMigrationHelper.UpdateFieldType( "Financial Gateway", "", "Rock", "Rock.Field.Types.FinancialGatewayFieldType", "7B34F9D8-6BBA-423E-B50E-525ABB3A1013" );
 
@@ -172,7 +174,7 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteBlock( "8C707818-ECB1-4E40-8F2C-6E9802E6BA73" );
             RockMigrationHelper.DeletePage( "6F8EC649-FDED-4805-B7AF-42A6901C197F" );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
@@ -188,33 +190,33 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteBlockType( "B4D8CBCA-00F6-4D81-B8B6-170373D28128" ); // Gateway Detail
             RockMigrationHelper.DeletePage( "24DE6092-CE91-468C-8E49-94DB3875B9B7" ); //  Page: Gateway Detail, Layout: Full Width, Site: Rock RMS
             RockMigrationHelper.DeletePage( "F65AA215-8B46-4E34-B709-FA956BF62C30" ); //  Page: Financial Gateways, Layout: Full Width, Site: Rock RMS
-            
-            AddColumn("dbo.FinancialPersonSavedAccount", "GatewayEntityTypeId", c => c.Int());
-            AddColumn("dbo.FinancialScheduledTransaction", "GatewayEntityTypeId", c => c.Int());
-            AddColumn("dbo.FinancialTransaction", "GatewayEntityTypeId", c => c.Int());
-            DropForeignKey("dbo.FinancialPersonSavedAccount", "FinancialGatewayId", "dbo.FinancialGateway");
-            DropForeignKey("dbo.FinancialScheduledTransaction", "FinancialGatewayId", "dbo.FinancialGateway");
-            DropForeignKey("dbo.FinancialTransaction", "FinancialGatewayId", "dbo.FinancialGateway");
-            DropForeignKey("dbo.FinancialGateway", "ModifiedByPersonAliasId", "dbo.PersonAlias");
-            DropForeignKey("dbo.FinancialGateway", "EntityTypeId", "dbo.EntityType");
-            DropForeignKey("dbo.FinancialGateway", "CreatedByPersonAliasId", "dbo.PersonAlias");
-            DropIndex("dbo.FinancialPersonSavedAccount", new[] { "FinancialGatewayId" });
-            DropIndex("dbo.FinancialScheduledTransaction", new[] { "FinancialGatewayId" });
-            DropIndex("dbo.FinancialGateway", new[] { "Guid" });
-            DropIndex("dbo.FinancialGateway", new[] { "ModifiedByPersonAliasId" });
-            DropIndex("dbo.FinancialGateway", new[] { "CreatedByPersonAliasId" });
-            DropIndex("dbo.FinancialGateway", new[] { "EntityTypeId" });
-            DropIndex("dbo.FinancialTransaction", new[] { "FinancialGatewayId" });
-            DropColumn("dbo.FinancialPersonSavedAccount", "FinancialGatewayId");
-            DropColumn("dbo.FinancialScheduledTransaction", "FinancialGatewayId");
-            DropColumn("dbo.FinancialTransaction", "FinancialGatewayId");
-            DropTable("dbo.FinancialGateway");
-            CreateIndex("dbo.FinancialPersonSavedAccount", "GatewayEntityTypeId");
-            CreateIndex("dbo.FinancialScheduledTransaction", "GatewayEntityTypeId");
-            CreateIndex("dbo.FinancialTransaction", "GatewayEntityTypeId");
-            AddForeignKey("dbo.FinancialPersonSavedAccount", "GatewayEntityTypeId", "dbo.EntityType", "Id");
-            AddForeignKey("dbo.FinancialScheduledTransaction", "GatewayEntityTypeId", "dbo.EntityType", "Id");
-            AddForeignKey("dbo.FinancialTransaction", "GatewayEntityTypeId", "dbo.EntityType", "Id");
+
+            AddColumn( "dbo.FinancialPersonSavedAccount", "GatewayEntityTypeId", c => c.Int() );
+            AddColumn( "dbo.FinancialScheduledTransaction", "GatewayEntityTypeId", c => c.Int() );
+            AddColumn( "dbo.FinancialTransaction", "GatewayEntityTypeId", c => c.Int() );
+            DropForeignKey( "dbo.FinancialPersonSavedAccount", "FinancialGatewayId", "dbo.FinancialGateway" );
+            DropForeignKey( "dbo.FinancialScheduledTransaction", "FinancialGatewayId", "dbo.FinancialGateway" );
+            DropForeignKey( "dbo.FinancialTransaction", "FinancialGatewayId", "dbo.FinancialGateway" );
+            DropForeignKey( "dbo.FinancialGateway", "ModifiedByPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.FinancialGateway", "EntityTypeId", "dbo.EntityType" );
+            DropForeignKey( "dbo.FinancialGateway", "CreatedByPersonAliasId", "dbo.PersonAlias" );
+            DropIndex( "dbo.FinancialPersonSavedAccount", new[] { "FinancialGatewayId" } );
+            DropIndex( "dbo.FinancialScheduledTransaction", new[] { "FinancialGatewayId" } );
+            DropIndex( "dbo.FinancialGateway", new[] { "Guid" } );
+            DropIndex( "dbo.FinancialGateway", new[] { "ModifiedByPersonAliasId" } );
+            DropIndex( "dbo.FinancialGateway", new[] { "CreatedByPersonAliasId" } );
+            DropIndex( "dbo.FinancialGateway", new[] { "EntityTypeId" } );
+            DropIndex( "dbo.FinancialTransaction", new[] { "FinancialGatewayId" } );
+            DropColumn( "dbo.FinancialPersonSavedAccount", "FinancialGatewayId" );
+            DropColumn( "dbo.FinancialScheduledTransaction", "FinancialGatewayId" );
+            DropColumn( "dbo.FinancialTransaction", "FinancialGatewayId" );
+            DropTable( "dbo.FinancialGateway" );
+            CreateIndex( "dbo.FinancialPersonSavedAccount", "GatewayEntityTypeId" );
+            CreateIndex( "dbo.FinancialScheduledTransaction", "GatewayEntityTypeId" );
+            CreateIndex( "dbo.FinancialTransaction", "GatewayEntityTypeId" );
+            AddForeignKey( "dbo.FinancialPersonSavedAccount", "GatewayEntityTypeId", "dbo.EntityType", "Id" );
+            AddForeignKey( "dbo.FinancialScheduledTransaction", "GatewayEntityTypeId", "dbo.EntityType", "Id" );
+            AddForeignKey( "dbo.FinancialTransaction", "GatewayEntityTypeId", "dbo.EntityType", "Id" );
         }
     }
 }
