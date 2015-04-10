@@ -29,6 +29,7 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class Attribute
     {
+        public const string PERSON_ALLERGY = "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31";
         public const string PERSON_FACEBOOK = "2B8A03D3-B7DC-4DA3-A31E-826D655435D5";
     }
 
@@ -65,6 +66,7 @@ namespace Rock.Client.SystemGuid
         public const string HISTORY_PERSON_FAMILY_CHANGES = "5C4CCE5A-D7D0-492F-A241-96E13A3F7DF8";
         public const string HISTORY_PERSON_GROUP_MEMBERSHIP = "325278A4-FACA-4F38-A405-9C090B3BAA34";
         public const string PERSON_ATTRIBUTES_SOCIAL = "DD8F467D-B83C-444F-B04C-C681167046A1";
+        public const string PERSONAL_MERGE_TEMPLATE = "A9F2F544-660B-4176-ACAD-88898416A66E";
         public const string SCHEDULE_METRICS = "5A794741-5444-43F0-90D7-48E47276D426";
         public const string SCHEDULE_SERVICE_TIMES = "4FECC91B-83F9-4269-AE03-A006F401C47E";
         public const string SYSTEM_EMAIL_WORKFLOW = "C7B9B5F1-9D90-485F-93E4-5D7D81EC2B12";
@@ -194,6 +196,7 @@ namespace Rock.Client.SystemGuid
         public const string COMMUNICATION_MEDIUM_SMS = "4BC02764-512A-4A10-ACDE-586F71D8A8BD";
         public const string GROUP = "9BBFDA11-0D22-40D5-902F-60ADFBC88987";
         public const string GROUP_MEMBER = "49668B95-FEDC-43DD-8085-D2B0D6343C48";
+        public const string MERGE_TEMPLATE = "CD1DB988-6891-4B0F-8D1B-B0A311A3BC3E";
         public const string METRICCATEGORY = "3D35C859-DF37-433F-A20A-0FFD0FCB9862";
         public const string PERSON = "72657ED8-D16E-492E-AC12-144C5E7567E7";
         public const string PERSON_ALIAS = "90F5E87B-F0D5-4617-8AE9-EB57E673F36F";

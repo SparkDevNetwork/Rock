@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AdditionalMergeValuesJson { get; set; }
+
+        /// <summary />
         public int EntityId { get; set; }
 
         /// <summary />
@@ -56,6 +59,9 @@ namespace Rock.Client
     /// </summary>
     public partial class EntitySetItem : EntitySetItemEntity
     {
+        /// <summary />
+        public Dictionary<string, Object> AdditionalMergeValues { get; set; }
+
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
