@@ -1385,6 +1385,19 @@ namespace Rock.Web.UI.Controls
                             {
                                 value = ( propValue as IEnumerable<object> ).ToList().AsDelimited( "," );
                             }
+                            else if ( propValue is DateTime? && propValue != null )
+                            {
+                                DateTime dateTimeValue = ( propValue as DateTime? ).Value;
+                                var columnAttribute = prop.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.ColumnAttribute>( true );
+                                if ( ( columnAttribute != null && columnAttribute.Name == "Date" ) || prop.Name.EndsWith( "Date" ) )
+                                {
+                                    value = dateTimeValue.ToShortDateString();
+                                }
+                                else
+                                {
+                                    value = dateTimeValue.ToString();
+                                }
+                            }
                             else
                             {
                                 value = propValue.ToString();
@@ -1847,7 +1860,7 @@ namespace Rock.Web.UI.Controls
         private int? GetEntitySetFromGridSourceDataTable()
         {
             var entitySet = new Rock.Model.EntitySet();
-            
+
             // the datasource is a DataTable so there isn't an EntityTypeId
             entitySet.EntityTypeId = null;
 
@@ -1859,13 +1872,13 @@ namespace Rock.Web.UI.Controls
                 try
                 {
                     var item = new Rock.Model.EntitySetItem();
-                    
+
                     // the datasource is a DataTable (not an Entity), so just set it to zero.  The entire datarow will be put into AdditionalMergeValues
                     item.EntityId = 0;
-                    
+
                     item.Order = itemOrder++;
                     item.AdditionalMergeValues = new Dictionary<string, object>();
-                    foreach (var col in this.DataSourceAsDataTable.Columns.OfType<DataColumn>())
+                    foreach ( var col in this.DataSourceAsDataTable.Columns.OfType<DataColumn>() )
                     {
                         item.AdditionalMergeValues.Add( col.ColumnName, row[col] );
                     }
@@ -1931,7 +1944,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            
+
 
             // first try to get the SelectedKeys from the SelectField (if there is one)
             var selectedKeys = this.SelectedKeys.Select( a => a as int? ).Where( a => a.HasValue ).Select( a => a.Value ).Distinct().ToList();
