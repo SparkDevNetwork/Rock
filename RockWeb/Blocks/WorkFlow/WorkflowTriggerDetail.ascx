@@ -32,7 +32,7 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:DataDropDownList ID="ddlWorkflowType" runat="server" SourceTypeName="Rock.Model.WorkflowTrigger, Rock" PropertyName="WorkflowType" Required="true" Help="The workflow type to run when a change occurs." />
-                            <Rock:RockRadioButtonList ID="rblTriggerType" runat="server" RepeatDirection="Horizontal" Label="Trigger Type" Help="Determines when the tigger should be fired. Using a 'pre' event allows the workflow to cancel the action and notify the user." />
+                            <Rock:RockRadioButtonList ID="rblTriggerType" runat="server" RepeatDirection="Horizontal" Label="Trigger Type" Help="Determines when the trigger should be fired. Using a 'pre' event allows the workflow to cancel the action and notify the user. 'Post' events are considered more efficient because they run the workflow in a job within 60 seconds, thus preventing the user interface execution from being blocked. Immediate post save should be used when the Id of a new entity needs to be known and the workflow should not wait for the job-based execution." />
                             
                         </div>
                     </div>
