@@ -141,49 +141,52 @@ namespace Rock.Jobs
         /// <param name="createLogin">if set to <c>true</c> [create login].</param>
         private void SendWelcomeEmail( int systemEmailId, int personId, Group syncGroup, bool createLogin )
         {
-            RockContext rockContext = new RockContext();
-            SystemEmailService emailService = new SystemEmailService( rockContext );
 
-            var systemEmail = emailService.Get( systemEmailId );
-
-            if ( systemEmail != null )
+            using ( var rockContext = new RockContext() )
             {
-                string newPassword = string.Empty;
-                
-                var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "Group", syncGroup );
-                
-                // get person
-                var recipient = new PersonService( rockContext ).Queryable("Users").Where(p => p.Id == personId).FirstOrDefault();
+                SystemEmailService emailService = new SystemEmailService( rockContext );
 
-                if ( !string.IsNullOrWhiteSpace( recipient.Email ) )
+                var systemEmail = emailService.Get( systemEmailId );
+
+                if ( systemEmail != null )
                 {
-                    if ( createLogin && recipient.Users.Count == 0 )
+                    string newPassword = string.Empty;
+
+                    var mergeFields = new Dictionary<string, object>();
+                    mergeFields.Add( "Group", syncGroup );
+
+                    // get person
+                    var recipient = new PersonService( rockContext ).Queryable( "Users" ).Where( p => p.Id == personId ).FirstOrDefault();
+
+                    if ( !string.IsNullOrWhiteSpace( recipient.Email ) )
                     {
-                        newPassword = System.Web.Security.Membership.GeneratePassword( 9, 1 );
-                        
-                        // create user
-                        string username = Rock.Security.Authentication.Database.GenerateUsername( recipient.NickName, recipient.LastName );
+                        if ( createLogin && recipient.Users.Count == 0 )
+                        {
+                            newPassword = System.Web.Security.Membership.GeneratePassword( 9, 1 );
 
-                        UserLogin login = UserLoginService.Create(
-                            rockContext,
-                            recipient,
-                            Rock.Model.AuthenticationServiceType.Internal,
-                            EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
-                            username,
-                            newPassword,
-                            true );
+                            // create user
+                            string username = Rock.Security.Authentication.Database.GenerateUsername( recipient.NickName, recipient.LastName );
+
+                            UserLogin login = UserLoginService.Create(
+                                rockContext,
+                                recipient,
+                                Rock.Model.AuthenticationServiceType.Internal,
+                                EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
+                                username,
+                                newPassword,
+                                true );
+                        }
+                        mergeFields.Add( "Person", recipient );
+                        mergeFields.Add( "NewPassword", newPassword );
+                        mergeFields.Add( "CreateLogin", createLogin );
+
+                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+
+                        var recipients = new List<RecipientData>();
+                        recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
+
+                        Email.Send( systemEmail.Guid, recipients, appRoot );
                     }
-                    mergeFields.Add( "Person", recipient );
-                    mergeFields.Add( "NewPassword", newPassword );
-                    mergeFields.Add( "CreateLogin", createLogin );
-
-                    var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
-
-                    var recipients = new List<RecipientData>();
-                    recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
-
-                    Email.Send( systemEmail.Guid, recipients, appRoot );
                 }
             }
         }
@@ -198,23 +201,25 @@ namespace Rock.Jobs
         {
             if ( !string.IsNullOrWhiteSpace( recipient.Email ) )
             {
-                RockContext rockContext = new RockContext();
-                SystemEmailService emailService = new SystemEmailService( rockContext );
-
-                var systemEmail = emailService.Get( systemEmailId );
-
-                if ( systemEmail != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "Group", syncGroup );
-                    mergeFields.Add( "Person", recipient );
+                    SystemEmailService emailService = new SystemEmailService( rockContext );
 
-                    var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                    var systemEmail = emailService.Get( systemEmailId );
 
-                    var recipients = new List<RecipientData>();
-                    recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
+                    if ( systemEmail != null )
+                    {
+                        var mergeFields = new Dictionary<string, object>();
+                        mergeFields.Add( "Group", syncGroup );
+                        mergeFields.Add( "Person", recipient );
 
-                    Email.Send( systemEmail.Guid, recipients, appRoot );
+                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+
+                        var recipients = new List<RecipientData>();
+                        recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
+
+                        Email.Send( systemEmail.Guid, recipients, appRoot );
+                    }
                 }
             }
         }
