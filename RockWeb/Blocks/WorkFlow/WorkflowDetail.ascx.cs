@@ -84,10 +84,10 @@ namespace RockWeb.Blocks.WorkFlow
             var activityTypeService = new WorkflowActivityTypeService( rockContext );
             var actionTypeService = new WorkflowActionTypeService( rockContext );
             Workflow.WorkflowType = workflowTypeService.Get( Workflow.WorkflowTypeId );
-            foreach(var activity in Workflow.Activities)
+            foreach ( var activity in Workflow.Activities )
             {
                 activity.ActivityType = activityTypeService.Get( activity.ActivityTypeId );
-                foreach(var action in activity.Actions)
+                foreach ( var action in activity.Actions )
                 {
                     action.ActionType = actionTypeService.Get( action.ActionTypeId );
                 }
@@ -106,6 +106,8 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 ExpandedActivities = new List<Guid>();
             }
+
+            _canEdit = UserCanEdit || Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
         }
 
         /// <summary>
@@ -115,8 +117,6 @@ namespace RockWeb.Blocks.WorkFlow
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            _canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
 
             gLog.DataKeyNames = new string[] { "Id" };
             gLog.Actions.ShowAdd = false;
@@ -660,6 +660,8 @@ namespace RockWeb.Blocks.WorkFlow
                 return;
             }
 
+            _canEdit = UserCanEdit || Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
+
             Workflow.LoadAttributes( rockContext );
             foreach ( var activity in Workflow.Activities )
             {
@@ -688,7 +690,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( Workflow != null )
             {
-                if ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                if ( _canEdit || Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     tdName.Description = Workflow.Name;
                     tdStatus.Description = Workflow.Status;
