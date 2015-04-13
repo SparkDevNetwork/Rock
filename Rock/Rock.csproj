@@ -146,6 +146,7 @@
     <Compile Include="Attribute\ContentChannelFieldAttribute.cs" />
     <Compile Include="Attribute\DateTimeFieldAttribute.cs" />
     <Compile Include="Attribute\DefinedValueRangeFieldAttribute.cs" />
+    <Compile Include="Attribute\GroupAndRoleFieldAttribute.cs" />
     <Compile Include="Attribute\KeyValueListFieldAttribute.cs" />
     <Compile Include="Attribute\SystemEmailFieldAttribute.cs" />
     <Compile Include="Attribute\EnumsFieldAttribute.cs" />
@@ -235,6 +236,7 @@
     <Compile Include="Field\Types\ContentChannelFieldType.cs" />
     <Compile Include="Field\Types\DateTimeFieldType.cs" />
     <Compile Include="Field\Types\DefinedValueFieldType.cs" />
+    <Compile Include="Field\Types\GroupAndRoleFieldType.cs" />
     <Compile Include="Field\Types\RatingFieldType.cs" />
     <Compile Include="Field\Types\SystemEmailFieldType.cs" />
     <Compile Include="Field\Types\SchedulesFieldType.cs" />
@@ -368,7 +370,9 @@
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
     <Compile Include="Web\UI\Controls\Grid\CurrencyField.cs" />
     <Compile Include="Web\UI\Controls\Grid\CallbackField.cs" />
+    <Compile Include="Web\UI\Controls\IDisplayRequiredIndicator.cs" />
     <Compile Include="Web\UI\Controls\Pickers\FinancialGatewayPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\GroupAndRolePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MergeTemplatePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DataViewPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GradePicker.cs" />
@@ -881,6 +885,7 @@
     <Compile Include="Workflow\Action\Delay.cs" />
     <Compile Include="Workflow\Action\DeleteWorkflow.cs" />
     <Compile Include="Workflow\Action\BackgroundCheckRequest.cs" />
+    <Compile Include="Workflow\Action\AddPersonToGroup.cs" />
     <Compile Include="Workflow\Action\PersonTagRemove.cs" />
     <Compile Include="Workflow\Action\SendSms.cs" />
     <Compile Include="Workflow\Action\PersonTagAdd.cs" />
@@ -1257,7 +1262,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Auth\" />
-    <Folder Include="Workflow\Attribute\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
