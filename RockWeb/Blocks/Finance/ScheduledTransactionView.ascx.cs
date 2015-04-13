@@ -139,21 +139,31 @@ namespace RockWeb.Blocks.Finance
             int? txnId = PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull();
             if ( txnId.HasValue )
             {
-                var rockContext = new RockContext();
-                var txnService = new FinancialScheduledTransactionService( rockContext );
-                var txn = txnService.Queryable("AuthorizedPersonAlias.Person").FirstOrDefault( t => t.Id == txnId.Value );
-                if ( txn != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    string errorMessage = string.Empty;
-                    if ( txnService.GetStatus( txn, out errorMessage ) )
+                    var txnService = new FinancialScheduledTransactionService( rockContext );
+                    var txn = txnService
+                        .Queryable( "AuthorizedPersonAlias.Person,FinancialGateway" )
+                        .FirstOrDefault( t => t.Id == txnId.Value );
+
+                    if ( txn != null )
                     {
-                        rockContext.SaveChanges();
+                        if ( txn.FinancialGateway != null )
+                        {
+                            txn.FinancialGateway.LoadAttributes( rockContext );
+                        }
+
+                        string errorMessage = string.Empty;
+                        if ( txnService.GetStatus( txn, out errorMessage ) )
+                        {
+                            rockContext.SaveChanges();
+                        }
+                        else
+                        {
+                            ShowErrorMessage( errorMessage );
+                        }
+                        ShowView( txn );
                     }
-                    else
-                    {
-                        ShowErrorMessage( errorMessage );
-                    }
-                    ShowView( txn );
                 }
             }
         }
@@ -168,23 +178,32 @@ namespace RockWeb.Blocks.Finance
             int? txnId = PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull();
             if ( txnId.HasValue )
             {
-                var rockContext = new RockContext();
-                var txnService = new FinancialScheduledTransactionService( rockContext );
-                var txn = txnService.Queryable( "AuthorizedPersonAlias.Person" ).FirstOrDefault( t => t.Id == txnId.Value );
-                if ( txn != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    string errorMessage = string.Empty;
-                    if ( txnService.Cancel( txn, out errorMessage ) )
+                    var txnService = new FinancialScheduledTransactionService( rockContext );
+                    var txn = txnService
+                        .Queryable( "AuthorizedPersonAlias.Person,FinancialGateway" )
+                        .FirstOrDefault( t => t.Id == txnId.Value );
+                    if ( txn != null )
                     {
-                        txnService.GetStatus( txn, out errorMessage );
-                        rockContext.SaveChanges();
-                    }
-                    else
-                    {
-                        ShowErrorMessage( errorMessage );
-                    }
+                        if ( txn.FinancialGateway != null )
+                        {
+                            txn.FinancialGateway.LoadAttributes( rockContext );
+                        }
 
-                    ShowView( txn );
+                        string errorMessage = string.Empty;
+                        if ( txnService.Cancel( txn, out errorMessage ) )
+                        {
+                            txnService.GetStatus( txn, out errorMessage );
+                            rockContext.SaveChanges();
+                        }
+                        else
+                        {
+                            ShowErrorMessage( errorMessage );
+                        }
+
+                        ShowView( txn );
+                    }
                 }
             }
         }
@@ -199,23 +218,33 @@ namespace RockWeb.Blocks.Finance
             int? txnId = PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull();
             if ( txnId.HasValue )
             {
-                var rockContext = new RockContext();
-                var txnService = new FinancialScheduledTransactionService( rockContext );
-                var txn = txnService.Queryable( "AuthorizedPersonAlias.Person" ).FirstOrDefault( t => t.Id == txnId.Value );
-                if ( txn != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    string errorMessage = string.Empty;
-                    if ( txnService.Reactivate( txn, out errorMessage ) )
-                    {
-                        txnService.GetStatus( txn, out errorMessage );
-                        rockContext.SaveChanges();
-                    }
-                    else
-                    {
-                        ShowErrorMessage( errorMessage );
-                    }
+                    var txnService = new FinancialScheduledTransactionService( rockContext );
+                    var txn = txnService
+                        .Queryable( "AuthorizedPersonAlias.Person,FinancialGateway" )
+                        .FirstOrDefault( t => t.Id == txnId.Value );
 
-                    ShowView( txn );
+                    if ( txn != null )
+                    {
+                        if ( txn.FinancialGateway != null )
+                        {
+                            txn.FinancialGateway.LoadAttributes( rockContext );
+                        }
+
+                        string errorMessage = string.Empty;
+                        if ( txnService.Reactivate( txn, out errorMessage ) )
+                        {
+                            txnService.GetStatus( txn, out errorMessage );
+                            rockContext.SaveChanges();
+                        }
+                        else
+                        {
+                            ShowErrorMessage( errorMessage );
+                        }
+
+                        ShowView( txn );
+                    }
                 }
             }
         }

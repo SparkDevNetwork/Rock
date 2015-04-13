@@ -73,6 +73,8 @@ namespace Rock.Jobs
                             .Queryable()
                             .Where( g => g.IsActive ) )
                         {
+                            financialGateway.LoadAttributes( rockContext );
+
                             var gateway = financialGateway.GetGatewayComponent();
                             if ( gateway != null )
                             {

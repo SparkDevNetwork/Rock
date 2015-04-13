@@ -550,7 +550,8 @@ achieve our mission.  We are so grateful for your commitment.
                     if ( int.TryParse( PageParameter( "ScheduledTransactionId" ), out txnId ) )
                     {
                         var service = new FinancialScheduledTransactionService( rockContext );
-                        var scheduledTransaction = service.Queryable( "AuthorizedPersonAlias.Person,ScheduledTransactionDetails,FinancialGateway,CurrencyTypeValue,CreditCardTypeValue" )
+                        var scheduledTransaction = service
+                            .Queryable( "AuthorizedPersonAlias.Person,ScheduledTransactionDetails,FinancialGateway,CurrencyTypeValue,CreditCardTypeValue" )
                             .Where( t =>
                                 t.Id == txnId &&
                                 ( t.AuthorizedPersonAlias.PersonId == targetPerson.Id || t.AuthorizedPersonAlias.Person.GivingGroupId == targetPerson.GivingGroupId ) )
@@ -563,6 +564,11 @@ achieve our mission.  We are so grateful for your commitment.
                                 TargetPersonId = scheduledTransaction.AuthorizedPersonAlias.PersonId;
                             }
                             ScheduledTransactionId = scheduledTransaction.Id;
+
+                            if ( scheduledTransaction.FinancialGateway != null )
+                            {
+                                scheduledTransaction.FinancialGateway.LoadAttributes( rockContext );
+                            }
 
                             if ( refresh )
                             {
@@ -1000,13 +1006,19 @@ achieve our mission.  We are so grateful for your commitment.
                 if ( ScheduledTransactionId.HasValue )
                 {
                     scheduledTransaction = transactionService
-                        .Queryable("AuthorizedPersonAlias.Person").FirstOrDefault( s => s.Id == ScheduledTransactionId.Value );
+                        .Queryable("AuthorizedPersonAlias.Person,FinancialGateway")
+                        .FirstOrDefault( s => s.Id == ScheduledTransactionId.Value );
                 }
 
                 if ( scheduledTransaction == null )
                 {
                     errorMessage = "There was a problem getting the transaction information";
                     return false;
+                }
+
+                if ( scheduledTransaction.FinancialGateway != null )
+                {
+                    scheduledTransaction.FinancialGateway.LoadAttributes();
                 }
 
                 if ( scheduledTransaction.AuthorizedPersonAlias == null || scheduledTransaction.AuthorizedPersonAlias.Person == null)

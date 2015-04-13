@@ -641,47 +641,43 @@ namespace Rock.PayFlowPro
 
         #endregion
 
+        #region private methods
+
         private FinancialGateway GetFinancialGateway( FinancialTransaction transaction )
         {
-            if ( transaction != null )
-            { 
-                if ( transaction.FinancialGateway != null )
-                {
-                    return transaction.FinancialGateway;
-                }
-
-                if ( transaction.FinancialGatewayId.HasValue )
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        return new FinancialGatewayService( rockContext ).Get( transaction.FinancialGatewayId.Value );
-                    }
-                }
-            }
-
-            return null;
+            return transaction != null ? GetFinancialGateway( transaction.FinancialGateway, transaction.FinancialGatewayId ) : null;
         }
 
-        private FinancialGateway GetFinancialGateway( FinancialScheduledTransaction transaction )
+        private FinancialGateway GetFinancialGateway( FinancialScheduledTransaction scheduledTransaction )
         {
-            if ( transaction != null )
-            { 
-                if ( transaction.FinancialGateway != null )
-                {
-                    return transaction.FinancialGateway;
-                }
+            return scheduledTransaction != null ? GetFinancialGateway( scheduledTransaction.FinancialGateway, scheduledTransaction.FinancialGatewayId ) : null;
+        }
 
-                if ( transaction.FinancialGatewayId.HasValue )
+        private FinancialGateway GetFinancialGateway( FinancialGateway financialGateway, int? financialGatewayId)
+        {
+            if ( financialGateway != null )
+            {
+                if ( financialGateway.Attributes == null )
                 {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        return new FinancialGatewayService( rockContext ).Get( transaction.FinancialGatewayId.Value );
-                    }
+                    financialGateway.LoadAttributes();
+                }
+                return financialGateway;
+            }
+
+            if ( financialGatewayId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var gateway = new FinancialGatewayService( rockContext ).Get( financialGatewayId.Value );
+                    gateway.LoadAttributes( rockContext );
+                    return gateway;
                 }
             }
 
             return null;
         }
+
+        #endregion
 
         #region PayFlowPro Object Helper Methods
 

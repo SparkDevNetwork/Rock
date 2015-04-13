@@ -181,6 +181,7 @@ namespace RockWeb.Blocks.Finance
                     var financialGateway = new FinancialGatewayService( rockContext ).Get( gatewayGuid.Value );
                     if ( financialGateway != null )
                     {
+                        financialGateway.LoadAttributes( rockContext );
                         return financialGateway;
                     }
                 }
