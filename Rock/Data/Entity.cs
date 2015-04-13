@@ -81,7 +81,8 @@ namespace Rock.Data
         /// <value>
         /// The foreign identifier.
         /// </value>
-        [MaxLength( 50 )]
+        [MaxLength( 100 )]
+        [Index]
         [DataMember]
         [LavaIgnore]
         [HideFromReporting]
