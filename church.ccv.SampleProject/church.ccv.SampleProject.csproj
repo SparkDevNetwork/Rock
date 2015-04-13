@@ -91,6 +91,7 @@
     <Compile Include="Migrations\002_AddSystemData.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />
     <Compile Include="Migrations\003_RenameDomain.cs" />
+    <Compile Include="Migrations\004_AddForeignIdIndex.cs" />
     <Compile Include="Model\ReferralAgency.cs" />
     <Compile Include="Model\ReferralAgencyService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

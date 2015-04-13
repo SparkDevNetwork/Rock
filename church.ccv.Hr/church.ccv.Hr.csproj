@@ -90,6 +90,7 @@
     <Compile Include="Migrations\002_AlterColumns.cs" />
     <Compile Include="Migrations\003_AddHolidaySchedule.cs" />
     <Compile Include="Migrations\004_AddEarnedHolidayHours.cs" />
+    <Compile Include="Migrations\006_AddForeignIdIndex.cs" />
     <Compile Include="Migrations\005_RenameDomain.cs" />
     <Compile Include="Model\CodeGenerated\TimeCardDayService.cs" />
     <Compile Include="Model\CodeGenerated\TimeCardHistoryService.cs" />

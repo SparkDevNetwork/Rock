@@ -98,6 +98,7 @@
     <Compile Include="Data\NamedModel.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />
     <Compile Include="Migrations\002_AddSystemData.cs" />
+    <Compile Include="Migrations\005_AddForeignIdIndex.cs" />
     <Compile Include="Migrations\004_RenameDomain.cs" />
     <Compile Include="Migrations\003_AddVenue.cs" />
     <Compile Include="Model\Recording.cs" />

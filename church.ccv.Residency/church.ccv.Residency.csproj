@@ -53,6 +53,7 @@
     <Compile Include="Data\ResidencyContext.cs" />
     <Compile Include="Data\ResidencyService.cs" />
     <Compile Include="Migrations\002_AddIndexes.cs" />
+    <Compile Include="Migrations\009_AddForeignIdIndex.cs" />
     <Compile Include="Migrations\008_RenameDomain.cs" />
     <Compile Include="Migrations\004_AddIsPassFail.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />
