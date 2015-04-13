@@ -16,14 +16,19 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.HtmlControls;
+
 using DotLiquid;
 using DotLiquid.Util;
+
 using Humanizer;
+
+using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -817,6 +822,7 @@ namespace Rock.Lava
                 Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
                 var location = new GroupMemberService( GetRockContext(context) )
                     .Queryable( "GroupLocations.Location" )
+                    .AsNoTracking()
                     .Where( m => 
                         m.PersonId == person.Id && 
                         m.Group.GroupType.Guid == familyGuid )
@@ -910,6 +916,38 @@ namespace Rock.Lava
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Addresses the specified context.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="addressType">Type of the group.</param>
+        /// <returns></returns>
+        public static List<Rock.Model.Group> Groups( DotLiquid.Context context, object input, string groupTypeId )
+        {
+            if ( input != null && input is Person )
+            {
+                var person = (Person)input;
+
+                int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+                if ( numericalGroupTypeId.HasValue )
+                {
+                    return new GroupMemberService( GetRockContext( context ) )
+                        .Queryable().AsNoTracking()
+                        .Where( m =>
+                            m.PersonId == person.Id &&
+                            m.Group.GroupTypeId == numericalGroupTypeId.Value &&
+                            m.GroupMemberStatus == GroupMemberStatus.Active &&
+                            m.Group.IsActive )
+                        .Select( m =>
+                            m.Group )
+                        .ToList();
+                }
+            }
+
+            return new List<Model.Group>();
         }
 
         /// <summary>
