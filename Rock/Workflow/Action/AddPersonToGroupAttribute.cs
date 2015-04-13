@@ -31,15 +31,16 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets an attribute's value to the selected person 
     /// </summary>
-    [Description( "Adds person to a specific group." )]
+    [Description( "Adds person to a group using a workflow attribute." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Add Person to specified Group" )]
+    [ExportMetadata( "ComponentName", "Add Person to a Group using Workflow Attribute" )]
 
-    [WorkflowAttribute( "Person", "Workflow attribute that contains the person to add to the group.", true, "", "", 0, null, 
-        new string[] { "Rock.Field.Types.PersonFieldType" })]
+    [WorkflowAttribute( "Person", "Workflow attribute that contains the person to add to the group.", true, "", "", 0, null,
+        new string[] { "Rock.Field.Types.PersonFieldType" } )]
 
-    [Rock.Attribute.GroupAndRoleFieldAttribute( "Group and Role", "Group/Role to add the person to. Leave role blank to use the default role for that group.", "Group", true, key: "GroupAndRole" )]
-    public class AddPersonToGroup : ActionComponent
+    [WorkflowAttribute( "Group", "Workflow Attribute that contains the group to add the person to.", true, "", "", 0, null,
+        new string[] { "Rock.Field.Types.GroupFieldType" } )]
+    public class AddPersonToGroupWFAttribute : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -57,31 +58,23 @@ namespace Rock.Workflow.Action
             Group group = null;
             int? groupRoleId = null;
 
-            var groupAndRoleValues = ( GetAttributeValue( action, "GroupAndRole" ) ?? string.Empty ).Split( '|' );
-            if ( groupAndRoleValues.Count() > 1 )
-            {
-                var groupGuid = groupAndRoleValues[1].AsGuidOrNull();
-                if ( groupGuid.HasValue )
-                {
-                    group = new GroupService( rockContext ).Get( groupGuid.Value );
-                         
-                    if ( groupAndRoleValues.Count() > 2 )
-                    {
-                        var groupTypeRoleGuid = groupAndRoleValues[2].AsGuidOrNull();
-                        if ( groupTypeRoleGuid.HasValue )
-                        {
-                            var groupRole = new GroupTypeRoleService( rockContext ).Get( groupTypeRoleGuid.Value );
-                            if ( groupRole != null )
-                            {
-                                groupRoleId = groupRole.Id;
-                            }
-                        }
-                    }
+            var guidGroupAttribute = GetAttributeValue( action, "Group" ).AsGuidOrNull();
 
-                    if ( !groupRoleId.HasValue && group != null )
+            if ( guidGroupAttribute.HasValue )
+            {
+                var attributeGroup = AttributeCache.Read( guidGroupAttribute.Value, rockContext );
+                if ( attributeGroup != null )
+                {
+                    var groupGuid = action.GetWorklowAttributeValue( guidGroupAttribute.Value ).AsGuidOrNull();
+
+                    if ( groupGuid.HasValue )
                     {
-                        // use the group's grouptype's default group role if a group role wasn't specified
-                        groupRoleId = group.GroupType.DefaultGroupRoleId;
+                        group = new GroupService( rockContext ).Get( groupGuid.Value );
+                        if ( group != null )
+                        {
+                            // use the group's grouptype's default group role if a group role wasn't specified
+                            groupRoleId = group.GroupType.DefaultGroupRoleId;
+                        }
                     }
                 }
             }
@@ -93,7 +86,7 @@ namespace Rock.Workflow.Action
 
             if ( !groupRoleId.HasValue )
             {
-                errorMessages.Add( "No group role was provided and group doesn't have a default group role" );
+                errorMessages.Add( "Provided group doesn't have a default group role" );
             }
 
             // determine the person that will be added to the group
