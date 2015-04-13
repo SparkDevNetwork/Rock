@@ -81,8 +81,15 @@ namespace Rock.Model
         /// <returns></returns>
         public bool GetStatus( FinancialScheduledTransaction scheduledTransaction, out string errorMessages )
         {
-            if ( scheduledTransaction != null && scheduledTransaction.FinancialGateway != null && scheduledTransaction.FinancialGateway.IsActive )
+            if ( scheduledTransaction != null && 
+                scheduledTransaction.FinancialGateway != null && 
+                scheduledTransaction.FinancialGateway.IsActive )
             {
+                if ( scheduledTransaction.FinancialGateway.Attributes == null )
+                {
+                    scheduledTransaction.FinancialGateway.LoadAttributes( (RockContext)this.Context );
+                }
+
                 var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
                 if ( gateway != null )
                 {
@@ -102,8 +109,15 @@ namespace Rock.Model
         /// <returns></returns>
         public bool Reactivate( FinancialScheduledTransaction scheduledTransaction, out string errorMessages )
         {
-            if ( scheduledTransaction != null && scheduledTransaction.FinancialGateway != null && scheduledTransaction.FinancialGateway.IsActive )
+            if ( scheduledTransaction != null && 
+                scheduledTransaction.FinancialGateway != null && 
+                scheduledTransaction.FinancialGateway.IsActive )
             {
+                if ( scheduledTransaction.FinancialGateway.Attributes == null )
+                {
+                    scheduledTransaction.FinancialGateway.LoadAttributes( (RockContext)this.Context );
+                }
+
                 var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
                 if ( gateway != null )
                 {
@@ -140,8 +154,15 @@ namespace Rock.Model
         /// <returns></returns>
         public bool Cancel( FinancialScheduledTransaction scheduledTransaction, out string errorMessages )
         {
-            if ( scheduledTransaction != null && scheduledTransaction.FinancialGateway != null && scheduledTransaction.FinancialGateway.IsActive )
+            if ( scheduledTransaction != null && 
+                scheduledTransaction.FinancialGateway != null && 
+                scheduledTransaction.FinancialGateway.IsActive )
             {
+                if ( scheduledTransaction.FinancialGateway.Attributes == null )
+                {
+                    scheduledTransaction.FinancialGateway.LoadAttributes( (RockContext)this.Context );
+                }
+
                 var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
                 if ( gateway != null )
                 {

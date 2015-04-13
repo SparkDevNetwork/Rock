@@ -401,6 +401,10 @@ namespace RockWeb.Blocks.Finance
                     if ( gatewayGuid.HasValue )
                     {
                         financialGateway = new FinancialGatewayService( rockContext ).Get( gatewayGuid.Value );
+                        if ( financialGateway != null )
+                        {
+                            financialGateway.LoadAttributes( rockContext );
+                        }
                         gateway = financialGateway.GetGatewayComponent();
                     }
 

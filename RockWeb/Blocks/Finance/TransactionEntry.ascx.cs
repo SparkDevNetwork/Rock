@@ -280,6 +280,7 @@ namespace RockWeb.Blocks.Finance
                     _ccGateway = financialGatewayService.Get( ccGatewayGuid.Value );
                     if ( _ccGateway != null )
                     {
+                        _ccGateway.LoadAttributes( rockContext );
                         ccGatewayComponent = _ccGateway.GetGatewayComponent();
                         if ( ccGatewayComponent != null )
                         {
@@ -298,6 +299,7 @@ namespace RockWeb.Blocks.Finance
                     _achGateway = financialGatewayService.Get( achGatewayGuid.Value );
                     if ( _achGateway != null )
                     {
+                        _achGateway.LoadAttributes( rockContext );
                         achGatewayComponent = _achGateway.GetGatewayComponent();
                         achEnabled = achGatewayComponent != null;
                     }
@@ -701,8 +703,6 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSaveAccount_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
-
             if ( string.IsNullOrWhiteSpace( TransactionCode ) )
             {
                 nbSaveAccount.Text = "Sorry, the account information cannot be saved as there's not a valid transaction code to reference";
@@ -710,163 +710,174 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
-            if ( phCreateLogin.Visible )
+            using ( var rockContext = new RockContext() )
             {
-                if ( string.IsNullOrWhiteSpace( txtUserName.Text ) || string.IsNullOrWhiteSpace( txtPassword.Text ) )
+                if ( phCreateLogin.Visible )
                 {
-                    nbSaveAccount.Title = "Missing Informaton";
-                    nbSaveAccount.Text = "A username and password are required when saving an account";
-                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
-                    nbSaveAccount.Visible = true;
-                    return;
-                }
-
-                if ( new UserLoginService( rockContext ).GetByUserName( txtUserName.Text ) != null )
-                {
-                    nbSaveAccount.Title = "Invalid Username";
-                    nbSaveAccount.Text = "The selected Username is already being used.  Please select a different Username";
-                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
-                    nbSaveAccount.Visible = true;
-                    return;
-                }
-
-                if ( txtPasswordConfirm.Text != txtPassword.Text )
-                {
-                    nbSaveAccount.Title = "Invalid Password";
-                    nbSaveAccount.Text = "The password and password confirmation do not match";
-                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
-                    nbSaveAccount.Visible = true;
-                    return;
-                }
-            }
-
-            if ( !string.IsNullOrWhiteSpace( txtSaveAccount.Text ) )
-            {
-                GatewayComponent gateway = null;
-                var financialGateway = hfPaymentTab.Value == "ACH" ? _achGateway : _ccGateway;
-                if ( financialGateway != null )
-                {
-                    gateway = financialGateway.GetGatewayComponent();
-                }
-
-                if ( gateway != null )
-                {
-                    var ccCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
-                    var achCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) );
-
-                    string errorMessage = string.Empty;
-
-                    PersonAlias authorizedPersonAlias = null;
-                    string referenceNumber = string.Empty;
-                    int? currencyTypeValueId = hfPaymentTab.Value == "ACH" ? achCurrencyType.Id : ccCurrencyType.Id;
-
-                    if ( string.IsNullOrWhiteSpace( ScheduleId ) )
+                    if ( string.IsNullOrWhiteSpace( txtUserName.Text ) || string.IsNullOrWhiteSpace( txtPassword.Text ) )
                     {
-                        var transaction = new FinancialTransactionService( rockContext ).GetByTransactionCode( TransactionCode );
-                        if ( transaction != null && transaction.AuthorizedPersonAlias != null )
-                        {
-                            authorizedPersonAlias = transaction.AuthorizedPersonAlias;
-                            referenceNumber = gateway.GetReferenceNumber( transaction, out errorMessage );
-                        }
-                    }
-                    else
-                    {
-                        var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetByScheduleId( ScheduleId );
-                        if ( scheduledTransaction != null )
-                        {
-                            authorizedPersonAlias = scheduledTransaction.AuthorizedPersonAlias;
-                            referenceNumber = gateway.GetReferenceNumber( scheduledTransaction, out errorMessage );
-                        }
+                        nbSaveAccount.Title = "Missing Informaton";
+                        nbSaveAccount.Text = "A username and password are required when saving an account";
+                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
+                        nbSaveAccount.Visible = true;
+                        return;
                     }
 
-                    if ( authorizedPersonAlias != null && authorizedPersonAlias.Person != null )
+                    if ( new UserLoginService( rockContext ).GetByUserName( txtUserName.Text ) != null )
                     {
-                        if ( phCreateLogin.Visible )
+                        nbSaveAccount.Title = "Invalid Username";
+                        nbSaveAccount.Text = "The selected Username is already being used.  Please select a different Username";
+                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
+                        nbSaveAccount.Visible = true;
+                        return;
+                    }
+
+                    if ( txtPasswordConfirm.Text != txtPassword.Text )
+                    {
+                        nbSaveAccount.Title = "Invalid Password";
+                        nbSaveAccount.Text = "The password and password confirmation do not match";
+                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
+                        nbSaveAccount.Visible = true;
+                        return;
+                    }
+                }
+
+                if ( !string.IsNullOrWhiteSpace( txtSaveAccount.Text ) )
+                {
+                    GatewayComponent gateway = null;
+                    var financialGateway = hfPaymentTab.Value == "ACH" ? _achGateway : _ccGateway;
+                    if ( financialGateway != null )
+                    {
+                        gateway = financialGateway.GetGatewayComponent();
+                    }
+
+                    if ( gateway != null )
+                    {
+                        var ccCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
+                        var achCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) );
+
+                        string errorMessage = string.Empty;
+
+                        PersonAlias authorizedPersonAlias = null;
+                        string referenceNumber = string.Empty;
+                        int? currencyTypeValueId = hfPaymentTab.Value == "ACH" ? achCurrencyType.Id : ccCurrencyType.Id;
+
+                        if ( string.IsNullOrWhiteSpace( ScheduleId ) )
                         {
-                            var user = UserLoginService.Create(
-                                rockContext,
-                                authorizedPersonAlias.Person,
-                                Rock.Model.AuthenticationServiceType.Internal,
-                                EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
-                                txtUserName.Text,
-                                txtPassword.Text,
-                                false );
-
-                            var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
-                            mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
-
-                            var personDictionary = authorizedPersonAlias.Person.ToLiquid() as Dictionary<string, object>;
-                            mergeObjects.Add( "Person", personDictionary );
-
-                            mergeObjects.Add( "User", user );
-
-                            var recipients = new List<Rock.Communication.RecipientData>();
-                            recipients.Add( new Rock.Communication.RecipientData( authorizedPersonAlias.Person.Email, mergeObjects ) );
-
-                            Rock.Communication.Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
-                        }
-
-                        var paymentInfo = GetPaymentInfo();
-
-                        if ( errorMessage.Any() )
-                        {
-                            nbSaveAccount.Title = "Invalid Transaction";
-                            nbSaveAccount.Text = "Sorry, the account information cannot be saved. " + errorMessage;
-                            nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
-                            nbSaveAccount.Visible = true;
+                            var transaction = new FinancialTransactionService( rockContext ).GetByTransactionCode( TransactionCode );
+                            if ( transaction != null && transaction.AuthorizedPersonAlias != null )
+                            {
+                                authorizedPersonAlias = transaction.AuthorizedPersonAlias;
+                                if ( transaction.FinancialGateway != null )
+                                {
+                                    transaction.FinancialGateway.LoadAttributes( rockContext );
+                                }
+                                referenceNumber = gateway.GetReferenceNumber( transaction, out errorMessage );
+                            }
                         }
                         else
                         {
-                            if ( authorizedPersonAlias != null )
+                            var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetByScheduleId( ScheduleId );
+                            if ( scheduledTransaction != null )
                             {
-                                var savedAccount = new FinancialPersonSavedAccount();
-                                savedAccount.PersonAliasId = authorizedPersonAlias.Id;
-                                savedAccount.ReferenceNumber = referenceNumber;
-                                savedAccount.Name = txtSaveAccount.Text;
-                                savedAccount.MaskedAccountNumber = paymentInfo.MaskedNumber;
-                                savedAccount.TransactionCode = TransactionCode;
-                                savedAccount.FinancialGatewayId = financialGateway.Id;
-                                savedAccount.CurrencyTypeValueId = currencyTypeValueId;
-                                savedAccount.CreditCardTypeValueId = CreditCardTypeValueId;
+                                authorizedPersonAlias = scheduledTransaction.AuthorizedPersonAlias;
+                                if ( scheduledTransaction.FinancialGateway != null )
+                                {
+                                    scheduledTransaction.FinancialGateway.LoadAttributes( rockContext );
+                                }
+                                referenceNumber = gateway.GetReferenceNumber( scheduledTransaction, out errorMessage );
+                            }
+                        }
 
-                                var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
-                                savedAccountService.Add( savedAccount );
-                                rockContext.SaveChanges();
+                        if ( authorizedPersonAlias != null && authorizedPersonAlias.Person != null )
+                        {
+                            if ( phCreateLogin.Visible )
+                            {
+                                var user = UserLoginService.Create(
+                                    rockContext,
+                                    authorizedPersonAlias.Person,
+                                    Rock.Model.AuthenticationServiceType.Internal,
+                                    EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
+                                    txtUserName.Text,
+                                    txtPassword.Text,
+                                    false );
 
-                                cbSaveAccount.Visible = false;
-                                txtSaveAccount.Visible = false;
-                                phCreateLogin.Visible = false;
-                                divSaveActions.Visible = false;
+                                var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
+                                mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
 
-                                nbSaveAccount.Title = "Success";
-                                nbSaveAccount.Text = "The account has been saved for future use";
-                                nbSaveAccount.NotificationBoxType = NotificationBoxType.Success;
+                                var personDictionary = authorizedPersonAlias.Person.ToLiquid() as Dictionary<string, object>;
+                                mergeObjects.Add( "Person", personDictionary );
+
+                                mergeObjects.Add( "User", user );
+
+                                var recipients = new List<Rock.Communication.RecipientData>();
+                                recipients.Add( new Rock.Communication.RecipientData( authorizedPersonAlias.Person.Email, mergeObjects ) );
+
+                                Rock.Communication.Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
+                            }
+
+                            var paymentInfo = GetPaymentInfo();
+
+                            if ( errorMessage.Any() )
+                            {
+                                nbSaveAccount.Title = "Invalid Transaction";
+                                nbSaveAccount.Text = "Sorry, the account information cannot be saved. " + errorMessage;
+                                nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                                 nbSaveAccount.Visible = true;
                             }
+                            else
+                            {
+                                if ( authorizedPersonAlias != null )
+                                {
+                                    var savedAccount = new FinancialPersonSavedAccount();
+                                    savedAccount.PersonAliasId = authorizedPersonAlias.Id;
+                                    savedAccount.ReferenceNumber = referenceNumber;
+                                    savedAccount.Name = txtSaveAccount.Text;
+                                    savedAccount.MaskedAccountNumber = paymentInfo.MaskedNumber;
+                                    savedAccount.TransactionCode = TransactionCode;
+                                    savedAccount.FinancialGatewayId = financialGateway.Id;
+                                    savedAccount.CurrencyTypeValueId = currencyTypeValueId;
+                                    savedAccount.CreditCardTypeValueId = CreditCardTypeValueId;
+
+                                    var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
+                                    savedAccountService.Add( savedAccount );
+                                    rockContext.SaveChanges();
+
+                                    cbSaveAccount.Visible = false;
+                                    txtSaveAccount.Visible = false;
+                                    phCreateLogin.Visible = false;
+                                    divSaveActions.Visible = false;
+
+                                    nbSaveAccount.Title = "Success";
+                                    nbSaveAccount.Text = "The account has been saved for future use";
+                                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Success;
+                                    nbSaveAccount.Visible = true;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            nbSaveAccount.Title = "Invalid Transaction";
+                            nbSaveAccount.Text = "Sorry, the account information cannot be saved as there's not a valid transaction code to reference.";
+                            nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
+                            nbSaveAccount.Visible = true;
                         }
                     }
                     else
                     {
-                        nbSaveAccount.Title = "Invalid Transaction";
-                        nbSaveAccount.Text = "Sorry, the account information cannot be saved as there's not a valid transaction code to reference.";
+                        nbSaveAccount.Title = "Invalid Gateway";
+                        nbSaveAccount.Text = "Sorry, the financial gateway information for this type of transaction is not valid.";
                         nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                         nbSaveAccount.Visible = true;
                     }
                 }
                 else
                 {
-                    nbSaveAccount.Title = "Invalid Gateway";
-                    nbSaveAccount.Text = "Sorry, the financial gateway information for this type of transaction is not valid.";
+                    nbSaveAccount.Title = "Missing Account Name";
+                    nbSaveAccount.Text = "Please enter a name to use for this account.";
                     nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                     nbSaveAccount.Visible = true;
                 }
-            }
-            else
-            {
-                nbSaveAccount.Title = "Missing Account Name";
-                nbSaveAccount.Text = "Please enter a name to use for this account.";
-                nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
-                nbSaveAccount.Visible = true;
             }
         }
 
