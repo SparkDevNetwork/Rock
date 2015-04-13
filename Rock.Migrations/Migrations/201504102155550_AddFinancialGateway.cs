@@ -77,76 +77,118 @@ namespace Rock.Migrations
             Sql( @"
     DECLARE @PayFlowProGatewayEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.PayFlowPro.Gateway' )
     DECLARE @TestGatewayEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Financial.TestGateway' )
+    DECLARE @CyberSourceGatewayEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.CyberSource.Gateway' )
     DECLARE @GatewayEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '122EFE60-84A6-4C7A-A852-30E4BD89A662' )
     DECLARE @GatewayFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Guid] = '7B34F9D8-6BBA-423E-B50E-525ABB3A1013' )
     DECLARE @PayFlowProGatewayId int
     DECLARE @TestGatewayId int
+    DECLARE @CyberSourceGatewayId int
 
-    INSERT INTO [FinancialGateway] ( [Name], [EntityTypeId], [IsActive], [BatchTimeOffsetTicks], [Guid] )
-    VALUES ( 'Pay Flow Pro', @PayFlowProGatewayEntityTypeId, 0, 0, '420747BE-640C-406E-B382-CEE4BB377F29' )
-    SET @PayFlowProGatewayId = SCOPE_IDENTITY()
+    IF @PayFlowProGatewayEntityTypeId IS NOT NULL
+    BEGIN
+        INSERT INTO [FinancialGateway] ( [Name], [EntityTypeId], [IsActive], [BatchTimeOffsetTicks], [Guid] )
+        VALUES ( 'Pay Flow Pro', @PayFlowProGatewayEntityTypeId, 0, 0, '420747BE-640C-406E-B382-CEE4BB377F29' )
+        SET @PayFlowProGatewayId = SCOPE_IDENTITY()
+    END
 
-    INSERT INTO [FinancialGateway] ( [Name], [EntityTypeId], [IsActive], [BatchTimeOffsetTicks], [Guid] )
-    VALUES( 'Test Gateway', @TestGatewayEntityTypeId, 0, 0, '6432D2D2-32FF-443D-B5B3-FB6C8414C3AD' )
-    SET @TestGatewayId = SCOPE_IDENTITY()
+    IF @TestGatewayEntityTypeId IS NOT NULL
+    BEGIN
+        INSERT INTO [FinancialGateway] ( [Name], [EntityTypeId], [IsActive], [BatchTimeOffsetTicks], [Guid] )
+        VALUES( 'Test Gateway', @TestGatewayEntityTypeId, 0, 0, '6432D2D2-32FF-443D-B5B3-FB6C8414C3AD' )
+        SET @TestGatewayId = SCOPE_IDENTITY()
+    END
+
+    IF @CyberSourceGatewayEntityTypeId IS NOT NULL
+    BEGIN
+        INSERT INTO [FinancialGateway] ( [Name], [EntityTypeId], [IsActive], [BatchTimeOffsetTicks], [Guid] )
+        VALUES ( 'Cyber Source', @CyberSourceGatewayEntityTypeId, 0, 0, '457B3B47-88EF-45F8-92FE-4F7F2C60718A' )
+        SET @CyberSourceGatewayId = SCOPE_IDENTITY()
+    END
     
 	UPDATE [FinancialTransaction]
     SET [FinancialGatewayId] = (
-	    CASE WHEN [GatewayEntityTypeId] = @PayFlowProGatewayEntityTypeId
-		    THEN @PayFlowProGatewayId
+	    CASE [GatewayEntityTypeId] 
+            WHEN @PayFlowProGatewayEntityTypeId THEN @PayFlowProGatewayId
+            WHEN @CyberSourceGatewayEntityTypeId THEN @CyberSourceGatewayId
 		    ELSE @TestGatewayId
 	    END
     )
 
     UPDATE [FinancialScheduledTransaction]
     SET [FinancialGatewayId] = (
-	    CASE WHEN [GatewayEntityTypeId] = @PayFlowProGatewayEntityTypeId
-		    THEN @PayFlowProGatewayId
+	    CASE [GatewayEntityTypeId] 
+            WHEN @PayFlowProGatewayEntityTypeId THEN @PayFlowProGatewayId
+            WHEN @CyberSourceGatewayEntityTypeId THEN @CyberSourceGatewayId
 		    ELSE @TestGatewayId
 	    END
     )
+    WHERE [GatewayEntityTypeId] IS NOT NULL
 
     UPDATE [FinancialTransaction]
     SET [FinancialGatewayId] = (
-	    CASE WHEN [GatewayEntityTypeId] = @PayFlowProGatewayEntityTypeId
-		    THEN @PayFlowProGatewayId
+	    CASE [GatewayEntityTypeId] 
+            WHEN @PayFlowProGatewayEntityTypeId THEN @PayFlowProGatewayId
+            WHEN @CyberSourceGatewayEntityTypeId THEN @CyberSourceGatewayId
 		    ELSE @TestGatewayId
 	    END
     )
+    WHERE [GatewayEntityTypeId] IS NOT NULL
 
     UPDATE G SET [IsActive] = ( CASE WHEN AV.[Value] = 'True' THEN 1 ELSE 0 END )
     FROM [Attribute] A
-    INNER JOIN [AttributeValue] AV ON AV.[AttributeId] = A.[Id]
-    INNER JOIN [FinancialGateway] G ON G.[Id] = ( CASE WHEN A.[EntityTypeId] = @PayFlowProGatewayEntityTypeId THEN @PayFlowProGatewayId ELSE @TestGatewayId END )
-    WHERE [A].[EntityTypeId] IN ( @PayFlowProGatewayEntityTypeId, @TestGatewayEntityTypeId )
+    INNER JOIN [AttributeValue] AV 
+        ON AV.[AttributeId] = A.[Id]
+    INNER JOIN [FinancialGateway] G 
+        ON G.[Id] = ( 
+            CASE A.[EntityTypeId] 
+                WHEN @PayFlowProGatewayEntityTypeId THEN @PayFlowProGatewayId 
+                WHEN @CyberSourceGatewayEntityTypeId THEN @CyberSourceGatewayId 
+                ELSE @TestGatewayId END 
+            )
+    WHERE [A].[EntityTypeId] IS NOT NULL
+    AND [A].[EntityTypeId] IN ( @PayFlowProGatewayEntityTypeId, @TestGatewayEntityTypeId, @CyberSourceGatewayEntityTypeId )
     AND [A].[Key] = 'Active'
     AND [AV].[EntityId] = 0
 
     UPDATE G SET BatchTimeOffsetTicks = CAST(10000000 as bigint) * DATEDIFF( second, '2015-04-01 00:00:00', CAST( '2015-04-01 ' + '20:00:00' AS DATETIME) )
     FROM [Attribute] A
-    INNER JOIN [AttributeValue] AV ON AV.[AttributeId] = A.[Id]
-    INNER JOIN [FinancialGateway] G  ON G.[Id] = ( CASE WHEN A.[EntityTypeId] = @PayFlowProGatewayEntityTypeId THEN @PayFlowProGatewayId ELSE @TestGatewayId END )
-    WHERE [A].[EntityTypeId] IN ( @PayFlowProGatewayEntityTypeId, @TestGatewayEntityTypeId )
+    INNER JOIN [AttributeValue] AV 
+        ON AV.[AttributeId] = A.[Id]
+    INNER JOIN [FinancialGateway] G 
+        ON G.[Id] = ( 
+            CASE A.[EntityTypeId] 
+                WHEN @PayFlowProGatewayEntityTypeId THEN @PayFlowProGatewayId 
+                WHEN @CyberSourceGatewayEntityTypeId THEN @CyberSourceGatewayId 
+                ELSE @TestGatewayId END 
+            )
+    WHERE [A].[EntityTypeId] IS NOT NULL
+    AND [A].[EntityTypeId] IN ( @PayFlowProGatewayEntityTypeId, @TestGatewayEntityTypeId, @CyberSourceGatewayEntityTypeId )
     AND [A].[Key] = 'BatchProcessTime'
     AND [AV].[EntityId] = 0
 
     DELETE [Attribute]
-    WHERE [EntityTypeId] IN ( @PayFlowProGatewayEntityTypeId, @TestGatewayEntityTypeId )
+    WHERE [EntityTypeId] IS NOT NULL
+    AND [EntityTypeId] IN ( @PayFlowProGatewayEntityTypeId, @TestGatewayEntityTypeId, @CyberSourceGatewayEntityTypeId )
     AND [Key] IN ( 'Active', 'BatchProcessTime', 'Order')
 
     UPDATE AV SET [EntityId] = ( 
-	    CASE WHEN A.[EntityTypeId] = @PayFlowProGatewayEntityTypeId THEN @PayFlowProGatewayId ELSE @TestGatewayId END 
-    )
+        CASE A.[EntityTypeId] 
+            WHEN @PayFlowProGatewayEntityTypeId THEN @PayFlowProGatewayId 
+            WHEN @CyberSourceGatewayEntityTypeId THEN @CyberSourceGatewayId 
+            ELSE @TestGatewayId END 
+        )
     FROM [AttributeValue] AV
     INNER JOIN [Attribute] A ON A.[Id] = AV.[AttributeId]
-    WHERE A.[EntityTypeId] IN ( @PayFlowProGatewayEntityTypeId, @TestGatewayEntityTypeId )
+    WHERE A.[EntityTypeId] IS NOT NULL
+    AND A.[EntityTypeId] IN ( @PayFlowProGatewayEntityTypeId, @TestGatewayEntityTypeId, @CyberSourceGatewayEntityTypeId )
 
     UPDATE [Attribute] SET
 	    [IsSystem] = 1,
 	    [EntityTypeId] = @GatewayEntityTypeId,
 	    [EntityTypeQualifierColumn] = 'EntityTypeId',
 	    [EntityTypeQualifierValue] = CAST( [EntityTypeId] AS VARCHAR )
-    WHERE [EntityTypeId] IN ( @PayFlowProGatewayEntityTypeId, @TestGatewayEntityTypeId )
+    WHERE [EntityTypeId] IS NOT NULL
+    AND [EntityTypeId] IN ( @PayFlowProGatewayEntityTypeId, @TestGatewayEntityTypeId, @CyberSourceGatewayEntityTypeId )
 
     UPDATE A SET 
 	    [FieldTypeId] = @GatewayFieldTypeId,
@@ -156,7 +198,12 @@ namespace Rock.Migrations
     WHERE F.[Guid] = 'A7486B0E-4CA2-4E00-A987-5544C7DABA76' 
     AND [Key] IN ( 'CCGateway', 'ACHGateway' )
 
-    UPDATE AV SET [Value] = ( CASE WHEN T.[Name] = 'Rock.PayFlowPro.Gateway' THEN '420747BE-640C-406E-B382-CEE4BB377F29' ELSE '6432D2D2-32FF-443D-B5B3-FB6C8414C3AD' END )
+    UPDATE AV SET [Value] = ( 
+        CASE T.[Name] 
+            WHEN 'Rock.PayFlowPro.Gateway' THEN '420747BE-640C-406E-B382-CEE4BB377F29' 
+            WHEN 'Rock.CyberSource.Gateway' THEN '457B3B47-88EF-45F8-92FE-4F7F2C60718A' 
+            ELSE '6432D2D2-32FF-443D-B5B3-FB6C8414C3AD' END 
+        )
     FROM [Attribute] A 
     INNER JOIN [AttributeValue] AV
 	    ON AV.[AttributeId] = A.[Id]
