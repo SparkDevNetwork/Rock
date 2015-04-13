@@ -48,11 +48,11 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ActionComponent" /> class.
+        /// Initializes a new instance of the <see cref="GatewayComponent" /> class.
         /// </summary>
         public GatewayComponent()
         {
-            // Override default constructor of Component that loads attributes (not needed for gateway components, needs to be done by each action)
+            // Override default constructor of Component that loads attributes (not needed for gateway components, needs to be done by each financial gateway)
         }
 
         /// <summary>
@@ -68,9 +68,9 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Loads the attributes for the financial gateway.  
+        /// Loads the attributes for the financial gateway.
         /// </summary>
-        /// <param name="action">The action.</param>
+        /// <param name="financialGateway">The financial gateway.</param>
         public void LoadAttributes( FinancialGateway financialGateway )
         {
             financialGateway.LoadAttributes();
@@ -89,7 +89,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Always returns 0.  (Ordering of actions is configured through the workflow admin and stored as property of WorkflowActionType)
+        /// Always returns 0.  
         /// </summary>
         /// <value>
         /// The order.
@@ -103,7 +103,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Always returns true.  (Activating of actions is configured through the workflow admin and stored as a WorkflowActionType)
+        /// Always returns true. 
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
@@ -115,11 +115,11 @@ namespace Rock.Financial
                 return true; ;
             }
         }
-        
+
         /// <summary>
-        /// Gets the attribute value for the gateway action
+        /// Gets the attribute value for the gateway 
         /// </summary>
-        /// <param name="action">The action.</param>
+        /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
         protected string GetAttributeValue( FinancialGateway financialGateway, string key )
