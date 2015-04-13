@@ -1,315 +1,313 @@
 {% if AllowedActions.View == true || AllowedActions.Edit == true || AllowedActions.Administrate == true %}
 
 
-	{% for groupLocation in Group.GroupLocations %}
-		{% if groupLocation.Location.GeoPoint != '' %}
-
-		<div class="packagesummary-image"
-			 style="background: url('https://maps.googleapis.com/maps/api/staticmap?size=1400x400&zoom=13&maptype=roadmap&markers={{ groupLocation.Location.GeoPoint }}&scale=2') no-repeat center;
-					width: 100%;
-					height: 200px;">
-		</div>
-
-		{% endif %}
-	{% endfor %}
-
-
-
-	<h1>{{ Group.Name }}</h1>
-
-	{{ Group.Description }}
-
-	<div class="row">
-		<div class="col-md-6">
-		<h4>Group Details:</h4>
-		{% for attribute in Group.AttributeValues %}
-		<strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
-		{% endfor %}
-		</div>
-
-		<div class="col-md-6">
-		<h4>Leaders:</h4>
-		<ul>
-			{% for member in Group.Members %}
-
-			{% if member.GroupRole.IsLeader %}
-			<li>
-			{{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small>
-			</li>
-			{% endif %}
-			{% endfor %}
-		</ul>
-		</div>
-	</div>
-
-	{% if AllowedActions.Edit == true %}
-	<div class="actions margin-t-md clearfix">
-		<a class="btn btn-default btn-sm pull-right" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}">Edit</a>
-	</div>
-	{% endif %}
-
-	{% if LinkedPages.RosterPage != '' and  (LinkedPages.AttendancePage != '' or Group.GroupType.TakesAttendance == 'False') %}
-		<ul class="nav nav-tabs margin-v-lg">
-			{% if LinkedPages.RosterPage != '' %}
-				{% if LinkedPages.RosterPage == CurrentPage.Path %}
-					<li role="presentation" class="active"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
-				{% else %}
-					<li role="presentation"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
-				{% endif %}
-			{% endif %}
-
-			{% if LinkedPages.AttendancePage != '' and Group.GroupType.TakesAttendance == 'True' %}
-				{% if LinkedPages.AttendancePage == CurrentPage.Path %}
-					<li role="presentation" class="active"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
-				{% else %}
-					<li role="presentation"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
-				{% endif %}
-			{% endif %}
-		</ul>
-	{% else %}
-		<hr>
-	{% endif %}
+  {% for groupLocation in Group.GroupLocations %}
+    {% if groupLocation.Location.GeoPoint != '' %}
+
+    <div class="card card-lg">
+      <div class="packagesummary-image card-header" style="background: url('https://maps.googleapis.com/maps/api/staticmap?size=1400x400&zoom=13&maptype=roadmap&markers={{ groupLocation.Location.GeoPoint }}&scale=2') no-repeat center; width: 100%; height: 200px;">
+      </div>
+      <div class="card-footer">
+        {% if AllowedActions.Edit == true %}
+        <a class="margin-t-md btn btn-default btn-xs pull-right" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}"><i class="fa fa-pencil"></i> Edit</a>
+        {% endif %}
+        <h1 class="margin-t-sm">{{ Group.Name }}</h1>
+        <div class="row">
+          <div class="col-md-5">
+            {% if Group.Schedule.FriendlyScheduleText %}
+              <h4 class="no-caps margin-t-none">Meets every {{Group.Schedule.FriendlyScheduleText}}</h4>
+            {% endif %}
+            <p>{{ Group.Description }}</p>
+          </div>
+          <div class="col-md-3">
+            <p>
+            {% for attribute in Group.AttributeValues %}
+              {% unless attribute.AttributeName == "Meeting Day" or attribute.AttributeName == "Meeting Time" %}
+              <strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+              {% endunless %}
+            {% endfor %}
+            </p>
+          </div>
+          <div class="col-md-4">
+            <strong>Leaders:</strong>
+            <ul class="unstyled">
+              {% for member in Group.Members %}
+
+              {% if member.GroupRole.IsLeader %}
+              <li>
+              {{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small>
+              </li>
+              {% endif %}
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% endif %}
+  {% endfor %}
+
+  {% if LinkedPages.RosterPage != '' and  (LinkedPages.AttendancePage != '' or Group.GroupType.TakesAttendance == 'False') %}
+    <ul class="nav nav-tabs margin-v-lg">
+      {% if LinkedPages.RosterPage != '' %}
+        {% if LinkedPages.RosterPage == CurrentPage.Path %}
+          <li role="presentation" class="active"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
+        {% else %}
+          <li role="presentation"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
+        {% endif %}
+      {% endif %}
+
+      {% if LinkedPages.AttendancePage != '' and Group.GroupType.TakesAttendance == 'True' %}
+        {% if LinkedPages.AttendancePage == CurrentPage.Path %}
+          <li role="presentation" class="active"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
+        {% else %}
+          <li role="presentation"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
+        {% endif %}
+      {% endif %}
+    </ul>
+  {% endif %}
+
+  {% if LinkedPages.RosterPage == CurrentPage.Path %}
+
+    {% assign countActive = -1 %}
+    {% assign countInactive = -1 %}
+    {% assign countPending = -1 %}
+    {% for member in Group.Members %}
+      {% case member.GroupMemberStatus %}
+        {% when 'Active' %}
+          {% assign countActive = countActive | Plus: 1 %}
+        {% when 'Inactive' %}
+          {% assign countInactive = countInactive | Plus: 1 %}
+        {% when 'Pending' %}
+          {% assign countPending = countPending | Plus: 1 %}
+        {% else %}
+      {% endcase %}
+    {% endfor %}
+
+
+
+    {% if countPending > -1 %}
+      <div class="well">
+        <h4>Pending Members</h4>
+      {% assign icountPending = 0 %}
+
+
+
+      {% for member in Group.Members %}
+
+        {% if member.GroupMemberStatus == 'Pending' %}
+
+          {% assign loopcycle = icountPending | Modulo:2 %}
+
+          {% if loopcycle == 0 %}
+            <div class="row">
+          {% endif %}
+
+          <div class="col-sm-6 margin-b-md rollover-container" style="overflow: hidden;">
+            {% if LinkedPages.PersonDetailPage != '' %}
+              <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
+            {% endif %}
+            <img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" width="60" class="pull-left margin-r-sm" />
+            <div class="pull-left">
+              <strong>{{ member.Person.FullName }}</strong>
+              <small>({{ member.GroupRole.Name}})</small>
+
+              {% for phone in member.Person.PhoneNumbers %}
+              <br />{{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small>
+              {% endfor %}
+
+              {% assign memberAddress =  member.Person | Address:'Home' %}
+              {% if memberAddress != '' %}
+              <br />{{ member.Person | Address:'Home' }}
+              {% endif %}
 
-	{% if LinkedPages.RosterPage == CurrentPage.Path %}
+              <br />
+              <a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
+            </div>
 
-		{% assign countActive = -1 %}
-		{% assign countInactive = -1 %}
-		{% assign countPending = -1 %}
-		{% for member in Group.Members %}
-			{% case member.GroupMemberStatus %}
-				{% when 'Active' %}
-					{% assign countActive = countActive | Plus: 1 %}
-				{% when 'Inactive' %}
-					{% assign countInactive = countInactive | Plus: 1 %}
-				{% when 'Pending' %}
-					{% assign countPending = countPending | Plus: 1 %}
-				{% else %}
-			{% endcase %}
-		{% endfor %}
-
-
-
-		{% if countPending > -1 %}
-			<div class="well">
-				<h4>Pending Members</h4>
-			{% assign icountPending = 0 %}
-
-
-
-			{% for member in Group.Members %}
-
-				{% if member.GroupMemberStatus == 'Pending' %}
-
-					{% assign loopcycle = icountPending | Modulo:2 %}
-
-					{% if loopcycle == 0 %}
-						<div class="row">
-					{% endif %}
+            {% if AllowedActions.Edit == true %}
+            <div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
+              <a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
+              <i class="fa fa-times"></i>
+              </a>
+              <a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
+              <i class="fa fa-pencil"></i>
+              </a>
+            </div>
+            {% endif %}
 
-					<div class="col-sm-6 margin-b-md rollover-container" style="overflow: hidden;">
-						{% if LinkedPages.PersonDetailPage != '' %}
-							<a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
-						{% endif %}
-						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" width="60" class="pull-left margin-r-sm" />
-						<div class="pull-left">
-							<strong>{{ member.Person.FullName }}</strong>
-							<small>({{ member.GroupRole.Name}})</small>
-
-							{% for phone in member.Person.PhoneNumbers %}
-							<br />{{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small>
-							{% endfor %}
-
-							{% assign memberAddress =  member.Person | Address:'Home' %}
-							{% if memberAddress != '' %}
-							<br />{{ member.Person | Address:'Home' }}
-							{% endif %}
+            {% if LinkedPages.PersonDetailPage != '' %}
+              </a>
+            {% endif %}
+          </div>
 
-							<br />
-							<a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
-						</div>
+          {% if loopcycle != 0 or icountPending == countPending %}
+            </div>
+          {% endif %}
 
-						{% if AllowedActions.Edit == true %}
-						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
-							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
-							<i class="fa fa-times"></i>
-							</a>
-							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
-							<i class="fa fa-pencil"></i>
-							</a>
-						</div>
-						{% endif %}
+          {% assign icountPending = icountPending | Plus: 1 %}
 
-						{% if LinkedPages.PersonDetailPage != '' %}
-							</a>
-						{% endif %}
-					</div>
+        {% endif %}
 
-					{% if loopcycle != 0 or icountPending == countPending %}
-						</div>
-					{% endif %}
+      {% endfor %}
 
-					{% assign icountPending = icountPending | Plus: 1 %}
+      </div>
 
-				{% endif %}
+    {% endif %}
 
-			{% endfor %}
 
-			</div>
 
-		{% endif %}
+    {% if countActive > -1 %}
+      {% assign icountActive = 0 %}
 
+      <h4>Active Members</h4>
 
+      {% for member in Group.Members %}
 
-		{% if countActive > -1 %}
-			{% assign icountActive = 0 %}
+        {% if member.GroupMemberStatus == 'Active' %}
 
-			<h4>Active Members</h4>
+          {% assign loopcycle = icountActive | Modulo:2 %}
 
-			{% for member in Group.Members %}
+          {% if loopcycle == 0 %}
+          <div class="row">
+          {% endif %}
 
-				{% if member.GroupMemberStatus == 'Active' %}
+          <div class="col-sm-6 margin-b-md rollover-container" style="overflow: hidden;">
+            {% if LinkedPages.PersonDetailPage != '' %}
+              <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
+            {% endif %}
+            <img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" width="60" class="pull-left margin-r-sm" />
+            <div class="pull-left">
+              <strong>{{ member.Person.FullName }}</strong>
+              <small>({{ member.GroupRole.Name}})</small>
 
-					{% assign loopcycle = icountActive | Modulo:2 %}
+              {% for phone in member.Person.PhoneNumbers %}
+              <br />{{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small>
+              {% endfor %}
 
-					{% if loopcycle == 0 %}
-					<div class="row">
-					{% endif %}
+              {% assign memberAddress =  member.Person | Address:'Home' %}
+              {% if memberAddress != '' %}
+              <br />{{ member.Person | Address:'Home' }}
+              {% endif %}
 
-					<div class="col-sm-6 margin-b-md rollover-container" style="overflow: hidden;">
-						{% if LinkedPages.PersonDetailPage != '' %}
-							<a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
-						{% endif %}
-						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" width="60" class="pull-left margin-r-sm" />
-						<div class="pull-left">
-							<strong>{{ member.Person.FullName }}</strong>
-							<small>({{ member.GroupRole.Name}})</small>
+              <br />
+              <a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
+            </div>
 
-							{% for phone in member.Person.PhoneNumbers %}
-							<br />{{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small>
-							{% endfor %}
+            {% if AllowedActions.Edit == true %}
+            <div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
+              <a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
+              <i class="fa fa-times"></i>
+              </a>
+              <a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
+              <i class="fa fa-pencil"></i>
+              </a>
+            </div>
+            {% endif %}
 
-							{% assign memberAddress =  member.Person | Address:'Home' %}
-							{% if memberAddress != '' %}
-							<br />{{ member.Person | Address:'Home' }}
-							{% endif %}
+            {% if LinkedPages.PersonDetailPage != '' %}
+              </a>
+            {% endif %}
+          </div>
 
-							<br />
-							<a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
-						</div>
+          {% if loopcycle != 0 or icountActive == countActive %}
+            </div>
+          {% endif %}
 
-						{% if AllowedActions.Edit == true %}
-						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
-							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
-							<i class="fa fa-times"></i>
-							</a>
-							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
-							<i class="fa fa-pencil"></i>
-							</a>
-						</div>
-						{% endif %}
+          {% assign icountActive = icountActive | Plus: 1 %}
 
-						{% if LinkedPages.PersonDetailPage != '' %}
-							</a>
-						{% endif %}
-					</div>
+        {% endif %}
 
-					{% if loopcycle != 0 or icountActive == countActive %}
-						</div>
-					{% endif %}
+      {% endfor %}
 
-					{% assign icountActive = icountActive | Plus: 1 %}
+    {% endif %}
 
-				{% endif %}
 
-			{% endfor %}
 
-		{% endif %}
+    {% if countInactive > -1 %}
+      {% assign icountInactive = 0 %}
 
+      <h4>Inactive Members</h4>
 
+      {% for member in Group.Members %}
 
-		{% if countInactive > -1 %}
-			{% assign icountInactive = 0 %}
+        {% if member.GroupMemberStatus == 'Inactive' %}
 
-			<h4>Inactive Members</h4>
+          {% assign loopcycle = icountInactive | Modulo:2 %}
 
-			{% for member in Group.Members %}
+          {% if loopcycle == 0 %}
+          <div class="row">
+          {% endif %}
 
-				{% if member.GroupMemberStatus == 'Inactive' %}
+          <div class="col-sm-6 margin-b-md rollover-container" style="overflow: hidden;">
+            {% if LinkedPages.PersonDetailPage != '' %}
+              <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
+            {% endif %}
+            <img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" width="60" class="pull-left margin-r-sm" />
+            <div class="pull-left">
+              <strong>{{ member.Person.FullName }}</strong>
+              <small>({{ member.GroupRole.Name}})</small>
 
-					{% assign loopcycle = icountInactive | Modulo:2 %}
+              {% for phone in member.Person.PhoneNumbers %}
+              <br />{{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small>
+              {% endfor %}
 
-					{% if loopcycle == 0 %}
-					<div class="row">
-					{% endif %}
+              {% assign memberAddress =  member.Person | Address:'Home' %}
+              {% if memberAddress != '' %}
+              <br />{{ member.Person | Address:'Home' }}
+              {% endif %}
 
-					<div class="col-sm-6 margin-b-md rollover-container" style="overflow: hidden;">
-						{% if LinkedPages.PersonDetailPage != '' %}
-							<a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
-						{% endif %}
-						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" width="60" class="pull-left margin-r-sm" />
-						<div class="pull-left">
-							<strong>{{ member.Person.FullName }}</strong>
-							<small>({{ member.GroupRole.Name}})</small>
+              <br />
+              <a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
+            </div>
 
-							{% for phone in member.Person.PhoneNumbers %}
-							<br />{{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small>
-							{% endfor %}
+            {% if AllowedActions.Edit == true %}
+            <div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
+              <a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
+              <i class="fa fa-times"></i>
+              </a>
+              <a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
+              <i class="fa fa-pencil"></i>
+              </a>
+            </div>
+            {% endif %}
 
-							{% assign memberAddress =  member.Person | Address:'Home' %}
-							{% if memberAddress != '' %}
-							<br />{{ member.Person | Address:'Home' }}
-							{% endif %}
+            {% if LinkedPages.PersonDetailPage != '' %}
+              </a>
+            {% endif %}
+          </div>
 
-							<br />
-							<a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
-						</div>
+          {% if loopcycle != 0 or icountInactive == countInactive %}
+            </div>
+          {% endif %}
 
-						{% if AllowedActions.Edit == true %}
-						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
-							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
-							<i class="fa fa-times"></i>
-							</a>
-							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
-							<i class="fa fa-pencil"></i>
-							</a>
-						</div>
-						{% endif %}
+          {% assign icountInactive = icountInactive | Plus: 1 %}
 
-						{% if LinkedPages.PersonDetailPage != '' %}
-							</a>
-						{% endif %}
-					</div>
+        {% endif %}
 
-					{% if loopcycle != 0 or icountInactive == countInactive %}
-						</div>
-					{% endif %}
+      {% endfor %}
 
-					{% assign icountInactive = icountInactive | Plus: 1 %}
+    {% endif %}
 
-				{% endif %}
-
-			{% endfor %}
-
-		{% endif %}
-
-		<div class="pull-right margin-b-md">
-			{% if AllowedActions.Edit == true %}
-				<a href="#" onclick="{{ '' | Postback:'AddGroupMember' }}" class="btn btn-default btn-xs">
-					<i class="fa fa-plus"></i> Add Member
-				</a>
-			{% endif %}
-			{% if LinkedPages.CommunicationPage != '' and AllowedActions.Edit == true %}
-				<a href="#" onclick="{{ '' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
-					<i class="fa fa-envelope-o"></i> Email Roster
-				</a>
-			{% endif %}
-		</div>
-		</p>
-	{% endif %}
+    <div class="pull-right margin-b-md">
+      {% if AllowedActions.Edit == true %}
+        <a href="#" onclick="{{ '' | Postback:'AddGroupMember' }}" class="btn btn-default btn-xs">
+          <i class="fa fa-plus"></i> Add Member
+        </a>
+      {% endif %}
+      {% if LinkedPages.CommunicationPage != '' and AllowedActions.Edit == true %}
+        <a href="#" onclick="{{ '' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
+          <i class="fa fa-envelope-o"></i> Email Roster
+        </a>
+      {% endif %}
+    </div>
+    </p>
+  {% endif %}
 
 {% else %}
-	{% if Group.Id %}
-		<div class='alert alert-warning'>You do not have persmission to view this group.</div>
-	{% endif %}
+  {% if Group.Id %}
+    <div class='alert alert-warning'>You do not have persmission to view this group.</div>
+  {% endif %}
 {% endif %}
 

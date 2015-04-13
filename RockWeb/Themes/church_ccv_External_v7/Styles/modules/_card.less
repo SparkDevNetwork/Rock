@@ -1,0 +1,34 @@
+
+
+//
+// CARDS
+// --------------------------------------------------
+
+
+.card {
+  margin-bottom: @line-height-computed;
+  border: 1px solid @panel-default-border;
+  .box-shadow(0 1px 1px rgba(0,0,0,.05));
+  border-radius: @border-radius-base;
+}
+  .card-lg {
+    border-radius: @border-radius-large;
+  }
+
+  .card-header {
+    .border-top-radius(@border-radius-base);
+
+    .card-lg & {
+      .border-top-radius(@border-radius-large);
+    }
+  }
+
+  .card-footer {
+    .border-bottom-radius(@border-radius-base);
+    background-color: @panel-footer-bg;
+    padding: @panel-footer-padding;
+
+    .card-lg & {
+      .border-bottom-radius(@border-radius-large);
+    }
+  }
