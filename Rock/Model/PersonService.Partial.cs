@@ -71,9 +71,7 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<Person> Queryable( bool includeDeceased, bool includeBusinesses = true )
         {
-            // Do an eager load of suffix since its used by all the FullName methods
-            return Queryable( "SuffixValue", includeDeceased, includeBusinesses );
-
+            return Queryable( null, includeDeceased, includeBusinesses );
         }
 
         /// <summary>

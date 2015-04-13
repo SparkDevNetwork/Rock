@@ -24,13 +24,13 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Attribute;
 using Rock.Financial;
+using Rock.Data;
 
 namespace Rock.Jobs
 {
     /// <summary>
     /// Job to download any scheduled payments that were processed by the payment gateway
     /// </summary>
-    [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Payment Gateway", "The payment gateway to query for scheduled payments that were processed.", true, "", "", 0 )]
     [IntegerField( "Days Back", "The number of days prior to the current date to use as the start date when querying for scheduled payments that were processed.", true, 7, "", 1 )]
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 2 )]
 
@@ -64,35 +64,46 @@ namespace Rock.Jobs
                 // get the job map
                 JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-                string gatewayGuid = dataMap.GetString( "PaymentGateway" );
-                if ( !string.IsNullOrWhiteSpace( gatewayGuid ) )
+                Guid? financialGatewayGuid = dataMap.GetString( "PaymentGateway" ).AsGuidOrNull();
+                if ( financialGatewayGuid.HasValue )
                 {
-                    GatewayComponent gateway = GatewayContainer.GetComponent( gatewayGuid );
-                    if ( gateway != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        int daysBack = dataMap.GetString( "DaysBack" ).AsIntegerOrNull() ?? 1;
-
-                        DateTime today = RockDateTime.Today;
-                        TimeSpan days = new TimeSpan( daysBack, 0, 0, 0 );
-                        DateTime endDateTime = today.Add( gateway.BatchTimeOffset );
-                        endDateTime = RockDateTime.Now.CompareTo( endDateTime ) < 0 ? endDateTime.AddDays( -1 ) : today;
-                        DateTime startDateTime = endDateTime.Subtract( days );
-
-                        string errorMessage = string.Empty;
-                        var payments = gateway.GetPayments( startDateTime, endDateTime, out errorMessage );
-
-                        if ( string.IsNullOrWhiteSpace( errorMessage ) )
+                        foreach ( var financialGateway in new FinancialGatewayService( rockContext )
+                            .Queryable()
+                            .Where( g => g.IsActive ) )
                         {
-                            string batchNamePrefix = dataMap.GetString( "BatchNamePrefix" );
-                            FinancialScheduledTransactionService.ProcessPayments( gateway, batchNamePrefix, payments );
-                        }
-                        else
-                        {
-                            throw new Exception( errorMessage );
+                            financialGateway.LoadAttributes( rockContext );
+
+                            var gateway = financialGateway.GetGatewayComponent();
+                            if ( gateway != null )
+                            {
+                                int daysBack = dataMap.GetString( "DaysBack" ).AsIntegerOrNull() ?? 1;
+
+                                DateTime today = RockDateTime.Today;
+                                TimeSpan days = new TimeSpan( daysBack, 0, 0, 0 );
+                                DateTime endDateTime = today.Add( financialGateway.GetBatchTimeOffset() );
+                                endDateTime = RockDateTime.Now.CompareTo( endDateTime ) < 0 ? endDateTime.AddDays( -1 ) : today;
+                                DateTime startDateTime = endDateTime.Subtract( days );
+
+                                string errorMessage = string.Empty;
+                                var payments = gateway.GetPayments( financialGateway, startDateTime, endDateTime, out errorMessage );
+
+                                if ( string.IsNullOrWhiteSpace( errorMessage ) )
+                                {
+                                    string batchNamePrefix = dataMap.GetString( "BatchNamePrefix" );
+                                    FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments );
+                                }
+                                else
+                                {
+                                    throw new Exception( errorMessage );
+                                }
+                            }
                         }
                     }
                 }
             }
+
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, null );

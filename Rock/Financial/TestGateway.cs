@@ -63,10 +63,11 @@ namespace Rock.Financial
         /// <summary>
         /// Charges the specified payment info.
         /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="paymentInfo">The payment info.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public override FinancialTransaction Charge( PaymentInfo paymentInfo, out string errorMessage )
+        public override FinancialTransaction Charge( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -78,11 +79,12 @@ namespace Rock.Financial
         /// <summary>
         /// Adds the scheduled payment.
         /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="schedule">The schedule.</param>
         /// <param name="paymentInfo">The payment info.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public override FinancialScheduledTransaction AddScheduledPayment( PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
+        public override FinancialScheduledTransaction AddScheduledPayment( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -151,11 +153,12 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the payments that have been processed for any scheduled transactions
         /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="startDate">The start date.</param>
         /// <param name="endDate">The end date.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public override List<Payment> GetPayments( DateTime startDate, DateTime endDate, out string errorMessage )
+        public override List<Payment> GetPayments( FinancialGateway financialGateway, DateTime startDate, DateTime endDate, out string errorMessage )
         {
             errorMessage = string.Empty;
             return new List<Payment>();
