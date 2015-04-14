@@ -64,7 +64,7 @@ namespace Rock.Migrations
                     {
                         Id = c.Int(nullable: false, identity: true),
                         Name = c.String(nullable: false),
-                        Description = c.String(nullable: false),
+                        Description = c.String(),
                         CanExpire = c.Boolean(nullable: false),
                         ExpireInDays = c.Int(),
                         RequirementCheckType = c.Int(nullable: false),
