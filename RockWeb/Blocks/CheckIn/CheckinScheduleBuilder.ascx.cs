@@ -261,6 +261,8 @@ namespace RockWeb.Blocks.CheckIn
 
             var groupLocationService = new GroupLocationService( rockContext );
             var groupTypeService = new GroupTypeService( rockContext );
+            var groupService = new GroupService( rockContext );
+
             IEnumerable<GroupTypePath> groupPaths = new List<GroupTypePath>();
             var groupLocationQry = groupLocationService.Queryable();
             int groupTypeId;
@@ -315,6 +317,7 @@ namespace RockWeb.Blocks.CheckIn
                 new
                 {
                     GroupLocationId = a.Id,
+                    GroupId = a.GroupId,
                     GroupName = a.Group.Name,
                     LocationName = a.Location.Name,
                     ScheduleIdList = a.Schedules.Select( s => s.Id ),
@@ -332,6 +335,7 @@ namespace RockWeb.Blocks.CheckIn
             // put stuff in a datatable so we can dynamically have columns for each Schedule
             DataTable dataTable = new DataTable();
             dataTable.Columns.Add( "GroupLocationId" );
+            dataTable.Columns.Add( "GroupId" );
             dataTable.Columns.Add( "GroupName" );
             dataTable.Columns.Add( "LocationName" );
             dataTable.Columns.Add( "Path" );
@@ -344,7 +348,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 DataRow dataRow = dataTable.NewRow();
                 dataRow["GroupLocationId"] = row.GroupLocationId;
-                dataRow["GroupName"] = row.GroupName;
+                dataRow["GroupName"] = groupService.GroupAncestorPathName( row.GroupId );
                 dataRow["LocationName"] = row.LocationName;
                 dataRow["Path"] = groupPaths.Where( gt => gt.GroupTypeId == row.GroupTypeId ).Select( gt => gt.Path ).FirstOrDefault();
                 foreach ( var field in gGroupLocationSchedule.Columns.OfType<CheckBoxEditableField>() )
