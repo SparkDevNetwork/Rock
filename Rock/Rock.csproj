@@ -305,6 +305,9 @@
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Model\EntitySet.cs" />
     <Compile Include="Model\EntitySetItem.cs" />
+    <Compile Include="Model\GroupMemberRequirement.cs" />
+    <Compile Include="Model\GroupRequirement.cs" />
+    <Compile Include="Model\GroupRequirementType.cs" />
     <Compile Include="Model\GroupScheduleExclusion.cs" />
     <Compile Include="Model\MergeTemplate.cs" />
     <Compile Include="Model\PersonBadgeService.partial.cs" />
