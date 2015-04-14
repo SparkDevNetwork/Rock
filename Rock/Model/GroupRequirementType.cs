@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -47,8 +49,7 @@ namespace Rock.Model
         /// <value>
         /// The description.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -144,6 +145,20 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
+        /// Gets the merge objects that can be used in the SQL Expression
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns></returns>
+        public Dictionary<string, object> GetMergeObjects( Group group )
+        {
+            Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
+            mergeObjects.Add( "Group", group );
+            mergeObjects.Add( "GroupRequirementType", this );
+
+            return mergeObjects;
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -164,9 +179,9 @@ namespace Rock.Model
     /// </summary>
     public enum RequirementCheckType
     {
-        Sql,
-        DataView,
-        Manual
+        Sql = 0,
+        Dataview = 1,
+        Manual = 2
     }
 
     #endregion
