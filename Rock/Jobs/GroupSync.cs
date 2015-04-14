@@ -180,6 +180,9 @@ namespace Rock.Jobs
                         mergeFields.Add( "NewPassword", newPassword );
                         mergeFields.Add( "CreateLogin", createLogin );
 
+                        var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+                        globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+
                         var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
 
                         var recipients = new List<RecipientData>();
@@ -212,6 +215,9 @@ namespace Rock.Jobs
                         var mergeFields = new Dictionary<string, object>();
                         mergeFields.Add( "Group", syncGroup );
                         mergeFields.Add( "Person", recipient );
+
+                        var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields(null);
+                        globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
                         var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
 
