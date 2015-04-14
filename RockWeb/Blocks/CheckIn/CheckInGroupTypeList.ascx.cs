@@ -206,6 +206,10 @@ namespace RockWeb.Blocks.CheckIn
                     groupType.GroupTypePurposeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ).Id;
                     groupType.ShowInNavigation = false;
                     groupType.ShowInGroupList = false;
+                
+                    var defaultRole = new GroupTypeRole();
+                    defaultRole.Name = "Member";
+                    groupType.Roles.Add( defaultRole );
                 }
                 else
                 {
@@ -216,6 +220,15 @@ namespace RockWeb.Blocks.CheckIn
                 groupType.Description = tbGroupTypeDescription.Text;
 
                 rockContext.SaveChanges();
+
+                // Reload to check for setting default role
+                groupType = groupTypeService.Get( groupType.Id );
+                if ( groupType != null && !groupType.DefaultGroupRoleId.HasValue && groupType.Roles.Any() )
+                {
+                    groupType.DefaultGroupRoleId = groupType.Roles.First().Id;
+                    rockContext.SaveChanges();
+                }
+            
             }
 
             mdAddEditCheckinGroupType.Hide();

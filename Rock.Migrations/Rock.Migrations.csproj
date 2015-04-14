@@ -79,6 +79,10 @@
     <Compile Include="Migrations\201504131119451_AddForeignIdIndex.Designer.cs">
       <DependentUpon>201504131119451_AddForeignIdIndex.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201504132125186_VolunteerCheckin.cs" />
+    <Compile Include="Migrations\201504132125186_VolunteerCheckin.Designer.cs">
+      <DependentUpon>201504132125186_VolunteerCheckin.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.cs" />
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.Designer.cs">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
@@ -1540,6 +1544,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201504131119451_AddForeignIdIndex.resx">
       <DependentUpon>201504131119451_AddForeignIdIndex.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201504132125186_VolunteerCheckin.resx">
+      <DependentUpon>201504132125186_VolunteerCheckin.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>

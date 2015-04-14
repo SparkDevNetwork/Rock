@@ -790,6 +790,10 @@ namespace RockWeb.Blocks.CheckIn
                         groupTypeDB.AttendancePrintTo = PrintTo.Default;
                         groupTypeDB.AllowMultipleLocations = true;
                         groupTypeDB.EnableLocationSchedules = true;
+
+                        GroupTypeRole defaultRole = new GroupTypeRole();
+                        defaultRole.Name = "Member";
+                        groupTypeDB.Roles.Add( defaultRole );
                     }
 
                     groupTypeDB.Name = groupTypeUI.Name;
@@ -826,6 +830,12 @@ namespace RockWeb.Blocks.CheckIn
                         var attribute = attributeService.Get( labelAttributeDB.Value.Guid );
                         Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                         attributeService.Delete( attribute );
+                    }
+
+                    // Make sure default role is set
+                    if ( !groupTypeDB.DefaultGroupRoleId.HasValue && groupTypeDB.Roles.Any() )
+                    {
+                        groupTypeDB.DefaultGroupRoleId = groupTypeDB.Roles.First().Id;
                     }
 
                     rockContext.SaveChanges();
@@ -935,6 +945,7 @@ namespace RockWeb.Blocks.CheckIn
                     var groupTypeDB = groupTypeService.Get( groupTypeUI.Guid );
                     groupTypeDB.ChildGroupTypes = new List<GroupType>();
                     groupTypeDB.ChildGroupTypes.Clear();
+                    //groupTypeDB.ChildGroupTypes.Add( groupTypeDB );
                     foreach ( var childGroupTypeUI in groupTypeUI.ChildGroupTypes )
                     {
                         var childGroupTypeDB = groupTypeService.Get( childGroupTypeUI.Guid );
