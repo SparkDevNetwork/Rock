@@ -204,6 +204,15 @@ namespace Rock.Model
         [DataMember]
         public bool? AddUserAccountsDuringSync { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether a group member can only be added if all the GroupRequirements have been met
+        /// </summary>
+        /// <value>
+        /// The must meet requirements to add member.
+        /// </value>
+        [DataMember]
+        public bool? MustMeetRequirementsToAddMember { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -311,6 +320,20 @@ namespace Rock.Model
             set { _groupLocations = value; }
         }
         private ICollection<GroupLocation> _groupLocations;
+
+        /// <summary>
+        /// Gets or sets the group requirements.
+        /// </summary>
+        /// <value>
+        /// The group requirements.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<GroupRequirement> GroupRequirements
+        {
+            get { return _groupsRequirements ?? ( _groupsRequirements = new Collection<GroupRequirement>() ); }
+            set { _groupsRequirements = value; }
+        }
+        private ICollection<GroupRequirement> _groupsRequirements;
 
         /// <summary>
         /// Gets the securable object that security permissions should be inherited from.  If block is located on a page
