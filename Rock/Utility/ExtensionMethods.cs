@@ -311,7 +311,7 @@ namespace Rock
 
                     if ( objAttrs.Any() )
                     {
-                        result.Add( string.Format( "Attributes <p class='attributes'>Below is a list of attributes that can be retrieved using <code>{{ {0} | Attribute:'[AttributeKey]' }}</code>.</p>", parentElement ), objAttrs );
+                        result.Add( string.Format( "Attributes <p class='attributes'>Below is a list of attributes that can be retrieved using <code>{{{{ {0} | Attribute:'[AttributeKey]' }}}}</code>.</p>", parentElement ), objAttrs );
                     }
                 }
 
