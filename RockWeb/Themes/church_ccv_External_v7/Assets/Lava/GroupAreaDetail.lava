@@ -1,12 +1,12 @@
-{% unless rows == empty %}
+{% unless rows == empty or detailPageId == empty %}
 
   <div class="row">
     {% for g in rows %}
       <div class="col-md-4 col-sm-6">
-        <a class="link-plain" href="/page/863?GroupId={{ g.id }}">
+        <a class="link-plain" href="/page/{{ detailPageId }}?GroupId={{ g.id }}">
           <div class="card card-lg card-link">
             <div class="card-header">
-              <img src="https://maps.googleapis.com/maps/api/staticmap?zoom=12&amp;size=260x160&amp;markers=scale:2%7Cicon:http://bit.ly/1npXPPc%7C{{ g.Lat }},{{ g.Long }}&amp;sensor=false&amp;style=feature:all%7Csaturation:-100&amp;scale=2" alt="Map of Group Location">
+              <img src="https://maps.googleapis.com/maps/api/staticmap?zoom=13&amp;size=260x160&amp;markers=scale:2%7Cicon:http://bit.ly/1npXPPc%7C{{ g.Lat }},{{ g.Long }}&amp;sensor=false&amp;style=feature:all%7Csaturation:-100&amp;scale=2" alt="Map of Group Location">
             </div>
             <div class="card-footer">
               <h5 class="margin-all-sm">{{ g.Name }} &nbsp;<i class="fa fa-caret-right"></i></h5>

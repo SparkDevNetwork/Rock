@@ -4,8 +4,10 @@
   {% for groupLocation in Group.GroupLocations %}
     {% if groupLocation.Location.GeoPoint != '' %}
 
+    {% assign groupgeo = groupLocation.Location.GeoPoint | Split: ',' %}
+
     <div class="card card-lg">
-      <div class="packagesummary-image card-header" style="background: url('https://maps.googleapis.com/maps/api/staticmap?size=1400x400&zoom=13&maptype=roadmap&markers={{ groupLocation.Location.GeoPoint }}&scale=2') no-repeat center; width: 100%; height: 200px;">
+      <div class="packagesummary-image card-header" id="groupMap" style="height: 200px;">
       </div>
       <div class="card-footer">
         {% if AllowedActions.Edit == true %}
@@ -20,15 +22,6 @@
             <p>{{ Group.Description }}</p>
           </div>
           <div class="col-md-3">
-            <p>
-            {% for attribute in Group.AttributeValues %}
-              {% unless attribute.AttributeName == "Meeting Day" or attribute.AttributeName == "Meeting Time" %}
-              <strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
-              {% endunless %}
-            {% endfor %}
-            </p>
-          </div>
-          <div class="col-md-4">
             <strong>Leaders:</strong>
             <ul class="unstyled">
               {% for member in Group.Members %}
@@ -40,6 +33,15 @@
               {% endif %}
               {% endfor %}
             </ul>
+          </div>
+          <div class="col-md-3">
+            <p>
+            {% for attribute in Group.AttributeValues %}
+              {% unless attribute.AttributeName == "Meeting Day" or attribute.AttributeName == "Meeting Time" or attribute.ValueFormatted == empty %}
+              <strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+              {% endunless %}
+            {% endfor %}
+            </p>
           </div>
         </div>
       </div>
@@ -304,6 +306,20 @@
     </div>
     </p>
   {% endif %}
+
+  {% comment %} The ~~ relative path doesn't seem to work with this block {% endcomment %}
+  <script src="/Themes/church_ccv_External_v7/Scripts/_map.js"></script>
+
+  <script>
+    var mapPoint = [{
+      title: "{{ Group.Name }}",
+      lat: {{ groupgeo[0] }},
+      lng: {{ groupgeo[1] }}
+    }]
+    var groupMap = new CCV.baseMap(document.getElementById('groupMap'), mapPoint)
+    // groupMap.zoom = 13
+    groupMap.draw()
+  </script>
 
 {% else %}
   {% if Group.Id %}

@@ -108,7 +108,7 @@
       },
       fitMarkers: function () {
         this.map.setCenter(this.bounds.getCenter())
-        if (this.useZoom)
+        if (this.useZoom || this.markers.length == 1)
           this.map.setZoom(this.zoom)
         else
           this.map.fitBounds(this.bounds)
