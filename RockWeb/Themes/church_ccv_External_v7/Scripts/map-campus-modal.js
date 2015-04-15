@@ -20,7 +20,7 @@ Rock.controls.util.loadGoogleMapsApi('https://maps.googleapis.com/maps/api/js?se
 
 $(window).on('googleMapsIsLoaded', function(){
 
-  window.campusModalMap = new CCV.infoWindowMap(document.getElementById('campusmodal-holder'))
+  window.campusModalMap = new CCV.campusInfoWindowMap(document.getElementById('campusmodal-holder'))
 
   campusModalMap.selectCampus = function (campusId) {
     CCV.selectCampus(campusId)

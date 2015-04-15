@@ -14,7 +14,7 @@
 // Map Object
 // -------------------------
 
-var landingMap = new CCV.infoWindowMap(document.getElementById('map-holder'))
+var landingMap = new CCV.campusInfoWindowMap(document.getElementById('map-holder'))
 
 // Custom properties
 // landingMap.zoom = 11

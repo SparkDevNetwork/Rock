@@ -63,9 +63,9 @@
 
     // Begin map object
 
-    CCV.baseMap = function (holder, campusToDraw) {
+    CCV.baseMap = function (holder, points) {
       this.holder = holder
-      this.campusToDraw = campusToDraw || 'all'
+      this.points = points
       this.markers = []
       this.bounds = new google.maps.LatLngBounds()
       this.zoom = this.zoom || 12
@@ -87,32 +87,24 @@
         this.bindUi()
       },
       dropMarkers: function () {
-        if (this.campusToDraw == 'all') {
-          for (var i = 0; i < CCV.locations.length; i++) {
-            var campus = CCV.locations[i]
-            this.dropMarker(campus)
-          }
-        }
-        else {
-          var campus = CCV.findCampusById(this.campusToDraw)
-          this.dropMarker(campus)
-          this.useZoom = true
+        for (var i = 0; i < this.points.length; i++) {
+          var point = this.points[i]
+          this.dropMarker(point)
         }
       },
-      dropMarker: function (campus) {
+      dropMarker: function (point) {
         var marker = new google.maps.Marker({
-          position: new google.maps.LatLng(campus.geo.lat,campus.geo.lng),
+          position: new google.maps.LatLng(point.lat,point.lng),
           icon: CCV.marker,
           map: this.map,
-          title: campus.name,
-          campusid: campus.id,
+          title: point.title,
           animation: google.maps.Animation.DROP
         })
         this.markers.push(marker)
         this.bounds.extend(marker.position)
-        this.afterDropMarker(this, campus, marker)
+        this.afterDropMarker.call(this, point, marker)
       },
-      afterDropMarker: function (_this, campus, marker) {
+      afterDropMarker: function (point, marker) {
       },
       fitMarkers: function () {
         this.map.setCenter(this.bounds.getCenter())
@@ -135,24 +127,63 @@
     }
 
 
+    // Campus Map
+
+    // Inherit baseMap and add campus details
+    CCV.campusMap = function (holder, campusToDraw) {
+      CCV.baseMap.call(this, holder, campusToDraw)
+      this.campusToDraw = campusToDraw || 'all'
+    }
+    CCV.campusMap.prototype = new CCV.baseMap()
+    CCV.campusMap.prototype.constructor = CCV.campusMap
+
+    CCV.campusMap.prototype.dropMarkers = function () {
+      if (this.campusToDraw == 'all') {
+        for (var i = 0; i < CCV.locations.length; i++) {
+          var campus = CCV.locations[i]
+          this.dropMarker(campus)
+        }
+      }
+      else {
+        var campus = CCV.findCampusById(this.campusToDraw)
+        this.dropMarker(campus)
+        this.useZoom = true
+      }
+    }
+    CCV.campusMap.prototype.dropMarker = function (campus) {
+      var marker = new google.maps.Marker({
+        position: new google.maps.LatLng(campus.geo.lat,campus.geo.lng),
+        icon: CCV.marker,
+        map: this.map,
+        title: campus.name,
+        campusid: campus.id,
+        animation: google.maps.Animation.DROP
+      })
+      this.markers.push(marker)
+      this.bounds.extend(marker.position)
+      this.afterDropMarker.call(this, campus, marker)
+    }
+
+
     // Infowindow map
 
-    // Inherit baseMap and add initial infowindow
-    CCV.infoWindowMap = function (holder, campusToDraw) {
-      CCV.baseMap.call(this, holder, campusToDraw)
+    // Inherit campusMap and add initial infowindow
+    CCV.campusInfoWindowMap = function (holder, campusToDraw) {
+      CCV.campusMap.call(this, holder, campusToDraw)
       this.infowindow = new google.maps.InfoWindow({ content: 'Loading...' })
     }
-    CCV.infoWindowMap.prototype = new CCV.baseMap()
-    CCV.infoWindowMap.prototype.constructor = CCV.infoWindowMap
+    CCV.campusInfoWindowMap.prototype = new CCV.campusMap()
+    CCV.campusInfoWindowMap.prototype.constructor = CCV.campusInfoWindowMap
 
     // Custom & override methods
-    CCV.infoWindowMap.prototype.afterDropMarker = function (_this, campus, marker) {
+    CCV.campusInfoWindowMap.prototype.afterDropMarker = function (campus, marker) {
+      var _this = this
       google.maps.event.addListener(marker, 'click', function () {
         _this.infowindow.setContent(_this.buildInfoWindow(campus))
         _this.infowindow.open(_this.map, this)
       })
     }
-    CCV.infoWindowMap.prototype.buildInfoWindow = function(campus) {
+    CCV.campusInfoWindowMap.prototype.buildInfoWindow = function(campus) {
       var result
       result  = '<div class="infowindow">'
       result += '  <div class="name">'+campus.name+' Campus</div>'
