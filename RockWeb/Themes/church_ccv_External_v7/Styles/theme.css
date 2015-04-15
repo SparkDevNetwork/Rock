@@ -5827,6 +5827,15 @@ html[xmlns] .slides {
 .card-lg {
   border-radius: 6px;
 }
+.card-link {
+  -webkit-transition: box-shadow 0.2s;
+  -o-transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s;
+}
+.card-link:hover {
+  -webkit-box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1875);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1875);
+}
 .card-header {
   border-top-right-radius: 4px;
   border-top-left-radius: 4px;

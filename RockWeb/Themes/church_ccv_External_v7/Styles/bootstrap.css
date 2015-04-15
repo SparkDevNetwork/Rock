@@ -7994,6 +7994,13 @@ button.close {
   text-transform: uppercase;
   font-weight: 700;
 }
+.link-plain {
+  color: inherit;
+}
+.link-plain:hover {
+  color: inherit;
+  text-decoration: inherit;
+}
 .container-sm {
   max-width: 40em;
   margin-left: auto;
