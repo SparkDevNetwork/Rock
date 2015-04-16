@@ -78,10 +78,10 @@
                                 </Rock:Grid>
                             </div>
                             <asp:Panel ID="pnlSchedule" runat="server" Visible="false">
-                                
+
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:RockRadioButtonList ID="rblScheduleSelect" runat="server" Label="Group Schedule" CssClass="margin-b-sm" OnSelectedIndexChanged="rblScheduleSelect_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" /> 
+                                        <Rock:RockRadioButtonList ID="rblScheduleSelect" runat="server" Label="Group Schedule" CssClass="margin-b-sm" OnSelectedIndexChanged="rblScheduleSelect_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" />
                                     </div>
                                     <div class="col-md-6">
                                         <div class="row">
@@ -135,6 +135,22 @@
                             </div>
                         </Rock:PanelWidget>
 
+                        <Rock:PanelWidget ID="wpGroupRequirements" runat="server" Title="Group Requirements">
+                            <Rock:RockCheckBox ID="cbMembersMustMeetRequirementsOnAdd" runat="server" Text="Members Must Meet Requirements On Add" />
+                            <div class="grid">
+                                <Rock:Grid ID="gGroupRequirements" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group Requirement" ShowConfirmDeleteDialog="false">
+                                    <Columns>
+                                        <Rock:ReorderField />
+                                        <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                                        <Rock:RockBoundField DataField="GroupRole" HeaderText="Group Role" />
+                                        <Rock:BoolField DataField="CanExpire" HeaderText="Can Expire" />
+                                        <Rock:EnumField DataField="RequirementCheckType" HeaderText="Type" />
+                                        <Rock:EditField OnClick="gGroupRequirements_Edit" />
+                                        <Rock:DeleteField OnClick="gGroupRequirements_Delete" />
+                                    </Columns>
+                                </Rock:Grid>
+                            </div>
+                        </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpGroupSync" runat="server" Title="Group Sync Settings">
                             <div class="row">
@@ -142,7 +158,7 @@
                                     <Rock:DataViewPicker ID="dvpSyncDataview" Label="Sync Dataview" runat="server"></Rock:DataViewPicker>
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:RockCheckbox ID="rbCreateLoginDuringSync" runat="server" Label="Create Login During Sync" Help="If the individual does not have a login should one be created during the sync process?" />
+                                    <Rock:RockCheckBox ID="rbCreateLoginDuringSync" runat="server" Label="Create Login During Sync" Help="If the individual does not have a login should one be created during the sync process?" />
                                 </div>
                             </div>
                             <div class="row">
@@ -152,7 +168,7 @@
                                 <div class="col-md-6">
                                     <Rock:RockDropDownList ID="ddlExitEmail" runat="server" Label="Exit Email"></Rock:RockDropDownList>
                                 </div>
-                           </div>
+                            </div>
                         </Rock:PanelWidget>
 
                         <div class="actions">

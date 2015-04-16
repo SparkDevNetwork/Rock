@@ -78,6 +78,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the group requirement.
         /// </value>
+        [DataMember]
         public virtual GroupRequirementType GroupRequirementType { get; set; }
 
         /// <summary>
