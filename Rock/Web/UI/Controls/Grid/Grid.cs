@@ -262,6 +262,7 @@ namespace Rock.Web.UI.Controls
                     this.AllowPaging = false;
                     this.AllowSorting = false;
                     this.Actions.ShowExcelExport = false;
+                    this.Actions.ShowMergeTemplate = false;
                 }
             }
         }
