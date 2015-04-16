@@ -448,7 +448,7 @@ namespace RockWeb.Blocks.Groups
             group.IsActive = cbIsActive.Checked;
 
             // save sync settings
-            if ( wpGroupAttributes.Visible )
+            if ( wpGroupSync.Visible )
             {
                 group.SyncDataViewId = dvpSyncDataview.SelectedItem.Value.AsIntegerOrNull();
                 group.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedItem.Value.AsIntegerOrNull();

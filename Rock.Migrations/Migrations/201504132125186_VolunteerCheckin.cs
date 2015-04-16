@@ -30,10 +30,18 @@ namespace Rock.Migrations
         public override void Up()
         {
             RockMigrationHelper.AddGroupType( "Check In", "A base group type that can be inherited from to support check in without any filters.", "Group", "Member", false, false, false, "", 0, null, 0, "6BCED84C-69AD-4F5A-9197-5C0F9C02DD34", "6E7AD783-7614-4721-ABC1-35842113EF59", false );
+            RockMigrationHelper.AddGroupType( "Volunteer Check-in Area", "", "Group", "Member", false, false, false, "", 0, null, 0, "4A406CB0-495B-4795-B788-52BDFDE00B01", "92435F1D-E525-4FD2-BEC7-4956DC056A2B", false );
 
             Sql( @"
     DECLARE @CheckInGroupTypeId int = ( SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '6E7AD783-7614-4721-ABC1-35842113EF59' )
+    DECLARE @VolunteerAreaGroupTypeId int = ( SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '92435F1D-E525-4FD2-BEC7-4956DC056A2B' )
     DECLARE @ServingGroupTypeId int = ( SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '2C42B2D4-1C5F-4AD5-A9AD-08631B872AC4' )
+
+    INSERT INTO [GroupTypeAssociation] ( [GroupTypeId], [ChildGroupTypeId] )
+	VALUES ( @VolunteerAreaGroupTypeId, @VolunteerAreaGroupTypeId )
+
+    INSERT INTO [GroupTypeAssociation] ( [GroupTypeId], [ChildGroupTypeId] )
+	VALUES ( @VolunteerAreaGroupTypeId, @ServingGroupTypeId )
 
     -- Update the serving group type to inherit from new 'Check-in' group type
     UPDATE [GroupType] SET 
