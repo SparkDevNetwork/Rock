@@ -35,9 +35,32 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PeopleController
     {
-
         #region Get
 
+        // GET api/<controller>/5
+        [Authenticate, Secured]
+        [ActionName( "GetById" )]
+        public override Person GetById( int id )
+        {
+            // NOTE: We want PrimaryAliasId to be populated, so call this.Get( false ) which includes "Aliases"
+            var person = this.Get( true ).FirstOrDefault( a => a.Id == id );
+            if (person == null)
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            return person;
+        }
+
+        // GET api/<controller>(5)
+        [Authenticate, Secured]
+        [EnableQuery]
+        public override Person Get( [FromODataUri] int key )
+        {
+            // NOTE: We want PrimaryAliasId to be populated, so call this.Get( false ) which includes "Aliases"
+            return this.GetById( key );
+        }
+        
         /// <summary>
         /// Returns a Queryable of Person records
         /// </summary>
