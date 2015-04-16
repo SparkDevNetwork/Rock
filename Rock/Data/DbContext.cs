@@ -99,17 +99,17 @@ namespace Rock.Data
 
         /// <summary>
         /// Saves all changes made in this context to the underlying database.  The
-        /// default pre and post processing can also optionally be disabled.  This 
+        /// default pre and post processing can also optionally be disabled.  This
         /// would disable audit records being created, workflows being triggered, and
-        /// any PreSaveChanges() methods being called for changed entities.  
+        /// any PreSaveChanges() methods being called for changed entities.
         /// </summary>
-        /// <param name="disablePrePostProcessing">if set to <c>true</c> disables 
+        /// <param name="disablePrePostProcessing">if set to <c>true</c> disables
         /// the Pre and Post processing from being run. This should only be disabled
         /// when updating a large number of records at a time (e.g. importing records).</param>
         /// <returns></returns>
         public int SaveChanges( bool disablePrePostProcessing )
         {
-            // Pre and Post processing has been disabled, just call the base 
+            // Pre and Post processing has been disabled, just call the base
             // SaveChanges() method and return
             if ( disablePrePostProcessing )
             {
@@ -134,7 +134,7 @@ namespace Rock.Data
             // Evaluate the current context for items that have changes
             var updatedItems = RockPreSave( this, personAlias );
 
-            // If update was not cancelled by triggered workflow 
+            // If update was not cancelled by triggered workflow
             if ( updatedItems != null )
             {
                 try
@@ -255,7 +255,6 @@ namespace Rock.Data
                             model.ModifiedDateTime = RockDateTime.Now;
                             model.ModifiedByPersonAliasId = personAliasId;
                         }
-
                     }
                 }
                 else if ( entry.State == EntityState.Deleted )
@@ -270,7 +269,7 @@ namespace Rock.Data
                 {
                     GetAuditDetails( dbContext, contextItem, personAliasId );
                 }
-                catch (SystemException ex)
+                catch ( SystemException ex )
                 {
                     ExceptionLogService.LogException( ex, null );
                 }
@@ -305,7 +304,7 @@ namespace Rock.Data
 
             foreach ( var item in updatedItems )
             {
-                if ( item.State == EntityState.Deleted )
+                if ( item.State == EntityState.Detached || item.State == EntityState.Deleted )
                 {
                     TriggerWorkflows( item.Entity, WorkflowTriggerType.PostDelete, personAlias );
                 }
@@ -458,7 +457,6 @@ namespace Rock.Data
                     }
                 }
             }
-
         }
 
         private static bool AuditClass( Type baseType )
@@ -549,9 +547,7 @@ namespace Rock.Data
                             break;
                         }
                 }
-
             }
         }
-
     }
 }
