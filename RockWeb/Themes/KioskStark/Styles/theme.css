@@ -2037,7 +2037,8 @@ ul.rocklist .rocklist-item.selected {
   opacity: 0.5;
 }
 .image-editor-fileinput {
-  display: none;
+  visibility: hidden;
+  height: 0;
 }
 .image-editor-group.imageupload-group {
   border: 0;
@@ -3432,9 +3433,6 @@ table.attribute-grid tr th:nth-child(3) {
   -moz-animation: bar-grow 1s ease-in-out;
   -o-animation: bar-grow 1s ease-in-out;
   animation: bar-grow 1s ease-in-out;
-}
-.badge-ingroupoftype {
-  width: 45px;
 }
 .badge-attendingduration {
   position: relative;
