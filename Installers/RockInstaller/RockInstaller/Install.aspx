@@ -197,7 +197,7 @@
 	        <h1 id="logo">Rock RMS</h1>
 
 
-                <div id="content-box">
+                <div id="content-box" class="no-fade">
                     <!-- welcome panel -->
                     <div id="pnlWelcome">
                         
@@ -634,7 +634,7 @@
 <script language="CS" runat="server">
     
     const string baseStorageUrl = "//rockrms.blob.core.windows.net/install/";
-    const string baseVersion = "2_6_0";
+    const string baseVersion = "2_7_0";
 
     string storageUrl = string.Empty;
     bool isDebug = false;

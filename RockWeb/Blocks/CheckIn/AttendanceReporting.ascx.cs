@@ -44,6 +44,12 @@ namespace RockWeb.Blocks.CheckIn
     [GroupTypeField( "Check-in Type", key: "GroupTypeTemplate", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
     public partial class AttendanceReporting : RockBlock
     {
+        #region Fields
+
+        private RockContext _rockContext = null;
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -59,6 +65,8 @@ namespace RockWeb.Blocks.CheckIn
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             gAttendance.GridRebind += gAttendance_GridRebind;
+
+            _rockContext = new RockContext();
 
             // GroupTypesUI dynamically creates controls, so we need to rebuild it on every OnInit()
             BuildGroupTypesUI();
@@ -145,9 +153,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void BuildGroupTypesUI()
         {
-            var rockContext = new RockContext();
-
-            var groupTypeService = new GroupTypeService( rockContext );
+            var groupTypeService = new GroupTypeService( _rockContext );
             var groupTypeTemplateGuid = this.GetAttributeValue( "GroupTypeTemplate" ).AsGuidOrNull();
 
             nbGroupTypeWarning.Visible = !groupTypeTemplateGuid.HasValue;
@@ -391,7 +397,7 @@ function(item) {
 
             SortProperty sortProperty = gAttendance.SortProperty;
 
-            var chartData = new AttendanceService( new RockContext() ).GetChartData(
+            var chartData = new AttendanceService( _rockContext ).GetChartData(
                 hfGroupBy.Value.ConvertToEnumOrNull<AttendanceGroupBy>() ?? AttendanceGroupBy.Week,
                 hfGraphBy.Value.ConvertToEnumOrNull<AttendanceGraphBy>() ?? AttendanceGraphBy.Total,
                 dateRange.Start,
@@ -425,6 +431,7 @@ function(item) {
                 var liGroupTypeItem = new HtmlGenericContainer( "li", "rocktree-item rocktree-folder" );
                 liGroupTypeItem.ID = "liGroupTypeItem" + groupType.Id;
                 e.Item.Controls.Add( liGroupTypeItem );
+
                 AddGroupTypeControls( groupType, liGroupTypeItem );
             }
         }
@@ -434,40 +441,80 @@ function(item) {
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
         /// <param name="pnlGroupTypes">The PNL group types.</param>
-        private void AddGroupTypeControls( GroupType groupType, HtmlGenericContainer liGroupTypeItem )
+        private void AddGroupTypeControls( GroupType groupType, HtmlGenericContainer liGroupTypeItem, List<int> addedGroupTypes = null )
         {
-            if ( groupType.Groups.Any() )
+            if ( addedGroupTypes == null )
             {
-                var cblGroupTypeGroups = new RockCheckBoxList { ID = "cblGroupTypeGroups" + groupType.Id };
+                addedGroupTypes = new List<int>();
+            }
 
-                cblGroupTypeGroups.Label = groupType.Name;
-                cblGroupTypeGroups.Items.Clear();
-                foreach ( var group in groupType.Groups.OrderBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => new { a.Id, a.Name } ).ToList() )
+            if ( !addedGroupTypes.Contains( groupType.Id ) )
+            {
+                addedGroupTypes.Add( groupType.Id );
+
+                if ( groupType.Groups.Any() )
                 {
-                    cblGroupTypeGroups.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
+                    var groupService = new GroupService( _rockContext );
+
+                    var cblGroupTypeGroups = new RockCheckBoxList { ID = "cblGroupTypeGroups" + groupType.Id };
+
+                    cblGroupTypeGroups.Label = groupType.Name;
+                    cblGroupTypeGroups.Items.Clear();
+
+                    foreach ( var group in groupType.Groups
+                        .Where( g => !g.ParentGroupId.HasValue )
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.Name )
+                        .ToList() )
+                    {
+                        AddGroupControls( group, cblGroupTypeGroups, groupService );
+                    }
+
+                    liGroupTypeItem.Controls.Add( cblGroupTypeGroups );
+                }
+                else
+                {
+                    if ( groupType.ChildGroupTypes.Any() )
+                    {
+                        liGroupTypeItem.Controls.Add( new Label { Text = groupType.Name, ID = "lbl" + groupType.Name } );
+                    }
                 }
 
-                liGroupTypeItem.Controls.Add( cblGroupTypeGroups );
-            }
-            else
-            {
                 if ( groupType.ChildGroupTypes.Any() )
                 {
-                    liGroupTypeItem.Controls.Add( new Label { Text = groupType.Name, ID = "lbl" + groupType.Name } );
+                    var ulGroupTypeList = new HtmlGenericContainer( "ul", "rocktree-children" );
+
+                    liGroupTypeItem.Controls.Add( ulGroupTypeList );
+                    foreach ( var childGroupType in groupType.ChildGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+                    {
+                        var liChildGroupTypeItem = new HtmlGenericContainer( "li", "rocktree-item rocktree-folder" );
+                        liChildGroupTypeItem.ID = "liGroupTypeItem" + groupType.Id;
+                        ulGroupTypeList.Controls.Add( liChildGroupTypeItem );
+                        AddGroupTypeControls( childGroupType, liChildGroupTypeItem, addedGroupTypes );
+                    }
                 }
             }
+        }
 
-            if ( groupType.ChildGroupTypes.Any() )
+        private void AddGroupControls( Group group, RockCheckBoxList checkBoxList, GroupService service )
+        {
+            // Only show groups that actually have a schedule
+            if ( group != null  )
             {
-                var ulGroupTypeList = new HtmlGenericContainer( "ul", "rocktree-children" );
-
-                liGroupTypeItem.Controls.Add( ulGroupTypeList );
-                foreach ( var childGroupType in groupType.ChildGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+                if ( group.ScheduleId.HasValue || group.GroupLocations.Any( l => l.Schedules.Any() ) )
                 {
-                    var liChildGroupTypeItem = new HtmlGenericContainer( "li", "rocktree-item rocktree-folder" );
-                    liChildGroupTypeItem.ID = "liGroupTypeItem" + groupType.Id;
-                    ulGroupTypeList.Controls.Add( liChildGroupTypeItem );
-                    AddGroupTypeControls( childGroupType, liChildGroupTypeItem );
+                    checkBoxList.Items.Add( new ListItem( service.GroupAncestorPathName( group.Id ), group.Id.ToString() ) );
+                }
+
+                if ( group.Groups != null )
+                {
+                    foreach ( var childGroup in group.Groups
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.Name )
+                        .ToList() )
+                    {
+                        AddGroupControls( childGroup, checkBoxList, service );
+                    }
                 }
             }
         }

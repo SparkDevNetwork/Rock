@@ -1511,6 +1511,14 @@
     <Compile Include="Migrations\Version 0.1 %28Pre Beta%29\Version 0.1.4\RockMigration3.cs" />
     <Compile Include="Migrations\Version 0.1 %28Pre Beta%29\Version 0.1.3\RockMigration2.cs" />
     <Compile Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\RockMigration1.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.1\201503272300012_AddIndexes.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.1\201503272300012_AddIndexes.Designer.cs">
+      <DependentUpon>201503272300012_AddIndexes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 3.0\Version 1.3.1\201504080019568_FixNullAddress.cs" />
+    <Compile Include="Migrations\Version 3.0\Version 1.3.1\201504080019568_FixNullAddress.Designer.cs">
+      <DependentUpon>201504080019568_FixNullAddress.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -2619,6 +2627,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408191153260_DefinedValueValue.resx">
       <DependentUpon>201408191153260_DefinedValueValue.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.1\201503272300012_AddIndexes.resx">
+      <DependentUpon>201503272300012_AddIndexes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.1\201504080019568_FixNullAddress.resx">
+      <DependentUpon>201504080019568_FixNullAddress.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
