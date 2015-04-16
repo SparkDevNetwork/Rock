@@ -81,6 +81,7 @@ namespace RockWeb.Blocks.Groups
         private List<GroupLocation> GroupLocationsState { get; set; }
         private List<InheritedAttribute> GroupMemberAttributesInheritedState { get; set; }
         private List<Attribute> GroupMemberAttributesState { get; set; }
+        private List<GroupRequirement> GroupRequirementsState { get; set; }
         private bool AllowMultipleLocations { get; set; }
 
         #endregion
@@ -125,6 +126,16 @@ namespace RockWeb.Blocks.Groups
                 GroupMemberAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
             }
 
+            json = ViewState["GroupRequirementsState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                GroupRequirementsState = new List<GroupRequirement>();
+            }
+            else
+            {
+                GroupRequirementsState = JsonConvert.DeserializeObject<List<GroupRequirement>>( json );
+            }
+
             AllowMultipleLocations = ViewState["AllowMultipleLocations"] as bool? ?? false;
         }
 
@@ -150,6 +161,12 @@ namespace RockWeb.Blocks.Groups
             gGroupMemberAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
             gGroupMemberAttributes.GridRebind += gGroupMemberAttributes_GridRebind;
             gGroupMemberAttributes.GridReorder += gGroupMemberAttributes_GridReorder;
+
+            gGroupRequirements.DataKeyNames = new string[] { "Guid" };
+            gGroupRequirements.Actions.ShowAdd = true;
+            gGroupRequirements.Actions.AddClick += gGroupRequirements_Add;
+            gGroupRequirements.EmptyDataText = Server.HtmlEncode( None.Text );
+            gGroupRequirements.GridRebind += gGroupRequirements_GridRebind;
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Group.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Group ) ).Id;
@@ -216,6 +233,7 @@ namespace RockWeb.Blocks.Groups
             ViewState["GroupLocationsState"] = JsonConvert.SerializeObject( GroupLocationsState, Formatting.None, jsonSetting );
             ViewState["GroupMemberAttributesInheritedState"] = JsonConvert.SerializeObject( GroupMemberAttributesInheritedState, Formatting.None, jsonSetting );
             ViewState["GroupMemberAttributesState"] = JsonConvert.SerializeObject( GroupMemberAttributesState, Formatting.None, jsonSetting );
+            ViewState["GroupRequirementsState"] = JsonConvert.SerializeObject( GroupRequirementsState, Formatting.None, jsonSetting );
             ViewState["AllowMultipleLocations"] = AllowMultipleLocations;
 
             return base.SaveViewState();
@@ -1028,7 +1046,7 @@ namespace RockWeb.Blocks.Groups
 
             ddlCampus.SetValue( group.CampusId );
 
-            //GroupLocationsState = groupLocations;
+            GroupRequirementsState = group.GroupRequirements.ToList();
             GroupLocationsState = group.GroupLocations.ToList();
 
             var groupTypeCache = GroupTypeCache.Read( group.GroupTypeId );
@@ -1053,6 +1071,8 @@ namespace RockWeb.Blocks.Groups
             BindGroupMemberAttributesGrid();
 
             BindInheritedAttributes( group.GroupTypeId, attributeService );
+
+            BindGroupRequirementsGrid();
         }
 
         /// <summary>
@@ -1813,6 +1833,35 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
+        #region GroupRequirements Grid and Picker
+
+        protected void gGroupRequirements_Add( object sender, EventArgs e )
+        {
+
+        }
+
+        protected void gGroupRequirements_Edit( object sender, RowEventArgs e )
+        {
+
+        }
+
+        protected void gGroupRequirements_ShowEdit( Guid attributeGuid )
+        {
+
+        }
+
+        protected void gGroupRequirements_Delete( object sender, RowEventArgs e )
+        {
+
+        }
+
+        protected void gGroupRequirements_GridRebind( object sender, EventArgs e )
+        {
+            BindGroupRequirementsGrid();
+        }
+
+        #endregion
+
         #region GroupMemberAttributes Grid and Picker
 
         /// <summary>
@@ -1961,6 +2010,16 @@ namespace RockWeb.Blocks.Groups
             SetAttributeListOrder( GroupMemberAttributesState );
             gGroupMemberAttributes.DataSource = GroupMemberAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             gGroupMemberAttributes.DataBind();
+        }
+
+        /// <summary>
+        /// Binds the group requirements grid.
+        /// </summary>
+        private void BindGroupRequirementsGrid()
+        {
+            gGroupRequirements.AddCssClass( "group-requirements-grid" );
+            gGroupRequirements.DataSource = GroupRequirementsState.OrderBy( a => a.GroupRequirementType.Name ).ToList();
+            gGroupRequirements.DataBind();
         }
 
         private void SetScheduleDisplay()
