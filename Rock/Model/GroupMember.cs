@@ -43,7 +43,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Group"/> that this GroupMember is associated with. This property is required.
         /// </summary>
@@ -53,7 +53,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int GroupId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> that is represented by the GroupMember. This property is required.
         /// </summary>
@@ -63,7 +63,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int PersonId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Id of the GroupMember's <see cref="GroupRole"/> in the <see cref="Rock.Model.Group"/>. This property is required.
         /// </summary>
@@ -106,7 +106,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Model.Person Person { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Group"/> that the GroupMember belongs to.
         /// </summary>
@@ -114,7 +114,7 @@ namespace Rock.Model
         /// A <see cref="Rock.Model.Group"/> representing the Group that the GroupMember is a part of.
         /// </value>
         public virtual Group Group { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the the GroupMember's role in the <see cref="Rock.Model.Group"/>.
         /// </summary>
@@ -147,16 +147,16 @@ namespace Rock.Model
         public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
         {
             string action = string.Empty;
-            if ( state == System.Data.Entity.EntityState.Added)
+            if ( state == System.Data.Entity.EntityState.Added )
             {
                 action = "Added to group.";
             }
-            else if ( state == System.Data.Entity.EntityState.Deleted)
+            else if ( state == System.Data.Entity.EntityState.Deleted )
             {
                 action = "Removed from group.";
             }
 
-            if (!string.IsNullOrWhiteSpace(action))
+            if ( !string.IsNullOrWhiteSpace( action ) )
             {
                 var rockContext = (RockContext)dbContext;
 
@@ -166,7 +166,7 @@ namespace Rock.Model
                     group = new GroupService( rockContext ).Get( this.GroupId );
                 }
 
-                if (group != null)
+                if ( group != null )
                 {
                     var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
                     var groupEntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
@@ -298,15 +298,13 @@ namespace Rock.Model
         /// </returns>
         public bool IsEqualTo( GroupMember other )
         {
-            return ( 
-                this.GroupId == other.GroupId && 
-                this.PersonId == other.PersonId && 
-                this.GroupRoleId == other.GroupRoleId 
-           );
+            return
+                this.GroupId == other.GroupId &&
+                this.PersonId == other.PersonId &&
+                this.GroupRoleId == other.GroupRoleId;
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -321,9 +319,9 @@ namespace Rock.Model
         /// </summary>
         public GroupMemberConfiguration()
         {
-            this.HasRequired( p => p.Person ).WithMany( p => p.Members ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
-            this.HasRequired( p => p.Group ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupId ).WillCascadeOnDelete(true);
-            this.HasRequired( p => p.GroupRole ).WithMany().HasForeignKey( p => p.GroupRoleId ).WillCascadeOnDelete(false);
+            this.HasRequired( p => p.Person ).WithMany( p => p.Members ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.Group ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.GroupRole ).WithMany().HasForeignKey( p => p.GroupRoleId ).WillCascadeOnDelete( false );
         }
     }
 
@@ -345,11 +343,11 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.GroupMember"/> is an active member of the <see cref="Rock.Model.Group"/>.
         /// </summary>
         Active = 1,
-        
+
         /// <summary>
         /// The <see cref="Rock.Model.GroupMember">GroupMember's</see> membership in the <see cref="Rock.Model.Group"/> is pending.
         /// </summary>
-        Pending = 2 
+        Pending = 2
     }
 
     #endregion

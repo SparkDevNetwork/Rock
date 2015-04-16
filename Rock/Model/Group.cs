@@ -39,7 +39,6 @@ namespace Rock.Model
     [DataContract]
     public partial class Group : Model<Group>, IOrdered
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -140,8 +139,8 @@ namespace Rock.Model
             get { return _isActive; }
             set { _isActive = value; }
         }
+
         private bool _isActive = true;
-        
 
         /// <summary>
         /// Gets or sets the display order of the group in the group list and group hierarchy. The lower the number the higher the 
@@ -153,7 +152,6 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
-
 
         /// <summary>
         /// Gets or sets whether group allows members to specify additional "guests" that will be part of the group (i.e. attend event)
@@ -291,6 +289,7 @@ namespace Rock.Model
             get { return _groups ?? ( _groups = new Collection<Group>() ); }
             set { _groups = value; }
         }
+
         private ICollection<Group> _groups;
 
         /// <summary>
@@ -305,6 +304,7 @@ namespace Rock.Model
             get { return _members ?? ( _members = new Collection<GroupMember>() ); }
             set { _members = value; }
         }
+
         private ICollection<GroupMember> _members;
 
         /// <summary>
@@ -319,6 +319,7 @@ namespace Rock.Model
             get { return _groupLocations ?? ( _groupLocations = new Collection<GroupLocation>() ); }
             set { _groupLocations = value; }
         }
+
         private ICollection<GroupLocation> _groupLocations;
 
         /// <summary>
@@ -333,6 +334,7 @@ namespace Rock.Model
             get { return _groupsRequirements ?? ( _groupsRequirements = new Collection<GroupRequirement>() ); }
             set { _groupsRequirements = value; }
         }
+
         private ICollection<GroupRequirement> _groupsRequirements;
 
         /// <summary>
@@ -410,6 +412,7 @@ namespace Rock.Model
                                 {
                                     return true;
                                 }
+
                                 if ( action == Authorization.EDIT && role.CanEdit )
                                 {
                                     return true;
@@ -435,7 +438,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -482,5 +484,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }
