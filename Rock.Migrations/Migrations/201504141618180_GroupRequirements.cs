@@ -36,7 +36,7 @@ namespace Rock.Migrations
                         Id = c.Int(nullable: false, identity: true),
                         GroupId = c.Int(nullable: false),
                         GroupRequirementTypeId = c.Int(nullable: false),
-                        GroupRoleId = c.Int(nullable: false),
+                        GroupRoleId = c.Int(),
                         CreatedDateTime = c.DateTime(),
                         ModifiedDateTime = c.DateTime(),
                         CreatedByPersonAliasId = c.Int(),

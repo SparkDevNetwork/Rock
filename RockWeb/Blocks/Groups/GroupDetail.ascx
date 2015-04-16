@@ -6,7 +6,7 @@
     }
 </script>
 
-<asp:UpdatePanel ID="upnlGroupList" runat="server">
+<asp:UpdatePanel ID="upnlGroupDetail" runat="server">
     <ContentTemplate>
 
         <asp:Panel ID="pnlDetails" runat="server">
@@ -136,15 +136,14 @@
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpGroupRequirements" runat="server" Title="Group Requirements">
-                            <Rock:RockCheckBox ID="cbMembersMustMeetRequirementsOnAdd" runat="server" Text="Members Must Meet Requirements On Add" />
+                            <Rock:RockCheckBox ID="cbMembersMustMeetRequirementsOnAdd" runat="server" Text="Members Must Meet Requirements On Add" Help="If this is enabled, a person can only become a group member if all the requirements are met. If this is left as disabled, requirements won't be checked when adding." />
                             <div class="grid">
                                 <Rock:Grid ID="gGroupRequirements" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group Requirement" ShowConfirmDeleteDialog="false">
                                     <Columns>
-                                        <Rock:ReorderField />
-                                        <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                                        <Rock:RockBoundField DataField="GroupRequirementType.Name" HeaderText="Name" />
                                         <Rock:RockBoundField DataField="GroupRole" HeaderText="Group Role" />
-                                        <Rock:BoolField DataField="CanExpire" HeaderText="Can Expire" />
-                                        <Rock:EnumField DataField="RequirementCheckType" HeaderText="Type" />
+                                        <Rock:BoolField DataField="GroupRequirementType.CanExpire" HeaderText="Can Expire" />
+                                        <Rock:EnumField DataField="GroupRequirementType.RequirementCheckType" HeaderText="Type" />
                                         <Rock:EditField OnClick="gGroupRequirements_Edit" />
                                         <Rock:DeleteField OnClick="gGroupRequirements_Delete" />
                                     </Columns>
@@ -220,12 +219,14 @@
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
+        <!-- Group Member Attribute Modal Dialog -->
         <Rock:ModalDialog ID="dlgGroupMemberAttribute" runat="server" Title="Group Member Attributes" OnSaveClick="dlgGroupMemberAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupMemberAttribute">
             <Content>
                 <Rock:AttributeEditor ID="edtGroupMemberAttributes" runat="server" ShowActions="false" ValidationGroup="GroupMemberAttribute" />
             </Content>
         </Rock:ModalDialog>
 
+        <!-- Locations Modal Dialog -->
         <Rock:ModalDialog ID="dlgLocations" runat="server" Title="Group Location" OnSaveClick="dlgLocations_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Location">
             <Content>
 
@@ -257,6 +258,21 @@
 
                 <Rock:SchedulePicker ID="spSchedules" runat="server" Label="Schedule(s)" ValidationGroup="Location" AllowMultiSelect="true" />
 
+            </Content>
+        </Rock:ModalDialog>
+
+        <!-- Group Requirements Modal Dialog -->
+        <Rock:ModalDialog ID="mdGroupRequirement" runat="server" Title="Group Requirement" OnSaveClick="mdGroupRequirement_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="vg_GroupRequirement">
+            <Content>
+                <asp:HiddenField ID="hfGroupRequirementGuid" runat="server" />
+
+                <Rock:NotificationBox id="nbDuplicateGroupRequirement" runat="server" NotificationBoxType="Warning" />
+
+                <asp:ValidationSummary ID="vsGroupRequirement" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vg_GroupRequirement" />
+
+                <Rock:RockDropDownList ID="ddlGroupRequirementType" runat="server" Label="Group Requirement Type" Required="true" ValidationGroup="vg_GroupRequirement"/>
+
+                <Rock:GroupRolePicker ID="grpGroupRequirementGroupRole" runat="server" Label="Group Role" Help="Select the group role that this requirement applies to. Leave blank if it applies to all group roles." ValidationGroup="vg_GroupRequirement" />
             </Content>
         </Rock:ModalDialog>
 

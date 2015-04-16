@@ -130,7 +130,7 @@ namespace Rock.Model
             this.HasRequired( a => a.Group ).WithMany(a => a.GroupRequirements).HasForeignKey( a => a.GroupId ).WillCascadeOnDelete( false );
             
             this.HasRequired( a => a.GroupRequirementType ).WithMany().HasForeignKey( a => a.GroupRequirementTypeId ).WillCascadeOnDelete( true );
-            this.HasRequired( a => a.GroupRole ).WithMany().HasForeignKey( a => a.GroupRoleId ).WillCascadeOnDelete( true );
+            this.HasOptional( a => a.GroupRole ).WithMany().HasForeignKey( a => a.GroupRoleId ).WillCascadeOnDelete( true );
         }
     }
 
