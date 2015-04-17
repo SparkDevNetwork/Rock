@@ -2037,7 +2037,8 @@ ul.rocklist .rocklist-item.selected {
   opacity: 0.5;
 }
 .image-editor-fileinput {
-  display: none;
+  visibility: hidden;
+  height: 0;
 }
 .image-editor-group.imageupload-group {
   border: 0;
