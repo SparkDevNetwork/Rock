@@ -307,13 +307,15 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns the current values of the group requirements statuses for this GroupMember
+        /// Returns the current values of the group requirements statuses for this GroupMember from the last time they were calculated ordered by GroupRequirementType.Name
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<GroupRequirementStatus> MeetsGroupRequirements()
+        public IEnumerable<GroupRequirementStatus> GetGroupRequirementsStatuses()
         {
             var metRequirements = this.GroupMemberRequirements.Select( a => new { GroupRequirementId = a.GroupRequirement.Id, MeetsGroupRequirement = MeetsGroupRequirement.Meets } );
-            var allGroupRequirements = this.Group.GroupRequirements;
+            
+            // get all the group requirements that apply the group member's role
+            var allGroupRequirements = this.Group.GroupRequirements.Where( a => !a.GroupRoleId.HasValue || a.GroupRoleId == this.GroupRoleId ).OrderBy( a => a.GroupRequirementType.Name );
 
             var result = from groupRequirement in allGroupRequirements
                          join metRequirement in metRequirements on groupRequirement.Id equals metRequirement.GroupRequirementId into j
@@ -325,6 +327,50 @@ namespace Rock.Model
                          };
 
             return result;
+        }
+
+        /// <summary>
+        /// Calculates and Updates the GroupMemberRequirements for the GroupMember, then saves the changes to the database
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="saveChanges">if set to <c>true</c> [save changes].</param>
+        public void CalculateRequirements( RockContext rockContext, bool saveChanges = true)
+        {
+            // recalculate and store in the database if the groupmember isn't new or changed
+            var groupMemberRequirementsService = new GroupMemberRequirementService( rockContext );
+            var group = this.Group ?? new GroupService( rockContext ).Queryable("GroupRequirements").FirstOrDefault(a => a.Id == this.GroupId );
+            if (!group.GroupRequirements.Any())
+            {
+                // group doesn't have requirements so no need to calculate
+                return;
+            }
+
+            var updatedRequirements = group.PersonMeetsGroupRequirements( this.PersonId, this.GroupRoleId );
+            foreach ( var calculatedRequirement in this.GroupMemberRequirements.Where( a => a.GroupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual ).ToList() )
+            {
+                this.GroupMemberRequirements.Remove( calculatedRequirement );
+                groupMemberRequirementsService.Delete( calculatedRequirement );
+            }
+
+            foreach ( var updatedRequirement in updatedRequirements )
+            {
+                var existingRequirement = this.GroupMemberRequirements.FirstOrDefault( a => a.GroupRequirementId == updatedRequirement.GroupRequirement.Id );
+                if ( existingRequirement == null && updatedRequirement.MeetsGroupRequirement == MeetsGroupRequirement.Meets )
+                {
+                    this.GroupMemberRequirements.Add(
+                        new GroupMemberRequirement
+                        {
+                            GroupRequirementId = updatedRequirement.GroupRequirement.Id,
+                            LastRequirementCheckDateTime = RockDateTime.Now,
+                            RequirementMetDateTime = RockDateTime.Now
+                        } );
+                }
+            }
+
+            if ( saveChanges )
+            {
+                rockContext.SaveChanges();
+            }
         }
 
         /// <summary>

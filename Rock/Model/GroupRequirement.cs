@@ -117,10 +117,11 @@ namespace Rock.Model
         /// <summary>
         /// Persons the queryable meets group requirement.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="personQry">The person qry.</param>
-        /// <param name="groupRole">The group role.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
-        public IEnumerable<PersonGroupRequirementStatus> PersonQueryableMeetsGroupRequirement( IQueryable<Person> personQry, int? groupRoleId )
+        public IEnumerable<PersonGroupRequirementStatus> PersonQueryableMeetsGroupRequirement( RockContext rockContext, IQueryable<Person> personQry, int? groupRoleId )
         {
             if ( ( this.GroupRoleId != null ) && ( groupRoleId != null ) && ( this.GroupRoleId != groupRoleId ) )
             {
@@ -141,7 +142,10 @@ namespace Rock.Model
                 if ( this.GroupRequirementType.DataViewId.HasValue )
                 {
                     var errorMessages = new List<string>();
-                    var dataViewQry = this.GroupRequirementType.DataView.GetQuery( null, null, out errorMessages ) as IQueryable<Person>;
+                    var personService = new PersonService(rockContext);
+                    var paramExpression = personService.ParameterExpression;
+                    var dataViewWhereExpression = this.GroupRequirementType.DataView.GetExpression( personService, paramExpression, out errorMessages );
+                    var dataViewQry = personService.Get( paramExpression, dataViewWhereExpression );
                     if ( dataViewQry != null )
                     {
                         var join = personQry.Join( 
@@ -211,8 +215,9 @@ namespace Rock.Model
         /// <returns></returns>
         public MeetsGroupRequirement PersonMeetsGroupRequirement( int personId, int? groupRoleId )
         {
-            var personQuery = new PersonService( new RockContext() ).Queryable().Where( a => a.Id == personId );
-            var result = this.PersonQueryableMeetsGroupRequirement( personQuery, groupRoleId ).FirstOrDefault();
+            var rockContext = new RockContext();
+            var personQuery = new PersonService( rockContext ).Queryable().Where( a => a.Id == personId );
+            var result = this.PersonQueryableMeetsGroupRequirement(rockContext, personQuery, groupRoleId ).FirstOrDefault();
             if ( result == null )
             {
                 // no result. probably because personId was zero
@@ -285,6 +290,17 @@ namespace Rock.Model
         /// The meets group requirement.
         /// </value>
         public MeetsGroupRequirement MeetsGroupRequirement { get; set; }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return string.Format( "{0}:{1}", this.GroupRequirement, this.MeetsGroupRequirement );
+        }
     }
 
     #endregion

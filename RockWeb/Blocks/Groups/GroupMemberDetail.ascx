@@ -25,7 +25,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:PersonPicker runat="server" ID="ppGroupMemberPerson" Label="Person" CssClass="js-authorizedperson" Required="true" />
+                            <Rock:PersonPicker runat="server" ID="ppGroupMemberPerson" Label="Person" CssClass="js-authorizedperson" Required="true" OnSelectPerson="ppGroupMemberPerson_SelectPerson" />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Status" RepeatDirection="Horizontal" />
@@ -34,7 +34,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockDropDownList runat="server" ID="ddlGroupRole" DataTextField="Name" DataValueField="Id" Label="Role" Required="true" />
+                            <Rock:RockDropDownList runat="server" ID="ddlGroupRole" DataTextField="Name" DataValueField="Id" Label="Role" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupRole_SelectedIndexChanged" />
                         </div>
                         <div class="col-md-6">
                             <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
@@ -49,7 +49,9 @@
                             <div class="col-md-6">
                                 <Rock:RockControlWrapper ID="rcwRequirements" runat="server" Label="Requirements">
                                     <Rock:RockCheckBoxList ID="cblManualRequirements" RepeatDirection="Vertical" runat="server" Label="" />
-                                    <asp:Literal ID="lRequirementsLabels" runat="server" />
+                                    <div class="labels">
+                                        <asp:Literal ID="lRequirementsLabels" runat="server" />
+                                    </div>
                                 </Rock:RockControlWrapper>
                             </div>
                         </div>
