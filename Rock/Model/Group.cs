@@ -427,7 +427,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a list of the Group Requirements for this Group along with 
+        /// Returns a list of the Group Requirements for this Group along with the status ordered by GroupRequirement Name
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="groupRole">The group role.</param>
@@ -435,7 +435,7 @@ namespace Rock.Model
         public IEnumerable<PersonGroupRequirementStatus> PersonMeetsGroupRequirements( int personId, int? groupRoleId )
         {
             var result = new List<PersonGroupRequirementStatus>();
-            foreach ( var groupRequirement in this.GroupRequirements )
+            foreach ( var groupRequirement in this.GroupRequirements.OrderBy(a => a.GroupRequirementType.Name ))
             {
                 var meetsRequirement = groupRequirement.PersonMeetsGroupRequirement( personId, groupRoleId );
                 result.Add( new PersonGroupRequirementStatus { PersonId = personId, GroupRequirement = groupRequirement, MeetsGroupRequirement = meetsRequirement } );

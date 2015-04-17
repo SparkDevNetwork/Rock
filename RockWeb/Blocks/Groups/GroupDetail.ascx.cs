@@ -96,6 +96,8 @@ namespace RockWeb.Blocks.Groups
         {
             base.LoadViewState( savedState );
 
+            
+            // NOTE: These things are converted to JSON prior to going into ViewState, so the json variable could be null or the string "null"!
             string json = ViewState["GroupLocationsState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
@@ -133,7 +135,21 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                GroupRequirementsState = JsonConvert.DeserializeObject<List<GroupRequirement>>( json );
+                GroupRequirementsState = JsonConvert.DeserializeObject<List<GroupRequirement>>( json ) ?? new List<GroupRequirement>();
+            }
+
+            // get the GroupRole for each GroupRequirement from the database it case it isn't serialized, and we'll need it
+            var groupRoleIds = GroupRequirementsState.Where( a => a.GroupRoleId.HasValue && a.GroupRole == null ).Select( a => a.GroupRoleId.Value ).Distinct().ToList();
+            if (groupRoleIds.Any())
+            {
+                var groupRoles = new GroupTypeRoleService( new RockContext() ).GetByIds( groupRoleIds );
+                GroupRequirementsState.ForEach( a =>
+                {
+                    if (a.GroupRoleId.HasValue)
+                    {
+                        a.GroupRole = groupRoles.FirstOrDefault( b => b.Id == a.GroupRoleId );
+                    }
+                } );
             }
 
             AllowMultipleLocations = ViewState["AllowMultipleLocations"] as bool? ?? false;
@@ -1919,6 +1935,8 @@ namespace RockWeb.Blocks.Groups
                 ddlGroupRequirementType.SelectedIndex = 0;
                 grpGroupRequirementGroupRole.GroupRoleId = null;
             }
+            
+            nbDuplicateGroupRequirement.Visible = false;
 
             ShowDialog( "GroupRequirements", true );
         }
@@ -1965,11 +1983,13 @@ namespace RockWeb.Blocks.Groups
                     "This group already has a group requirement of {0} {1}",
                     groupRequirement.GroupRequirementType.Name,
                     groupRequirement.GroupRoleId.HasValue ? "for group role " + groupRequirement.GroupRole.Name : string.Empty );
+                nbDuplicateGroupRequirement.Visible = true;
                 this.GroupRequirementsState.Remove( groupRequirement );
                 return;
             }
             else 
             {
+                nbDuplicateGroupRequirement.Visible = false;
                 BindGroupRequirementsGrid();
                 HideDialog();
             }
