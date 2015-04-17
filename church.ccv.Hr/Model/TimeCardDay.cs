@@ -211,7 +211,7 @@ namespace church.ccv.Hr.Model
         }
 
         /// <summary>
-        /// Determines whether this time card has any hours entered.
+        /// Determines whether this time card has any hours (including Holiday, Paid, and Vacation, etc) entered.
         /// </summary>
         /// <returns></returns>
         public virtual bool HasHoursEntered()

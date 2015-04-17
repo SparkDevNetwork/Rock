@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using church.ccv.Hr.Data;
 using Rock;
 using Rock.Communication;
@@ -60,6 +61,29 @@ namespace church.ccv.Hr.Model
             }
 
             return true;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class TimeCardExtensions
+    {
+        /// <summary>
+        /// Gets the time cards that non-zero hours ( Worked, Holiday, Vacation, Sick and 'Earned-Holiday' ).
+        /// Only time cards where something was entered will be returned
+        /// </summary>
+        /// <returns></returns>
+        public static IQueryable<TimeCard> WhereTimeCardsHaveHours( this IQueryable<TimeCard> qry )
+        {
+            return qry.Where( a =>
+                a.TimeCardDays.Any( b =>
+                    b.TotalWorkedDuration > 0
+                    || b.PaidHolidayHours > 0
+                    || b.EarnedHolidayHours > 0
+                    || b.PaidSickHours > 0
+                    || b.PaidVacationHours > 0
+                    ) );
         }
     }
 }

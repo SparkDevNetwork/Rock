@@ -154,7 +154,9 @@ namespace RockWeb.Plugins.church_ccv.Hr
             TimeCardPayPeriodService timeCardPayPeriodService = new TimeCardPayPeriodService( hrContext );
             TimeCardService timeCardService = new TimeCardService( hrContext );
             var payPeriodQry = timeCardPayPeriodService.Queryable().OrderByDescending( a => a.StartDate );
-            var timeCardQry = timeCardService.Queryable();
+            
+            // get non-empty timecards
+            var timeCardQry = timeCardService.Queryable().WhereTimeCardsHaveHours();
 
             if ( !this.IsUserAuthorized( Authorization.APPROVE ) )
             {
