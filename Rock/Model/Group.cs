@@ -427,6 +427,24 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns a list of the Group Requirements for this Group along with 
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="groupRole">The group role.</param>
+        /// <returns></returns>
+        public IEnumerable<PersonGroupRequirementStatus> PersonMeetsGroupRequirements( int personId, int? groupRoleId )
+        {
+            var result = new List<PersonGroupRequirementStatus>();
+            foreach ( var groupRequirement in this.GroupRequirements )
+            {
+                var meetsRequirement = groupRequirement.PersonMeetsGroupRequirement( personId, groupRoleId );
+                result.Add( new PersonGroupRequirementStatus { PersonId = personId, GroupRequirement = groupRequirement, MeetsGroupRequirement = meetsRequirement } );
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> containing the Name of the Group that represents this instance.
         /// </summary>
         /// <returns>
