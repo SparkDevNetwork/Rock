@@ -172,7 +172,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
             lPaidVacationHours.Visible = lPaidVacationHours.Text.AsDecimal() != 0;
 
             Label lPaidHolidayHours = repeaterItem.FindControl( "lPaidHolidayHours" ) as Label;
-            lPaidHolidayHours.Text = timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
+            lPaidHolidayHours.Text = timeCard.PaidHolidayHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
             lPaidHolidayHours.Visible = lPaidHolidayHours.Text.AsDecimal() != 0;
 
             Label lPaidSickHours = repeaterItem.FindControl( "lPaidSickHours" ) as Label;
