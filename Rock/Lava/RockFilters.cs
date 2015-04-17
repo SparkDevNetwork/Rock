@@ -820,17 +820,51 @@ namespace Rock.Lava
                 var person = (Person)input;
                
                 Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-                var location = new GroupMemberService( GetRockContext(context) )
-                    .Queryable( "GroupLocations.Location" )
-                    .AsNoTracking()
-                    .Where( m => 
-                        m.PersonId == person.Id && 
-                        m.Group.GroupType.Guid == familyGuid )
-                    .SelectMany( m => m.Group.GroupLocations )
-                    .Where( gl => 
-                        gl.GroupLocationTypeValue.Value == addressType )
-                    .Select( gl => gl.Location )
-                    .FirstOrDefault();
+
+                Location location = null;
+
+                switch ( addressType )
+                {
+                    case "Mailing":
+                        location = new GroupMemberService( GetRockContext( context ) )
+                            .Queryable( "GroupLocations.Location" )
+                            .AsNoTracking()
+                            .Where( m =>
+                                m.PersonId == person.Id &&
+                                m.Group.GroupType.Guid == familyGuid )
+                            .SelectMany( m => m.Group.GroupLocations )
+                            .Where( gl =>
+                                gl.IsMailingLocation == true )
+                            .Select( gl => gl.Location )
+                            .FirstOrDefault();
+                        break;
+                    case "MapLocation":
+                        location = new GroupMemberService( GetRockContext( context ) )
+                            .Queryable( "GroupLocations.Location" )
+                            .AsNoTracking()
+                            .Where( m =>
+                                m.PersonId == person.Id &&
+                                m.Group.GroupType.Guid == familyGuid )
+                            .SelectMany( m => m.Group.GroupLocations )
+                            .Where( gl =>
+                                gl.IsMappedLocation == true )
+                            .Select( gl => gl.Location )
+                            .FirstOrDefault();
+                        break;
+                    default:
+                        location = new GroupMemberService( GetRockContext( context ) )
+                            .Queryable( "GroupLocations.Location" )
+                            .AsNoTracking()
+                            .Where( m =>
+                                m.PersonId == person.Id &&
+                                m.Group.GroupType.Guid == familyGuid )
+                            .SelectMany( m => m.Group.GroupLocations )
+                            .Where( gl =>
+                                gl.GroupLocationTypeValue.Value == addressType )
+                            .Select( gl => gl.Location )
+                            .FirstOrDefault();
+                        break;
+                }
 
                 if (location != null)
                 {
