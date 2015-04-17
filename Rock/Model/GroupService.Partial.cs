@@ -91,8 +91,9 @@ namespace Rock.Model
         /// <param name="limitToSecurityRoleGroups">if set to <c>true</c> [limit to security role groups].</param>
         /// <param name="groupTypeIncludedIds">The group type included ids.</param>
         /// <param name="groupTypeExcludedIds">The group type excluded ids.</param>
+        /// <param name="includeInactiveGroups">if set to <c>true</c> [include inactive groups].</param>
         /// <returns></returns>
-        public IQueryable<Group> GetNavigationChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, List<int> groupTypeIncludedIds, List<int> groupTypeExcludedIds )
+        public IQueryable<Group> GetNavigationChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, List<int> groupTypeIncludedIds, List<int> groupTypeExcludedIds, bool includeInactiveGroups )
         {
             var qry = Queryable();
 
@@ -110,6 +111,11 @@ namespace Rock.Model
             else
             {
                 qry = qry.Where( a => a.ParentGroupId == id );
+            }
+
+            if ( !includeInactiveGroups )
+            {
+                qry = qry.Where( a => a.IsActive );
             }
 
             if ( limitToSecurityRoleGroups )
