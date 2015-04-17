@@ -844,6 +844,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough()] 
         public static int? AsIntegerOrNull( this string str )
         {
             int value;
