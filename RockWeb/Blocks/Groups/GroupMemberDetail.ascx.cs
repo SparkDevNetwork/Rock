@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -242,7 +242,7 @@ namespace RockWeb.Blocks.Groups
                 }
 
             });", true );
-            
+
             var rockContext = new RockContext();
             GroupMember groupMember = null;
 
@@ -341,6 +341,68 @@ namespace RockWeb.Blocks.Groups
                 phAttributesReadOnly.Visible = false;
                 phAttributes.Visible = true;
             }
+
+            var groupHasRequirements = group.GroupRequirements.Any();
+            pnlRequirements.Visible = groupHasRequirements;
+            btnReCheckRequirements.Visible = groupHasRequirements && ( groupMemberId != 0 );
+
+            ShowGroupRequirementsStatuses();
+        }
+
+        /// <summary>
+        /// Shows the group requirements statuses.
+        /// </summary>
+        private void ShowGroupRequirementsStatuses()
+        {
+            var rockContext = new RockContext();
+            int groupMemberId = hfGroupMemberId.Value.AsInteger();
+            var groupId = hfGroupId.Value.AsInteger();
+            GroupMember groupMember = null;
+
+            if ( !groupMemberId.Equals( 0 ) )
+            {
+                groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
+            }
+            else
+            {
+                // only create a new one if parent was specified
+                groupMember = new GroupMember { Id = 0 };
+                groupMember.GroupId = groupId;
+                groupMember.Group = new GroupService( rockContext ).Get( groupMember.GroupId );
+                groupMember.GroupRoleId = groupMember.Group.GroupType.DefaultGroupRoleId ?? 0;
+                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+            }
+
+            cblManualRequirements.Items.Clear();
+            lRequirementsLabels.Text = string.Empty;
+
+            IEnumerable<GroupRequirementStatus> requirementsResults;
+            if ( groupMember.Id == 0 || ppGroupMemberPerson.PersonId != groupMember.PersonId )
+            {
+                requirementsResults = groupMember.Group.PersonMeetsGroupRequirements( groupMember.PersonId, ddlGroupRole.SelectedValue.AsIntegerOrNull() );
+            }
+            else
+            {
+                requirementsResults = groupMember.MeetsGroupRequirements().ToList();
+            }
+
+            foreach ( var requirementResult in requirementsResults )
+            {
+                if ( requirementResult.GroupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual )
+                {
+                    var checkboxItem = new ListItem( requirementResult.GroupRequirement.GroupRequirementType.Name, requirementResult.GroupRequirement.Id.ToString() );
+                    checkboxItem.Selected = requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets;
+                    checkboxItem.Enabled = requirementResult.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable;
+                    cblManualRequirements.Items.Add( checkboxItem );
+                }
+                else
+                {
+                    lRequirementsLabels.Text += string.Format(
+                        "<span class='label label-{1}'>{0}</span>",
+                        requirementResult.GroupRequirement.GroupRequirementType.Name,
+                        requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets ? "success" : "danger" );
+                }
+            }
         }
 
         /// <summary>
@@ -366,6 +428,48 @@ namespace RockWeb.Blocks.Groups
             }
 
             rblStatus.BindToEnum<GroupMemberStatus>();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnReCheckRequirements control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnReCheckRequirements_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var group = new GroupService( rockContext ).Get( hfGroupId.Value.AsInteger() );
+            var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
+            var groupMemberRequirementsService = new GroupMemberRequirementService( rockContext );
+
+            if ( ppGroupMemberPerson.PersonId.HasValue && groupMember != null )
+            {
+                var updatedRequirements = group.PersonMeetsGroupRequirements( ppGroupMemberPerson.PersonId.Value, ddlGroupRole.SelectedValue.AsIntegerOrNull() );
+                foreach ( var calculatedRequirement in groupMember.GroupMemberRequirements.Where( a => a.GroupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual ).ToList() )
+                {
+                    groupMember.GroupMemberRequirements.Remove( calculatedRequirement );
+                    groupMemberRequirementsService.Delete( calculatedRequirement );
+                }
+
+                foreach ( var updatedRequirement in updatedRequirements )
+                {
+                    var existingRequirement = groupMember.GroupMemberRequirements.FirstOrDefault( a => a.GroupRequirementId == updatedRequirement.GroupRequirement.Id );
+                    if ( existingRequirement == null && updatedRequirement.MeetsGroupRequirement == MeetsGroupRequirement.Meets)
+                    {
+                        groupMember.GroupMemberRequirements.Add(
+                            new GroupMemberRequirement
+                            {
+                                GroupRequirementId = updatedRequirement.GroupRequirement.Id,
+                                LastRequirementCheckDateTime = RockDateTime.Now,
+                                RequirementMetDateTime = RockDateTime.Now
+                            } );
+                    }
+                }
+
+                rockContext.SaveChanges();
+            }
+
+            ShowGroupRequirementsStatuses();
         }
 
         #endregion

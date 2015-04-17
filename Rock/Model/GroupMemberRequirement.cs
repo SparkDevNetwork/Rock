@@ -128,7 +128,7 @@ namespace Rock.Model
         public GroupMemberRequirementConfiguration()
         {
             this.HasRequired( a => a.GroupRequirement ).WithMany().HasForeignKey( a => a.GroupRequirementId ).WillCascadeOnDelete( true );
-            this.HasRequired( a => a.GroupMember ).WithMany().HasForeignKey( a => a.GroupMemberId ).WillCascadeOnDelete( true );
+            this.HasRequired( a => a.GroupMember ).WithMany( a => a.GroupMemberRequirements ).HasForeignKey( a => a.GroupMemberId ).WillCascadeOnDelete( true );
         }
     }
 

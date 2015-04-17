@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -123,6 +125,21 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual GroupTypeRole GroupRole { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member requirements.
+        /// </summary>
+        /// <value>
+        /// The group member requirements.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<GroupMemberRequirement> GroupMemberRequirements
+        {
+            get { return _groupMemberRequirements ?? ( _groupMemberRequirements = new Collection<GroupMemberRequirement>() ); }
+            set { _groupMemberRequirements = value; }
+        }
+
+        private ICollection<GroupMemberRequirement> _groupMemberRequirements;
 
         #endregion
 
@@ -287,6 +304,27 @@ namespace Rock.Model
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Returns the current values of the group requirements statuses for this GroupMember
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<GroupRequirementStatus> MeetsGroupRequirements()
+        {
+            var metRequirements = this.GroupMemberRequirements.Select( a => new { GroupRequirementId = a.GroupRequirement.Id, MeetsGroupRequirement = MeetsGroupRequirement.Meets } );
+            var allGroupRequirements = this.Group.GroupRequirements;
+
+            var result = from groupRequirement in allGroupRequirements
+                         join metRequirement in metRequirements on groupRequirement.Id equals metRequirement.GroupRequirementId into j
+                         from metRequirement in j.DefaultIfEmpty()
+                         select new GroupRequirementStatus
+                         {
+                             GroupRequirement = groupRequirement,
+                             MeetsGroupRequirement = metRequirement != null ? metRequirement.MeetsGroupRequirement : MeetsGroupRequirement.NotMet
+                         };
+
+            return result;
         }
 
         /// <summary>
