@@ -115,10 +115,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Persons the queryable meets group requirement.
+        /// Returns a list of each person and their GroupRequiremnt status for this group requirement
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="personQry">The person qry.</param>
+        /// <param name="personQry">A qry containing the people whose requirements should be checked</param>
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
         public IEnumerable<PersonGroupRequirementStatus> PersonQueryableMeetsGroupRequirement( RockContext rockContext, IQueryable<Person> personQry, int? groupRoleId )
