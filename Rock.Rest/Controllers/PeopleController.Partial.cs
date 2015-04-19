@@ -190,7 +190,7 @@ namespace Rock.Rest.Controllers
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
             PersonService.SaveNewPerson( person, (Rock.Data.RockContext)Service.Context, null, false );
 
-            return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person );
+            return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person.Id );
         }
 
         #endregion
