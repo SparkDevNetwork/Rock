@@ -222,7 +222,7 @@ namespace Rock.Rest
                                 // No need to parse anything
                                 property.SetValue( targetModel, null );
                             }
-                            else if ( propertyType == typeof( int ) || propertyType == typeof( int? ) )
+                            else if ( propertyType == typeof( int ) || propertyType == typeof( int? ) || propertyType.IsEnum )
                             {
                                 // By default, objects that hold integer values, hold int64, so coerce to int32
                                 try
