@@ -128,7 +128,7 @@ namespace Rock.Rest
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
             Service.Context.SaveChanges();
 
-            var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+            var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created, value );
 
             // TODO set response.Headers.Location as per REST POST convention
             //response.Headers.Location = new Uri( Request.RequestUri, "/api/pages/" + page.Id.ToString() );
