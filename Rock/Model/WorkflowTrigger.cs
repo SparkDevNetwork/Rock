@@ -203,7 +203,12 @@ namespace Rock.Model
         /// <summary>
         /// Post Delete
         /// </summary>
-        PostDelete = 3
+        PostDelete = 3,
+
+        /// <summary>
+        /// Immediate Post Save
+        /// </summary>
+        ImmediatePostSave = 4
     }
 
     #endregion
