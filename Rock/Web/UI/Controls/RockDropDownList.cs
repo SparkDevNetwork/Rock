@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.DropDownList"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:RockDropDownList runat=server></{0}:RockDropDownList>" )]
-    public class RockDropDownList : DropDownList, IRockControl
+    public class RockDropDownList : DropDownList, IRockControl, IDisplayRequiredIndicator
     {
         #region IRockControl implementation (NOTE: uses a different Required property than other IRockControl controls)
 
@@ -74,6 +74,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
         /// </summary>
@@ -97,6 +98,18 @@ namespace Rock.Web.UI.Controls
             {
                 ViewState["Required"] = value;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show the Required indicator when Required=true
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [display required indicator]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayRequiredIndicator
+        {
+            get { return ViewState["DisplayRequiredIndicator"] as bool? ?? true; }
+            set { ViewState["DisplayRequiredIndicator"] = value; }
         }
 
         /// <summary>

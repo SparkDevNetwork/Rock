@@ -35,8 +35,31 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PeopleController
     {
-
         #region Get
+
+        // GET api/<controller>/5
+        [Authenticate, Secured]
+        [ActionName( "GetById" )]
+        public override Person GetById( int id )
+        {
+            // NOTE: We want PrimaryAliasId to be populated, so call this.Get( false ) which includes "Aliases"
+            var person = this.Get( true ).FirstOrDefault( a => a.Id == id );
+            if ( person == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            return person;
+        }
+
+        // GET api/<controller>(5)
+        [Authenticate, Secured]
+        [EnableQuery]
+        public override Person Get( [FromODataUri] int key )
+        {
+            // NOTE: We want PrimaryAliasId to be populated, so call this.Get( false ) which includes "Aliases"
+            return this.GetById( key );
+        }
 
         /// <summary>
         /// Returns a Queryable of Person records
@@ -59,12 +82,12 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [EnableQuery]
-        public IQueryable<Person> Get( bool includeDeceased)
+        public IQueryable<Person> Get( bool includeDeceased )
         {
             var rockContext = this.Service.Context as RockContext;
 
             // NOTE: We want PrimaryAliasId to be populated, so include "Aliases"
-            return new PersonService( rockContext ).Queryable( "Aliases", includeDeceased);
+            return new PersonService( rockContext ).Queryable( "Aliases", includeDeceased );
         }
 
         /// <summary>
@@ -167,7 +190,7 @@ namespace Rock.Rest.Controllers
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
             PersonService.SaveNewPerson( person, (Rock.Data.RockContext)Service.Context, null, false );
 
-            return  ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+            return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person.Id );
         }
 
         #endregion
@@ -231,7 +254,7 @@ namespace Rock.Rest.Controllers
             var phoneNumbersQry = new PhoneNumberService( rockContext ).Queryable();
 
             // join with PhoneNumbers to avoid lazy loading
-            var joinQry = sortedPersonQry.GroupJoin( phoneNumbersQry, p => p.Id, n => n.PersonId, (Person, PhoneNumbers) => new { Person, PhoneNumbers } );
+            var joinQry = sortedPersonQry.GroupJoin( phoneNumbersQry, p => p.Id, n => n.PersonId, ( Person, PhoneNumbers ) => new { Person, PhoneNumbers } );
 
             var topQry = joinQry.Take( count );
 
@@ -317,7 +340,7 @@ namespace Rock.Rest.Controllers
                     {
                         personInfoHtml += familyGroupTypeRoles.First( a => a.Id == familyGroupMember.GroupRoleId ).Name;
                     }
-                    
+
                     if ( personAge != null )
                     {
                         personInfoHtml += " <em>(" + personAge.ToString() + " yrs old)</em>";
@@ -375,7 +398,7 @@ namespace Rock.Rest.Controllers
 
                         personInfoHtml += emailAndPhoneHtml;
                     }
-                    
+
                     personSearchResult.PickerItemDetailsHtml = string.Format( itemDetailFormat, imageHtml, personInfoHtml );
                 }
 
@@ -414,9 +437,9 @@ namespace Rock.Rest.Controllers
                 {
                     recordTypeValueGuid = DefinedValueCache.Read( person.RecordTypeValueId.Value ).Guid;
                 }
-                
+
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-                html.AppendFormat( 
+                html.AppendFormat(
                     "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
                     Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, recordTypeValueGuid, 65, 65 ),
                     person.FullName,
@@ -425,7 +448,7 @@ namespace Rock.Rest.Controllers
                 var spouse = person.GetSpouse( rockContext );
                 if ( spouse != null )
                 {
-                    html.AppendFormat( 
+                    html.AppendFormat(
                         "<strong>Spouse</strong> {0}",
                         spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName );
                 }

@@ -430,7 +430,7 @@ namespace RockWeb.Blocks.Groups
             group.IsActive = cbIsActive.Checked;
 
             // save sync settings
-            if ( wpGroupAttributes.Visible )
+            if ( wpGroupSync.Visible )
             {
                 group.SyncDataViewId = dvpSyncDataview.SelectedItem.Value.AsIntegerOrNull();
                 group.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedItem.Value.AsIntegerOrNull();
@@ -1208,16 +1208,8 @@ namespace RockWeb.Blocks.Groups
 
             lblMainDetails.Text = descriptionList.Html;
 
-            var attributes = new List<Rock.Web.Cache.AttributeCache>();
-
-            // Get the attributes inherited from group type
-            GroupType groupType = new GroupTypeService( rockContext ).Get( group.GroupTypeId );
-            groupType.LoadAttributes();
-            attributes = groupType.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
-
-            // Combine with the group attributes
             group.LoadAttributes();
-            attributes.AddRange( group.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) );
+            var attributes = group.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
 
             // display attribute values
             var attributeCategories = Helper.GetAttributeCategories( attributes );
@@ -1226,7 +1218,7 @@ namespace RockWeb.Blocks.Groups
             var pageParams = new Dictionary<string, string>();
             pageParams.Add("GroupId", group.Id.ToString());
 
-            hlAttendance.Visible = groupType.TakesAttendance;
+            hlAttendance.Visible = group.GroupType.TakesAttendance;
             hlAttendance.NavigateUrl = LinkedPageUrl( "AttendancePage", pageParams );
 
             string groupMapUrl = LinkedPageUrl("GroupMapPage", pageParams);
