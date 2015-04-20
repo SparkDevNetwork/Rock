@@ -36,7 +36,7 @@ namespace Rock.PersonProfile.Badge
 
     [GroupTypeField( "Group Type", "The type of group to use.", true )]
     [TextField( "Badge Color", "The color of the badge (#ffffff).", true, "#0ab4dd" )]
-    public class GeofencedGroup : BadgeComponent
+    public class GeofencedByGroup : BadgeComponent
     {
         /// <summary>
         /// Renders the specified writer.
