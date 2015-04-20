@@ -639,7 +639,9 @@ namespace RockWeb.Plugins.church_ccv.Hr
                 return;
             }
 
-            var submitToPersonAlias = new PersonAliasService( hrContext ).Get( ddlSubmitTo.SelectedValue.AsInteger() );
+            int submitToPersonId = ddlSubmitTo.SelectedValue.AsInteger();
+            var submitToPersonAlias = new PersonAliasService( hrContext ).Queryable().Where( p => p.PersonId == submitToPersonId ).FirstOrDefault();
+
             if ( submitToPersonAlias == null )
             {
                 return;
