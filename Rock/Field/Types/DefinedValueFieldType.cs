@@ -17,59 +17,31 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Newtonsoft.Json;
-using Rock;
-using Rock.Constants;
 using Rock.Data;
+using Rock.Model;
+using Rock.Reporting;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type used to display a dropdown list of Defined Values for a specific Defined Type
+    /// Stored as either a single DefinedValue.Guid or a comma-delimited list of DefinedValue.Guids (if AllowMultiple)
     /// </summary>
     [Serializable]
-    public class DefinedValueFieldType : FieldType
+    public class DefinedValueFieldType : FieldType, IEntityFieldType
     {
+
+        #region Configuration
+
         private const string DEFINED_TYPE_KEY = "definedtype";
         private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            string formattedValue = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                var names = new List<string>();
-                foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                {
-                    Guid guid = Guid.Empty;
-                    if ( Guid.TryParse( guidValue, out guid ) )
-                    {
-                        var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
-                        if ( definedValue != null )
-                        {
-                            names.Add( definedValue.Value );
-                        }
-                    }
-                }
-
-                formattedValue = names.AsDelimited( ", " );
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
-
-        }
+        private const string DISPLAY_DESCRIPTION = "displaydescription";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -80,6 +52,7 @@ namespace Rock.Field.Types
             var configKeys = base.ConfigurationKeys();
             configKeys.Add( DEFINED_TYPE_KEY );
             configKeys.Add( ALLOW_MULTIPLE_KEY );
+            configKeys.Add( DISPLAY_DESCRIPTION );
             return configKeys;
         }
 
@@ -115,6 +88,15 @@ namespace Rock.Field.Types
             cb.Label = "Allow Multiple Values";
             cb.Text = "Yes";
             cb.Help = "When set, allows multiple defined type values to be selected.";
+
+            // option for Display Descriptions
+            var cbDescription = new RockCheckBox();
+            controls.Add( cbDescription );
+            cbDescription.AutoPostBack = true;
+            cbDescription.CheckedChanged += OnQualifierUpdated;
+            cbDescription.Label = "Display Descriptions";
+            cbDescription.Text = "Yes";
+            cbDescription.Help = "When set, the defined value descriptions will be displayed instead of the values.";
             return controls;
         }
 
@@ -128,17 +110,23 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( DEFINED_TYPE_KEY, new ConfigurationValue( "Defined Type", "The Defined Type to select values from", "" ) );
             configurationValues.Add( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "Allow Multiple Values", "When set, allows multiple defined type values to be selected.", "" ) );
+            configurationValues.Add( DISPLAY_DESCRIPTION, new ConfigurationValue( "Display Descriptions", "When set, the defined value descriptions will be displayed instead of the values.", "" ) );
 
-            if ( controls != null && controls.Count == 2 )
+            if ( controls != null )
             {
-                if ( controls[0] != null && controls[0] is DropDownList )
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is DropDownList )
                 {
                     configurationValues[DEFINED_TYPE_KEY].Value = ( (DropDownList)controls[0] ).SelectedValue;
                 }
 
-                if ( controls[1] != null && controls[1] is CheckBox )
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is CheckBox )
                 {
                     configurationValues[ ALLOW_MULTIPLE_KEY ].Value = ( (CheckBox)controls[1] ).Checked.ToString();
+                }
+
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is CheckBox )
+                {
+                    configurationValues[DISPLAY_DESCRIPTION].Value = ( (CheckBox)controls[2] ).Checked.ToString();
                 }
             }
 
@@ -152,19 +140,76 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && controls.Count == 2 && configurationValues != null )
+            if ( controls != null && configurationValues != null )
             {
-                if ( controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( DEFINED_TYPE_KEY ) )
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( DEFINED_TYPE_KEY ) )
                 {
                     ( (DropDownList)controls[0] ).SelectedValue = configurationValues[DEFINED_TYPE_KEY].Value;
                 }
 
-                if ( controls[1] != null && controls[1] is CheckBox && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) )
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is CheckBox && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) )
                 {
                     ( (CheckBox)controls[1] ).Checked = configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
                 }
+
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is CheckBox && configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) )
+                {
+                    ( (CheckBox)controls[2] ).Checked = configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean();
+                }
             }
         }
+
+        #endregion
+
+        #region Formatting
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            string formattedValue = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                bool useDescription = false;
+                if ( !condensed &&
+                     configurationValues != null &&
+                     configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) &&
+                     configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean() )
+                {
+                    useDescription = true;
+                }
+
+                var names = new List<string>();
+                foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                {
+                    Guid guid = Guid.Empty;
+                    if ( Guid.TryParse( guidValue, out guid ) )
+                    {
+                        var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                        if ( definedValue != null )
+                        {
+                            names.Add( useDescription ? definedValue.Description : definedValue.Value );
+                        }
+                    }
+                }
+
+                formattedValue = names.AsDelimited( ", " );
+            }
+
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
+
+        }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -180,7 +225,7 @@ namespace Rock.Field.Types
 
             if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ ALLOW_MULTIPLE_KEY ].Value.AsBoolean() )
             {
-                editControl = new Rock.Web.UI.Controls.RockCheckBoxList { ID = id }; 
+                editControl = new Rock.Web.UI.Controls.RockCheckBoxList { ID = id, RepeatDirection = RepeatDirection.Horizontal }; 
                 editControl.AddCssClass( "checkboxlist-group" );
             }
             else
@@ -198,9 +243,12 @@ namespace Rock.Field.Types
                     var definedValues = definedValueService.GetByDefinedTypeId( definedTypeId );
                     if ( definedValues.Any() )
                     {
+
+                        bool useDescription = configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) && configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean();
+
                         foreach ( var definedValue in definedValues )
                         {
-                            editControl.Items.Add( new ListItem( definedValue.Value, definedValue.Id.ToString() ) );
+                            editControl.Items.Add( new ListItem( useDescription ? definedValue.Description : definedValue.Value, definedValue.Id.ToString() ) );
                         }
                     }
                     return editControl;
@@ -289,31 +337,310 @@ namespace Rock.Field.Types
             }
         }
 
-        /// <summary>
-        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
-        /// </summary>
-        /// <param name="attribute"></param>
-        /// <returns></returns>
-        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute)
-        {
-            var filterConfig = base.GetFilterConfig( attribute );
-            filterConfig.ControlCount = 1;
-            filterConfig.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
+        #endregion
 
-            if ( attribute.QualifierValues.ContainsKey( DEFINED_TYPE_KEY ) )
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the filter compare control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <returns></returns>
+        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        {
+            bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+            if ( allowMultiple )
             {
-                int? definedTypeId = attribute.QualifierValues[DEFINED_TYPE_KEY].Value.AsIntegerOrNull();
-                if (definedTypeId.HasValue)
+                return base.FilterCompareControl( configurationValues, id, required );
+            }
+            else
+            {
+                var lbl = new Label();
+                lbl.ID = string.Format( "{0}_lIs", id );
+                lbl.AddCssClass( "data-view-filter-label" );
+                lbl.Text = "Is";
+                return lbl;
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.ContainsFilterComparisonTypes;
+            }
+        }
+
+        /// <summary>
+        /// Filters the value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        {
+            bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+
+            var overrideConfigValues = new Dictionary<string, ConfigurationValue>();
+            foreach ( var keyVal in configurationValues )
+            {
+                overrideConfigValues.Add( keyVal.Key, keyVal.Value );
+            }
+            overrideConfigValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new ConfigurationValue( (!allowMultiple).ToString() ) );
+
+            return base.FilterValueControl( overrideConfigValues, id, required );
+        }
+
+
+        /// <summary>
+        /// Gets the filter value.
+        /// </summary>
+        /// <param name="filterControl">The filter control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var values = new List<string>();
+
+            if ( filterControl != null )
+            {
+                bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+
+                try
                 {
-                    var definedType = Rock.Web.Cache.DefinedTypeCache.Read( definedTypeId.Value );
-                    if (definedType != null)
+                    if ( allowMultiple )
                     {
-                        filterConfig.DefinedTypeGuid = definedType.Guid;
+                        var filterValues = base.GetFilterValues( filterControl, configurationValues );
+                        if ( filterValues != null )
+                        {
+                            filterValues.ForEach( v => values.Add( v ) );
+                        }
+                    }
+                    else
+                    {
+                        values.Add( GetEditValue( filterControl.Controls[1].Controls[0], configurationValues ) );
+                    }
+                }
+                catch { }
+            }
+
+            return values;
+        }
+
+        /// <summary>
+        /// Sets the filter compare value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterCompareValue( Control control, string value )
+        {
+        }
+
+        /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            bool useDescription = false;
+            if ( configurationValues != null &&
+                configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) &&
+                configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean() )
+            {
+                useDescription = true;
+            }
+
+            var values = new List<string>();
+            foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                Guid guid = Guid.Empty;
+                if ( Guid.TryParse( guidValue, out guid ) )
+                {
+                    var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                    if ( definedValue != null )
+                    {
+                        values.Add( useDescription ? definedValue.Description : definedValue.Value );
                     }
                 }
             }
 
-            return filterConfig;
+            return values.Select( v => "'" + v + "'" ).ToList().AsDelimited( " or " );
         }
+
+        /// <summary>
+        /// Gets the filter format script.
+        /// </summary>
+        /// <param name="configurationValues"></param>
+        /// <param name="title">The title.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// This script must set a javascript variable named 'result' to a friendly string indicating value of filter controls
+        /// a '$selectedContent' should be used to limit script to currently selected filter fields
+        /// </remarks>
+        public override string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
+        {
+            bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+            if ( allowMultiple )
+            {
+                return base.GetFilterFormatScript( configurationValues, title );
+            }
+
+            string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
+            return string.Format( "var selectedItems = ''; $('input:checked', $selectedContent).each(function() {{ selectedItems += selectedItems == '' ? '' : ' or '; selectedItems += '\\'' + $(this).parent().text() + '\\'' }}); result = '{0} is ' + selectedItems ", titleJs );
+        }
+
+        /// <summary>
+        /// Gets a filter expression for an entity property value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
+        {
+            List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            if ( selectedValues.Any() )
+            {
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
+
+                var type = propertyType;
+                bool isNullableType = type.IsGenericType && type.GetGenericTypeDefinition() == typeof( Nullable<> );
+                if ( isNullableType )
+                {
+                    type = Nullable.GetUnderlyingType( type );
+                    propertyExpression = Expression.Property( propertyExpression, "Value" );
+                }
+
+                Type genericListType = typeof( List<> );
+                Type specificListType = genericListType.MakeGenericType( type );
+                object specificList = Activator.CreateInstance( specificListType );
+
+                foreach ( string value in selectedValues )
+                {
+                    string tempValue = value;
+                    // if this is not for an attribute value, look up the id for the defined value
+                    if ( propertyName != "Value" || propertyType != typeof(string) )
+                    {
+                        var dv = DefinedValueCache.Read( value.AsGuid() );
+                        tempValue = dv != null ? dv.Id.ToString() : string.Empty;
+                    }
+                    if ( !string.IsNullOrWhiteSpace( tempValue ) )
+                    {
+                        object obj = Convert.ChangeType( tempValue, type );
+                        specificListType.GetMethod( "Add" ).Invoke( specificList, new object[] { obj } );
+                    }
+                }
+
+                ConstantExpression constantExpression = Expression.Constant( specificList, specificListType );
+                return Expression.Call( constantExpression, specificListType.GetMethod( "Contains", new Type[] { type } ), propertyExpression );
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Geta a filter expression for an attribute value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
+        {
+            bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+            if ( allowMultiple || filterValues.Count != 1 )
+            {
+                return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
+            }
+
+            List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            if ( selectedValues.Any() )
+            {
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
+                return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof(string) } ), propertyExpression );
+            }
+
+            return null;
+        }
+            
+        #endregion
+
+        #region Entity Methods
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
+            var item = DefinedValueCache.Read( guid );
+            return item != null ? item.Id : (int?)null;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            DefinedValueCache item = null;
+            if ( id.HasValue )
+            {
+                item = DefinedValueCache.Read( id.Value );
+            }
+            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
+            SetEditValue( control, configurationValues, guidValue );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity( value, null );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                rockContext = rockContext ?? new RockContext();
+                return new DefinedValueService( rockContext ).Get( guid.Value );
+            }
+
+            return null;
+        }
+
+        #endregion
+
     }
 }

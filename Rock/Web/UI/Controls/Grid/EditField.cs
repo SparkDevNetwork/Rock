@@ -25,7 +25,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column for editing a row in a grid
     /// </summary>
     [ToolboxData( "<{0}:EditField runat=server></{0}:EditField>" )]
-    public class EditField : TemplateField, INotRowSelectedField
+    public class EditField : RockTemplateField, INotRowSelectedField
     {
         /// <summary>
         /// Gets or sets the icon CSS class.
@@ -48,6 +48,30 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["IconCssClass"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the tool tip.
+        /// </summary>
+        /// <value>
+        /// The tool tip.
+        /// </value>
+        public string ToolTip
+        {
+            get
+            {
+                string toolTip = ViewState["ToolTip"] as string;
+                if ( string.IsNullOrWhiteSpace( toolTip ) )
+                {
+                    toolTip = "Edit";
+                    ViewState["ToolTip"] = toolTip;
+                }
+                return toolTip;
+            }
+            set
+            {
+                ViewState["ToolTip"] = value;
             }
         }
 
@@ -130,10 +154,11 @@ namespace Rock.Web.UI.Controls
             {
                 EditField editField = cell.ContainingField as EditField;
                 ParentGrid = editField.ParentGrid;
+
                 LinkButton lbEdit = new LinkButton();
                 lbEdit.CausesValidation = false;
                 lbEdit.CssClass = "btn btn-default btn-sm";
-                lbEdit.ToolTip = "Edit";
+                lbEdit.ToolTip = editField.ToolTip;
                 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
                 buttonIcon.Attributes.Add("class", editField.IconCssClass);

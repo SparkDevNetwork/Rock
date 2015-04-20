@@ -14,8 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel;
+using System.Collections.Generic;
 using System.Net;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using Rock.Net;
@@ -53,6 +56,13 @@ namespace Rock.Apps.StatementGenerator
         {
             txtUsername.Text = txtUsername.Text.Trim();
             txtRockUrl.Text = txtRockUrl.Text.Trim();
+            Uri rockUrl = new Uri( txtRockUrl.Text );
+            var validSchemes = new string[] { Uri.UriSchemeHttp, Uri.UriSchemeHttps };
+            if ( !validSchemes.Contains(rockUrl.Scheme) )
+            {
+                txtRockUrl.Text = "http://" + rockUrl.AbsoluteUri;
+            }
+
             RockRestClient rockRestClient = new RockRestClient( txtRockUrl.Text );
 
             string userName = txtUsername.Text;
@@ -204,6 +214,17 @@ namespace Rock.Apps.StatementGenerator
             {
                 btnLogin_Click( null, null );
             }
+        }
+
+        /// <summary>
+        /// (EasterEgg) Handles the MouseDoubleClick event of the LoginLabel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="MouseButtonEventArgs"/> instance containing the event data.</param>
+        private void LoginLabel_MouseDoubleClick( object sender, MouseButtonEventArgs e )
+        {
+            lblRockUrl.Visibility = Visibility.Visible;
+            txtRockUrl.Visibility = Visibility.Visible;
         }
     }
 }

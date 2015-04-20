@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
     /// 
     /// </summary>
     [ToolboxData( "<{0}:LiquidField runat=server></{0}:LiquidField>" )]
-    public class LiquidField : TemplateField
+    public class LiquidField : RockTemplateField
     {
         /// <summary>
         /// Performs basic instance initialization for a data control field.

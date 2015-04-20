@@ -31,7 +31,6 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Removes (or excludes) the groups for each selected family member if the person's ability level does not match the groups." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Ability Level" )]
-
     [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true )]
     public class FilterGroupsByAbilityLevel : CheckInActionComponent
     {
@@ -57,9 +56,9 @@ namespace Rock.Workflow.Action.CheckIn
             {
                 var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
 
-                foreach ( var person in family.People.Where( p => p.Selected ) )
+                foreach ( var person in family.People )
                 {
-                    person.Person.LoadAttributes();
+                    person.Person.LoadAttributes( rockContext );
                     string personAbilityLevel = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
                     if ( string.IsNullOrWhiteSpace( personAbilityLevel ) )
                     {
@@ -81,7 +80,6 @@ namespace Rock.Workflow.Action.CheckIn
                                 {
                                     group.ExcludedByFilter = true;
                                 }
-
                             }
                         }
                     }

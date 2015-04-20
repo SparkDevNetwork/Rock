@@ -50,11 +50,21 @@ namespace Rock.Workflow.Action
             errorMessages = new List<string>();
 
             var workflow = action.Activity.Workflow;
+            if ( workflow.Id >= 0 )
+            {
+                // Create a new RockContext so that any previous updates are ignored and
+                // workflow can be sucessfully deleted
+                var newRockContext = new RockContext();
+                var workflowService = new WorkflowService( newRockContext );
+                var workflowToDelete = workflowService.Get( workflow.Id );
+                if ( workflowToDelete != null )
+                {
+                    workflowService.Delete( workflowToDelete );
+                    newRockContext.SaveChanges();
+                }
+            }
 
-            WorkflowService workflowService = new WorkflowService( rockContext );
-            workflowService.Delete( workflow );
-            rockContext.SaveChanges();
-
+            workflow.Id = 0;
             workflow.IsPersisted = false;
 
             return true;

@@ -3,18 +3,18 @@
 <!DOCTYPE html>
 
 <!--
-  _______       _____           _   ____         _______ _             _____ _                   
- |__   __|     / ____|         | | |  _ \       |__   __| |           / ____| |                  
-    | | ___   | |  __  ___   __| | | |_) | ___     | |  | |__   ___  | |  __| | ___  _ __ _   _  
-    | |/ _ \  | | |_ |/ _ \ / _` | |  _ < / _ \    | |  | '_ \ / _ \ | | |_ | |/ _ \| '__| | | | 
-    | | (_) | | |__| | (_) | (_| | | |_) |  __/    | |  | | | |  __/ | |__| | | (_) | |  | |_| | 
-    |_|\___/   \_____|\___/ \__,_| |____/ \___|    |_|  |_| |_|\___|  \_____|_|\___/|_|   \__, | 
-                                                                                           __/ | 
-                                                                                          |___/ 
+  _______       _____           _   ____         _______ _             _____ _
+ |__   __|     / ____|         | | |  _ \       |__   __| |           / ____| |
+    | | ___   | |  __  ___   __| | | |_) | ___     | |  | |__   ___  | |  __| | ___  _ __ _   _
+    | |/ _ \  | | |_ |/ _ \ / _` | |  _ < / _ \    | |  | '_ \ / _ \ | | |_ | |/ _ \| '__| | | |
+    | | (_) | | |__| | (_) | (_| | | |_) |  __/    | |  | | | |  __/ | |__| | | (_) | |  | |_| |
+    |_|\___/   \_____|\___/ \__,_| |____/ \___|    |_|  |_| |_|\___|  \_____|_|\___/|_|   \__, |
+                                                                                           __/ |
+                                                                                          |___/
 -->
 
 <script runat="server">
-    
+
     // keep code below to call base class init method
 
     /// <summary>
@@ -26,8 +26,8 @@
         base.OnInit( e );
 
         lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath("~/Assets/Images/rock-logo.svg") );
-    }    
-    
+    }
+
 </script>
 
 <html class="no-js">
@@ -36,8 +36,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <meta charset="utf-8">
     <title></title>
-    
-    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>" ></script>
+
     <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js", true) %>"></script>
     <script src="<%# ResolveRockUrl("~/Scripts/jquery.jquery-dotimeout.js", true) %>"></script>
 
@@ -51,6 +50,8 @@
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
 
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>" ></script>
+
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
     <!-- Icons -->
@@ -59,16 +60,16 @@
     <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone-retina.png", true) %>">
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-ipad.png", true) %>">
     <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone.png", true) %>">
-    
+
 </head>
 <body>
 
     <form id="form1" runat="server">
-        
+
         <div id="page-wrapper">
 
             <nav class="navbar-default navbar-static-side" role="navigation">
-                
+
                 <div class="navbar-header">
                     <asp:HyperLink ID="hlHome" runat="server" NavigateUrl="~" ToolTip="Rock">
                         <div class="logo"></div>
@@ -83,19 +84,19 @@
                 <header>
                     <!-- Brand Bar -->
                     <nav class="navbar navbar-default navbar-static-top">
-            
-                    
+
+
 			                <div class="navbar-header">
                                 <div class="navbar-minimize">
                                     <i class="fa fa-bars"></i>
                                 </div>
 			                </div>
-                        
+
                             <div class="navbar-mobile-logo">
-                                <asp:Literal ID="lLogoSvg" runat="server" />		   
+                                <asp:Literal ID="lLogoSvg" runat="server" />
                             </div>
-                        	
-                            <div class="navbar-content">   
+
+                            <div class="navbar-content">
                                 <div class="navbar-zone-login pull-right"><Rock:Zone Name="Login" runat="server" /></div>
                                 <div class="navbar-zone-header pull-right divided"><Rock:Zone Name="Header" runat="server" /></div>
 			                </div>
@@ -110,8 +111,8 @@
                 </main>
 
                  <footer>
-                
-		    
+
+
                         <hr />
 
                         <div class="row">
@@ -119,7 +120,7 @@
                                 <Rock:Zone Name="Footer" runat="server" />
                             </div>
                             <div class="col-md-4">
-                                
+
                             </div>
                         </div>
 
@@ -128,10 +129,10 @@
             </div>
 
 	    </div>
-        
+
         <%-- controls for scriptmanager and update panel --%>
-        <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server"/>
-        <asp:UpdateProgress id="updateProgress" runat="server">
+        <asp:ScriptManager ID="sManager" runat="server"/>
+        <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
 		        <ProgressTemplate>
 		            <div class="updateprogress-status">
                         <div class="spinner">
@@ -169,8 +170,8 @@
             $('#content-wrapper').click(function () {
                 $('.navbar-side li').removeClass('open');
             });
-            
-            // show/hide sidebar nav 
+
+            // show/hide sidebar nav
             $('.navbar-minimize').click(function () {
                 if ($('.navbar-static-side').is(":visible")) {
                     $('body').addClass('navbar-side-close');

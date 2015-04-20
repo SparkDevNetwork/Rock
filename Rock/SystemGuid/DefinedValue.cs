@@ -269,11 +269,6 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_MARITAL_STATUS_SINGLE = "F19FC180-FE8F-4B72-A59C-8013E3B0EB0D";
 
-        /// <summary>
-        /// Marital Status of Unknown
-        /// </summary>
-        public const string PERSON_MARITAL_STATUS_UNKNOWN = "D9CFD343-6A56-45F6-9E26-3269BA4FBC02";
-
         #endregion
 
         #region Person Phone Type
@@ -410,6 +405,20 @@ namespace Rock.SystemGuid
         /// Default RSS Channel Template
         /// </summary>
         public const string DEFAULT_RSS_CHANNEL = "D6149581-9EFC-40D8-BD38-E92C0717BEDA";
+
+        #endregion
+
+        #region Workflow Note Type
+
+        /// <summary>
+        /// A user-entered workflow note
+        /// </summary>
+        public const string WORKFLOW_NOTE_TYPE_USER_NOTE = "534489FB-E239-4C51-8F5D-9ECF85E9CDE2";
+
+        /// <summary>
+        /// A system-entered workflow note
+        /// </summary>
+        public const string WORKFLOW_NOTE_TYPE_SYSTEM_NOTE = "414E9F98-4709-4895-AEBA-E41773BB7EB8";
 
         #endregion
     }

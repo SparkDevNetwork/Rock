@@ -15,11 +15,16 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.IO;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Storage;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -62,18 +67,6 @@ namespace Rock.Model
         public int? BinaryFileTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Url that the provider can use as needed to store a URL reference to a file
-        /// NOTE: when generating the URL for a Rock Client, don't use this. 
-        /// Use ~/GetFile.ashx?guid={guid}, ~/GetImage.ashx?guid={guid} instead
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing the Url to the file.
-        /// </value>
-        [MaxLength( 255 )]
-        [DataMember]
-        public string Url { get; set; }
-
-        /// <summary>
         /// Gets or sets the name of the file, including any extensions. This name is usually captured when the file is uploaded to Rock and this same name will be used when the file is downloaded. This property is required.
         /// </summary>
         /// <value>
@@ -111,7 +104,73 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the ID of the Storage Service <see cref="Rock.Model.EntityType"/> that is being used to store this file.
         /// </value>
         [DataMember]
-        public int? StorageEntityTypeId { get; private set; }
+        public int? StorageEntityTypeId
+        {
+            get
+            {
+                return _storageEntityTypeId;
+            }
+
+            private set
+            {
+                _storageEntityTypeId = value;
+
+                StorageProvider = null;
+                if ( value.HasValue )
+                {
+                    var entityType = EntityTypeCache.Read( value.Value );
+                    if ( entityType != null )
+                    {
+                        StorageProvider = ProviderContainer.GetComponent( entityType.Name );
+                    }
+                }
+
+
+            }
+        }
+        private int? _storageEntityTypeId = null;
+
+        /// <summary>
+        /// Gets or sets the storage entity settings.
+        /// </summary>
+        /// <value>
+        /// The storage entity settings.
+        /// </value>
+        /// <remarks>
+        /// Because a Storage provider's settings are stored with the binary file type, and that binary file 
+        /// type may change the settings or storage provider, the setting values at the time this file was 
+        /// saved need to be stored with the binary file so that the storage provider is still able to 
+        /// retrieve the file using these settings
+        /// </remarks>
+        public string StorageEntitySettings { get; set; }
+
+        /// <summary>
+        /// Gets or sets a path to the file that is understandable by the storage provider.
+        /// </summary>
+        /// <value>
+        /// The URL.
+        /// </value>
+        /// <remarks>
+        /// It us up to the storage provider to save the path value when creating the file
+        /// </remarks>
+        [MaxLength( 2083 )]
+        [DataMember]
+        public string Path { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content last modified.
+        /// </summary>
+        /// <value>
+        /// The content last modified.
+        /// </value>
+        /// <remarks>
+        /// Because the Content property is not part of the EF model, changes to just the content
+        /// would not mark the entity as modified when it is saved. Because the storage providers will 
+        /// only get notified of new content when this model is added or changed, this property is 
+        /// required in order to flag the entity as being modified whenever the content is updated.
+        /// </remarks>
+        [DataMember]
+        public DateTime? ContentLastModified { get; set; }
 
         #endregion
 
@@ -132,20 +191,100 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.BinaryFileData"/> that contains the content of the file. 
         /// </value>
-        public virtual BinaryFileData Data { get; set; }
+        public virtual BinaryFileData DatabaseData { get; set; }
 
         /// <summary>
-        /// Gets or sets the Storage Service <see cref="Rock.Model.EntityType"/>
+        /// Gets the storage provider.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.EntityType"/> representing the Storage Service that is being used.
+        /// The storage provider.
         /// </value>
+        [NotMapped]
+        public virtual Storage.ProviderComponent StorageProvider { get; private set; }
+
+        /// <summary>
+        /// Gets the URL.
+        /// </summary>
+        /// <value>
+        /// The URL.
+        /// </value>
+        [NotMapped]
         [DataMember]
-        public virtual EntityType StorageEntityType { get; set; }
+        public virtual string Url
+        {
+            get
+            {
+                if ( StorageProvider != null )
+                {
+                    return StorageProvider.GetUrl( this );
+                }
+                else
+                {
+                    return Path;
+                }
+            }
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets or sets the content stream.
+        /// </summary>
+        /// <value>
+        /// The content stream.
+        /// </value>
+        [NotMapped]
+        [HideFromReporting]
+        public virtual Stream ContentStream
+        {
+            get
+            {
+                if ( _stream == null )
+                {
+                    if ( StorageProvider != null )
+                    {
+                        _stream = StorageProvider.GetContentStream( this );
+                    }
+                }
+                else
+                {
+                    if ( _stream.CanSeek )
+                    {
+                        _stream.Position = 0;
+                    }
+                }
+
+                return _stream;
+            }
+            set
+            {
+                _stream = value;
+                _contentIsDirty = true;
+                ContentLastModified = RockDateTime.Now;
+            }
+        }
+        private Stream _stream;
+        private bool _contentIsDirty = false;
+
+        /// <summary>
+        /// Gets the storage settings.
+        /// </summary>
+        /// <value>
+        /// The storage settings.
+        /// </value>
+        [NotMapped]
+        [HideFromReporting]
+        public virtual Dictionary<string,string> StorageSettings
+        {
+            get
+            {
+                return StorageEntitySettings.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+            }
+        }
 
         #endregion
 
         #region Methods
+
 
         /// <summary>
         /// Sets the type of the storage entity.
@@ -161,68 +300,93 @@ namespace Rock.Model
         /// Pres the save.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        /// <param name="entry">The entry.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
-            if ( state == System.Data.Entity.EntityState.Deleted )
+            if ( entry.State == System.Data.Entity.EntityState.Deleted )
             {
-                Rock.Storage.ProviderComponent storageProvider = BinaryFileService.DetermineBinaryFileStorageProvider( (Rock.Data.RockContext)dbContext, this );
-                if ( storageProvider != null )
+                if ( StorageProvider != null )
                 {
-                    storageProvider.RemoveFile( this, System.Web.HttpContext.Current );
+                    this.BinaryFileTypeId = entry.OriginalValues["BinaryFileTypeId"].ToString().AsInteger();
+                    StorageProvider.DeleteContent( this );
+                    this.BinaryFileTypeId = null;
                 }
             }
-            else if ( state == System.Data.Entity.EntityState.Added )
+            else
             {
-                // when a file is saved (unless it is getting Deleted/Saved), it should use the StoredEntityType that is associated with the BinaryFileType
-                if ( BinaryFileType != null )
+                if ( BinaryFileType == null && BinaryFileTypeId.HasValue )
                 {
-                    SetStorageEntityTypeId( BinaryFileType.StorageEntityTypeId );
-
-                    var storageProvider = BinaryFileService.DetermineBinaryFileStorageProvider( (Rock.Data.RockContext)dbContext, this );
-
-                    if ( storageProvider != null )
-                    {
-                        // save the file to the provider's new storage medium
-                        storageProvider.SaveFile( this, System.Web.HttpContext.Current );
-                    }
+                    BinaryFileType = new BinaryFileTypeService( (RockContext)dbContext ).Get( BinaryFileTypeId.Value );
                 }
-            }
-            else if ( state == System.Data.Entity.EntityState.Modified )
-            {
-                // when a file is saved (unless it is getting Deleted/Saved), it should use the StorageEntityType that is associated with the BinaryFileType
-                if ( BinaryFileType != null )
-                {
-                    if ( !this.StorageEntityTypeId.HasValue )
-                    {
-                        SetStorageEntityTypeId( BinaryFileType.StorageEntityTypeId );
-                    }
 
-                    // if the storage provider changed, read it from the old provider and write it to the new one, then remove it from the old provider
-                    if ( this.StorageEntityTypeId != BinaryFileType.StorageEntityTypeId )
+                if ( entry.State == System.Data.Entity.EntityState.Added )
+                {
+                    // when a file is saved (unless it is getting Deleted/Saved), it should use the StoredEntityType that is associated with the BinaryFileType
+                    if ( BinaryFileType != null )
                     {
-                        Rock.Storage.ProviderComponent origStorageProvider = BinaryFileService.DetermineBinaryFileStorageProvider( (Rock.Data.RockContext)dbContext, this );
-                        SetStorageEntityTypeId( BinaryFileType.StorageEntityTypeId );
-                        Rock.Storage.ProviderComponent newStorageProvider = BinaryFileService.DetermineBinaryFileStorageProvider( (Rock.Data.RockContext)dbContext, this );
-                        using ( var origStream = origStorageProvider.GetFileContentStream( this, System.Web.HttpContext.Current ) )
+                        // Persist the storage type
+                        StorageEntityTypeId = BinaryFileType.StorageEntityTypeId;
+
+                        // Persist the storage type's settings specific to this binary file type
+                        var settings = new Dictionary<string, string>();
+                        if ( BinaryFileType.Attributes == null )
                         {
-                            newStorageProvider.SaveFile( this, System.Web.HttpContext.Current );
-                            try
+                            BinaryFileType.LoadAttributes();
+                        }
+                        foreach ( var attributeValue in BinaryFileType.AttributeValues )
+                        {
+                            settings.Add( attributeValue.Key, attributeValue.Value.Value );
+                        }
+                        StorageEntitySettings = settings.ToJson();
+
+                        if ( StorageProvider != null )
+                        {
+                            // save the file to the provider's new storage medium
+                            StorageProvider.SaveContent( this );
+                            Path = StorageProvider.GetPath( this );
+                        }
+                    }
+                }
+
+                else if ( entry.State == System.Data.Entity.EntityState.Modified )
+                {
+                    // when a file is saved (unless it is getting Deleted/Added), 
+                    // it should use the StorageEntityType that is associated with the BinaryFileType
+                    if ( BinaryFileType != null )
+                    {
+                        // if the storage provider changed, or any of it's settings specific 
+                        // to the binary file type changed, delete the original provider's content
+                        if ( StorageEntityTypeId.HasValue && BinaryFileType.StorageEntityTypeId.HasValue )
+                        {
+                            var settings = new Dictionary<string, string>();
+                            if ( BinaryFileType.Attributes == null )
                             {
-                                // try to delete it from the old provider
-                                origStorageProvider.RemoveFile( this, System.Web.HttpContext.Current );
+                                BinaryFileType.LoadAttributes();
                             }
-                            catch ( Exception ex )
+                            foreach ( var attributeValue in BinaryFileType.AttributeValues )
                             {
-                                ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
+                                settings.Add( attributeValue.Key, attributeValue.Value.Value );
+                            }
+                            string settingsJson = settings.ToJson();
+
+                            if ( StorageProvider != null && (
+                                StorageEntityTypeId.Value != BinaryFileType.StorageEntityTypeId.Value ||
+                                StorageEntitySettings != settingsJson ) )
+                            {
+                                // Delete the current provider's storage
+                                StorageProvider.DeleteContent( this );
+
+                                // Set the new storage provider with it's settings
+                                StorageEntityTypeId = BinaryFileType.StorageEntityTypeId;
+                                StorageEntitySettings = settingsJson;
                             }
                         }
                     }
-                    else
+
+                    if ( _contentIsDirty && StorageProvider != null )
                     {
-                        // storage provider didn't change, so just save the file
-                        Rock.Storage.ProviderComponent storageProvider = BinaryFileService.DetermineBinaryFileStorageProvider( (Rock.Data.RockContext)dbContext, this );
-                        storageProvider.SaveFile( this, System.Web.HttpContext.Current );
+                        StorageProvider.SaveContent( this );
+                        Path = StorageProvider.GetPath( this );
                     }
                 }
             }
@@ -237,6 +401,25 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.FileName;
+        }
+
+        /// <summary>
+        /// Reads the file's content stream and converts to a string.
+        /// </summary>
+        /// <returns></returns>
+        public string ContentsToString()
+        {
+            string contents = string.Empty;
+
+            using ( var stream = this.ContentStream )
+            {
+                using ( var reader = new StreamReader( stream ) )
+                {
+                    contents = reader.ReadToEnd();
+                }
+            }
+
+            return contents;
         }
 
         /// <summary>
@@ -269,7 +452,7 @@ namespace Rock.Model
         public BinaryFileConfiguration()
         {
             this.HasRequired( f => f.BinaryFileType ).WithMany().HasForeignKey( f => f.BinaryFileTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( f => f.Data ).WithRequired().WillCascadeOnDelete();
+            this.HasOptional( f => f.DatabaseData ).WithRequired().WillCascadeOnDelete();
         }
     }
 

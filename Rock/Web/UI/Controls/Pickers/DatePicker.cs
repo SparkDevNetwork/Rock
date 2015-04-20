@@ -26,6 +26,7 @@ namespace Rock.Web.UI.Controls
     public class DatePicker : DataTextBox
     {
         private CheckBox _cbCurrent;
+        private RockTextBox _nbDayOffset;
 
         /// <summary>
         /// Gets or sets a value indicating whether [display current option].
@@ -47,12 +48,12 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [current date].
+        /// Gets or sets a value indicating whether the selected date is the CurrentDate +- offset
         /// </summary>
         /// <value>
         ///   <c>true</c> if [current date]; otherwise, <c>false</c>.
         /// </value>
-        public bool CurrentDate
+        public bool IsCurrentDateOffset
         {
             get
             {
@@ -69,6 +70,32 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _cbCurrent.Checked = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the current date offset.
+        /// </summary>
+        /// <value>
+        /// The current date offset.
+        /// </value>
+        public int CurrentDateOffsetDays
+        {
+            get
+            {
+                if ( DisplayCurrentOption )
+                {
+                    EnsureChildControls();
+                    return _nbDayOffset.Text.AsIntegerOrNull() ?? 0;
+                }
+
+                return 0;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _nbDayOffset.Text = value.ToString();
             }
         }
 
@@ -205,8 +232,16 @@ namespace Rock.Web.UI.Controls
 
             _cbCurrent = new CheckBox();
             _cbCurrent.ID = this.ID + "_cbCurrent";
+            _cbCurrent.AddCssClass( "js-current-date-checkbox" );
             _cbCurrent.Text = "Current Date";
-            Controls.Add( _cbCurrent );
+            this.Controls.Add( _cbCurrent );
+
+            _nbDayOffset = new RockTextBox();
+            _nbDayOffset.ID = this.ID + "_nbDayOffset";
+            _nbDayOffset.Help = "Enter the number of days after the current date to use as the date. Use a negative number to specify days before.";
+            _nbDayOffset.AddCssClass( "input-width-md js-current-date-offset" );
+            _nbDayOffset.Label = "+- Days";
+            this.Controls.Add( _nbDayOffset );
         }
 
         /// <summary>
@@ -217,12 +252,18 @@ namespace Rock.Web.UI.Controls
         {
             if ( DisplayCurrentOption)
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-control-group" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-control-group js-date-picker-container" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                if (CurrentDate)
+                if (IsCurrentDateOffset)
                 {
-                    base.Enabled = false;
+                    // set this.Attributes["disabled"] instead of this.Enabled so that our child controls don't get disabled
+                    this.Attributes["disabled"] = "true";
+                    _nbDayOffset.Enabled = true;
+                }
+                else
+                {
+                    _nbDayOffset.Enabled = false;
                 }
             }
 
@@ -231,6 +272,7 @@ namespace Rock.Web.UI.Controls
             if ( DisplayCurrentOption )
             {
                 _cbCurrent.RenderControl( writer );
+                _nbDayOffset.RenderControl( writer );
                 writer.RenderEndTag();
             }
         }

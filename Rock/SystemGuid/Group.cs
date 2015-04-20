@@ -32,14 +32,9 @@ namespace Rock.SystemGuid
         public const string GROUP_ADMINISTRATORS= "628C51A8-4613-43ED-A18D-4A6FB999273E";
 
         /// <summary>
-        /// Gets the staff member group guid (Staff Users)
+        /// The Communication Administrators Group guid
         /// </summary>
-        public const string GROUP_STAFF_MEMBERS= "2C112948-FF4C-46E7-981A-0257681EADF4";
-
-        /// <summary>
-        /// Get the photo request application group
-        /// </summary>
-        public const string GROUP_PHOTO_REQUEST = "2108EF9C-10DC-4466-973D-D25AAB7818BE";
+        public const string GROUP_COMMUNICATION_ADMINISTRATORS = "B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B";
 
         /// <summary>
         /// The Finance Administrators Group guid
@@ -52,8 +47,23 @@ namespace Rock.SystemGuid
         public const string GROUP_FINANCE_USERS = "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9";
 
         /// <summary>
-        /// The Communication Administrators Group guid
+        /// The security group used by mobile app
         /// </summary>
-        public const string GROUP_COMMUNICATION_ADMINISTRATORS = "B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B";
+        public const string GROUP_MOBILE_APP = "EDD336D5-1429-41D9-8D41-2581A05F0E16";
+
+        /// <summary>
+        /// Get the photo request application group
+        /// </summary>
+        public const string GROUP_PHOTO_REQUEST = "2108EF9C-10DC-4466-973D-D25AAB7818BE";
+
+        /// <summary>
+        /// Gets the staff member group guid (Staff Users)
+        /// </summary>
+        public const string GROUP_STAFF_MEMBERS = "2C112948-FF4C-46E7-981A-0257681EADF4";
+
+        /// <summary>
+        /// Gets the staff-like member group guid (Staff Users)
+        /// </summary>
+        public const string GROUP_STAFF_LIKE_MEMBERS = "300BA2C8-49A3-44BA-A82A-82E3FD8C3745";
     }
 }

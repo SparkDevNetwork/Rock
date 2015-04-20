@@ -65,14 +65,41 @@
                                     <div class="grid">
                                         <Rock:Grid ID="gChildGroupTypes" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Group Type">
                                             <Columns>
-                                                <asp:BoundField DataField="Value" />
+                                                <Rock:RockBoundField DataField="Name" />
                                                 <Rock:DeleteField OnClick="gChildGroupTypes_Delete" />
                                             </Columns>
                                         </Rock:Grid>
                                     </div>
                                 </Rock:RockControlWrapper>
-                                <Rock:RockCheckBox ID="cbTakesAttendance" runat="server" Label="Takes Attendance" Text="Yes" 
-                                    Help="Check this option if groups of this type should support taking and tracking attendance." />
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbTakesAttendance" runat="server" Label="Takes Attendance" Text="Yes" 
+                                            Help="Check this option if groups of this type should support taking and tracking attendance." />
+                                        <Rock:RockCheckBox ID="cbSendAttendanceReminder" runat="server" Label="Send Attendance Reminder" Text="Yes"
+                                            Help="Check this option if an email should be sent to the group leaders of these group types reminding them to enter attendance information." />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBoxList ID="cblScheduleTypes" runat="server" Label="Group Schedule Options"
+                                            Help="The schedule option types to allow when editing groups of this type."/>
+                                    </div>
+                                </div>
+                                <Rock:RockControlWrapper ID="rcScheduleExclusions" runat="server" Label="Schedule Exclusions"
+                                    Help="The date ranges that groups of this type do not meet (regardless of their individual schedules).">
+                                    <div class="grid">
+                                        <Rock:Grid ID="gScheduleExclusions" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Exclusion">
+                                            <Columns>
+                                                <asp:TemplateField>
+                                                    <ItemTemplate>
+                                                        <%# ((DateTime)Eval("Value.Start")).ToShortDateString() %> - 
+                                                        <%# ((DateTime)Eval("Value.End")).ToShortDateString() %>
+                                                    </ItemTemplate>
+                                                </asp:TemplateField>
+                                                <Rock:EditField OnClick="gScheduleExclusions_Edit" />
+                                                <Rock:DeleteField OnClick="gScheduleExclusions_Delete" />
+                                            </Columns>
+                                        </Rock:Grid>
+                                    </div>
+                                </Rock:RockControlWrapper>
                                 <Rock:RockDropDownList ID="ddlAttendanceRule" runat="server" Label="Check-in Rule"
                                     Help="The rule that check in should use when a person attempts to check in to a group of this type.  If 'None' is selected, user will not be added to group and is not required to belong to group.  If 'Add On Check In' is selected, user will be added to group if they don't already belong.  If 'Already Belongs' is selected, user must already be a member of the group or they will not be allowed to check in." />
                                 <Rock:RockDropDownList ID="ddlPrintTo" runat="server" Label="Print Using" 
@@ -82,14 +109,14 @@
                                 </Rock:RockDropDownList>
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockCheckBoxList ID="cblLocationSelectionModes" runat="server" Label="Location Selection Modes"
-                                    Help="The location selection modes to allow when adding locations to groups of this type."/>
                                 <div class="row">
                                     <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Multiple Locations" Text="Allow" 
-                                            Help="Check this option if more than one location should be allowed for groups of this type." />
+                                         <Rock:RockCheckBoxList ID="cblLocationSelectionModes" runat="server" Label="Location Selection Modes"
+                                            Help="The location selection modes to allow when adding locations to groups of this type."/>
                                     </div>
                                     <div class="col-xs-6">
+                                       <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Multiple Locations" Text="Allow" 
+                                            Help="Check this option if more than one location should be allowed for groups of this type." />
                                         <Rock:RockCheckBox ID="cbEnableLocationSchedules" runat="server" Label="Enable Location Schedules" Text="Yes" 
                                             Help="Check this option if group locations should be associated with one or more pre-defined schedules." />
                                     </div>
@@ -99,7 +126,7 @@
                                     <div class="grid">
                                         <Rock:Grid ID="gLocationTypes" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Location Type">
                                             <Columns>
-                                                <asp:BoundField DataField="Value" />
+                                                <Rock:RockBoundField DataField="Value" />
                                                 <Rock:DeleteField OnClick="gLocationTypes_Delete" />
                                             </Columns>
                                         </Rock:Grid>
@@ -113,18 +140,20 @@
 
                     <Rock:PanelWidget ID="wpRoles" runat="server" Title="Roles">
                         <div class="grid">
-                            <Rock:Grid ID="gGroupTypeRoles" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Role">
+                            <Rock:Grid ID="gGroupTypeRoles" runat="server" EnableResponsiveTable="false" AllowPaging="false" DisplayType="Light" RowItemText="Role" TooltipField="Description">
                                 <Columns>
                                     <Rock:ReorderField />
-                                    <asp:BoundField DataField="Name" HeaderText="Name" />
-                                    <asp:BoundField DataField="Description" HeaderText="Description" />
-                                    <asp:BoundField DataField="MinCount" HeaderText="Minimum Required" DataFormatString="{0:N0}" />
-                                    <asp:BoundField DataField="MaxCount" HeaderText="Maximum Allowed" DataFormatString="{0:N0}" />
-                                    <asp:TemplateField HeaderText="Default">
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                                    <Rock:BoolField DataField="IsLeader" HeaderText="Is Leader" />
+                                    <Rock:BoolField DataField="CanView" HeaderText="Can View" />
+                                    <Rock:BoolField DataField="CanEdit" HeaderText="Can Edit" />
+                                    <Rock:RockBoundField DataField="MinCount" HeaderText="Minimum Required" DataFormatString="{0:N0}" />
+                                    <Rock:RockBoundField DataField="MaxCount" HeaderText="Maximum Allowed" DataFormatString="{0:N0}" />
+                                    <Rock:RockTemplateField HeaderText="Default">
                                         <ItemTemplate>
                                             <input type="radio" value='<%# Eval( "Guid" ) %>' name="GroupTypeDefaultRole" <%# ((Guid)Eval("Guid")).Equals(DefaultRoleGuid) ? "checked" : "" %> />
                                         </ItemTemplate>
-                                    </asp:TemplateField>
+                                    </Rock:RockTemplateField>
                                     <Rock:EditField OnClick="gGroupTypeRoles_Edit" />
                                     <Rock:DeleteField OnClick="gGroupTypeRoles_Delete" />
                                 </Columns>
@@ -139,11 +168,11 @@
                             <div class="grid">
                                 <Rock:Grid ID="gGroupMemberAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Inherited Member Attribute">
                                     <Columns>
-                                        <asp:BoundField DataField="Name" />
-                                        <asp:BoundField DataField="Description" />
-                                        <asp:TemplateField>
+                                        <Rock:RockBoundField DataField="Name" />
+                                        <Rock:RockBoundField DataField="Description" />
+                                        <Rock:RockTemplateField>
                                             <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</ItemTemplate>
-                                        </asp:TemplateField>
+                                        </Rock:RockTemplateField>
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -152,8 +181,8 @@
                             <Rock:Grid ID="gGroupMemberAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Member Attribute">
                                 <Columns>
                                     <Rock:ReorderField />
-                                    <asp:BoundField DataField="Name" HeaderText="Attribute" />
-                                    <asp:BoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
+                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
                                     <Rock:EditField OnClick="gGroupMemberAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gGroupMemberAttributes_Delete" />
@@ -169,11 +198,11 @@
                             <div class="grid">
                                 <Rock:Grid ID="gGroupAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Inherited Group Attribute">
                                     <Columns>
-                                        <asp:BoundField DataField="Name" />
-                                        <asp:BoundField DataField="Description" />
-                                        <asp:TemplateField>
+                                        <Rock:RockBoundField DataField="Name" />
+                                        <Rock:RockBoundField DataField="Description" />
+                                        <Rock:RockTemplateField>
                                             <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</ItemTemplate>
-                                        </asp:TemplateField>
+                                        </Rock:RockTemplateField>
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -182,8 +211,8 @@
                             <Rock:Grid ID="gGroupAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group Attribute">
                                 <Columns>
                                     <Rock:ReorderField />
-                                    <asp:BoundField DataField="Name" HeaderText="Attribute" />
-                                    <asp:BoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
+                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
                                     <Rock:EditField OnClick="gGroupAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gGroupAttributes_Delete" />
@@ -199,11 +228,11 @@
                             <div class="grid">
                                 <Rock:Grid ID="gGroupTypeAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Inherited Group Type Attribute">
                                     <Columns>
-                                        <asp:BoundField DataField="Name" />
-                                        <asp:BoundField DataField="Description" />
-                                        <asp:TemplateField>
+                                        <Rock:RockBoundField DataField="Name" />
+                                        <Rock:RockBoundField DataField="Description" />
+                                        <Rock:RockTemplateField>
                                             <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</ItemTemplate>
-                                        </asp:TemplateField>
+                                        </Rock:RockTemplateField>
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -212,8 +241,8 @@
                             <Rock:Grid ID="gGroupTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group Type Attribute">
                                 <Columns>
                                     <Rock:ReorderField />
-                                    <asp:BoundField DataField="Name" HeaderText="Name" />
-                                    <asp:BoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
                                     <Rock:EditField OnClick="gGroupTypeAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gGroupTypeAttributes_Delete" />
@@ -242,8 +271,8 @@
                     </Rock:PanelWidget>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
 
                 </div>
@@ -276,12 +305,15 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:NumberBox ID="nbMinimumRequired" runat="server" NumberType="Integer" Label="Minimum Required" />
-                        <Rock:NumberBox ID="nbMaximumAllowed" runat="server" NumberType="Integer" Label="Maximum Allowed" />
-                        <asp:CustomValidator ID="cvAllowed" runat="server" Display="None" OnServerValidate="cvAllowed_ServerValidate" 
-                            ValidationGroup="Roles" ErrorMessage="The Minimum Required should be less than Maximum Allowed." />
+                        <Rock:RockCheckBox ID="cbIsLeader" runat="server" Label="Is Leader" Text="Yes" Help="Are people with this role in group considered a 'Leader' of the group?" />
+                        <Rock:RockCheckBox ID="cbCanView" runat="server" Label="Can View" Text="Yes" Help="Should users with this role be able to view this group regardless of the security settings on the group?" />
+                        <Rock:RockCheckBox ID="cbCanEdit" runat="server" Label="Can Edit" Text="Yes" Help="Should users with this role be able to edit the details and members of this group regardless of the security settings on the group?" />
                      </div>
                     <div class="col-md-6">
+                        <Rock:NumberBox ID="nbMinimumRequired" runat="server" NumberType="Integer" Label="Minimum Required" Help="The minimum number of people with this role that group should allow." />
+                        <Rock:NumberBox ID="nbMaximumAllowed" runat="server" NumberType="Integer" Label="Maximum Allowed" Help="The maximum number of people with this role that group shold allow." />
+                        <asp:CustomValidator ID="cvAllowed" runat="server" Display="None" OnServerValidate="cvAllowed_ServerValidate" 
+                            ValidationGroup="Roles" ErrorMessage="The Minimum Required should be less than Maximum Allowed." />
                         <asp:PlaceHolder ID="phGroupTypeRoleAttributes" runat="server" />
                     </div>
                 </div>
@@ -291,6 +323,13 @@
         <Rock:ModalDialog ID="dlgChildGroupType" runat="server" OnSaveClick="dlgChildGroupType_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ChildGroupTypes">
             <Content>
                 <Rock:RockDropDownList ID="ddlChildGroupType" runat="server" DataTextField="Name" DataValueField="Id" Label="Child Group Type" ValidationGroup="ChildGroupTypes" />
+            </Content>
+        </Rock:ModalDialog>
+
+        <Rock:ModalDialog ID="dlgScheduleExclusion" runat="server" OnSaveClick="dlgScheduleExclusion_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ScheduleExclusion">
+            <Content>
+                <asp:HiddenField ID="hfScheduleExclusion" runat="server" />
+                <Rock:DateRangePicker ID="drpScheduleExclusion" runat="server" Label="Schedule Exclusion" ValidationGroup="ScheduleExclusion" />
             </Content>
         </Rock:ModalDialog>
 

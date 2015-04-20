@@ -27,14 +27,14 @@
                     </div>
                 </div>
 
-                <Rock:DataTextBox ID="tbSubject" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="Subject" />
+                <Rock:DataTextBox ID="tbSubject" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="Subject" Help="<small><span class='tip tip-lava'></span></small>" />
                 <Rock:CodeEditor ID="tbBody" EditorHeight="500" Label="Message Body" EditorMode="Liquid" EditorTheme="Rock" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="Body" />
 
                 <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Danger" Visible="false" />
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click"></asp:LinkButton>
-                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
+                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click"></asp:LinkButton>
+                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
                 </div>
 
             </div>

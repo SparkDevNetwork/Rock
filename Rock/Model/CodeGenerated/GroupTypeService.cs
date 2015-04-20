@@ -103,29 +103,31 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this GroupType target, GroupType source )
         {
-            target.IsSystem = source.IsSystem;
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.GroupTerm = source.GroupTerm;
-            target.GroupMemberTerm = source.GroupMemberTerm;
-            target.DefaultGroupRoleId = source.DefaultGroupRoleId;
+            target.Id = source.Id;
+            target.AllowedScheduleTypes = source.AllowedScheduleTypes;
             target.AllowMultipleLocations = source.AllowMultipleLocations;
+            target.AttendancePrintTo = source.AttendancePrintTo;
+            target.AttendanceRule = source.AttendanceRule;
+            target.DefaultGroupRoleId = source.DefaultGroupRoleId;
+            target.Description = source.Description;
+            target.EnableLocationSchedules = source.EnableLocationSchedules;
+            target.GroupMemberTerm = source.GroupMemberTerm;
+            target.GroupTerm = source.GroupTerm;
+            target.GroupTypePurposeValueId = source.GroupTypePurposeValueId;
+            target.IconCssClass = source.IconCssClass;
+            target.InheritedGroupTypeId = source.InheritedGroupTypeId;
+            target.IsSystem = source.IsSystem;
+            target.LocationSelectionMode = source.LocationSelectionMode;
+            target.Name = source.Name;
+            target.Order = source.Order;
+            target.SendAttendanceReminder = source.SendAttendanceReminder;
             target.ShowInGroupList = source.ShowInGroupList;
             target.ShowInNavigation = source.ShowInNavigation;
-            target.IconCssClass = source.IconCssClass;
             target.TakesAttendance = source.TakesAttendance;
-            target.AttendanceRule = source.AttendanceRule;
-            target.AttendancePrintTo = source.AttendancePrintTo;
-            target.Order = source.Order;
-            target.InheritedGroupTypeId = source.InheritedGroupTypeId;
-            target.LocationSelectionMode = source.LocationSelectionMode;
-            target.EnableLocationSchedules = source.EnableLocationSchedules;
-            target.GroupTypePurposeValueId = source.GroupTypePurposeValueId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

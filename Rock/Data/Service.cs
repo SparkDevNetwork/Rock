@@ -192,6 +192,24 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the Guid for the entity that has the specified Id
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public virtual Guid? GetGuid( int id )
+        {
+            var result = this.Queryable().Where( a => a.Id == id ).Select( a => a.Guid ).FirstOrDefault();
+            if (result.IsEmpty())
+            {
+                return null;
+            }
+            else
+            {
+                return result;
+            }
+        }
+
+        /// <summary>
         /// Trys to get the model with the id value
         /// </summary>
         /// <returns></returns>
@@ -210,9 +228,9 @@ namespace Rock.Data
         /// </summary>
         /// <param name="ids">The ids.</param>
         /// <returns></returns>
-        public virtual IEnumerable<T> GetByIds( List<int> ids )
+        public virtual IQueryable<T> GetByIds( List<int> ids )
         {
-            return Queryable().Where( t => ids.Contains( t.Id ) ).ToList();
+            return Queryable().Where( t => ids.Contains( t.Id ) );
         }
 
         /// <summary>
@@ -220,9 +238,31 @@ namespace Rock.Data
         /// </summary>
         /// <param name="guids">The guids.</param>
         /// <returns></returns>
-        public virtual IEnumerable<T> GetByGuids( List<Guid> guids )
+        public virtual IQueryable<T> GetByGuids( List<Guid> guids )
         {
-            return Queryable().Where( t => guids.Contains( t.Guid ) ).ToList();
+            return Queryable().Where( t => guids.Contains( t.Guid ) );
+        }
+
+
+        /// <summary>
+        /// Gets a list of entities by ids.
+        /// </summary>
+        /// <param name="ids">The ids.</param>
+        /// <returns></returns>
+        public virtual List<T> GetListByIds( List<int> ids )
+        {
+            return GetByIds( ids ).ToList();
+        }
+
+
+        /// <summary>
+        /// Gets a list of entities by guids.
+        /// </summary>
+        /// <param name="guids">The guids.</param>
+        /// <returns></returns>
+        public virtual List<T> GetListByGuids( List<Guid> guids )
+        {
+            return GetByGuids( guids ).ToList();
         }
 
         /// <summary>

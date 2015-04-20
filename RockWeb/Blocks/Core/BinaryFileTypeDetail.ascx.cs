@@ -138,6 +138,20 @@ namespace RockWeb.Blocks.Core
             cbAllowCaching.Checked = binaryFileType.AllowCaching;
             cbRequiresViewSecurity.Checked = binaryFileType.RequiresViewSecurity;
 
+            nbMaxWidth.Text = binaryFileType.MaxWidth.ToString();
+            nbMaxHeight.Text = binaryFileType.MaxHeight.ToString();
+
+            ddlPreferredFormat.BindToEnum<Format>();
+            ddlPreferredFormat.SetValue( (int)binaryFileType.PreferredFormat );
+
+            ddlPreferredResolution.BindToEnum<Resolution>();
+            ddlPreferredResolution.SetValue( (int)binaryFileType.PreferredResolution );
+
+            ddlPreferredColorDepth.BindToEnum<ColorDepth>();
+            ddlPreferredColorDepth.SetValue( (int)binaryFileType.PreferredColorDepth );
+
+            cbPreferredRequired.Checked = binaryFileType.PreferredRequired;
+
             if ( binaryFileType.StorageEntityType != null )
             {
                 cpStorageType.SelectedValue = binaryFileType.StorageEntityType.Guid.ToString().ToUpper();
@@ -179,7 +193,7 @@ namespace RockWeb.Blocks.Core
                 btnCancel.Text = "Close";
             }
 
-            if (readOnly)
+            if ( readOnly )
             {
                 Rock.Attribute.Helper.AddDisplayControls( binaryFileType, phAttributes );
             }
@@ -201,7 +215,13 @@ namespace RockWeb.Blocks.Core
             cbAllowCaching.Enabled = !readOnly;
             cbRequiresViewSecurity.Enabled = !readOnly;
             cpStorageType.Enabled = !readOnly;
-            btnSave.Visible = !readOnly ;
+            nbMaxWidth.ReadOnly = readOnly;
+            nbMaxHeight.ReadOnly = readOnly;
+            ddlPreferredFormat.Enabled = !readOnly;
+            ddlPreferredResolution.Enabled = !readOnly;
+            ddlPreferredColorDepth.Enabled = !readOnly;
+            cbPreferredRequired.Enabled = !readOnly;
+            btnSave.Visible = !readOnly;
         }
 
         #endregion
@@ -250,6 +270,12 @@ namespace RockWeb.Blocks.Core
             binaryFileType.IconCssClass = tbIconCssClass.Text;
             binaryFileType.AllowCaching = cbAllowCaching.Checked;
             binaryFileType.RequiresViewSecurity = cbRequiresViewSecurity.Checked;
+            binaryFileType.MaxWidth = nbMaxWidth.Text.AsInteger();
+            binaryFileType.MaxHeight = nbMaxHeight.Text.AsInteger();
+            binaryFileType.PreferredFormat = ddlPreferredFormat.SelectedValueAsEnum<Format>();
+            binaryFileType.PreferredResolution = ddlPreferredResolution.SelectedValueAsEnum<Resolution>();
+            binaryFileType.PreferredColorDepth = ddlPreferredColorDepth.SelectedValueAsEnum<ColorDepth>();
+            binaryFileType.PreferredRequired = cbPreferredRequired.Checked;
 
             if ( !string.IsNullOrWhiteSpace( cpStorageType.SelectedValue ) )
             {

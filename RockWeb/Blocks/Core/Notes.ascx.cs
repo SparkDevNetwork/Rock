@@ -49,7 +49,8 @@ namespace RockWeb.Blocks.Core
     [BooleanField( "Allow Anonymous", "", false, "", 9 )]
     [BooleanField( "Add Always Visible", "Should the add entry screen always be visible (vs. having to click Add button to display the entry screen).", false, "", 10 )]
     [CustomDropdownListField( "Display Order", "Descending will render with entry field at top and most recent note at top.  Ascending will render with entry field at bottom and most recent note at the end.  Ascending will also disable the more option", "Ascending,Descending", true, "Descending", "", 11 )]
-    public partial class Notes : RockBlock
+    [BooleanField("Allow Backdated Notes", "", false, "", 12)]
+    public partial class Notes : RockBlock, ISecondaryBlock
     {
         #region Base Control Methods
 
@@ -68,27 +69,30 @@ namespace RockWeb.Blocks.Core
 
                 string noteTypeName = GetAttributeValue( "NoteType" );
 
-                var rockContext = new RockContext();
-                var service = new NoteTypeService( rockContext );
-                var noteType = service.Get( contextEntity.TypeId, noteTypeName );
-
-                notesTimeline.NoteTypeId = noteType.Id;
-                notesTimeline.EntityId = contextEntity.Id;
-                notesTimeline.Title = GetAttributeValue( "Heading" );
-                if ( string.IsNullOrWhiteSpace( notesTimeline.Title ) )
+                using ( var rockContext = new RockContext() )
                 {
-                    notesTimeline.Title = noteType.Name;
+                    var service = new NoteTypeService( rockContext );
+                    var noteType = service.Get( contextEntity.TypeId, noteTypeName );
+
+                    notesTimeline.NoteTypeId = noteType.Id;
+                    notesTimeline.EntityId = contextEntity.Id;
+                    notesTimeline.Title = GetAttributeValue( "Heading" );
+                    if ( string.IsNullOrWhiteSpace( notesTimeline.Title ) )
+                    {
+                        notesTimeline.Title = noteType.Name;
+                    }
+                    notesTimeline.TitleIconCssClass = GetAttributeValue( "HeadingIcon" );
+                    notesTimeline.Term = GetAttributeValue( "NoteTerm" );
+                    notesTimeline.DisplayType = GetAttributeValue( "DisplayType" ) == "Light" ? NoteDisplayType.Light : NoteDisplayType.Full;
+                    notesTimeline.UsePersonIcon = GetAttributeValue( "UsePersonIcon" ).AsBoolean();
+                    notesTimeline.ShowAlertCheckBox = GetAttributeValue( "ShowAlertCheckbox" ).AsBoolean();
+                    notesTimeline.ShowPrivateCheckBox = GetAttributeValue( "ShowPrivateCheckbox" ).AsBoolean();
+                    notesTimeline.ShowSecurityButton = GetAttributeValue( "ShowSecurityButton" ).AsBoolean();
+                    notesTimeline.AllowAnonymousEntry = GetAttributeValue( "Allow Anonymous" ).AsBoolean();
+                    notesTimeline.AddAlwaysVisible = GetAttributeValue( "AddAlwaysVisible" ).AsBoolean();
+                    notesTimeline.SortDirection = GetAttributeValue( "DisplayOrder" ) == "Ascending" ? ListSortDirection.Ascending : ListSortDirection.Descending;
+                    notesTimeline.ShowCreateDateInput = GetAttributeValue("AllowBackdatedNotes").AsBoolean();
                 }
-                notesTimeline.TitleIconCssClass = GetAttributeValue( "HeadingIcon" );
-                notesTimeline.Term = GetAttributeValue( "NoteTerm" );
-                notesTimeline.DisplayType = GetAttributeValue( "DisplayType" ) == "Light" ? NoteDisplayType.Light : NoteDisplayType.Full;
-                notesTimeline.UsePersonIcon = GetAttributeValue( "UsePersonIcon" ).AsBoolean();
-                notesTimeline.ShowAlertCheckBox = GetAttributeValue( "ShowAlertCheckbox" ).AsBoolean();
-                notesTimeline.ShowPrivateCheckBox = GetAttributeValue( "ShowPrivateCheckbox" ).AsBoolean();
-                notesTimeline.ShowSecurityButton = GetAttributeValue( "ShowSecurityButton" ).AsBoolean();
-                notesTimeline.AllowAnonymousEntry = GetAttributeValue( "Allow Anonymous" ).AsBoolean();
-                notesTimeline.AddAlwaysVisible = GetAttributeValue( "AddAlwaysVisible" ).AsBoolean();
-                notesTimeline.SortDirection = GetAttributeValue( "DisplayOrder" ) == "Ascending" ? ListSortDirection.Ascending : ListSortDirection.Descending;
             }
             else
             {
@@ -98,6 +102,14 @@ namespace RockWeb.Blocks.Core
 
         #endregion
 
+        #region Methods
+
+        public void SetVisible( bool visible )
+        {
+            notesTimeline.Visible = visible;
+        }
+
+        #endregion
 
     }
 }

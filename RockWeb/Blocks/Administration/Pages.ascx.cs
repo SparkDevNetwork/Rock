@@ -16,7 +16,6 @@
 //
 using System;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -46,6 +45,10 @@ namespace RockWeb.Blocks.Administration
 
         #region Base Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             try
@@ -60,14 +63,15 @@ namespace RockWeb.Blocks.Administration
                 else
                 {
                     canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
-                } 
+                }
 
                 if ( canConfigure )
                 {
-                    rGrid.DataKeyNames = new string[] { "id" };
+                    rGrid.DataKeyNames = new string[] { "Id" };
                     rGrid.Actions.ShowAdd = true;
                     rGrid.Actions.AddClick += rGrid_GridAdd;
                     rGrid.Actions.ShowExcelExport = false;
+                    rGrid.Actions.ShowMergeTemplate = false;
                     rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
                     rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
                 }
@@ -84,6 +88,10 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             if ( !Page.IsPostBack && canConfigure )
@@ -99,27 +107,46 @@ namespace RockWeb.Blocks.Administration
 
         #region Events
 
-        #region Grid 
+        #region Grid
 
-        void rGrid_GridReorder( object sender, GridReorderEventArgs e )
+        /// <summary>
+        /// Handles the GridReorder event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
-            int? parentPageId = null;
-            if (_page != null)
-                parentPageId = _page.Id;
+            if ( _page == null )
+            {
+                return;
+            }
 
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
-            pageService.Reorder( pageService.GetByParentPageId( parentPageId ).ToList(), e.OldIndex, e.NewIndex );
+            pageService.Reorder( pageService.GetByParentPageId( _page.Id ).ToList(), e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
+
+            Rock.Web.Cache.PageCache.Flush( _page.Id );
+            _page.FlushChildPages();
 
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the Edit event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void rGrid_Edit( object sender, RowEventArgs e )
         {
-            ShowEdit( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( e.RowKeyId );
         }
 
+        /// <summary>
+        /// Handles the Delete event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
@@ -127,7 +154,7 @@ namespace RockWeb.Blocks.Administration
             var pageViewService = new PageViewService( rockContext );
             var siteService = new SiteService( rockContext );
 
-            var page = pageService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+            var page = pageService.Get( e.RowKeyId );
             if ( page != null )
             {
                 string errorMessage = string.Empty;
@@ -144,11 +171,13 @@ namespace RockWeb.Blocks.Administration
                         site.DefaultPageId = null;
                         site.DefaultPageRouteId = null;
                     }
+
                     if ( site.LoginPageId == page.Id )
                     {
                         site.LoginPageId = null;
                         site.LoginPageRouteId = null;
                     }
+
                     if ( site.RegistrationPageId == page.Id )
                     {
                         site.RegistrationPageId = null;
@@ -156,7 +185,7 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
 
-                foreach( var pageView in pageViewService.GetByPageId(page.Id))
+                foreach ( var pageView in pageViewService.GetByPageId( page.Id ) )
                 {
                     pageView.Page = null;
                     pageView.PageId = null;
@@ -177,12 +206,22 @@ namespace RockWeb.Blocks.Administration
             BindGrid();
         }
 
-        void rGrid_GridAdd( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the GridAdd event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rGrid_GridAdd( object sender, EventArgs e )
         {
             ShowEdit( 0 );
         }
 
-        void rGrid_GridRebind( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the GridRebind event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rGrid_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
@@ -191,12 +230,22 @@ namespace RockWeb.Blocks.Administration
 
         #region Edit Events
 
+        /// <summary>
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCancel_Click( object sender, EventArgs e )
         {
             rGrid.Visible = true;
             pnlDetails.Visible = false;
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
             if ( Page.IsValid )
@@ -228,17 +277,18 @@ namespace RockWeb.Blocks.Administration
                     page.IncludeAdminFooter = true;
                     page.MenuDisplayChildPages = true;
 
-                    Rock.Model.Page lastPage =
-                        pageService.GetByParentPageId( _page.Id ).
-                            OrderByDescending( b => b.Order ).FirstOrDefault();
+                    Rock.Model.Page lastPage = pageService.GetByParentPageId( _page.Id ).OrderByDescending( b => b.Order ).FirstOrDefault();
 
                     if ( lastPage != null )
+                    {
                         page.Order = lastPage.Order + 1;
+                    }
                     else
+                    {
                         page.Order = 0;
+                    }
 
                     pageService.Add( page );
-
                 }
                 else
                 {
@@ -273,16 +323,24 @@ namespace RockWeb.Blocks.Administration
 
         #region Methods
 
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
         private void BindGrid()
         {
             int? parentPageId = null;
             if ( _page != null )
+            {
                 parentPageId = _page.Id;
+            }
 
             rGrid.DataSource = new PageService( new RockContext() ).GetByParentPageId( parentPageId ).ToList();
             rGrid.DataBind();
         }
 
+        /// <summary>
+        /// Loads the layouts.
+        /// </summary>
         private void LoadLayouts()
         {
             ddlLayout.Items.Clear();
@@ -293,14 +351,18 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
+        /// <summary>
+        /// Shows the edit.
+        /// </summary>
+        /// <param name="pageId">The page identifier.</param>
         protected void ShowEdit( int pageId )
         {
             var page = new PageService( new RockContext() ).Get( pageId );
             if ( page != null )
             {
                 hfPageId.Value = page.Id.ToString();
-                try { ddlLayout.SelectedValue = page.LayoutId.ToString(); }
-                catch { }
+                ddlLayout.SetValue( page.LayoutId );
+
                 dtbPageName.Text = page.InternalName;
 
                 lEditAction.Text = "Edit";
@@ -313,11 +375,18 @@ namespace RockWeb.Blocks.Administration
                 try
                 {
                     if ( _page != null )
-                        ddlLayout.SelectedValue = _page.LayoutId.ToString();
+                    {
+                        ddlLayout.SetValue( _page.LayoutId );
+                    }
                     else
+                    {
                         ddlLayout.Text = RockPage.Layout.Id.ToString();
+                    }
                 }
-                catch { }
+                catch
+                {
+                    // intentionally ignore error. todo: test if we really need to do this
+                }
 
                 dtbPageName.Text = string.Empty;
 
@@ -329,6 +398,10 @@ namespace RockWeb.Blocks.Administration
             pnlDetails.Visible = true;
         }
 
+        /// <summary>
+        /// Displays the error.
+        /// </summary>
+        /// <param name="message">The message.</param>
         private void DisplayError( string message )
         {
             pnlMessage.Controls.Clear();

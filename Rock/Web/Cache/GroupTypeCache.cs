@@ -32,13 +32,17 @@ namespace Rock.Web.Cache
     [DataContract]
     public class GroupTypeCache : CachedModel<GroupType>
     {
+        private object _lockObj;
+
         #region Constructors
 
         private GroupTypeCache()
         {
+            _lockObj = new object();
         }
 
         private GroupTypeCache( GroupType groupType )
+            : this()
         {
             CopyFromModel( groupType );
         }
@@ -102,6 +106,15 @@ namespace Rock.Web.Cache
         public int? DefaultGroupRoleId { get; set; }
 
         /// <summary>
+        /// Gets or sets the allowed schedule types.
+        /// </summary>
+        /// <value>
+        /// The allowed schedule types.
+        /// </value>
+        [DataMember]
+        public ScheduleType AllowedScheduleTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [allow multiple locations].
         /// </summary>
         /// <value>
@@ -145,6 +158,15 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public bool TakesAttendance { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [send attendance reminder].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [send attendance reminder]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool SendAttendanceReminder { get; set; }
 
         /// <summary>
         /// Gets or sets the attendance rule.
@@ -260,6 +282,14 @@ namespace Rock.Web.Cache
         public List<GroupTypeRoleCache> Roles { get; set; }
 
         /// <summary>
+        /// Gets or sets the group schedule exclusions.
+        /// </summary>
+        /// <value>
+        /// The group schedule exclusions.
+        /// </value>
+        public List<DateRange> GroupScheduleExclusions { get; set; }
+
+        /// <summary>
         /// Gets the child group types.
         /// </summary>
         /// <value>
@@ -269,23 +299,38 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( childGroupTypeIds == null )
-                {
-                    childGroupTypeIds = new GroupTypeService( new RockContext() )
-                        .GetChildGroupTypes( this.Id )
-                        .Select( t => t.Id )
-                        .ToList();
-                }
-
                 var childGroupTypes = new List<GroupTypeCache>();
-                foreach( int id in childGroupTypeIds)
-                { 
-                    var groupType = GroupTypeCache.Read( id );
-                    if (groupType != null)
+
+                lock ( _lockObj )
+                {
+                    if ( childGroupTypeIds != null )
                     {
-                        childGroupTypes.Add( groupType );
+                        foreach ( int id in childGroupTypeIds )
+                        {
+                            var groupType = GroupTypeCache.Read( id );
+                            if ( groupType != null )
+                            {
+                                childGroupTypes.Add( groupType );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        childGroupTypeIds = new List<int>();
+
+                        using ( var rockContext = new RockContext() )
+                        {
+                            foreach ( var childGroupType in new GroupTypeService( rockContext )
+                                .GetChildGroupTypes( this.Id ) )
+                            {
+                                childGroupTypeIds.Add( childGroupType.Id );
+                                childGroupType.LoadAttributes( rockContext );
+                                childGroupTypes.Add( GroupTypeCache.Read( childGroupType ) );
+                            }
+                        }
                     }
                 }
+
                 return childGroupTypes;
             }
         }
@@ -301,23 +346,38 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( parentGroupTypeIds == null )
-                {
-                    parentGroupTypeIds = new GroupTypeService( new RockContext() )
-                        .GetParentGroupTypes( this.Id )
-                        .Select( t => t.Id )
-                        .ToList();
-                }
-
                 var parentGroupTypes = new List<GroupTypeCache>();
-                foreach ( int id in parentGroupTypeIds )
+
+                lock ( _lockObj )
                 {
-                    var groupType = GroupTypeCache.Read( id );
-                    if ( groupType != null )
+                    if ( parentGroupTypeIds != null )
                     {
-                        parentGroupTypes.Add( groupType );
+                        foreach ( int id in parentGroupTypeIds )
+                        {
+                            var groupType = GroupTypeCache.Read( id );
+                            if ( groupType != null )
+                            {
+                                parentGroupTypes.Add( groupType );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        parentGroupTypeIds = new List<int>();
+
+                        using ( var rockContext = new RockContext() )
+                        {
+                            foreach ( var groupType in new GroupTypeService( rockContext )
+                                .GetParentGroupTypes( this.Id ) )
+                            {
+                                parentGroupTypeIds.Add( groupType.Id );
+                                groupType.LoadAttributes( rockContext );
+                                parentGroupTypes.Add( GroupTypeCache.Read( groupType ) );
+                            }
+                        }
                     }
                 }
+
                 return parentGroupTypes;
             }
         }
@@ -371,11 +431,13 @@ namespace Rock.Web.Cache
                 this.GroupTerm = groupType.GroupTerm;
                 this.GroupMemberTerm = groupType.GroupMemberTerm;
                 this.DefaultGroupRoleId = groupType.DefaultGroupRoleId;
+                this.AllowedScheduleTypes = groupType.AllowedScheduleTypes;
                 this.AllowMultipleLocations = groupType.AllowMultipleLocations;
                 this.ShowInGroupList = groupType.ShowInGroupList;
                 this.ShowInNavigation = groupType.ShowInNavigation;
                 this.IconCssClass = groupType.IconCssClass;
                 this.TakesAttendance = groupType.TakesAttendance;
+                this.SendAttendanceReminder = groupType.SendAttendanceReminder;
                 this.AttendanceRule = groupType.AttendanceRule;
                 this.AttendancePrintTo = groupType.AttendancePrintTo;
                 this.Order = groupType.Order;
@@ -386,7 +448,16 @@ namespace Rock.Web.Cache
                 this.locationTypeValueIDs = groupType.LocationTypes.Select( l => l.LocationTypeValueId ).ToList();
 
                 this.Roles = new List<GroupTypeRoleCache>();
-                groupType.Roles.OrderBy( r => r.Order ).ToList().ForEach( r => Roles.Add( new GroupTypeRoleCache( r ) ) );
+                groupType.Roles
+                    .OrderBy( r => r.Order )
+                    .ToList()
+                    .ForEach( r => Roles.Add( new GroupTypeRoleCache( r ) ) );
+
+                this.GroupScheduleExclusions = new List<DateRange>();
+                groupType.GroupScheduleExclusions
+                    .OrderBy( s => s.StartDate )
+                    .ToList()
+                    .ForEach( s => GroupScheduleExclusions.Add( new DateRange( s.StartDate, s.EndDate ) ) );
             }
         }
 
@@ -426,14 +497,20 @@ namespace Rock.Web.Cache
 
             if ( groupType == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var groupTypeService = new GroupTypeService( rockContext );
-                var groupTypeModel = groupTypeService.Get( id );
-                if ( groupTypeModel != null )
+                if ( rockContext != null )
                 {
-                    groupTypeModel.LoadAttributes( rockContext );
-                    groupType = new GroupTypeCache( groupTypeModel );
+                    groupType = LoadById( id, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        groupType = LoadById( id, myRockContext );
+                    }
+                }
 
+                if ( groupType != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, groupType, cachePolicy );
                     cache.Set( groupType.Guid.ToString(), groupType.Id, cachePolicy );
@@ -441,6 +518,19 @@ namespace Rock.Web.Cache
             }
 
             return groupType;
+        }
+
+        private static GroupTypeCache LoadById( int id, RockContext rockContext )
+        {
+            var groupTypeService = new GroupTypeService( rockContext );
+            var groupTypeModel = groupTypeService.Get( id );
+            if ( groupTypeModel != null )
+            {
+                groupTypeModel.LoadAttributes( rockContext );
+                return new GroupTypeCache( groupTypeModel );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -472,14 +562,20 @@ namespace Rock.Web.Cache
 
             if ( groupType == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var groupTypeService = new GroupTypeService( rockContext );
-                var groupTypeModel = groupTypeService.Get( guid );
-                if ( groupTypeModel != null )
+                if ( rockContext != null )
                 {
-                    groupTypeModel.LoadAttributes( rockContext );
-                    groupType = new GroupTypeCache( groupTypeModel );
+                    groupType = LoadByGuid( guid, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        groupType = LoadByGuid( guid, myRockContext );
+                    }
+                }
 
+                if ( groupType != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( GroupTypeCache.CacheKey( groupType.Id ), groupType, cachePolicy );
                     cache.Set( groupType.Guid.ToString(), groupType.Id, cachePolicy );
@@ -487,6 +583,19 @@ namespace Rock.Web.Cache
             }
 
             return groupType;
+        }
+
+        private static GroupTypeCache LoadByGuid( Guid guid, RockContext rockContext )
+        {
+            var groupTypeService = new GroupTypeService( rockContext );
+            var groupTypeModel = groupTypeService.Get( guid );
+            if ( groupTypeModel != null )
+            {
+                groupTypeModel.LoadAttributes( rockContext );
+                return new GroupTypeCache( groupTypeModel );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -567,6 +676,7 @@ namespace Rock.Web.Cache
         /// The unique identifier.
         /// </value>
         public Guid Guid { get; set; }
+        
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -584,6 +694,46 @@ namespace Rock.Web.Cache
         public int Order { get; set; }
 
         /// <summary>
+        /// Gets or sets the maximum count.
+        /// </summary>
+        /// <value>
+        /// The maximum count.
+        /// </value>
+        public int? MaxCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the minimum count.
+        /// </summary>
+        /// <value>
+        /// The minimum count.
+        /// </value>
+        public int? MinCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is leader.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is leader; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsLeader { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can view.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can view; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanView { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can edit.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can edit; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanEdit { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="GroupTypeRoleCache"/> class.
         /// </summary>
         /// <param name="role">The role.</param>
@@ -593,6 +743,11 @@ namespace Rock.Web.Cache
             Guid = role.Guid;
             Name = role.Name;
             Order = role.Order;
+            MaxCount = role.MaxCount;
+            MinCount = role.MinCount;
+            IsLeader = role.IsLeader;
+            CanView = role.CanView;
+            CanEdit = role.CanEdit;
         }
     }
 }

@@ -43,8 +43,10 @@ namespace Rock.Security
         {
             cypherText = null;
             
+            string encryptionKey = Encryption.GetDataEncryptionKey();
+
             // non-web apps might not have the DataEncryptionKey, so check that first since it could happen quite a bit
-            if ( string.IsNullOrWhiteSpace( Encryption.GetDataEncryptionKey() ) )
+            if ( string.IsNullOrWhiteSpace( encryptionKey ) )
             {
                 return false;
             }
@@ -52,7 +54,7 @@ namespace Rock.Security
             {
                 try
                 {
-                    cypherText = EncryptString( plainText );
+                    cypherText = EncryptString( plainText, encryptionKey );
                     return true;
                 }
                 catch
@@ -85,12 +87,24 @@ namespace Rock.Security
         /// <param name="plainText">The text to encrypt.</param>
         public static string EncryptString( string plainText )
         {
+            string dataEncryptionKey = Encryption.GetDataEncryptionKey();
+            return EncryptString( plainText, dataEncryptionKey );
+        }
+
+        /// <summary>
+        /// Encrypts the string.
+        /// </summary>
+        /// <param name="plainText">The plain text.</param>
+        /// <param name="dataEncryptionKey">The data encryption key.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">DataEncryptionKey must be specified in configuration file</exception>
+        public static string EncryptString( string plainText, string dataEncryptionKey )
+        {
             if (string.IsNullOrEmpty(plainText))
             {
                 return string.Empty;
             }
 
-            string dataEncryptionKey = Encryption.GetDataEncryptionKey();
             if ( string.IsNullOrEmpty( dataEncryptionKey ) )
             {
                 throw new ArgumentNullException( "DataEncryptionKey must be specified in configuration file" );
@@ -152,30 +166,81 @@ namespace Rock.Security
         /// <param name="cipherText">The text to decrypt.</param>
         public static string DecryptString( string cipherText )
         {
+            string dataEncryptionKey = ConfigurationManager.AppSettings["DataEncryptionKey"];
+            
+            string plainText = null;
+
+            try
+            {
+                plainText = DecryptString( cipherText, dataEncryptionKey );
+            }
+            catch { }
+
+            if ( plainText != null )
+            {
+                return plainText;
+            }
+
+            // Check for any old decryption strings
+            int i = 0;
+            dataEncryptionKey = ConfigurationManager.AppSettings["OldDataEncryptionKey" + ( i > 0 ? i.ToString() : "" )];
+            while ( !string.IsNullOrWhiteSpace( dataEncryptionKey ) )
+            {
+                try
+                {
+                    plainText = DecryptString( cipherText, dataEncryptionKey );
+                }
+                catch { }
+
+                if ( plainText != null )
+                {
+                    return plainText;
+                }
+
+                i++;
+                dataEncryptionKey = ConfigurationManager.AppSettings["OldDataEncryptionKey" + ( i > 0 ? i.ToString() : "" )];
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Decrypts the string.
+        /// </summary>
+        /// <param name="cipherText">The cipher text.</param>
+        /// <param name="dataEncryptionKey">The data encryption key.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">DataEncryptionKey must be specified in configuration file</exception>
+        public static string DecryptString( string cipherText, string dataEncryptionKey )
+        {
             if ( string.IsNullOrEmpty( cipherText ) )
             {
                 return string.Empty;
             }
-
-            string dataEncryptionKey = ConfigurationManager.AppSettings["DataEncryptionKey"];
 
             if ( string.IsNullOrEmpty( dataEncryptionKey ) )
             {
                 throw new ArgumentNullException( "DataEncryptionKey must be specified in configuration file" );
             }
 
-            // Declare the RijndaelManaged object
-            // used to decrypt the data.
-            RijndaelManaged aesAlg = null;
-
             // Declare the string used to hold
             // the decrypted text.
             string plaintext = null;
 
+            RijndaelManaged aesAlg = null;
+
             try
             {
+                // Create a RijndaelManaged object
+                aesAlg = new RijndaelManaged();
+                
                 // generate the key from the shared secret and the salt
-                Rfc2898DeriveBytes key = new Rfc2898DeriveBytes( dataEncryptionKey, _salt );
+                if ( _keyBytes == null )
+                {
+                    // generate a new key for every thread (vs. every call which is slow) 
+                    Rfc2898DeriveBytes key = new Rfc2898DeriveBytes( dataEncryptionKey, _salt );
+                    _keyBytes = key.GetBytes( aesAlg.KeySize / 8 );
+                }
 
                 // Create the streams used for decryption.                
                 byte[] bytes = Convert.FromBase64String( cipherText );
@@ -184,7 +249,7 @@ namespace Rock.Security
                     // Create a RijndaelManaged object
                     // with the specified key and IV.
                     aesAlg = new RijndaelManaged();
-                    aesAlg.Key = key.GetBytes( aesAlg.KeySize / 8 );
+                    aesAlg.Key = _keyBytes;
                     // Get the initialization vector from the encrypted stream
                     aesAlg.IV = ReadByteArray( msDecrypt );
                     // Create a decrytor to perform the stream transform.
@@ -263,7 +328,7 @@ namespace Rock.Security
         /// </summary>
         /// <param name="hexString">The hexadecimal string.</param>
         /// <returns></returns>
-        private static byte[] HexToByte( string hexString )
+        public static byte[] HexToByte( string hexString )
         {
             byte[] returnBytes = new byte[hexString.Length / 2];
             for ( int i = 0; i < returnBytes.Length; i++ )
@@ -273,5 +338,37 @@ namespace Rock.Security
 
             return returnBytes;
         }
+
+        /// <summary>
+        /// Generates the machine key.
+        /// </summary>
+        /// <param name="length">The length.</param>
+        /// <returns></returns>
+        public static string GenerateMachineKey( int length )
+        {
+            RNGCryptoServiceProvider rngCsp = new RNGCryptoServiceProvider();
+            byte[] buff = new byte[length];
+            rngCsp.GetBytes( buff );
+            StringBuilder sb = new StringBuilder( buff.Length * 2 );
+            for ( int i = 0; i < buff.Length; i++ )
+                sb.Append( string.Format( "{0:X2}", buff[i] ) );
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Generates the encryption key.
+        /// </summary>
+        /// <param name="length">The length.</param>
+        /// <returns></returns>
+        public static string GenerateEncryptionKey( int length )
+        {
+            var rng = System.Security.Cryptography.RNGCryptoServiceProvider.Create();
+            byte[] randomBytes = new byte[length];
+            rng.GetNonZeroBytes( randomBytes );
+            string dataEncryptionKey = Convert.ToBase64String( randomBytes );
+
+            return dataEncryptionKey;
+        }
+
     }
 }

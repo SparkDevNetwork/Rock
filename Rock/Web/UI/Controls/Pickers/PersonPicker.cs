@@ -461,7 +461,7 @@ namespace Rock.Web.UI.Controls
                 string pickerLabelHtmlFormat = @"
             <a class='picker-label' href='#'>
                 <i class='fa fa-user'></i>
-                <span id='{0}_selectedPersonLabel'>{1}</span>
+                <span id='{0}_selectedPersonLabel' class='picker-selectedperson'>{1}</span>
                 <b class='fa fa-caret-down pull-right'></b>
             </a>
 ";

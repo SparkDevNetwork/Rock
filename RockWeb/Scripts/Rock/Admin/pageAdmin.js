@@ -84,19 +84,21 @@
             _showBlockConfig = function () {
                 $('.zone-configuration').hide();
                 $('.zone-instance').removeClass('outline');
+                $('body').removeClass('zone-highlight');
                 $('.block-configuration').toggle();
                 $('.block-instance').toggleClass('outline');
+                $('body').toggleClass('block-highlight');
 
                 // Bind the block configure icon so that edit icons are displayed on hover
                 $(".block-configuration").hover(function (e) {
                     var barWidth = $('.block-configuration-bar', this).outerWidth() + 45 + 'px';
                     $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '9001' });
                 }, function () {
-                    $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '9000' });
+                    $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '1000' });
                 });
 
-                // Bind the block instance delete anchor
-                $('a.block-delete').click(function (a, b, c) {
+                // Bind the block instance delete anchor (ensure it is only bound once)
+                $('a.block-delete').off('click').on('click', function (a, b, c) {
                     var blockId = $(this).attr('href');
 
                     Rock.dialogs.confirm('Are you sure you want to delete this block?', function(result) {
@@ -129,7 +131,7 @@
                 });
 
                 // Bind the click event of the block move anchor tag
-                $('a.block-move').click(function () {
+                $('a.block-move').off('click').on('click', function () {
 
                     // Get a reference to the anchor tag for use in the dialog success function
                     $moveLink = $(this);
@@ -143,7 +145,7 @@
                     $('#block-move-Location_1').prop('checked', !pageBlock);
 
                     // Show the popup block move dialog
-                    $find('modal-block-move').show();
+                    $('.js-modal-block-move .modal').modal('show');
 
                     return false;
 
@@ -152,7 +154,9 @@
             _showPageZones = function () {
                 $('.block-configuration').hide();
                 $('.block-instance').removeClass('outline');
+                $('body').removeClass('block-highlight');
                 $('.zone-instance').toggleClass('outline');
+                $('body').toggleClass('zone-highlight');
                 $('.zone-configuration').toggle();
 
                 // Bind the zone configure icon so that edit icons are displayed on hover
@@ -160,7 +164,7 @@
                     var barWidth = $('.zone-configuration-bar', this).width() + 45 + 'px';
                     $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '9001' });
                 }, function () {
-                    $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '9000' });
+                    $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '1000' });
                 });
             },
             exports = {

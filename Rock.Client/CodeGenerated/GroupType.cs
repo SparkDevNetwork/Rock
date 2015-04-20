@@ -21,35 +21,69 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for GroupType
+    /// Base client model for GroupType that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class GroupType
+    public partial class GroupTypeEntity
     {
         /// <summary />
-        public bool IsSystem { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
+        public int /* ScheduleType*/ AllowedScheduleTypes { get; set; }
 
         /// <summary />
-        public string Description { get; set; }
+        public bool AllowMultipleLocations { get; set; }
 
         /// <summary />
-        public string GroupTerm { get; set; }
+        public int /* PrintTo*/ AttendancePrintTo { get; set; }
 
         /// <summary />
-        public string GroupMemberTerm { get; set; }
+        public int /* AttendanceRule*/ AttendanceRule { get; set; }
 
         /// <summary />
         public int? DefaultGroupRoleId { get; set; }
 
         /// <summary />
-        public bool AllowMultipleLocations { get; set; }
+        public string Description { get; set; }
+
+        /// <summary />
+        public bool? EnableLocationSchedules { get; set; }
+
+        /// <summary />
+        public string GroupMemberTerm { get; set; }
+
+        /// <summary />
+        public string GroupTerm { get; set; }
+
+        /// <summary />
+        public int? GroupTypePurposeValueId { get; set; }
+
+        /// <summary />
+        public string IconCssClass { get; set; }
+
+        /// <summary />
+        public int? InheritedGroupTypeId { get; set; }
+
+        /// <summary />
+        public bool IsSystem { get; set; }
+
+        /// <summary />
+        public int /* GroupLocationPickerMode*/ LocationSelectionMode { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
+        public bool SendAttendanceReminder { get; set; }
 
         /// <summary />
         public bool ShowInGroupList { get; set; }
@@ -58,31 +92,35 @@ namespace Rock.Client
         public bool ShowInNavigation { get; set; }
 
         /// <summary />
-        public string IconCssClass { get; set; }
-
-        /// <summary />
         public bool TakesAttendance { get; set; }
 
         /// <summary />
-        public int /* AttendanceRule*/ AttendanceRule { get; set; }
+        public Guid Guid { get; set; }
 
         /// <summary />
-        public int /* PrintTo*/ AttendancePrintTo { get; set; }
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Client model for GroupType that includes all the fields that are available for GETs. Use this for GETs (use GroupTypeEntity for POST/PUTs)
+    /// </summary>
+    public partial class GroupType : GroupTypeEntity
+    {
+        /// <summary />
+        public ICollection<GroupType> ChildGroupTypes { get; set; }
 
         /// <summary />
-        public int Order { get; set; }
+        public GroupTypeRole DefaultGroupRole { get; set; }
 
         /// <summary />
-        public int? InheritedGroupTypeId { get; set; }
+        public DefinedValue GroupTypePurposeValue { get; set; }
 
         /// <summary />
-        public int /* GroupLocationPickerMode*/ LocationSelectionMode { get; set; }
+        public ICollection<GroupTypeLocationType> LocationTypes { get; set; }
 
         /// <summary />
-        public bool? EnableLocationSchedules { get; set; }
-
-        /// <summary />
-        public int? GroupTypePurposeValueId { get; set; }
+        public ICollection<GroupTypeRole> Roles { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -96,14 +134,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
-        public int Id { get; set; }
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

@@ -59,14 +59,16 @@ namespace Rock.Model
             if ( createIfNotFound )
             {
                 // Create a new context so type can be saved independing of current context
-                var rockContext = new RockContext();
-                var EntityTypeService = new EntityTypeService( rockContext );
-                entityType = new EntityType();
-                entityType.Name = type.FullName;
-                entityType.FriendlyName = type.Name.SplitCase();
-                entityType.AssemblyName = type.AssemblyQualifiedName;
-                EntityTypeService.Add( entityType );
-                rockContext.SaveChanges();
+                using ( var rockContext = new RockContext() )
+                {
+                    var EntityTypeService = new EntityTypeService( rockContext );
+                    entityType = new EntityType();
+                    entityType.Name = type.FullName;
+                    entityType.FriendlyName = type.Name.SplitCase();
+                    entityType.AssemblyName = type.AssemblyQualifiedName;
+                    EntityTypeService.Add( entityType );
+                    rockContext.SaveChanges();
+                }
 
                 // Read type using current context
                 return this.Get( entityType.Id );
@@ -124,7 +126,7 @@ namespace Rock.Model
         public IEnumerable<EntityType> GetReportableEntities(Person currentPerson)
         {
             return this.GetEntities()
-                .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson, this.Context as RockContext ) )
+                .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
                 .Where( a => !Rock.Web.Cache.EntityTypeCache.Read( a ).GetEntityType().GetCustomAttributes( typeof( HideFromReportingAttribute ), true ).Any() );
         }
 
@@ -173,14 +175,16 @@ namespace Rock.Model
                 entityType.AssemblyName = type.Value.AssemblyQualifiedName;
                 entityType.IsEntity = !type.Value.GetCustomAttributes( typeof(System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute), false ).Any();
                 entityType.IsSecured = false;
-                entityTypes.Add( type.Key, entityType );
+                entityTypes.Add( type.Key.ToLower(), entityType );
             }
 
             foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Security.ISecured ) ) )
             {
-                if ( entityTypes.ContainsKey( type.Key ) )
+                string key = type.Key.ToLower();
+
+                if ( entityTypes.ContainsKey( key ) )
                 {
-                    entityTypes[type.Key].IsSecured = true;
+                    entityTypes[key].IsSecured = true;
                 }
                 else
                 {
@@ -190,55 +194,81 @@ namespace Rock.Model
                     entityType.AssemblyName = type.Value.AssemblyQualifiedName;
                     entityType.IsEntity = false;
                     entityType.IsSecured = true;
-                    entityTypes.Add( type.Key, entityType );
+                    entityTypes.Add( key, entityType );
                 }
             }
 
-            var rockContext = new RockContext();
-            var entityTypeService = new EntityTypeService( rockContext );
-
-            // Find any existing EntityTypes marked as an entity or secured that are no longer an entity or secured
-            foreach ( var oldEntityType in entityTypeService.Queryable()
-                .Where( e => !entityTypes.Keys.Contains( e.Name ) && ( e.IsEntity || e.IsSecured ) )
-                .ToList() )
+            using ( var rockContext = new RockContext() )
             {
-                oldEntityType.IsSecured = false;
-                oldEntityType.IsEntity = false;
-                oldEntityType.AssemblyName = null;
-            }
+                var entityTypeService = new EntityTypeService( rockContext );
 
-            // Update any existing entities
-            foreach ( var existingEntityType in entityTypeService.Queryable()
-                .Where( e => entityTypes.Keys.Contains( e.Name ) )
-                .ToList() )
-            {
-                var entityType = entityTypes[existingEntityType.Name];
-
-                if ( existingEntityType.IsEntity != entityType.IsEntity ||
-                    existingEntityType.IsSecured != entityType.IsSecured ||
-                    existingEntityType.FriendlyName != ( existingEntityType.FriendlyName ?? entityType.FriendlyName ) ||
-                    existingEntityType.AssemblyName != entityType.AssemblyName )
+                // Find any existing EntityTypes marked as an entity or secured that are no longer an entity or secured
+                foreach ( var oldEntityType in entityTypeService.Queryable()
+                    .Where( e => e.IsEntity || e.IsSecured )
+                    .ToList() )
                 {
-                    existingEntityType.IsEntity = entityType.IsEntity;
-                    existingEntityType.IsSecured = entityType.IsSecured;
-                    existingEntityType.FriendlyName = existingEntityType.FriendlyName ?? entityType.FriendlyName;
-                    existingEntityType.AssemblyName = entityType.AssemblyName;
+                    if ( !entityTypes.Keys.Contains( oldEntityType.Name.ToLower() ) )
+                    {
+                        oldEntityType.IsSecured = false;
+                        oldEntityType.IsEntity = false;
+                        oldEntityType.AssemblyName = null;
+                    }
                 }
-                entityTypes.Remove( entityType.Name );
-            }
 
-            // Add the newly discovered entities 
-            foreach ( var entityTypeInfo in entityTypes )
-            {
-                // Don't add the EntityType entity as it will probably have been automatically 
-                // added by the audit on a previous save in this method.
-                if ( entityTypeInfo.Value.Name != "Rock.Model.EntityType" )
+                // Update any existing entities
+                foreach ( var existingEntityType in entityTypeService.Queryable()
+                    .Where( e => entityTypes.Keys.Contains( e.Name ) )
+                    .ToList() )
                 {
-                    entityTypeService.Add( entityTypeInfo.Value );
+                    var key = existingEntityType.Name.ToLower();
+
+                    var entityType = entityTypes[key];
+
+                    if ( existingEntityType.Name != entityType.Name ||
+                        existingEntityType.IsEntity != entityType.IsEntity ||
+                        existingEntityType.IsSecured != entityType.IsSecured ||
+                        existingEntityType.FriendlyName != ( existingEntityType.FriendlyName ?? entityType.FriendlyName ) ||
+                        existingEntityType.AssemblyName != entityType.AssemblyName )
+                    {
+                        existingEntityType.Name = entityType.Name;
+                        existingEntityType.IsEntity = entityType.IsEntity;
+                        existingEntityType.IsSecured = entityType.IsSecured;
+                        existingEntityType.FriendlyName = existingEntityType.FriendlyName ?? entityType.FriendlyName;
+                        existingEntityType.AssemblyName = entityType.AssemblyName;
+                    }
+                    entityTypes.Remove( key );
                 }
+
+                // Add the newly discovered entities 
+                foreach ( var entityTypeInfo in entityTypes )
+                {
+                    // Don't add the EntityType entity as it will probably have been automatically 
+                    // added by the audit on a previous save in this method.
+                    if ( entityTypeInfo.Value.Name != "Rock.Model.EntityType" )
+                    {
+                        entityTypeService.Add( entityTypeInfo.Value );
+                    }
+                }
+
+                rockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// Gets the Guid for the EntityType that has the specified Id
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Guid? GetGuid( int id )
+        {
+            var cacheItem = Rock.Web.Cache.EntityTypeCache.Read( id );
+            if ( cacheItem != null )
+            {
+                return cacheItem.Guid;
             }
 
-            rockContext.SaveChanges();
+            return null;
+
         }
     }
 }

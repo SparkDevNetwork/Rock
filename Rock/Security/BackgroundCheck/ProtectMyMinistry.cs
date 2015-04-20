@@ -168,25 +168,15 @@ namespace Rock.Security.BackgroundCheck
                     subjectElement.Add( new XElement( "Gender", "Female" ) );
                 }
 
-                Guid homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
-                foreach ( var family in person.GetFamilies())
+                var homelocation = person.GetHomeLocation();
+                if ( homelocation != null)
                 {
-                    var loc = family.GroupLocations
-                        .Where( l => 
-                            l.GroupLocationTypeValue.Guid.Equals(homeAddressGuid) &&
-                            l.IsMappedLocation )
-                        .Select( l => l.Location )
-                        .FirstOrDefault();
-                    if ( loc != null)
-                    {
-                        subjectElement.Add( new XElement( "CurrentAddress",
-                            new XElement( "StreetAddress", loc.Street1 ),
-                            new XElement( "City", loc.City ),
-                            new XElement( "State", loc.State ),
-                            new XElement( "Zipcode", loc.PostalCode )
-                        ) );
-                        break;
-                    }
+                    subjectElement.Add( new XElement( "CurrentAddress",
+                        new XElement( "StreetAddress", homelocation.Street1 ),
+                        new XElement( "City", homelocation.City ),
+                        new XElement( "State", homelocation.State ),
+                        new XElement( "Zipcode", homelocation.PostalCode )
+                    ) );
                 }
 
                 XElement aliasesElement = new XElement( "Aliases" );
@@ -427,8 +417,7 @@ namespace Rock.Security.BackgroundCheck
                         binaryFile.BinaryFileTypeId = binaryFileType.Id;
                         binaryFile.MimeType = "application/pdf";
                         binaryFile.FileName = fileName;
-                        binaryFile.Data = new BinaryFileData();
-                        binaryFile.Data.Content = data;
+                        binaryFile.ContentStream = new MemoryStream( data );
 
                         var binaryFileService = new BinaryFileService( rockContext );
                         binaryFileService.Add( binaryFile );

@@ -17,7 +17,7 @@
                 <asp:HiddenField ID="hfSelectedColumn" runat="server" />
         
                 <div class="grid">
-                    <Rock:Grid ID="gValues" runat="server" AllowSorting="false" EmptyDataText="No Results" />
+                    <Rock:Grid ID="gValues" runat="server" EnableResponsiveTable="false" AllowSorting="false" EmptyDataText="No Results" />
                 </div>
             
                 <Rock:NotificationBox ID="nbSecurityNotice" runat="server" NotificationBoxType="danger" Visible="false" Title="Account Hijack Possible:" Heading="Security Alert" 

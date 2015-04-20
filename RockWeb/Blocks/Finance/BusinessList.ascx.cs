@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Finance
             gfBusinessFilter.ApplyFilterClick += gfBusinessFilter_ApplyFilterClick;
             gfBusinessFilter.DisplayFilterValue += gfBusinessFilter_DisplayFilterValue;
 
-            gBusinessList.DataKeyNames = new string[] { "id" };
+            gBusinessList.DataKeyNames = new string[] { "Id" };
             gBusinessList.Actions.ShowAdd = canEdit;
             gBusinessList.Actions.AddClick += gBusinessList_AddClick;
             gBusinessList.GridRebind += gBusinessList_GridRebind;
@@ -229,6 +229,7 @@ namespace RockWeb.Blocks.Finance
                                 .Select( p => p.Person.LastName + ", " + p.Person.NickName)
             } );
 
+            gBusinessList.EntityTypeId = EntityTypeCache.Read<Person>().Id;
             gBusinessList.DataSource = businessList.ToList();
             gBusinessList.DataBind();
         }

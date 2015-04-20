@@ -59,6 +59,16 @@ namespace RockWeb.Blocks.Security
 
         #endregion
 
+        #region Properties
+
+        protected string Password
+        {
+            get { return ViewState["Password"] as string ?? string.Empty; }
+            set { ViewState["Password"] = value; }
+        }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -111,6 +121,7 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnUserInfoNext_Click( object sender, EventArgs e )
         {
+            Password = tbPassword.Text;
 
             if ( Page.IsValid )
             {
@@ -504,7 +515,6 @@ namespace RockWeb.Blocks.Security
         private Person CreatePerson()
         {
             var rockContext = new RockContext();
-            Rock.Model.PersonService personService = new PersonService( rockContext );
 
             DefinedValueCache dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
             DefinedValueCache dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
@@ -513,8 +523,9 @@ namespace RockWeb.Blocks.Security
             person.FirstName = tbFirstName.Text;
             person.LastName = tbLastName.Text;
             person.Email = tbEmail.Text;
+            person.IsEmailActive = true;
             person.EmailPreference = EmailPreference.EmailAllowed;
-
+            person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             if ( dvcConnectionStatus != null )
             {
                 person.ConnectionStatusValueId = dvcConnectionStatus.Id;
@@ -549,7 +560,7 @@ namespace RockWeb.Blocks.Security
                 }
             }
 
-            GroupService.SaveNewFamily( rockContext, person, null, false );
+            PersonService.SaveNewPerson( person, rockContext, null, false );
             return person;
         }
 
@@ -569,7 +580,7 @@ namespace RockWeb.Blocks.Security
                 Rock.Model.AuthenticationServiceType.Internal,
                 EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
                 tbUserName.Text, 
-                tbPassword.Text,
+                Password,
                 confirmed );
         }
 

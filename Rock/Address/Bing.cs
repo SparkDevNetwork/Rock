@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.ServiceModel.Web;
 using System.Web;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Web.UI;
@@ -37,7 +38,7 @@ namespace Rock.Address
     [Export( typeof( VerificationComponent ) )]
     [ExportMetadata( "ComponentName", "Bing" )]
     [TextField( "Bing Maps Key", "The Bing maps key", true, "", "", 1 )]
-    [IntegerField("Daily Transaction Limit", "The maximum number of transactions to process each day.", false, 5000, "", 2)]
+    [IntegerField( "Daily Transaction Limit", "The maximum number of transactions to process each day.", false, 5000, "", 2 )]
     public class Bing : VerificationComponent
     {
         const string TXN_DATE = "com.rockrms.bing.txnDate";
@@ -57,15 +58,21 @@ namespace Rock.Address
             bool verified = false;
             result = string.Empty;
 
-            if ( location != null && 
-                !(location.IsGeoPointLocked ?? false) &&  
-                (!location.GeocodeAttemptedDateTime.HasValue || reVerify) )
+            // Only verify if location is valid, has not been locked, and 
+            // has either never been attempted or last attempt was in last 30 secs (prev active service failed) or reverifying
+            if ( location != null &&
+                !( location.IsGeoPointLocked ?? false ) &&
+                (
+                    !location.GeocodeAttemptedDateTime.HasValue ||
+                    location.GeocodeAttemptedDateTime.Value.CompareTo( RockDateTime.Now.AddSeconds( -30 ) ) > 0 ||
+                    reVerify
+                ) )
             {
                 // Verify that bing transaction count hasn't been exceeded for the day
                 DateTime? txnDate = Rock.Web.SystemSettings.GetValue( TXN_DATE ).AsDateTime();
                 int? dailyTxnCount = 0;
 
-                if (txnDate.Equals(RockDateTime.Today))
+                if ( txnDate.Equals( RockDateTime.Today ) )
                 {
                     dailyTxnCount = Rock.Web.SystemSettings.GetValue( DAILY_TXN_COUNT ).AsIntegerOrNull();
                 }
@@ -82,10 +89,23 @@ namespace Rock.Address
                     Rock.Web.SystemSettings.SetValue( DAILY_TXN_COUNT, dailyTxnCount.ToString() );
 
                     string key = GetAttributeValue( "BingMapsKey" );
-                    string query = HttpUtility.UrlEncode( string.Format( "{0} {1} {2} {3} {4}",
-                        location.Street1, location.Street2, location.City, location.State, location.PostalCode ) );
 
-                    Uri geocodeRequest = new Uri( string.Format( "http://dev.virtualearth.net/REST/v1/Locations?q={0}&key={1}", query, key ) );
+                    var queryValues = new Dictionary<string, string>();
+                    queryValues.Add( "adminDistrict", location.State );
+                    queryValues.Add( "locality", location.City );
+                    queryValues.Add( "postalCode", location.PostalCode );
+                    queryValues.Add( "addressLine", location.Street1 + " " + location.Street2 );
+                    queryValues.Add( "countryRegion", location.Country );
+
+                    var queryParams = new List<string>();
+                    foreach ( var queryKeyValue in queryValues )
+                    {
+                        if ( !string.IsNullOrWhiteSpace( queryKeyValue.Value ) )
+                        {
+                            queryParams.Add( string.Format( "{0}={1}", queryKeyValue.Key, HttpUtility.UrlEncode( queryKeyValue.Value.Trim() ) ) );
+                        }
+                    }
+                    Uri geocodeRequest = new Uri( string.Format( "http://dev.virtualearth.net/REST/v1/Locations?{0}&key={1}", queryParams.AsDelimited( "&" ), key ) );
 
                     WebClient wc = new WebClient();
                     var stream = wc.OpenRead( geocodeRequest );
@@ -117,7 +137,8 @@ namespace Rock.Address
                                         location.Street1 = address.AddressLine;
                                         location.City = address.Locality;
                                         location.State = address.AdminDistrict;
-                                        if ( !location.PostalCode.StartsWith( address.PostalCode ) )
+                                        if ( !String.IsNullOrWhiteSpace( address.PostalCode ) &&
+                                            !( ( location.PostalCode ?? string.Empty ).StartsWith( address.PostalCode ) ) )
                                         {
                                             location.PostalCode = address.PostalCode;
                                         }

@@ -39,8 +39,8 @@ namespace RockWeb.Blocks.Core
     [System.ComponentModel.Category( "Core" )]
     [System.ComponentModel.Description( "Block to administrate MEF plugins." )]
 
-    [TextField( "Component Container", "The Rock Extension Managed Component Container to manage", true, "", "", 1)]
-    [BooleanField( "Support Ordering", "Should user be allowed to re-order list of components?", true, "", 2)]
+    [TextField( "Component Container", "The Rock Extension Managed Component Container to manage. For example: 'Rock.Search.SearchContainer, Rock'", true, "", "", 1 )]
+    [BooleanField( "Support Ordering", "Should user be allowed to re-order list of components?", true, "", 2 )]
     public partial class Components : RockBlock
     {
         #region Private Variables
@@ -53,20 +53,24 @@ namespace RockWeb.Blocks.Core
 
         #region Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
             _isAuthorizedToConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
-            
+
             _supportOrdering = GetAttributeValue( "SupportOrdering" ).AsBoolean( true );
-            
+
             Type containerType = Type.GetType( GetAttributeValue( "ComponentContainer" ) );
             if ( containerType != null )
             {
                 PropertyInfo instanceProperty = containerType.GetProperty( "Instance" );
                 if ( instanceProperty != null )
-                {                   
+                {
                     _container = instanceProperty.GetValue( null, null ) as IContainer;
                     if ( _container != null )
                     {
@@ -74,9 +78,11 @@ namespace RockWeb.Blocks.Core
                         rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
                         if ( !Page.IsPostBack )
+                        {
                             _container.Refresh();
+                        }
 
-                        rGrid.DataKeyNames = new string[] { "id" };
+                        rGrid.DataKeyNames = new string[] { "Id" };
                         rGrid.Columns[0].Visible = _supportOrdering && _isAuthorizedToConfigure;
                         rGrid.GridReorder += rGrid_GridReorder;
                         rGrid.GridRebind += rGrid_GridRebind;
@@ -88,16 +94,21 @@ namespace RockWeb.Blocks.Core
                         }
 
                         mdEditComponent.SaveClick += mdEditComponent_SaveClick;
-
                     }
                     else
+                    {
                         DisplayError( "Could not get ContainerManaged instance from Instance property" );
+                    }
                 }
                 else
+                {
                     DisplayError( "ContainerManaged class does not have an 'Instance' property" );
+                }
             }
             else
-                DisplayError( "Could not get the type of the specified Manged Component Container" );
+            {
+                DisplayError( "Could not get the type of the specified Managed Component Container" );
+            }
         }
 
         /// <summary>
@@ -117,17 +128,17 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                if (hfActiveDialog.Value.Trim().ToUpper() == "EDITCOMPONENT")
+                if ( hfActiveDialog.Value.Trim().ToUpper() == "EDITCOMPONENT" )
                 {
                     int? serviceId = ViewState["serviceId"] as int?;
-                    if (serviceId.HasValue)
+                    if ( serviceId.HasValue )
                     {
-                        LoadEditControls(serviceId.Value, false);
+                        LoadEditControls( serviceId.Value, false );
                     }
                 }
+
                 ShowDialog();
             }
-
         }
 
         #endregion
@@ -153,25 +164,30 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Controls.GridReorderEventArgs"/> instance containing the event data.</param>
-        void rGrid_GridReorder( object sender, GridReorderEventArgs e )
+        protected void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
             var components = _container.Dictionary.ToList();
             var movedItem = components[e.OldIndex];
             components.RemoveAt( e.OldIndex );
             if ( e.NewIndex >= components.Count )
+            {
                 components.Add( movedItem );
+            }
             else
+            {
                 components.Insert( e.NewIndex, movedItem );
+            }
 
             var rockContext = new RockContext();
             int order = 0;
             foreach ( var item in components )
             {
                 Component component = item.Value.Value;
-                if (  component.Attributes.ContainsKey("Order") )
+                if ( component.Attributes.ContainsKey( "Order" ) )
                 {
                     Rock.Attribute.Helper.SaveAttributeValue( component, component.Attributes["Order"], order.ToString(), rockContext );
                 }
+
                 order++;
             }
 
@@ -187,7 +203,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="Rock.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void rGrid_Edit( object sender, RowEventArgs e )
         {
-            ShowEdit( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( e.RowKeyId );
         }
 
         /// <summary>
@@ -195,12 +211,17 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        void rGrid_GridRebind( object sender, EventArgs e )
+        protected void rGrid_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
 
-        void rGrid_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        /// <summary>
+        /// Handles the RowDataBound event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void rGrid_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
         {
             ComponentDescription componentDescription = e.Row.DataItem as ComponentDescription;
             if ( componentDescription != null )
@@ -228,7 +249,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdEditComponent_SaveClick( object sender, EventArgs e )
         {
-            int serviceId = ( int )ViewState["serviceId"];
+            int serviceId = (int)ViewState["serviceId"];
             Rock.Attribute.IHasAttributes component = _container.Dictionary[serviceId].Value;
 
             Rock.Attribute.Helper.GetEditValues( phProperties, component );
@@ -264,14 +285,14 @@ namespace RockWeb.Blocks.Core
             var dataSource = new List<ComponentDescription>();
 
             // Get components ordered by 'Order' attribute (if ordering is supported) or by Name
-            var components = new Dictionary<int,KeyValuePair<string,Component>>();
-            if (_supportOrdering)
+            var components = new Dictionary<int, KeyValuePair<string, Component>>();
+            if ( _supportOrdering )
             {
                 components = _container.Dictionary;
             }
             else
             {
-                components = new Dictionary<int,KeyValuePair<string,Component>>();
+                components = new Dictionary<int, KeyValuePair<string, Component>>();
                 _container.Dictionary.OrderBy( c => c.Value.Key ).ToList().ForEach( c =>
                 {
                     components.Add( c.Key, c.Value );
@@ -279,7 +300,7 @@ namespace RockWeb.Blocks.Core
             }
 
             var rockContext = new RockContext();
-            foreach ( var component in components)
+            foreach ( var component in components )
             {
                 Type type = component.Value.Value.GetType();
                 if ( Rock.Attribute.Helper.UpdateAttributes( type, Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ), string.Empty, string.Empty, rockContext ) )
@@ -330,31 +351,49 @@ namespace RockWeb.Blocks.Core
         {
             ViewState["serviceId"] = serviceId;
             phProperties.Controls.Clear();
-            LoadEditControls(serviceId, true);
+            LoadEditControls( serviceId, true );
 
-            mdEditComponent.Title = (_container.Dictionary[serviceId].Key + " Properties").FormatAsHtmlTitle();
+            mdEditComponent.Title = ( _container.Dictionary[serviceId].Key + " Properties" ).FormatAsHtmlTitle();
 
             ShowDialog( "EditComponent" );
         }
 
-        private void LoadEditControls(int serviceId, bool setValues)
+        /// <summary>
+        /// Loads the edit controls.
+        /// </summary>
+        /// <param name="serviceId">The service identifier.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        private void LoadEditControls( int serviceId, bool setValues )
         {
             Rock.Attribute.IHasAttributes component = _container.Dictionary[serviceId].Value;
             phProperties.Controls.Clear();
             Rock.Attribute.Helper.AddEditControls( component, phProperties, setValues, string.Empty, new List<string>() { "Order" } );
         }
 
+        /// <summary>
+        /// Displays the error.
+        /// </summary>
+        /// <param name="message">The message.</param>
         private void DisplayError( string message )
         {
             mdAlert.Show( message, ModalAlertType.Alert );
         }
 
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        /// <param name="dialog">The dialog.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void ShowDialog( string dialog, bool setValues = false )
         {
             hfActiveDialog.Value = dialog.ToUpper().Trim();
             ShowDialog( setValues );
         }
 
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void ShowDialog( bool setValues = false )
         {
             switch ( hfActiveDialog.Value )
@@ -365,11 +404,13 @@ namespace RockWeb.Blocks.Core
             }
         }
 
+        /// <summary>
+        /// Hides the dialog.
+        /// </summary>
         private void HideDialog()
         {
             switch ( hfActiveDialog.Value )
             {
-
                 case "EDITCOMPONENT":
                     mdEditComponent.Hide();
                     break;

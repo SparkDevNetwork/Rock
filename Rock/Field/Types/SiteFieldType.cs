@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
+
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -30,6 +31,9 @@ namespace Rock.Field.Types
     /// </summary>
     public class SiteFieldType : FieldType, IEntityFieldType
     {
+
+        #region Edit Control 
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -101,6 +105,10 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Entity Methods
+
         /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
@@ -150,5 +158,8 @@ namespace Rock.Field.Types
 
             return null;
         }
+
+        #endregion
+
     }
 }

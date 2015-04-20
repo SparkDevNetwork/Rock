@@ -21,47 +21,67 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for ContentChannel
+    /// Base client model for ContentChannel that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class ContentChannel
+    public partial class ContentChannelEntity
     {
         /// <summary />
-        public int ContentChannelTypeId { get; set; }
-
-        /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
-        public string Description { get; set; }
-
-        /// <summary />
-        public string IconCssClass { get; set; }
-
-        /// <summary />
-        public bool RequiresApproval { get; set; }
-
-        /// <summary />
-        public bool EnableRss { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public string ChannelUrl { get; set; }
 
         /// <summary />
-        public string ItemUrl { get; set; }
-
-        /// <summary />
-        public int? TimeToLive { get; set; }
+        public int ContentChannelTypeId { get; set; }
 
         /// <summary />
         public int /* ContentControlType*/ ContentControlType { get; set; }
 
         /// <summary />
+        public string Description { get; set; }
+
+        /// <summary />
+        public bool EnableRss { get; set; }
+
+        /// <summary />
+        public string IconCssClass { get; set; }
+
+        /// <summary />
+        public string ItemUrl { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
+        public bool RequiresApproval { get; set; }
+
+        /// <summary />
         public string RootImageDirectory { get; set; }
+
+        /// <summary />
+        public int? TimeToLive { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Client model for ContentChannel that includes all the fields that are available for GETs. Use this for GETs (use ContentChannelEntity for POST/PUTs)
+    /// </summary>
+    public partial class ContentChannel : ContentChannelEntity
+    {
+        /// <summary />
+        public ContentChannelType ContentChannelType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -75,14 +95,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
-        public int Id { get; set; }
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

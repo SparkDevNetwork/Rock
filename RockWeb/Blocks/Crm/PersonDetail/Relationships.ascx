@@ -16,6 +16,7 @@
             </div>
 
             <div class="panel-body">
+                <asp:Literal ID="lAccessWarning" runat="server" />
                 <ul class="personlist">
                     <asp:Repeater ID="rGroupMembers" runat="server">
                         <ItemTemplate>
@@ -39,7 +40,7 @@
 
             <asp:HiddenField ID="hfRoleId" runat="server" />
     
-            <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Relationship" Content-Height="380" ValidationGroup="NewRelationship">
+            <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Relationship" ValidationGroup="NewRelationship">
                 <Content>
 
                     <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="NewRelationship" />

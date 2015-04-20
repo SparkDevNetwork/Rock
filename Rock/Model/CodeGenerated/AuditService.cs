@@ -87,13 +87,13 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Audit target, Audit source )
         {
-            target.EntityTypeId = source.EntityTypeId;
-            target.EntityId = source.EntityId;
-            target.Title = source.Title;
+            target.Id = source.Id;
             target.AuditType = source.AuditType;
             target.DateTime = source.DateTime;
+            target.EntityId = source.EntityId;
+            target.EntityTypeId = source.EntityTypeId;
             target.PersonAliasId = source.PersonAliasId;
-            target.Id = source.Id;
+            target.Title = source.Title;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

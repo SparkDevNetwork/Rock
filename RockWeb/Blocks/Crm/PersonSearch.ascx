@@ -9,11 +9,11 @@
             <Rock:Grid ID="gPeople" runat="server" EmptyDataText="No People Found" AllowSorting="true" OnRowSelected="gPeople_RowSelected">
                 <Columns>
                     <Rock:SelectField />
-                    <asp:BoundField 
+                    <Rock:RockBoundField 
                         DataField="FullNameReversed"  
                         HeaderText="Person"  
                         SortExpression="LastName,FirstName" />
-                    <asp:BoundField 
+                    <Rock:RockBoundField 
                         ItemStyle-HorizontalAlign="Right"
                         HeaderStyle-HorizontalAlign="Right"
                         DataField="Age"  

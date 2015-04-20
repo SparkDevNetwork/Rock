@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Groups
 
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
-            gGroupType.DataKeyNames = new string[] { "id" };
+            gGroupType.DataKeyNames = new string[] { "Id" };
             gGroupType.Actions.ShowAdd = true;
             gGroupType.Actions.AddClick += gGroupType_Add;
             gGroupType.GridReorder += gGroupType_GridReorder;
@@ -242,6 +242,7 @@ namespace RockWeb.Blocks.Groups
                     a.IsSystem
                 } );
 
+            gGroupType.EntityTypeId = EntityTypeCache.Read<GroupType>().Id;
             gGroupType.DataSource = selectQry.ToList();
             gGroupType.DataBind();
         }

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Data.Entity;
 using System.Net;
 using System.Web.Http;
 using System.Linq;
@@ -85,6 +86,52 @@ namespace Rock.Rest.Controllers
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the attendance summary data for the 24 month attenance badge 
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/PersonBadges/GeofencedGroups/{personId}/{groupTypeGuid}" )]
+        public string GetGeofencedGroups( int personId, Guid groupTypeGuid )
+        {
+            var rockContext = (Rock.Data.RockContext)Service.Context;
+            var groupMemberService = new GroupMemberService( rockContext );
+            var groupService = new GroupService( rockContext );
+
+            Guid familyTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+
+            // get the geopoints for the family locations for the selected person
+            var familyGeoPoints = groupMemberService
+                .Queryable().AsNoTracking()
+                .Where( m => 
+                    m.PersonId == personId &&
+                    m.Group.GroupType.Guid.Equals( familyTypeGuid ) )
+                .SelectMany( m => m.Group.GroupLocations )
+                .Where( l => 
+                    l.IsMappedLocation &&
+                    l.Location.GeoPoint != null ) 
+                .Select( l => l.Location.GeoPoint )
+                .ToList();
+
+            // Get the groups that have a location that intersects with any of the family's locations
+            var groupNames = groupService
+                .Queryable().AsNoTracking()
+                .Where( g => 
+                    g.GroupType.Guid.Equals( groupTypeGuid ) &&
+                    g.IsActive &&
+                    g.GroupLocations.Any( l =>
+                        l.Location.GeoFence != null &&
+                        familyGeoPoints.Any( p => p.Intersects( l.Location.GeoFence ) )
+                    ))
+                .OrderBy( g => g.Name )
+                .Select( g => g.Name )
+                .ToList();
+
+            return groupNames.AsDelimited( " | ");
         }
 
         /// <summary>

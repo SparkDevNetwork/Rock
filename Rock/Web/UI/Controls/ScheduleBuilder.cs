@@ -246,7 +246,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 _scheduleBuilderPopupContents.iCalendarContent = value;
 
-                if (ShowScheduleFriendlyTextAsToolTip)
+                if ( ShowScheduleFriendlyTextAsToolTip )
                 {
                     this.ToolTip = new Rock.Model.Schedule { iCalendarContent = _scheduleBuilderPopupContents.iCalendarContent }.ToFriendlyScheduleText();
                 }
@@ -385,6 +385,7 @@ namespace Rock.Web.UI.Controls
         protected void btnSaveSchedule_Click( object sender, EventArgs e )
         {
             iCalendarContent = _scheduleBuilderPopupContents.GetCalendarContentFromControls();
+            _modalDialog.Hide();
             if ( SaveSchedule != null )
             {
                 SaveSchedule( sender, e );
@@ -419,7 +420,7 @@ namespace Rock.Web.UI.Controls
         private RockRadioButton _radWeekly;
         private RockRadioButton _radMonthly;
 
-        private HiddenField _hfSpecificDateListValues;
+        private HiddenFieldWithClass _hfSpecificDateListValues;
 
         // specific date panel
         private DatePicker _dpSpecificDate;
@@ -456,7 +457,7 @@ namespace Rock.Web.UI.Controls
         private NumberBox _tbEndByOccurrenceCount;
 
         // exclusions
-        private HiddenField _hfExclusionDateRangeListValues;
+        private HiddenFieldWithClass _hfExclusionDateRangeListValues;
         private DateRangePicker _dpExclusionDateRange;
 
 
@@ -488,7 +489,8 @@ END:VCALENDAR
             _radMonthly = new RockRadioButton();
 
             // specific date
-            _hfSpecificDateListValues = new HiddenField();
+            _hfSpecificDateListValues = new HiddenFieldWithClass();
+            _hfSpecificDateListValues.CssClass = "js-specific-datelist-values";
 
             _dpSpecificDate = new DatePicker();
 
@@ -524,7 +526,8 @@ END:VCALENDAR
             _tbEndByOccurrenceCount = new NumberBox();
 
             // exclusions
-            _hfExclusionDateRangeListValues = new HiddenField();
+            _hfExclusionDateRangeListValues = new HiddenFieldWithClass();
+            _hfExclusionDateRangeListValues.CssClass = "js-exclusion-daterange-list-values";
             _dpExclusionDateRange = new DateRangePicker();
         }
 
@@ -591,7 +594,24 @@ END:VCALENDAR
 
             if ( _dpStartDateTime.SelectedDateTimeIsBlank )
             {
-                return iCalendarContentEmptyEvent;
+                if ( _radRecurring.Checked )
+                {
+                    if ( _dpStartDateTime.SelectedTime.HasValue )
+                    {
+                        // if they set the Time but not the Date, assume Today and let the recurring rules figure out the dates from that
+                        _dpStartDateTime.SelectedDateTime = RockDateTime.Today.Add( _dpStartDateTime.SelectedTime.Value );
+                    }
+                    else
+                    {
+                        // no date or time set, so no schedule
+                        return iCalendarContentEmptyEvent;
+                    }
+                }
+                else
+                {
+                    // no date or time set, so no schedule
+                    return iCalendarContentEmptyEvent;
+                }
             }
 
             DDay.iCal.Event calendarEvent = new DDay.iCal.Event();
@@ -601,16 +621,16 @@ END:VCALENDAR
             int durationHours = TextBoxToPositiveInteger( _tbDurationHours, 0 );
             int durationMins = TextBoxToPositiveInteger( _tbDurationMinutes, 0 );
 
-            if ( (durationHours == 0 && durationMins == 0) || this.ShowDuration == false )
+            if ( ( durationHours == 0 && durationMins == 0 ) || this.ShowDuration == false )
             {
                 // make a one second duration since a zero duration won't be included in occurrences
-                calendarEvent.Duration = new TimeSpan( 0, 0, 1);
+                calendarEvent.Duration = new TimeSpan( 0, 0, 1 );
             }
             else
             {
                 calendarEvent.Duration = new TimeSpan( durationHours, durationMins, 0 );
             }
-            
+
 
             if ( _radRecurring.Checked )
             {
@@ -836,12 +856,14 @@ END:VCALENDAR
                     calendar = calendarList[0] as DDay.iCal.iCalendar;
                     if ( calendar == null )
                     {
+                        _radOneTime.Checked = true;
                         _iCalendarContent = iCalendarContentEmptyEvent;
                         return;
                     }
                 }
                 else
                 {
+                    _radOneTime.Checked = true;
                     _iCalendarContent = iCalendarContentEmptyEvent;
                     return;
                 }
@@ -851,7 +873,8 @@ END:VCALENDAR
                 if ( calendarEvent.DTStart != null )
                 {
                     _dpStartDateTime.SelectedDateTime = calendarEvent.DTStart.Value;
-                    _tbDurationHours.Text = calendarEvent.Duration.Hours.ToString();
+                    int hours = ( calendarEvent.Duration.Days * 24 ) + calendarEvent.Duration.Hours;
+                    _tbDurationHours.Text = hours.ToString();
                     _tbDurationMinutes.Text = calendarEvent.Duration.Minutes.ToString();
                 }
                 else
@@ -1048,6 +1071,7 @@ END:VCALENDAR
             _dpStartDateTime.ClientIDMode = ClientIDMode.Static;
             _dpStartDateTime.ID = "dpStartDateTime_" + this.ClientID;
             _dpStartDateTime.Label = "Start Date / Time";
+            _dpStartDateTime.Help = "Select the Date and Time to base the schedule on. Make sure to set this if you want the schedule to work. Set to blank if you want to leave this unscheduled.";
             _dpStartDateTime.Required = false;
             _dpStartDateTime.ValidationGroup = validationGroup;
 
@@ -1056,7 +1080,6 @@ END:VCALENDAR
             _tbDurationHours.CssClass = "input-width-md";
             _tbDurationHours.AppendText = "hrs&nbsp;";
             _tbDurationHours.MinimumValue = "0";
-            _tbDurationHours.MaximumValue = "24";
             _tbDurationHours.ValidationGroup = validationGroup;
 
             _tbDurationMinutes.ClientIDMode = ClientIDMode.Static;
@@ -1241,6 +1264,7 @@ END:VCALENDAR
 
             _dpExclusionDateRange.ClientIDMode = ClientIDMode.Static;
             _dpExclusionDateRange.ID = "dpExclusionDateRange_" + this.ClientID;
+            _dpExclusionDateRange.CssClass = "js-exclusion-date-range-picker";
             _dpExclusionDateRange.ValidationGroup = validationGroup;
 
             Controls.Add( _dpStartDateTime );
@@ -1345,13 +1369,14 @@ END:VCALENDAR
             }
 
             writer.AddAttribute( "id", "schedule-recurrence-panel_" + this.ClientID );
+            writer.AddAttribute( "class", "js-schedule-recurrence-panel" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "legend-small" );
             writer.RenderBeginTag( HtmlTextWriterTag.Legend );
             writer.Write( "Recurrence" );
             writer.RenderEndTag();
-            
+
 
             // OccurrencePattern Radiobuttons
             writer.AddAttribute( "class", "form-group" );
@@ -1394,6 +1419,7 @@ END:VCALENDAR
 " );
 
             writer.AddAttribute( "id", "add-specific-date-group_" + this.ClientID );
+            writer.AddAttribute( "class", "js-add-specific-date-group" );
 
             writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -1426,7 +1452,7 @@ END:VCALENDAR
             //writer.AddAttribute( "class", "form-group controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute("class", "form-control-group");
+            writer.AddAttribute( "class", "form-control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radDailyEveryXDays.Text = "Every";
             _radDailyEveryXDays.RenderControl( writer );
@@ -1434,13 +1460,13 @@ END:VCALENDAR
             _tbDailyEveryXDays.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute("class", "form-control-group");
+            writer.AddAttribute( "class", "form-control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radDailyEveryWeekday.Text = "Every weekday";
             _radDailyEveryWeekday.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute("class", "form-control-group");
+            writer.AddAttribute( "class", "form-control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radDailyEveryWeekendDay.Text = "Every weekend day";
             _radDailyEveryWeekendDay.RenderControl( writer );
@@ -1458,7 +1484,7 @@ END:VCALENDAR
                 writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             }
 
-            writer.AddAttribute("class", "weekly-x-weeks");
+            writer.AddAttribute( "class", "weekly-x-weeks" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "form-control-group" );
@@ -1468,7 +1494,7 @@ END:VCALENDAR
             writer.Write( "<span> on</span>" );
             writer.RenderEndTag();
 
-            writer.AddAttribute("class", "week-days");
+            writer.AddAttribute( "class", "week-days" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbWeeklySunday.RenderControl( writer );
             _cbWeeklyMonday.RenderControl( writer );
@@ -1492,10 +1518,10 @@ END:VCALENDAR
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( "class", "form-group controls" );
-            
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute("class", "form-control-group");
+            writer.AddAttribute( "class", "form-control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radMonthlyDayX.Text = "Day";
             _radMonthlyDayX.RenderControl( writer );
@@ -1506,7 +1532,7 @@ END:VCALENDAR
             writer.Write( "<span> months</span>" );
             writer.RenderEndTag();
 
-            writer.AddAttribute("class", "form-control-group");
+            writer.AddAttribute( "class", "form-control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radMonthlyNth.Text = "The";
             _radMonthlyNth.RenderControl( writer );
@@ -1523,19 +1549,24 @@ END:VCALENDAR
             writer.Write( @"
 <div class='controls'><hr /></div>
 " );
-            writer.AddAttribute( "class", "continue-until" );
+            writer.AddAttribute( "class", "continue-until js-continue-until" );
+            if ( _radSpecificDates.Checked )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.Write( "<label class='control-label'>Continue Until</label>" );
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute("class", "form-control-group");
+            writer.AddAttribute( "class", "form-control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radEndByNone.Text = "No End";
             _radEndByNone.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute("class", "form-control-group");
+            writer.AddAttribute( "class", "form-control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radEndByDate.Text = "End by ";
             _radEndByDate.RenderControl( writer );
@@ -1543,7 +1574,7 @@ END:VCALENDAR
             _dpEndBy.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute("class", "form-control-group");
+            writer.AddAttribute( "class", "form-control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radEndByOccurrenceCount.Text = "End after ";
             _radEndByOccurrenceCount.RenderControl( writer );
@@ -1558,7 +1589,16 @@ END:VCALENDAR
 
             // exclusions
             writer.Write( @"<hr />" );
-            writer.Write(@"<div class='exclusions'><label class='control-label'>Exclusions</label>");
+
+            writer.AddAttribute( "class", "exclusions js-exclusion-dates" );
+            if ( _radSpecificDates.Checked )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
+
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.Write( @"<label class='control-label'>Exclusions</label>" );
+
             writer.AddAttribute( "id", "recurrence-pattern-exclusions_" + this.ClientID );
             writer.AddAttribute( "class", "form-group controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -1578,12 +1618,11 @@ END:VCALENDAR
                     <span> Add Date Range</span>
                 </a>" );
 
-            writer.AddAttribute( "id", "add-exclusion-daterange-group_" + this.ClientID );
-            writer.AddAttribute("class", "add-exclusion");
+            writer.AddAttribute( "class", "add-exclusion js-add-exclusion-daterange-group" );
             writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _dpExclusionDateRange.RenderControl( writer );
-            writer.Write(@"
+            writer.Write( @"
                 <div class='actions'>
                     <a class='btn btn-primary btn-xs add-exclusion-daterange-ok'>
                         <span>OK</span>
@@ -1591,7 +1630,11 @@ END:VCALENDAR
                     <a class='btn btn-link btn-xs add-exclusion-daterange-cancel'>
                         <span>Cancel</span>
                     </a>
-                </div>");
+                </div>" );
+
+            writer.AddAttribute( "class", "js-last-item clearfix" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.RenderEndTag();
 
             writer.RenderEndTag();
 
@@ -1601,9 +1644,8 @@ END:VCALENDAR
             writer.RenderEndTag();
 
             // write out the closing div for <div class='exclusions'>
-            writer.Write( @"
-                </div>
-" );
+            writer.RenderEndTag();
+
             writer.RenderEndTag();
         }
     }

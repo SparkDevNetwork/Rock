@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
     /// 
     /// </summary>
     [ToolboxData( "<{0}:ColorField runat=server></{0}:ColorField>" )]
-    public class ColorField : BoundField
+    public class ColorField : RockBoundField
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorField"/> class.

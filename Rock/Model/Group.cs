@@ -19,10 +19,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Data;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -79,6 +82,16 @@ namespace Rock.Model
         [HideFromReporting]
         [DataMember]
         public int? CampusId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedule identifier.
+        /// </summary>
+        /// <value>
+        /// The schedule identifier.
+        /// </value>
+        [HideFromReporting]
+        [DataMember]
+        public int? ScheduleId { get; set; }
 
         /// <summary>
         /// Gets or sets the Name of the Group. This property is required.
@@ -151,6 +164,46 @@ namespace Rock.Model
         [DataMember]
         public bool? AllowGuests { get; set; }
 
+        /// <summary>
+        /// Gets or sets the welcome system email template.
+        /// </summary>
+        /// <value>
+        /// The welcome system email.
+        /// </value>
+        [HideFromReporting]
+        [DataMember]
+        public int? WelcomeSystemEmailId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the exit system email template.
+        /// </summary>
+        /// <value>
+        /// The exit system email.
+        /// </value>
+        [HideFromReporting]
+        [DataMember]
+        public int? ExitSystemEmailId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data view to sync with.
+        /// </summary>
+        /// <value>
+        /// The sync data view.
+        /// </value>
+        [HideFromReporting]
+        [DataMember]
+        public int? SyncDataViewId { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether a user account should be generated when a person is added through the sync.
+        /// </summary>
+        /// <value>
+        /// The add user accounts through sync.
+        /// </value>
+        [HideFromReporting]
+        [DataMember]
+        public bool? AddUserAccountsDuringSync { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -180,6 +233,42 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Rock.Model.Campus Campus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedule.
+        /// </summary>
+        /// <value>
+        /// The schedule.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.Schedule Schedule { get; set; }
+
+        /// <summary>
+        /// Gets or sets the welcome system email.
+        /// </summary>
+        /// <value>
+        /// The welcome system email.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.SystemEmail WelcomeSystemEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the exit system email.
+        /// </summary>
+        /// <value>
+        /// The exit system email.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.SystemEmail ExitSystemEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data view to sync with.
+        /// </summary>
+        /// <value>
+        /// The sync data view.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.DataView SyncDataView { get; set; }
 
         /// <summary>
         /// Gets or sets a collection the Groups that are children of this group.
@@ -258,6 +347,60 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
+        /// Determines whether the specified action is authorized.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            // Check to see if user is authorized using normal authorization rules
+            bool authorized = base.IsAuthorized( action, person );
+
+            // If the user is not authorized for group through normal security roles, and this is a logged
+            // in user trying to view or edit, check to see if they should be allowed based on their role
+            // in the group.
+            if ( !authorized && person != null && ( action == Authorization.VIEW || action == Authorization.EDIT ) )
+            {
+                // Get the cached group type
+                var groupType = GroupTypeCache.Read( this.GroupTypeId );
+                if ( groupType != null )
+                {
+                    // For each occurrence of this person in this group, check to see if their role is valid
+                    // for the group type and if the role grants them authorization
+                    using ( var rockContext = new RockContext() )
+                    {
+                        foreach ( int roleId in new GroupMemberService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( m =>
+                                m.PersonId == person.Id &&
+                                m.GroupId == this.Id &&
+                                m.GroupMemberStatus == GroupMemberStatus.Active )
+                            .Select( m => m.GroupRoleId ) )
+                        {
+                            var role = groupType.Roles.FirstOrDefault( r => r.Id == roleId );
+                            if ( role != null )
+                            {
+                                if ( action == Authorization.VIEW && role.CanView )
+                                {
+                                    return true;
+                                }
+                                if ( action == Authorization.EDIT && role.CanEdit )
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return authorized;
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> containing the Name of the Group that represents this instance.
         /// </summary>
         /// <returns>
@@ -287,6 +430,10 @@ namespace Rock.Model
             this.HasOptional( p => p.ParentGroup ).WithMany( p => p.Groups ).HasForeignKey( p => p.ParentGroupId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.GroupType ).WithMany( p => p.Groups ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.WelcomeSystemEmail ).WithMany().HasForeignKey( p => p.WelcomeSystemEmailId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ExitSystemEmail ).WithMany().HasForeignKey( p => p.ExitSystemEmailId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.SyncDataView ).WithMany().HasForeignKey( p => p.SyncDataViewId ).WillCascadeOnDelete( false );
         }
     }
 

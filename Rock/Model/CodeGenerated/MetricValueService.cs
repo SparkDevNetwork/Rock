@@ -87,19 +87,19 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this MetricValue target, MetricValue source )
         {
+            target.Id = source.Id;
+            target.EntityId = source.EntityId;
+            target.MetricId = source.MetricId;
+            target.MetricValueDateTime = source.MetricValueDateTime;
             target.MetricValueType = source.MetricValueType;
+            target.Note = source.Note;
+            target.Order = source.Order;
             target.XValue = source.XValue;
             target.YValue = source.YValue;
-            target.Order = source.Order;
-            target.MetricId = source.MetricId;
-            target.Note = source.Note;
-            target.MetricValueDateTime = source.MetricValueDateTime;
-            target.EntityId = source.EntityId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

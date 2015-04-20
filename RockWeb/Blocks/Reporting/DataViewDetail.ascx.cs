@@ -18,10 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.Diagnostics;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -333,7 +333,7 @@ $(document).ready(function() {
                 var filteredEntityType = EntityTypeCache.Read( entityTypeId.Value );
                 foreach ( var component in DataTransformContainer.GetComponentsByTransformedEntityName( filteredEntityType.Name ).OrderBy( c => c.Title ) )
                 {
-                    if ( component.IsAuthorized( Authorization.VIEW, this.CurrentPerson, rockContext ) )
+                    if ( component.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
                     {
                         var transformEntityType = EntityTypeCache.Read( component.TypeName );
                         ListItem li = new ListItem( component.Title, transformEntityType.Id.ToString() );
@@ -379,7 +379,7 @@ $(document).ready(function() {
                 dataView.Name = string.Empty;
             }
 
-            if ( !dataView.IsAuthorized( Authorization.VIEW, CurrentPerson, rockContext ) )
+            if ( !dataView.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 return;
             }
@@ -405,7 +405,7 @@ $(document).ready(function() {
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( DataView.FriendlyTypeName );
             }
 
-            btnSecurity.Visible = dataView.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
+            btnSecurity.Visible = dataView.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.Title = dataView.Name;
             btnSecurity.EntityId = dataView.Id;
 
@@ -518,7 +518,7 @@ $(document).ready(function() {
         private void ShowReport( DataView dataView )
         {
             var rockContext = new RockContext();
-            if ( dataView.EntityTypeId.HasValue && dataView.IsAuthorized( Authorization.VIEW, CurrentPerson, rockContext ) )
+            if ( dataView.EntityTypeId.HasValue && dataView.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 string authorizationMessage = string.Empty;
 
@@ -527,7 +527,7 @@ $(document).ready(function() {
                 if ( isPersonDataSet )
                 {
                     gReport.PersonIdField = "Id";
-                    gReport.DataKeyNames = new string[] { "id" };
+                    gReport.DataKeyNames = new string[] { "Id" };
                 }
                 else
                 {
@@ -594,7 +594,7 @@ $(document).ready(function() {
                     {
                         grid.CreatePreviewColumns( entityType );
 
-                        var qry = dataView.GetQuery( grid.SortProperty, out errorMessages );
+                        var qry = dataView.GetQuery( grid.SortProperty, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180, out errorMessages );
 
                         if ( fetchRowCount.HasValue )
                         {
@@ -603,7 +603,6 @@ $(document).ready(function() {
 
                         try
                         {
-                            rockContext.Database.CommandTimeout = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180;
                             grid.DataSource = qry.AsNoTracking().ToList();
                         }
                         catch ( Exception ex )

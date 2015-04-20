@@ -21,23 +21,30 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for WorkflowActionType
+    /// Base client model for WorkflowActionType that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class WorkflowActionType
+    public partial class WorkflowActionTypeEntity
     {
+        /// <summary />
+        public int Id { get; set; }
+
         /// <summary />
         public int ActivityTypeId { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
+        public Guid? CriteriaAttributeGuid { get; set; }
 
         /// <summary />
-        public int Order { get; set; }
+        public int /* ComparisonType*/ CriteriaComparisonType { get; set; }
+
+        /// <summary />
+        public string CriteriaValue { get; set; }
 
         /// <summary />
         public int EntityTypeId { get; set; }
@@ -49,16 +56,32 @@ namespace Rock.Client
         public bool IsActivityCompletedOnSuccess { get; set; }
 
         /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
         public int? WorkflowFormId { get; set; }
 
         /// <summary />
-        public Guid? CriteriaAttributeGuid { get; set; }
+        public Guid Guid { get; set; }
 
         /// <summary />
-        public int /* ComparisonType*/ CriteriaComparisonType { get; set; }
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Client model for WorkflowActionType that includes all the fields that are available for GETs. Use this for GETs (use WorkflowActionTypeEntity for POST/PUTs)
+    /// </summary>
+    public partial class WorkflowActionType : WorkflowActionTypeEntity
+    {
+        /// <summary />
+        public EntityType EntityType { get; set; }
 
         /// <summary />
-        public string CriteriaValue { get; set; }
+        public WorkflowActionForm WorkflowForm { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -72,14 +95,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
-        public int Id { get; set; }
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

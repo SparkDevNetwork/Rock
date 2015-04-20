@@ -220,20 +220,7 @@ namespace Rock.Model
                 return this.Activities.Any( a => a.IsActive );
             }
         }
-
-        /// <summary>
-        /// Gets or sets a collection containing the <see cref="Rock.Model.WorkflowLog" /> entries for this Workflow instance.
-        /// </summary>
-        /// <value>
-        /// A collection containing the <see cref="Rock.Model.WorkflowLog"/> entries for this Workflow instance.
-        /// </value>
-        public virtual ICollection<WorkflowLog> LogEntries
-        {
-            get { return _logEntries ?? ( _logEntries = new Collection<WorkflowLog>() ); }
-            set { _logEntries = value; }
-        }
-        private ICollection<WorkflowLog> _logEntries;
-
+        
         /// <summary>
         /// Gets the parent security authority for this Workflow instance.
         /// </summary>
@@ -330,27 +317,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds a <see cref="Rock.Model.WorkflowLog" /> entry.
-        /// </summary>
-        /// <param name="logEntry">A <see cref="System.String" />containing the log entry.</param>
-        /// <param name="force">if set to <c>true</c> will ignore logging level and always add the entry.</param>
-        public virtual void AddLogEntry( string logEntry, bool force = false )
-        {
-            if ( force || (
-                this.WorkflowType != null && (
-                this.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Workflow ||
-                this.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
-                this.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Action ) ) )
-            {
-                var workflowLog = new WorkflowLog();
-                workflowLog.LogDateTime = RockDateTime.Now;
-                workflowLog.LogText = logEntry;
-
-                this.LogEntries.Add( workflowLog );
-            } 
-        }
-
-        /// <summary>
         /// Marks this Workflow as complete.
         /// </summary>
         public virtual void MarkComplete()
@@ -374,6 +340,95 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
+        }
+
+        /// <summary>
+        /// Gets the unsaved log entries.
+        /// </summary>
+        /// <returns></returns>
+        public ReadOnlyCollection<LogEntry> GetUnsavedLogEntries()
+        {
+            return ( _logEntries ?? new List<LogEntry>() ).ToList().AsReadOnly();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class LogEntry
+        {
+            /// <summary>
+            /// Gets or sets the log date time.
+            /// </summary>
+            /// <value>
+            /// The log date time.
+            /// </value>
+            public DateTime LogDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the log text.
+            /// </summary>
+            /// <value>
+            /// The log text.
+            /// </value>
+            public string LogText { get; set; }
+        }
+
+        /// <summary>
+        /// The log entries cache that will get saved in PreSaveChanges
+        /// </summary>
+        private ICollection<LogEntry> _logEntries;
+
+        /// <summary>
+        /// Adds a <see cref="Rock.Model.WorkflowLog" /> entry.
+        /// </summary>
+        /// <param name="logText">The log text.</param>
+        /// <param name="force">if set to <c>true</c> will ignore logging level and always add the entry.</param>
+        public virtual void AddLogEntry( string logText, bool force = false )
+        {
+            if ( force || (
+                this.WorkflowType != null && (
+                this.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Workflow ||
+                this.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
+                this.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Action ) ) )
+            {
+                LogEntry logEntry = new LogEntry();
+                logEntry.LogDateTime = RockDateTime.Now;
+                logEntry.LogText = logText;
+
+                if (_logEntries == null)
+                {
+                    _logEntries = new List<LogEntry>();
+                }
+
+                this._logEntries.Add( logEntry );
+            }
+        }
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if (_logEntries != null)
+            {
+                if ( _logEntries.Any() )
+                {
+                    if ( dbContext is RockContext )
+                    {
+                        var workflowLogService = new WorkflowLogService( ( dbContext as RockContext ) );
+                        foreach ( var logEntry in _logEntries )
+                        {
+                            workflowLogService.Add( new WorkflowLog { LogDateTime = logEntry.LogDateTime, LogText = logEntry.LogText, WorkflowId = this.Id } );
+                        }
+                        
+                        _logEntries.Clear();
+                    }
+                }
+            }
+            
+            base.PreSaveChanges( dbContext, state );
         }
 
         #endregion
@@ -427,6 +482,23 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.Workflow"/> instance.</returns>
         public static Workflow Activate( WorkflowType workflowType, string name )
         {
+            using( var rockContext = new RockContext() )
+            {
+                return Activate( workflowType, name, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Activates the specified <see cref="Rock.Model.WorkflowType" />.
+        /// </summary>
+        /// <param name="workflowType">The <see cref="Rock.Model.WorkflowType" />  being activated.</param>
+        /// <param name="name">A <see cref="System.String" /> representing the name of the <see cref="Rock.Model.Workflow" /> instance.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// The <see cref="Rock.Model.Workflow" /> instance.
+        /// </returns>
+        public static Workflow Activate( WorkflowType workflowType, string name, RockContext rockContext )
+        {
             var workflow = new Workflow();
             workflow.WorkflowType = workflowType;
             workflow.WorkflowTypeId = workflowType.Id;
@@ -443,7 +515,7 @@ namespace Rock.Model
             workflow.Status = "Active";
             workflow.IsProcessing = false;
             workflow.ActivatedDateTime = RockDateTime.Now;
-            workflow.LoadAttributes();
+            workflow.LoadAttributes( rockContext );
 
             workflow.AddLogEntry( "Activated" );
 
@@ -451,7 +523,7 @@ namespace Rock.Model
             {
                 if ( activityType.IsActivatedWithWorkflow)
                 {
-                    WorkflowActivity.Activate(activityType, workflow);
+                    WorkflowActivity.Activate(activityType, workflow, rockContext );
                 }
             }
 

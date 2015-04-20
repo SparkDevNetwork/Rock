@@ -1,11 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Client", "Rock.Client.csproj", "{6EA64BB9-9740-453A-939B-DF43AD9AC164}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Rock.Client.Models", "Rock.Client.Models.shproj", "{633206D3-C28A-481F-8CF3-2C9A9877FAC3}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Rock.Client.Models.projitems*{633206d3-c28a-481f-8cf3-2c9a9877fac3}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU

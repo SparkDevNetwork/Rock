@@ -54,7 +54,7 @@ namespace Rock.Model
  
             if ( new Service<Category>( Context ).Queryable().Any( a => a.ParentCategoryId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, Category.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} contains one or more child {1}.", Category.FriendlyTypeName, Category.FriendlyTypeName.Pluralize().ToLower() );
                 return false;
             }  
  
@@ -73,6 +73,12 @@ namespace Rock.Model
             if ( new Service<History>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, History.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<MergeTemplate>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, MergeTemplate.FriendlyTypeName );
                 return false;
             }  
  
@@ -141,21 +147,21 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Category target, Category source )
         {
-            target.IsSystem = source.IsSystem;
-            target.ParentCategoryId = source.ParentCategoryId;
+            target.Id = source.Id;
+            target.Description = source.Description;
             target.EntityTypeId = source.EntityTypeId;
             target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
-            target.Order = source.Order;
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.IconCssClass = source.IconCssClass;
             target.HighlightColor = source.HighlightColor;
+            target.IconCssClass = source.IconCssClass;
+            target.IsSystem = source.IsSystem;
+            target.Name = source.Name;
+            target.Order = source.Order;
+            target.ParentCategoryId = source.ParentCategoryId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

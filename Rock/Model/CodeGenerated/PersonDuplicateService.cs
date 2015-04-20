@@ -87,19 +87,19 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this PersonDuplicate target, PersonDuplicate source )
         {
-            target.PersonAliasId = source.PersonAliasId;
+            target.Id = source.Id;
+            target.Capacity = source.Capacity;
             target.DuplicatePersonAliasId = source.DuplicatePersonAliasId;
-            target.IsConfirmedAsNotDuplicate = source.IsConfirmedAsNotDuplicate;
             target.IgnoreUntilScoreChanges = source.IgnoreUntilScoreChanges;
+            target.IsConfirmedAsNotDuplicate = source.IsConfirmedAsNotDuplicate;
+            target.PersonAliasId = source.PersonAliasId;
             target.Score = source.Score;
             target.ScoreDetail = source.ScoreDetail;
-            target.Capacity = source.Capacity;
             target.TotalCapacity = source.TotalCapacity;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

@@ -21,35 +21,58 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for FinancialBatch
+    /// Base client model for FinancialBatch that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class FinancialBatch
+    public partial class FinancialBatchEntity
     {
         /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
-        public DateTime? BatchStartDateTime { get; set; }
-
-        /// <summary />
-        public DateTime? BatchEndDateTime { get; set; }
-
-        /// <summary />
-        public int /* BatchStatus*/ Status { get; set; }
-
-        /// <summary />
-        public int? CampusId { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public string AccountingSystemCode { get; set; }
 
         /// <summary />
+        public DateTime? BatchEndDateTime { get; set; }
+
+        /// <summary />
+        public DateTime? BatchStartDateTime { get; set; }
+
+        /// <summary />
+        public int? CampusId { get; set; }
+
+        /// <summary />
         public decimal ControlAmount { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
+        public int /* BatchStatus*/ Status { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Client model for FinancialBatch that includes all the fields that are available for GETs. Use this for GETs (use FinancialBatchEntity for POST/PUTs)
+    /// </summary>
+    public partial class FinancialBatch : FinancialBatchEntity
+    {
+        /// <summary />
+        public Campus Campus { get; set; }
+
+        /// <summary />
+        public ICollection<FinancialTransaction> Transactions { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -63,14 +86,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
-        public int Id { get; set; }
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

@@ -58,6 +58,13 @@ namespace Rock.Apps.CheckScannerUtility
             lblLoginWarning.Visibility = Visibility.Hidden;
             txtUsername.Text = txtUsername.Text.Trim();
             txtRockUrl.Text = txtRockUrl.Text.Trim();
+            Uri rockUrl = new Uri( txtRockUrl.Text );
+            var validSchemes = new string[] { Uri.UriSchemeHttp, Uri.UriSchemeHttps };
+            if ( !validSchemes.Contains( rockUrl.Scheme ) )
+            {
+                txtRockUrl.Text = "http://" + rockUrl.AbsoluteUri;
+            }
+
             RockRestClient rockRestClient = new RockRestClient( txtRockUrl.Text );
 
             string userName = txtUsername.Text;
@@ -200,6 +207,17 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 btnLogin_Click( null, null );
             }
+        }
+
+        /// <summary>
+        /// (EasterEgg) Handles the MouseDoubleClick event of the LoginLabel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="MouseButtonEventArgs"/> instance containing the event data.</param>
+        private void LoginLabel_MouseDoubleClick( object sender, MouseButtonEventArgs e )
+        {
+            lblRockUrl.Visibility = Visibility.Visible;
+            txtRockUrl.Visibility = Visibility.Visible;
         }
     }
 }

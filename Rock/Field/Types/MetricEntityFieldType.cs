@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -29,6 +30,9 @@ namespace Rock.Field.Types
     /// </summary>
     public class MetricEntityFieldType : FieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -66,6 +70,10 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -119,5 +127,8 @@ namespace Rock.Field.Types
                 }
             }
         }
+
+        #endregion
+
     }
 }

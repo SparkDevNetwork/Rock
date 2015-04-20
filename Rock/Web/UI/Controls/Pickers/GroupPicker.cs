@@ -35,7 +35,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            ItemRestUrlExtraParams = "/0/false/0";
+            ItemRestUrlExtraParams = "";
             this.IconCssClass = "fa fa-users";
             base.OnInit( e );
         }

@@ -17,9 +17,11 @@
 using System;
 using System.ComponentModel;
 using System.Web.UI;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Security
 {
@@ -30,10 +32,9 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Block for a user to change their password." )]
 
-    [TextField( "Invalid UserName Caption", "", false, "The User Name/Password combination is not valid.", "Captions", 0 )]
-    [TextField( "Invalid Password Caption","", false, "The User Name/Password combination is not valid.", "Captions", 1 )]
-    [TextField( "Success Caption","", false, "Your password has been changed", "Captions", 2 )]
-    [TextField( "Change Password Not Supported Caption", "", false, "Changing your password is not supported.", "Captions", 3 )]
+    [TextField( "Invalid Password Caption","", false, "The password is not valid.", "Captions", 0 )]
+    [TextField( "Success Caption","", false, "Your password has been changed", "Captions", 1 )]
+    [TextField( "Change Password Not Supported Caption", "", false, "Changing your password is not supported.", "Captions", 2 )]
     public partial class ChangePassword : Rock.Web.UI.RockBlock
     {
 
@@ -47,9 +48,11 @@ namespace RockWeb.Blocks.Security
         {
             base.OnLoad( e );
 
+            nbMessage.Visible = false;
+
             if ( CurrentUser == null || ! CurrentUser.IsAuthenticated )
             {
-                DisplayErrorText( "You must login before changing your password" );
+                DisplayMessage( "You must login before changing your password", NotificationBoxType.Warning );
                 pnlChangePassword.Visible = false;
             }
             else
@@ -57,13 +60,9 @@ namespace RockWeb.Blocks.Security
                 if ( !Page.IsPostBack )
                 {
                     var component = Rock.Security.AuthenticationContainer.GetComponent( CurrentUser.EntityType.Name );
-                    if ( component.SupportsChangePassword )
+                    if ( !component.SupportsChangePassword )
                     {
-                        tbUserName.Text = CurrentUser.UserName;
-                    }
-                    else
-                    {
-                        DisplayErrorFromAttribute( "ChangePasswordNotSupportedCaption" );
+                        DisplayMessage( string.Format( "Changing your password is not supported when logged in using {0}.", component.EntityType.FriendlyName), NotificationBoxType.Warning );
                         pnlChangePassword.Visible = false;
                     }
                 }
@@ -83,7 +82,7 @@ namespace RockWeb.Blocks.Security
         {
             RockContext rockContext = new RockContext();
             var userLoginService = new UserLoginService( rockContext );
-            var userLogin = userLoginService.GetByUserName( tbUserName.Text );
+            var userLogin = userLoginService.GetByUserName( CurrentUser.UserName );
 
             if ( userLogin != null )
             {
@@ -99,9 +98,8 @@ namespace RockWeb.Blocks.Security
                         {
                             rockContext.SaveChanges();
 
-                            lSuccess.Text = GetAttributeValue( "SuccessCaption" );
-                            pnlEntry.Visible = false;
-                            pnlSuccess.Visible = true;
+                            DisplayMessage( GetAttributeValue( "SuccessCaption" ) , NotificationBoxType.Success );
+                            pnlChangePassword.Visible = false;
                         }
                         else
                         {
@@ -111,7 +109,7 @@ namespace RockWeb.Blocks.Security
                             }
                             else
                             {
-                                DisplayErrorText( warningMessage );
+                                DisplayMessage( warningMessage, NotificationBoxType.Danger );
                             }
                         }
                     }
@@ -119,16 +117,16 @@ namespace RockWeb.Blocks.Security
                     {
                         // shouldn't happen, but just in case
                         DisplayErrorFromAttribute( "ChangePasswordNotSupportedCaption" );
-                        pnlChangePassword.Visible = false;
                     }
                 }
                 else
                 {
-                    InvalidPassword();
+                    DisplayMessage( UserLoginService.FriendlyPasswordRules(), NotificationBoxType.Danger );
                 }
             }
             else
             {
+                // shouldn't happen, but just in case
                 DisplayErrorFromAttribute( "InvalidUserNameCaption" );
             }
         }
@@ -138,31 +136,23 @@ namespace RockWeb.Blocks.Security
         #region Methods
 
         /// <summary>
-        /// Invalids the password.
-        /// </summary>
-        private void InvalidPassword()
-        {
-            nbPasswordMessage.Text = UserLoginService.FriendlyPasswordRules();
-            nbPasswordMessage.Visible = true;
-        }
-
-        /// <summary>
         /// Displays the error from attribute.
         /// </summary>
         /// <param name="messageKey">The message key.</param>
         private void DisplayErrorFromAttribute( string messageKey )
         {
-            DisplayErrorText( GetAttributeValue( messageKey ) );
+            DisplayMessage( GetAttributeValue( messageKey ), NotificationBoxType.Danger );
         }
 
         /// <summary>
         /// Displays the error text.
         /// </summary>
         /// <param name="messageText">The message text.</param>
-        private void DisplayErrorText (string messageText)
+        private void DisplayMessage (string messageText, NotificationBoxType noticeType)
         {
-            nbPasswordMessage.Text = messageText;
-            nbPasswordMessage.Visible = true;
+            nbMessage.NotificationBoxType = noticeType;
+            nbMessage.Text = messageText;
+            nbMessage.Visible = true;
         }
 
         #endregion

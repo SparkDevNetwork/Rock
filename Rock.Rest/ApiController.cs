@@ -16,13 +16,15 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Reflection;
 using System.ServiceModel.Channels;
 using System.Web.Http;
 using System.Web.Http.OData;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -30,19 +32,11 @@ using Rock.Security;
 
 namespace Rock.Rest
 {
-    /*
-     * NOTE: We could have inherited from System.Web.Http.OData.ODataController, but that changes 
-     * the response format from vanilla REST to OData format. That breaks existing Rock Rest clients.
-     * 
-     */
-
     /// <summary>
-    /// Base ApiController for Rock REST endpoints
-    /// Supports ODataV3 Queries and ODataRouting 
+    /// ApiController for Rock REST Entity endpoints
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    [ODataRouting]
-    public abstract class ApiController<T> : ApiController
+    public abstract class ApiController<T> : ApiControllerBase
         where T : Rock.Data.Entity<T>, new()
     {
         /// <summary>
@@ -56,6 +50,7 @@ namespace Rock.Rest
             get { return _service; }
             set { _service = value; }
         }
+
         private Service<T> _service;
 
         /// <summary>
@@ -112,6 +107,11 @@ namespace Rock.Rest
         [Authenticate, Secured]
         public virtual HttpResponseMessage Post( [FromBody]T value )
         {
+            if ( value == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+
             SetProxyCreation( true );
 
             CheckCanEdit( value );
@@ -128,7 +128,7 @@ namespace Rock.Rest
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
             Service.Context.SaveChanges();
 
-            var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+            var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created, value.Id );
 
             // TODO set response.Headers.Location as per REST POST convention
             //response.Headers.Location = new Uri( Request.RequestUri, "/api/pages/" + page.Id.ToString() );
@@ -139,6 +139,11 @@ namespace Rock.Rest
         [Authenticate, Secured]
         public virtual void Put( int id, [FromBody]T value )
         {
+            if ( value == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+
             SetProxyCreation( true );
 
             T targetModel;
@@ -158,7 +163,126 @@ namespace Rock.Rest
             }
             else
             {
-                throw new HttpResponseException( HttpStatusCode.BadRequest );
+                var response = ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    string.Join( ",", targetModel.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+                throw new HttpResponseException( response );
+            }
+        }
+
+        // PATCH api/<controller>/5  (update subset of atttributes)
+        [Authenticate, Secured]
+        public virtual void Patch( int id, [FromBody]Dictionary<string, object> values )
+        {
+            // Check that something was sent in the body
+            if ( values == null || !values.Keys.Any() )
+            {
+                var response = ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest, "No values were sent in the body" );
+                throw new HttpResponseException( response );
+            }
+            else if ( values.ContainsKey( "Id" ) )
+            {
+                var response = ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest, "Cannot set Id" );
+                throw new HttpResponseException( response );
+            }
+
+            SetProxyCreation( true );
+
+            T targetModel;
+            if ( !Service.TryGet( id, out targetModel ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            CheckCanEdit( targetModel );
+            var type = targetModel.GetType();
+            var properties = type.GetProperties().ToList();
+
+            // Same functionality as Service.SetValues but for a subset of properties
+            foreach ( var key in values.Keys )
+            {
+                if ( properties.Any( p => p.Name.Equals( key ) ) )
+                {
+                    var property = type.GetProperty( key, BindingFlags.Public | BindingFlags.Instance );
+                    var propertyType = Nullable.GetUnderlyingType( property.PropertyType ) ?? property.PropertyType;
+                    var currentValue = values[key];
+
+                    if ( property != null )
+                    {
+                        if ( property.GetValue( targetModel ) == currentValue )
+                        {
+                            continue;
+                        }
+                        else if ( property.CanWrite )
+                        {
+                            if ( currentValue == null )
+                            {
+                                // No need to parse anything
+                                property.SetValue( targetModel, null );
+                            }
+                            else if ( propertyType == typeof( int ) || propertyType == typeof( int? ) || propertyType.IsEnum )
+                            {
+                                // By default, objects that hold integer values, hold int64, so coerce to int32
+                                try
+                                {
+                                    var int32 = Convert.ToInt32( currentValue );
+                                    property.SetValue( targetModel, int32 );
+                                }
+                                catch ( OverflowException )
+                                {
+                                    var response = ControllerContext.Request.CreateErrorResponse(
+                                        HttpStatusCode.BadRequest,
+                                        string.Format( "Cannot cast {0} to int32", key ) );
+                                    throw new HttpResponseException( response );
+                                }
+                            }
+                            else
+                            {
+                                var castedValue = Convert.ChangeType( currentValue, propertyType );
+                                property.SetValue( targetModel, castedValue );
+                            }
+                        }
+                        else
+                        {
+                            var response = ControllerContext.Request.CreateErrorResponse(
+                                HttpStatusCode.BadRequest,
+                                string.Format( "Cannot write {0}", key ) );
+                            throw new HttpResponseException( response );
+                        }
+                    }
+                    else
+                    {
+                        // This shouldn't happen because we are checking that the property exists.
+                        // Just to make sure reflection doesn't fail
+                        var response = ControllerContext.Request.CreateErrorResponse(
+                            HttpStatusCode.BadRequest,
+                            string.Format( "Cannot find property {0}", key ) );
+                        throw new HttpResponseException( response );
+                    }
+                }
+                else
+                {
+                    var response = ControllerContext.Request.CreateErrorResponse(
+                        HttpStatusCode.BadRequest,
+                        string.Format( "{0} does not have attribute {1}", type.BaseType.Name, key ) );
+                    throw new HttpResponseException( response );
+                }
+            }
+
+            // Verify model is valid before saving
+            if ( targetModel.IsValid )
+            {
+                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+                Service.Context.SaveChanges();
+            }
+            else
+            {
+                var response = ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    string.Join( ",", targetModel.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+                throw new HttpResponseException( response );
             }
         }
 
@@ -202,7 +326,7 @@ namespace Rock.Rest
                 var paramExpression = Service.ParameterExpression;
                 var whereExpression = dataView.GetExpression( Service, paramExpression, out errorMessages );
 
-                if ( paramExpression != null)
+                if ( paramExpression != null )
                 {
                     return Service.Get( paramExpression, whereExpression );
                 }
@@ -212,46 +336,47 @@ namespace Rock.Rest
         }
 
         /// <summary>
-        /// Gets the peron alias.
+        /// Gets the encrypted context key for an entity.
         /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
-        protected virtual Rock.Model.Person GetPerson()
+        [Authenticate, Secured]
+        [HttpPut, HttpOptions]
+        [ActionName( "SetContext" )]
+        public virtual HttpResponseMessage SetContext( int id )
         {
-            if ( Request.Properties.Keys.Contains( "Person" ) )
+            Guid? guid = Service.GetGuid( id );
+            if ( !guid.HasValue )
             {
-                return Request.Properties["Person"] as Person;
+                throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
-            var principal = ControllerContext.Request.GetUserPrincipal();
-            if ( principal != null && principal.Identity != null )
-            {
-                var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
-                var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
+            string cookieName = "Rock_Context";
+            string typeName = typeof( T ).FullName;
 
-                if ( userLogin != null )
-                {
-                    var person = userLogin.Person;
-                    Request.Properties.Add( "Person", person );
-                    return userLogin.Person;
-                }
+            string identifier =
+                typeName + "|" +
+                id.ToString() + ">" +
+                guid.ToString();
+            string contextValue = Rock.Security.Encryption.EncryptString( identifier );
+
+            var httpContext = System.Web.HttpContext.Current;
+            if ( httpContext == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
 
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the person alias.
-        /// </summary>
-        /// <returns></returns>
-        protected virtual Rock.Model.PersonAlias GetPersonAlias()
-        {
-            var person = GetPerson();
-            if ( person != null )
+            var contextCookie = httpContext.Request.Cookies[cookieName];
+            if ( contextCookie == null )
             {
-                return person.PrimaryAlias;
+                contextCookie = new System.Web.HttpCookie( cookieName );
             }
+            contextCookie.Values[typeName] = contextValue;
+            contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
+            httpContext.Response.Cookies.Add( contextCookie );
 
-            return null;
+            return ControllerContext.Request.CreateResponse( HttpStatusCode.OK );
         }
 
         /// <summary>

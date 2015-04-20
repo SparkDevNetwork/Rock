@@ -166,6 +166,8 @@ namespace RockWeb.Blocks.Cms
                 site.DefaultPageRouteId = ppDefaultPage.PageRouteId;
                 site.LoginPageId = ppLoginPage.PageId;
                 site.LoginPageRouteId = ppLoginPage.PageRouteId;
+                site.CommunicationPageId = ppCommunicationPage.PageId;
+                site.CommunicationPageRouteId = ppCommunicationPage.PageRouteId;
                 site.RegistrationPageId = ppRegistrationPage.PageId;
                 site.RegistrationPageRouteId = ppRegistrationPage.PageRouteId;
                 site.PageNotFoundPageId = ppPageNotFoundPage.PageId;
@@ -416,6 +418,15 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 ppLoginPage.SetValue( site.LoginPage );
+            }
+
+            if ( site.CommunicationPageRoute != null )
+            {
+                ppCommunicationPage.SetValue( site.CommunicationPageRoute );
+            }
+            else
+            {
+                ppCommunicationPage.SetValue( site.CommunicationPage );
             }
 
             if ( site.RegistrationPageRoute != null )

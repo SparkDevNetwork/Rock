@@ -26,7 +26,7 @@ namespace Rock.CheckIn
     /// A group option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInGroup : DotLiquid.ILiquidizable, DotLiquid.IIndexable
+    public class CheckInGroup : Lava.ILiquidizable
     {
         /// <summary>
         /// Gets or sets the group.
@@ -125,6 +125,26 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets the available keys (for debuging info).
+        /// </summary>
+        /// <value>
+        /// The available keys.
+        /// </value>
+        [Rock.Data.LavaIgnore]
+        public List<string> AvailableKeys
+        {
+            get
+            {
+                var availableKeys = new List<string> { "LastCheckIn", "Locations" };
+                if ( this.Group != null )
+                {
+                    availableKeys.AddRange( this.Group.AvailableKeys );
+                }
+                return availableKeys;
+            }
+        }
+
+        /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
         /// <value>
@@ -132,6 +152,7 @@ namespace Rock.CheckIn
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Rock.Data.LavaIgnore]
         public object this[object key]
         {
             get
@@ -152,8 +173,8 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public bool ContainsKey( object key )
         {
-            var additionalProperties = new List<string> { "LastCheckIn", "Locations" };
-            if ( additionalProperties.Contains( key.ToStringSafe() ) )
+            var additionalKeys = new List<string> { "LastCheckIn", "Locations" };
+            if ( additionalKeys.Contains( key.ToStringSafe() ) )
             {
                 return true;
             }

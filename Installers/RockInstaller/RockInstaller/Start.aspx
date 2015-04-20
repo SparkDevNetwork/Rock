@@ -57,7 +57,7 @@
         // first disable the no ASP.Net message
         lNoScripting.Visible = false;
 
-        string version = "2_5_0";
+        string version = "2_7_0";
         bool isDebug = false;
 
         // prepare redirect links
@@ -210,11 +210,6 @@
                     if ( downloadSuccessful )
                     {
                         downloadSuccessful = DownloadFile( @"bin\RockInstallTools.dll", serverUrl, serverPath );
-                    }
-
-                    if ( downloadSuccessful )
-                    {
-                        downloadSuccessful = DownloadFile( @"bin\Subtext.Scripting.dll", serverUrl, serverPath );
                     }
 
                     // download web.config

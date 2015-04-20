@@ -7,8 +7,8 @@
         <div class="grid">
             <Rock:Grid ID="gSchedules" runat="server" AllowSorting="true" OnRowSelected="gSchedules_Edit">
                 <Columns>
-                    <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                    <asp:BoundField DataField="CategoryName" HeaderText="Category" SortExpression="CategoryName" />
+                    <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                    <Rock:RockBoundField DataField="CategoryName" HeaderText="Category" SortExpression="CategoryName" />
                     <Rock:DeleteField OnClick="gSchedules_Delete" />
                 </Columns>
             </Rock:Grid>

@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Cms
             StatusFilter = ViewState["StatusFilter"] as bool?;
             SelectedChannelId = ViewState["SelectedChannelId"] as int?;
 
-            GetData();
+            //GetData();
         }
 
         protected override void OnInit( EventArgs e )
@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Cms
             gfFilter.ApplyFilterClick += gfFilter_ApplyFilterClick;
             gfFilter.DisplayFilterValue += gfFilter_DisplayFilterValue;
 
-            gContentChannelItems.DataKeyNames = new string[] { "id" };
+            gContentChannelItems.DataKeyNames = new string[] { "Id" };
             gContentChannelItems.Actions.AddClick += gContentChannelItems_Add;
             gContentChannelItems.GridRebind += gContentChannelItems_GridRebind;
         }
@@ -93,11 +93,18 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnLoad( e );
 
+            string eventTarget = this.Page.Request.Params["__EVENTTARGET"] ?? string.Empty;
+
             if ( !Page.IsPostBack )
             {
                 BindFilter();
 
                 SelectedChannelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
+                GetData();
+            }
+            else if ( eventTarget.StartsWith( gContentChannelItems.UniqueID ) )
+            {
+                // if we got a PostBack from the Grid (or child controls) make sure the Grid is bound
                 GetData();
             }
         }
@@ -340,7 +347,9 @@ namespace RockWeb.Blocks.Cms
                 qry = qry.Where( c => c.Count > 0 );
             }
 
-            rptChannels.DataSource = qry.ToList();
+            var contentChannels = qry.ToList();
+
+            rptChannels.DataSource = contentChannels;
             rptChannels.DataBind();
 
             ContentChannel selectedChannel = null;
@@ -353,8 +362,11 @@ namespace RockWeb.Blocks.Cms
                     .FirstOrDefault();
             }
 
-            if ( selectedChannel != null )
+            if ( selectedChannel != null && contentChannels.Count > 0 )
             {
+                // show the content item panel
+                divItemPanel.Visible = true;
+                
                 AddColumns( selectedChannel );
 
                 var itemQry = itemService.Queryable()
@@ -413,7 +425,7 @@ namespace RockWeb.Blocks.Cms
                 gContentChannelItems.ObjectList = new Dictionary<string, object>();
                 items.ForEach( i => gContentChannelItems.ObjectList.Add( i.Id.ToString(), i ) );
 
-                gContentChannelItems.DataSource = itemQry.ToList().Select( i => new
+                gContentChannelItems.DataSource = items.Select( i => new
                 {
                     i.Id,
                     i.Guid,
@@ -425,15 +437,11 @@ namespace RockWeb.Blocks.Cms
                 } ).ToList();
                 gContentChannelItems.DataBind();
 
-                gfFilter.Visible = true;
-                gContentChannelItems.Visible = true;
-
                 lContentChannelItems.Text = selectedChannel.Name + " Items";
             }
             else
             {
-                gfFilter.Visible = false;
-                gContentChannelItems.Visible = false;
+                divItemPanel.Visible = false;
             }
 
         }

@@ -168,7 +168,7 @@ namespace Rock.Model
         public int? ScheduleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the last run date time.
+        /// For SQL or DataView based Metrics, this is the DateTime that the MetricValues where scheduled to be updated according to Schedule
         /// </summary>
         /// <value>
         /// The last run date time.
@@ -264,6 +264,20 @@ namespace Rock.Model
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Gets the merge objects that can be used in the SourceSql
+        /// </summary>
+        /// <param name="runDateTime">The run date time. Note, this is the scheduled run date time, not the current datetime</param>
+        /// <returns></returns>
+        public Dictionary<string, object> GetMergeObjects( DateTime runDateTime )
+        {
+            Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
+            mergeObjects.Add( "RunDateTime", runDateTime );
+            mergeObjects.Add( "Metric", this );
+
+            return mergeObjects;
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this Metric

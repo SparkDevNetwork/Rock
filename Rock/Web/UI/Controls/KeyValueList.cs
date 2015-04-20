@@ -250,6 +250,7 @@ namespace Rock.Web.UI.Controls
         e.preventDefault();
         var $keyValueList = $(this).closest('.key-value-list');
         $keyValueList.find('.key-value-rows').append($keyValueList.find('.js-value-html').val());
+        Rock.controls.modal.updateSize($(this));
     });
 
     $(document).on('click', 'a.key-value-remove', function (e) {
@@ -257,6 +258,7 @@ namespace Rock.Web.UI.Controls
         var $rows = $(this).closest('span.key-value-rows');
         $(this).closest('div.controls-row').remove();
         updateKeyValues($rows);            
+        Rock.controls.modal.updateSize($(this));
     });
 
     $(document).on('focusout', '.js-key-value-input', function (e) {

@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            gBinaryFileType.DataKeyNames = new string[] { "id" };
+            gBinaryFileType.DataKeyNames = new string[] { "Id" };
             gBinaryFileType.Actions.ShowAdd = true;
             gBinaryFileType.Actions.AddClick += gBinaryFileType_Add;
             gBinaryFileType.GridRebind += gBinaryFileType_GridRebind;
@@ -176,6 +176,7 @@ namespace RockWeb.Blocks.Administration
                 gBinaryFileType.DataSource = qry.OrderBy( p => p.Name ).ToList();
             }
 
+            gBinaryFileType.EntityTypeId = EntityTypeCache.Read<Rock.Model.BinaryFileType>().Id;
             gBinaryFileType.DataBind();
         }
 

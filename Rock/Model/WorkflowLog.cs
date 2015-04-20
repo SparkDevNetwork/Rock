@@ -107,7 +107,7 @@ namespace Rock.Model
         /// </summary>
         public WorkflowLogConfiguration()
         {
-            this.HasRequired( m => m.Workflow ).WithMany( m => m.LogEntries).HasForeignKey( m => m.WorkflowId ).WillCascadeOnDelete( true );
+            this.HasRequired( m => m.Workflow ).WithMany().HasForeignKey( m => m.WorkflowId ).WillCascadeOnDelete( true );
         }
     }
 

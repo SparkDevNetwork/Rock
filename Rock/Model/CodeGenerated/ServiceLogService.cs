@@ -87,17 +87,17 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this ServiceLog target, ServiceLog source )
         {
-            target.LogDateTime = source.LogDateTime;
+            target.Id = source.Id;
             target.Input = source.Input;
-            target.Type = source.Type;
+            target.LogDateTime = source.LogDateTime;
             target.Name = source.Name;
             target.Result = source.Result;
             target.Success = source.Success;
+            target.Type = source.Type;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

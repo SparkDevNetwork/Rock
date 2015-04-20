@@ -2,12 +2,9 @@
 
 <asp:UpdatePanel runat="server" ID="upnlHtmlContent" ChildrenAsTriggers="false" UpdateMode="Conditional">
     <ContentTemplate>
-        <%-- View Panel --%>
-        <asp:Panel ID="pnlView" runat="server">
-            <asp:Literal ID="lPreHtml" runat="server"></asp:Literal>
-            <asp:Literal ID="lHtmlContent" runat="server" />
-            <asp:Literal ID="lPostHtml" runat="server"></asp:Literal>
-        </asp:Panel>
+
+        <Rock:NotificationBox ID="nbApprovalRequired" runat="server" NotificationBoxType="Info" Text="Your changes will not be visible until they are reviewed and approved." Visible="false" />
+        <asp:Literal ID="lHtmlContent" runat="server" />
 
         <%-- Edit Panel --%>
         <asp:Panel ID="pnlEditModel" runat="server" Visible="false">
@@ -17,7 +14,7 @@
                     <asp:UpdatePanel runat="server" ID="upnlEdit">
                         <ContentTemplate>
                             <asp:HiddenField ID="hfVersion" runat="server" />
-                            <asp:Panel ID="pnlEdit" runat="server" Visible="false" Height="440">
+                            <asp:Panel ID="pnlEdit" runat="server" Visible="false">
 
                                 <!-- Approval -->
                                 <asp:UpdatePanel ID="upnlApproval" runat="server">
@@ -56,16 +53,16 @@
 
                             </asp:Panel>
 
-                            <asp:Panel ID="pnlVersionGrid" runat="server" Visible="false" Height="440">
+                            <asp:Panel ID="pnlVersionGrid" runat="server" Visible="false" >
 
                                 <div class="grid">
-                                    <Rock:Grid ID="gVersions" runat="server" DataKeyNames="Id" DisplayType="Light" ShowActionRow="false">
+                                    <Rock:Grid ID="gVersions" runat="server" DataKeyNames="Id" DisplayType="Full" ShowActionRow="false" AllowPaging="true" PageSize="10">
                                         <Columns>
-                                            <asp:BoundField DataField="VersionText" HeaderText="Version" SortExpression="Version" />
-                                            <asp:BoundField DataField="ModifiedDateTime" HeaderText="Last Modified" SortExpression="ModifiedDateTime" />
-                                            <asp:BoundField DataField="ModifiedByPerson" HeaderText="By User" SortExpression="ModifiedByPerson" />
+                                            <Rock:RockBoundField DataField="VersionText" HeaderText="Version" SortExpression="Version" />
+                                            <Rock:RockBoundField DataField="ModifiedDateTime" HeaderText="Last Modified" SortExpression="ModifiedDateTime" />
+                                            <Rock:RockBoundField DataField="ModifiedByPerson" HeaderText="By User" SortExpression="ModifiedByPerson" />
                                             <Rock:BoolField DataField="Approved" HeaderText="Approved" SortExpression="Approved" />
-                                            <asp:BoundField DataField="ApprovedByPerson" HeaderText="By" SortExpression="ApprovedByPerson" />
+                                            <Rock:RockBoundField DataField="ApprovedByPerson" HeaderText="By" SortExpression="ApprovedByPerson" />
                                             <Rock:DateField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" />
                                             <Rock:DateField DataField="ExpireDateTime" HeaderText="Expire" SortExpression="ExpireDateTime" />
                                             <Rock:LinkButtonField Text="Select" OnClick="SelectVersion_Click" />

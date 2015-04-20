@@ -105,11 +105,12 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Device target, Device source )
         {
-            target.Name = source.Name;
+            target.Id = source.Id;
             target.Description = source.Description;
             target.DeviceTypeValueId = source.DeviceTypeValueId;
-            target.LocationId = source.LocationId;
             target.IPAddress = source.IPAddress;
+            target.LocationId = source.LocationId;
+            target.Name = source.Name;
             target.PrinterDeviceId = source.PrinterDeviceId;
             target.PrintFrom = source.PrintFrom;
             target.PrintToOverride = source.PrintToOverride;
@@ -117,7 +118,6 @@ namespace Rock.Model
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

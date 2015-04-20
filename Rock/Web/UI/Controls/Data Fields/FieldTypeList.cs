@@ -34,8 +34,11 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
 
             this.Items.Clear();
+            this.Items.Add( new ListItem() );
             foreach ( var item in Rock.Web.Cache.FieldTypeCache.All() )
+            {
                 this.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+            }
         }
     }
 }

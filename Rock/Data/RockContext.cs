@@ -20,6 +20,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration.Conventions;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Web;
@@ -34,13 +35,52 @@ namespace Rock.Data
     /// </summary>
     public class RockContext : Rock.Data.DbContext
     {
+        //private const string APP_LOG_FILENAME = "RockContext";
+        //private static string _filePath = string.Empty;
+        //private static object _threadlock;
+
+        //private string _contextId = string.Empty;
+
+        //static RockContext()
+        //{
+        //    string directory = AppDomain.CurrentDomain.BaseDirectory;
+        //    directory = Path.Combine( directory, "App_Data", "Logs" );
+
+        //    if ( !Directory.Exists( directory ) )
+        //    {
+        //        Directory.CreateDirectory( directory );
+        //    }
+
+        //    _filePath = Path.Combine( directory, APP_LOG_FILENAME + ".csv" );
+
+        //    _threadlock = new object();
+        //}
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RockContext"/> class.
         /// </summary>
-        public RockContext()
-            : base()
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        public RockContext() : base()
         {
+            //try
+            //{
+            //    _contextId = DateTime.Now.Ticks.ToString();
+
+            //    var frames = new System.Diagnostics.StackTrace().GetFrames();
+
+            //    var sb = new System.Text.StringBuilder();
+            //    for ( int i = 1; i < frames.Length; i++ )
+            //    {
+            //        var method = frames[i].GetMethod();
+            //        sb.AppendFormat( "{0}:{1}", method.DeclaringType.Name, method.Name );
+            //        sb.Append( "; " );
+            //    }
+
+            //    LogMessage( _contextId, sb.ToString() );
+            //}
+            //catch { }
         }
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RockContext"/> class.
@@ -119,10 +159,26 @@ namespace Rock.Data
         public DbSet<Auth> Auths { get; set; }
 
         /// <summary>
+        /// Gets or sets the Benevolence Results.
+        /// </summary>
+        /// <value>
+        /// the Benevolence Results.
+        /// </value>
+        public DbSet<Model.BenevolenceResult> BenevolenceResults { get; set; }      
+        
+        /// <summary>
+        /// Gets or sets the Benevolence Requests.
+        /// </summary>
+        /// <value>
+        /// The Benevolence Requests.
+        /// </value>
+        public DbSet<Model.BenevolenceRequest> BenevolenceRequests { get; set; }     
+        
+        /// <summary>
         /// Gets or sets the Files.
         /// </summary>
         /// <value>
-        /// the Files.
+        /// The Files.
         /// </value>
         public DbSet<Model.BinaryFile> BinaryFiles { get; set; }
 
@@ -319,6 +375,14 @@ namespace Rock.Data
         public DbSet<FinancialAccount> FinancialAccounts { get; set; }
 
         /// <summary>
+        /// Gets or sets the financial gateways.
+        /// </summary>
+        /// <value>
+        /// The financial gateways.
+        /// </value>
+        public DbSet<FinancialGateway> FinancialGateways { get; set; }
+
+        /// <summary>
         /// Gets or sets the batches.
         /// </summary>
         /// <value>
@@ -429,6 +493,14 @@ namespace Rock.Data
         /// the Members.
         /// </value>
         public DbSet<GroupMember> GroupMembers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group schedule exclusions.
+        /// </summary>
+        /// <value>
+        /// The group schedule exclusions.
+        /// </value>
+        public DbSet<GroupScheduleExclusion> GroupScheduleExclusions { get; set; }
 
         /// <summary>
         /// Gets or sets the Group Types.
@@ -808,7 +880,40 @@ namespace Rock.Data
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
             ContextHelper.AddConfigurations( modelBuilder );
+
+            modelBuilder.Conventions.Add( new GetAddressStoreFunctionInjectionConvention() );
         }
+
+        ///// <summary>
+        ///// Disposes the context. The underlying <see cref="T:System.Data.Entity.Core.Objects.ObjectContext" /> is also disposed if it was created
+        ///// is by this context or ownership was passed to this context when this context was created.
+        ///// The connection to the database (<see cref="T:System.Data.Common.DbConnection" /> object) is also disposed if it was created
+        ///// is by this context or ownership was passed to this context when this context was created.
+        ///// </summary>
+        ///// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        //protected override void Dispose( bool disposing )
+        //{
+        //    LogMessage( _contextId, "Disposed" );
+        //    base.Dispose( disposing );
+        //}
+
+        ///// <summary>
+        ///// Logs the message.
+        ///// </summary>
+        ///// <param name="contextId">The context identifier.</param>
+        ///// <param name="message">The message.</param>
+        //private static void LogMessage( string contextId, string message )
+        //{
+        //    try
+        //    {
+        //        lock ( _threadlock )
+        //        {
+        //            string when = RockDateTime.Now.ToString();
+        //            File.AppendAllText( _filePath, string.Format( "{0},{1},{2}\r\n", contextId, when, message ) );
+        //        }
+        //    }
+        //    catch { }
+        //}
 
     }
 

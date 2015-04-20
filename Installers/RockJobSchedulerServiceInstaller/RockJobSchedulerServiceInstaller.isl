@@ -341,9 +341,8 @@
 		<col def="S0">ISDotNetInstallerArgsCommit</col>
 		<col def="S0">ISDotNetInstallerArgsUninstall</col>
 		<col def="S0">ISDotNetInstallerArgsRollback</col>
-		<row><td>C5.dll</td><td>{2C62D7C6-51C1-4CC6-AB4C-E8FBF989FADF}</td><td>INSTALLDIR</td><td>2</td><td/><td>c5.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>ISX_DEFAULTCOMPONENT</td><td>{0D335255-CD17-4BD3-A313-B0EBD47D66FB}</td><td>INSTALLDIR</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>Quartz.dll</td><td>{87CC73A4-D0F9-4319-89CB-3833DC077472}</td><td>INSTALLDIR</td><td>2</td><td/><td>quartz.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>Quartz.dll</td><td>{5CF786D9-DD90-4D0F-B2F9-8D541C0CF971}</td><td>INSTALLDIR</td><td>2</td><td/><td>quartz.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>RockJobSchedulerService.Primary_output</td><td>{7E5CEDC0-E85B-42F6-A922-3BCF2D03FD52}</td><td>INSTALLDIR</td><td>2</td><td/><td>rockjobschedulerservice.prim</td><td>81</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 	</table>
 
@@ -1870,7 +1869,6 @@
 	<table name="FeatureComponents">
 		<col key="yes" def="s38">Feature_</col>
 		<col key="yes" def="s72">Component_</col>
-		<row><td>AlwaysInstall</td><td>C5.dll</td></row>
 		<row><td>AlwaysInstall</td><td>ISX_DEFAULTCOMPONENT</td></row>
 		<row><td>AlwaysInstall</td><td>Quartz.dll</td></row>
 		<row><td>AlwaysInstall</td><td>RockJobSchedulerService.Primary_output</td></row>
@@ -1889,7 +1887,6 @@
 		<col def="I4">ISAttributes</col>
 		<col def="S72">ISComponentSubFolder_</col>
 		<row><td>app.config</td><td>ISX_DEFAULTCOMPONENT</td><td>APP~1.CON|app.config</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Projects\Rock\RockJobSchedulerService\app.config</td><td>1</td><td/></row>
-		<row><td>c5.dll</td><td>C5.dll</td><td>C5.dll</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Projects\Rock\RockJobSchedulerService\bin\Release\C5.dll</td><td>1</td><td/></row>
 		<row><td>quartz.dll</td><td>Quartz.dll</td><td>Quartz.dll</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Projects\Rock\RockJobSchedulerService\bin\Release\Quartz.dll</td><td>1</td><td/></row>
 		<row><td>rockjobschedulerservice.prim</td><td>RockJobSchedulerService.Primary_output</td><td>RockJobSchedulerService.Primary output</td><td>0</td><td/><td/><td>0</td><td>1</td><td>&lt;RockJobSchedulerService&gt;|Built</td><td>3</td><td/></row>
 	</table>
@@ -2035,9 +2032,8 @@
 		<col def="S0">FTPLocation</col>
 		<col def="S0">HTTPLocation</col>
 		<col def="S0">Miscellaneous</col>
-		<row><td>C5.dll</td><td/><td/><td>_191FAD7D_A4AB_4D9C_8C42_0DD287C0E435_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>ISX_DEFAULTCOMPONENT</td><td/><td/><td>_1693B5DC_1480_4807_8211_C0E179A64CCE_FILTER</td><td/><td/><td/><td/></row>
-		<row><td>Quartz.dll</td><td/><td/><td>_F638BC8C_4119_4FDC_9D84_90D94370B8C8_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>Quartz.dll</td><td/><td/><td>_75DDAC26_9A3D_4378_BB96_9DDD5056B713_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>RockJobSchedulerService.Primary_output</td><td/><td/><td>_67AB93B5_7A52_4E46_87C4_762BC02820FE_FILTER</td><td/><td/><td/><td/></row>
 	</table>
 
@@ -2113,7 +2109,7 @@
 		<row><td>FACEBOOK.DLL</td><td>1</td></row>
 		<row><td>MICROSOFT.WINDOWSAZURE.STORAGE</td><td>1</td></row>
 		<row><td>RESTSHARP</td><td>1</td></row>
-		<row><td>TWILIO.API.DLL</td><td>1</td></row>
+		<row><td>TWILIO.API.DLL</td><td>0</td></row>
 	</table>
 
 	<table name="ISDisk1File">
@@ -4009,7 +4005,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ISTheme</td><td>InstallShield Blue.theme</td></row>
 		<row><td>ISUSLock</td><td>{1E9DA5CF-A8A9-42AE-9DC4-ED2F9A2576B0}</td></row>
 		<row><td>ISUSSignature</td><td>{0E486813-EE2F-4CBF-B8C5-FBFE896E67BA}</td></row>
-		<row><td>ISVisitedViews</td><td>viewAssistant,viewISToday,viewUI,viewSystemSearch,viewInstallScriptStd,viewCustomActions,viewSupportFiles,viewAppV,viewAppFiles,viewProject,viewUpgradePaths,viewUpdateService,viewShortcuts,viewServices,viewRelease,viewRegistry,viewIniFiles,viewTextFiles,viewBillboards,viewTextMessages,viewDesignPatches</td></row>
+		<row><td>ISVisitedViews</td><td>viewAssistant,viewISToday,viewUI,viewSystemSearch,viewInstallScriptStd,viewCustomActions,viewSupportFiles,viewAppV,viewAppFiles,viewProject,viewUpgradePaths,viewUpdateService,viewShortcuts,viewServices,viewRelease,viewRegistry,viewIniFiles,viewTextFiles,viewBillboards,viewTextMessages,viewDesignPatches,viewRealSetupDesign,viewSetupDesign,viewSetupTypes</td></row>
 		<row><td>Limited</td><td>1</td></row>
 		<row><td>LockPermissionMode</td><td>1</td></row>
 		<row><td>MsiExecCmdLineOptions</td><td/></row>

@@ -19,9 +19,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Jobs;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
@@ -44,7 +46,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            gScheduledJobs.DataKeyNames = new string[] { "id" };
+            gScheduledJobs.DataKeyNames = new string[] { "Id" };
             gScheduledJobs.Actions.ShowAdd = true;
             gScheduledJobs.Actions.AddClick += gScheduledJobs_Add;
             gScheduledJobs.GridRebind += gScheduledJobs_GridRebind;
@@ -80,7 +82,13 @@ namespace RockWeb.Blocks.Administration
             var site = RockPage.Site;
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                
+                // Remove the "Run Now" option from the Job Pulse job
+                Guid? jobGuid = e.Row.DataItem.GetPropertyValue( "Guid" ).ToString().AsGuidOrNull();
+                if ( jobGuid.HasValue && jobGuid.Value.Equals( Rock.SystemGuid.ServiceJob.JOB_PULSE.AsGuid() ))
+                {
+                    e.Row.Cells[8].Text = string.Empty;
+                }
+
                 // format duration
                 if ( e.Row.DataItem.GetPropertyValue( "LastRunDurationSeconds" ) != null )
                 {
@@ -147,6 +155,26 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
+        /// Handles the RunNow event of the gScheduledJobs control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gScheduledJobs_RunNow( object sender, RowEventArgs e )
+        {
+            var job = new ServiceJobService( new RockContext() ).Get( e.RowKeyId );
+            if ( job != null )
+            {
+                var transaction = new Rock.Transactions.RunJobNowTransaction( job.Id );
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+
+                mdGridWarning.Show( string.Format( "The '{0}' job has been triggered to run and will start within the next two minutes ( during the next transaction cycle ).", job.Name ), ModalAlertType.Information );
+            }
+
+            BindGrid();
+
+        }
+
+        /// <summary>
         /// Handles the Delete event of the grdScheduledJobs control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -205,5 +233,5 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
-    }
+}
 }

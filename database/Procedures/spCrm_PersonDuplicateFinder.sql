@@ -853,6 +853,7 @@ BEGIN
     UPDATE [PersonDuplicate]
     SET [TotalCapacity] = @TotalCapacity
     WHERE [TotalCapacity] != @TotalCapacity
+    OR [TotalCapacity] is null
 
     UPDATE [PersonDuplicate]
     set IgnoreUntilScoreChanges = 0

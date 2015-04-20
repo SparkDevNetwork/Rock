@@ -21,23 +21,46 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for Following
+    /// Base client model for Following that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class Following
+    public partial class FollowingEntity
     {
         /// <summary />
-        public int EntityTypeId { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public int EntityId { get; set; }
 
         /// <summary />
+        public int EntityTypeId { get; set; }
+
+        /// <summary />
         public int PersonAliasId { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Client model for Following that includes all the fields that are available for GETs. Use this for GETs (use FollowingEntity for POST/PUTs)
+    /// </summary>
+    public partial class Following : FollowingEntity
+    {
+        /// <summary />
+        public EntityType EntityType { get; set; }
+
+        /// <summary />
+        public PersonAlias PersonAlias { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -51,14 +74,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
-        public int Id { get; set; }
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

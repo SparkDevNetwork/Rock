@@ -34,7 +34,19 @@ namespace Rock.Migrations
             Sql( @"ALTER TABLE PersonDuplicate ADD ConfidenceScore AS sqrt ((Capacity / (TotalCapacity * .01)) * (Score / (Capacity * .01))) PERSISTED" );
             CreateIndex( "dbo.PersonDuplicate", "ConfidenceScore" );
 
-            Sql( "sp_changeobjectowner 'spCrm_PersonDuplicateFinder', 'dbo'" );
+            Sql( @" DECLARE @ObjectName varchar(50) = 'spCrm_PersonDuplicateFinder'
+                    DECLARE @AlterSql nvarchar(MAX)
+                    DECLARE @SchemaOwner varchar(12) = (SELECT TOP 1 s.name
+										                    FROM sys.schemas AS s
+											                    INNER JOIN sys.all_objects AS o ON s.[schema_id] = o.[schema_id]
+										                    WHERE o.name = @ObjectName)
+
+                    IF (@SchemaOwner != 'dbo')
+	                    BEGIN
+		                    SELECT @AlterSql = 'ALTER SCHEMA dbo TRANSFER [' + @SchemaOwner + '].' + @ObjectName
+		                    EXEC sp_executesql @AlterSql
+	                    END" );
+
             Sql( @"
 /*
 <doc>
@@ -913,7 +925,32 @@ BEGIN
 END
 " );
 
-            Sql( "sp_changeobjectowner 'spCheckin_BadgeAttendance', 'dbo'" );
+            Sql( @" DECLARE @ObjectName varchar(50) = 'spCheckin_BadgeAttendance'
+                    DECLARE @AlterSql nvarchar(MAX)
+                    DECLARE @SchemaOwner varchar(12) = (SELECT TOP 1 s.name
+										                    FROM sys.schemas AS s
+											                    INNER JOIN sys.all_objects AS o ON s.[schema_id] = o.[schema_id]
+										                    WHERE o.name = @ObjectName)
+
+                    IF (@SchemaOwner != 'dbo')
+	                    BEGIN
+		                    SELECT @AlterSql = 'ALTER SCHEMA dbo TRANSFER [' + @SchemaOwner + '].' + @ObjectName
+		                    EXEC sp_executesql @AlterSql
+	                    END" );
+
+            Sql( @" DECLARE @ObjectName varchar(50) = 'spCheckin_BadgeAttendance'
+                    DECLARE @AlterSql nvarchar(MAX)
+                    DECLARE @SchemaOwner varchar(12) = (SELECT TOP 1 s.name
+										                    FROM sys.schemas AS s
+											                    INNER JOIN sys.all_objects AS o ON s.[schema_id] = o.[schema_id]
+										                    WHERE o.name = @ObjectName)
+
+                    IF (@SchemaOwner != 'dbo')
+	                    BEGIN
+		                    SELECT @AlterSql = 'ALTER SCHEMA dbo TRANSFER [' + @SchemaOwner + '].' + @ObjectName
+		                    EXEC sp_executesql @AlterSql
+	                    END" );
+
             Sql( @"
 /*
 <doc>

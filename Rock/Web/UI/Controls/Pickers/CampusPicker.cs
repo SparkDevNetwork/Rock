@@ -15,11 +15,8 @@
 // </copyright>
 //
 using System.Collections.Generic;
-using System.Linq;
 using System.Web.UI.WebControls;
 
-using Rock.Constants;
-using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -49,20 +46,12 @@ namespace Rock.Web.UI.Controls
             set
             {
                 this.Items.Clear();
-
-                if ( !Required )
-                {
-                    this.Items.Add( new ListItem( string.Empty, string.Empty ) );
-                }
+                this.Items.Add( new ListItem() );
 
                 foreach ( CampusCache campus in value )
                 {
-                    ListItem campusItem = new ListItem();
-                    campusItem.Value = campus.Id.ToString();
-                    campusItem.Text = campus.Name;
-                    this.Items.Add( campusItem );
+                    this.Items.Add( new ListItem( campus.Name, campus.Id.ToString() ) );
                 }
-
             }
         }
 
@@ -78,6 +67,7 @@ namespace Rock.Web.UI.Controls
             {
                 return this.SelectedValueAsInt();
             }
+
             set
             {
                 int id = value.HasValue ? value.Value : 0;
@@ -88,6 +78,5 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
-
     }
 }

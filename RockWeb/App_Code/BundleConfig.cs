@@ -30,8 +30,6 @@ public class BundleConfig
     {
         // start with a clean bundles (this seems to have fixed the javascript errors that would occur on the first time you debug after opening the solution)
         bundles.ResetAll();
-        
-        // TODO: Add bundles for CSS files
 
         bundles.Add( new ScriptBundle( "~/bundles/WebFormsJs" ).Include(
             "~/Scripts/WebForms/WebForms.js",
@@ -43,29 +41,25 @@ public class BundleConfig
             "~/Scripts/WebForms/TreeView.js",
             "~/Scripts/WebForms/WebParts.js" ) );
 
-        // Omitting AjaxToolkit bundle for now. The toolkit and scriptmanager facade seem to
-        // conflict with eachother, despite one being a "fix" for the other.
-        //bundles.Add( new ScriptBundle( "~/bundles/MsAjaxJs" ).Include(
-        //    "~/Scripts/WebForms/MsAjax/MicrosoftAjax.js",
-        //    "~/Scripts/WebForms/MsAjax/MicrosoftAjaxApplicationServices.js",
-        //    "~/Scripts/WebForms/MsAjax/MicrosoftAjaxTimer.js",
-        //    "~/Scripts/WebForms/MsAjax/MicrosoftAjaxWebForms.js" ) );
-
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockLibs" ).Include(
             "~/Scripts/jquery-ui-1.10.0.custom.min.js",
             "~/Scripts/bootstrap.min.js",
             "~/Scripts/bootstrap-timepicker.js",
             "~/Scripts/bootstrap-datepicker.js",
+            "~/Scripts/bootstrap-modalmanager.js",
+            "~/Scripts/bootstrap-modal.js",
             "~/Scripts/bootbox.min.js",
             "~/Scripts/typeahead.min.js",
             "~/Scripts/jquery.fileupload.js",
             "~/Scripts/jquery.tinyscrollbar.js",
             "~/Scripts/jcrop.min.js",
+            "~/Scripts/ResizeSensor.js",       
             "~/Scripts/Rock/Extensions/*.js" ) );
 
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockUi" ).Include(
             "~/Scripts/Rock/dialogs.js",
             "~/Scripts/Rock/settings.js",
+            "~/Scripts/Rock/utility.js",
             "~/Scripts/Rock/Controls/*.js" ) );
 
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockValidation" ).Include(
@@ -75,7 +69,6 @@ public class BundleConfig
         // to be included for administrative users
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockAdmin" ).Include( 
             "~/Scripts/Rock/Admin/*.js" ) );
-
 
         // make sure the ConcatenationToken is what we want.  This is supposed to be the default, but it occassionally was an empty string.
         foreach ( var bundle in bundles )
@@ -92,7 +85,5 @@ public class BundleConfig
                 bundle.Transforms.Clear();
             }
         }
-
-        // TODO: Consider adding a MEF component to dynamically load external bundle configurations
 	}
 }

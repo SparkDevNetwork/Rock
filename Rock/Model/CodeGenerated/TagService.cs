@@ -87,19 +87,19 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Tag target, Tag source )
         {
-            target.IsSystem = source.IsSystem;
+            target.Id = source.Id;
+            target.Description = source.Description;
             target.EntityTypeId = source.EntityTypeId;
             target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            target.IsSystem = source.IsSystem;
             target.Name = source.Name;
-            target.Description = source.Description;
             target.Order = source.Order;
             target.OwnerPersonAliasId = source.OwnerPersonAliasId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

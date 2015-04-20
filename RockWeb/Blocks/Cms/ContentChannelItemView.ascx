@@ -32,9 +32,19 @@
                     </ul>
                 </div>
 
-                <h4><asp:Literal ID="lContentChannelItems" runat="server"></asp:Literal></h4>
+                
 
-                <div class="grid">
+            </div>
+        </div>
+
+        <div class="panel panel-block" id="divItemPanel" runat="server" visible="false">
+            <div class="panel-heading">
+                <div class="panel-title">
+                    <i class="fa fa-bullhorn"></i> <asp:Literal ID="lContentChannelItems" runat="server"></asp:Literal></h1>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="grid grid-panel">
 
                     <Rock:GridFilter ID="gfFilter" runat="server">
                         <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
@@ -44,12 +54,12 @@
 
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
-                    <Rock:Grid ID="gContentChannelItems" runat="server" OnRowSelected="gContentChannelItems_Edit" />
+                    <Rock:Grid ID="gContentChannelItems" runat="server" AllowSorting="true" OnRowSelected="gContentChannelItems_Edit" />
 
                 </div>
-
             </div>
         </div>
+
         <script>
             $(".my-contentItems .list-as-blocks li").on("click", function () {
                 $(".my-contentItems .list-as-blocks li").removeClass('active');

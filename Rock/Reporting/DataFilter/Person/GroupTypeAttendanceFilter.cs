@@ -109,7 +109,7 @@ namespace Rock.Reporting.DataFilter.Person
             {
                 var groupType = Rock.Web.Cache.GroupTypeCache.Read( options[0].AsGuid() );
 
-                ComparisonType comparisonType = options[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
+                ComparisonType comparisonType = options[1].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
 
                 s = string.Format(
                     "Attended '{0}' {1} {2} times in the last {3} week(s)",
@@ -137,20 +137,21 @@ namespace Rock.Reporting.DataFilter.Person
                 ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Guid.ToString() ) );
             }
 
-            var ddl = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypes );
-            ddl.ID = filterControl.ID + "_1";
-            filterControl.Controls.Add( ddl );
+            var ddlIntegerCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypes );
+            ddlIntegerCompare.ID = filterControl.ID + "_ddlIntegerCompare";
+            filterControl.Controls.Add( ddlIntegerCompare );
 
-            var tb = new RockTextBox();
-            tb.ID = filterControl.ID + "_2";
-            filterControl.Controls.Add( tb );
+            var tbAttendedCount = new RockTextBox();
+            tbAttendedCount.ID = filterControl.ID + "_2";
+            filterControl.Controls.Add( tbAttendedCount );
 
-            var tb2 = new RockTextBox();
-            tb2.ID = filterControl.ID + "_3";
-            filterControl.Controls.Add( tb );
+            var tbInLastWeeksCount = new RockTextBox();
+            tbInLastWeeksCount.ID = filterControl.ID + "_tbInLastWeeksCount";
+            filterControl.Controls.Add( tbInLastWeeksCount );
 
-            var controls = new Control[4] { ddlGroupType, ddl, tb, tb2 };
+            var controls = new Control[4] { ddlGroupType, ddlIntegerCompare, tbAttendedCount, tbInLastWeeksCount };
 
+            // set the default values in case this is a newly added filter
             SetSelection(
                 entityType,
                 controls,
@@ -286,7 +287,7 @@ namespace Rock.Reporting.DataFilter.Person
                                     ( a.Group.GroupTypeId == groupTypeId ) &&
                                     ( a.StartDateTime >= startDate )
                                 ) &&
-                                ( a.DidAttend == true )
+                                ( a.DidAttend.HasValue && a.DidAttend.Value )
                             )
                         ) == attended );
 

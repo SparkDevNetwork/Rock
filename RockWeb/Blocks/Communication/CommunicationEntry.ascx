@@ -1,4 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CommunicationEntry.ascx.cs" Inherits="RockWeb.Blocks.Communication.CommunicationEntry" %>
+<%@ Register src="CommunicationDetail.ascx" TagName="communicationDetail" TagPrefix="cd" %>
 
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
@@ -88,7 +89,7 @@
                         <asp:LinkButton ID="btnSave" runat="server" Text="Save as Draft" CssClass="btn btn-link" OnClick="btnSave_Click" />
                     </div>
 
-                    <Rock:NotificationBox ID="nbTestResult" runat="server" NotificationBoxType="Success" Text="Test communication has been sent." Visible="false" />
+                    <Rock:NotificationBox ID="nbTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test communication has been sent." Visible="false" />
 
                 </asp:Panel>
 

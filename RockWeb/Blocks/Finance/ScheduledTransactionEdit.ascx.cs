@@ -41,8 +41,8 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Edit an existing scheduled transaction." )]
 
-    [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
-    [ComponentField( "Rock.Financial.GatewayContainer, Rock", "ACH Card Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
+    [FinancialGatewayField( "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
+    [FinancialGatewayField( "ACH Card Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
     [BooleanField( "Impersonation", "Allow (only use on an internal page used by staff)", "Don't Allow",
         "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 2 )]
     [AccountsField( "Accounts", "The accounts to display.  By default all active accounts with a Public Name will be displayed", false, "", "", 3 )]
@@ -237,7 +237,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                 if ( scheduledTransaction != null )
                 {
-                    Gateway = GetGateway( scheduledTransaction );
+                    Gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
 
                     GetAccounts( scheduledTransaction );
                     SetFrequency( scheduledTransaction );
@@ -524,74 +524,62 @@ achieve our mission.  We are so grateful for your commitment.
         private FinancialScheduledTransaction GetScheduledTransaction( bool refresh = false )
         {
             Person targetPerson = null;
-            var rockContext = new RockContext();
-
-            // If impersonation is allowed, and a valid person key was used, set the target to that person
-            bool allowImpersonation = false;
-            if ( bool.TryParse( GetAttributeValue( "Impersonation" ), out allowImpersonation ) && allowImpersonation )
+            using ( var rockContext = new RockContext() )
             {
-                string personKey = PageParameter( "Person" );
-                if ( !string.IsNullOrWhiteSpace( personKey ) )
+
+                // If impersonation is allowed, and a valid person key was used, set the target to that person
+                bool allowImpersonation = false;
+                if ( bool.TryParse( GetAttributeValue( "Impersonation" ), out allowImpersonation ) && allowImpersonation )
                 {
-                    targetPerson = new PersonService( rockContext ).GetByUrlEncodedKey( personKey );
-                }
-            }
-
-            if ( targetPerson == null )
-            {
-                targetPerson = CurrentPerson;
-            }
-
-            // Verify that transaction id is valid for selected person
-            if ( targetPerson != null )
-            {
-                int txnId = int.MinValue;
-                if ( int.TryParse( PageParameter( "ScheduledTransactionId" ), out txnId ) )
-                {
-                    var service = new FinancialScheduledTransactionService( rockContext );
-                    var scheduledTransaction = service.Queryable( "AuthorizedPersonAlias.Person,ScheduledTransactionDetails,GatewayEntityType,CurrencyTypeValue,CreditCardTypeValue" )
-                        .Where( t =>
-                            t.Id == txnId &&
-                            ( t.AuthorizedPersonAlias.PersonId == targetPerson.Id || t.AuthorizedPersonAlias.Person.GivingGroupId == targetPerson.GivingGroupId ) )
-                        .FirstOrDefault();
-
-                    if ( scheduledTransaction != null )
+                    string personKey = PageParameter( "Person" );
+                    if ( !string.IsNullOrWhiteSpace( personKey ) )
                     {
-                        if ( scheduledTransaction.AuthorizedPersonAlias != null )
-                        {
-                            TargetPersonId = scheduledTransaction.AuthorizedPersonAlias.PersonId;
-                        }
-                        ScheduledTransactionId = scheduledTransaction.Id;
-
-                        if ( refresh )
-                        {
-                            string errorMessages = string.Empty;
-                            service.GetStatus( scheduledTransaction, out errorMessages );
-                            rockContext.SaveChanges();
-                        }
-
-                        return scheduledTransaction;
+                        targetPerson = new PersonService( rockContext ).GetByUrlEncodedKey( personKey );
                     }
                 }
-            }
 
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the gateway.
-        /// </summary>
-        /// <param name="scheduledTransaction">The scheduled transaction.</param>
-        /// <returns></returns>
-        private GatewayComponent GetGateway( FinancialScheduledTransaction scheduledTransaction )
-        {
-            if ( scheduledTransaction.GatewayEntityType != null )
-            {
-                Guid gatewayGuid = scheduledTransaction.GatewayEntityType.Guid;
-                var gateway = GatewayContainer.GetComponent( gatewayGuid.ToString() );
-                if ( gateway != null && gateway.IsActive )
+                if ( targetPerson == null )
                 {
-                    return gateway;
+                    targetPerson = CurrentPerson;
+                }
+
+                // Verify that transaction id is valid for selected person
+                if ( targetPerson != null )
+                {
+                    int txnId = int.MinValue;
+                    if ( int.TryParse( PageParameter( "ScheduledTransactionId" ), out txnId ) )
+                    {
+                        var service = new FinancialScheduledTransactionService( rockContext );
+                        var scheduledTransaction = service
+                            .Queryable( "AuthorizedPersonAlias.Person,ScheduledTransactionDetails,FinancialGateway,CurrencyTypeValue,CreditCardTypeValue" )
+                            .Where( t =>
+                                t.Id == txnId &&
+                                ( t.AuthorizedPersonAlias.PersonId == targetPerson.Id || t.AuthorizedPersonAlias.Person.GivingGroupId == targetPerson.GivingGroupId ) )
+                            .FirstOrDefault();
+
+                        if ( scheduledTransaction != null )
+                        {
+                            if ( scheduledTransaction.AuthorizedPersonAlias != null )
+                            {
+                                TargetPersonId = scheduledTransaction.AuthorizedPersonAlias.PersonId;
+                            }
+                            ScheduledTransactionId = scheduledTransaction.Id;
+
+                            if ( scheduledTransaction.FinancialGateway != null )
+                            {
+                                scheduledTransaction.FinancialGateway.LoadAttributes( rockContext );
+                            }
+
+                            if ( refresh )
+                            {
+                                string errorMessages = string.Empty;
+                                service.GetStatus( scheduledTransaction, out errorMessages );
+                                rockContext.SaveChanges();
+                            }
+
+                            return scheduledTransaction;
+                        }
+                    }
                 }
             }
 
@@ -626,7 +614,7 @@ achieve our mission.  We are so grateful for your commitment.
                     ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
                 .OrderBy( f => f.Order ) )
             {
-                var accountItem = new AccountItem( account.Id, account.Order, account.Name, account.CampusId );
+                var accountItem = new AccountItem( account.Id, account.Order, account.Name, account.CampusId, account.PublicName );
                 if ( showAll )
                 {
                     SelectedAccounts.Add( accountItem );
@@ -758,7 +746,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                     rblSavedCC.DataSource = savedAccounts
                         .Where( a =>
-                            a.GatewayEntityTypeId == Gateway.TypeId &&
+                            a.FinancialGateway.EntityTypeId == Gateway.TypeId &&
                             a.CurrencyTypeValueId == ccCurrencyType.Id )
                         .OrderBy( a => a.Name )
                         .Select( a => new
@@ -776,7 +764,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                     rblSavedAch.DataSource = savedAccounts
                         .Where( a =>
-                            a.GatewayEntityTypeId == Gateway.TypeId &&
+                            a.FinancialGateway.EntityTypeId == Gateway.TypeId &&
                             a.CurrencyTypeValueId == achCurrencyType.Id )
                         .OrderBy( a => a.Name )
                         .Select( a => new
@@ -1018,13 +1006,19 @@ achieve our mission.  We are so grateful for your commitment.
                 if ( ScheduledTransactionId.HasValue )
                 {
                     scheduledTransaction = transactionService
-                        .Queryable("AuthorizedPersonAlias.Person").FirstOrDefault( s => s.Id == ScheduledTransactionId.Value );
+                        .Queryable("AuthorizedPersonAlias.Person,FinancialGateway")
+                        .FirstOrDefault( s => s.Id == ScheduledTransactionId.Value );
                 }
 
                 if ( scheduledTransaction == null )
                 {
                     errorMessage = "There was a problem getting the transaction information";
                     return false;
+                }
+
+                if ( scheduledTransaction.FinancialGateway != null )
+                {
+                    scheduledTransaction.FinancialGateway.LoadAttributes();
                 }
 
                 if ( scheduledTransaction.AuthorizedPersonAlias == null || scheduledTransaction.AuthorizedPersonAlias.Person == null)
@@ -1279,17 +1273,7 @@ achieve our mission.  We are so grateful for your commitment.
             var savedAccount = new FinancialPersonSavedAccountService( new RockContext() ).Get( savedAccountId );
             if ( savedAccount != null )
             {
-                var reference = new ReferencePaymentInfo();
-                reference.TransactionCode = savedAccount.TransactionCode;
-                reference.ReferenceNumber = savedAccount.ReferenceNumber;
-                reference.MaskedAccountNumber = savedAccount.MaskedAccountNumber;
-                reference.InitialCurrencyTypeValue = DefinedValueCache.Read( savedAccount.CurrencyTypeValue );
-                if ( reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
-                {
-                    reference.InitialCreditCardTypeValue = DefinedValueCache.Read( savedAccount.CreditCardTypeValue );
-                }
-
-                return reference;
+                return savedAccount.GetReferencePayment();
             }
 
             return null;
@@ -1484,6 +1468,8 @@ achieve our mission.  We are so grateful for your commitment.
 
             public decimal Amount { get; set; }
 
+            public string PublicName { get; set; }
+
             public string AmountFormatted
             {
                 get
@@ -1492,12 +1478,13 @@ achieve our mission.  We are so grateful for your commitment.
                 }
             }
 
-            public AccountItem( int id, int order, string name, int? campusId )
+            public AccountItem( int id, int order, string name, int? campusId, string publicName )
             {
                 Id = id;
                 Order = order;
                 Name = name;
                 CampusId = campusId;
+                PublicName = publicName;
             }
         }
 

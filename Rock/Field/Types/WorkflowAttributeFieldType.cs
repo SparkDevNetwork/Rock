@@ -20,8 +20,6 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock.Data;
-using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -33,44 +31,12 @@ namespace Rock.Field.Types
     [Serializable]
     public class WorkflowAttributeFieldType : FieldType
     {
+
+        #region Configuration
+
         private const string ATTRIBUTE_FIELD_TYPES_KEY = "attributefieldtypes";
         private const string WORKFLOW_TYPE_ATTRIBUTES_KEY = "WorkflowTypeAttributes";
         private const string ACTIVITY_TYPE_ATTRIBUTES_KEY = "ActivityTypeAttributes";
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            string formattedValue = string.Empty;
-
-            Guid guid = value.AsGuid();
-            if (!guid.IsEmpty())
-            {
-                var attributes = GetContextAttributes();
-                if ( attributes != null && attributes.ContainsKey(guid) )
-                {
-                    formattedValue = attributes[guid].Name;
-                }
-
-                if (string.IsNullOrWhiteSpace(formattedValue))
-                {
-                    var attributeCache = AttributeCache.Read( guid );
-                    if (attributeCache != null)
-                    {
-                        formattedValue = attributeCache.Name;
-                    }
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
-
-        }
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -139,6 +105,49 @@ namespace Rock.Field.Types
                 }
             }
         }
+
+        #endregion
+
+        #region Formatting
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            string formattedValue = string.Empty;
+
+            Guid guid = value.AsGuid();
+            if ( !guid.IsEmpty() )
+            {
+                var attributes = GetContextAttributes();
+                if ( attributes != null && attributes.ContainsKey( guid ) )
+                {
+                    formattedValue = attributes[guid].Name;
+                }
+
+                if ( string.IsNullOrWhiteSpace( formattedValue ) )
+                {
+                    var attributeCache = AttributeCache.Read( guid );
+                    if ( attributeCache != null )
+                    {
+                        formattedValue = attributeCache.Name;
+                    }
+                }
+            }
+
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
+
+        }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -228,6 +237,25 @@ namespace Rock.Field.Types
 
             return null;
         }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Creates the control needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <returns></returns>
+        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        {
+            // This fieldtype does not support filtering
+            return null;
+        }
+
+        #endregion
 
     }
 }

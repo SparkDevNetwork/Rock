@@ -106,6 +106,7 @@ namespace Rock.Web.Cache
                                     {
                                         cookie.Value = theme;
                                     }
+
                                     httpContext.Response.SetCookie( cookie );
 
                                     return theme;
@@ -140,13 +141,13 @@ namespace Rock.Web.Cache
                                 cookie.Value = null;
                                 httpContext.Response.SetCookie( cookie );
                             }
-
                         }
                     }
                 }
 
                 return _theme;
             }
+
             set
             {
                 _theme = value;
@@ -245,6 +246,36 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets or sets the communication page identifier.
+        /// </summary>
+        /// <value>
+        /// The communication page identifier.
+        /// </value>
+        public int? CommunicationPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication page route identifier.
+        /// </summary>
+        /// <value>
+        /// The communication page route identifier.
+        /// </value>
+        public int? CommunicationPageRouteId { get; set; }
+
+        /// <summary>
+        /// Gets the communication page reference.
+        /// </summary>
+        /// <value>
+        /// The communication page reference.
+        /// </value>
+        public PageReference CommunicationPageReference
+        {
+            get
+            {
+                return new Rock.Web.PageReference( CommunicationPageId ?? 0, CommunicationPageRouteId ?? 0 );
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the registration page id.
         /// </summary>
         /// <value>
@@ -314,9 +345,11 @@ namespace Rock.Web.Cache
             get
             {
                 if ( DefaultPageId.HasValue && DefaultPageId.Value != 0 )
+                {
                     return PageCache.Read( DefaultPageId.Value );
-                else
-                    return null;
+                }
+
+                return null;
             }
         }
 
@@ -343,6 +376,8 @@ namespace Rock.Web.Cache
                 this.DefaultPageRouteId = site.DefaultPageRouteId;
                 this.LoginPageId = site.LoginPageId;
                 this.LoginPageRouteId = site.LoginPageRouteId;
+                this.CommunicationPageId = site.CommunicationPageId;
+                this.CommunicationPageRouteId = site.CommunicationPageRouteId;
                 this.RegistrationPageId = site.RegistrationPageId;
                 this.RegistrationPageRouteId = site.RegistrationPageRouteId;
                 this.ErrorPage = site.ErrorPage;
@@ -396,6 +431,16 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Redirects to communication page.
+        /// </summary>
+        public void RedirectToCommunicationPage()
+        {
+            var context = HttpContext.Current;
+            context.Response.Redirect( CommunicationPageReference.BuildUrl(), false );
+            context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
         /// Redirects to registration page.
         /// </summary>
         public void RedirectToRegistrationPage()
@@ -439,14 +484,20 @@ namespace Rock.Web.Cache
 
             if ( site == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var siteService = new SiteService( rockContext );
-                var siteModel = siteService.Get( id );
-                if ( siteModel != null )
+                if ( rockContext != null )
                 {
-                    siteModel.LoadAttributes( rockContext );
-                    site = new SiteCache( siteModel );
+                    site = LoadById( id, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        site = LoadById( id, myRockContext );
+                    }
+                }
 
+                if ( site != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, site, cachePolicy );
                     cache.Set( site.Guid.ToString(), site.Id, cachePolicy );
@@ -454,6 +505,19 @@ namespace Rock.Web.Cache
             }
 
             return site;
+        }
+
+        private static SiteCache LoadById( int id, RockContext rockContext )
+        {
+            var siteService = new SiteService( rockContext );
+            var siteModel = siteService.Get( id );
+            if ( siteModel != null )
+            {
+                siteModel.LoadAttributes( rockContext );
+                return new SiteCache( siteModel );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -475,14 +539,20 @@ namespace Rock.Web.Cache
 
             if ( site == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var siteService = new SiteService( rockContext );
-                var siteModel = siteService.Get( guid );
-                if ( siteModel != null )
+                if ( rockContext != null )
                 {
-                    siteModel.LoadAttributes( rockContext );
-                    site = new SiteCache( siteModel );
+                    site = LoadByGuid( guid, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        site = LoadByGuid( guid, myRockContext );
+                    }
+                }
 
+                if ( site != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( SiteCache.CacheKey( site.Id ), site, cachePolicy );
                     cache.Set( site.Guid.ToString(), site.Id, cachePolicy );
@@ -490,6 +560,19 @@ namespace Rock.Web.Cache
             }
 
             return site;
+        }
+
+        private static SiteCache LoadByGuid( Guid guid, RockContext rockContext = null )
+        {
+            var siteService = new SiteService( rockContext );
+            var siteModel = siteService.Get( guid );
+            if ( siteModel != null )
+            {
+                siteModel.LoadAttributes( rockContext );
+                return new SiteCache( siteModel );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -556,17 +639,20 @@ namespace Rock.Web.Cache
             else
             {
                 // get from database
-                Rock.Model.SiteDomainService siteDomainService = new Rock.Model.SiteDomainService( new RockContext() );
-                Rock.Model.SiteDomain siteDomain = siteDomainService.GetByDomain( host );
-                if ( siteDomain == null )
+                using ( var rockContext = new RockContext() )
                 {
-                    siteDomain = siteDomainService.GetByDomainContained( host );
-                }
+                    Rock.Model.SiteDomainService siteDomainService = new Rock.Model.SiteDomainService( rockContext );
+                    Rock.Model.SiteDomain siteDomain = siteDomainService.GetByDomain( host );
+                    if ( siteDomain == null )
+                    {
+                        siteDomain = siteDomainService.GetByDomainContained( host );
+                    }
 
-                if ( siteDomain != null )
-                {
-                    sites.AddOrUpdate( host, siteDomain.SiteId, (k,v) => siteDomain.SiteId );
-                    site = SiteCache.Read( siteDomain.SiteId );
+                    if ( siteDomain != null )
+                    {
+                        sites.AddOrUpdate( host, siteDomain.SiteId, ( k, v ) => siteDomain.SiteId );
+                        site = SiteCache.Read( siteDomain.SiteId );
+                    }
                 }
             }
 
@@ -574,6 +660,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
     }
 }

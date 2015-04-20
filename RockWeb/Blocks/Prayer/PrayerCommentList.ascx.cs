@@ -54,11 +54,6 @@ namespace RockWeb.Blocks.Prayer
         private Guid? _blockInstancePrayerRequestCategoryGuid = null;
 
         /// <summary>
-        /// The PrayerRequest entity type id.  This causes only comments/categories that are appropriate to the PrayerRequest entity to be listed.
-        /// </summary>
-        private int? _prayerRequestEntityTypeId = null;
-
-        /// <summary>
         /// Holds whether or not the person can add, edit, and delete.
         /// </summary>
         private bool _canAddEditDelete = false;
@@ -85,9 +80,6 @@ namespace RockWeb.Blocks.Prayer
             base.OnInit( e );
 
             _blockInstancePrayerRequestCategoryGuid = GetAttributeValue( "PrayerRequestCategory" ).AsGuidOrNull();
-            PrayerRequest prayerRequest = new PrayerRequest();
-            Type type = prayerRequest.GetType();
-            _prayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type.FullName );
 
             BindFilter();
 
@@ -127,6 +119,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPrayerComments_Edit( object sender, RowEventArgs e )
         {
+            // NOTE: DataKeys for Grid has two fields "id,entityId"
             NavigateToLinkedPage( "DetailPage", _prayerCommentKeyParameter, (int)e.RowKeyValues["id"], _prayerRequestKeyParameter, (int)e.RowKeyValues["entityid"] );
         }
 
@@ -143,6 +136,7 @@ namespace RockWeb.Blocks.Prayer
             {
                 var rockContext = new RockContext();
                 NoteService noteService = new NoteService( rockContext );
+                // NOTE: DataKeys for Grid has two fields "id,entityId"
                 Note prayerComment = noteService.Get( (int)e.RowKeyValues["id"] );
 
                 if ( prayerComment != null )
@@ -273,7 +267,7 @@ namespace RockWeb.Blocks.Prayer
             var rockContext = new RockContext();
 
             var noteTypeService = new NoteTypeService( rockContext );
-            var noteType = noteTypeService.Get( (int)_prayerRequestEntityTypeId, "Prayer Comment" );
+            var noteType = noteTypeService.Get( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() );
 
             // TODO log exception if noteType is null
 
@@ -320,7 +314,7 @@ namespace RockWeb.Blocks.Prayer
             }
             else
             {
-                gPrayerComments.DataSource = prayerComments.OrderBy( n => n.CreatedDateTime ).ToList();
+                gPrayerComments.DataSource = prayerComments.OrderByDescending( n => n.CreatedDateTime ).ToList();
             }
 
             gPrayerComments.DataBind();

@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             rptWorkflowTypes.ItemCommand += rptWorkflowTypes_ItemCommand;
 
-            gWorkflows.DataKeyNames = new string[] { "id" };
+            gWorkflows.DataKeyNames = new string[] { "Id" };
             gWorkflows.Actions.ShowAdd = false;
             gWorkflows.IsDeleteEnabled = false;
             gWorkflows.GridRebind += gWorkflows_GridRebind;
@@ -277,7 +277,7 @@ namespace RockWeb.Blocks.WorkFlow
                     // If there are not any active assigned activities, and not filtering by active, then also
                     // show any types that user is authorized to edit
                     if ( ( !StatusFilter.HasValue || !StatusFilter.Value ) &&
-                        workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson, rockContext ) )
+                        workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                     {
                         displayedTypes.Add( workflowType );
                     }

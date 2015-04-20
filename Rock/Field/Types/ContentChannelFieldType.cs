@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -32,6 +32,9 @@ namespace Rock.Field.Types
     /// </summary>
     public class ContentChannelFieldType : FieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -56,6 +59,10 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -116,5 +123,8 @@ namespace Rock.Field.Types
                 picker.SelectedValue = value.ToUpper();
             }
         }
+
+        #endregion
+
     }
 }

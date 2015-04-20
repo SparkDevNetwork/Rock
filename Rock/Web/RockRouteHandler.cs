@@ -173,7 +173,7 @@ namespace Rock.Web
                     requestContext.HttpContext.Cache["RockLastException"] = ex;
                 }
 
-                System.Web.UI.Page errorPage = (System.Web.UI.Page)BuildManager.CreateInstanceFromVirtualPath( "~/Error66.aspx", typeof( System.Web.UI.Page ) );
+                System.Web.UI.Page errorPage = (System.Web.UI.Page)BuildManager.CreateInstanceFromVirtualPath( "~/Error.aspx", typeof( System.Web.UI.Page ) );
                 return errorPage;
             }
         }

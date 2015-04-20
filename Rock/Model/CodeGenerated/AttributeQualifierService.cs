@@ -87,11 +87,11 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this AttributeQualifier target, AttributeQualifier source )
         {
-            target.IsSystem = source.IsSystem;
+            target.Id = source.Id;
             target.AttributeId = source.AttributeId;
+            target.IsSystem = source.IsSystem;
             target.Key = source.Key;
             target.Value = source.Value;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

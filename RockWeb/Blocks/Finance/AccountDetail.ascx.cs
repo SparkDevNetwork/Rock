@@ -118,17 +118,18 @@ namespace RockWeb.Blocks.Finance
         {
             FinancialAccount account = null;
 
+            bool editAllowed = IsUserAuthorized( Authorization.EDIT );
+
             if ( !accountId.Equals( 0 ) )
             {
                 account = new FinancialAccountService( new RockContext() ).Get( accountId );
+                editAllowed = editAllowed || account.IsAuthorized( Authorization.EDIT, CurrentPerson );
             }
 
             if ( account == null )
             {
                 account = new FinancialAccount { Id = 0, IsActive = true };
             }
-
-            bool editAllowed = account.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
             hfAccountId.Value = account.Id.ToString();
 

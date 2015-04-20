@@ -16,8 +16,7 @@
 
     <style>
         html, body {
-            height: 100%;
-            min-height: 100%;
+            height: auto;
             width: 100%;
             min-width: 100%;
             background-color: #ffffff;
@@ -31,9 +30,9 @@
 
 <body class="rock-blank">
     <form id="form1" runat="server">
-        <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server" />
+        <asp:ScriptManager ID="sManager" runat="server" />
 
-        <asp:UpdateProgress ID="updateProgress" runat="server">
+        <asp:UpdateProgress ID="updateProgress" runat="server" DisplayAfter="800">
             <ProgressTemplate>
                 <div class="updateprogress-status">
                     <div class="spinner">

@@ -53,10 +53,10 @@
 
                         <Rock:Grid ID="gPrayerRequests" runat="server" AllowSorting="true" RowItemText="request" OnRowSelected="gPrayerRequests_Edit" OnRowDataBound="gPrayerRequests_RowDataBound" >
                             <Columns>
-                                <asp:BoundField DataField="FullName" HeaderText="Name" SortExpression="FullName" />
-                                <asp:BoundField DataField="CategoryName" HeaderText="Category" SortExpression="CategoryName" />
+                                <Rock:RockBoundField DataField="FullName" HeaderText="Name" SortExpression="FullName" />
+                                <Rock:RockBoundField DataField="CategoryName" HeaderText="Category" SortExpression="CategoryName" />
                                 <Rock:DateField DataField="EnteredDate" HeaderText="Entered" SortExpression="EnteredDate"/>
-                                <asp:BoundField DataField="Text" HeaderText="Request" SortExpression="Text" />
+                                <Rock:RockBoundField DataField="Text" HeaderText="Request" SortExpression="Text" />
                                 <Rock:BadgeField DataField="FlagCount" HeaderText="Flag Count" SortExpression="FlagCount" ImportantMin="4" WarningMin="2" InfoMin="1" InfoMax="2" />
                                 <Rock:ToggleField DataField="IsApproved" HeaderText="Approved?" ButtonSizeCssClass="btn-xs" Enabled="True" OnCssClass="btn-success" OnText="Yes" OffText="No" SortExpression="IsApproved" OnCheckedChanged="gPrayerRequests_CheckChanged" />
                                 <Rock:DeleteField OnClick="gPrayerRequests_Delete"  />

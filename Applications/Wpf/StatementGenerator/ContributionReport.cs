@@ -38,7 +38,7 @@ namespace Rock.Apps.StatementGenerator
         /// <value>
         /// The start date.
         /// </value>
-        public DateTime StartDate { get; set; }
+        public DateTime? StartDate { get; set; }
 
         /// <summary>
         /// Gets or sets the end date.
@@ -58,11 +58,20 @@ namespace Rock.Apps.StatementGenerator
 
         /// <summary>
         /// Gets or sets the person unique identifier.
+        /// NULL means to get all individuals
         /// </summary>
         /// <value>
         /// The person unique identifier.
         /// </value>
         public int? PersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [include individuals with no address].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [include individuals with no address]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeIndividualsWithNoAddress { get; set; }
 
         /// <summary>
         /// Gets or sets the layout file.
@@ -85,6 +94,7 @@ namespace Rock.Apps.StatementGenerator
                 return _current;
             }
         }
+
         private static ReportOptions _current = new ReportOptions();
     }
 
@@ -149,7 +159,20 @@ namespace Rock.Apps.StatementGenerator
         /// </summary>
         private DataTable _personGroupAddressDataTable = null;
 
-        // the _transactionsDataTable for the current person/group 
+        /// <summary>
+        /// the _transactionsDataTable for the current person/group 
+        /// The structure of the DataTable is
+        /// 
+        /// DateTime TransactionDateTime
+        /// string CurrencyTypeValueName
+        /// string Summary (main transaction summary)
+        /// DataTable Details {
+        ///      int AccountId
+        ///      string AccountName
+        ///      string Summary (detail summary)
+        ///      decimal Amount
+        /// }
+        /// </summary>
         private DataTable _transactionsDataTable = null;
 
         /// <summary>
@@ -167,11 +190,16 @@ namespace Rock.Apps.StatementGenerator
             _rockRestClient = new RockRestClient( rockConfig.RockBaseUrl );
             _rockRestClient.Login( rockConfig.Username, rockConfig.Password );
 
+            // shouldn't happen, but just in case the StartDate isn't set, set it to the first day of the current year
+            DateTime firstDayOfYear = new DateTime( DateTime.Now.Year, 1, 1 );
+
+            // note: if a specific person is specified, get them even if they don't have an address. 
             _contributionStatementOptionsREST = new Rock.Net.RestParameters.ContributionStatementOptions
             {
-                StartDate = Options.StartDate,
+                StartDate = Options.StartDate ?? firstDayOfYear,
                 EndDate = Options.EndDate,
                 AccountIds = Options.AccountIds,
+                IncludeIndividualsWithNoAddress = Options.PersonId.HasValue || Options.IncludeIndividualsWithNoAddress,
                 PersonId = Options.PersonId,
                 OrderByPostalCode = true
             };
@@ -202,8 +230,8 @@ namespace Rock.Apps.StatementGenerator
             foreach ( var imageNode in imageNodes.OfType<XmlNode>() )
             {
                 string imagePath = imageNode.Attributes["path"].Value;
-                string imageId =imageNode.Attributes["id"].Value;
-                if (imageId.Equals("imgLogo" ) &&  imagePath.Equals( RockConfig.DefaultLogoFile, StringComparison.OrdinalIgnoreCase )  )
+                string imageId = imageNode.Attributes["id"].Value;
+                if ( imageId.Equals( "imgLogo" ) && imagePath.Equals( RockConfig.DefaultLogoFile, StringComparison.OrdinalIgnoreCase ) )
                 {
                     Image imgLogo = report.GetReportElementById( "imgLogo" ) as Image;
                     if ( imgLogo != null )
@@ -215,14 +243,13 @@ namespace Rock.Apps.StatementGenerator
                                 imgLogo.ImageData = ceTe.DynamicPDF.Imaging.ImageData.GetImage( rockConfig.LogoFile );
                             }
                         }
-                        catch (Exception ex)
+                        catch ( Exception ex )
                         {
-                            throw new Exception( "Error loading Logo Image: " + rockConfig.LogoFile + "\n\n" + ex.Message);
+                            throw new Exception( "Error loading Logo Image: " + rockConfig.LogoFile + "\n\n" + ex.Message );
                         }
                     }
                 }
             }
-
 
             Query query = report.GetQueryById( "OuterQuery" );
             if ( query == null )
@@ -251,9 +278,36 @@ namespace Rock.Apps.StatementGenerator
                 _accountSummaryQuery.OpeningRecordSet += delegate( object s, OpeningRecordSetEventArgs ee )
                 {
                     // create a recordset for the _accountSummaryQuery which is the GroupBy summary of AccountName, Amount
-                    var summaryTable = _transactionsDataTable.AsEnumerable().GroupBy( g => g["AccountId"] ).Select( a => new
+                    /*
+                     The structure of _transactionsDataTable is
+                     
+                     DateTime TransactionDateTime
+                     string CurrencyTypeValueName
+                     string Summary (main transaction summary)
+                     DataTable Details {
+                          int AccountId
+                          string AccountName
+                          string Summary (detail summary)
+                          decimal Amount
+                     }
+                     */
+
+                    var detailsData = new DataTable();
+                    detailsData.Columns.Add( "AccountId", typeof( int ) );
+                    detailsData.Columns.Add( "AccountName" );
+                    detailsData.Columns.Add( "Amount", typeof( decimal ) );
+
+                    foreach ( var details in _transactionsDataTable.AsEnumerable().Select( a => ( a["Details"] as DataTable ) ) )
                     {
-                        AccountName = a.Max(x => x["AccountName"].ToString()),
+                        foreach ( var row in details.AsEnumerable() )
+                        {
+                            detailsData.Rows.Add( row["AccountId"], row["AccountName"], row["Amount"] );
+                        }
+                    }
+
+                    var summaryTable = detailsData.AsEnumerable().GroupBy( g => g["AccountId"] ).Select( a => new
+                    {
+                        AccountName = a.Max( x => x["AccountName"].ToString() ),
                         Amount = a.Sum( x => decimal.Parse( x["Amount"].ToString() ) )
                     } ).OrderBy( o => o.AccountName );
 
@@ -325,6 +379,16 @@ namespace Rock.Apps.StatementGenerator
             }
 
             innerReport.Query.OpeningRecordSet += innerReport_OpeningRecordSet;
+
+            // Transaction Detail (Accounts Breakout)
+            SubReport transactionDetailReport = e.LayoutWriter.DocumentLayout.GetReportElementById( "TransactionDetailReport" ) as SubReport;
+
+            if ( transactionDetailReport == null )
+            {
+                throw new MissingReportElementException( "Report requires a QueryElement named 'TransactionDetailReport'" );
+            }
+
+            transactionDetailReport.Query.OpeningRecordSet += transactionDetailReport_OpeningRecordSet;
         }
 
         /// <summary>
@@ -370,6 +434,17 @@ namespace Rock.Apps.StatementGenerator
             _transactionsDataTable = transactionsDataSet.Tables[0];
 
             e.RecordSet = new DataTableRecordSet( _transactionsDataTable );
+        }
+
+        /// <summary>
+        /// Handles the OpeningRecordSet event of the transactionDetailReport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="OpeningRecordSetEventArgs"/> instance containing the event data.</param>
+        public void transactionDetailReport_OpeningRecordSet( object sender, OpeningRecordSetEventArgs e )
+        {
+            var detailsDataSet = e.LayoutWriter.RecordSets.Current["Details"] as DataTable;
+            e.RecordSet = new DataTableRecordSet( detailsDataSet );
         }
 
         /// <summary>

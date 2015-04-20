@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Core
                             _parentCategoryId = parentCategoryId;
                         }
 
-                        gCategories.DataKeyNames = new string[] { "id" };
+                        gCategories.DataKeyNames = new string[] { "Id" };
                         gCategories.Actions.ShowAdd = true;
 
                         gCategories.Actions.AddClick += gCategories_Add;
@@ -197,13 +197,13 @@ namespace RockWeb.Blocks.Core
         protected void gCategories_Select( object sender, RowEventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "CategoryId", gCategories.DataKeys[e.RowIndex]["id"].ToString() );
+            parms.Add( "CategoryId", e.RowKeyId.ToString() );
             Response.Redirect( new PageReference( CurrentPageReference.PageId, 0, parms ).BuildUrl(), false );
         }
 
         protected void gCategories_Edit( object sender, RowEventArgs e )
         {
-            ShowEdit( (int)gCategories.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( e.RowKeyId );
         }
         
         /// <summary>
@@ -216,7 +216,7 @@ namespace RockWeb.Blocks.Core
             var rockContext = new RockContext();
             var service = new CategoryService( rockContext );
 
-            var category = service.Get( (int)gCategories.DataKeys[e.RowIndex]["id"] );
+            var category = service.Get( e.RowKeyId );
             if ( category != null )
             {
                 string errorMessage = string.Empty;
@@ -258,10 +258,10 @@ namespace RockWeb.Blocks.Core
 
         void gCategories_GridReorder( object sender, GridReorderEventArgs e )
         {
-            var categories = GetCategories();
+            var rockContext = new RockContext();
+            var categories = GetCategories( rockContext );
             if ( categories != null )
             {
-                var rockContext = new RockContext();
                 new CategoryService( rockContext ).Reorder( categories.ToList(), e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
             }
@@ -358,19 +358,22 @@ namespace RockWeb.Blocks.Core
                     ChildCount = c.ChildCategories.Count()
                 } ).ToList();
 
+            gCategories.EntityTypeId = EntityTypeCache.Read<Rock.Model.Category>().Id;
             gCategories.DataBind();
         }
 
-        private IQueryable<Category> GetCategories()
+        private IQueryable<Category> GetCategories( RockContext rockContext = null )
         {
-            return GetUnorderedCategories()
+            return GetUnorderedCategories( rockContext )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name );
         }
 
-        private IQueryable<Category> GetUnorderedCategories()
+        private IQueryable<Category> GetUnorderedCategories( RockContext rockContext = null )
         {
-            var queryable = new CategoryService( new RockContext() ).Queryable().Where( c => c.EntityTypeId == _entityTypeId );
+            rockContext = rockContext ?? new RockContext();
+
+            var queryable = new CategoryService( rockContext ).Queryable().Where( c => c.EntityTypeId == _entityTypeId );
             if (_parentCategoryId.HasValue)
             {
                 queryable = queryable.Where( c => c.ParentCategoryId == _parentCategoryId );

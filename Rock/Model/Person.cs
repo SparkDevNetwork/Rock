@@ -32,13 +32,12 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a person or a business in Rock.  
+    /// Represents a person or a business in Rock.
     /// </summary>
     [Table( "Person" )]
     [DataContract]
     public partial class Person : Model<Person>
     {
-
         #region Constants
 
         /// <summary>
@@ -135,6 +134,7 @@ namespace Rock.Model
                 }
             }
         }
+
         private bool _isDeceased = false;
 
         /// <summary>
@@ -276,15 +276,13 @@ namespace Rock.Model
         public DateTime? AnniversaryDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the date of the Person's projected or actual high school graduation date. The month and date will match the "Grade Transition Date" global attribute. This value is used to determine what grade a student is in. 
+        /// Gets or sets the date of the Person's projected or actual high school graduation year. This value is used to determine what grade a student is in.
         /// </summary>
         /// <value>
-        /// A <see cref="System.DateTime"/> representing the Person's projected or actual high school graduation date.  This value will be null if a Graduation Date is an adult, not known, not applicable or the 
-        /// Person has not entered school.
+        /// The Person's projected or actual high school graduation year
         /// </value>
         [DataMember]
-        [Column( TypeName = "Date" )]
-        public DateTime? GraduationDate { get; set; }
+        public int? GraduationYear { get; set; }
 
         /// <summary>
         /// Gets or sets the giving group id.  If an individual would like their giving to be grouped with the rest of their family,
@@ -420,6 +418,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [NotMapped]
+        [RockClientInclude( "The Primary PersonAliasId of the Person" )]
         public virtual int? PrimaryAliasId
         {
             get
@@ -436,10 +435,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the Full Name of the Person using the Title FirstName LastName format.
+        /// Gets the Full Name of the Person using the NickName LastName Suffix format.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName format.
+        /// A <see cref="System.String"/> representing the Full Name of a Person using the NickName LastName Suffix format.
         /// </value>
         [DataMember]
         [NotMapped]
@@ -451,11 +450,21 @@ namespace Rock.Model
 
                 fullName.AppendFormat( "{0} {1}", NickName, LastName );
 
-                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Value ) )
-                    fullName.AppendFormat( " {0}", SuffixValue.Value );
+                // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so 
+                // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
+                if ( SuffixValueId.HasValue )
+                {
+                    var suffix = DefinedValueCache.Read( SuffixValueId.Value );
+                    if ( suffix != null )
+                    {
+                        fullName.AppendFormat( " {0}", suffix.Value );
+                    }
+                }
 
                 return fullName.ToString();
+
             }
+
             private set { }
         }
 
@@ -495,14 +504,21 @@ namespace Rock.Model
 
                 fullName.Append( LastName );
 
-                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Value ) )
-                    fullName.AppendFormat( " {0}", SuffixValue.Value );
+                // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so 
+                // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
+                if ( SuffixValueId.HasValue )
+                {
+                    var suffix = DefinedValueCache.Read( SuffixValueId.Value );
+                    if ( suffix != null )
+                    {
+                        fullName.AppendFormat( " {0}", suffix.Value );
+                    }
+                }
 
                 fullName.AppendFormat( ", {0}", NickName );
                 return fullName.ToString();
             }
         }
-
 
         /// <summary>
         /// Gets the Full Name of the Person using the Title FirstName LastName format.
@@ -530,7 +546,6 @@ namespace Rock.Model
                 return fullName.ToString();
             }
         }
-
 
         /// <summary>
         /// Gets the full name of the Person using the LastName, FirstName format.
@@ -653,10 +668,11 @@ namespace Rock.Model
             get { return _users; }
             set { _users = value; }
         }
+
         private ICollection<UserLogin> _users;
 
         /// <summary>
-        /// Gets or sets a collection of <see cref="Rock.Model.PhoneNumber">PhoneNumbers</see> 
+        /// Gets or sets a collection of <see cref="Rock.Model.PhoneNumber">PhoneNumbers</see>
         /// </summary>
         /// <value>
         /// A collection of <see cref="Rock.Model.PhoneNumber"/> entities representing the phone numbers that are associated with this Person.
@@ -667,6 +683,7 @@ namespace Rock.Model
             get { return _phoneNumbers; }
             set { _phoneNumbers = value; }
         }
+
         private ICollection<PhoneNumber> _phoneNumbers;
 
         /// <summary>
@@ -681,6 +698,7 @@ namespace Rock.Model
             get { return _members; }
             set { _members = value; }
         }
+
         private ICollection<GroupMember> _members;
 
         /// <summary>
@@ -694,6 +712,7 @@ namespace Rock.Model
             get { return _aliases; }
             set { _aliases = value; }
         }
+
         private ICollection<PersonAlias> _aliases;
 
         /// <summary>
@@ -709,7 +728,7 @@ namespace Rock.Model
         /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the Person's connection status
         /// </summary>
         /// <value>
-        /// A <see cref="DefinedValue"/> object representing the Person's connection status. 
+        /// A <see cref="DefinedValue"/> object representing the Person's connection status.
         /// </value>
         [DataMember]
         public virtual DefinedValue ConnectionStatusValue { get; set; }
@@ -778,7 +797,7 @@ namespace Rock.Model
         public virtual BinaryFile Photo { get; set; }
 
         /// <summary>
-        /// Gets or sets the giving group.  The 
+        /// Gets or sets the giving group.
         /// </summary>
         /// <value>
         /// The giving group.
@@ -786,17 +805,19 @@ namespace Rock.Model
         public virtual Group GivingGroup { get; set; }
 
         /// <summary>
-        /// Gets or sets the Person's birth date.
+        /// Gets the Person's birth date. Note: Use SetBirthDate to set the Birthdate
         /// </summary>
         /// <value>
         /// A <see cref="System.DateTime"/> representing the Person's birthdate.  If no birthdate is available, null is returned. If the year is not available then the birthdate is returned with the DateTime.MinValue.Year.
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [Column( TypeName = "Date" )]
         public DateTime? BirthDate
         {
             get
             {
+                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database
                 if ( BirthDay == null || BirthMonth == null )
                 {
                     return null;
@@ -807,27 +828,36 @@ namespace Rock.Model
                 }
             }
 
-            set
+            private set
             {
-                if ( value.HasValue )
+                // don't do anthing here since EF uses this for loading the Birthdate From the database. Use SetBirthDate to set the birthdate
+            }
+        }
+
+        /// <summary>
+        /// Sets the birth date, which will set the BirthMonth, BirthDay, and BirthYear values
+        /// </summary>
+        /// <param name="value">The value.</param>
+        public void SetBirthDate( DateTime? value )
+        {
+            if ( value.HasValue )
+            {
+                BirthMonth = value.Value.Month;
+                BirthDay = value.Value.Day;
+                if ( value.Value.Year != DateTime.MinValue.Year )
                 {
-                    BirthMonth = value.Value.Month;
-                    BirthDay = value.Value.Day;
-                    if ( value.Value.Year != DateTime.MinValue.Year )
-                    {
-                        BirthYear = value.Value.Year;
-                    }
-                    else
-                    {
-                        BirthYear = null;
-                    }
+                    BirthYear = value.Value.Year;
                 }
                 else
                 {
-                    BirthMonth = null;
-                    BirthDay = null;
                     BirthYear = null;
                 }
+            }
+            else
+            {
+                BirthMonth = null;
+                BirthDay = null;
+                BirthYear = null;
             }
         }
 
@@ -906,7 +936,7 @@ namespace Rock.Model
         /// Gets the Person's precise age (includes the fraction of the year).
         /// </summary>
         /// <value>
-        /// A <see cref="System.Double"/> representing the Person's age (including fraction of year) 
+        /// A <see cref="System.Double"/> representing the Person's age (including fraction of year)
         /// </value>
         [NotMapped]
         public virtual double? AgePrecise
@@ -936,52 +966,80 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the grade level of the person based on their high school graduation date.  Grade levels are -1 for prekindergarten, 0 for kindergarten, 1 for first grade, etc. or null if they have no graduation date or if no 'GradeTransitionDate' is configured.
+        /// Gets or sets the grade offset, which is the number of years until their graduation date.  This is used to determine which Grade (Defined Value) they are in
         /// </summary>
         /// <value>
-        /// The Person's grade level based on their Graduation Date. If no graduation date is provided or the GradeTransitionDate is not provided, returns null.
+        /// The grade offset.
         /// </value>
         [NotMapped]
         [DataMember]
-        public virtual int? Grade
+        public virtual int? GradeOffset
         {
             get
             {
-                if ( !GraduationDate.HasValue )
+                if ( !GraduationYear.HasValue )
                 {
                     return null;
                 }
                 else
                 {
-                    // Use the GradeTransitionDate (aka grade promotion date) to figure out what grade their in
-                    DateTime transitionDate;
+                    // Use the GradeTransitionDate (aka grade promotion date) to figure out what grade (gradeOffset) they're in
                     var globalAttributes = GlobalAttributesCache.Read();
-                    if ( !DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
+                    var transitionDate = globalAttributes.GetValue( "GradeTransitionDate" ).AsDateTime();
+                    if ( transitionDate.HasValue )
+                    {
+                        // if the next graduation mm/dd won't happen until next year, refactor the graduationyear to the prior year
+                        // Example, if Transition Date is 6/1/YYYY and today is 6/1/YYYY or later, refactor the graduationyear to the prior year
+                        // in other words, we are treating the grade transition date as the last day of the "school" year
+                        int graduationYearRefactor = ( RockDateTime.Now < transitionDate.Value ) ? this.GraduationYear.Value : ( this.GraduationYear.Value - 1 );
+
+                        int offsetYears = graduationYearRefactor - RockDateTime.Now.Year;
+                        return offsetYears;
+                    }
+                    else
                     {
                         return null;
                     }
-
-                    int gradeMaxFactorReactor = ( RockDateTime.Now < transitionDate ) ? 12 : 13;
-                    return gradeMaxFactorReactor - ( GraduationDate.Value.Year - RockDateTime.Now.Year );
                 }
             }
 
             set
             {
-                if ( value.HasValue && value.Value <= 12 )
+                if ( value.HasValue && value >= 0 )
                 {
-                    DateTime transitionDate;
                     var globalAttributes = GlobalAttributesCache.Read();
-                    if ( DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
+                    var transitionDate = globalAttributes.GetValue( "GradeTransitionDate" ).AsDateTime();
+                    if ( transitionDate.HasValue )
                     {
-                        int gradeFactorReactor = ( RockDateTime.Now < transitionDate ) ? 12 : 13;
-                        GraduationDate = transitionDate.AddYears( gradeFactorReactor - value.Value );
+                        int gradeOffsetAdjustment = ( RockDateTime.Now < transitionDate.Value ) ? value.Value : value.Value + 1;
+                        GraduationYear = transitionDate.Value.Year + gradeOffsetAdjustment;
                     }
                 }
                 else
                 {
-                    GraduationDate = null;
+                    GraduationYear = null;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets the has graduated.
+        /// </summary>
+        /// <value>
+        /// The has graduated.
+        /// </value>
+        [NotMapped]
+        [DataMember]
+        public virtual bool? HasGraduated
+        {
+            get
+            {
+                if ( GradeOffset.HasValue )
+                {
+                    return GradeOffset < 0;
+                }
+
+                return null;
             }
         }
 
@@ -997,25 +1055,19 @@ namespace Rock.Model
         {
             get
             {
-                int? grade = Grade;
-                if ( grade.HasValue )
+                int? gradeOffset = GradeOffset;
+
+                if ( gradeOffset.HasValue && gradeOffset >= 0 )
                 {
-                    switch ( grade.Value )
+                    var schoolGrades = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+                    if ( schoolGrades != null )
                     {
-                        case 0: { return "Kindergarten"; }
-                        case 1: { return "1st Grade"; }
-                        case 2: { return "2nd Grade"; }
-                        case 3: { return "3rd Grade"; }
-                        case 4:
-                        case 5:
-                        case 6:
-                        case 7:
-                        case 8:
-                        case 9:
-                        case 10:
-                        case 11:
-                        case 12: { return string.Format( "{0}th Grade", grade.Value ); }
-                        default: { return string.Empty; }
+                        var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
+                        var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
+                        if ( schoolGradeValue != null )
+                        {
+                            return schoolGradeValue.Description;
+                        }
                     }
                 }
 
@@ -1070,7 +1122,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets an anchor tag to send person a communication 
+        /// Gets an anchor tag to send person a communication
         /// </summary>
         /// <value>
         /// The email tag.
@@ -1116,7 +1168,6 @@ namespace Rock.Model
             return string.Empty;
         }
 
-
         /// <summary>
         /// Creates a <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of the Person object
         /// </summary>
@@ -1126,6 +1177,7 @@ namespace Rock.Model
             var dictionary = base.ToDictionary();
             dictionary.Add( "Age", AgePrecise );
             dictionary.Add( "DaysToBirthday", DaysToBirthday );
+            dictionary.AddOrIgnore( "FullName", FullName );
             return dictionary;
         }
 
@@ -1166,7 +1218,6 @@ namespace Rock.Model
 
             var transaction = new Rock.Transactions.SaveMetaphoneTransaction( this );
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-
         }
 
         /// <summary>
@@ -1185,9 +1236,10 @@ namespace Rock.Model
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public override bool IsAuthorized( string action, Person person, RockContext rockContext = null )
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsAuthorized( string action, Person person )
         {
             if ( person.Guid.Equals( this.Guid ) )
             {
@@ -1195,7 +1247,7 @@ namespace Rock.Model
             }
             else
             {
-                return base.IsAuthorized( action, person, rockContext );
+                return base.IsAuthorized( action, person );
             }
         }
 
@@ -1270,7 +1322,6 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPhotoUrl( int? photoId, int? age, Gender gender, Guid? RecordTypeValueGuid, int? maxWidth = null, int? maxHeight = null )
         {
-
             string virtualPath = String.Empty;
             if ( photoId.HasValue )
             {
@@ -1473,7 +1524,6 @@ namespace Rock.Model
                     }
                 }
 
-
                 if ( maxWidth.HasValue || maxHeight.HasValue )
                 {
                     styleString = string.Format( " style='{0}{1}'",
@@ -1487,62 +1537,74 @@ namespace Rock.Model
 
         /// <summary>
         /// Adds the related person to the selected person's known relationships with a role of 'Can check in' which
-        /// is typically configured to allow check-in.  If an inverse relationship is configured for 'Can check in' 
+        /// is typically configured to allow check-in.  If an inverse relationship is configured for 'Can check in'
         /// (i.e. 'Allow check in by'), that relationship will also be created.
         /// </summary>
-        /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the Person.</param>
-        /// <param name="relatedPersonId">A <see cref="System.Int32"/> representing the Id of the related Person.</param>
-        /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias"/> representing the Person who is logged in.</param>
-        public static void CreateCheckinRelationship( int personId, int relatedPersonId, PersonAlias currentPersonAlias )
+        /// <param name="personId">A <see cref="System.Int32" /> representing the Id of the Person.</param>
+        /// <param name="relatedPersonId">A <see cref="System.Int32" /> representing the Id of the related Person.</param>
+        /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias" /> representing the Person who is logged in.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void CreateCheckinRelationship( int personId, int relatedPersonId, PersonAlias currentPersonAlias, RockContext rockContext = null )
         {
-            var rockContext = new RockContext();
+            rockContext = rockContext ?? new RockContext();
 
-            var groupMemberService = new GroupMemberService( rockContext );
-            var knownRelationshipGroup = groupMemberService.Queryable()
-                .Where( m =>
-                    m.PersonId == personId &&
-                    m.GroupRole.Guid.Equals( new Guid( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
-                .Select( m => m.Group )
-                .FirstOrDefault();
+            var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
+            var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) );
+            var canCheckInRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) );
 
-            if ( knownRelationshipGroup != null )
+            if ( ownerRole != null && canCheckInRole != null )
             {
-                int? canCheckInRoleId = new GroupTypeRoleService( rockContext ).Queryable()
-                    .Where( r =>
-                        r.Guid.Equals( new Guid( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) )
-                    .Select( r => r.Id )
+                var groupMemberService = new GroupMemberService( rockContext );
+                var knownRelationshipGroup = groupMemberService.Queryable()
+                    .Where( m =>
+                        m.PersonId == personId &&
+                        m.GroupRole.Guid.Equals( ownerRole.Guid ) )
+                    .Select( m => m.Group )
                     .FirstOrDefault();
-                if ( canCheckInRoleId.HasValue )
+
+                // Create known relationship group if doesn't exist
+                if ( knownRelationshipGroup == null )
                 {
-                    var canCheckInMember = groupMemberService.Queryable()
-                        .FirstOrDefault( m =>
-                            m.GroupId == knownRelationshipGroup.Id &&
-                            m.PersonId == relatedPersonId &&
-                            m.GroupRoleId == canCheckInRoleId.Value );
+                    var groupMember = new GroupMember();
+                    groupMember.PersonId = personId;
+                    groupMember.GroupRoleId = ownerRole.Id;
 
-                    if ( canCheckInMember == null )
-                    {
-                        canCheckInMember = new GroupMember();
-                        canCheckInMember.GroupId = knownRelationshipGroup.Id;
-                        canCheckInMember.PersonId = relatedPersonId;
-                        canCheckInMember.GroupRoleId = canCheckInRoleId.Value;
-                        rockContext.SaveChanges();
-                    }
+                    knownRelationshipGroup = new Group();
+                    knownRelationshipGroup.Name = knownRelationshipGroupType.Name;
+                    knownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
+                    knownRelationshipGroup.Members.Add( groupMember );
 
-                    var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true, currentPersonAlias );
-                    if ( inverseGroupMember != null )
-                    {
-                        rockContext.SaveChanges();
-                    }
+                    new GroupService( rockContext ).Add( knownRelationshipGroup );
+                    rockContext.SaveChanges();
+                }
 
+                // Add relationships
+                var canCheckInMember = groupMemberService.Queryable()
+                    .FirstOrDefault( m =>
+                        m.GroupId == knownRelationshipGroup.Id &&
+                        m.PersonId == relatedPersonId &&
+                        m.GroupRoleId == canCheckInRole.Id );
+
+                if ( canCheckInMember == null )
+                {
+                    canCheckInMember = new GroupMember();
+                    canCheckInMember.GroupId = knownRelationshipGroup.Id;
+                    canCheckInMember.PersonId = relatedPersonId;
+                    canCheckInMember.GroupRoleId = canCheckInRole.Id;
+                    groupMemberService.Add( canCheckInMember );
+                    rockContext.SaveChanges();
+                }
+
+                var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true, currentPersonAlias );
+                if ( inverseGroupMember != null )
+                {
+                    groupMemberService.Add( inverseGroupMember );
                     rockContext.SaveChanges();
                 }
             }
-
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -1596,96 +1658,6 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// A person's possible grade levels
-    /// </summary>
-    public enum GradeLevel
-    {
-        /// <summary>
-        /// Kindergarten
-        /// </summary>
-        [Description( "Pre-K" )]
-        PreK = -1,
-
-        /// <summary>
-        /// Kindergarten
-        /// </summary>
-        [Description( "Kindergarten" )]
-        Kindergarten = 0,
-
-        /// <summary>
-        /// 1st Grade
-        /// </summary>
-        [Description( "1st Grade" )]
-        First = 1,
-
-        /// <summary>
-        /// 2nd Grade
-        /// </summary>
-        [Description( "2nd Grade" )]
-        Second = 2,
-
-        /// <summary>
-        /// 3rd Grade
-        /// </summary>
-        [Description( "3rd Grade" )]
-        Third = 3,
-
-        /// <summary>
-        /// 4th Grade
-        /// </summary>
-        [Description( "4th Grade" )]
-        Fourth = 4,
-
-        /// <summary>
-        /// 5th Grade
-        /// </summary>
-        [Description( "5th Grade" )]
-        Fifth = 5,
-
-        /// <summary>
-        /// 6th Grade
-        /// </summary>
-        [Description( "6th Grade" )]
-        Sixth = 6,
-
-        /// <summary>
-        /// 7th Grade
-        /// </summary>
-        [Description( "7th Grade" )]
-        Seventh = 7,
-
-        /// <summary>
-        /// 8th Grade
-        /// </summary>
-        [Description( "8th Grade" )]
-        Eighth = 8,
-
-        /// <summary>
-        /// 9th Grade
-        /// </summary>
-        [Description( "9th Grade" )]
-        Ninth = 9,
-
-        /// <summary>
-        /// 10th Grade
-        /// </summary>
-        [Description( "10th Grade" )]
-        Tenth = 10,
-
-        /// <summary>
-        /// 11th Grade
-        /// </summary>
-        [Description( "11th Grade" )]
-        Eleventh = 11,
-
-        /// <summary>
-        /// 12th Grade
-        /// </summary>
-        [Description( "12th Grade" )]
-        Twelfth = 12
-    }
-
-    /// <summary>
     /// The person's email preference
     /// </summary>
     public enum EmailPreference
@@ -1716,10 +1688,37 @@ namespace Rock.Model
         /// Gets the families.
         /// </summary>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static IQueryable<Group> GetFamilies( this Person person )
+        public static IQueryable<Group> GetFamilies( this Person person, RockContext rockContext = null )
         {
-            return new PersonService( new RockContext() ).GetFamilies( person != null ? person.Id : 0 );
+            rockContext = rockContext ?? new RockContext();
+            return new PersonService( rockContext ).GetFamilies( person != null ? person.Id : 0 );
+        }
+
+        /// <summary>
+        /// Gets the home location.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public static Location GetHomeLocation( this Person person )
+        {
+            Guid homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
+            foreach ( var family in person.GetFamilies() )
+            {
+                var loc = family.GroupLocations
+                    .Where( l =>
+                        l.GroupLocationTypeValue.Guid.Equals( homeAddressGuid ) &&
+                        l.IsMappedLocation )
+                    .Select( l => l.Location )
+                    .FirstOrDefault();
+                if ( loc != null )
+                {
+                    return loc;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -1745,9 +1744,7 @@ namespace Rock.Model
         {
             return new PersonService( rockContext ?? new RockContext() ).GetSpouse( person );
         }
-
     }
 
     #endregion
-
 }

@@ -54,19 +54,41 @@ namespace Rock.Model
  
             if ( new Service<Page>( Context ).Queryable().Any( a => a.ParentPageId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Page.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} contains one or more child {1}.", Page.FriendlyTypeName, Page.FriendlyTypeName.Pluralize().ToLower() );
                 return false;
             }  
             
             // ignoring PageView,PageId 
-            
-            // ignoring Site,DefaultPageId 
-            
-            // ignoring Site,LoginPageId 
-            
-            // ignoring Site,PageNotFoundPageId 
-            
-            // ignoring Site,RegistrationPageId 
+ 
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.CommunicationPageId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.DefaultPageId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.LoginPageId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.PageNotFoundPageId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.RegistrationPageId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -103,36 +125,36 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Page target, Page source )
         {
-            target.InternalName = source.InternalName;
-            target.PageTitle = source.PageTitle;
-            target.BrowserTitle = source.BrowserTitle;
-            target.ParentPageId = source.ParentPageId;
-            target.IsSystem = source.IsSystem;
-            target.LayoutId = source.LayoutId;
-            target.RequiresEncryption = source.RequiresEncryption;
-            target.EnableViewState = source.EnableViewState;
-            target.PageDisplayTitle = source.PageDisplayTitle;
-            target.PageDisplayBreadCrumb = source.PageDisplayBreadCrumb;
-            target.PageDisplayIcon = source.PageDisplayIcon;
-            target.PageDisplayDescription = source.PageDisplayDescription;
-            target.DisplayInNavWhen = source.DisplayInNavWhen;
-            target.MenuDisplayDescription = source.MenuDisplayDescription;
-            target.MenuDisplayIcon = source.MenuDisplayIcon;
-            target.MenuDisplayChildPages = source.MenuDisplayChildPages;
-            target.BreadCrumbDisplayName = source.BreadCrumbDisplayName;
+            target.Id = source.Id;
             target.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
-            target.Order = source.Order;
-            target.OutputCacheDuration = source.OutputCacheDuration;
+            target.BreadCrumbDisplayName = source.BreadCrumbDisplayName;
+            target.BrowserTitle = source.BrowserTitle;
             target.Description = source.Description;
-            target.KeyWords = source.KeyWords;
+            target.DisplayInNavWhen = source.DisplayInNavWhen;
+            target.EnableViewState = source.EnableViewState;
             target.HeaderContent = source.HeaderContent;
             target.IconCssClass = source.IconCssClass;
             target.IncludeAdminFooter = source.IncludeAdminFooter;
+            target.InternalName = source.InternalName;
+            target.IsSystem = source.IsSystem;
+            target.KeyWords = source.KeyWords;
+            target.LayoutId = source.LayoutId;
+            target.MenuDisplayChildPages = source.MenuDisplayChildPages;
+            target.MenuDisplayDescription = source.MenuDisplayDescription;
+            target.MenuDisplayIcon = source.MenuDisplayIcon;
+            target.Order = source.Order;
+            target.OutputCacheDuration = source.OutputCacheDuration;
+            target.PageDisplayBreadCrumb = source.PageDisplayBreadCrumb;
+            target.PageDisplayDescription = source.PageDisplayDescription;
+            target.PageDisplayIcon = source.PageDisplayIcon;
+            target.PageDisplayTitle = source.PageDisplayTitle;
+            target.PageTitle = source.PageTitle;
+            target.ParentPageId = source.ParentPageId;
+            target.RequiresEncryption = source.RequiresEncryption;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

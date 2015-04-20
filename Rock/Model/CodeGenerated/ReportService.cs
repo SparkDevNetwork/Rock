@@ -87,18 +87,18 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Report target, Report source )
         {
+            target.Id = source.Id;
+            target.CategoryId = source.CategoryId;
+            target.DataViewId = source.DataViewId;
+            target.Description = source.Description;
+            target.EntityTypeId = source.EntityTypeId;
+            target.FetchTop = source.FetchTop;
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;
-            target.Description = source.Description;
-            target.CategoryId = source.CategoryId;
-            target.EntityTypeId = source.EntityTypeId;
-            target.DataViewId = source.DataViewId;
-            target.FetchTop = source.FetchTop;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

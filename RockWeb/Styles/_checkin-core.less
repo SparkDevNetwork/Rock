@@ -131,6 +131,11 @@ body {
     font-weight: @checkin-button-text-weight;
 }
 
+.checkin-start {
+    text-align: center;
+    margin-top: 25%;
+}
+
 // checkin footer 
 
 .checkin-footer
@@ -233,6 +238,8 @@ body {
 
 /* bootbox modal styles */
 .bootbox {
+    z-index: @zindex-popover;
+
     .modal-content {
         background-color: @bg-color;
     }
@@ -348,7 +355,7 @@ input.checkin-phone-entry
 .iScrollVerticalScrollbar, 
 .iScrollLoneScrollbar {
     position: absolute; 
-    z-index: 9999; 
+    z-index: 1; 
     width: 7px; 
     bottom: 2px; 
     top: 2px; 

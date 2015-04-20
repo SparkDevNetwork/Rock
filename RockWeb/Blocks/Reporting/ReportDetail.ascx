@@ -32,7 +32,7 @@
                         <div class="col-md-6">
                             <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" EntityTypeName="Rock.Model.Report" Label="Category" />
                             <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Applies To" Required="true" AutoPostBack="true" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged"/>
-                            <Rock:RockDropDownList ID="ddlDataView" runat="server" Label="Data View" Required="false" />
+                            <Rock:DataViewPicker ID="ddlDataView" runat="server" Label="Data View" Required="false" />
                         </div>
                         <div class="col-md-6">
                             <Rock:KeyValueList ID="kvSortFields" runat="server" Label="Sorting" />
@@ -67,8 +67,8 @@
                     </section>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" Text="Save" AccessKey="s" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" AccessKey="c" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
 
                 </div>
@@ -86,7 +86,7 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                         <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security pull-right" />

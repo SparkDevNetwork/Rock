@@ -24,6 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -179,7 +180,7 @@ namespace RockWeb.Blocks.Finance
             lReceipt.Text = lReceipt.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
 
             // show liquid help for debug
-            if ( GetAttributeValue( "EnableDebug" ).AsBooleanOrNull() ?? false )
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
             {
                 lReceipt.Text += mergeObjects.lavaDebugInfo();
             }
@@ -306,10 +307,15 @@ namespace RockWeb.Blocks.Finance
                     FirstName = tbFirstName.Text,
                     LastName = tbLastName.Text,
                     Email = tbEmail.Text,
+                    EmailPreference = Rock.Model.EmailPreference.EmailAllowed,
                     ConnectionStatusValueId = definedValue.Id,
                 };
 
-                GroupService.SaveNewFamily( rockContext, person, null, false );
+                person.IsSystem = false;
+                person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
+
+                PersonService.SaveNewPerson( person, rockContext, null, false );
             }
 
             return person;

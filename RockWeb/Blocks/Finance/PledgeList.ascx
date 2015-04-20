@@ -18,10 +18,10 @@
                     </Rock:GridFilter>
                     <Rock:Grid ID="gPledges" runat="server" AutoGenerateColumns="False" AllowSorting="True" AllowPaging="True" OnRowSelected="gPledges_Edit">
                         <Columns>
-                            <asp:BoundField DataField="PersonAlias.Person" HeaderText="Person" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName"/>
-                            <asp:BoundField DataField="Account" HeaderText="Account" SortExpression="AccountId"/>
-                            <asp:BoundField DataField="TotalAmount" HeaderText="Total Amount" SortExpression="TotalAmount" DataFormatString="{0:C}"/>
-                            <asp:BoundField DataField="PledgeFrequencyValue" HeaderText="Payment Schedule" SortExpression="PledgeFrequencyValue" />
+                            <Rock:RockBoundField DataField="PersonAlias.Person" HeaderText="Person" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName"/>
+                            <Rock:RockBoundField DataField="Account" HeaderText="Account" SortExpression="AccountId"/>
+                            <Rock:CurrencyField DataField="TotalAmount" HeaderText="Total Amount" SortExpression="TotalAmount" />
+                            <Rock:RockBoundField DataField="PledgeFrequencyValue" HeaderText="Payment Schedule" SortExpression="PledgeFrequencyValue" />
                             <Rock:DateField DataField="StartDate" HeaderText="Starts" SortExpression="StartDate"/>
                             <Rock:DateField DataField="EndDate" HeaderText="Ends" SortExpression="EndDate"/>
                             <Rock:DeleteField OnClick="gPledges_Delete"/>

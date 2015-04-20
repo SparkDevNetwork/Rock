@@ -23,6 +23,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -45,7 +46,7 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            gSchedules.DataKeyNames = new string[] { "id" };
+            gSchedules.DataKeyNames = new string[] { "Id" };
             gSchedules.Actions.ShowAdd = true;
             gSchedules.Actions.AddClick += gSchedules_Add;
             gSchedules.GridRebind += gSchedules_GridRebind;
@@ -158,6 +159,7 @@ namespace RockWeb.Blocks.Administration
                 gSchedules.DataSource = qry.OrderBy( s => s.Name ).ToList();
             }
 
+            gSchedules.EntityTypeId = EntityTypeCache.Read<Schedule>().Id;
             gSchedules.DataBind();
         }
 

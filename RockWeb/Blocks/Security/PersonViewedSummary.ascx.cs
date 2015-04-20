@@ -23,6 +23,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -55,8 +56,8 @@ namespace RockWeb.Blocks.Security
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            gViewed.DataKeyNames = new string[] { "id" };
-            gViewedBy.DataKeyNames = new string[] { "id" };
+            gViewed.DataKeyNames = new string[] { "Id" };
+            gViewedBy.DataKeyNames = new string[] { "Id" };
             var person = ContextEntity<Person>();
             if ( person != null )
             {
@@ -189,6 +190,7 @@ namespace RockWeb.Blocks.Security
                         qry = qry.OrderByDescending( q => q.LastViewedDate );
                     }
 
+                    gViewed.EntityTypeId = EntityTypeCache.Read<PersonViewed>().Id;
                     gViewed.DataSource = qry.ToList();
                     gViewed.DataBind();
                 }
@@ -236,6 +238,7 @@ namespace RockWeb.Blocks.Security
                         qry = qry.OrderByDescending( q => q.LastViewedDate );
                     }
 
+                    gViewedBy.EntityTypeId = EntityTypeCache.Read<Person>().Id;
                     gViewedBy.DataSource = qry.ToList();
                     gViewedBy.DataBind();
                 }

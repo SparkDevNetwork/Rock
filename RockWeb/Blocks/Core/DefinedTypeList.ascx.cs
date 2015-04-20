@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Core
             tFilter.ApplyFilterClick += tFilter_ApplyFilterClick;
             tFilter.DisplayFilterValue += tFilter_DisplayFilterValue;
 
-            gDefinedType.DataKeyNames = new string[] { "id" };
+            gDefinedType.DataKeyNames = new string[] { "Id" };
             gDefinedType.Actions.ShowAdd = true;
             gDefinedType.Actions.AddClick += gDefinedType_Add;
             gDefinedType.GridRebind += gDefinedType_GridRebind;

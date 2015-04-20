@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.DropDownList"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:RockDropDownList runat=server></{0}:RockDropDownList>" )]
-    public class RockDropDownList : DropDownList, IRockControl
+    public class RockDropDownList : DropDownList, IRockControl, IDisplayRequiredIndicator
     {
         #region IRockControl implementation (NOTE: uses a different Required property than other IRockControl controls)
 
@@ -74,6 +74,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
         /// </summary>
@@ -88,29 +89,27 @@ namespace Rock.Web.UI.Controls
         ]
         public bool Required
         {
-            get { return ViewState["Required"] as bool? ?? false; }
-
-            set 
-            { 
-                var li = this.Items.FindByValue( string.Empty );
-
-                if ( value )
-                {
-                    if ( li != null )
-                    {
-                        this.Items.Remove( li );
-                    }
-                }
-                else
-                {
-                    if ( li == null )
-                    {
-                        this.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-                    }
-                }
-
-                ViewState["Required"] = value; 
+            get
+            {
+                return ViewState["Required"] as bool? ?? false;
             }
+
+            set
+            {
+                ViewState["Required"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show the Required indicator when Required=true
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [display required indicator]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayRequiredIndicator
+        {
+            get { return ViewState["DisplayRequiredIndicator"] as bool? ?? true; }
+            set { ViewState["DisplayRequiredIndicator"] = value; }
         }
 
         /// <summary>
@@ -234,7 +233,7 @@ namespace Rock.Web.UI.Controls
         /// Renders any data validator.
         /// </summary>
         /// <param name="writer">The writer.</param>
-        protected virtual void RenderDataValidator( HtmlTextWriter writer)
+        protected virtual void RenderDataValidator( HtmlTextWriter writer )
         {
         }
 

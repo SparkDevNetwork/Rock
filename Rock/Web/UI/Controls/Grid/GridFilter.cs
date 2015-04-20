@@ -31,7 +31,7 @@ namespace Rock.Web.UI.Controls
     {
         private HiddenField _hfVisible;
         private LinkButton _lbFilter;
-        private Dictionary<string, string> _userPreferences;
+        private List<UserPreference> _userPreferences;
         private bool _isDirty = false;
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
 
             // Get User Values
-            _userPreferences = new Dictionary<string, string>();
+            _userPreferences = new List<UserPreference>();
 
             RockBlock rockBlock = this.RockBlock();
             if ( rockBlock != null )
@@ -52,7 +52,17 @@ namespace Rock.Web.UI.Controls
 
                 foreach ( var userPreference in rockBlock.GetUserPreferences( keyPrefix ) )
                 {
-                    _userPreferences.Add( userPreference.Key.Replace( keyPrefix, string.Empty ), userPreference.Value );
+                    var blockKey = userPreference.Key.Replace( keyPrefix, string.Empty );
+                    var keyName = blockKey.Split( new char[] {'|'}, StringSplitOptions.RemoveEmptyEntries );
+                    if ( blockKey.Contains("|") && keyName.Length == 2 )
+                    {
+                        // only load userPreferences that are stored in the {key}|{name} format
+                        // and make sure there isn't more than one with the same key
+                        if ( !_userPreferences.Any( a => a.Key == keyName[0] ) )
+                        {
+                            _userPreferences.Add( new UserPreference( keyName[0], keyName[1], userPreference.Value ) );
+                        }
+                    }
                 }
             }
         }
@@ -164,7 +174,7 @@ namespace Rock.Web.UI.Controls
                 {
                     foreach ( var userPreference in nonEmptyValues )
                     {
-                        DisplayFilterValueArgs args = new DisplayFilterValueArgs( userPreference.Key, userPreference.Value );
+                        DisplayFilterValueArgs args = new DisplayFilterValueArgs( userPreference );
                         if ( DisplayFilterValue != null )
                         {
                             DisplayFilterValue( this, args );
@@ -174,7 +184,7 @@ namespace Rock.Web.UI.Controls
                         {
 
                             filtersHtml.AppendLine( "<div>" );
-                            filtersHtml.AppendLine( string.Format( "<label>{0}:</label> {1}", args.Key, args.Value ) );
+                            filtersHtml.AppendLine( string.Format( "<label>{0}:</label> {1}", args.Name, args.Value ) );
                             filtersHtml.AppendLine( "</div>" );
                         }
                     }
@@ -281,11 +291,32 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public string GetUserPreference( string key )
         {
-            if ( _userPreferences.ContainsKey( key ) )
+            return _userPreferences.Where( p => p.Key == key ).Select( p => p.Value ).FirstOrDefault() ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Adds or updates an item in the User Preferences dictionary
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
+        public void SaveUserPreference( string key, string name, string value )
+        {
+            var userPreference = _userPreferences.FirstOrDefault( p => p.Key == key );
+            if ( userPreference != null  )
             {
-                return _userPreferences[key];
+                if ( userPreference.Name != name || userPreference.Value != value )
+                {
+                    _isDirty = true;
+                    userPreference.Name = name;
+                    userPreference.Value = value;
+                }
             }
-            return string.Empty;
+            else
+            {
+                _isDirty = true;
+                _userPreferences.Add( new UserPreference( key, name, value ) );
+            }
         }
 
         /// <summary>
@@ -295,19 +326,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="value">The value.</param>
         public void SaveUserPreference( string key, string value )
         {
-            if ( _userPreferences.ContainsKey( key ) )
-            {
-                if ( _userPreferences[key] != value )
-                {
-                    _isDirty = true;
-                    _userPreferences[key] = value;
-                }
-            }
-            else
-            {
-                _isDirty = true;
-                _userPreferences.Add( key, value );
-            }
+            SaveUserPreference( key, key, value );
         }
 
         private void SaveUserPreferences()
@@ -319,7 +338,7 @@ namespace Rock.Web.UI.Controls
 
                 foreach ( var userPreference in _userPreferences )
                 {
-                    rockBlock.SetUserPreference( keyPrefix + userPreference.Key, userPreference.Value );
+                    rockBlock.SetUserPreference( string.Format( "{0}{1}|{2}", keyPrefix, userPreference.Key, userPreference.Name ), userPreference.Value );
                 }
             }
         }
@@ -346,35 +365,89 @@ namespace Rock.Web.UI.Controls
             /// <value>
             /// The key.
             /// </value>
-            public string Key
-            {
-                get { return _key; }
-                set { _key = value; }
-            }
-            private string _key = string.Empty;
-            
+            public string Key { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
+            public string Name { get; set; }
+
             /// <summary>
             /// Gets or sets the value.
             /// </summary>
             /// <value>
             /// The value.
             /// </value>
-            public string Value
-            {
-                get { return _value; }
-                set { _value = value; }
-            }
-            private string _value = string.Empty;
+            public string Value { get; set; }
 
             /// <summary>
             /// Initializes a new instance of the <see cref="DisplayFilterValueArgs" /> class.
             /// </summary>
             /// <param name="key">The key.</param>
+            /// <param name="name">The name.</param>
             /// <param name="value">The value.</param>
-            public DisplayFilterValueArgs( string key, string value )
+            public DisplayFilterValueArgs( string key, string name, string value )
             {
-                _key = key;
-                _value = value;
+                Key = key;
+                Name = name;
+                Value = value;
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="DisplayFilterValueArgs"/> class.
+            /// </summary>
+            /// <param name="userPreference">The user preference.</param>
+            public DisplayFilterValueArgs( UserPreference userPreference )
+            {
+                Key = userPreference.Key;
+                Name = userPreference.Name;
+                Value = userPreference.Value;
+            }
+        }
+
+        /// <summary>
+        /// Helper class for user preferences
+        /// </summary>
+        public class UserPreference
+        {
+            /// <summary>
+            /// Gets or sets the key.
+            /// </summary>
+            /// <value>
+            /// The key.
+            /// </value>
+            public string Key { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the value.
+            /// </summary>
+            /// <value>
+            /// The value.
+            /// </value>
+            public string Value { get; set; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="UserPreference"/> class.
+            /// </summary>
+            /// <param name="key">The key.</param>
+            /// <param name="name">The name.</param>
+            /// <param name="value">The value.</param>
+            public UserPreference( string key, string name, string value )
+            {
+                Key = key;
+                Name = name;
+                Value = value;
             }
         }
     }

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -25,47 +26,26 @@ namespace Rock.Field.Types
     [Serializable]
     public class DecimalRangeFieldType : FieldType
     {
-        /// <summary>
-        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="message">The message.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified value is valid; otherwise, <c>false</c>.
-        /// </returns>
-        public override bool IsValid( string value, bool required, out string message )
-        {
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                decimal result;
-                string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
-                if ( valuePair.Length <= 2 )
-                {
-                    foreach ( string v in valuePair )
-                    {
-                        if ( !string.IsNullOrWhiteSpace(v) )
-                        {
-                            if ( !string.IsNullOrWhiteSpace( v ) )
-                            {
-                                if ( !decimal.TryParse( v, out result ) )
-                                {
-                                    message = "The input provided contains invalid decimal values";
-                                    return false;
-                                }
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    message = "The input provided is not a valid decimal range.";
-                    return false;
-                }
-            }
 
-            return base.IsValid( value, required, out message );
+        #region Formatting
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary> 
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            string formattedValue = NumberRangeEditor.FormatDelimitedValues( value ) ?? value;
+            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -115,30 +95,65 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary> 
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="message">The message.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified value is valid; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsValid( string value, bool required, out string message )
         {
-            string formattedValue = NumberRangeEditor.FormatDelimitedValues( value ) ?? value;
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                decimal result;
+                string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
+                if ( valuePair.Length <= 2 )
+                {
+                    foreach ( string v in valuePair )
+                    {
+                        if ( !string.IsNullOrWhiteSpace( v ) )
+                        {
+                            if ( !string.IsNullOrWhiteSpace( v ) )
+                            {
+                                if ( !decimal.TryParse( v, out result ) )
+                                {
+                                    message = "The input provided contains invalid decimal values";
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    message = "The input provided is not a valid decimal range.";
+                    return false;
+                }
+            }
+
+            return base.IsValid( value, required, out message );
         }
 
+        #endregion
+
+        #region Filter Control
 
         /// <summary>
-        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// Creates the control needed to filter (query) values using this field type.
         /// </summary>
-        /// <param name="attribute"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
-        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
+        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
         {
-            var filterConfig = base.GetFilterConfig( attribute );
-            filterConfig.FilterFieldType = SystemGuid.FieldType.DECIMAL;
-            return filterConfig;
+            // Filtering is not supported by this fieldtype
+            return null;
         }
+
+        #endregion
+
     }
 }

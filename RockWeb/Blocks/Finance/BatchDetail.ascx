@@ -24,6 +24,7 @@
 
                 <div id="pnlEditDetails" runat="server">
                     <asp:ValidationSummary ID="valSummaryBatch" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:CustomValidator ID="cvBatch" runat="server" />
 
                     <div class="row">
                         <div class="col-md-6">
@@ -56,8 +57,16 @@
                             <div class="grid">
                                 <Rock:Grid ID="gAccounts" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Account" AllowSorting="false">
                                     <Columns>
-                                        <asp:BoundField DataField="Name" HeaderText="Account Totals" />
-                                        <asp:BoundField DataField="Amount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" />
+                                        <Rock:RockBoundField DataField="Name" HeaderText="Account Totals" />
+                                        <Rock:RockBoundField DataField="Amount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" />
+                                    </Columns>
+                                </Rock:Grid>
+                            </div>
+                            <div class="grid">
+                                <Rock:Grid ID="gCurrencyTypes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="CurrencyType" AllowSorting="false">
+                                    <Columns>
+                                        <Rock:RockBoundField DataField="Name" HeaderText="Currency Totals" />
+                                        <Rock:RockBoundField DataField="Amount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>

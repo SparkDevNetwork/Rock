@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Reporting
             gfMetricValues.ApplyFilterClick += gfMetricValues_ApplyFilterClick;
             gfMetricValues.DisplayFilterValue += gfMetricValues_DisplayFilterValue;
 
-            gMetricValues.DataKeyNames = new string[] { "id" };
+            gMetricValues.DataKeyNames = new string[] { "Id" };
             gMetricValues.Actions.AddClick += gMetricValues_Add;
             gMetricValues.GridRebind += gMetricValues_GridRebind;
 
@@ -159,7 +159,7 @@ namespace RockWeb.Blocks.Reporting
             }
             else if ( e.Key == EntityPreferenceKey )
             {
-                e.Key = hfEntityTypeName.Value;
+                e.Name = hfEntityTypeName.Value;
                 var parts = e.Value.Split( '|' );
                 if ( parts.Length >= 2 )
                 {
@@ -384,7 +384,7 @@ namespace RockWeb.Blocks.Reporting
             }
             else
             {
-                gMetricValues.DataSource = qry.OrderBy( s => s.Order ).ThenBy( s => s.MetricValueDateTime ).ThenBy( s => s.YValue ).ThenBy( s => s.XValue ).ToList();
+                gMetricValues.DataSource = qry.OrderBy( s => s.Order ).ThenByDescending( s => s.MetricValueDateTime ).ThenBy( s => s.YValue ).ThenBy( s => s.XValue ).ToList();
             }
 
             gMetricValues.DataBind();

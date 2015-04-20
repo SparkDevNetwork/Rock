@@ -24,13 +24,13 @@
                     
                     <div class="row">
                             <div class="col-md-12">
-                                <Rock:DataTextBox ID="tbTypeDescription" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                                <Rock:DataTextBox ID="tbTypeDescription" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" ValidateRequestMode="Disabled" />
                             </div>
                     </div>
 
                     <div class="row">
                             <div class="col-md-12">
-                                <Rock:DataTextBox ID="tbHelpText" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="HelpText" TextMode="MultiLine" Rows="3" />
+                                <Rock:DataTextBox ID="tbHelpText" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="HelpText" TextMode="MultiLine" Rows="3"  ValidateRequestMode="Disabled" />
                             </div>
                     </div>
 
@@ -47,8 +47,8 @@
                 </fieldset>
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnSaveType" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveType_Click" />
-                    <asp:LinkButton ID="btnCancelType" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancelType_Click" />
+                    <asp:LinkButton ID="btnSaveType" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveType_Click" />
+                    <asp:LinkButton ID="btnCancelType" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancelType_Click" />
                 </div>
             </div>
 
@@ -83,7 +83,7 @@
                                 <Rock:Grid ID="gDefinedTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Attribute">
                                     <Columns>
                                         <Rock:ReorderField />
-                                        <asp:BoundField DataField="Name" HeaderText="Attributes for Defined Type" />
+                                        <Rock:RockBoundField DataField="Name" HeaderText="Attributes for Defined Type" />
                                         <Rock:EditField OnClick="gDefinedTypeAttributes_Edit" />
                                         <Rock:DeleteField OnClick="gDefinedTypeAttributes_Delete" />
                                     </Columns>
@@ -94,7 +94,7 @@
                     </div>
                 </div>
                 <div class="actions">
-                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnEdit_Click" />
+                    <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnEdit_Click" />
                     <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                     <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                 </div>

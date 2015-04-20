@@ -101,7 +101,7 @@ namespace RockWeb.Blocks.Security
                     if ( user.EntityType != null )
                     {
                         var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
-                        if ( component.ServiceType == AuthenticationServiceType.Internal )
+                        if ( !component.RequiresRemoteAuthentication )
                         {
                             users.Add( user );
                         }

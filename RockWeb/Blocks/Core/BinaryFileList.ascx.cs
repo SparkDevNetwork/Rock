@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Core
             BindFilter();
             fBinaryFile.ApplyFilterClick += fBinaryFile_ApplyFilterClick;
             
-            gBinaryFile.DataKeyNames = new string[] { "id" };
+            gBinaryFile.DataKeyNames = new string[] { "Id" };
             gBinaryFile.Actions.ShowAdd = true;
             gBinaryFile.Actions.AddClick += gBinaryFile_Add;
             gBinaryFile.GridRebind += gBinaryFile_GridRebind;

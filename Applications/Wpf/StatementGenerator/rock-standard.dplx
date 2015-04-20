@@ -7,15 +7,15 @@
 		<template id="Template1"/>
 		<header id="ReportHeader"/>
 		<detail id="PersonDetail" height="683" autoSplit="true">
-			<subReport id="InnerReport" width="501" x="0" y="230">
+			<subReport id="InnerReport" width="501" y="230" x="1">
 				<query id="InnerQuery">
 					<eventDriven connectionString=""></eventDriven>
 				</query>
-				<header id="TranListHeader" height="50">
-					<label text="Date" font="HelveticaBold" width="72" id="lblDate" height="14" x="6" y="30" fontSize="10"/>
-					<label font="HelveticaBold" width="72" x="90" id="lblSummary" text="Summary" height="14" y="30" fontSize="10"/>
-					<label font="HelveticaBold" width="72" id="lblAccount" text="Account" height="14" x="264" y="30" fontSize="10"/>
-					<label font="HelveticaBold" x="396" id="lblAmount" text="Amount" height="14" align="right" width="102" y="30" fontSize="10"/>
+				<header id="TranListHeader" height="45.5">
+					<label text="Date" font="HelveticaBold" id="lblDate" height="14" y="30" fontSize="10" x="12" width="65.1"/>
+					<label font="HelveticaBold" width="72" height="14" fontSize="10" text="Type" id="lblCurrencyTypeValueName" x="57" y="30"/>
+					<label font="HelveticaBold" height="14" fontSize="10" id="lblAccounts" text="Account(s)" x="284.5" width="213.5" y="30"/>
+					<label font="HelveticaBold" id="lblAmount" text="Amount" height="14" align="right" fontSize="10" width="99.1" x="171" y="30"/>
 					<line id="HeaderLine" x2="498" x1="0" y1="46" y2="46"/>
 					<rectangle fillColor="lightGrey" id="rectTopTotal" x="0" width="501" y="-2" height="26"/>
 					<recordArea x="12" width="288" height="18" font="HelveticaBold" y="6" id="raTopTotalText" fontSize="10">
@@ -24,10 +24,20 @@
 					<recordBox x="390" y="6" height="18" width="108" id="rbTopTotalAmount" font="HelveticaBold" align="right" fontSize="10" field="Sum(Amount, InnerReport, InnerQuery)" dataFormat="$#,##0.00"/>
 				</header>
 				<detail autoSplit="true" id="TranListDetail" height="15">
-					<recordBox height="14" width="100" field="Amount" id="rbAmount" x="396" align="right" y="2" fontSize="9" dataFormat="$#,##0.00"/>
-					<recordBox height="14" field="TransactionDateTime" id="rbTransactionDateTime" dataFormat="MM/dd/yyyy" x="6" y="2" fontSize="9" width="114"/>
-					<recordBox dataFormat="" field="Summary" id="rbSummary" width="167" x="90" height="14" y="2" fontSize="9"/>
-					<recordBox dataFormat="" height="14" field="AccountName" id="rbAccountName" width="126" x="264" y="2" fontSize="9"/>
+					<recordBox height="14" field="TransactionDateTime" id="rbTransactionDateTime" fontSize="9" dataFormat="M/dd/yyyy" align="right" x="0" y="2" width="50"/>
+					<recordBox dataFormat="" height="14" fontSize="9" field="CurrencyTypeValueName" id="rbCurrencyTypeValueName" x="56.5" width="114" y="2"/>
+					<recordBox height="14" width="100" field="Amount" align="right" fontSize="9" dataFormat="$#,##0.00" id="rbAmount" x="172" y="2"/>
+					<subReport id="TransactionDetailReport" x="285" width="257.1" y="2">
+						<query id="qryTransactionDetails">
+							<eventDriven connectionString=""></eventDriven>
+						</query>
+						<header id="Header2"/>
+						<detail id="Detail1" height="15">
+							<recordBox dataFormat="" height="14" id="rbAccountName" field="AccountName" fontSize="9" x="0" y="0" width="141.5"/>
+							<recordBox height="14" id="rbDetailAmount" field="Amount" align="right" fontSize="9" dataFormat="$#,##0.00" width="94" x="116" y="0"/>
+						</detail>
+						<footer id="Footer2"/>
+					</subReport>
 				</detail>
 				<footer id="TranListFooter" height="3">
 					<line id="FooterLine" x2="498" x1="0" y1="2" y2="2"/>
@@ -36,9 +46,9 @@
 			<pageBreak id="PageBreak1" y="426"/>
 			<recordArea x="0" width="252" id="raToAddress" y="144" height="60" fontSize="11">
 				<text>#AddressPersonNames#
-#Street1##IIF(len(Street2),"
+#Street1##IIF(len(trim(Street2)),"
 ")##Street2#
-#City#, #State# #PostalCode#</text>
+#City##IIF(len(trim(City)),",")# #State# #PostalCode#</text>
 			</recordArea>
 			<subReport id="OrganizationInfoReport" x="0" y="0" width="250">
 				<query id="OrgInfoQuery">
@@ -46,12 +56,13 @@
 				</query>
 				<header id="Header1"/>
 				<detail id="OrgDetail" height="100">
-					<image height="51" path="logo.jpg" width="137" x="0" y="0" id="imgLogo"/>
+					<image path="logo.jpg" x="0" id="imgLogo" y="0" height="50" width="150"/>
 					<recordArea x="0" width="252" id="raOrganizationAddress" height="42" y="54" fontSize="10">
 						<text>#Street1#, #City# #State# #PostalCode#
 </text>
 					</recordArea>
-					<contentGroup id="ContentGroup1" height="55" width="200" x="162" y="66"/></detail>
+					<contentGroup id="ContentGroup1" height="55" width="200" x="162" y="66"/>
+				</detail>
 				<footer id="Footer1"/>
 			</subReport>
 			<recordArea y="0" align="right" id="raRightTop" x="144" width="366" height="78" fontSize="11">
@@ -79,7 +90,8 @@
 				<footer id="AccountSummaryFooter"/>
 			</subReport>
 			<label width="100" text="Total" font="HelveticaBold" height="18" fontSize="10" x="6" y="300" id="lblBottomTotal"/>
-			<recordBox height="14" field="Sum(Amount, InnerReport, InnerQuery)" fontSize="10" font="HelveticaBold" align="right" width="264" id="rbBottomTotal" y="300" x="234" dataFormat="$#,##0.00"/></detail>
+			<recordBox height="14" field="Sum(Amount, InnerReport, InnerQuery)" fontSize="10" font="HelveticaBold" align="right" width="264" id="rbBottomTotal" y="300" x="234" dataFormat="$#,##0.00"/>
+		</detail>
 		<footer id="ReportFooter"/>
 	</report>
 </document>

@@ -26,7 +26,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "GroupTypeLocationType" )]
     [DataContract]
-    public class GroupTypeLocationType
+    public class GroupTypeLocationType: DotLiquid.ILiquidizable
     {
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.GroupType"/>. This property is required, and is part of the key.
@@ -69,5 +69,14 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Model.DefinedValue LocationTypeValue { get; set; }
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return LocationTypeValue;
+        }
     }
 }

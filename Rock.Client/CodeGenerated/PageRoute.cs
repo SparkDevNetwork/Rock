@@ -21,15 +21,19 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for PageRoute
+    /// Base client model for PageRoute that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class PageRoute
+    public partial class PageRouteEntity
     {
+        /// <summary />
+        public int Id { get; set; }
+
         /// <summary />
         public bool IsSystem { get; set; }
 
@@ -39,6 +43,19 @@ namespace Rock.Client
         /// <summary />
         public string Route { get; set; }
 
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Client model for PageRoute that includes all the fields that are available for GETs. Use this for GETs (use PageRouteEntity for POST/PUTs)
+    /// </summary>
+    public partial class PageRoute : PageRouteEntity
+    {
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
@@ -51,14 +68,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
-        public int Id { get; set; }
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

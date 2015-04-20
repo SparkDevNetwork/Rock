@@ -15,8 +15,8 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 
@@ -24,9 +24,9 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Security;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -42,18 +42,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status",
         "The connection status that should be set by default", false, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR, "", 1 )]
     [BooleanField( "Gender", "Require a gender for each person", "Don't require", "Should Gender be required for each person added?", false, "", 2 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Adult Marital Status", "The default marital status for adults in the family.", false, false, "", "", 3)]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Adult Marital Status", "The default marital status for adults in the family.", false, false, "", "", 3 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Child Marital Status", "The marital status to use for children in the family.", false, false,
         Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE, "", 4 )]
-    [BooleanField( "Grade", "Require a grade for each child", "Don't require", "Should Grade be required for each child added?", false, "", 5 )]
-    [AttributeCategoryField( "Attribute Categories", "The Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 6 )]
+    [BooleanField( "Marital Status Confirmation", "Should user be asked to confirm saving an adults without a marital status?", true, "", 5 )]
+    [BooleanField( "Grade", "Require a grade for each child", "Don't require", "Should Grade be required for each child added?", false, "", 6 )]
+    [AttributeCategoryField( "Attribute Categories", "The Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 7 )]
     public partial class AddFamily : Rock.Web.UI.RockBlock
     {
 
         #region Fields
 
-        private bool _requireGender = false;
-        private bool _requireGrade = false;
+        private bool _confirmMaritalStatus = true;
         private int _childRoleId = 0;
         private List<NewFamilyAttributes> attributeControls = new List<NewFamilyAttributes>();
         private List<GroupMember> _groupMembers = null;
@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             jsonStrings.ForEach( j => familyMembers.Add( GroupMember.FromJson( j ) ) );
             CreateControls( familyMembers, false );
         }
-        
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
             var AdultMaritalStatus = DefinedValueCache.Read( GetAttributeValue( "AdultMaritalStatus" ).AsGuid() );
-            if (AdultMaritalStatus != null)
+            if ( AdultMaritalStatus != null )
             {
                 ddlMaritalStatus.SetValue( AdultMaritalStatus.Id );
             }
@@ -114,21 +114,42 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             cpCampus.Visible = campusi.Any();
 
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
-            if (familyGroupType != null)
+            if ( familyGroupType != null )
             {
                 _childRoleId = familyGroupType.Roles
                     .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) )
-                    .Select( r => r.Id)
+                    .Select( r => r.Id )
                     .FirstOrDefault();
             }
 
-            bool.TryParse( GetAttributeValue( "Gender" ), out _requireGender );
-            bool.TryParse( GetAttributeValue( "Grade" ), out _requireGrade );
+            nfmMembers.RequireGender = GetAttributeValue( "Gender" ).AsBoolean();
+            nfmMembers.RequireGrade = GetAttributeValue( "Grade" ).AsBoolean();
 
-            lTitle.Text = ("Add Family").FormatAsHtmlTitle();
+            lTitle.Text = ( "Add Family" ).FormatAsHtmlTitle();
 
             _homePhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
             _cellPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+
+            _confirmMaritalStatus = GetAttributeValue( "MaritalStatusConfirmation" ).AsBoolean();
+            if ( _confirmMaritalStatus )
+            {
+                string script = string.Format( @"
+    $('a.js-confirm-marital-status').click(function( e ){{
+        if ( $(""input[id$='_rblRole_0']"").prop('checked', true).length ) {{
+            if ( $('#{0}').val() == '' ) {{
+                e.preventDefault();
+                Rock.dialogs.confirm('You have not selected a marital status for the adults in this new family. Are you sure you want to continue?', function (result) {{
+                    if (result) {{
+                        window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                    }}
+                }});
+            }}
+        }}
+    }});
+", ddlMaritalStatus.ClientID );
+                ScriptManager.RegisterStartupScript( btnNext, btnNext.GetType(), "confirm-marital-status", script, true );
+
+            }
         }
 
         /// <summary>
@@ -154,7 +175,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         string personName = string.Format( "{0} {1}", familyMemberRow.FirstName, familyMemberRow.LastName );
 
                         var contactInfoRow = nfciContactInfo.ContactInfoRows.FirstOrDefault( c => c.PersonGuid == familyMemberRow.PersonGuid );
-                        if (contactInfoRow != null)
+                        if ( contactInfoRow != null )
                         {
                             contactInfoRow.PersonName = personName;
                         }
@@ -199,12 +220,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnPreRender( EventArgs e )
         {
-            if (_groupMembers == null)
+            if ( _groupMembers == null )
             {
                 _groupMembers = GetControlData();
             }
 
-            var adults = _groupMembers.Where( m => m.GroupRoleId != _childRoleId).ToList();
+            var adults = _groupMembers.Where( m => m.GroupRoleId != _childRoleId ).ToList();
             ddlMaritalStatus.Visible = adults.Any();
 
             base.OnPreRender( e );
@@ -246,7 +267,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             NewFamilyMembersRow row = sender as NewFamilyMembersRow;
 
             var contactInfoRow = nfciContactInfo.ContactInfoRows.FirstOrDefault( c => c.PersonGuid == row.PersonGuid );
-            if (contactInfoRow != null)
+            if ( contactInfoRow != null )
             {
                 nfciContactInfo.ContactInfoRows.Remove( contactInfoRow );
             }
@@ -276,7 +297,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( Page.IsValid )
             {
-                if ( CurrentPageIndex < ( attributeControls.Count + 1) )
+                if ( CurrentPageIndex < ( attributeControls.Count + 1 ) )
                 {
                     CurrentPageIndex++;
                     ShowPage( CurrentPageIndex );
@@ -354,8 +375,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 familyMemberRow.RoleUpdated += familyMemberRow_RoleUpdated;
                 familyMemberRow.DeleteClick += familyMemberRow_DeleteClick;
                 familyMemberRow.PersonGuid = familyMember.Person.Guid;
-                familyMemberRow.RequireGender = _requireGender;
-                familyMemberRow.RequireGrade = _requireGrade;
+                familyMemberRow.RequireGender = nfmMembers.RequireGender;
+                familyMemberRow.RequireGrade = nfmMembers.RequireGrade;
                 familyMemberRow.RoleId = familyMember.GroupRoleId;
                 familyMemberRow.ShowGrade = familyMember.GroupRoleId == _childRoleId;
 
@@ -364,10 +385,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 contactInfoRow.ID = string.Format( "ci_row_{0}", familyMemberGuidString );
                 contactInfoRow.PersonGuid = familyMember.Person.Guid;
 
-                if ( _homePhone != null  )
+                if ( _homePhone != null )
                 {
                     var homePhoneNumber = familyMember.Person.PhoneNumbers.Where( p => p.NumberTypeValueId == _homePhone.Id ).FirstOrDefault();
-                    if (homePhoneNumber != null)
+                    if ( homePhoneNumber != null )
                     {
                         contactInfoRow.HomePhoneNumber = homePhoneNumber.NumberFormatted;
                         contactInfoRow.HomePhoneCountryCode = homePhoneNumber.CountryCode;
@@ -397,7 +418,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         familyMemberRow.Gender = familyMember.Person.Gender;
                         familyMemberRow.BirthDate = familyMember.Person.BirthDate;
                         familyMemberRow.ConnectionStatusValueId = familyMember.Person.ConnectionStatusValueId;
-                        familyMemberRow.Grade = familyMember.Person.Grade;
+                        familyMemberRow.GradeOffset = familyMember.Person.GradeOffset;
                     }
                 }
 
@@ -424,7 +445,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var familyMembers = new List<GroupMember>();
 
             int? childMaritalStatusId = null;
-            var childMaritalStatus = DefinedValueCache.Read( GetAttributeValue("ChildMaritalStatus").AsGuid() );
+            var childMaritalStatus = DefinedValueCache.Read( GetAttributeValue( "ChildMaritalStatus" ).AsGuid() );
             if ( childMaritalStatus != null )
             {
                 childMaritalStatusId = childMaritalStatus.Id;
@@ -446,7 +467,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     groupMember.GroupRoleId = row.RoleId.Value;
 
-                    if (groupMember.GroupRoleId == _childRoleId)
+                    if ( groupMember.GroupRoleId == _childRoleId )
                     {
                         groupMember.Person.MaritalStatusValueId = childMaritalStatusId;
                     }
@@ -463,20 +484,33 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMember.Person.SuffixValueId = row.SuffixValueId;
                 groupMember.Person.Gender = row.Gender;
 
-                DateTime? birthdate = row.BirthDate;
-                if (birthdate.HasValue)
+                var birthday = row.BirthDate;
+                if ( birthday.HasValue )
                 {
                     // If setting a future birthdate, subtract a century until birthdate is not greater than today.
                     var today = RockDateTime.Today;
-                    while ( birthdate.Value.CompareTo( today ) > 0 )
+                    while ( birthday.Value.CompareTo( today ) > 0 )
                     {
-                        birthdate = birthdate.Value.AddYears( -100 );
+                        birthday = birthday.Value.AddYears( -100 );
+                    }
+                    groupMember.Person.BirthMonth = birthday.Value.Month;
+                    groupMember.Person.BirthDay = birthday.Value.Day;
+                    if ( birthday.Value.Year != DateTime.MinValue.Year )
+                    {
+                        groupMember.Person.BirthYear = birthday.Value.Year;
+                    }
+                    else
+                    {
+                        groupMember.Person.BirthYear = null;
                     }
                 }
-                groupMember.Person.BirthDate = birthdate;
+                else
+                {
+                    groupMember.Person.SetBirthDate( null );
+                }
 
                 groupMember.Person.ConnectionStatusValueId = row.ConnectionStatusValueId;
-                groupMember.Person.Grade = row.Grade;
+                groupMember.Person.GradeOffset = row.GradeOffset;
 
                 NewFamilyContactInfoRow contactInfoRow = nfciContactInfo.ContactInfoRows.FirstOrDefault( c => c.PersonGuid == row.PersonGuid );
                 if ( contactInfoRow != null )
@@ -503,7 +537,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     groupMember.Person.Email = contactInfoRow.Email;
                 }
-
+                groupMember.Person.IsEmailActive = true;
                 groupMember.Person.EmailPreference = EmailPreference.EmailAllowed;
 
                 groupMember.Person.LoadAttributes();
@@ -536,8 +570,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             familyMemberRow.DeleteClick += familyMemberRow_DeleteClick;
             familyMemberRow.PersonGuid = familyMemberGuid;
             familyMemberRow.Gender = Gender.Unknown;
-            familyMemberRow.RequireGender = _requireGender;
-            familyMemberRow.RequireGrade = _requireGrade;
+            familyMemberRow.RequireGender = nfmMembers.RequireGender;
+            familyMemberRow.RequireGrade = nfmMembers.RequireGrade;
             familyMemberRow.ValidationGroup = BlockValidationGroup;
 
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
@@ -583,13 +617,22 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             pnlContactInfo.Visible = ( index == 1 );
 
             attributeControls.ForEach( c => c.Visible = false );
-            if ( index > 1 && attributeControls.Count >= ( index - 1) )
+            if ( index > 1 && attributeControls.Count >= ( index - 1 ) )
             {
                 attributeControls[index - 2].Visible = true;
             }
 
+            if ( _confirmMaritalStatus && index == 0)
+            {
+                btnNext.AddCssClass( "js-confirm-marital-status" );
+            }
+            else
+            {
+                btnNext.RemoveCssClass( "js-confirm-marital-status" );
+            }
+
             btnPrevious.Visible = index > 0;
-            btnNext.Text = index < ( attributeControls.Count + 1) ? "Next" : "Finish";
+            btnNext.Text = index < ( attributeControls.Count + 1 ) ? "Next" : "Finish";
         }
 
         #endregion

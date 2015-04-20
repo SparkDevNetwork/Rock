@@ -87,27 +87,29 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Site target, Site source )
         {
-            target.IsSystem = source.IsSystem;
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.Theme = source.Theme;
+            target.Id = source.Id;
+            target.CommunicationPageId = source.CommunicationPageId;
+            target.CommunicationPageRouteId = source.CommunicationPageRouteId;
             target.DefaultPageId = source.DefaultPageId;
             target.DefaultPageRouteId = source.DefaultPageRouteId;
-            target.LoginPageId = source.LoginPageId;
-            target.LoginPageRouteId = source.LoginPageRouteId;
-            target.RegistrationPageId = source.RegistrationPageId;
-            target.RegistrationPageRouteId = source.RegistrationPageRouteId;
-            target.PageNotFoundPageId = source.PageNotFoundPageId;
-            target.PageNotFoundPageRouteId = source.PageNotFoundPageRouteId;
+            target.Description = source.Description;
             target.ErrorPage = source.ErrorPage;
-            target.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
             target.FacebookAppId = source.FacebookAppId;
             target.FacebookAppSecret = source.FacebookAppSecret;
+            target.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
+            target.IsSystem = source.IsSystem;
+            target.LoginPageId = source.LoginPageId;
+            target.LoginPageRouteId = source.LoginPageRouteId;
+            target.Name = source.Name;
+            target.PageNotFoundPageId = source.PageNotFoundPageId;
+            target.PageNotFoundPageRouteId = source.PageNotFoundPageRouteId;
+            target.RegistrationPageId = source.RegistrationPageId;
+            target.RegistrationPageRouteId = source.RegistrationPageRouteId;
+            target.Theme = source.Theme;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

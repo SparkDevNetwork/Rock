@@ -21,32 +21,33 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for Communication
+    /// Base client model for Communication that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class Communication
+    public partial class CommunicationEntity
     {
         /// <summary />
-        public int? SenderPersonAliasId { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
-        public string Subject { get; set; }
-
-        /// <summary />
-        public bool IsBulkCommunication { get; set; }
+        public string AdditionalMergeFieldsJson { get; set; }
 
         /// <summary />
         public DateTime? FutureSendDateTime { get; set; }
 
         /// <summary />
-        public int /* CommunicationStatus*/ Status { get; set; }
+        public bool IsBulkCommunication { get; set; }
 
         /// <summary />
-        public int? ReviewerPersonAliasId { get; set; }
+        public string MediumDataJson { get; set; }
+
+        /// <summary />
+        public int? MediumEntityTypeId { get; set; }
 
         /// <summary />
         public DateTime? ReviewedDateTime { get; set; }
@@ -55,13 +56,47 @@ namespace Rock.Client
         public string ReviewerNote { get; set; }
 
         /// <summary />
-        public int? MediumEntityTypeId { get; set; }
+        public int? ReviewerPersonAliasId { get; set; }
 
         /// <summary />
-        public string MediumDataJson { get; set; }
+        public int? SenderPersonAliasId { get; set; }
 
         /// <summary />
-        public string AdditionalMergeFieldsJson { get; set; }
+        public int /* CommunicationStatus*/ Status { get; set; }
+
+        /// <summary />
+        public string Subject { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Client model for Communication that includes all the fields that are available for GETs. Use this for GETs (use CommunicationEntity for POST/PUTs)
+    /// </summary>
+    public partial class Communication : CommunicationEntity
+    {
+        /// <summary />
+        public List<string> AdditionalMergeFields { get; set; }
+
+        /// <summary />
+        public Dictionary<string, string> MediumData { get; set; }
+
+        /// <summary />
+        public EntityType MediumEntityType { get; set; }
+
+        /// <summary />
+        public ICollection<CommunicationRecipient> Recipients { get; set; }
+
+        /// <summary />
+        public PersonAlias ReviewerPersonAlias { get; set; }
+
+        /// <summary />
+        public PersonAlias SenderPersonAlias { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -75,14 +110,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
-        public int Id { get; set; }
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

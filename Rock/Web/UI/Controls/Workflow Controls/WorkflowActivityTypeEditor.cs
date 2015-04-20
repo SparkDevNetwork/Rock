@@ -300,7 +300,19 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
                 _pwAttributes.Title = "Attributes";
             } 
             
-            _gAttributes.DataSource = attributes.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            _gAttributes.DataSource = attributes
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .Select( a => new
+                {
+                    a.Id,
+                    a.Guid,
+                    a.Name,
+                    a.Description,
+                    FieldType = FieldTypeCache.GetName( a.FieldTypeId ),
+                    a.IsRequired
+                } )
+                .ToList();
             _gAttributes.DataBind();
         }
 
@@ -415,6 +427,7 @@ javascript:
 
             _gAttributes = new Grid();
             _pwAttributes.Controls.Add( _gAttributes );
+            _gAttributes.ID = this.ID + "_gAttributes";
             _gAttributes.AllowPaging = false;
             _gAttributes.DisplayType = GridDisplayType.Light;
             _gAttributes.RowItemText = "Activity Attribute";
@@ -437,6 +450,11 @@ javascript:
             descField.DataField = "Description";
             descField.HeaderText = "Description";
             _gAttributes.Columns.Add( descField );
+
+            var fieldTypeField = new BoundField();
+            fieldTypeField.DataField = "FieldType";
+            fieldTypeField.HeaderText = "Field Type";
+            _gAttributes.Columns.Add( fieldTypeField );
 
             var reqField = new BoolField();
             reqField.DataField = "IsRequired";

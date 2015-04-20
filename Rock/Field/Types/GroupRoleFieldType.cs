@@ -19,9 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Newtonsoft.Json;
-using Rock;
-using Rock.Constants;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -33,32 +31,10 @@ namespace Rock.Field.Types
     /// </summary>
     public class GroupRoleFieldType : FieldType, IEntityFieldType
     {
+
+        #region Configuration
+
         private const string GROUP_TYPE_KEY = "grouptype";
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            string formattedValue = string.Empty;
-
-            Guid guid = Guid.Empty;
-            if ( Guid.TryParse( value, out guid ) )
-            {
-                var groupRole = new GroupTypeRoleService( new RockContext() ).Get( guid );
-                if ( groupRole != null )
-                {
-                    formattedValue = groupRole.Name;
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
-        }
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -136,6 +112,39 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Formatting
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            string formattedValue = string.Empty;
+
+            Guid guid = Guid.Empty;
+            if ( Guid.TryParse( value, out guid ) )
+            {
+                var groupRole = new GroupTypeRoleService( new RockContext() ).Get( guid );
+                if ( groupRole != null )
+                {
+                    formattedValue = groupRole.Name;
+                }
+            }
+
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
+        }
+
+        #endregion
+
+        #region Edit Control
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -210,6 +219,10 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Entity Methods
+
         /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
@@ -263,5 +276,8 @@ namespace Rock.Field.Types
 
             return null;
         }
+
+        #endregion
+
     }
 }

@@ -98,9 +98,10 @@ namespace Rock.Services.NuGet
             {
                 Directory.Delete( packageRestorePath, recursive: true );
             }
-            catch
+            catch ( Exception ex )
             {
-                ExceptionLogService.LogException( new FileNotFoundException( string.Format( "Unable to delete package restore folder ({0}) after a successful update.", packageRestorePath ) ), System.Web.HttpContext.Current );
+                ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
+                ExceptionLogService.LogException( new Exception( string.Format( "Unable to delete package restore folder ({0}) after a successful update.", packageRestorePath ) ), System.Web.HttpContext.Current );
             }
         }
 

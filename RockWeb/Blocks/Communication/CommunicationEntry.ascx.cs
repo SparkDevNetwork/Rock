@@ -52,8 +52,16 @@ namespace RockWeb.Blocks.Communication
     [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved", false, 0, "", 2 )]
     [IntegerField( "Display Count", "The initial number of recipients to display prior to expanding list", false, 0, "", 3  )]
     [BooleanField( "Send When Approved", "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?", true, "", 4 )]
+    [CustomDropdownListField("Mode", "The mode to use ( 'Simple' mode will prevent uers from searching/adding new people to communication).", "Full,Simple", true, "Full", "", 5)]
     public partial class CommunicationEntry : RockBlock
     {
+
+        #region Fields
+
+        private bool _fullMode = true;
+
+        #endregion
+
         #region Properties
 
         protected int? CommunicationId
@@ -153,6 +161,10 @@ namespace RockWeb.Blocks.Communication
 
         #region Base Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -162,13 +174,23 @@ namespace RockWeb.Blocks.Communication
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to remove all of the pending recipients from this communication?', function (result) {
             if (result) {
-                eval(e.target.href);
+                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
             }
         });
     });
 ";
             ScriptManager.RegisterStartupScript(lbRemoveAllRecipients, lbRemoveAllRecipients.GetType(), "ConfirmRemoveAll", script, true );
+
+            string mode = GetAttributeValue( "Mode" );
+            _fullMode = string.IsNullOrWhiteSpace( mode ) || mode != "Simple";
+            ppAddPerson.Visible = _fullMode;
+            cbBulk.Visible = _fullMode;
+            ddlTemplate.Visible = _fullMode;
+            dtpFutureSend.Visible = _fullMode;
+            btnTest.Visible = _fullMode;
+            btnSave.Visible = _fullMode;
         }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -697,7 +719,7 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
-            ddlTemplate.Visible = visible;
+            ddlTemplate.Visible = _fullMode && visible;
         }
 
         /// <summary>
@@ -786,7 +808,7 @@ namespace RockWeb.Blocks.Communication
 
             if (component != null)
             {
-                var mediumControl = component.Control;
+                var mediumControl = component.GetControl( !_fullMode );
                 mediumControl.ID = "commControl";
                 mediumControl.IsTemplate = false;
                 mediumControl.AdditionalMergeFields = this.AdditionalMergeFields.ToList();
@@ -811,6 +833,8 @@ namespace RockWeb.Blocks.Communication
                     nbInvalidTransport.Visible = false;
                 }
 
+                cbBulk.Visible = _fullMode && component.SupportsBulkCommunication;
+
                 return mediumControl;
             }
 
@@ -822,18 +846,28 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void GetMediumData()
         {
-            if ( phContent.Controls.Count == 1 && phContent.Controls[0] is MediumControl )
+            if ( phContent.Controls.Count == 1 )
             {
-                var mediumData = ( (MediumControl)phContent.Controls[0] ).MediumData;
-                foreach ( var dataItem in mediumData )
+                var mediumControl = phContent.Controls[0] as MediumControl;
+                if ( mediumControl != null )
                 {
-                    if ( MediumData.ContainsKey( dataItem.Key ) )
+                    // If using simple mode, the control should be re-initialized from sender since sender fields 
+                    // are not presented for editing and user shouldn't be able to change them
+                    if ( !_fullMode && CurrentPerson != null )
                     {
-                        MediumData[dataItem.Key] = dataItem.Value;
+                        mediumControl.InitializeFromSender( CurrentPerson );
                     }
-                    else
+
+                    foreach ( var dataItem in mediumControl.MediumData )
                     {
-                        MediumData.Add( dataItem.Key, dataItem.Value );
+                        if ( MediumData.ContainsKey( dataItem.Key ) )
+                        {
+                            MediumData[dataItem.Key] = dataItem.Value;
+                        }
+                        else
+                        {
+                            MediumData.Add( dataItem.Key, dataItem.Value );
+                        }
                     }
                 }
             }
@@ -1039,15 +1073,9 @@ namespace RockWeb.Blocks.Communication
 
             nbResult.Text = message;
 
-            if ( CurrentPageReference.Parameters.ContainsKey( "CommunicationId" ) )
-            {
-                CurrentPageReference.Parameters["CommunicationId"] = communication.Id.ToString();
-            }
-            else
-            {
-                CurrentPageReference.Parameters.Add( "CommunicationId", communication.Id.ToString() );
-            }
+            CurrentPageReference.Parameters.AddOrReplace( "CommunicationId", communication.Id.ToString() );
             hlViewCommunication.NavigateUrl = CurrentPageReference.BuildUrl();
+            hlViewCommunication.Visible = this.Page.ControlsOfTypeRecursive<RockWeb.Blocks.Communication.CommunicationDetail>().Any();
 
             pnlResult.Visible = true;
 

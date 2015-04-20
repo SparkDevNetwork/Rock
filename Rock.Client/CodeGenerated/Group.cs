@@ -21,44 +21,103 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for Group
+    /// Base client model for Group that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class Group
+    public partial class GroupEntity
     {
         /// <summary />
-        public bool IsSystem { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
-        public int? ParentGroupId { get; set; }
+        public bool? AddUserAccountsDuringSync { get; set; }
 
         /// <summary />
-        public int GroupTypeId { get; set; }
+        public bool? AllowGuests { get; set; }
 
         /// <summary />
         public int? CampusId { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
-        public bool IsSecurityRole { get; set; }
+        public int? ExitSystemEmailId { get; set; }
+
+        /// <summary />
+        public int GroupTypeId { get; set; }
 
         /// <summary />
         public bool IsActive { get; set; }
 
         /// <summary />
+        public bool IsSecurityRole { get; set; }
+
+        /// <summary />
+        public bool IsSystem { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
         public int Order { get; set; }
 
         /// <summary />
-        public bool? AllowGuests { get; set; }
+        public int? ParentGroupId { get; set; }
+
+        /// <summary />
+        public int? ScheduleId { get; set; }
+
+        /// <summary />
+        public int? SyncDataViewId { get; set; }
+
+        /// <summary />
+        public int? WelcomeSystemEmailId { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Client model for Group that includes all the fields that are available for GETs. Use this for GETs (use GroupEntity for POST/PUTs)
+    /// </summary>
+    public partial class Group : GroupEntity
+    {
+        /// <summary />
+        public Campus Campus { get; set; }
+
+        /// <summary />
+        public SystemEmail ExitSystemEmail { get; set; }
+
+        /// <summary />
+        public ICollection<GroupLocation> GroupLocations { get; set; }
+
+        /// <summary />
+        public ICollection<Group> Groups { get; set; }
+
+        /// <summary />
+        public GroupType GroupType { get; set; }
+
+        /// <summary />
+        public ICollection<GroupMember> Members { get; set; }
+
+        /// <summary />
+        public Schedule Schedule { get; set; }
+
+        /// <summary />
+        public DataView SyncDataView { get; set; }
+
+        /// <summary />
+        public SystemEmail WelcomeSystemEmail { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -72,14 +131,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
-        public int Id { get; set; }
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

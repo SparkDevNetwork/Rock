@@ -13,23 +13,19 @@
 
             var id = this.id,
                 $modal = $('#' + id).closest('.rock-modal');
-            
 
-            $modal.find('.schedule-type').click(function () {
+
+            $modal.find('.schedule-type').off('click').on('click',function () {
                 var recurrenceState = $('input[class=schedule-type]:checked').data('schedule-type');
 
                 if (recurrenceState === 'schedule-onetime') {
-                    $('#schedule-recurrence-panel_' + id).slideUp(function () {
-                        $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                    });
+                    $modal.find('.js-schedule-recurrence-panel').slideUp();
                 } else {
-                    $('#schedule-recurrence-panel_' + id).slideDown(function () {
-                        $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                    });
+                    $modal.find('.js-schedule-recurrence-panel').slideDown();
                 }
             });
 
-            $modal.find('.recurrence-pattern-radio').click(function () {
+            $modal.find('.recurrence-pattern-radio').off('click').on('click', function () {
 
                 var recurrencePattern = '.' + $('input[class=recurrence-pattern-radio]:checked').data('recurrence-pattern');
 
@@ -37,24 +33,30 @@
 
                     $modal.find('.recurrence-pattern-type').not(recurrencePattern).hide();
 
-                    $(recurrencePattern).fadeIn(function () {
-                        $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                    });
+                    if (recurrencePattern == ".recurrence-pattern-specific-date") {
+                        /* don't show continue-until or exclusion dates for specific date mode (since it doesn't make sense, plus ical ends up deleting them) */
+                        $modal.find('.js-continue-until').hide();
+                        $modal.find('.js-exclusion-dates').hide();
+                    }
+                    else {
+                        $modal.find('.js-continue-until').show();
+                        $modal.find('.js-exclusion-dates').show();
+                    }
+
+                    $(recurrencePattern).fadeIn();
                 }
             });
 
             /** Specific Dates Scripts**/
 
             // show datepicker, ok, cancel so that new date can be added to the list
-            $modal.find('.add-specific-date').click(function () {
+            $modal.find('.add-specific-date').off('click').on('click', function () {
                 $(this).hide();
-                $('#add-specific-date-group_' + id).show(100, function () {
-                    $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                });
+                $modal.find('.js-add-specific-date-group').show();
             });
 
             // add new date to list when ok is clicked
-            $modal.find('.add-specific-date-ok').click(function () {
+            $modal.find('.add-specific-date-ok').off('click').on('click', function () {
 
                 // get date list from hidden field
                 var dateListValues = $modal.find('.recurrence-pattern-type > input:hidden').val().split(',');
@@ -93,7 +95,7 @@
                 dateListValues.push(newDate);
 
                 // save list back to hidden field
-                $modal.find('input[id*="hfSpecificDateListValues"]').val(dateListValues);
+                $modal.find('.js-specific-datelist-values').val(dateListValues);
 
                 // rebuild the UL
                 var dateList = $modal.find(".lstSpecificDates");
@@ -104,18 +106,14 @@
                     dateList.append(newLi);
                 });
 
-                $modal.find('#add-specific-date-group_' + id).hide();
-                $modal.find('.add-specific-date').show(100, function () {
-                    $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                });
+                $modal.find('.js-add-specific-date-group').hide();
+                $modal.find('.add-specific-date').show();
             });
 
             // cancel out of adding a new date
-            $modal.find('.add-specific-date-cancel').click(function () {
-                $modal.find('#add-specific-date-group_' + id).hide();
-                $modal.find('.add-specific-date').show(100, function () {
-                    $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                });
+            $modal.find('.add-specific-date-cancel').off('click').on('click', function () {
+                $modal.find('.js-add-specific-date-group').hide();
+                $modal.find('.add-specific-date').show();
             });
 
             // fadeIn/fadeOut the X buttons to delete dates
@@ -129,11 +127,11 @@
             );
 
             // delete specific date from list
-            $modal.find('.lstSpecificDates').on('click', 'li a', function () {
+            $modal.find('.lstSpecificDates').off('click').on('click', 'li a', function () {
                 var selectedDate = $(this).siblings().text();
 
                 // get date list from hidden field
-                var $hiddenField = $modal.find('input[id*="hfSpecificDateListValues"]');
+                var $hiddenField = $modal.find('.js-specific-datelist-values');
                 var dateList = $hiddenField.val().split(",");
 
                 // delete selectedDate
@@ -148,31 +146,30 @@
                 // remove date from ul list
                 var liItem = $(this).parent();
                 liItem.remove();
-
-                $modal.find('.scroll-container').tinyscrollbar_update('relative');
             });
 
             /** Exclusion DateRanges Scripts **/
 
             // show dateRangepicker, ok, cancel so that new dateRange can be added to the list
-            $modal.find('.add-exclusion-daterange').click(function () {
+            $modal.find('.add-exclusion-daterange').off('click').on('click', function () {
+                
                 $(this).hide();
-                $modal.find('#add-exclusion-daterange-group_' + id).show(100, function () {
-                    $modal.find('.scroll-container').tinyscrollbar_update('relative');
+                $modal.find('.js-add-exclusion-daterange-group').show(function () {
+                    Rock.controls.modal.updateSize();
                 });
             });
 
             // add new date to list when ok is clicked
-            $modal.find('.add-exclusion-daterange-ok').click(function () {
+            $modal.find('.add-exclusion-daterange-ok').off('click').on('click', function () {
 
                 // get daterange list from hidden field
-                var dateRangeListValues = $modal.find('input[id*="hfExclusionDateRangeListValues"]').val().split(",");
+                var dateRangeListValues = $modal.find('.js-exclusion-daterange-list-values').val().split(",");
                 if (!dateRangeListValues[0]) {
                     // if blank, initialize as a new empty array
                     dateRangeListValues = [];
                 }
 
-                var $exclusionDateRange = $modal.find('input[id*="dpExclusionDateRange_"]');
+                var $exclusionDateRange = $modal.find('.js-exclusion-date-range-picker input');
                 var newDateRange = $exclusionDateRange.first().val() + ' - ' + $exclusionDateRange.last().val();
 
                 // delete newDateRange from list in case it is already there
@@ -185,7 +182,7 @@
                 dateRangeListValues.push(newDateRange);
 
                 // save list back to hidden field
-                $modal.find('input[id*="hfExclusionDateRangeListValues"]').val(dateRangeListValues);
+                $modal.find('.js-exclusion-daterange-list-values').val(dateRangeListValues);
 
                 // rebuild the UL
                 var dateRangeList = $modal.find('.lstExclusionDateRanges');
@@ -196,20 +193,14 @@
                     dateRangeList.append(newLi);
                 });
 
-                $modal.find('#add-exclusion-daterange-group_' + id).hide();
-                $modal.find('.add-exclusion-daterange').show(100, function (e) {
-                    $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                });
-
-
+                $modal.find('.js-add-exclusion-daterange-group').hide();
+                $modal.find('.add-exclusion-daterange').show();
             });
 
             // cancel out of adding a new dateRange
-            $modal.find('.add-exclusion-daterange-cancel').click(function () {
-                $modal.find('#add-exclusion-daterange-group' + id).hide();
-                $modal.find('.add-exclusion-daterange').show(100, function () {
-                    $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                });
+            $modal.find('.add-exclusion-daterange-cancel').off('click').on('click', function () {
+                $modal.find('.js-add-exclusion-daterange-group').hide();
+                $modal.find('.add-exclusion-daterange').show();
             });
 
             // fadeIn/fadeOut the X buttons to delete dateRanges
@@ -223,11 +214,11 @@
             );
 
             // delete dateRange from list
-            $modal.find('.lstExclusionDateRanges').on('click', 'li a', function () {
+            $modal.find('.lstExclusionDateRanges').off('click').on('click', 'li a', function () {
                 var selectedDateRange = $(this).siblings("span").text();
 
                 // get dateRange list from hidden field
-                var $hiddenField = $modal.find('input[id*="hfExclusionDateRangeListValues"]');
+                var $hiddenField = $modal.find('.js-exclusion-daterange-list-values');
                 var dateRangeList = $hiddenField.val().split(",");
 
                 // delete selectedDateRange
@@ -242,12 +233,10 @@
                 // remove dateRange from ul list
                 var liItem = $(this).parent();
                 liItem.remove();
-
-                $modal.find('.scroll-container').tinyscrollbar_update('relative');
             });
 
             // validate on Save.  Make sure they have at least a StartDate and Time set
-            $modal.find('.modaldialog-save-button').on('click', function (event) {
+            $modal.find('.js-modaldialog-save-link').off('click').on('click', function (event) {
                 var $datetimepicker = $modal.find('[id*="dpStartDateTime"]').find('input'),
                     startDateValue = Date.parse($datetimepicker.first().val()) || -1,
                     startTimeValue = $datetimepicker.last().val();

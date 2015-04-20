@@ -93,18 +93,24 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this BinaryFileType target, BinaryFileType source )
         {
-            target.IsSystem = source.IsSystem;
-            target.Name = source.Name;
+            target.Id = source.Id;
+            target.AllowCaching = source.AllowCaching;
             target.Description = source.Description;
             target.IconCssClass = source.IconCssClass;
-            target.StorageEntityTypeId = source.StorageEntityTypeId;
-            target.AllowCaching = source.AllowCaching;
+            target.IsSystem = source.IsSystem;
+            target.MaxHeight = source.MaxHeight;
+            target.MaxWidth = source.MaxWidth;
+            target.Name = source.Name;
+            target.PreferredColorDepth = source.PreferredColorDepth;
+            target.PreferredFormat = source.PreferredFormat;
+            target.PreferredRequired = source.PreferredRequired;
+            target.PreferredResolution = source.PreferredResolution;
             target.RequiresViewSecurity = source.RequiresViewSecurity;
+            target.StorageEntityTypeId = source.StorageEntityTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

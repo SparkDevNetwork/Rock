@@ -24,12 +24,23 @@
                     startView: options.startView || 'month'
                 });
 
-                $('#' + options.id).closest('.form-control-group').find('input:checkbox').click(function () {
-                    if ( $(this).is(':checked')) {
+                var $datePickerContainer = $textBox.closest('.js-date-picker-container');
+                
+                $datePickerContainer.find('.js-current-date-checkbox').on('click', function (a,b,c) {
+                    var $dateOffsetBox = $datePickerContainer.find('.js-current-date-offset');
+                    var $dateOffsetlabel = $("label[for='" + $dateOffsetBox.attr('id') + "']")
+                    if ($(this).is(':checked')) {
+                        $dateOffsetlabel.removeClass('aspNetDisabled');
+                        $dateOffsetBox.prop('disabled', false);
+                        $dateOffsetBox.removeClass('aspNetDisabled');
                         $textBox.val('');
                         $textBox.prop('disabled', true);
                         $textBox.addClass('aspNetDisabled');
+
                     } else {
+                        $dateOffsetlabel.addClass('aspNetDisabled');
+                        $dateOffsetBox.prop('disabled', true);
+                        $dateOffsetBox.addClass('aspNetDisabled');
                         $textBox.prop('disabled', false);
                         $textBox.removeClass('aspNetDisabled');
                     }

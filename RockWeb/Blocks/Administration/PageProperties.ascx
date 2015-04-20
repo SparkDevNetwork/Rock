@@ -7,6 +7,8 @@
     </Triggers>
 <ContentTemplate>
  
+    <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert alert-danger block-message error"/>
+
     <asp:PlaceHolder ID="phContent" runat="server">
 
         <ul class="nav nav-pills" >
@@ -24,8 +26,6 @@
 
             <asp:ValidationSummary ID="valSummaryTop" runat="server"  HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-            <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert alert-danger block-message error"/>
-            
             <asp:Panel ID="pnlBasicProperty" runat="server" Visible="true" >
                 <div class="row">
                     <div class="col-md-6">
@@ -82,7 +82,8 @@
                         <Rock:DataTextBox ID="tbCacheDuration" runat="server" Label="Cache Duration" SourceTypeName="Rock.Model.Page, Rock" PropertyName="OutputCacheDuration"/>
                     </div>
                     <div class="col-md-6">
-                        <fieldset>                
+                        <fieldset>  
+                            <Rock:NotificationBox ID="nbPageRouteWarning" runat="server" />
                             <Rock:RockTextBox ID="tbPageRoute" runat="server" TextMode="MultiLine" Rows="3" Label="Page Routes" Help="A unique, friendly route name for the page (e.g. 'Login' or 'Community/GetInvolved')" />
                             <asp:CustomValidator ID="cvPageRoute" runat="server" ControlToValidate="tbPageRoute" OnServerValidate="cvPageRoute_ServerValidate" Display="None" ErrorMessage="Invalid Route(s)" />
                         </fieldset>

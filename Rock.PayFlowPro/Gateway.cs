@@ -20,12 +20,11 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data;
 using System.Linq;
-
 using PayPal.Payments.Common.Utility;
 using PayPal.Payments.DataObjects;
 using PayPal.Payments.Transactions;
-
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -44,7 +43,6 @@ namespace Rock.PayFlowPro
     [TextField( "PayPal User", "", false, "", "", 2, "User" )]
     [TextField( "PayPal Password", "", true, "", "", 3, "Password", true )]
     [CustomRadioListField( "Mode", "Mode to use for transactions", "Live,Test", true, "Live", "", 4 )]
-    [TimeField( "Batch Process Time", "The Paypal Batch processing cut-off time.  When batches are created by Rock, they will use this for the start/stop when creating new batches", false, "00:00:00", "", 5 )]
 
     public class Gateway : GatewayComponent
     {
@@ -71,28 +69,13 @@ namespace Rock.PayFlowPro
         }
 
         /// <summary>
-        /// Gets the batch time offset.
+        /// Authorizes the specified payment info.
         /// </summary>
-        public override TimeSpan BatchTimeOffset
-        {
-            get
-            {
-                var timeValue = new TimeSpan( 0 );
-                if ( TimeSpan.TryParse( GetAttributeValue( "BatchProcessTime" ), out timeValue ) )
-                {
-                    return timeValue;
-                }
-                return base.BatchTimeOffset;
-            }
-        }
-
-        /// <summary>
-        /// Charges the specified payment info.
-        /// </summary>
+        /// <param name="financialGateway"></param>
         /// <param name="paymentInfo">The payment info.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public override FinancialTransaction Charge( PaymentInfo paymentInfo, out string errorMessage )
+        public override FinancialTransaction Authorize( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
         {
             errorMessage = string.Empty;
             Response ppResponse = null;
@@ -105,12 +88,75 @@ namespace Rock.PayFlowPro
                 if ( paymentInfo is ReferencePaymentInfo )
                 {
                     var reference = paymentInfo as ReferencePaymentInfo;
-                    var ppTransaction = new ReferenceTransaction( "Sale", reference.TransactionCode, GetUserInfo(), GetConnection(), invoice, tender, PayflowUtility.RequestId );
+                    var ppTransaction = new ReferenceTransaction( "Authorization", reference.TransactionCode, GetUserInfo( financialGateway ), GetConnection( financialGateway ), invoice, tender, PayflowUtility.RequestId );
                     ppResponse = ppTransaction.SubmitTransaction();
                 }
                 else
                 {
-                    var ppTransaction = new SaleTransaction( GetUserInfo(), GetConnection(), invoice, tender, PayflowUtility.RequestId );
+                    var ppTransaction = new AuthorizationTransaction( GetUserInfo( financialGateway ), GetConnection( financialGateway ), invoice, tender, PayflowUtility.RequestId );
+                    ppResponse = ppTransaction.SubmitTransaction();
+                }
+            }
+            else
+            {
+                errorMessage = "Could not create tender from PaymentInfo";
+            }
+
+            if ( ppResponse != null )
+            {
+                TransactionResponse txnResponse = ppResponse.TransactionResponse;
+                if ( txnResponse != null )
+                {
+                    if ( txnResponse.Result == 0 ) // Success
+                    {
+                        var transaction = new FinancialTransaction();
+                        transaction.TransactionCode = txnResponse.Pnref;
+                        return transaction;
+                    }
+                    else
+                    {
+                        errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
+                    }
+                }
+                else
+                {
+                    errorMessage = "Invalid transaction response from the financial gateway";
+                }
+            }
+            else
+            {
+                errorMessage = "Invalid response from the financial gateway.";
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Charges the specified payment info.
+        /// </summary>
+        /// <param name="financialGateway"></param>
+        /// <param name="paymentInfo">The payment info.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override FinancialTransaction Charge( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            Response ppResponse = null;
+
+            var invoice = GetInvoice( paymentInfo );
+            var tender = GetTender( paymentInfo );
+
+            if ( tender != null )
+            {
+                if ( paymentInfo is ReferencePaymentInfo )
+                {
+                    var reference = paymentInfo as ReferencePaymentInfo;
+                    var ppTransaction = new ReferenceTransaction( "Sale", reference.TransactionCode, GetUserInfo( financialGateway ), GetConnection( financialGateway ), invoice, tender, PayflowUtility.RequestId );
+                    ppResponse = ppTransaction.SubmitTransaction();
+                }
+                else
+                {
+                    var ppTransaction = new SaleTransaction( GetUserInfo( financialGateway ), GetConnection( financialGateway ), invoice, tender, PayflowUtility.RequestId );
                     ppResponse = ppTransaction.SubmitTransaction();
                 }
             }
@@ -151,11 +197,12 @@ namespace Rock.PayFlowPro
         /// <summary>
         /// Adds the scheduled payment.
         /// </summary>
+        /// <param name="financialGateway"></param>
         /// <param name="schedule">The schedule.</param>
         /// <param name="paymentInfo">The payment info.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public override FinancialScheduledTransaction AddScheduledPayment( PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
+        public override FinancialScheduledTransaction AddScheduledPayment( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -166,7 +213,7 @@ namespace Rock.PayFlowPro
                 recurring.OptionalTrx = "A";
             }
 
-            var ppTransaction = new RecurringAddTransaction( GetUserInfo(), GetConnection(), GetInvoice( paymentInfo ), GetTender( paymentInfo ),
+            var ppTransaction = new RecurringAddTransaction( GetUserInfo( financialGateway ), GetConnection( financialGateway ), GetInvoice( paymentInfo ), GetTender( paymentInfo ),
                 recurring, PayflowUtility.RequestId );
 
             if ( paymentInfo is ReferencePaymentInfo )
@@ -222,14 +269,14 @@ namespace Rock.PayFlowPro
         /// Reactivates the scheduled payment.
         /// </summary>
         /// <param name="transaction">The transaction.</param>
-        /// <param name="paymentInfo">The payment information.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         public override bool ReactivateScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage )
         {
             errorMessage = string.Empty;
 
-            var ppTransaction = new RecurringReActivateTransaction( GetUserInfo(), GetConnection(), GetRecurring( transaction ), PayflowUtility.RequestId );
+            var financialGateway = GetFinancialGateway( transaction );
+            var ppTransaction = new RecurringReActivateTransaction( GetUserInfo( financialGateway ), GetConnection( financialGateway ), GetRecurring( transaction ), PayflowUtility.RequestId );
 
             var ppResponse = ppTransaction.SubmitTransaction();
             if ( ppResponse != null )
@@ -267,10 +314,10 @@ namespace Rock.PayFlowPro
             return false;
         }
 
-         /// <summary>
+        /// <summary>
         /// Updates the scheduled payment.
         /// </summary>
-        /// <param name="schedule">The schedule.</param>
+        /// <param name="transaction">The transaction.</param>
         /// <param name="paymentInfo">The payment info.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
@@ -279,14 +326,15 @@ namespace Rock.PayFlowPro
             errorMessage = string.Empty;
 
             RecurringModifyTransaction ppTransaction = null;
+            var financialGateway = GetFinancialGateway( transaction );
 
             if ( paymentInfo != null )
             {
-                ppTransaction = new RecurringModifyTransaction( GetUserInfo(), GetConnection(), GetRecurring( transaction ), GetInvoice( paymentInfo ), GetTender( paymentInfo ), PayflowUtility.RequestId );
+                ppTransaction = new RecurringModifyTransaction( GetUserInfo( financialGateway ), GetConnection( financialGateway ), GetRecurring( transaction ), GetInvoice( paymentInfo ), GetTender( paymentInfo ), PayflowUtility.RequestId );
             }
             else
             {
-                ppTransaction = new RecurringModifyTransaction( GetUserInfo(), GetConnection(), GetRecurring( transaction ), PayflowUtility.RequestId );
+                ppTransaction = new RecurringModifyTransaction( GetUserInfo( financialGateway ), GetConnection( financialGateway ), GetRecurring( transaction ), PayflowUtility.RequestId );
             }
 
             var ppResponse = ppTransaction.SubmitTransaction();
@@ -336,7 +384,9 @@ namespace Rock.PayFlowPro
         {
             errorMessage = string.Empty;
 
-            var ppTransaction = new RecurringCancelTransaction( GetUserInfo(), GetConnection(), GetRecurring( transaction ), PayflowUtility.RequestId );
+            var financialGateway = GetFinancialGateway( transaction );
+            
+            var ppTransaction = new RecurringCancelTransaction( GetUserInfo( financialGateway ), GetConnection( financialGateway ), GetRecurring( transaction ), PayflowUtility.RequestId );
             var ppResponse = ppTransaction.SubmitTransaction();
 
             if ( ppResponse != null )
@@ -380,7 +430,9 @@ namespace Rock.PayFlowPro
         {
             errorMessage = string.Empty;
 
-            var ppTransaction = new RecurringInquiryTransaction( GetUserInfo(), GetConnection(), GetRecurring( transaction ), PayflowUtility.RequestId );
+            var financialGateway = GetFinancialGateway( transaction );
+
+            var ppTransaction = new RecurringInquiryTransaction( GetUserInfo( financialGateway ), GetConnection( financialGateway ), GetRecurring( transaction ), PayflowUtility.RequestId );
             var ppResponse = ppTransaction.SubmitTransaction();
 
             if ( ppResponse != null )
@@ -423,23 +475,25 @@ namespace Rock.PayFlowPro
         /// <summary>
         /// Gets the payments that have been processed for any scheduled transactions
         /// </summary>
+        /// <param name="financialGateway"></param>
         /// <param name="startDate">The start date.</param>
         /// <param name="endDate">The end date.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public override List<Payment> GetPayments( DateTime startDate, DateTime endDate, out string errorMessage )
+        public override List<Payment> GetPayments( FinancialGateway financialGateway, DateTime startDate, DateTime endDate, out string errorMessage )
         {
             var reportingApi = new Reporting.Api(
-                GetAttributeValue( "User" ),
-                GetAttributeValue( "Vendor" ),
-                GetAttributeValue( "Partner" ),
-                GetAttributeValue( "Password" ),
-                GetAttributeValue( "Mode" ).Equals( "Test", StringComparison.CurrentCultureIgnoreCase ) );
+                GetAttributeValue( financialGateway, "User" ),
+                GetAttributeValue( financialGateway, "Vendor" ),
+                GetAttributeValue( financialGateway, "Partner" ),
+                GetAttributeValue( financialGateway, "Password" ),
+                GetAttributeValue( financialGateway, "Mode" ).Equals( "Test", StringComparison.CurrentCultureIgnoreCase ) );
 
             // Query the PayFlowPro Recurring Billing Report for transactions that were processed during data range
             var recurringBillingParams = new Dictionary<string, string>();
             recurringBillingParams.Add( "start_date", startDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
             recurringBillingParams.Add( "end_date", endDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
+            recurringBillingParams.Add( "include_declines", "false" );
             DataTable recurringBillingTable = reportingApi.GetReport( "RecurringBillingReport", recurringBillingParams, out errorMessage );
             if ( recurringBillingTable != null )
             {
@@ -450,6 +504,7 @@ namespace Rock.PayFlowPro
                 customParams.Add( "start_date", startDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
                 customParams.Add( "end_date", endDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
                 customParams.Add( "maximum_amount", "1000000" );
+                customParams.Add( "results", "Approvals Only" );
                 customParams.Add( "recurring_only", "true" );
                 customParams.Add( "show_order_id", "false" );
                 customParams.Add( "show_transaction_id", "true" );
@@ -458,15 +513,15 @@ namespace Rock.PayFlowPro
                 customParams.Add( "show_tender_type", "true" );
                 customParams.Add( "show_account_number", "false" );
                 customParams.Add( "show_expires", "false" );
-                customParams.Add( "show_aba_routing_num", "false" );
+                customParams.Add( "show_aba_routing_number", "false" );
                 customParams.Add( "show_amount", "true" );
-                customParams.Add( "show_result_code", "false" );
+                customParams.Add( "show_result_code", "true" );
                 customParams.Add( "show_response_msg", "false" );
                 customParams.Add( "show_comment1", "false" );
                 customParams.Add( "show_comment2", "false" );
                 customParams.Add( "show_tax_amount", "false" );
                 customParams.Add( "show_purchase_order", "false" );
-                customParams.Add( "show_original_transactio", "false" );
+                customParams.Add( "show_original_transaction_id", "false" );
                 customParams.Add( "show_avs_street_match", "false" );
                 customParams.Add( "show_avs_zip_match", "false" );
                 customParams.Add( "show_invoice_number", "false" );
@@ -475,15 +530,15 @@ namespace Rock.PayFlowPro
                 customParams.Add( "show_csc_match", "false" );
                 customParams.Add( "show_billing_first_name", "false" );
                 customParams.Add( "show_billing_last_name", "false" );
-                customParams.Add( "show_billing_company_", "false" );
+                customParams.Add( "show_billing_company_name", "false" );
                 customParams.Add( "show_billing_address", "false" );
                 customParams.Add( "show_billing_city", "false" );
                 customParams.Add( "show_billing_state", "false" );
                 customParams.Add( "show_billing_zip", "false" );
                 customParams.Add( "show_billing_email", "false" );
                 customParams.Add( "show_billing_country", "false" );
-                customParams.Add( "show_shipping_first_na", "false" );
-                customParams.Add( "show_shipping_last_na", "false" );
+                customParams.Add( "show_shipping_first_name", "false" );
+                customParams.Add( "show_shipping_last_name", "false" );
                 customParams.Add( "show_shipping_address", "false" );
                 customParams.Add( "show_shipping_city", "false" );
                 customParams.Add( "show_shipping_state", "false" );
@@ -575,7 +630,7 @@ namespace Rock.PayFlowPro
         /// <summary>
         /// Gets an optional reference identifier needed to process future transaction from saved account.
         /// </summary>
-        /// <param name="transaction">The transaction.</param>
+        /// <param name="scheduledTransaction">The scheduled transaction.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         public override string GetReferenceNumber( FinancialScheduledTransaction scheduledTransaction, out string errorMessage )
@@ -586,34 +641,69 @@ namespace Rock.PayFlowPro
 
         #endregion
 
+        #region private methods
+
+        private FinancialGateway GetFinancialGateway( FinancialTransaction transaction )
+        {
+            return transaction != null ? GetFinancialGateway( transaction.FinancialGateway, transaction.FinancialGatewayId ) : null;
+        }
+
+        private FinancialGateway GetFinancialGateway( FinancialScheduledTransaction scheduledTransaction )
+        {
+            return scheduledTransaction != null ? GetFinancialGateway( scheduledTransaction.FinancialGateway, scheduledTransaction.FinancialGatewayId ) : null;
+        }
+
+        private FinancialGateway GetFinancialGateway( FinancialGateway financialGateway, int? financialGatewayId)
+        {
+            if ( financialGateway != null )
+            {
+                if ( financialGateway.Attributes == null )
+                {
+                    financialGateway.LoadAttributes();
+                }
+                return financialGateway;
+            }
+
+            if ( financialGatewayId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var gateway = new FinancialGatewayService( rockContext ).Get( financialGatewayId.Value );
+                    gateway.LoadAttributes( rockContext );
+                    return gateway;
+                }
+            }
+
+            return null;
+        }
+
+        #endregion
+
         #region PayFlowPro Object Helper Methods
 
-        private string GatewayUrl
+        private string GetGatewayUrl( FinancialGateway financialGateway )
         {
-            get
+            if ( GetAttributeValue( financialGateway, "Mode" ).Equals( "Live", StringComparison.CurrentCultureIgnoreCase ) )
             {
-                if ( GetAttributeValue( "Mode" ).Equals( "Live", StringComparison.CurrentCultureIgnoreCase ) )
-                {
-                    return "payflowpro.paypal.com";
-                }
-                else
-                {
-                    return "pilot-payflowpro.paypal.com";
-                }
+                return "payflowpro.paypal.com";
+            }
+            else
+            {
+                return "pilot-payflowpro.paypal.com";
             }
         }
 
-        private PayflowConnectionData GetConnection()
+        private PayflowConnectionData GetConnection( FinancialGateway financialGateway )
         {
-            return new PayflowConnectionData( GatewayUrl );
+            return new PayflowConnectionData( GetGatewayUrl( financialGateway ) );
         }
 
-        private UserInfo GetUserInfo()
+        private UserInfo GetUserInfo( FinancialGateway financialGateway )
         {
-            string user = GetAttributeValue( "User" );
-            string vendor = GetAttributeValue( "Vendor" );
-            string partner = GetAttributeValue( "Partner" );
-            string password = GetAttributeValue( "Password" );
+            string user = GetAttributeValue( financialGateway, "User" );
+            string vendor = GetAttributeValue( financialGateway, "Vendor" );
+            string partner = GetAttributeValue( financialGateway, "Partner" );
+            string password = GetAttributeValue( financialGateway, "Password" );
 
             if ( string.IsNullOrWhiteSpace( user ) )
             {
@@ -632,6 +722,7 @@ namespace Rock.PayFlowPro
             ppBillingInfo.PhoneNum = paymentInfo.Phone;
             ppBillingInfo.Street = paymentInfo.Street1;
             ppBillingInfo.BillToStreet2 = paymentInfo.Street2;
+            ppBillingInfo.City = paymentInfo.City;
             ppBillingInfo.State = paymentInfo.State;
             ppBillingInfo.Zip = paymentInfo.PostalCode;
             ppBillingInfo.BillToCountry = paymentInfo.Country;
@@ -652,7 +743,9 @@ namespace Rock.PayFlowPro
             var ppInvoice = new Invoice();
             ppInvoice.Amt = ppAmount;
             ppInvoice.BillTo = ppBillingInfo;
-
+            ppInvoice.Comment1 = paymentInfo.Comment1;
+            ppInvoice.Comment2 = paymentInfo.Comment2;
+            ppInvoice.Desc = paymentInfo.Description;
             return ppInvoice;
         }
 

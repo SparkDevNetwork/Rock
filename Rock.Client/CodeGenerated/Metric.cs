@@ -21,26 +21,30 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for Metric
+    /// Base client model for Metric that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class Metric
+    public partial class MetricEntity
     {
         /// <summary />
-        public bool IsSystem { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
-        public string Title { get; set; }
+        public int? AdminPersonAliasId { get; set; }
 
         /// <summary />
-        public string Subtitle { get; set; }
+        public int? DataViewId { get; set; }
 
         /// <summary />
         public string Description { get; set; }
+
+        /// <summary />
+        public int? EntityTypeId { get; set; }
 
         /// <summary />
         public string IconCssClass { get; set; }
@@ -49,13 +53,28 @@ namespace Rock.Client
         public bool IsCumulative { get; set; }
 
         /// <summary />
-        public int? SourceValueTypeId { get; set; }
+        public bool IsSystem { get; set; }
+
+        /// <summary />
+        public DateTime? LastRunDateTime { get; set; }
+
+        /// <summary />
+        public int? MetricChampionPersonAliasId { get; set; }
+
+        /// <summary />
+        public int? ScheduleId { get; set; }
 
         /// <summary />
         public string SourceSql { get; set; }
 
         /// <summary />
-        public int? DataViewId { get; set; }
+        public int? SourceValueTypeId { get; set; }
+
+        /// <summary />
+        public string Subtitle { get; set; }
+
+        /// <summary />
+        public string Title { get; set; }
 
         /// <summary />
         public string XAxisLabel { get; set; }
@@ -64,19 +83,26 @@ namespace Rock.Client
         public string YAxisLabel { get; set; }
 
         /// <summary />
-        public int? MetricChampionPersonAliasId { get; set; }
+        public Guid Guid { get; set; }
 
         /// <summary />
-        public int? AdminPersonAliasId { get; set; }
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Client model for Metric that includes all the fields that are available for GETs. Use this for GETs (use MetricEntity for POST/PUTs)
+    /// </summary>
+    public partial class Metric : MetricEntity
+    {
+        /// <summary />
+        public EntityType EntityType { get; set; }
 
         /// <summary />
-        public int? ScheduleId { get; set; }
+        public ICollection<MetricCategory> MetricCategories { get; set; }
 
         /// <summary />
-        public DateTime? LastRunDateTime { get; set; }
-
-        /// <summary />
-        public int? EntityTypeId { get; set; }
+        public DefinedValue SourceValueType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -90,14 +116,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
-        public int Id { get; set; }
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

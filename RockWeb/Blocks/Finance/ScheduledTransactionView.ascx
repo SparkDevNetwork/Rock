@@ -31,11 +31,11 @@
 
                         <Rock:Grid ID="gAccountsView" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light">
                             <Columns>
-                                <asp:TemplateField HeaderText="Accounts">
+                                <Rock:RockTemplateField HeaderText="Accounts">
                                     <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
-                                </asp:TemplateField>
-                                <asp:BoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
-                                <asp:BoundField DataField="Summary" SortExpression="Summary" />
+                                </Rock:RockTemplateField>
+                                <Rock:RockBoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
+                                <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
                             </Columns>
                         </Rock:Grid>
 
@@ -60,7 +60,7 @@
                     <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancel_Click" />
                 </div>
 
-                <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Danger" Dismissable="true" />
+                <Rock:NotificationBox ID="nbError" CssClass="margin-t-lg" runat="server" Visible="false" NotificationBoxType="Danger" Dismissable="true" />
 
             </div>
 

@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            gContentList.DataKeyNames = new string[] { "id" };
+            gContentList.DataKeyNames = new string[] { "Id" };
             _canApprove = IsUserAuthorized( "Approve" );
             ppApprovedByFilter.Visible = _canApprove;
             gContentListFilter.ApplyFilterClick += gContentListFilter_ApplyFilterClick;
@@ -305,6 +305,8 @@ namespace RockWeb.Blocks.Cms
                 BlockPageId = a.Block.PageId,
                 BlockLayoutId = a.Block.LayoutId,
             } );
+
+            gContentList.EntityTypeId = EntityTypeCache.Read<HtmlContent>().Id;
 
             // Filter by Site
             if ( ddlSiteFilter.SelectedIndex > 0 )

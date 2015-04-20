@@ -192,20 +192,23 @@ Rock.controls.tagList.initialize({{
         {
             var sb = new StringBuilder();
 
-            var service = new TaggedItemService( new RockContext() );
-            foreach ( dynamic item in service.Get(
-                EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid )
-                .Select( i => new
-                {
-                    OwnerId = ( i.Tag.OwnerPersonAlias != null ? i.Tag.OwnerPersonAlias.PersonId : (int?)null ),
-                    Name = i.Tag.Name
-                } ) )
+            using ( var rockContext = new RockContext() )
             {
-                if ( sb.Length > 0 )
-                    sb.Append( ',' );
-                sb.Append( item.Name );
-                if ( currentPersonId.HasValue && item.OwnerId == currentPersonId.Value )
-                    sb.Append( "^personal" );
+                var service = new TaggedItemService( rockContext );
+                foreach ( dynamic item in service.Get(
+                    EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid )
+                    .Select( i => new
+                    {
+                        OwnerId = ( i.Tag.OwnerPersonAlias != null ? i.Tag.OwnerPersonAlias.PersonId : (int?)null ),
+                        Name = i.Tag.Name
+                    } ) )
+                {
+                    if ( sb.Length > 0 )
+                        sb.Append( ',' );
+                    sb.Append( item.Name );
+                    if ( currentPersonId.HasValue && item.OwnerId == currentPersonId.Value )
+                        sb.Append( "^personal" );
+                }
             }
 
             this.Text = sb.ToString();

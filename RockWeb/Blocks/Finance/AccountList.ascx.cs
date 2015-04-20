@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.Finance
                 rGridAccount.Columns[3].Visible = true;
             }
 
-            rGridAccount.DataKeyNames = new string[] { "id" };
+            rGridAccount.DataKeyNames = new string[] { "Id" };
             rGridAccount.Actions.ShowAdd = canEdit;
             rGridAccount.Actions.AddClick += rGridAccount_Add;
             rGridAccount.GridReorder += rGridAccount_GridReorder;

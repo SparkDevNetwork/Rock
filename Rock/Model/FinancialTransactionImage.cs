@@ -91,13 +91,26 @@ namespace Rock.Model
         /// <param name="state">The state.</param>
         public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
         {
-            if (state != System.Data.Entity.EntityState.Deleted)
+            BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );
+            var binaryFile = binaryFileService.Get( BinaryFileId );
+            if ( binaryFile != null )
             {
-                BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );
-                var binaryFile = binaryFileService.Get( BinaryFileId );
-                if ( binaryFile != null && binaryFile.IsTemporary )
+                if ( state != System.Data.Entity.EntityState.Deleted )
                 {
-                    binaryFile.IsTemporary = false;
+                    // if there is an binaryfile (image) associated with this, make sure that it is flagged as IsTemporary=False
+                    if ( binaryFile.IsTemporary )
+                    {
+                        binaryFile.IsTemporary = false;
+                    }
+                }
+                else
+                {
+                    // if deleting, and there is an binaryfile (image) associated with this, make sure that it is flagged as IsTemporary=true 
+                    // so that it'll get cleaned up
+                    if ( !binaryFile.IsTemporary )
+                    {
+                        binaryFile.IsTemporary = true;
+                    }
                 }
             }
         }
@@ -117,7 +130,7 @@ namespace Rock.Model
         /// </summary>
         public FinancialTransactionImageConfiguration()
         {
-            this.HasRequired( i => i.Transaction ).WithMany( t => t.Images ).HasForeignKey( i => i.TransactionId ).WillCascadeOnDelete( false );
+            this.HasRequired( i => i.Transaction ).WithMany( t => t.Images ).HasForeignKey( i => i.TransactionId ).WillCascadeOnDelete( true );
             this.HasRequired( i => i.BinaryFile ).WithMany().HasForeignKey( i => i.BinaryFileId ).WillCascadeOnDelete( false );
         }
     }

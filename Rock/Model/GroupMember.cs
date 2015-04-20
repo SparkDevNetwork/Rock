@@ -17,8 +17,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
-
+using Humanizer;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -31,7 +32,6 @@ namespace Rock.Model
     [DataContract]
     public partial class GroupMember : Model<GroupMember>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -182,15 +182,131 @@ namespace Rock.Model
                         RelatedEntityTypeId = groupEntityTypeId,
                         RelatedEntityId = this.GroupId
                     } );
-
                 }
             }
 
             base.PreSaveChanges( dbContext, state );
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsValid
+        {
+            get
+            {
+                var result = base.IsValid;
+                if ( result )
+                {
+                    string errorMessage;
+                    using ( var rockContext = new RockContext() )
+                    {
+                        if ( !ValidateGroupMembership( rockContext, out errorMessage ) )
+                        {
+                            ValidationResults.Add( new ValidationResult( errorMessage ) );
+                            result = false;
+                        }
+                    }
+                }
+
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Validates the group membership.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private bool ValidateGroupMembership( RockContext rockContext, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+            var groupRole = this.GroupRole ?? new GroupTypeRoleService( rockContext ).Get( this.GroupRoleId );
+
+            // check to see if the person is alread a member of the gorup/role
+            var existingGroupMembership = groupMemberService.GetByGroupIdAndPersonId( this.GroupId, this.PersonId );
+            if ( existingGroupMembership.Any( a => a.GroupRoleId == this.GroupRoleId && a.Id != this.Id ) )
+            {
+                var person = this.Person ?? new PersonService( rockContext ).Get( this.PersonId );
+
+                errorMessage = string.Format(
+                    "{0} already belongs to the {1} role for this {2}, and cannot be added again with the same role",
+                    person,
+                    groupRole.Name,
+                    groupRole.GroupType.GroupTerm );
+
+                return false;
+            }
+
+            var databaseRecord = existingGroupMembership.FirstOrDefault( a => a.Id == this.Id );
+
+            int memberCountInRole = new GroupMemberService( rockContext ).Queryable()
+                .Where( m =>
+                    m.GroupId == this.GroupId &&
+                    m.GroupRoleId == this.GroupRoleId &&
+                    m.GroupMemberStatus == GroupMemberStatus.Active )
+                .Count();
+
+            bool roleMembershipAboveMax = false;
+
+            // if adding new active group member..
+            if ( this.Id.Equals( 0 ) && this.GroupMemberStatus == GroupMemberStatus.Active )
+            {
+                // verify that active count has not exceeded the max
+                if ( groupRole.MaxCount != null && ( memberCountInRole + 1 ) > groupRole.MaxCount )
+                {
+                    roleMembershipAboveMax = true;
+                }
+            }
+            else if ( this.Id > 0 && ( this.GroupRoleId != databaseRecord.GroupRoleId || this.GroupMemberStatus != databaseRecord.GroupMemberStatus )
+                    && this.GroupMemberStatus == GroupMemberStatus.Active )
+            {
+                // if existing group member changing role or status..
+                // verify that active count has not exceeded the max
+                if ( groupRole.MaxCount != null && ( memberCountInRole + 1 ) > groupRole.MaxCount )
+                {
+                    roleMembershipAboveMax = true;
+                }
+            }
+
+            // throw error if above max.. do not proceed
+            if ( roleMembershipAboveMax )
+            {
+                errorMessage = string.Format(
+            "The number of {0} for this {1} is at or above its maximum allowed limit of {2:N0} active {3}.",
+            groupRole.Name.Pluralize(),
+            groupRole.GroupType.GroupTerm,
+            groupRole.MaxCount,
+            groupRole.GroupType.GroupMemberTerm.Pluralize( groupRole.MaxCount == 1 ) );
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Indicates whether the current object is equal to another object of the same type.
+        /// </summary>
+        /// <param name="other">An object to compare with this object.</param>
+        /// <returns>
+        /// true if the current object is equal to the <paramref name="other" /> parameter; otherwise, false.
+        /// </returns>
+        public bool IsEqualTo( GroupMember other )
+        {
+            return ( 
+                this.GroupId == other.GroupId && 
+                this.PersonId == other.PersonId && 
+                this.GroupRoleId == other.GroupRoleId 
+           );
+        }
+
         #endregion
-    
+
     }
 
     #region Entity Configuration

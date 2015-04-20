@@ -26,6 +26,7 @@ using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -387,6 +388,7 @@ namespace Rock.Model
         /// <value>
         /// The formatted address.
         /// </value>
+        [LavaInclude]
         public virtual string FormattedAddress
         {
             get { return GetFullStreetAddress(); }
@@ -398,10 +400,110 @@ namespace Rock.Model
         /// <value>
         /// The formatted HTML address.
         /// </value>
+        [LavaInclude]
         public virtual string FormattedHtmlAddress
         {
             get { return FormattedAddress.ConvertCrLfToHtmlBr(); }
         }
+
+        /// <summary>
+        /// Gets the latitude ( use GeoPoint to set a latitude/longitude values ).
+        /// </summary>
+        /// <value>
+        /// The latitude.
+        /// </value>
+        [DataMember]
+        public virtual double? Latitude
+        {
+            get
+            {
+                return GeoPoint != null ? GeoPoint.Latitude : null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the longitude ( use GeoPoint to set a latitude/longitude values ).
+        /// </summary>
+        /// <value>
+        /// The longitude.
+        /// </value>
+        [DataMember]
+        public virtual double? Longitude
+        {
+            get
+            {
+                return GeoPoint != null ? GeoPoint.Longitude : null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the GeoFence coordinates.
+        /// </summary>
+        /// <value>
+        /// The geo fence coordinates.
+        /// </value>
+        [DataMember]
+        public virtual List<Double[]> GeoFenceCoordinates
+        {
+            get
+            {
+                if ( GeoFence != null )
+                {
+                    return GeoFence.Coordinates()
+                        .Where( c => c.Latitude.HasValue && c.Longitude.HasValue )
+                        .Select( c => new Double[] { c.Latitude.Value, c.Longitude.Value } )
+                        .ToList();
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the campus that is at this location, or one of this location's parent location
+        /// </summary>
+        /// <value>
+        /// The campus identifier.
+        /// </value>
+        [LavaInclude]
+        public virtual int? CampusId
+        {
+            get
+            {
+                var campuses = CampusCache.All();
+
+                int? campusId = null;
+                Location loc = this;
+
+                while ( !campusId.HasValue && loc != null )
+                {
+                    var campus = campuses.Where( c => c.LocationId != null && c.LocationId == loc.Id ).FirstOrDefault();
+                    if ( campus != null )
+                    {
+                        campusId = campus.Id;
+                    }
+                    else
+                    {
+                        loc = loc.ParentLocation;
+                    }
+                }
+
+                return campusId;
+            }
+        }
+
+        /// <summary>
+        /// Gets the distance.
+        /// </summary>
+        /// <value>
+        /// The distance.
+        /// </value>
+        [DataMember]
+        public virtual double Distance
+        {
+            get { return _distance; }
+        }
+        private double _distance = 0.0D;
 
         #endregion
 
@@ -579,7 +681,78 @@ namespace Rock.Model
             return str.ToString();
         }
 
+        /// <summary>
+        /// Sets the distance.
+        /// </summary>
+        /// <param name="distance">The distance.</param>
+        public void SetDistance( double distance )
+        {
+            _distance = distance;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public override object this[object key]
+        {
+            get
+            {
+                string keyName = key.ToStringSafe();
+                switch ( keyName )
+                {
+                    case "GeoPoint":
+                        {
+                            if ( GeoPoint != null && GeoPoint.Latitude.HasValue && GeoPoint.Longitude.HasValue )
+                            {
+                                return string.Format( "{0},{1}", GeoPoint.Latitude.Value, GeoPoint.Longitude.Value );
+                            }
+                            break;
+                        }
+                    case "GeoFence":
+                        {
+                            if ( GeoFence != null )
+                            {
+                                return GeoFence.Coordinates()
+                                    .Select( c => c.Latitude.ToString() + "," + c.Longitude.ToString() )
+                                    .ToList()
+                                    .AsDelimited("|");
+                            }
+                            break;
+                        }
+                    default:
+                        {
+                            return base[key];
+                        }
+                }
+
+                return string.Empty;
+            }
+        }
+        
         #endregion
+
+        #region constants
+
+        /// <summary>
+        /// Meters per mile (1609.344)
+        /// NOTE: Geo Spatial distances are in meters
+        /// </summary>
+        public const double MetersPerMile = 1609.344;
+
+
+        /// <summary>
+        /// Miles per meter 1/1609.344 (0.00062137505)
+        /// NOTE: Geo Spatial distances are in meters
+        /// </summary>
+        public const double MilesPerMeter = 1 / MetersPerMile;
+
+        #endregion
+
 
     }
 

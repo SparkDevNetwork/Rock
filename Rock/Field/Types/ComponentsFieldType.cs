@@ -16,12 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock.Extension;
+using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -33,36 +31,8 @@ namespace Rock.Field.Types
     /// </summary>
     public class ComponentsFieldType : FieldType
     {
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            string formattedValue = string.Empty;
 
-            var names = new List<string>();
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                foreach ( Guid guid in value.SplitDelimitedValues().AsGuidList() )
-                {
-                    var entityType = EntityTypeCache.Read( guid );
-                    if ( entityType != null )
-                    {
-                        names.Add( entityType.FriendlyName );
-                    }
-                }
-            }
-
-            formattedValue = names.AsDelimited( ", " );
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
-        }
+        #region Configuration
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -126,6 +96,45 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Formatting
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            string formattedValue = string.Empty;
+
+            var names = new List<string>();
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                foreach ( Guid guid in value.SplitDelimitedValues().AsGuidList() )
+                {
+                    var entityType = EntityTypeCache.Read( guid );
+                    if ( entityType != null )
+                    {
+                        names.Add( entityType.FriendlyName );
+                    }
+                }
+            }
+
+            formattedValue = names.AsDelimited( ", " );
+
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
+        }
+
+        #endregion 
+
+        #region Edit Control
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -186,5 +195,26 @@ namespace Rock.Field.Types
                 }
             }
         }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override Model.ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.ContainsFilterComparisonTypes;
+            }
+        }
+
+        #endregion
+
     }
 }

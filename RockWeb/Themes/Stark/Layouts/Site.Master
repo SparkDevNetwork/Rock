@@ -24,7 +24,6 @@
     <meta charset="utf-8">
     <title></title>
     
-    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>" ></script>
     <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js", true) %>"></script>
 
     <!-- Set the viewport width to device width for mobile -->
@@ -37,14 +36,16 @@
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
 
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>" ></script>
+
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
     <!-- Icons -->
-    <link rel="shortcut icon" href="<%# ResolveRockUrl("~/Assets/Icons/favicon.ico", true) %>">
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-ipad-retina.png", true) %>">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone-retina.png", true) %>">
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-ipad.png", true) %>">
-    <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone.png", true) %>">
+    <link rel="shortcut icon" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/favicon.ico", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/touch-icon-ipad-retina.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/touch-icon-iphone-retina.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/touch-icon-ipad.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/touch-icon-iphone.png", true) %>">
     
 </head>
 <body>
@@ -94,8 +95,8 @@
 	    </footer>
         
         <%-- controls for scriptmanager and update panel --%>
-        <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server"/>
-        <asp:UpdateProgress id="updateProgress" runat="server">
+        <asp:ScriptManager ID="sManager" runat="server"/>
+        <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
 		        <ProgressTemplate>
 		            <div class="updateprogress-status">
                         <div class="spinner">

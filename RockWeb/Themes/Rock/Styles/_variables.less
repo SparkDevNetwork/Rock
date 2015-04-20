@@ -50,7 +50,7 @@
 @pagetitle-bg: #c7cacd;
 
 @header-bg:     #c2b8a7;
-@header-text-color: #231f20;
+@header-text-color: @accent-semibold-text-color;
 
 @footer-bg: @header-bg;
 @footer-text-color: @header-text-color;
@@ -70,7 +70,7 @@
 // Grid
 @grid-filter-bg: @accent-color;
 
-@grid-column-header-bg: #fff;
+@grid-column-header-bg: #efefef;
 @grid-column-header-text-color: @accent-text-color;
 @grid-column-header-font-size: 14px;
 @grid-column-header-font-weight: @font-weight-semibold;
@@ -102,27 +102,6 @@
 @widget-header-text-color: @accent-light-text-color;
 @widget-header-bg-dark: @accent-bold-color;
 @widget-header-text-color-dark: @accent-bold-text-color;
-
-// Titles
-@title-firstword-weight: @font-weight-bold;
-@title-default-weight: @font-weight-light;
-
-// Banner
-@banner-text-color: @accent-bold-text-color;
-@banner-font-weight: @title-default-weight;
-@banner-firstword-weight: @title-firstword-weight;
-@banner-font-size: 14px;
-@banner-bg: @accent-bold-color;
-@banner-border-radius: 0;
-@banner-border-color: transparent;
-@banner-border-size: 0;
-@banner-padding: 4px 12px;
-
-// Treeview //todo needed?
-@tree-selected-bg: @accent-bold-color;
-@tree-selected-color: @accent-bold-text-color;
-@tree-hover-bg: @accent-light-color;
-@tree-hover-color: @text-color;
 
 // Page List
 @pagelist-bg: @body-bg;
@@ -366,8 +345,8 @@
 
 @zindex-navbar:            1000;
 @zindex-dropdown:          1000;
-@zindex-popover:           1010;
-@zindex-tooltip:           1030;
+@zindex-popover:           1060;
+@zindex-tooltip:           1070;
 @zindex-navbar-fixed:      1030;
 @zindex-modal-background:  1040;
 @zindex-modal:             1050;
@@ -481,7 +460,7 @@
 // -------------------------
 
 @nav-link-padding:                          10px 15px;
-@nav-link-hover-bg:                         lighten(#9ab864, 25%);
+@nav-link-hover-bg:                         lighten(@nav-pills-active-link-hover-bg, 25%);
 
 @nav-disabled-link-color:                   @gray-light;
 @nav-disabled-link-hover-color:             @gray-light;
@@ -502,7 +481,7 @@
 @nav-tabs-justified-active-link-border-color:     @body-bg;
 
 // Pills
-@nav-pills-active-link-hover-bg:            #9ab864;
+@nav-pills-active-link-hover-bg:            #8cc63e;
 @nav-pills-active-link-hover-color:         #fff;
 
 

@@ -178,6 +178,13 @@ namespace Rock.Apps.CheckScannerUtility
             try
             {
                 txtRockUrl.Text = txtRockUrl.Text.Trim();
+                Uri rockUrl = new Uri( txtRockUrl.Text );
+                var validSchemes = new string[] { Uri.UriSchemeHttp, Uri.UriSchemeHttps };
+                if ( !validSchemes.Contains( rockUrl.Scheme ) )
+                {
+                    txtRockUrl.Text = "http://" + rockUrl.AbsoluteUri;
+                }
+
                 RockRestClient client = new RockRestClient( txtRockUrl.Text );
                 client.Login( rockConfig.Username, rockConfig.Password );
                 BatchPage.LoggedInPerson = client.GetData<Person>( string.Format( "api/People/GetByUserName/{0}", rockConfig.Username ) );

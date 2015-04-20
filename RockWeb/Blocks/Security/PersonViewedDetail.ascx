@@ -12,9 +12,9 @@
                 <div class="grid">
                     <Rock:Grid ID="gViewDetails" runat="server" DisplayType="Full" AllowSorting="true" EmptyDataText="No Viewing Details Found" RowItemText="Views">
                         <Columns>
-                            <asp:BoundField DataField="Source" HeaderText="Source" SortExpression="Source" />
-                            <asp:BoundField DataField="ViewDateTime" HeaderText="Date" SortExpression="ViewDateTime" />
-                            <asp:BoundField DataField="IpAddress" HeaderText="IP Address" SortExpression="IpAddress" />
+                            <Rock:RockBoundField DataField="Source" HeaderText="Source" SortExpression="Source" />
+                            <Rock:RockBoundField DataField="ViewDateTime" HeaderText="Date" SortExpression="ViewDateTime" />
+                            <Rock:RockBoundField DataField="IpAddress" HeaderText="IP Address" SortExpression="IpAddress" />
                         </Columns>
                     </Rock:Grid>
                 </div>

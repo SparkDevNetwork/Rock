@@ -87,15 +87,15 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this CommunicationRecipientActivity target, CommunicationRecipientActivity source )
         {
-            target.CommunicationRecipientId = source.CommunicationRecipientId;
+            target.Id = source.Id;
             target.ActivityDateTime = source.ActivityDateTime;
-            target.ActivityType = source.ActivityType;
             target.ActivityDetail = source.ActivityDetail;
+            target.ActivityType = source.ActivityType;
+            target.CommunicationRecipientId = source.CommunicationRecipientId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

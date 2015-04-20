@@ -87,15 +87,15 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this PageContext target, PageContext source )
         {
-            target.IsSystem = source.IsSystem;
-            target.PageId = source.PageId;
+            target.Id = source.Id;
             target.Entity = source.Entity;
             target.IdParameter = source.IdParameter;
+            target.IsSystem = source.IsSystem;
+            target.PageId = source.PageId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

@@ -38,6 +38,7 @@
                             <Rock:DataDropDownList ID="ddlTheme" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Theme" Help="The theme that should be used for the site.  Themes contain specific layouts and css styling that controls how a site and it's pages will look" />
                             <Rock:PagePicker ID="ppDefaultPage" runat="server" Label="Default Page" PromptForPageRoute="true" Help="The page and route that will be used whenever a specific page or page route is not provided."/>
                             <Rock:PagePicker ID="ppLoginPage" runat="server" Label="Login Page" Required="false" PromptForPageRoute="true" Help="The page that user will be redirected to when they request a page that requires them to login."/>
+                            <Rock:PagePicker ID="ppCommunicationPage" runat="server" Label="Communication Page" Required="false" PromptForPageRoute="true" Help="The page that user will be redirected to when creating a new communication." />
                             <Rock:PagePicker ID="ppRegistrationPage" runat="server" Label="Registration Page" Required="false" PromptForPageRoute="true" Help="The page that user will be redirected to when they request to register for a group."/>
                             <Rock:PagePicker ID="ppPageNotFoundPage" runat="server" Label="404 Page" Required="false" PromptForPageRoute="true" Help="Page to use instead of the server's 404 message." />
                         </div>
@@ -51,8 +52,8 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
 
                 </div>
@@ -70,7 +71,7 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnEdit_Click" />
+                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnEdit_Click" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" CausesValidation="false" OnClick="btnDelete_Click" />
                     </div>

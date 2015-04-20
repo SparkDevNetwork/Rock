@@ -15,9 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.Caching;
-
 using Rock.Data;
 using Rock.Model;
 
@@ -100,7 +100,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The security actions.
         /// </value>
-        public Dictionary<string, string> SecurityActions { get; set; }
+        public ConcurrentDictionary<string, string> SecurityActions { get; set; }
 
         #endregion
 
@@ -161,14 +161,20 @@ namespace Rock.Web.Cache
 
             if ( blockType == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var blockTypeService = new BlockTypeService( rockContext );
-                var blockTypeModel = blockTypeService.Get( id );
-                if ( blockTypeModel != null )
+                if ( rockContext != null )
                 {
-                    blockTypeModel.LoadAttributes( rockContext );
-                    blockType = new BlockTypeCache( blockTypeModel );
+                    blockType = LoadById( id, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        blockType = LoadById( id, myRockContext );
+                    }
+                }
 
+                if ( blockType != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     AddChangeMonitor( cachePolicy, blockType.Path );
                     cache.Set( cacheKey, blockType, cachePolicy );
@@ -180,6 +186,19 @@ namespace Rock.Web.Cache
             }
 
             return blockType;
+        }
+
+        private static BlockTypeCache LoadById( int id, RockContext rockContext )
+        {
+            var blockTypeService = new BlockTypeService( rockContext );
+            var blockTypeModel = blockTypeService.Get( id );
+            if ( blockTypeModel != null )
+            {
+                blockTypeModel.LoadAttributes( rockContext );
+                return new BlockTypeCache( blockTypeModel );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -201,25 +220,44 @@ namespace Rock.Web.Cache
 
             if ( blockType == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var blockTypeService = new BlockTypeService( rockContext );
-                var blockTypeModel = blockTypeService.Get( guid );
-                if ( blockTypeModel != null )
+                if ( rockContext != null )
                 {
-                    blockTypeModel.LoadAttributes( rockContext );
-                    blockType = new BlockTypeCache( blockTypeModel );
+                    blockType = LoadByGuid( guid, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        blockType = LoadByGuid( guid, myRockContext );
+                    }
+                }
 
-                    var cachePolicy = new CacheItemPolicy();
-                    AddChangeMonitor( cachePolicy, blockType.Path );
-                    cache.Set( BlockTypeCache.CacheKey( blockType.Id ), blockType, cachePolicy );
+                if ( blockType != null )
+                {
+                        var cachePolicy = new CacheItemPolicy();
+                        AddChangeMonitor( cachePolicy, blockType.Path );
+                        cache.Set( BlockTypeCache.CacheKey( blockType.Id ), blockType, cachePolicy );
 
-                    var guidCachePolicy = new CacheItemPolicy();
-                    AddChangeMonitor( guidCachePolicy, blockType.Path );
-                    cache.Set( blockType.Guid.ToString(), blockType.Id, guidCachePolicy );
+                        var guidCachePolicy = new CacheItemPolicy();
+                        AddChangeMonitor( guidCachePolicy, blockType.Path );
+                        cache.Set( blockType.Guid.ToString(), blockType.Id, guidCachePolicy );
                 }
             }
 
             return blockType;
+        }
+
+        private static BlockTypeCache LoadByGuid( Guid guid, RockContext rockContext )
+        {
+            var blockTypeService = new BlockTypeService( rockContext );
+            var blockTypeModel = blockTypeService.Get( guid );
+            if ( blockTypeModel != null )
+            {
+                blockTypeModel.LoadAttributes( rockContext );
+                return new BlockTypeCache( blockTypeModel );
+            }
+
+            return null;
         }
 
         /// <summary>

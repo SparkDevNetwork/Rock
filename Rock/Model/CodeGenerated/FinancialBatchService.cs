@@ -93,18 +93,18 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this FinancialBatch target, FinancialBatch source )
         {
-            target.Name = source.Name;
-            target.BatchStartDateTime = source.BatchStartDateTime;
-            target.BatchEndDateTime = source.BatchEndDateTime;
-            target.Status = source.Status;
-            target.CampusId = source.CampusId;
+            target.Id = source.Id;
             target.AccountingSystemCode = source.AccountingSystemCode;
+            target.BatchEndDateTime = source.BatchEndDateTime;
+            target.BatchStartDateTime = source.BatchStartDateTime;
+            target.CampusId = source.CampusId;
             target.ControlAmount = source.ControlAmount;
+            target.Name = source.Name;
+            target.Status = source.Status;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

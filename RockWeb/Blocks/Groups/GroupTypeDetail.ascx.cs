@@ -46,17 +46,35 @@ namespace RockWeb.Blocks.Groups
         /// Gets the child group types dictionary.
         /// </summary>
         /// <returns></returns>
-        private Dictionary<int, string> ChildGroupTypesDictionary
+        private List<int> ChildGroupTypesList
         {
             get
             {
-                Dictionary<int, string> childGroupTypesDictionary = ViewState["ChildGroupTypesDictionary"] as Dictionary<int, string>;
-                return childGroupTypesDictionary;
+                List<int> childGroupTypesList = ViewState["ChildGroupTypesList"] as List<int>;
+                return childGroupTypesList;
             }
 
             set
             {
-                ViewState["ChildGroupTypesDictionary"] = value;
+                ViewState["ChildGroupTypesList"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the state of the schedule exclusion.
+        /// </summary>
+        /// <value>
+        /// The state of the schedule exclusion.
+        /// </value>
+        private Dictionary<Guid, DateRange> ScheduleExclusionDictionary
+        {
+            get
+            {
+                return ViewState["ScheduleExclusionDictionary"] as Dictionary<Guid, DateRange> ?? new Dictionary<Guid, DateRange>();
+            }
+            set
+            {
+                ViewState["ScheduleExclusionDictionary"] = value;
             }
         }
 
@@ -259,11 +277,17 @@ namespace RockWeb.Blocks.Groups
             gGroupTypeRoles.GridRebind += gGroupTypeRoles_GridRebind;
             gGroupTypeRoles.GridReorder += gGroupTypeRoles_GridReorder;
 
-            gChildGroupTypes.DataKeyNames = new string[] { "key" };
+            gChildGroupTypes.DataKeyNames = new string[] { "Id" };
             gChildGroupTypes.Actions.ShowAdd = true;
             gChildGroupTypes.Actions.AddClick += gChildGroupTypes_Add;
             gChildGroupTypes.GridRebind += gChildGroupTypes_GridRebind;
             gChildGroupTypes.EmptyDataText = Server.HtmlEncode( None.Text );
+
+            gScheduleExclusions.DataKeyNames = new string[] { "key" };
+            gScheduleExclusions.Actions.ShowAdd = true;
+            gScheduleExclusions.Actions.AddClick += gScheduleExclusions_Add;
+            gScheduleExclusions.GridRebind += gScheduleExclusions_GridRebind;
+            gScheduleExclusions.EmptyDataText = Server.HtmlEncode( None.Text );
 
             gLocationTypes.DataKeyNames = new string[] { "key" };
             gLocationTypes.Actions.ShowAdd = true;
@@ -413,6 +437,7 @@ namespace RockWeb.Blocks.Groups
             AttributeService attributeService = new AttributeService( rockContext );
             AttributeQualifierService qualifierService = new AttributeQualifierService( rockContext );
             CategoryService categoryService = new CategoryService( rockContext );
+            GroupScheduleExclusionService scheduleExclusionService = new GroupScheduleExclusionService( rockContext );
 
             int groupTypeId = int.Parse( hfGroupTypeId.Value );
 
@@ -451,6 +476,15 @@ namespace RockWeb.Blocks.Groups
                 role.CopyPropertiesFrom( roleState );
             }
 
+            ScheduleType allowedScheduleTypes = ScheduleType.None;
+            foreach( ListItem li in cblScheduleTypes.Items )
+            {
+                if ( li.Selected )
+                {
+                    allowedScheduleTypes = allowedScheduleTypes | (ScheduleType)li.Value.AsInteger();
+                }
+            }
+
             GroupLocationPickerMode locationSelectionMode = GroupLocationPickerMode.None;
             foreach ( ListItem li in cblLocationSelectionModes.Items )
             {
@@ -468,8 +502,10 @@ namespace RockWeb.Blocks.Groups
             groupType.ShowInNavigation = cbShowInNavigation.Checked;
             groupType.IconCssClass = tbIconCssClass.Text;
             groupType.TakesAttendance = cbTakesAttendance.Checked;
+            groupType.SendAttendanceReminder = cbSendAttendanceReminder.Checked;
             groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
             groupType.AttendancePrintTo = ddlPrintTo.SelectedValueAsEnum<PrintTo>();
+            groupType.AllowedScheduleTypes = allowedScheduleTypes;
             groupType.LocationSelectionMode = locationSelectionMode;
             groupType.GroupTypePurposeValueId = ddlGroupTypePurpose.SelectedValueAsInt();
             groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
@@ -478,13 +514,35 @@ namespace RockWeb.Blocks.Groups
 
             groupType.ChildGroupTypes = new List<GroupType>();
             groupType.ChildGroupTypes.Clear();
-            foreach ( var item in ChildGroupTypesDictionary )
+            foreach ( var item in ChildGroupTypesList )
             {
-                var childGroupType = groupTypeService.Get( item.Key );
+                var childGroupType = groupTypeService.Get( item );
                 if ( childGroupType != null )
                 {
                     groupType.ChildGroupTypes.Add( childGroupType );
                 }
+            }
+
+            // Delete any removed exclusions
+            foreach ( var exclusion in groupType.GroupScheduleExclusions.Where( s => !ScheduleExclusionDictionary.Keys.Contains( s.Guid ) ).ToList() )
+            {
+                groupType.GroupScheduleExclusions.Remove( exclusion );
+                scheduleExclusionService.Delete( exclusion );
+            }
+
+            // Update exclusions
+            foreach( var keyVal in ScheduleExclusionDictionary )
+            {
+                var scheduleExclusion = groupType.GroupScheduleExclusions
+                    .FirstOrDefault( s => s.Guid.Equals( keyVal.Key));
+                if ( scheduleExclusion == null )
+                {
+                    scheduleExclusion = new GroupScheduleExclusion();
+                    groupType.GroupScheduleExclusions.Add( scheduleExclusion);
+                }
+
+                scheduleExclusion.StartDate = keyVal.Value.Start;
+                scheduleExclusion.EndDate = keyVal.Value.End;
             }
 
             DefinedValueService definedValueService = new DefinedValueService( rockContext );
@@ -608,6 +666,7 @@ namespace RockWeb.Blocks.Groups
                 groupType.Roles.Add( memberRole );
                 groupType.DefaultGroupRole = memberRole;
 
+                groupType.AllowedScheduleTypes = ScheduleType.None;
                 groupType.LocationSelectionMode = GroupLocationPickerMode.None;
             }
 
@@ -688,8 +747,8 @@ namespace RockWeb.Blocks.Groups
             ddlGroupTypePurpose.Enabled = !groupType.IsSystem;
             ddlGroupTypePurpose.SetValue( groupType.GroupTypePurposeValueId );
 
-            ChildGroupTypesDictionary = new Dictionary<int, string>();
-            groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesDictionary.Add( a.Id, a.Name ) );
+            ChildGroupTypesList = new List<int>();
+            groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesList.Add( a.Id ) );
             BindChildGroupTypesGrid();
 
             // Display
@@ -701,8 +760,18 @@ namespace RockWeb.Blocks.Groups
             cbAllowMultipleLocations.Enabled = !groupType.IsSystem;
             cbAllowMultipleLocations.Checked = groupType.AllowMultipleLocations;
 
+            cblScheduleTypes.Enabled = !groupType.IsSystem;
+            foreach ( ListItem li in cblScheduleTypes.Items )
+            {
+                ScheduleType scheduleType = (ScheduleType)li.Value.AsInteger();
+                li.Selected = ( groupType.AllowedScheduleTypes & scheduleType ) == scheduleType;
+            }
+
+            ScheduleExclusionDictionary = new Dictionary<Guid, DateRange>();
+            groupType.GroupScheduleExclusions.ToList().ForEach( s => ScheduleExclusionDictionary.Add( s.Guid, new DateRange( s.StartDate, s.EndDate ) ) );
+            BindScheduleExclusionsGrid();
+
             cblLocationSelectionModes.Enabled = !groupType.IsSystem;
-            cblLocationSelectionModes.Enabled = true;
             foreach ( ListItem li in cblLocationSelectionModes.Items )
             {
                 GroupLocationPickerMode mode = (GroupLocationPickerMode)li.Value.AsInteger();
@@ -719,6 +788,7 @@ namespace RockWeb.Blocks.Groups
 
             // Check In
             cbTakesAttendance.Checked = groupType.TakesAttendance;
+            cbSendAttendanceReminder.Checked = groupType.SendAttendanceReminder;
             ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
             ddlPrintTo.SetValue( (int)groupType.AttendancePrintTo );
 
@@ -818,6 +888,11 @@ namespace RockWeb.Blocks.Groups
         {
             ddlAttendanceRule.BindToEnum<Rock.Model.AttendanceRule>();
 
+            cblScheduleTypes.Items.Clear();
+            cblScheduleTypes.Items.Add( new ListItem( "Weekly", "1" ) );
+            cblScheduleTypes.Items.Add( new ListItem( "Custom", "2" ) );
+            cblScheduleTypes.Items.Add( new ListItem( "Named", "4" ) );
+
             cblLocationSelectionModes.Items.Clear();
             cblLocationSelectionModes.Items.Add( new ListItem( "Named", "2" ) );
             cblLocationSelectionModes.Items.Add( new ListItem( "Address", "1" ) );
@@ -878,6 +953,9 @@ namespace RockWeb.Blocks.Groups
                 case "CHILDGROUPTYPES":
                     dlgChildGroupType.Show();
                     break;
+                case "SCHEDULEEXCLUSION":
+                    dlgScheduleExclusion.Show();
+                    break;
                 case "LOCATIONTYPE":
                     dlgLocationType.Show();
                     break;
@@ -905,6 +983,9 @@ namespace RockWeb.Blocks.Groups
                     break;
                 case "CHILDGROUPTYPES":
                     dlgChildGroupType.Hide();
+                    break;
+                case "SCHEDULEEXCLUSION":
+                    dlgScheduleExclusion.Hide();
                     break;
                 case "LOCATIONTYPE":
                     dlgLocationType.Hide();
@@ -1168,6 +1249,10 @@ namespace RockWeb.Blocks.Groups
             string groupTerm = string.IsNullOrWhiteSpace( tbGroupTerm.Text ) ? "Group" : tbGroupTerm.Text;
             string memberTerm = string.IsNullOrWhiteSpace( tbGroupMemberTerm.Text ) ? "Member" : tbGroupMemberTerm.Text;
 
+            cbIsLeader.Checked = groupTypeRole.IsLeader;
+            cbCanView.Checked = groupTypeRole.CanView;
+            cbCanEdit.Checked = groupTypeRole.CanEdit;
+
             nbMinimumRequired.Text = groupTypeRole.MinCount.HasValue ? groupTypeRole.MinCount.ToString() : string.Empty;
             nbMinimumRequired.Help = string.Format(
                 "The minimum number of {0} in this {1} that are required to have this role.",
@@ -1241,6 +1326,9 @@ namespace RockWeb.Blocks.Groups
 
             groupTypeRole.Name = tbRoleName.Text;
             groupTypeRole.Description = tbRoleDescription.Text;
+            groupTypeRole.IsLeader = cbIsLeader.Checked;
+            groupTypeRole.CanView = cbCanView.Checked;
+            groupTypeRole.CanEdit = cbCanEdit.Checked;
 
             int result;
 
@@ -1318,23 +1406,20 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gChildGroupTypes_Add( object sender, EventArgs e )
         {
-            GroupTypeService groupTypeService = new GroupTypeService( new RockContext() );
-            int currentGroupTypeId = int.Parse( hfGroupTypeId.Value );
-
             // populate dropdown with all grouptypes that aren't already childgroups
-            var qry = from gt in groupTypeService.Queryable()
-                      where !( from cgt in ChildGroupTypesDictionary.Keys
-                               select cgt ).Contains( gt.Id )
-                      select gt;
+            var groupTypeList = new GroupTypeService( new RockContext() )
+                .Queryable()
+                .Where( t => !ChildGroupTypesList.Contains( t.Id ) )
+                .OrderBy( t => t.Order )
+                .ToList();
 
-            List<GroupType> list = qry.ToList();
-            if ( list.Count == 0 )
+            if ( groupTypeList.Count == 0 )
             {
                 modalAlert.Show( "There are not any other group types that can be added", ModalAlertType.Warning );
             }
             else
             {
-                ddlChildGroupType.DataSource = list;
+                ddlChildGroupType.DataSource = groupTypeList;
                 ddlChildGroupType.DataBind();
                 ShowDialog( "ChildGroupTypes" );
             }
@@ -1348,7 +1433,7 @@ namespace RockWeb.Blocks.Groups
         protected void gChildGroupTypes_Delete( object sender, RowEventArgs e )
         {
             int childGroupTypeId = e.RowKeyId;
-            ChildGroupTypesDictionary.Remove( childGroupTypeId );
+            ChildGroupTypesList.Remove( childGroupTypeId );
             BindChildGroupTypesGrid();
         }
 
@@ -1367,7 +1452,13 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindChildGroupTypesGrid()
         {
-            gChildGroupTypes.DataSource = ChildGroupTypesDictionary.OrderBy( a => a.Value ).ToList();
+            var groupTypeList = new GroupTypeService( new RockContext() )
+                .Queryable()
+                .Where( t => ChildGroupTypesList.Contains( t.Id ) )
+                .OrderBy( t => t.Order )
+                .ToList();
+
+            gChildGroupTypes.DataSource = groupTypeList;
             gChildGroupTypes.DataBind();
         }
 
@@ -1378,8 +1469,97 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgChildGroupType_SaveClick( object sender, EventArgs e )
         {
-            ChildGroupTypesDictionary.Add( int.Parse( ddlChildGroupType.SelectedValue ), ddlChildGroupType.SelectedItem.Text );
+            ChildGroupTypesList.Add( ddlChildGroupType.SelectedValueAsId() ?? 0 );
             BindChildGroupTypesGrid();
+            HideDialog();
+        }
+
+        #endregion
+
+        #region ScheduleExclusion Grid and Picker
+
+        /// <summary>
+        /// Handles the Add event of the gScheduleExclusions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gScheduleExclusions_Add( object sender, EventArgs e )
+        {
+            hfScheduleExclusion.Value = Guid.NewGuid().ToString();
+            drpScheduleExclusion.LowerValue = null;
+            drpScheduleExclusion.UpperValue = null;
+            ShowDialog( "ScheduleExclusion" );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gScheduleExclusions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gScheduleExclusions_Edit( object sender, RowEventArgs e )
+        {
+            Guid guid = e.RowKeyValue.ToString().AsGuid();
+            if ( ScheduleExclusionDictionary.Keys.Contains( guid ) )
+            {
+                hfScheduleExclusion.Value = guid.ToString();
+                drpScheduleExclusion.LowerValue = ScheduleExclusionDictionary[guid].Start;
+                drpScheduleExclusion.UpperValue = ScheduleExclusionDictionary[guid].End;
+                ShowDialog( "ScheduleExclusion" );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gScheduleExclusions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gScheduleExclusions_Delete( object sender, RowEventArgs e )
+        {
+            Guid guid = e.RowKeyValue.ToString().AsGuid();
+            if ( ScheduleExclusionDictionary.Keys.Contains(guid))
+            {
+                ScheduleExclusionDictionary.Remove( guid );
+            }
+            BindScheduleExclusionsGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gScheduleExclusions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gScheduleExclusions_GridRebind( object sender, EventArgs e )
+        {
+            BindScheduleExclusionsGrid();
+        }
+
+        /// <summary>
+        /// Binds the location types grid.
+        /// </summary>
+        private void BindScheduleExclusionsGrid()
+        {
+            gScheduleExclusions.DataSource = ScheduleExclusionDictionary.OrderBy( a => a.Value.Start ).ToList();
+            gScheduleExclusions.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgScheduleExclusion control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgScheduleExclusion_SaveClick( object sender, EventArgs e )
+        {
+            Guid guid = hfScheduleExclusion.Value.AsGuid();
+            if ( ScheduleExclusionDictionary.ContainsKey(guid))
+            {
+                ScheduleExclusionDictionary[guid].Start = drpScheduleExclusion.LowerValue;
+                ScheduleExclusionDictionary[guid].End = drpScheduleExclusion.UpperValue;
+            }
+            else
+            {
+                ScheduleExclusionDictionary.Add( guid, new DateRange(drpScheduleExclusion.LowerValue, drpScheduleExclusion.UpperValue));
+            }
+            BindScheduleExclusionsGrid();
             HideDialog();
         }
 

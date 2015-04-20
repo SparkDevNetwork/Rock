@@ -22,10 +22,12 @@ using HtmlAgilityPack;
 namespace Rock.Web.Utilities
 {
     /// <summary>
-    /// 
+    /// Sanitation method from Rick Strahl's blog...
+    /// http://weblog.west-wind.com/posts/2012/Jul/19/NET-HTML-Sanitation-for-rich-HTML-Input
+    /// https://github.com/RickStrahl/HtmlSanitizer/blob/master/HtmlSanitizer/HtmlSanitizer/HtmlSanitizer.cs 
     /// </summary>
     public class HtmlSanitizer
-    {
+    { 
         /// <summary>
         /// The black list
         /// </summary>

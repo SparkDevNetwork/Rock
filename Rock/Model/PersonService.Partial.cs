@@ -71,9 +71,7 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<Person> Queryable( bool includeDeceased, bool includeBusinesses = true )
         {
-            // Do an eager load of suffix since its used by all the FullName methods
-            return Queryable( "SuffixValue", includeDeceased, includeBusinesses );
-
+            return Queryable( null, includeDeceased, includeBusinesses );
         }
 
         /// <summary>
@@ -382,11 +380,11 @@ namespace Rock.Model
             var qry = GetByFullName( fullName, includeDeceased, includeBusinesses, allowFirstNameOnly, out reversed );
             if ( reversed )
             {
-                return qry.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );
+                return qry.OrderBy( p => p.LastName ).ThenBy( p => p.NickName );
             }
             else
             {
-                return qry.OrderBy( p => p.FirstName ).ThenBy( p => p.LastName );
+                return qry.OrderBy( p => p.NickName ).ThenBy( p => p.LastName );
             }
         }
 
@@ -738,6 +736,86 @@ namespace Rock.Model
 
         #endregion
 
+        /// <summary>
+        /// Adds a person alias, known relationship group, implied relationship group, and optionally a family group for
+        /// a new person.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="savePersonAttributes">if set to <c>true</c> [save person attributes].</param>
+        /// <returns>Family Group</returns>
+        public static Group SaveNewPerson ( Person person, RockContext rockContext, int? campusId = null, bool savePersonAttributes = false )
+        {
+            // Create/Save Known Relationship Group
+            var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
+            if ( knownRelationshipGroupType != null )
+            {
+                var ownerRole = knownRelationshipGroupType.Roles
+                    .FirstOrDefault( r =>
+                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) );
+                if ( ownerRole != null )
+                {
+                    var groupMember = new GroupMember();
+                    groupMember.Person = person;
+                    groupMember.GroupRoleId = ownerRole.Id;
+
+                    var group = new Group();
+                    group.Name = knownRelationshipGroupType.Name;
+                    group.GroupTypeId = knownRelationshipGroupType.Id;
+                    group.Members.Add( groupMember );
+
+                    var groupService = new GroupService( rockContext );
+                    groupService.Add( group );
+                }
+            }
+
+            // Create/Save Implied Relationship Group
+            var impliedRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_IMPLIED_RELATIONSHIPS );
+            if ( impliedRelationshipGroupType != null )
+            {
+                var ownerRole = impliedRelationshipGroupType.Roles
+                    .FirstOrDefault( r =>
+                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_IMPLIED_RELATIONSHIPS_OWNER.AsGuid() ) );
+                if ( ownerRole != null )
+                {
+                    var groupMember = new GroupMember();
+                    groupMember.Person = person;
+                    groupMember.GroupRoleId = ownerRole.Id;
+
+                    var group = new Group();
+                    group.Name = impliedRelationshipGroupType.Name;
+                    group.GroupTypeId = impliedRelationshipGroupType.Id;
+                    group.Members.Add( groupMember );
+
+                    var groupService = new GroupService( rockContext );
+                    groupService.Add( group );
+                }
+            }
+
+            // Create/Save family
+            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            if ( familyGroupType != null )
+            {
+                var adultRole = familyGroupType.Roles
+                    .FirstOrDefault( r =>
+                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
+                if ( adultRole != null )
+                {
+                    var groupMember = new GroupMember();
+                    groupMember.Person = person;
+                    groupMember.GroupRoleId = adultRole.Id;
+
+                    var groupMembers = new List<GroupMember>();
+                    groupMembers.Add( groupMember );
+
+                    return GroupService.SaveNewFamily( rockContext, groupMembers, campusId, savePersonAttributes );
+                }
+            }
+
+            return null;
+        }
+
         #region User Preferences
 
         /// <summary>
@@ -750,58 +828,60 @@ namespace Rock.Model
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
-            var rockContext = new RockContext();
-            var attributeService = new Model.AttributeService( rockContext );
-            var attribute = attributeService.Get( PersonEntityTypeId, string.Empty, string.Empty, key );
-
-            if ( attribute == null )
+            using ( var rockContext = new RockContext() )
             {
-                var fieldTypeService = new Model.FieldTypeService( rockContext );
-                var fieldType = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() );
+                var attributeService = new Model.AttributeService( rockContext );
+                var attribute = attributeService.Get( PersonEntityTypeId, string.Empty, string.Empty, key );
 
-                attribute = new Model.Attribute();
-                attribute.IsSystem = false;
-                attribute.EntityTypeId = PersonEntityTypeId;
-                attribute.EntityTypeQualifierColumn = string.Empty;
-                attribute.EntityTypeQualifierValue = string.Empty;
-                attribute.Key = key;
-                attribute.Name = key;
-                attribute.IconCssClass = string.Empty;
-                attribute.DefaultValue = string.Empty;
-                attribute.IsMultiValue = false;
-                attribute.IsRequired = false;
-                attribute.Description = string.Empty;
-                attribute.FieldTypeId = fieldType.Id;
-                attribute.Order = 0;
+                if ( attribute == null )
+                {
+                    var fieldTypeService = new Model.FieldTypeService( rockContext );
+                    var fieldType = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() );
 
-                attributeService.Add( attribute );
+                    attribute = new Model.Attribute();
+                    attribute.IsSystem = false;
+                    attribute.EntityTypeId = PersonEntityTypeId;
+                    attribute.EntityTypeQualifierColumn = string.Empty;
+                    attribute.EntityTypeQualifierValue = string.Empty;
+                    attribute.Key = key;
+                    attribute.Name = key;
+                    attribute.IconCssClass = string.Empty;
+                    attribute.DefaultValue = string.Empty;
+                    attribute.IsMultiValue = false;
+                    attribute.IsRequired = false;
+                    attribute.Description = string.Empty;
+                    attribute.FieldTypeId = fieldType.Id;
+                    attribute.Order = 0;
+
+                    attributeService.Add( attribute );
+                    rockContext.SaveChanges();
+                }
+
+                var attributeValueService = new Model.AttributeValueService( rockContext );
+                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id );
+
+                if ( string.IsNullOrWhiteSpace( value ) )
+                {
+                    // Delete existing value if no existing value
+                    if ( attributeValue != null )
+                    {
+                        attributeValueService.Delete( attributeValue );
+                    }
+                }
+                else
+                {
+                    if ( attributeValue == null )
+                    {
+                        attributeValue = new Model.AttributeValue();
+                        attributeValue.AttributeId = attribute.Id;
+                        attributeValue.EntityId = person.Id;
+                        attributeValueService.Add( attributeValue );
+                    }
+                    attributeValue.Value = value;
+                }
+
                 rockContext.SaveChanges();
             }
-
-            var attributeValueService = new Model.AttributeValueService( rockContext );
-            var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id );
-
-            if ( string.IsNullOrWhiteSpace( value ) )
-            {
-                // Delete existing value if no existing value
-                if ( attributeValue != null )
-                {
-                    attributeValueService.Delete( attributeValue );
-                }
-            }
-            else
-            {
-                if ( attributeValue == null )
-                {
-                    attributeValue = new Model.AttributeValue();
-                    attributeValue.AttributeId = attribute.Id;
-                    attributeValue.EntityId = person.Id;
-                    attributeValueService.Add( attributeValue );
-                }
-                attributeValue.Value = value;
-            }
-
-            rockContext.SaveChanges();
         }
 
         /// <summary>
@@ -814,17 +894,19 @@ namespace Rock.Model
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
-            var rockContext = new Rock.Data.RockContext();
-            var attributeService = new Model.AttributeService( rockContext );
-            var attribute = attributeService.Get( PersonEntityTypeId, string.Empty, string.Empty, key );
-
-            if (attribute != null)
+            using ( var rockContext = new Rock.Data.RockContext() )
             {
-                var attributeValueService = new Model.AttributeValueService( rockContext );
-                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId(attribute.Id, person.Id);
-                if ( attributeValue != null )
+                var attributeService = new Model.AttributeService( rockContext );
+                var attribute = attributeService.Get( PersonEntityTypeId, string.Empty, string.Empty, key );
+
+                if ( attribute != null )
                 {
-                    return attributeValue.Value;
+                    var attributeValueService = new Model.AttributeValueService( rockContext );
+                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id );
+                    if ( attributeValue != null )
+                    {
+                        return attributeValue.Value;
+                    }
                 }
             }
 
@@ -842,15 +924,17 @@ namespace Rock.Model
 
             var values = new Dictionary<string, string>();
 
-            var rockContext = new Rock.Data.RockContext();
-            foreach ( var attributeValue in new Model.AttributeValueService( rockContext ).Queryable()
-                .Where( v =>
-                    v.Attribute.EntityTypeId == PersonEntityTypeId &&
-                    v.Attribute.EntityTypeQualifierColumn == string.Empty &&
-                    v.Attribute.EntityTypeQualifierValue == string.Empty &&
-                    v.EntityId == person.Id ) )
+            using ( var rockContext = new Rock.Data.RockContext() )
             {
-                values.Add(attributeValue.Attribute.Key, attributeValue.Value);
+                foreach ( var attributeValue in new Model.AttributeValueService( rockContext ).Queryable()
+                    .Where( v =>
+                        v.Attribute.EntityTypeId == PersonEntityTypeId &&
+                        ( v.Attribute.EntityTypeQualifierColumn == null || v.Attribute.EntityTypeQualifierColumn == string.Empty ) &&
+                        ( v.Attribute.EntityTypeQualifierValue == null || v.Attribute.EntityTypeQualifierValue == string.Empty ) &&
+                        v.EntityId == person.Id ) )
+                {
+                    values.Add( attributeValue.Attribute.Key, attributeValue.Value );
+                }
             }
 
             return values;

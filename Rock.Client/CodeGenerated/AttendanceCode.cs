@@ -21,23 +21,24 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for AttendanceCode
+    /// Base client model for AttendanceCode that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class AttendanceCode
+    public partial class AttendanceCodeEntity
     {
         /// <summary />
-        public DateTime IssueDateTime { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public string Code { get; set; }
 
         /// <summary />
-        public int Id { get; set; }
+        public DateTime IssueDateTime { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -45,5 +46,12 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+    }
+
+    /// <summary>
+    /// Client model for AttendanceCode that includes all the fields that are available for GETs. Use this for GETs (use AttendanceCodeEntity for POST/PUTs)
+    /// </summary>
+    public partial class AttendanceCode : AttendanceCodeEntity
+    {
     }
 }

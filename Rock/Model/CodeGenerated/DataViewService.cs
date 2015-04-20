@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<Group>( Context ).Queryable().Any( a => a.SyncDataViewId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, Group.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Metric>( Context ).Queryable().Any( a => a.DataViewId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, Metric.FriendlyTypeName );
@@ -99,18 +105,18 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this DataView target, DataView source )
         {
+            target.Id = source.Id;
+            target.CategoryId = source.CategoryId;
+            target.DataViewFilterId = source.DataViewFilterId;
+            target.Description = source.Description;
+            target.EntityTypeId = source.EntityTypeId;
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;
-            target.Description = source.Description;
-            target.CategoryId = source.CategoryId;
-            target.EntityTypeId = source.EntityTypeId;
-            target.DataViewFilterId = source.DataViewFilterId;
             target.TransformEntityTypeId = source.TransformEntityTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

@@ -21,9 +21,11 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock;
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -34,7 +36,7 @@ namespace RockWeb.Blocks.Administration
     [DisplayName( "Security" )]
     [Category( "Administration" )]
     [Description( "Displays security settings for a specific entity." )]
-    public partial class Security : Rock.Web.UI.RockBlock
+    public partial class Security : RockBlock
     {
         #region Fields
 
@@ -53,6 +55,7 @@ namespace RockWeb.Blocks.Administration
                 object currentAction = ViewState["CurrentAction"];
                 return currentAction != null ? currentAction.ToString() : Authorization.VIEW;
             }
+
             set
             {
                 ViewState["CurrentAction"] = value;
@@ -63,29 +66,29 @@ namespace RockWeb.Blocks.Administration
 
         #region Base Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            string entityParam = PageParameter( "EntityTypeId" );
+            int? entityTypeId = PageParameter( "EntityTypeId" ).AsIntegerOrNull();
+            string entityTypeName = string.Empty;
             Type type = null;
 
             // Get Entity Type
-            int entityTypeId = 0;
-            if ( Int32.TryParse( entityParam, out entityTypeId ) )
+            if ( entityTypeId.HasValue )
             {
-                var entityType = EntityTypeCache.Read( entityTypeId );
+                var entityType = EntityTypeCache.Read( entityTypeId.Value );
                 if ( entityType != null )
                 {
-                    entityParam = entityType.FriendlyName;
+                    entityTypeName = entityType.FriendlyName;
                     type = entityType.GetEntityType();
                 }
             }
 
             // Get Entity Id
-            int entityId = 0;
-            if ( !Int32.TryParse( PageParameter( "EntityId" ), out entityId ) )
-            {
-                entityId = 0;
-            }
+            int entityId = PageParameter( "EntityId" ).AsIntegerOrNull() ?? 0;
 
             // Get object type
             if ( type != null )
@@ -102,12 +105,12 @@ namespace RockWeb.Blocks.Administration
                     if ( contexts.Any() )
                     {
                         contextType = contexts.First().Value;
-                    } 
+                    }
                     else
                     {
                         contextType = typeof( RockContext );
                     }
-                    
+
                     Type serviceType = typeof( Rock.Data.Service<> );
                     Type[] modelType = { type };
                     Type service = serviceType.MakeGenericType( modelType );
@@ -140,7 +143,7 @@ namespace RockWeb.Blocks.Administration
 
                 if ( iSecured != null && iSecured.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
-                    if (iSecured.SupportedActions.Any())
+                    if ( iSecured.SupportedActions.Any() )
                     {
                         lActionDescription.Text = iSecured.SupportedActions.FirstOrDefault().Value;
                     }
@@ -148,7 +151,7 @@ namespace RockWeb.Blocks.Administration
                     rptActions.DataSource = iSecured.SupportedActions;
                     rptActions.DataBind();
 
-                    rGrid.DataKeyNames = new string[] { "id" };
+                    rGrid.DataKeyNames = new string[] { "Id" };
                     rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
                     rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
                     rGrid.RowDataBound += new GridViewRowEventHandler( rGrid_RowDataBound );
@@ -156,18 +159,20 @@ namespace RockWeb.Blocks.Administration
                     rGrid.EmptyDataText = string.Empty;
                     rGrid.ShowActionRow = false;
 
-                    rGridParentRules.DataKeyNames = new string[] { "id" };
+                    rGridParentRules.DataKeyNames = new string[] { "Id" };
                     rGridParentRules.ShowHeaderWhenEmpty = false;
                     rGridParentRules.EmptyDataText = string.Empty;
                     rGridParentRules.ShowActionRow = false;
 
                     BindRoles();
 
-                    string script = string.Format( @"
+                    string scriptFormat = @"
                     Sys.Application.add_load(function () {{
                         $('#modal-popup div.modal-header h3 small', window.parent.document).html('{0}');
                     }});
-                ", HttpUtility.JavaScriptStringEncode(iSecured.ToString()) );
+                ";
+                    string script = string.Format( scriptFormat, HttpUtility.JavaScriptStringEncode( iSecured.ToString() ) );
+
                     this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "set-html-{0}", this.ClientID ), script, true );
                 }
                 else
@@ -182,12 +187,17 @@ namespace RockWeb.Blocks.Administration
             {
                 rGrid.Visible = false;
                 rGridParentRules.Visible = false;
-                nbMessage.Text = string.Format( "The requested entity type ('{0}') could not be loaded to determine security attributes.", entityParam );
+                nbMessage.Text = string.Format( "The requested entity type ('{0}') could not be loaded to determine security attributes.", entityTypeName );
                 nbMessage.Visible = true;
             }
+
             base.OnInit( e );
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             nbMessage.Visible = false;
@@ -195,7 +205,9 @@ namespace RockWeb.Blocks.Administration
             if ( iSecured.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
+                {
                     BindGrid();
+                }
             }
             else
             {
@@ -204,7 +216,6 @@ namespace RockWeb.Blocks.Administration
                 nbMessage.Text = "You are not authorized to edit security for this entity";
                 nbMessage.Visible = true;
             }
-
 
             base.OnLoad( e );
         }
@@ -215,7 +226,12 @@ namespace RockWeb.Blocks.Administration
 
         #region Grid Events
 
-        void rGrid_GridReorder( object sender, GridReorderEventArgs e )
+        /// <summary>
+        /// Handles the GridReorder event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
             int entityTypeId = iSecured.TypeId;
 
@@ -230,6 +246,11 @@ namespace RockWeb.Blocks.Administration
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void rGrid_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
@@ -240,11 +261,16 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
+        /// <summary>
+        /// Handles the Delete event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
             var authService = new Rock.Model.AuthService( rockContext );
-            Rock.Model.Auth auth = authService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.Model.Auth auth = authService.Get( e.RowKeyId );
             if ( auth != null )
             {
                 authService.Delete( auth );
@@ -256,13 +282,23 @@ namespace RockWeb.Blocks.Administration
             BindGrid();
         }
 
-        void rGrid_GridRebind( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the GridRebind event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rGrid_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
 
         #endregion
 
+        /// <summary>
+        /// Handles the Click event of the lbAction control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAction_Click( object sender, EventArgs e )
         {
             LinkButton lb = sender as LinkButton;
@@ -279,13 +315,18 @@ namespace RockWeb.Blocks.Administration
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the rblAllowDeny control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rblAllowDeny_SelectedIndexChanged( object sender, EventArgs e )
         {
             RadioButtonList rblAllowDeny = (RadioButtonList)sender;
             GridViewRow selectedRow = rblAllowDeny.NamingContainer as GridViewRow;
             if ( selectedRow != null )
             {
-                int id = (int)rGrid.DataKeys[selectedRow.RowIndex]["id"];
+                int id = (int)rGrid.DataKeys[selectedRow.RowIndex]["Id"];
 
                 var rockContext = new RockContext();
                 var authService = new Rock.Model.AuthService( rockContext );
@@ -302,6 +343,11 @@ namespace RockWeb.Blocks.Administration
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbShowRole control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbShowRole_Click( object sender, EventArgs e )
         {
             SetRoleActions();
@@ -309,12 +355,22 @@ namespace RockWeb.Blocks.Administration
             pnlAddRole.Visible = true;
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbShowUser control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbShowUser_Click( object sender, EventArgs e )
         {
             phList.Visible = false;
             pnlAddUser.Visible = true;
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbCancelAdd control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCancelAdd_Click( object sender, EventArgs e )
         {
             pnlAddRole.Visible = false;
@@ -322,11 +378,21 @@ namespace RockWeb.Blocks.Administration
             phList.Visible = true;
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlRoles control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlRoles_SelectedIndexChanged( object sender, EventArgs e )
         {
             SetRoleActions();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbAddRole control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddRole_Click( object sender, EventArgs e )
         {
             List<AuthRule> existingAuths =
@@ -342,18 +408,24 @@ namespace RockWeb.Blocks.Administration
                     bool alreadyExists = false;
 
                     Rock.Model.SpecialRole specialRole = Rock.Model.SpecialRole.None;
-                    int? groupId = Int32.Parse( ddlRoles.SelectedValue );
+                    int? groupId = ddlRoles.SelectedValue.AsIntegerOrNull();
 
                     switch ( groupId )
                     {
-                        case -1: specialRole = Rock.Model.SpecialRole.AllUsers; break;
-                        case -2: specialRole = Rock.Model.SpecialRole.AllAuthenticatedUsers; break;
-                        case -3: specialRole = Rock.Model.SpecialRole.AllUnAuthenticatedUsers; break;
-                        default: specialRole = Rock.Model.SpecialRole.None; break;
+                        case -1: specialRole = Rock.Model.SpecialRole.AllUsers;
+                            break;
+                        case -2: specialRole = Rock.Model.SpecialRole.AllAuthenticatedUsers;
+                            break;
+                        case -3: specialRole = Rock.Model.SpecialRole.AllUnAuthenticatedUsers;
+                            break;
+                        default: specialRole = Rock.Model.SpecialRole.None;
+                            break;
                     }
 
                     if ( groupId < 0 )
+                    {
                         groupId = null;
+                    }
 
                     foreach ( AuthRule rule in
                         Authorization.AuthRules( iSecured.TypeId, iSecured.Id, li.Text ) )
@@ -386,7 +458,9 @@ namespace RockWeb.Blocks.Administration
                     }
 
                     if ( actionUpdated )
+                    {
                         Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, li.Text );
+                    }
                 }
             }
 
@@ -396,6 +470,11 @@ namespace RockWeb.Blocks.Administration
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbAddUser control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddUser_Click( object sender, EventArgs e )
         {
             List<AuthRule> existingAuths =
@@ -445,7 +524,9 @@ namespace RockWeb.Blocks.Administration
             }
 
             if ( actionUpdated )
+            {
                 Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
+            }
 
             pnlAddUser.Visible = false;
             phList.Visible = true;
@@ -457,6 +538,9 @@ namespace RockWeb.Blocks.Administration
 
         #region Methods
 
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
         private void BindGrid()
         {
             var itemRules = Authorization.AuthRules( iSecured.TypeId, iSecured.Id, CurrentAction );
@@ -470,30 +554,42 @@ namespace RockWeb.Blocks.Administration
             rGridParentRules.DataBind();
         }
 
+        /// <summary>
+        /// Adds the parent rules.
+        /// </summary>
+        /// <param name="itemRules">The item rules.</param>
+        /// <param name="parentRules">The parent rules.</param>
+        /// <param name="parent">The parent.</param>
+        /// <param name="action">The action.</param>
         private void AddParentRules( List<AuthRule> itemRules, List<MyAuthRule> parentRules, ISecured parent, string action )
         {
             if ( parent != null )
             {
                 var entityType = Rock.Web.Cache.EntityTypeCache.Read( parent.TypeId );
                 foreach ( AuthRule rule in Authorization.AuthRules( parent.TypeId, parent.Id, action ) )
+                {
                     if ( !itemRules.Exists( r =>
                             r.SpecialRole == rule.SpecialRole &&
                             r.PersonId == rule.PersonId &&
                             r.GroupId == rule.GroupId ) &&
-                        !parentRules.Exists( r => 
+                        !parentRules.Exists( r =>
                             r.SpecialRole == rule.SpecialRole &&
                             r.PersonId == rule.PersonId &&
                             r.GroupId == rule.GroupId ) )
                     {
                         var myRule = new MyAuthRule( rule );
-                        myRule.EntityTitle = string.Format( "{0} ({1})", parent.ToString(), entityType.FriendlyName ?? entityType.Name ).TrimStart();
+                        myRule.EntityTitle = string.Format( "{0} <small>({1})</small>", parent.ToString(), entityType.FriendlyName ?? entityType.Name ).TrimStart();
                         parentRules.Add( myRule );
                     }
+                }
 
                 AddParentRules( itemRules, parentRules, parent.ParentAuthority, action );
             }
         }
 
+        /// <summary>
+        /// Binds the roles.
+        /// </summary>
         private void BindRoles()
         {
             ddlRoles.Items.Clear();
@@ -502,18 +598,35 @@ namespace RockWeb.Blocks.Administration
             ddlRoles.Items.Add( new ListItem( "[All Authenticated Users]", "-2" ) );
             ddlRoles.Items.Add( new ListItem( "[All Un-Authenticated Users]", "-3" ) );
 
+            var securityRoleType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+            
             foreach ( var role in Role.AllRoles() )
-                ddlRoles.Items.Add( new ListItem( role.Name, role.Id.ToString() ) );
+            {
+                string name = role.IsSecurityTypeGroup ? role.Name : "GROUP - " + role.Name;
+                ddlRoles.Items.Add( new ListItem( name, role.Id.ToString() ) );
+            }
         }
 
+        /// <summary>
+        /// Gets the tab class.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
         protected string GetTabClass( object action )
         {
             if ( action.ToString() == CurrentAction )
+            {
                 return "active";
+            }
             else
-                return "";
+            {
+                return string.Empty;
+            }
         }
 
+        /// <summary>
+        /// Sets the role actions.
+        /// </summary>
         private void SetRoleActions()
         {
             cblRoleActionList.Items.Clear();
@@ -533,18 +646,24 @@ namespace RockWeb.Blocks.Administration
                     bool alreadyAdded = false;
 
                     Rock.Model.SpecialRole specialRole = Rock.Model.SpecialRole.None;
-                    int? groupId = Int32.Parse( ddlRoles.SelectedValue );
+                    int? groupId = ddlRoles.SelectedValue.AsIntegerOrNull();
 
                     switch ( groupId )
                     {
-                        case -1: specialRole = Rock.Model.SpecialRole.AllUsers; break;
-                        case -2: specialRole = Rock.Model.SpecialRole.AllAuthenticatedUsers; break;
-                        case -3: specialRole = Rock.Model.SpecialRole.AllUnAuthenticatedUsers; break;
-                        default: specialRole = Rock.Model.SpecialRole.None; break;
+                        case -1: specialRole = Rock.Model.SpecialRole.AllUsers;
+                            break;
+                        case -2: specialRole = Rock.Model.SpecialRole.AllAuthenticatedUsers;
+                            break;
+                        case -3: specialRole = Rock.Model.SpecialRole.AllUnAuthenticatedUsers;
+                            break;
+                        default: specialRole = Rock.Model.SpecialRole.None;
+                            break;
                     }
 
                     if ( groupId < 0 )
+                    {
                         groupId = null;
+                    }
 
                     foreach ( AuthRule rule in Authorization.AuthRules( iSecured.TypeId, iSecured.Id, action.Key ) )
                     {
@@ -556,21 +675,35 @@ namespace RockWeb.Blocks.Administration
                     }
 
                     if ( !alreadyAdded )
+                    {
                         cblRoleActionList.Items.Add( new ListItem( action.Key ) );
+                    }
                 }
             }
         }
 
         #endregion
-
     }
 
     #region MyAuthRule class
 
-    class MyAuthRule : AuthRule
+    /// <summary>
+    /// 
+    /// </summary>
+    public class MyAuthRule : AuthRule
     {
+        /// <summary>
+        /// Gets or sets the entity title.
+        /// </summary>
+        /// <value>
+        /// The entity title.
+        /// </value>
         public string EntityTitle { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MyAuthRule"/> class.
+        /// </summary>
+        /// <param name="rule">The rule.</param>
         public MyAuthRule( AuthRule rule )
             : base( rule.Id, rule.EntityId, rule.AllowOrDeny, rule.SpecialRole, rule.PersonId, rule.PersonAliasId, rule.GroupId, rule.Order )
         {
@@ -578,5 +711,4 @@ namespace RockWeb.Blocks.Administration
     }
 
     #endregion
-
 }

@@ -93,17 +93,18 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this WorkflowActionForm target, WorkflowActionForm source )
         {
-            target.NotificationSystemEmailId = source.NotificationSystemEmailId;
-            target.IncludeActionsInNotification = source.IncludeActionsInNotification;
-            target.Header = source.Header;
-            target.Footer = source.Footer;
-            target.Actions = source.Actions;
+            target.Id = source.Id;
             target.ActionAttributeGuid = source.ActionAttributeGuid;
+            target.Actions = source.Actions;
+            target.AllowNotes = source.AllowNotes;
+            target.Footer = source.Footer;
+            target.Header = source.Header;
+            target.IncludeActionsInNotification = source.IncludeActionsInNotification;
+            target.NotificationSystemEmailId = source.NotificationSystemEmailId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

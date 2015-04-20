@@ -31,59 +31,71 @@
                     <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                     <div class="row">
-
                         <div class="col-md-6">
-                            <Rock:PersonPicker ID="ppAuthorizedPerson" runat="server" Label="Person" IncludeBusinesses="true" />
+                            <Rock:PersonPicker ID="ppAuthorizedPerson" CssClass="js-authorizedperson" runat="server" Label="Person" IncludeBusinesses="true" OnSelectPerson="ppAuthorizedPerson_SelectPerson" />
                             <Rock:DateTimePicker ID="dtTransactionDateTime" runat="server" Label="Transaction Date/Time" />
+                        </div>
+                        <div class="col-md-6">
+                            <asp:Panel ID="pnlSingleAccount" runat="server" Visible="false" CssClass="row">
+                                <div class="col-sm-6">
+                                    <Rock:CurrencyBox id="tbSingleAccountAmount" runat="server" CssClass="input-width-lg"></Rock:CurrencyBox>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label class="control-label">&nbsp;</label>
+                                        <div class="input-group">
+                                            <asp:LinkButton ID="lbShowMore" runat="server" Text="Additional Accounts" CssClass="btn btn-link" TabIndex="0" OnClick="lbShowMore_Click" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </asp:Panel>
+                            <asp:Panel ID="pnlAccounts" runat="server">
+                                <div class="grid">
+                                    <Rock:Grid ID="gAccountsEdit" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light" 
+                                        OnRowSelected="gAccountsEdit_RowSelected" ShowConfirmDeleteDialog="false">
+                                        <Columns>
+                                            <Rock:RockTemplateField HeaderText="Accounts">
+                                                <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
+                                            </Rock:RockTemplateField>
+                                            <Rock:RockBoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
+                                            <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
+                                            <Rock:DeleteField OnClick="gAccountsEdit_DeleteClick" />
+                                        </Columns>
+                                    </Rock:Grid>
+                                </div>
+                            </asp:Panel>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlTransactionType" runat="server" Label="Transaction Type" Required="true" />
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source" />
-                            <Rock:ComponentPicker ID="cpPaymentGateway" runat="server" Label="Payment Gateway" ContainerType="Rock.Financial.GatewayContainer" />
-                            <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code"
-                                SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionCode" />
                             <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" />
                             <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
-                            <Rock:DataTextBox ID="tbSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="3"
-                                SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Summary" />
+                            <Rock:FinancialGatewayPicker ID="gpPaymentGateway" runat="server" Label="Payment Gateway" />
+                            <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code"
+                                SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionCode" />
                         </div>
-
                         <div class="col-md-6">
-
-                            <h4>Accounts</h4>
-                            <div class="grid">
-                                <Rock:Grid ID="gAccountsEdit" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light" 
-                                    OnRowSelected="gAccountsEdit_RowSelected" ShowConfirmDeleteDialog="false">
-                                    <Columns>
-                                        <asp:TemplateField>
-                                            <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
-                                        </asp:TemplateField>
-                                        <asp:BoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
-                                        <asp:BoundField DataField="Summary" SortExpression="Summary" />
-                                        <Rock:DeleteField OnClick="gAccountsEdit_DeleteClick" />
-                                    </Columns>
-                                </Rock:Grid>
-                            </div>
-
                             <h4>Images</h4>
                             <asp:DataList ID="dlImages" runat="server" RepeatDirection="Horizontal" RepeatColumns="2" OnItemDataBound="dlImages_ItemDataBound">
                                 <ItemTemplate>
-                                    <asp:HiddenField ID="hfImageGuid" runat="server" Value='<%# Eval("Guid") %>' />
-                                    <Rock:ImageUploader ID="imgupImage" runat="server" />
+                                    <Rock:ImageUploader ID="imgupImage" runat="server" OnImageRemoved="imgupImage_ImageRemoved" OnImageUploaded="imgupImage_ImageUploaded" />
                                 </ItemTemplate>
                             </asp:DataList>
-                            <asp:LinkButton ID="lbAddImage" runat="server" CssClass="btn btn-default btn-sm margin-t-sm" OnClick="lbAddImage_Click"><i class="fa fa-plus"></i> Add New Image</asp:LinkButton>
-
                             <Rock:RockLiteral ID="lScheduledTransaction" runat="server" Label="Scheduled Transaction" Visible="false" />
                             <Rock:RockLiteral ID="lProcessedBy" runat="server" Label="Matched By" Visible="false" />
-
                         </div>
-
                     </div>
+
+                    <Rock:DataTextBox ID="tbSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="2"
+                        SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Summary" />
 
                     <div class="actions">
-                        <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
-                        <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
+                        <asp:LinkButton ID="lbSave" runat="server" Text="Save" AccessKey="s" CssClass="btn btn-primary" OnClick="lbSave_Click" />
+                        <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" AccessKey="c" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                     </div>
-
                 </div>
 
                 <fieldset id="fieldsetViewSummary" runat="server">
@@ -96,11 +108,11 @@
 
                             <Rock:Grid ID="gAccountsView" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light">
                                 <Columns>
-                                    <asp:TemplateField HeaderText="Accounts">
+                                    <Rock:RockTemplateField HeaderText="Accounts">
                                         <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
-                                    </asp:TemplateField>
-                                    <asp:BoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
-                                    <asp:BoundField DataField="Summary" SortExpression="Summary" />
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockBoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
+                                    <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
                                 </Columns>
                             </Rock:Grid>
 
@@ -119,7 +131,8 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
+                        <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" AccessKey="e" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
+                        <asp:LinkButton ID="lbAddTransaction" runat="server" Text="Add New Transaction" AccessKey="a" CssClass="btn btn-default pull-right" CausesValidation="false" OnClick="lbAddTransaction_Click" />
                     </div>
 
                 </fieldset>

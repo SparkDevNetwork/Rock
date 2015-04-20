@@ -29,6 +29,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using DotLiquid;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -38,49 +39,7 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Scheduled Transaction Summary" )]
     [Category( "Finance" )]
     [Description( "Block that shows a summary of the scheduled transactions for the currently logged in user." )]
-    [CodeEditorField("Template", "Liquid template for the content to be placed on the page.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"
-
-<div class=""row margin-b-md"">
-
-    <div class=""col-md-6"">
-        <h1 class=""condensed"">Hello, {{CurrentPerson.NickName}}</h1>
-    </div>
-
-    <div class=""col-md-6"">
-        {% if ScheduledTransactions.size == 1 %}
-            <p>
-                You currently have <span class='label label-default'>1</span> giving profile active.
-            </p>
-            <p>
-                {% if ScheduledTransactions[0].DaysTillNextPayment > 0 %}
-                    Next gift is in {{ScheduledTransactions[0].DaysTillNextPayment}} days.
-                {% else %}
-                    Next gift is scheduled for today.
-                {% endif %}
-                
-                {% if ScheduledTransactions[0].LastPaymentDate != null %}
-                    {% if ScheduledTransactions[0].DaysSinceLastPayment > 0 %}
-                        Last gift was {{ScheduledTransactions[0].DaysSinceLastPayment}} days ago.
-                    {% else %}
-                        Last gift was today.
-                    {% endif %}
-                {% endif %}
-            </p>
-        {% elsif ScheduledTransactions.size > 1 %}
-            You currently have <span class='label label-default'>{{ScheduledTransactions.size}}</span> 
-            giving profiles active.
-        {% else %}
-            You currently have no active profiles.
-        {% endif %}
-        <div class=""clearfix"">
-            <a class=""btn btn-default pull-left"" href=""{{LinkedPages.ManageScheduledTransactionsPage}}"">Manage</a> 
-            <a class=""btn btn-default pull-right"" href=""{{LinkedPages.TransactionHistoryPage}}"">View History</a>
-        </div>
-        <a class=""btn btn-primary btn-block margin-t-md"" href=""{{LinkedPages.TransactionEntryPage}}"">Give Now</a>
-    </div>
-</div>
-
-", "", 1)]
+    [CodeEditorField( "Template", "Liquid template for the content to be placed on the page.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/ScheduledTransactionSummary.lava'  %}", "", 1 )]
     [BooleanField("Enable Debug", "Displays a list of available merge fields using the current person's scheduled transactions.", false, "", 2)]
     [LinkedPage("Manage Scheduled Transactions Page", "Link to be used for managing an individual's scheduled transactions.", false, "", "", 3)]
     [LinkedPage( "Transaction History Page", "Link to use for viewing an individual's transaction history.", false, "", "", 4 )]
@@ -239,7 +198,7 @@ namespace RockWeb.Blocks.Finance
                 string content = GetAttributeValue( "Template" ).ResolveMergeFields( scheduleValues );
 
                 // show merge fields if needed
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                 {
                     // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
                     scheduleValues.Remove( "Person" );

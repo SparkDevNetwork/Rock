@@ -50,11 +50,11 @@
                     <Rock:Grid ID="gExceptionList" runat="server" AllowSorting="true" OnRowSelected="gExceptionList_RowSelected" EmptyDataText="No Exceptions Found">
                         <Columns>
                             <Rock:DateField DataField="LastExceptionDate" HeaderText="Last Date" SortExpression="LastExceptionDate" />
-                            <asp:BoundField DataField="SiteName" HeaderText="Site Name" SortExpression="SiteName" />
-                            <asp:BoundField DataField="PageName" HeaderText="Page" SortExpression="PageName" />
-                            <asp:BoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
-                            <asp:BoundField DataField="TotalCount" HeaderText="Total Count" SortExpression="TotalCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
-                            <asp:BoundField DataField="SubsetCount" SortExpression="SubsetCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                            <Rock:RockBoundField DataField="SiteName" HeaderText="Site Name" SortExpression="SiteName" />
+                            <Rock:RockBoundField DataField="PageName" HeaderText="Page" SortExpression="PageName" />
+                            <Rock:RockBoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
+                            <Rock:RockBoundField DataField="TotalCount" HeaderText="Total Count" SortExpression="TotalCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                            <Rock:RockBoundField DataField="SubsetCount" SortExpression="SubsetCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                         </Columns>
                     </Rock:Grid>
                 </div>
@@ -87,8 +87,8 @@
                         <Columns>
                             <Rock:DateField DataField="CreatedDateTime" HeaderText="Date" SortExpression="CreatedDateTime" />
                             <Rock:TimeField DataField="CreatedDateTime" HeaderText="Time" SortExpression="CreatedDateTime" />
-                            <asp:BoundField DataField="FullName" HeaderText="Logged In User" SortExpression="FullName" />
-                            <asp:BoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
+                            <Rock:RockBoundField DataField="FullName" HeaderText="Logged In User" SortExpression="FullName" />
+                            <Rock:RockBoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
                         </Columns>
                     </Rock:Grid>
                 </div>

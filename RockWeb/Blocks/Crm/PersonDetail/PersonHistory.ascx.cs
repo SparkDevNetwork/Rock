@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
             gfSettings.DisplayFilterValue += gfSettings_DisplayFilterValue;
 
-            gHistory.DataKeyNames = new string[] { "id" };
+            gHistory.DataKeyNames = new string[] { "Id" };
             gHistory.GridRebind += gHistory_GridRebind;
         }
 
@@ -299,6 +299,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     PersonName = h.CreatedByPersonAlias != null && h.CreatedByPersonAlias.Person != null ? h.CreatedByPersonAlias.Person.NickName + " " + h.CreatedByPersonAlias.Person.LastName : "",
                     CreatedDateTime = h.CreatedDateTime
                 } ).ToList();
+
+                gHistory.EntityTypeId = EntityTypeCache.Read<History>().Id;
                 gHistory.DataBind();
             }
 

@@ -235,13 +235,37 @@ namespace RockWeb.Blocks.Cms
                         Page.Header.Controls.Add( new LiteralControl( rssLink ) );
                     }
 
-                    string content = String.Empty;
-                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+
+                    // rearrange the dictionary for cleaning purposes
+                    if ( feedDictionary.ContainsKey( "entry" ) ) {
+                        var item = feedDictionary["entry"];
+
+                        if ( item != null )
+                        {
+                            feedDictionary.Remove( "entry" );
+                            feedDictionary["Entries"] = item;
+                        }
+                    }
+                    
+
+                    // remove the link item
+                    if ( feedDictionary.ContainsKey( "link" ) )
                     {
-                        content = LoadDebugData( feedDictionary );
+                        var item = feedDictionary["link"];
+
+                        if ( item != null )
+                        {
+                            feedDictionary.Remove( "link" );
+                        }
+                    }
+
+                    string content = String.Empty;
+                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+                    {
+                        content = feedDictionary.lavaDebugInfo();
                     }
                     else
-                    {
+                    {                        
                         content = GetTemplate().Render( Hash.FromDictionary( feedDictionary ) );
                     }
 

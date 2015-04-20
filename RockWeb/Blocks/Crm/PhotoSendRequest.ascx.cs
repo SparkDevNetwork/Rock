@@ -415,6 +415,7 @@ namespace RockWeb.Blocks.Crm
             if ( template != null )
             {
                 var mediumData = template.MediumData;
+
                 if ( !mediumData.ContainsKey( "Subject" ) )
                 {
                     mediumData.Add( "Subject", template.Subject );
@@ -434,6 +435,10 @@ namespace RockWeb.Blocks.Crm
                         }
                     }
                 }
+            }
+            else
+            {
+                throw new Exception( "The communication template appears to be missing." );
             }
         }
 

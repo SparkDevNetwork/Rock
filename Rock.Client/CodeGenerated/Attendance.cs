@@ -21,53 +21,91 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for Attendance
+    /// Base client model for Attendance that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class Attendance
+    public partial class AttendanceEntity
     {
         /// <summary />
-        public int? LocationId { get; set; }
-
-        /// <summary />
-        public int? CampusId { get; set; }
-
-        /// <summary />
-        public int? ScheduleId { get; set; }
-
-        /// <summary />
-        public int? GroupId { get; set; }
-
-        /// <summary />
-        public int? PersonAliasId { get; set; }
-
-        /// <summary />
-        public int? DeviceId { get; set; }
-
-        /// <summary />
-        public int? SearchTypeValueId { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public int? AttendanceCodeId { get; set; }
 
         /// <summary />
-        public int? QualifierValueId { get; set; }
+        public int? CampusId { get; set; }
 
         /// <summary />
-        public DateTime StartDateTime { get; set; }
+        public int? DeviceId { get; set; }
+
+        /// <summary />
+        public bool? DidAttend { get; set; }
+
+        /// <summary />
+        public bool? DidNotOccur { get; set; }
 
         /// <summary />
         public DateTime? EndDateTime { get; set; }
 
         /// <summary />
-        public bool DidAttend { get; set; }
+        public int? GroupId { get; set; }
+
+        /// <summary />
+        public int? LocationId { get; set; }
 
         /// <summary />
         public string Note { get; set; }
+
+        /// <summary />
+        public int? PersonAliasId { get; set; }
+
+        /// <summary />
+        public bool? Processed { get; set; }
+
+        /// <summary />
+        public int? QualifierValueId { get; set; }
+
+        /// <summary />
+        public int /* RSVP*/ RSVP { get; set; }
+
+        /// <summary />
+        public int? ScheduleId { get; set; }
+
+        /// <summary />
+        public int? SearchTypeValueId { get; set; }
+
+        /// <summary />
+        public DateTime StartDateTime { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Client model for Attendance that includes all the fields that are available for GETs. Use this for GETs (use AttendanceEntity for POST/PUTs)
+    /// </summary>
+    public partial class Attendance : AttendanceEntity
+    {
+        /// <summary />
+        public AttendanceCode AttendanceCode { get; set; }
+
+        /// <summary />
+        public Device Device { get; set; }
+
+        /// <summary />
+        public DefinedValue Qualifier { get; set; }
+
+        /// <summary />
+        public DefinedValue SearchTypeValue { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -81,14 +119,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
-        public int Id { get; set; }
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

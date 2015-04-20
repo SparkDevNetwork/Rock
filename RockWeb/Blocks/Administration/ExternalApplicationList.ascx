@@ -15,7 +15,7 @@
                     <Rock:Grid ShowHeader="false" ID="gExternalApplication" CssClass="table-padded" runat="server" AllowSorting="true" DisplayType="Light" OnRowDataBound="gExternalApplication_RowDataBound">
                         <Columns>
                             <Rock:AttributeField DataField="Icon" HeaderText="" ItemStyle-CssClass="grid-icon" />
-                            <asp:TemplateField SortExpression="Name" HeaderText="">
+                            <Rock:RockTemplateField SortExpression="Name" HeaderText="">
                                 <ItemTemplate>
                                     <h4>
                                         <asp:Literal ID="lAppName" runat="server" />
@@ -25,7 +25,7 @@
                                     </h4>
                                     <%# Eval( "Description" ) %>
                                 </ItemTemplate>
-                            </asp:TemplateField>
+                            </Rock:RockTemplateField>
                             <asp:HyperLinkField Text="Download" />
                         </Columns>
                     </Rock:Grid>

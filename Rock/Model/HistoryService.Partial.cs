@@ -118,9 +118,11 @@ namespace Rock.Model
         /// <param name="relatedEntityId">The related entity identifier.</param>
         public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId )
         {
-            AddChanges( rockContext, modelType, categoryGuid, entityId, changes, caption, relatedModelType, relatedEntityId );
-
-            rockContext.SaveChanges();
+            if ( changes.Any() )
+            {
+                AddChanges( rockContext, modelType, categoryGuid, entityId, changes, caption, relatedModelType, relatedEntityId );
+                rockContext.SaveChanges();
+            }
         }
     }
 }

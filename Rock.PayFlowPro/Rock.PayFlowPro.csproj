@@ -35,10 +35,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Rock\bin\EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="Humanizer, Version=1.31.0.0, Culture=neutral, PublicKeyToken=979442b78dfc278e, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Humanizer.1.31.0\lib\portable-win+net40+sl50+wp8+wpa81\Humanizer.dll</HintPath>
-    </Reference>
     <Reference Include="Payflow_dotNET">
       <HintPath>..\libs\PayFlow\Payflow_dotNET.dll</HintPath>
     </Reference>
@@ -80,7 +76,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

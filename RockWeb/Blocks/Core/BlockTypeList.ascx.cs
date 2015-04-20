@@ -23,6 +23,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -48,7 +49,7 @@ namespace RockWeb.Blocks.Core
             gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
 
             gBlockTypes.RowItemText = "Block Type";
-            gBlockTypes.DataKeyNames = new string[] { "id" };
+            gBlockTypes.DataKeyNames = new string[] { "Id" };
             gBlockTypes.Actions.ShowAdd = true;
             gBlockTypes.Actions.AddClick += gBlockTypes_Add;
             gBlockTypes.GridRebind += gBlockTypes_GridRebind;
@@ -279,6 +280,7 @@ namespace RockWeb.Blocks.Core
                 gBlockTypes.DataSource = selectQry.OrderBy( b => b.Name ).ToList();
             }
 
+            gBlockTypes.EntityTypeId = EntityTypeCache.Read<Rock.Model.BlockType>().Id;
             gBlockTypes.DataBind();
         }
 

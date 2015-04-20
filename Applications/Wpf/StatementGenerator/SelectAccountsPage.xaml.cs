@@ -74,7 +74,7 @@ namespace Rock.Apps.StatementGenerator
             _rockRestClient = new RockRestClient( rockConfig.RockBaseUrl );
             _rockRestClient.Login( rockConfig.Username, rockConfig.Password );
 
-            var accounts = _rockRestClient.GetData<List<Rock.Client.FinancialAccount>>( "api/FinancialAccounts", "IsActive eq true and IsTaxDeductible eq true" );
+            var accounts = _rockRestClient.GetData<List<Rock.Client.FinancialAccount>>( "api/FinancialAccounts", "IsActive eq true" );
 
             lstAccounts.ItemsSource = accounts.Select( a => new NameIdIsChecked { Id = a.Id, Name = a.Name, IsChecked = true } );
 

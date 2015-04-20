@@ -19,11 +19,11 @@
 		* CustomMessage1
 		* CustomMessage2
 	</returns>
-	<param name="StartDate" datatype="datetime">The starting date of the date range</param>
-	<param name="EndDate" datatype="datetime">The ending date of the date range</param>
-	<param name="AccountIds" datatype="varchar(max)">Comma delimited list of account ids. NULL means all</param>
-	<param name="PersonId" datatype="int">Person the statement if for. NULL means all persons that have transactions for the date range</param>
-	<param name="OrderByPostalCode" datatype="int">Set to 1 to have the results sorted by PostalCode, 0 for no particular order</param>
+	<param name='StartDate' datatype='datetime'>The starting date of the date range</param>
+	<param name='EndDate' datatype='datetime'>The ending date of the date range</param>
+	<param name='AccountIds' datatype='varchar(max)'>Comma delimited list of account ids. NULL means all</param>
+	<param name='PersonId' datatype='int'>Person the statement if for. NULL means all persons that have transactions for the date range</param>
+	<param name='OrderByPostalCode' datatype='int'>Set to 1 to have the results sorted by PostalCode, 0 for no particular order</param>
 	<remarks>	
 		Uses the following constants:
 			* Group Type - Family: 790E3215-3B10-442B-AF69-616C0DCB998E
@@ -31,7 +31,9 @@
 			* Group Role - Child: C8B1814F-6AA7-4055-B2D7-48FE20429CB9
 	</remarks>
 	<code>
-		EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, null, 1  -- year 2014 statements for all persons
+		EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, null, 0, 1 -- year 2014 statements for all persons that have a mailing address
+        EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, null, 1, 1 -- year 2014 statements for all persons regardless of mailing address
+        EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, 2, 1, 1  -- year 2014 statements for Ted Decker
 	</code>
 </doc>
 */
@@ -40,6 +42,7 @@ ALTER PROCEDURE [dbo].[spFinance_ContributionStatementQuery]
 	, @EndDate datetime
 	, @AccountIds varchar(max) 
 	, @PersonId int -- NULL means all persons
+    , @IncludeIndividualsWithNoAddress bit 
 	, @OrderByPostalCode bit
 AS
 BEGIN
@@ -71,10 +74,12 @@ BEGIN
 			)
 	)
 
-	SELECT 
+	SELECT * FROM (
+    SELECT 
 		  [pg].[PersonId]
 		, [pg].[GroupId]
 		, [pn].[PersonNames] [AddressPersonNames]
+        , case when l.Id is null then 0 else 1 end [HasAddress]
 		, [l].[Street1]
 		, [l].[Street2]
 		, [l].[City]
@@ -132,12 +137,11 @@ BEGIN
 		AND [p].[Id] IN (SELECT * FROM tranListCTE)
 	) [pg]
 	CROSS APPLY 
-		[ufnCrm_GetFamilyTitle]([pg].[PersonId], [pg].[GroupId]) [pn]
-	JOIN 
+		[ufnCrm_GetFamilyTitle]([pg].[PersonId], [pg].[GroupId], default, default) [pn]
+	LEFT OUTER JOIN (
+    SELECT l.*, gl.GroupId from
 		[GroupLocation] [gl] 
-	ON 
-		[gl].[GroupId] = [pg].[GroupId]
-	JOIN
+	LEFT OUTER JOIN
 		[Location] [l]
 	ON 
 		[l].[Id] = [gl].[LocationId]
@@ -145,7 +149,12 @@ BEGIN
 		[gl].[IsMailingLocation] = 1
 	AND
 		[gl].[GroupLocationTypeValueId] = (SELECT Id FROM DefinedValue WHERE [Guid] = @cLOCATION_TYPE_HOME)
-	
-	ORDER BY
+        ) [l] 
+        ON 
+		[l].[GroupId] = [pg].[GroupId]
+    ) n
+    WHERE n.HasAddress = 1 or @IncludeIndividualsWithNoAddress = 1
+    ORDER BY
 	CASE WHEN @OrderByPostalCode = 1 THEN PostalCode END
+    
 END

@@ -192,6 +192,7 @@ img.jcrop-preview {
   border-radius: 3px;
   float: left;
   width: 100%;
+  z-index: 1049;
 }
 .zone-configuration {
   background: #428bca;
@@ -205,7 +206,7 @@ img.jcrop-preview {
   top: 1px;
   left: 1px;
   width: 25px;
-  z-index: 9000;
+  z-index: 1000;
   right: auto;
 }
 .zone-configuration p {
@@ -239,7 +240,7 @@ img.jcrop-preview {
   position: absolute;
   top: 2px;
   width: 26px;
-  z-index: 9000;
+  z-index: 1049;
 }
 .block-instance.outline {
   min-height: 36px;
@@ -291,7 +292,7 @@ img.jcrop-preview {
   bottom: 0;
   width: 100%;
   height: 26px;
-  z-index: 9999;
+  z-index: 1001;
   position: fixed;
   right: 0;
   margin-right: 0;
@@ -338,106 +339,381 @@ img.jcrop-preview {
     float: right;
   }
 }
-/*
-    Used to manage styles related to modal dialog.
-
-*/
-.rock-modal-frame {
-  width: 750px;
-  -moz-box-shadow: #464646 18px 18px 80px 0px;
-  -webkit-box-shadow: #464646 18px 18px 80px 0px;
-  box-shadow: #464646 18px 18px 80px 0px;
+/*!
+ * Bootstrap Modal
+ *
+ * Copyright Jordan Schroter
+ * Licensed under the Apache License v2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Boostrap 3 patch for for bootstrap-modal. Include BEFORE bootstrap-modal.css!
+ */
+body.modal-open,
+.modal-open .navbar-fixed-top,
+.modal-open .navbar-fixed-bottom {
+  margin-right: 0;
 }
-.modal-content {
+.modal {
+  left: 50%;
+  bottom: auto;
+  right: auto;
+  padding: 0;
+  width: 500px;
+  margin-left: -250px;
+  background-color: #ffffff;
+  border: 1px solid #999999;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  -webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
+  background-clip: padding-box;
+}
+.modal.container {
+  max-width: none;
+}
+/*!
+ * Bootstrap Modal
+ *
+ * Copyright Jordan Schroter
+ * Licensed under the Apache License v2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ */
+.modal-open {
+  overflow: hidden;
+}
+/* add a scroll bar to stop page from jerking around */
+.modal-open.page-overflow .page-container,
+.modal-open.page-overflow .page-container .navbar-fixed-top,
+.modal-open.page-overflow .page-container .navbar-fixed-bottom,
+.modal-open.page-overflow .modal-scrollable {
+  overflow-y: scroll;
+}
+@media (max-width: 979px) {
+  .modal-open.page-overflow .page-container .navbar-fixed-top,
+  .modal-open.page-overflow .page-container .navbar-fixed-bottom {
+    overflow-y: visible;
+  }
+}
+.modal-scrollable {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: auto;
+}
+.modal {
+  outline: none;
+  position: absolute;
+  margin-top: 0;
+  top: 50%;
+  overflow: visible;
+  /* allow content to popup out (i.e tooltips) */
+}
+.modal.fade {
+  top: -100%;
+  -webkit-transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
+  -moz-transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
+  -o-transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
+  transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
+}
+.modal.fade.in {
+  top: 50%;
+}
+.modal-body {
+  max-height: none;
+  overflow: visible;
+}
+.modal.modal-absolute {
+  position: absolute;
+  z-index: 950;
+}
+.modal .loading-mask {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 6px;
+}
+.modal-backdrop.modal-absolute {
+  position: absolute;
+  z-index: 940;
+}
+.modal-backdrop,
+.modal-backdrop.fade.in {
+  opacity: 0.7;
+  filter: alpha(opacity=70);
+  background: #fff;
+}
+.modal.container {
+  width: 940px;
+  margin-left: -470px;
+}
+/* Modal Overflow */
+.modal-overflow.modal {
+  top: 1%;
+}
+.modal-overflow.modal.fade {
+  top: -100%;
+}
+.modal-overflow.modal.fade.in {
+  top: 1%;
+}
+.modal-overflow .modal-body {
+  /*overflow: auto;*/
+  -webkit-overflow-scrolling: touch;
+}
+/* Responsive */
+@media (min-width: 1200px) {
+  .modal.container {
+    width: 1170px;
+    margin-left: -585px;
+  }
+}
+@media (max-width: 979px) {
+  .modal,
+  .modal.container,
+  .modal.modal-overflow {
+    top: 1%;
+    right: 1%;
+    left: 1%;
+    bottom: auto;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .modal.fade.in,
+  .modal.container.fade.in,
+  .modal.modal-overflow.fade.in {
+    top: 1%;
+    bottom: auto;
+  }
+  .modal-body,
+  .modal-overflow .modal-body {
+    position: static;
+    margin: 0;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .modal-footer,
+  .modal-overflow .modal-footer {
+    position: static;
+  }
+}
+.loading-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -12px 0 0 -12px;
+}
+/*
+Animate.css - http://daneden.me/animate
+Licensed under the ☺ license (http://licence.visualidiot.com/)
+
+Copyright (c) 2012 Dan Eden*/
+.animated {
+  -webkit-animation-duration: 1s;
+  -moz-animation-duration: 1s;
+  -o-animation-duration: 1s;
+  animation-duration: 1s;
+  -webkit-animation-fill-mode: both;
+  -moz-animation-fill-mode: both;
+  -o-animation-fill-mode: both;
+  animation-fill-mode: both;
+}
+@-webkit-keyframes shake {
+  0%,
+  100% {
+    -webkit-transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    -webkit-transform: translateX(-10px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    -webkit-transform: translateX(10px);
+  }
+}
+@-moz-keyframes shake {
+  0%,
+  100% {
+    -moz-transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    -moz-transform: translateX(-10px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    -moz-transform: translateX(10px);
+  }
+}
+@-o-keyframes shake {
+  0%,
+  100% {
+    -o-transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    -o-transform: translateX(-10px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    -o-transform: translateX(10px);
+  }
+}
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-10px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(10px);
+  }
+}
+.shake {
+  -webkit-animation-name: shake;
+  -moz-animation-name: shake;
+  -o-animation-name: shake;
+  animation-name: shake;
+}
+.modal-content.rock-modal,
+.rock-modal .modal-content {
   border: 0;
   background-color: #ffffff;
   color: #333333;
 }
-.modal-content .modal-header {
+.modal-content.rock-modal .modal-header,
+.rock-modal .modal-content .modal-header {
   background-color: #3a3a3a;
   color: #bbbbbb;
   padding: 5px 15px;
   min-height: 34px;
-  border-radius: 4px 4px 0 0;
 }
-.modal-content .modal-header:before,
-.modal-content .modal-header:after {
+.modal-content.rock-modal .modal-header:before,
+.rock-modal .modal-content .modal-header:before,
+.modal-content.rock-modal .modal-header:after,
+.rock-modal .modal-content .modal-header:after {
   content: " ";
   display: table;
 }
-.modal-content .modal-header:after {
+.modal-content.rock-modal .modal-header:after,
+.rock-modal .modal-content .modal-header:after {
   clear: both;
 }
-.modal-content .modal-header h3 {
+.modal-content.rock-modal .modal-header h3,
+.rock-modal .modal-content .modal-header h3 {
   float: left;
   margin-right: 12px;
 }
-.modal-content .modal-header .close {
+.modal-content.rock-modal .modal-header .close,
+.rock-modal .modal-content .modal-header .close {
   margin: 0;
   padding: 6px;
   color: #bbbbbb;
   text-shadow: none;
 }
-.modal-content .modal-header .label {
+.modal-content.rock-modal .modal-header .label,
+.rock-modal .modal-content .modal-header .label {
   margin-top: 8px;
 }
-.modal-content .modal-header small {
+.modal-content.rock-modal .modal-header small,
+.rock-modal .modal-content .modal-header small {
   margin-top: 12px;
   display: block;
   color: #a2a2a2;
 }
-.modal-content .modal-body {
+.modal-content.rock-modal .modal-body,
+.rock-modal .modal-content .modal-body {
   color: #333333;
+  text-align: left;
 }
-.modal-content .modal-body .nav-pills {
+.modal-content.rock-modal .modal-body .nav-pills,
+.rock-modal .modal-content .modal-body .nav-pills {
   margin: 6px 0 18px;
 }
-.modal-content .modal-body > .scroll-container {
+.modal-content.rock-modal .modal-body > .scroll-container,
+.rock-modal .modal-content .modal-body > .scroll-container {
   width: 720px;
 }
-.modal-content .modal-body > .scroll-container > .viewport {
+.modal-content.rock-modal .modal-body > .scroll-container > .viewport,
+.rock-modal .modal-content .modal-body > .scroll-container > .viewport {
   width: 670px;
 }
-.modal-content .modal-body.iframe {
+.modal-content.rock-modal .modal-body.iframe,
+.rock-modal .modal-content .modal-body.iframe {
   overflow: hidden;
 }
-.modal-content .modal-footer {
+.modal-content.rock-modal .modal-footer,
+.rock-modal .modal-content .modal-footer {
   padding: 8px;
   margin-top: 10px;
   background-color: #eeeeee;
   color: #555555;
   border-radius: 0 0 4px 4px;
 }
-.modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  z-index: 12000;
-  width: 750px;
-  margin-left: 0px;
-  background-color: #ffffff;
-}
-.modal-body {
+.rock-modal .modal-body {
   padding: 8px 12px 12px 12px;
 }
-.modal-footer:after {
+.rock-modal .modal-footer:after {
   clear: both;
 }
-.modal-footer .btn {
+.rock-modal .modal-footer .btn {
   float: right;
   margin-left: 5px;
+}
+.modal.modal-overflow {
+  top: 30px;
 }
 #modal-popup_iframe {
   height: 100%;
   width: 100%;
   border: 0;
+  display: block;
 }
-/* Bootbox Modal Overrides */
-.modal.bootbox {
-  left: 0;
-  top: 0;
+.modal-backdrop,
+.modal-backdrop.fade.in {
+  opacity: 0.7;
+  filter: alpha(opacity=70);
+  background: rgba(0, 0, 0, 0.3);
+}
+.modal-dialog {
+  margin: 0;
   width: auto;
-  background-color: transparent;
+}
+.modal-content {
+  border: none;
 }
 /*
     Used to manage styles related to reusable components / widgets.
@@ -471,6 +747,7 @@ img.jcrop-preview {
     27. List Extensions - additional list options
     28. Key Value Pair Control - styling for key/value pair control
     29. Context Setters
+    30. Paneled List Group - extends the bootstrap list group to behave in a panel
 */
 .picker {
   position: relative;
@@ -594,40 +871,38 @@ img.jcrop-preview {
   width: 340px;
   height: 190px;
 }
-.banner {
-  color: #ecf0f3;
-  background-color: #428bca;
-  border-radius: 0;
-  border: 0 solid transparent;
-  font-weight: 300;
-  font-size: 14px;
-  padding: 4px 12px;
-  margin: 0 0 15px;
-}
-.banner:before,
-.banner:after {
-  content: " ";
-  display: table;
-}
-.banner:after {
-  clear: both;
-}
-.banner h1 {
-  float: left;
-  margin: 0;
-  font-weight: 300;
-}
-.banner h1 .first-word {
-  font-weight: 700;
-}
-.banner h1 i {
-  margin-right: 15px;
-}
-.banner .label {
-  float: right;
-  margin-top: 15px;
-  margin-left: 15px;
-}
+/*.banner
+{
+    color: @banner-text-color;
+    background-color: @banner-bg;
+    border-radius: @banner-border-radius;
+    border: @banner-border-size solid @banner-border-color;
+    font-weight: @banner-font-weight;
+    font-size: @banner-font-size;
+    padding: @banner-padding;
+    margin: 0 0 @spacing-md-px;
+    .clearfix;
+
+    h1 {
+        float: left;
+        margin: 0;
+        font-weight: @banner-font-weight;
+
+        .first-word {
+            font-weight: @banner-firstword-weight;
+        }
+
+        i {
+            margin-right: @spacing-md-px;
+        }
+    }
+
+    .label {
+        float: right;
+        margin-top: @spacing-md-px;
+        margin-left: @spacing-md-px;
+    }
+}*/
 ul.rocktree,
 ul.rocktree ul {
   list-style-type: none;
@@ -1105,12 +1380,6 @@ div.tagsinput .tags_clear {
 fieldset .actions {
   margin-top: 12px;
 }
-.title {
-  font-weight: 300;
-}
-.title .first-word {
-  font-weight: 700;
-}
 .code-editor {
   position: relative;
 }
@@ -1118,7 +1387,7 @@ fieldset .actions {
   background-color: #83758f;
 }
 .label-type {
-  background-color: #5697d0;
+  background-color: #567d8c;
 }
 .label-communicationstatus-approved {
   background-color: #5cb85c;
@@ -1133,7 +1402,7 @@ fieldset .actions {
   background-color: #f0ad4e;
 }
 .label-communicationstatus-transient {
-  background-color: #5697d0;
+  background-color: #567d8c;
 }
 .datepicker {
   padding: 10px;
@@ -1189,6 +1458,34 @@ fieldset .actions {
 }
 .datepicker table td span.year:first-child {
   margin-left: 0;
+}
+.timepicker-input:before,
+.timepicker-input:after {
+  content: " ";
+  display: table;
+}
+.timepicker-input:after {
+  clear: both;
+}
+.timepicker-input .input-group {
+  float: left;
+}
+.timepicker-input i.fa-times {
+  float: left;
+  margin-top: 4px;
+  padding: 6px;
+  cursor: pointer;
+  opacity: 0;
+  -webkit-transition: opacity 0.2s ease-out;
+  -moz-transition: opacity 0.2s ease-out;
+  -o-transition: opacity 0.2s ease-out;
+  transition: opacity 0.2s ease-out;
+}
+.timepicker-input:hover i.fa-times {
+  opacity: 1;
+}
+.touch .timepicker-input i.fa-times {
+  opacity: 1;
 }
 .bootstrap-timepicker {
   position: relative;
@@ -1469,6 +1766,7 @@ fieldset .actions {
   text-rendering: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transform: translate(0, 0);
   content: "\f093";
   padding-right: .25em;
 }
@@ -1482,10 +1780,8 @@ fieldset .actions {
 .fileupload-group .upload-progress {
   position: absolute;
   z-index: 2;
-  left: 50%;
-  margin-left: -18px;
-  top: 50%;
-  margin-top: -37px;
+  left: 115%;
+  top: -20%;
   opacity: 0.3;
 }
 .updateprogress-status {
@@ -1551,6 +1847,44 @@ fieldset .actions {
     -webkit-transform: scaleY(1);
   }
 }
+.groupmembers {
+  list-style: none;
+  margin: 6px 0;
+  padding: 0;
+}
+.groupmembers .member {
+  float: left;
+  margin-right: 15px;
+  margin-bottom: 15px;
+  min-width: 160px;
+  border-radius: 4px;
+}
+.groupmembers .member .person-image {
+  border: 1px solid #f6f6f6;
+  float: left;
+  margin-right: 7.5px;
+  display: inline-block;
+  width: 60px;
+  height: 60px;
+}
+.groupmembers .member .member-information {
+  float: left;
+}
+.groupmembers .member h4 {
+  font-size: 16px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  margin: 0;
+}
+.groupmembers .member small {
+  display: block;
+  line-height: 16px;
+  margin: 0;
+}
+.groupmembers .member .btn {
+  margin-top: 6px;
+}
 .well-message {
   text-align: center;
 }
@@ -1580,41 +1914,6 @@ fieldset .actions {
   background-color: #fcf8e3;
   color: #c09853;
   border-color: #fbeed5;
-}
-ul.groupmembers {
-  list-style: none;
-  margin: 6px 0;
-  padding: 0;
-}
-ul.groupmembers li.member {
-  float: left;
-  margin-right: 15px;
-  margin-bottom: 15px;
-  min-width: 140px;
-  border-radius: 4px;
-}
-ul.groupmembers li.member .person-image {
-  border: 1px solid #f6f6f6;
-  float: left;
-  margin-right: 7.5px;
-  display: inline-block;
-  width: 60px;
-  height: 60px;
-}
-ul.groupmembers li.member h4 {
-  font-size: 16px;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  margin: 0;
-}
-ul.groupmembers li.member small {
-  display: block;
-  line-height: 16px;
-  margin: 0;
-}
-ul.groupmembers li.member .btn {
-  margin-top: 6px;
 }
 .loginstatus > li {
   min-width: 160px;
@@ -1738,7 +2037,8 @@ ul.rocklist .rocklist-item.selected {
   opacity: 0.5;
 }
 .image-editor-fileinput {
-  display: none;
+  visibility: hidden;
+  height: 0;
 }
 .image-editor-group.imageupload-group {
   border: 0;
@@ -1783,6 +2083,17 @@ ul.rocklist .rocklist-item.selected {
 }
 .contextsetter {
   margin-right: 2px;
+}
+ul.list-group-panel {
+  margin: 0;
+}
+ul.list-group-panel .list-group-item {
+  border-radius: 0;
+  border: 0;
+  border-top: 1px solid #dddddd;
+}
+ul.list-group-panel .list-group-item:first-child {
+  border: 0;
 }
 /*
     Used to manage styles related to Rock's forms
@@ -1969,15 +2280,21 @@ dl:not(.dl-horizontal) dd {
     Used to manage styles related to Rock's internal grid component
     
     1. Bootstrap Overrides
-    2. Filter
-    3. Column Header
-    4. Footer
-    5. Light Style - Used for small grids
-    5. Reusable classes
-    6. Column Types
-    7. Row Types
+    2. Core Table
+    3. Filter
+    4. Column Header
+    5. Footer
+    6. Light Style - Used for small grids
+    7. Reusable classes
+    8. Column Types
+    9. Row Types
+    10. Responsive Columns
 
 */
+/*.table-responsive > .table-bordered,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered {
+    border: 1px solid @table-border-color;
+}*/
 .table-hover tbody tr:hover td,
 .table-hover tbody tr:hover th {
   background-color: rgba(0, 0, 0, 0.03);
@@ -1999,11 +2316,43 @@ td.wrap-contents {
 .grid {
   margin-bottom: 20px;
 }
+.grid .grid-table {
+  border: 1px solid #dddddd;
+}
+.grid .grid-table.table-light {
+  border: none;
+}
+.grid.grid-panel .grid-table {
+  border: none !important;
+}
+.grid.grid-panel th:first-child,
+.grid.grid-panel td:first-child {
+  border-left: 0;
+}
+.grid.grid-panel th:last-child,
+.grid.grid-panel td:last-child {
+  border-right: 0;
+}
+.grid-panel .table-responsive[data-pattern="priority-columns"],
+.table-responsive.table-no-border {
+  border: 0;
+}
+.table-responsive[data-pattern="priority-columns"] {
+  position: static;
+}
+/*.table-responsive[data-pattern="priority-columns"] {
+    margin-bottom: inherit;
+    border: inherit;
+    border-radius: inherit;
+}*/
+.table-wrapper .btn-toolbar {
+  display: none;
+}
 .grid-filter {
   background-color: #d5d5d5;
   border-radius: 4px;
-  padding: 0 6px 12px 6px;
-  margin-bottom: -10px;
+  padding: 6px 12px;
+  border-bottom: 1px solid #dddddd;
 }
 .grid-filter header {
   border-radius: 4px 4px 0 0;
@@ -2038,9 +2387,9 @@ td.wrap-contents {
   color: #333333;
   border-color: #bbbbbb;
 }
-.grid-filter + div .grid-table {
-  margin-top: -12px;
-}
+/*.grid-filter +  div .grid-table {
+    margin-top: -12px;   
+}*/
 .grid-filter-entry legend + .control-group {
   margin-top: 0;
 }
@@ -2174,6 +2523,56 @@ td.grid-col-actions {
 .table > tbody > tr.grid-section-header:hover > td {
   background-color: #eeeeee !important;
 }
+tr.row-highlight td {
+  background-color: #428bca !important;
+  color: #ecf0f3 !important;
+}
+.table-responsive {
+  position: relative;
+  width: 100%;
+  overflow-y: hidden;
+  overflow-x: auto;
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+  -webkit-overflow-scrolling: touch;
+}
+.table-responsive th[data-priority],
+.table-responsive td[data-priority] {
+  display: none;
+}
+.table-responsive th[data-priority="1"],
+.table-responsive td[data-priority="1"] {
+  display: table-cell;
+}
+@media screen and (min-width: 480px) {
+  .table-responsive th[data-priority="2"],
+  .table-responsive td[data-priority="2"] {
+    display: table-cell;
+  }
+}
+@media screen and (min-width: 640px) {
+  .table-responsive th[data-priority="3"],
+  .table-responsive td[data-priority="3"] {
+    display: table-cell;
+  }
+}
+@media screen and (min-width: 800px) {
+  .table-responsive th[data-priority="4"],
+  .table-responsive td[data-priority="4"] {
+    display: table-cell;
+  }
+}
+@media screen and (min-width: 960px) {
+  .table-responsive th[data-priority="5"],
+  .table-responsive td[data-priority="5"] {
+    display: table-cell;
+  }
+}
+@media screen and (min-width: 1120px) {
+  .table-responsive th[data-priority="6"],
+  .table-responsive td[data-priority="6"] {
+    display: table-cell;
+  }
+}
 /*
     Used to manage styles for specific blocks.
 
@@ -2215,19 +2614,19 @@ td.grid-col-actions {
 .lava-debug .lava-debug-key {
   font-weight: 700;
 }
-.lava-debug .panel {
+.lava-debug .panel.panel-lavadebug {
   border: 0;
 }
-.lava-debug .panel .panel-heading {
+.lava-debug .panel.panel-lavadebug .panel-heading {
   background-color: #cce7f4;
   color: #3a87ad;
   border: 0;
   cursor: pointer;
 }
-.lava-debug .panel .panel-heading.collapsed i:before {
+.lava-debug .panel.panel-lavadebug .panel-heading.collapsed i:before {
   content: "\f078";
 }
-.lava-debug .panel .panel-body {
+.lava-debug .panel.panel-lavadebug .panel-body {
   background-color: #e6f3fa;
 }
 /*
@@ -2391,6 +2790,44 @@ td.grid-col-actions {
 .panel-note .load-more span {
   margin: 0 12px;
 }
+.note-deny article,
+.note-danger article,
+.note-security article {
+  border-color: #eed3d7;
+  background-color: #f2dede;
+  color: #b94a48;
+}
+.note-deny .actions a,
+.note-danger .actions a,
+.note-security .actions a {
+  color: #b94a48;
+}
+.note-approve article,
+.note-success article {
+  border-color: #d6e9c6;
+  background-color: #dff0d8;
+  color: #468847;
+}
+.note-approve .actions a,
+.note-success .actions a {
+  color: #468847;
+}
+.note-info article {
+  border-color: #bce8f1;
+  background-color: #d9edf7;
+  color: #3a87ad;
+}
+.note-info .actions a {
+  color: #3a87ad;
+}
+.note-warning article {
+  border-color: #fbeed5;
+  background-color: #fcf8e3;
+  color: #c09853;
+}
+.note-warning .actions a {
+  color: #c09853;
+}
 .panel-note-light {
   border: 0;
   background: none;
@@ -2429,6 +2866,10 @@ td.grid-col-actions {
 }
 .panel-noteentry > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #d5d5d5;
+}
+.panel-noteentry .createDate {
+  margin-top: 10px;
+  width: 50%;
 }
 .panel-noteentry .settings {
   margin-top: 4px;
@@ -2635,6 +3076,9 @@ table.inherited-attribute-grid tr td:nth-child(2),
 table.attribute-grid tr th:nth-child(3) {
   width: 550px;
 }
+.group-detail .panel-heading {
+  cursor: pointer;
+}
 /*
     Used to manage styles for specific blocks.
 
@@ -2740,6 +3184,7 @@ table.attribute-grid tr th:nth-child(3) {
     15. Photo Upload
     16. Duplicate Pages
     17. DISC
+    19. Edit Person
 */
 .personprofile {
   margin-top: -15px;
@@ -2989,9 +3434,6 @@ table.attribute-grid tr th:nth-child(3) {
   -o-animation: bar-grow 1s ease-in-out;
   animation: bar-grow 1s ease-in-out;
 }
-.badge-ingroupoftype {
-  width: 45px;
-}
 .badge-attendingduration {
   position: relative;
   color: #686576;
@@ -3122,7 +3564,7 @@ table.attribute-grid tr th:nth-child(3) {
   padding: 12px 0;
   border-bottom: 1px solid #e6e6e6;
   color: #333333;
-  margin-top: 12px;
+  min-height: 60px;
 }
 .personprofilebar-family a {
   color: #333333;
@@ -3209,15 +3651,13 @@ table.attribute-grid tr th:nth-child(3) {
   margin-top: 12px;
 }
 .editfamily-list li.member {
-  max-width: 200px;
+  min-width: 200px;
 }
 .editfamily-list li.member .radio {
-  width: 65px;
-  float: left;
   margin: 0;
 }
-.editfamily-list li.member h4 {
-  height: 38px;
+.editfamily-list .groupmembers h4 {
+  margin-bottom: 4px;
 }
 span.field-name {
   font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
@@ -3461,6 +3901,14 @@ tr.inactive td {
   font-size: 30px;
   position: absolute;
 }
+.phonegroup-label {
+  margin-bottom: 5px;
+}
+@media (min-width: 768px) {
+  .phonegroup-label {
+    padding-top: 4px;
+  }
+}
 /*
     Used to manage styles for specific blocks.
 
@@ -3689,10 +4137,12 @@ iframe.email-body {
   -webkit-user-select: none;
 }
 /*
-    Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
-    
-    1. Colors - creates utility classes for each of the accent colors
-    2. Spacing - provides utility classes for spacing based off of the themes gutter widths
+
+  Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
+
+  1. Variables - specific variables for sizing classes and media query helpers
+  2. Colors - creates utility classes for each of the accent colors
+  3. Spacing - provides utility classes for spacing based off of the themes gutter widths
 
 */
 .accent-color {
@@ -3731,6 +4181,15 @@ iframe.email-body {
   color: #ecf0f3;
   border: 1px solid #3071a9;
 }
+.bg-color {
+  background-color: #ffffff;
+}
+.text-color {
+  color: #333333;
+}
+.padding-all-none {
+  padding: 0 !important;
+}
 .padding-all-sm {
   padding: 7.5px !important;
 }
@@ -3743,6 +4202,9 @@ iframe.email-body {
 .padding-all-xl {
   padding: 60px !important;
 }
+.margin-all-none {
+  margin: 0 !important;
+}
 .margin-all-sm {
   margin: 7.5px !important;
 }
@@ -3754,6 +4216,10 @@ iframe.email-body {
 }
 .margin-all-xl {
   margin: 60px !important;
+}
+.padding-v-none {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 .padding-v-sm {
   padding-top: 7.5px !important;
@@ -3771,6 +4237,10 @@ iframe.email-body {
   padding-top: 60px !important;
   padding-bottom: 60px !important;
 }
+.margin-v-none {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
 .margin-v-sm {
   margin-top: 7.5px !important;
   margin-bottom: 7.5px !important;
@@ -3786,6 +4256,10 @@ iframe.email-body {
 .margin-v-xl {
   margin-top: 60px !important;
   margin-bottom: 60px !important;
+}
+.padding-h-none {
+  padding-right: 0 !important;
+  padding-left: 0 !important;
 }
 .padding-h-sm {
   padding-right: 7.5px !important;
@@ -3803,6 +4277,10 @@ iframe.email-body {
   padding-right: 60px !important;
   padding-left: 60px !important;
 }
+.margin-h-none {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+}
 .margin-h-sm {
   margin-right: 7.5px !important;
   margin-left: 7.5px !important;
@@ -3819,6 +4297,9 @@ iframe.email-body {
   margin-right: 60px !important;
   margin-left: 60px !important;
 }
+.padding-t-none {
+  padding-top: 0 !important;
+}
 .padding-t-sm {
   padding-top: 7.5px !important;
 }
@@ -3830,6 +4311,9 @@ iframe.email-body {
 }
 .padding-t-xl {
   padding-top: 60px !important;
+}
+.margin-t-none {
+  margin-top: 0 !important;
 }
 .margin-t-sm {
   margin-top: 7.5px !important;
@@ -3843,77 +4327,95 @@ iframe.email-body {
 .margin-t-xl {
   margin-top: 60px !important;
 }
+.padding-b-none {
+  padding-bottom: 0 !important;
+}
 .padding-b-sm {
-  padding-bottom: 7.5px;
+  padding-bottom: 7.5px !important;
 }
 .padding-b-md {
-  padding-bottom: 15px;
+  padding-bottom: 15px !important;
 }
 .padding-b-lg {
-  padding-bottom: 30px;
+  padding-bottom: 30px !important;
 }
 .padding-b-xl {
-  padding-bottom: 60px;
+  padding-bottom: 60px !important;
+}
+.margin-b-none {
+  margin-bottom: 0 !important;
 }
 .margin-b-sm {
-  margin-bottom: 7.5px;
+  margin-bottom: 7.5px !important;
 }
 .margin-b-md {
-  margin-bottom: 15px;
+  margin-bottom: 15px !important;
 }
 .margin-b-lg {
-  margin-bottom: 30px;
+  margin-bottom: 30px !important;
 }
 .margin-b-xl {
-  margin-bottom: 60px;
+  margin-bottom: 60px !important;
+}
+.padding-r-none {
+  padding-right: 0 !important;
 }
 .padding-r-sm {
-  padding-right: 7.5px;
+  padding-right: 7.5px !important;
 }
 .padding-r-md {
-  padding-right: 15px;
+  padding-right: 15px !important;
 }
 .padding-r-lg {
-  padding-right: 30px;
+  padding-right: 30px !important;
 }
 .padding-r-xl {
-  padding-right: 60px;
+  padding-right: 60px !important;
+}
+.margin-r-none {
+  margin-right: 0 !important;
 }
 .margin-r-sm {
-  margin-right: 7.5px;
+  margin-right: 7.5px !important;
 }
 .margin-r-md {
-  margin-right: 15px;
+  margin-right: 15px !important;
 }
 .margin-r-lg {
-  margin-right: 30px;
+  margin-right: 30px !important;
 }
 .margin-r-xl {
-  margin-right: 60px;
+  margin-right: 60px !important;
+}
+.padding-l-none {
+  padding-left: 0 !important;
 }
 .padding-l-sm {
-  padding-left: 7.5px;
+  padding-left: 7.5px !important;
 }
 .padding-l-md {
-  padding-left: 15px;
+  padding-left: 15px !important;
 }
 .padding-l-lg {
-  padding-left: 30px;
+  padding-left: 30px !important;
 }
 .padding-l-xl {
-  padding-left: 60px;
+  padding-left: 60px !important;
+}
+.margin-l-none {
+  margin-left: 0 !important;
 }
 .margin-l-sm {
-  margin-left: 7.5px;
+  margin-left: 7.5px !important;
 }
 .margin-l-md {
-  margin-left: 15px;
+  margin-left: 15px !important;
 }
 .margin-l-lg {
-  margin-left: 30px;
+  margin-left: 30px !important;
 }
 .margin-l-xl {
-  margin-left: 60px;
+  margin-left: 60px !important;
 }
 .cke_dialog_contents {
   background-color: #ffffff !important;
@@ -4047,10 +4549,6 @@ a.cke_dialog_ui_button_ok:active {
 ::-moz-selection {
   background: #5279a0;
   color: #ffffff;
-}
-small {
-  font-family: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  margin-top: 2px;
 }
 .clickable {
   cursor: pointer;
@@ -4572,14 +5070,12 @@ div.aspNetDisabled {
     4. Responsive Overrides 
 
 */
+html {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
 main {
   display: block;
-}
-img {
-  display: block;
-  width: 100% \9;
-  max-width: 100%;
-  height: auto;
 }
 .navbar {
   position: static;

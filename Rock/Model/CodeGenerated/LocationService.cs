@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<BenevolenceRequest>( Context ).Queryable().Any( a => a.LocationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, BenevolenceRequest.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Campus>( Context ).Queryable().Any( a => a.LocationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, Campus.FriendlyTypeName );
@@ -66,7 +72,7 @@ namespace Rock.Model
  
             if ( new Service<Location>( Context ).Queryable().Any( a => a.ParentLocationId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, Location.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} contains one or more child {1}.", Location.FriendlyTypeName, Location.FriendlyTypeName.Pluralize().ToLower() );
                 return false;
             }  
             return true;
@@ -105,35 +111,35 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Location target, Location source )
         {
-            target.ParentLocationId = source.ParentLocationId;
-            target.Name = source.Name;
-            target.IsActive = source.IsActive;
-            target.LocationTypeValueId = source.LocationTypeValueId;
-            target.GeoPoint = source.GeoPoint;
+            target.Id = source.Id;
+            target.AssessorParcelId = source.AssessorParcelId;
+            target.City = source.City;
+            target.Country = source.Country;
+            target.GeocodeAttemptedDateTime = source.GeocodeAttemptedDateTime;
+            target.GeocodeAttemptedResult = source.GeocodeAttemptedResult;
+            target.GeocodeAttemptedServiceType = source.GeocodeAttemptedServiceType;
+            target.GeocodedDateTime = source.GeocodedDateTime;
             target.GeoFence = source.GeoFence;
+            target.GeoPoint = source.GeoPoint;
+            target.ImageId = source.ImageId;
+            target.IsActive = source.IsActive;
+            target.IsGeoPointLocked = source.IsGeoPointLocked;
+            target.LocationTypeValueId = source.LocationTypeValueId;
+            target.Name = source.Name;
+            target.ParentLocationId = source.ParentLocationId;
+            target.PostalCode = source.PostalCode;
+            target.PrinterDeviceId = source.PrinterDeviceId;
+            target.StandardizeAttemptedDateTime = source.StandardizeAttemptedDateTime;
+            target.StandardizeAttemptedResult = source.StandardizeAttemptedResult;
+            target.StandardizeAttemptedServiceType = source.StandardizeAttemptedServiceType;
+            target.StandardizedDateTime = source.StandardizedDateTime;
+            target.State = source.State;
             target.Street1 = source.Street1;
             target.Street2 = source.Street2;
-            target.City = source.City;
-            target.State = source.State;
-            target.Country = source.Country;
-            target.PostalCode = source.PostalCode;
-            target.AssessorParcelId = source.AssessorParcelId;
-            target.StandardizeAttemptedDateTime = source.StandardizeAttemptedDateTime;
-            target.StandardizeAttemptedServiceType = source.StandardizeAttemptedServiceType;
-            target.StandardizeAttemptedResult = source.StandardizeAttemptedResult;
-            target.StandardizedDateTime = source.StandardizedDateTime;
-            target.GeocodeAttemptedDateTime = source.GeocodeAttemptedDateTime;
-            target.GeocodeAttemptedServiceType = source.GeocodeAttemptedServiceType;
-            target.GeocodeAttemptedResult = source.GeocodeAttemptedResult;
-            target.GeocodedDateTime = source.GeocodedDateTime;
-            target.IsGeoPointLocked = source.IsGeoPointLocked;
-            target.PrinterDeviceId = source.PrinterDeviceId;
-            target.ImageId = source.ImageId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

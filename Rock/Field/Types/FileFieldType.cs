@@ -14,17 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.IO;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
-using Rock;
-using Rock.Model;
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Model;
 
 namespace Rock.Field.Types
 {
@@ -34,6 +28,9 @@ namespace Rock.Field.Types
     /// </summary>
     public class FileFieldType : BinaryFileFieldType
     {
+
+        #region Edit Control 
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -93,5 +90,8 @@ namespace Rock.Field.Types
                 }
             }
         }
+
+        #endregion
+
     }
 }

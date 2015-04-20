@@ -113,18 +113,21 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public override string FormatSelection( Type entityType, string selection )
         {
-            var values = JsonConvert.DeserializeObject<List<string>>( selection );
             string result = entityType.Name.SplitCase() + " Property";
 
-            if ( values.Count > 0 )
+            // First value is the field id (property of attribute), remaining values are the field type's filter values
+            var values = JsonConvert.DeserializeObject<List<string>>( selection );
+            if ( values.Count >= 1 )
             {
                 // First value in array is always the name of the entity field being filtered
                 string entityFieldName = values[0].Replace( " ", "" );   // Prior to v1.1 attribute.Name was used instead of attribute.Key, because of that, strip spaces to attempt matching key
 
-                var entityField = GetEntityFields( entityType ).Where( p => p.Name == entityFieldName ).FirstOrDefault();
-                string entityFieldResult = GetEntityFieldFormatSelection( values, entityField );
-
-                result = entityFieldResult ?? result;
+                var entityFields = EntityHelper.GetEntityFields( entityType );
+                var entityField = entityFields.FirstOrDefault( p => p.Name == entityFieldName );
+                if ( entityField != null )
+                {
+                    result = entityField.FormattedFilterDescription( FixDelimination( values.Skip( 1 ).ToList() ));
+                }
             }
 
             return result;
@@ -140,21 +143,24 @@ namespace Rock.Reporting.DataFilter
 
             // Create the field selection dropdown
             var ddlProperty = new RockDropDownList();
-            ddlProperty.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+            ddlProperty.ID = string.Format( "{0}_ddlProperty", filterControl.ID );
             filterControl.Controls.Add( ddlProperty );
             controls.Add( ddlProperty );
 
-            var entityFields = GetEntityFields( entityType );
-
             // add Empty option first
             ddlProperty.Items.Add(new ListItem());
-                        
-            foreach ( var entityField in entityFields )
-            {
-                // Add the field to the dropdown of availailable fields
-                ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
 
-                AddFieldTypeControls( filterControl, controls, entityField );
+            foreach ( var entityField in EntityHelper.GetEntityFields( entityType ) )
+            {
+                string controlId = string.Format( "{0}_{1}", filterControl.ID, entityField.Name );
+                var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true );
+                if ( control != null )
+                {
+                    // Add the field to the dropdown of availailable fields
+                    ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
+                    filterControl.Controls.Add( control );
+                    controls.Add( control );
+                }
             }
 
             return controls.ToArray();
@@ -169,11 +175,12 @@ namespace Rock.Reporting.DataFilter
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-            List<EntityField> entityFields = GetEntityFields( entityType );
-            var groupedControls = GroupControls( entityType, controls );
-            DropDownList ddlEntityField = controls[0] as DropDownList;
-
-            RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, groupedControls, ddlEntityField );
+            if ( controls.Length > 0 )
+            {
+                DropDownList ddlEntityField = controls[0] as DropDownList;
+                var entityFields = EntityHelper.GetEntityFields( entityType );
+                RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlEntityField, controls.ToList(), filterControl.ID );
+            }
         }
 
         /// <summary>
@@ -186,11 +193,22 @@ namespace Rock.Reporting.DataFilter
         {
             var values = new List<string>();
 
-            var groupedControls = GroupControls( entityType, controls );
-            DropDownList ddlProperty = controls[0] as DropDownList;
+            if ( controls.Length > 0 )
+            {
+                DropDownList ddlProperty = controls[0] as DropDownList;
 
-            GetSelectionValuesForProperty( ddlProperty.SelectedValue, groupedControls, values );
-
+                var entityFields = EntityHelper.GetEntityFields( entityType );
+                var entityField = entityFields.FirstOrDefault( f => f.Name == ddlProperty.SelectedValue );
+                if ( entityField != null )
+                {
+                    var control = controls.ToList().FirstOrDefault( c => c.ID.EndsWith( entityField.Name ) );
+                    if ( control != null )
+                    {
+                        values.Add( ddlProperty.SelectedValue );
+                        entityField.FieldType.Field.GetFilterValues( control, entityField.FieldConfig ).ForEach( v => values.Add( v ) );
+                    }
+                }
+            }
             return values.ToJson();
         }
 
@@ -205,10 +223,10 @@ namespace Rock.Reporting.DataFilter
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
                 var values = JsonConvert.DeserializeObject<List<string>>( selection );
-                var groupedControls = GroupControls( entityType, controls );
-                DropDownList ddlProperty = controls[0] as DropDownList;
 
-                SetEntityFieldSelection( ddlProperty, values, groupedControls );
+                DropDownList ddlProperty = controls[0] as DropDownList;
+                var entityFields = EntityHelper.GetEntityFields( entityType );
+                SetEntityFieldSelection( entityFields, ddlProperty, values, controls.ToList() );
             }
         }
 
@@ -230,16 +248,17 @@ namespace Rock.Reporting.DataFilter
                 {
                     string selectedProperty = values[0].Replace( " ", "" );   // Prior to v1.1 attribute.Name was used instead of attribute.Key, because of that, strip spaces to attempt matching key
 
-                    var entityField = GetEntityFields( entityType ).Where( p => p.Name == selectedProperty ).FirstOrDefault();
+                    var entityFields = EntityHelper.GetEntityFields( entityType );
+                    var entityField = entityFields.FirstOrDefault( f => f.Name == selectedProperty );
                     if ( entityField != null )
                     {
                         if ( entityField.FieldKind == FieldKind.Property )
                         {
-                            return GetPropertyExpression( serviceInstance, parameterExpression, entityField, values.Skip( 1 ).ToList() );
+                            return GetPropertyExpression( serviceInstance, parameterExpression, entityField, FixDelimination( values.Skip( 1 ).ToList() ) );
                         }
                         else
                         {
-                            return GetAttributeExpression( serviceInstance, parameterExpression, entityField, values.Skip( 1 ).ToList() );
+                            return GetAttributeExpression( serviceInstance, parameterExpression, entityField, FixDelimination( values.Skip( 1 ).ToList() ) );
                         }
                     }
                 }
@@ -251,16 +270,6 @@ namespace Rock.Reporting.DataFilter
         #endregion
 
         #region Private Methods
-
-        /// <summary>
-        /// Gets the properties and attributes for the entity
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <returns></returns>
-        private List<EntityField> GetEntityFields( Type entityType )
-        {
-            return EntityHelper.GetEntityFields( entityType );
-        }
 
         /// <summary>
         /// Builds an expression for a property field
@@ -275,151 +284,7 @@ namespace Rock.Reporting.DataFilter
             Expression trueValue = Expression.Constant( true );
             MemberExpression propertyExpression = Expression.Property( parameterExpression, entityField.Name );
 
-            switch ( entityField.FilterFieldType )
-            {
-                // Date Properties
-                case SystemGuid.FieldType.DATE:
-                case SystemGuid.FieldType.FILTER_DATE:
-
-                    if ( values.Count == 2 )
-                    {
-                        ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                        DateTime dateValue = DateTime.Today;
-                        if ( values[1] == null || ( ! values[1].Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) ) )
-                        {
-                            dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
-                        }
-                        ConstantExpression constantExpression = Expression.Constant( dateValue );
-                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
-                    }
-
-                    break;
-
-                // Integer properties
-                case SystemGuid.FieldType.INTEGER:
-
-                    if ( values.Count == 2 )
-                    {
-                        ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                        int intValue = values[1].AsIntegerOrNull() ?? int.MinValue;
-                        ConstantExpression constantExpression = Expression.Constant( intValue );
-                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
-                    }
-
-                    break;
-
-                // Decimal properties
-                case SystemGuid.FieldType.DECIMAL:
-
-                    if ( values.Count == 2 )
-                    {
-                        ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                        decimal decimalValue = values[1].AsDecimalOrNull() ?? decimal.MinValue;
-                        ConstantExpression constantExpression = Expression.Constant( decimalValue );
-                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
-                    }
-
-                    break;
-
-                // Enumerations and Defined Value properties
-                case SystemGuid.FieldType.MULTI_SELECT:
-
-                    if ( values.Count == 1 )
-                    {
-                        List<string> selectedValues = JsonConvert.DeserializeObject<List<string>>( values[0] );
-                        if ( selectedValues.Any() )
-                        {
-                            if ( entityField.PropertyType.IsEnum )
-                            {
-                                ConstantExpression constantExpression = Expression.Constant( Enum.Parse( entityField.PropertyType, selectedValues[0].Replace( " ", string.Empty ) ) );
-                                Expression comparison = Expression.Equal( propertyExpression, constantExpression );
-
-                                foreach ( string selectedValue in selectedValues.Skip( 1 ) )
-                                {
-                                    constantExpression = Expression.Constant( Enum.Parse( entityField.PropertyType, selectedValue.Replace( " ", string.Empty ) ) );
-                                    comparison = Expression.Or( comparison, Expression.Equal( propertyExpression, constantExpression ) );
-                                }
-
-                                return comparison;
-                            }
-                            else if ( entityField.DefinedTypeGuid.HasValue )
-                            {
-                                List<Guid> selectedValueGuids = selectedValues.Select( v => v.AsGuid() ).ToList();
-                                List<int> selectedIds = new DefinedValueService( serviceInstance.Context as RockContext ).GetByGuids( selectedValueGuids ).Select( a => a.Id ).ToList();
-                                ConstantExpression constantExpression = Expression.Constant( selectedIds, typeof( List<int> ) );
-                                return ComparisonHelper.ComparisonExpression( ComparisonType.Contains, propertyExpression, constantExpression );
-                            }
-                        }
-                    }
-
-                    break;
-
-                // Boolean Properties
-                case SystemGuid.FieldType.SINGLE_SELECT:
-
-                    if ( values.Count == 1 )
-                    {
-                        if ( entityField.PropertyType == typeof( bool ) || entityField.PropertyType == typeof( bool? ) )
-                        {
-                            ConstantExpression constantExpression = Expression.Constant( bool.Parse( values[0] ) );
-                            ComparisonType comparisonType = ComparisonType.EqualTo;
-                            return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
-                            
-                        }
-                    }
-
-                    break;
-
-                // String Properties
-                case SystemGuid.FieldType.TEXT:
-
-                    if ( values.Count == 2 )
-                    {
-                        ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                        ConstantExpression constantExpression;
-                        if ( propertyExpression.Type == typeof( Guid ) )
-                        {
-                            constantExpression = Expression.Constant( values[1].AsGuid() );
-                        }
-                        else
-                        {
-                            constantExpression = Expression.Constant( values[1] );
-                        }
-
-                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
-                    }
-
-                    break;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Groups all the controls for each field
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        private Dictionary<string, List<Control>> GroupControls( Type entityType, Control[] controls )
-        {
-            var groupedControls = new Dictionary<string, List<Control>>();
-
-            var properties = GetEntityFields( entityType );
-            foreach ( var property in properties )
-            {
-                if ( !groupedControls.ContainsKey( property.Name ) )
-                {
-                    groupedControls.Add( property.Name, new List<Control>() );
-                }
-
-                for ( int i = property.Index; i < property.Index + property.ControlCount; i++ )
-                {
-                    groupedControls[property.Name].Add( controls[i] );
-                }
-            }
-
-            return groupedControls;
+            return entityField.FieldType.Field.PropertyFilterExpression( entityField.FieldConfig, values, parameterExpression, entityField.Name, entityField.PropertyType );
         }
 
         #endregion

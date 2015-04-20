@@ -33,7 +33,8 @@
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlNotificationStatus" runat="server" Label="Notification Status" TabIndex="5" />
                         <Rock:DataTextBox ID="tbNotificationEmails" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="NotificationEmails" TabIndex="4" />
-                        <Rock:RockDropDownList ID="ddlJobTypes" runat="server" Label="Job Type" OnSelectedIndexChanged="ddlJobTypes_SelectedIndexChanged" AutoPostBack="true" TabIndex="6" />
+                        <Rock:NotificationBox ID="nbJobTypeError" runat="server" NotificationBoxType="Danger" Dismissable="true" />
+                        <Rock:RockDropDownList ID="ddlJobTypes" runat="server" Label="Job Type" OnSelectedIndexChanged="ddlJobTypes_SelectedIndexChanged" AutoPostBack="true" TabIndex="6" Required="true" />
                     </div>
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbCronExpression" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="CronExpression" 
@@ -50,8 +51,8 @@
                 </div>
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
 
             </div>

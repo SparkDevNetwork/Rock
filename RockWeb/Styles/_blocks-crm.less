@@ -18,6 +18,7 @@
     15. Photo Upload
     16. Duplicate Pages
     17. DISC
+    19. Edit Person
 */
 
 // 1. Page Styles
@@ -340,11 +341,6 @@
     }
 }
 
-
-.badge-ingroupoftype {
-    width: 45px;
-}
-
 .badge-attendingduration {
     position: relative;
     color: #686576;
@@ -512,7 +508,7 @@
     padding: 12px 0;
     border-bottom: 1px solid darken(@persondetails-familybar-bg, @const-border-darken-amt);
     color: @persondetails-familybar-color;
-    margin-top: 12px;
+    min-height: 60px;
 
     a {
         color: @persondetails-familybar-color;
@@ -623,18 +619,16 @@
 .editfamily-list {
 
     li.member {
-        max-width: 200px;
+       min-width: 200px;
 
-        .radio { // put adult/child radios side by side
-            width: 65px;
-            float: left;
+        .radio { 
             margin: 0;
         }
-
-        h4 {
-            height: 38px;
-        }
     }
+
+    .groupmembers h4 {
+           margin-bottom: 4px;
+       }
 }
 
 // 7. Styles for Page Tabs
@@ -1002,10 +996,19 @@ tr.inactive {
     }
 }
 
-            .disc-chart .discbar-value {
-                letter-spacing: -3px;
-                opacity: .4;
-                width: 100%;
-                font-size: 30px;
-                position: absolute;
-            }
+.disc-chart .discbar-value {
+    letter-spacing: -3px;
+    opacity: .4;
+    width: 100%;
+    font-size: 30px;
+    position: absolute;
+}
+
+// 18. Edit Person
+// -------------------------
+.phonegroup-label {
+    margin-bottom: 5px;
+    @media @sm {
+        padding-top: 4px;
+    }
+}

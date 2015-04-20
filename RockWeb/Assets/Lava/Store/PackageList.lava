@@ -1,0 +1,38 @@
+<div class="row">
+{% for package in Packages %}
+	
+	<div class="col-sm-3 col-xs-6">
+		<div class="packagesummary">
+            <a href="{{ LinkedPages.DetailPage }}?PackageId={{ package.Id }}">
+                <div class="packagesummary-image" style="
+                    background: url('{{ package.PackageIconBinaryFile.ImageUrl }}') no-repeat center;
+                    width: 100%;
+                    height: 140px;">
+                    <div class="packagesummary-image-hover">
+                    </div>
+                </div>
+                <div class="packagesummary-body">
+                    <h2>{{ package.Name }}</h2>
+                    <p class="vendor">
+                        {{ package.Vendor.Name }}
+                    </p>
+
+					<div class="packagesummary-footer">
+						<div class="rating pull-left rating-{{ package.Rating | Replace:'.','' }}">
+						</div>
+						<div class="cost pull-right">
+							{% if package.Price == 0 %}
+								Free
+							{% else %}
+								${{ package.Price }}
+							{% endif %}
+						</div>
+					</div>
+                </div>
+				
+            </a>
+        </div>
+	</div>
+
+{% endfor %}
+</div>

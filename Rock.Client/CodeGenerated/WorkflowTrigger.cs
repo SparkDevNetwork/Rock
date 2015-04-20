@@ -21,20 +21,18 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for WorkflowTrigger
+    /// Base client model for WorkflowTrigger that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class WorkflowTrigger
+    public partial class WorkflowTriggerEntity
     {
         /// <summary />
-        public bool IsSystem { get; set; }
-
-        /// <summary />
-        public bool? IsActive { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public int EntityTypeId { get; set; }
@@ -46,22 +44,38 @@ namespace Rock.Client
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary />
-        public int WorkflowTypeId { get; set; }
+        public bool? IsActive { get; set; }
 
         /// <summary />
-        public int /* WorkflowTriggerType*/ WorkflowTriggerType { get; set; }
+        public bool IsSystem { get; set; }
 
         /// <summary />
         public string WorkflowName { get; set; }
 
         /// <summary />
-        public int Id { get; set; }
+        public int /* WorkflowTriggerType*/ WorkflowTriggerType { get; set; }
+
+        /// <summary />
+        public int WorkflowTypeId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
         public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Client model for WorkflowTrigger that includes all the fields that are available for GETs. Use this for GETs (use WorkflowTriggerEntity for POST/PUTs)
+    /// </summary>
+    public partial class WorkflowTrigger : WorkflowTriggerEntity
+    {
+        /// <summary />
+        public EntityType EntityType { get; set; }
+
+        /// <summary />
+        public WorkflowType WorkflowType { get; set; }
 
     }
 }

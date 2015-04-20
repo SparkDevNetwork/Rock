@@ -25,6 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -54,7 +55,7 @@ namespace RockWeb.Blocks.Core
             gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
             gfSettings.DisplayFilterValue += gfSettings_DisplayFilterValue;
 
-            gAuditInformationList.DataKeyNames = new string[] { "id" };
+            gAuditInformationList.DataKeyNames = new string[] { "Id" };
             gAuditInformationList.GridRebind += gAuditInformationList_GridRebind;
         }
 
@@ -238,6 +239,7 @@ namespace RockWeb.Blocks.Core
                 queryable = queryable.OrderByDescending( q => q.Id );
             }
 
+            gAuditInformationList.EntityTypeId = EntityTypeCache.Read<Rock.Model.Audit>().Id;
             gAuditInformationList.DataSource = queryable.ToList();
             gAuditInformationList.DataBind();
         }

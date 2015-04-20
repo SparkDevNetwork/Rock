@@ -15,20 +15,20 @@
                     <Rock:Grid ID="gList" runat="server" AllowSorting="True" OnRowDataBound="gList_RowDataBound" PersonIdField="PersonId">
                         <Columns>
                             <Rock:SelectField ShowHeader="false" />
-                            <asp:TemplateField HeaderText="Confidence" ItemStyle-HorizontalAlign="Right" SortExpression="ConfidenceScore">
+                            <Rock:RockTemplateField HeaderText="Confidence" ItemStyle-HorizontalAlign="Right" SortExpression="ConfidenceScore">
                                 <ItemTemplate>
                                     <%# GetConfidenceScoreColumnHtml((double?)Eval("ConfidenceScore")) %>
                                 </ItemTemplate>
-                            </asp:TemplateField>
+                            </Rock:RockTemplateField>
 
-                            <asp:BoundField DataField="DuplicatePerson.FirstName" HeaderText="First Name" SortExpression="DuplicatePerson.FirstName, DuplicatePerson.LastName" />
-                            <asp:BoundField DataField="DuplicatePerson.LastName" HeaderText="Last Name" SortExpression="DuplicatePerson.LastName, DuplicatePerson.FirstName" />
-                            <asp:BoundField DataField="DuplicatePerson.Email" HeaderText="Email" SortExpression="DuplicatePerson.Email" />
+                            <Rock:RockBoundField DataField="DuplicatePerson.FirstName" HeaderText="First Name" SortExpression="DuplicatePerson.FirstName, DuplicatePerson.LastName" />
+                            <Rock:RockBoundField DataField="DuplicatePerson.LastName" HeaderText="Last Name" SortExpression="DuplicatePerson.LastName, DuplicatePerson.FirstName" />
+                            <Rock:RockBoundField DataField="DuplicatePerson.Email" HeaderText="Email" SortExpression="DuplicatePerson.Email" />
                             <Rock:EnumField DataField="DuplicatePerson.Gender" HeaderText="Gender" SortExpression="DuplicatePerson.Gender" />
 
-                            <asp:BoundField DataField="DuplicatePerson.Age" HeaderText="Age" SortExpression="DuplicatePerson.Age" />
+                            <Rock:RockBoundField DataField="DuplicatePerson.Age" HeaderText="Age" SortExpression="DuplicatePerson.Age" />
 
-                            <asp:TemplateField HeaderText="Campus">
+                            <Rock:RockTemplateField HeaderText="Campus">
                                 <ItemTemplate>
                                     <ul class="list-unstyled">
                                         <asp:Repeater ID="rptrCampuses" runat="server" DataSource='<%# GetCampuses(Eval("DuplicatePerson") as Rock.Model.Person) %>'>
@@ -42,8 +42,8 @@
                                         </asp:Repeater>
                                     </ul>
                                 </ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:TemplateField HeaderText="Addresses">
+                            </Rock:RockTemplateField>
+                            <Rock:RockTemplateField HeaderText="Addresses">
                                 <ItemTemplate>
                                     <ul class="list-unstyled">
                                         <asp:Repeater ID="rptrAddresses" runat="server" DataSource='<%# GetGroupLocations(Eval("DuplicatePerson") as Rock.Model.Person) %>'>
@@ -59,8 +59,8 @@
                                         </asp:Repeater>
                                     </ul>
                                 </ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:TemplateField HeaderText="Phone Numbers">
+                            </Rock:RockTemplateField>
+                            <Rock:RockTemplateField HeaderText="Phone Numbers">
                                 <ItemTemplate>
                                     <ul class="list-unstyled">
                                         <asp:Repeater ID="rptrPhoneNumbers" runat="server" DataSource='<%# GetPhoneNumbers(Eval("DuplicatePerson") as Rock.Model.Person) %>'>
@@ -76,8 +76,8 @@
                                         </asp:Repeater>
                                     </ul>
                                 </ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:TemplateField ItemStyle-HorizontalAlign="Right">
+                            </Rock:RockTemplateField>
+                            <Rock:RockTemplateField ItemStyle-HorizontalAlign="Right">
                                 <ItemTemplate>
                                     <p>
                                         <a class="btn btn-default js-view-person" onclick="<%# GetPersonViewOnClick((int)Eval("PersonId")) %>" data-toggle="tooltip" title="View Person"><i class="fa fa-user fa-fw"></i></a>
@@ -89,7 +89,7 @@
                                         <asp:LinkButton runat="server" ID="btnIgnoreDuplicate" CssClass="btn btn-default js-ignore-duplicate" data-toggle="tooltip" title="Ignore" OnClick="btnIgnoreDuplicate_Click" CommandName="IgnoreDuplicate" CommandArgument='<%# Eval("PersonDuplicateId") %>'><i class="fa fa-bell-slash fa-fw"></i></asp:LinkButton>
                                     </p>
                                 </ItemTemplate>
-                            </asp:TemplateField>
+                            </Rock:RockTemplateField>
                         </Columns>
                     </Rock:Grid>
                 </div>
@@ -112,13 +112,7 @@
 
                         Rock.dialogs.confirm("Are you sure this is not a duplicate?", function (result) {
                             if (result) {
-                                var postbackJs = e.target.href ? e.target.href : e.target.parentElement.href;
-
-                                // need to do unescape because firefox might put %20 instead of spaces
-                                postbackJs = unescape(postbackJs);
-
-                                // Careful!
-                                eval(postbackJs);
+                                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                             }
                         })
                     });
@@ -134,13 +128,7 @@
 
                         Rock.dialogs.confirm("This will ignore this potential duplicate until the score changes.  Are you sure you want to ignore this as a duplicate?", function (result) {
                             if (result) {
-                                var postbackJs = e.target.href ? e.target.href : e.target.parentElement.href;
-
-                                // need to do unescape because firefox might put %20 instead of spaces
-                                postbackJs = unescape(postbackJs);
-
-                                // Careful!
-                                eval(postbackJs);
+                                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                             }
                         })
                     });

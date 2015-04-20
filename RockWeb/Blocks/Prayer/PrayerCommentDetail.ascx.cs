@@ -36,8 +36,7 @@ namespace RockWeb.Blocks.Prayer
     [Description( "Shows a list of prayer comments and allows the noteId that is passed in (via querystring) to be editable." )]
 
     [ContextAware( typeof( PrayerRequest ) )]
-    [TextField( "Note Type", "The note type name associated with the context entity to use (If it doesn't exist it will be created. Default is 'Prayer Comment').", false, "Prayer Comment", "Behavior", 0, "NoteType" )]
-    [TextField( "Title", "The title of the notes/comments section.", false, "Comments", "Behavior", 1 )]
+    [TextField( "Title", "The title of the notes/comments section.", false, "Comments", "Behavior", 0 )]
     public partial class PrayerCommentDetail : RockBlock, IDetailBlock
     {
         #region Private BlockType Attributes
@@ -182,11 +181,9 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         private void GetNoteType()
         {
-            string noteTypeName = GetAttributeValue( "NoteType" );
-
             var rockContext = new RockContext();
             var service = new NoteTypeService( rockContext );
-            noteType = service.Get( contextEntity.TypeId, noteTypeName );
+            noteType = service.Get( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() );
         }
 
         /// <summary>

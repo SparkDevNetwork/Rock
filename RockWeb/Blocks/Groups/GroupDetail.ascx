@@ -65,18 +65,39 @@
                             </div>
                         </Rock:PanelWidget>
 
-                        <Rock:PanelWidget ID="wpLocations" runat="server" Title="Meeting Details">
+                        <Rock:PanelWidget ID="wpMeetingDetails" runat="server" Title="Meeting Details">
                             <div class="grid">
                                 <Rock:Grid ID="gLocations" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location">
                                     <Columns>
-                                        <asp:BoundField DataField="Location" HeaderText="Location" />
-                                        <asp:BoundField DataField="Type" HeaderText="Type" />
-                                        <asp:BoundField DataField="Schedules" HeaderText="Schedule(s)" />
+                                        <Rock:RockBoundField DataField="Location" HeaderText="Location" />
+                                        <Rock:RockBoundField DataField="Type" HeaderText="Type" />
+                                        <Rock:RockBoundField DataField="Schedules" HeaderText="Schedule(s)" />
                                         <Rock:EditField OnClick="gLocations_Edit" />
                                         <Rock:DeleteField OnClick="gLocations_Delete" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>
+                            <asp:Panel ID="pnlSchedule" runat="server" Visible="false">
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:RockRadioButtonList ID="rblScheduleSelect" runat="server" Label="Group Schedule" CssClass="margin-b-sm" OnSelectedIndexChanged="rblScheduleSelect_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" /> 
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <Rock:DayOfWeekPicker ID="dowWeekly" runat="server" CssClass="input-width-md" Visible="false" Label="Day of the Week" />
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <Rock:TimePicker ID="timeWeekly" runat="server" Visible="false" Label="Time of Day" />
+                                            </div>
+                                        </div>
+                                        <Rock:SchedulePicker ID="spSchedule" runat="server" AllowMultiSelect="false" Visible="false" Label="Named Schedule" />
+                                        <asp:HiddenField ID="hfUniqueScheduleId" runat="server" />
+                                        <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ShowDuration="false" ShowScheduleFriendlyTextAsToolTip="true" Visible="false" Label="Custom Schedule" />
+                                    </div>
+                                </div>
+                            </asp:Panel>
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpGroupAttributes" runat="server" Title="Group Attribute Values">
@@ -90,11 +111,11 @@
                                 <div class="grid">
                                     <Rock:Grid ID="gGroupMemberAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Inherited Member Attribute">
                                         <Columns>
-                                            <asp:BoundField DataField="Name" />
-                                            <asp:BoundField DataField="Description" />
-                                            <asp:TemplateField>
+                                            <Rock:RockBoundField DataField="Name" />
+                                            <Rock:RockBoundField DataField="Description" />
+                                            <Rock:RockTemplateField>
                                                 <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</ItemTemplate>
-                                            </asp:TemplateField>
+                                            </Rock:RockTemplateField>
                                         </Columns>
                                     </Rock:Grid>
                                 </div>
@@ -104,8 +125,8 @@
                                 <Rock:Grid ID="gGroupMemberAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Member Attribute" ShowConfirmDeleteDialog="false">
                                     <Columns>
                                         <Rock:ReorderField />
-                                        <asp:BoundField DataField="Name" HeaderText="Attribute" />
-                                        <asp:BoundField DataField="Description" HeaderText="Description" />
+                                        <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
+                                        <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                         <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
                                         <Rock:EditField OnClick="gGroupMemberAttributes_Edit" />
                                         <Rock:DeleteField OnClick="gGroupMemberAttributes_Delete" />
@@ -114,9 +135,29 @@
                             </div>
                         </Rock:PanelWidget>
 
+
+                        <Rock:PanelWidget ID="wpGroupSync" runat="server" Title="Group Sync Settings">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:DataViewPicker ID="dvpSyncDataview" Label="Sync Dataview" runat="server"></Rock:DataViewPicker>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockCheckbox ID="rbCreateLoginDuringSync" runat="server" Label="Create Login During Sync" Help="If the individual does not have a login should one be created during the sync process?" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlWelcomeEmail" runat="server" Label="Welcome Email"></Rock:RockDropDownList>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlExitEmail" runat="server" Label="Exit Email"></Rock:RockDropDownList>
+                                </div>
+                           </div>
+                        </Rock:PanelWidget>
+
                         <div class="actions">
-                            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                            <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                            <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                         </div>
 
                     </div>
@@ -129,8 +170,14 @@
 
                         <div class="row">
                             <div class="col-md-6">
-                                <asp:Literal ID="lblMainDetails" runat="server" />
-                                <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <asp:Literal ID="lblMainDetails" runat="server" />
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6 location-maps">
                                 <asp:PlaceHolder ID="phMaps" runat="server" />
@@ -139,10 +186,11 @@
 
 
                         <div class="actions">
-                            <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
+                            <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                             <span class="pull-right">
+                                <asp:HyperLink ID="hlAttendance" runat="server" CssClass="btn btn-sm btn-default" ToolTip="Attendance"><i class="fa fa-check-square-o"></i></asp:HyperLink>
                                 <asp:HyperLink ID="hlMap" runat="server" CssClass="btn btn-sm btn-default" ToolTip="Interactive Map"><i class="fa fa-map-marker"></i></asp:HyperLink>
                                 <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" Title="Secure Group" />
                             </span>

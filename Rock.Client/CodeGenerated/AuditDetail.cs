@@ -21,29 +21,30 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for AuditDetail
+    /// Base client model for AuditDetail that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class AuditDetail
+    public partial class AuditDetailEntity
     {
         /// <summary />
+        public int Id { get; set; }
+
+        /// <summary />
         public int AuditId { get; set; }
-
-        /// <summary />
-        public string Property { get; set; }
-
-        /// <summary />
-        public string OriginalValue { get; set; }
 
         /// <summary />
         public string CurrentValue { get; set; }
 
         /// <summary />
-        public int Id { get; set; }
+        public string OriginalValue { get; set; }
+
+        /// <summary />
+        public string Property { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -51,5 +52,12 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+    }
+
+    /// <summary>
+    /// Client model for AuditDetail that includes all the fields that are available for GETs. Use this for GETs (use AuditDetailEntity for POST/PUTs)
+    /// </summary>
+    public partial class AuditDetail : AuditDetailEntity
+    {
     }
 }

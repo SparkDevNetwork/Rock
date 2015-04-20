@@ -13,16 +13,16 @@
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gGroupType" runat="server" AllowSorting="true" OnRowCommand="gGroupType_RowCommand" OnRowSelected="gGroupType_RowSelected">
                         <Columns>
-                            <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
-                            <asp:TemplateField ItemStyle-CssClass="grid-col-actions" HeaderStyle-CssClass="grid-col-actions" HeaderText="Actions">
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
+                            <Rock:RockTemplateField ItemStyle-CssClass="grid-col-actions" HeaderStyle-CssClass="grid-col-actions" HeaderText="Actions">
                                 <ItemTemplate>
                                     <div class="btn-group">
                                         <asp:LinkButton runat="server" ID="btnSchedule" CssClass="btn btn-action" CausesValidation="false" CommandName="schedule" CommandArgument="<%# Container.DataItemIndex %>"><i class="fa fa-calendar"></i> Schedule</asp:LinkButton>
                                         <asp:LinkButton runat="server" ID="btnConfigure" CssClass="btn btn-action" CausesValidation="false" CommandName="configure" CommandArgument="<%# Container.DataItemIndex %>"><i class="fa fa-cog"></i> Groups/Locations</asp:LinkButton>
                                     </div>
                                 </ItemTemplate>
-                            </asp:TemplateField>
+                            </Rock:RockTemplateField>
                         </Columns>
                     </Rock:Grid>
                 </div>
@@ -34,7 +34,7 @@
             <Content>
                 <asp:HiddenField runat="server" ID="hfGroupTypeId" />
                 <Rock:RockTextBox runat="server" ID="tbGroupTypeName" Label="Name" Required="true" ValidationGroup="CheckinGroupTypeListAdd" />
-                <Rock:RockTextBox runat="server" ID="tbGroupTypeDescription" Label="Description" Required="true" ValidationGroup="CheckinGroupTypeListAdd" TextMode="MultiLine" Rows="4" />
+                <Rock:RockTextBox runat="server" ID="tbGroupTypeDescription" Label="Description" ValidationGroup="CheckinGroupTypeListAdd" TextMode="MultiLine" Rows="4" />
             </Content>
         </Rock:ModalDialog>
     </ContentTemplate>

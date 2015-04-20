@@ -62,8 +62,9 @@
                             <Rock:Grid ID="gAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Attribute">
                                 <Columns>
                                     <Rock:ReorderField />
-                                    <asp:BoundField DataField="Name" HeaderText="Attribute" />
-                                    <asp:BoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
+                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:RockBoundField DataField="FieldType" HeaderText="Field Type" />
                                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
                                     <Rock:EditField OnClick="gAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gAttributes_Delete" />
@@ -88,8 +89,8 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
 
                 </div>
@@ -116,7 +117,7 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">

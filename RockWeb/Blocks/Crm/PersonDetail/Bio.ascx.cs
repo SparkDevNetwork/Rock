@@ -46,10 +46,11 @@ Additional custom actions (will be displayed after the list of workflow actions)
 Because the contents of this setting will be rendered inside a &lt;ul&gt; element, it is recommended to use an 
 &lt;li&gt; element for each available action.  Example:
 <pre>
-    &lt;li&gt;&lt;a href='~/LaunchWorkflow/4?PersonId={0}' tabindex='0'&gt;Fourth Action&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href='~/WorkflowEntry/4?PersonId={0}' tabindex='0'&gt;Fourth Action&lt;/a&gt;&lt;/li&gt;
 </pre>
 ", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 2, "Actions" )]
     [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 3 )]
+    [BooleanField("Display Country Code", "When enabled prepends the country code to all phone numbers.")]
     public partial class Bio : PersonBlock
     {
         #region Base Control Methods
@@ -114,8 +115,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 if ( Person != null && Person.Id != 0 )
                 {
-                    var rockContext = new RockContext();
-
                     if ( Person.NickName == Person.FirstName )
                     {
                         lName.Text = Person.FullName.FormatAsHtmlTitle();
@@ -168,16 +167,16 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     lGender.Text = Person.Gender.ToString();
 
-                    if ( Person.GraduationDate.HasValue )
+                    if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
                     {
-                        lGraduation.Text = string.Format( "{0} {1}",
-                            Person.GraduationDate.Value.CompareTo( RockDateTime.Today ) <= 0 ? "Graduated " : "Graduates ",
-                            Person.GraduationDate.Value.Year );
+                        lGraduation.Text = string.Format( "<small>({0} {1})</small>",
+                            Person.HasGraduated.Value  ? "Graduated " : "Graduates ",
+                            Person.GraduationYear.Value );
 
                         string grade = Person.GradeFormatted;
                         if ( grade != string.Empty )
                         {
-                            lGrade.Text = string.Format( "<small>({0})</small>", grade );
+                            lGrade.Text = string.Format( "{0}", grade );
                         }
                     }
 
@@ -201,19 +200,22 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     var workflowActions = GetAttributeValue( "WorkflowActions" );
                     if ( !string.IsNullOrWhiteSpace( workflowActions ) )
                     {
-                        var workflowTypeService = new WorkflowTypeService( rockContext );
-                        foreach ( string guidValue in workflowActions.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                        using ( var rockContext = new RockContext() )
                         {
-                            Guid? guid = guidValue.AsGuidOrNull();
-                            if ( guid.HasValue )
+                            var workflowTypeService = new WorkflowTypeService( rockContext );
+                            foreach ( string guidValue in workflowActions.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                             {
-                                var workflowType = workflowTypeService.Get( guid.Value );
-                                if ( workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson, rockContext ) )
+                                Guid? guid = guidValue.AsGuidOrNull();
+                                if ( guid.HasValue )
                                 {
-                                    string url = string.Format( "~/LaunchWorkflow/{0}?PersonId={1}", workflowType.Id, Person.Id );
-                                    sbActions.AppendFormat( "<li><a href='{0}'><i class='{1}'></i> {2}</a></li>",
-                                        ResolveRockUrl( url ), workflowType.IconCssClass, workflowType.Name );
-                                    sbActions.AppendLine();
+                                    var workflowType = workflowTypeService.Get( guid.Value );
+                                    if ( workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                                    {
+                                        string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, Person.Id );
+                                        sbActions.AppendFormat( "<li><a href='{0}'><i class='{1}'></i> {2}</a></li>",
+                                            ResolveRockUrl( url ), workflowType.IconCssClass, workflowType.Name );
+                                        sbActions.AppendLine();
+                                    }
                                 }
                             }
                         }
@@ -240,13 +242,16 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     // Every person should have an alias record with same id.  If it's missing, create it
                     if ( !Person.Aliases.Any( a => a.AliasPersonId == Person.Id ) )
                     {
-                        var personService = new PersonService( rockContext );
-                        var person = personService.Get( Person.Id );
-                        if ( person != null )
+                        using ( var rockContext = new RockContext() )
                         {
-                            person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
-                            rockContext.SaveChanges();
-                            Person = person;
+                            var personService = new PersonService( rockContext );
+                            var person = personService.Get( Person.Id );
+                            if ( person != null )
+                            {
+                                person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
+                                rockContext.SaveChanges();
+                                Person = person;
+                            }
                         }
                     }
                 }
@@ -294,7 +299,15 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 string cc = countryCode as string ?? string.Empty;
                 string n = number as string ?? string.Empty;
-                formattedNumber = PhoneNumber.FormattedNumber( cc, n );
+
+                if ( GetAttributeValue( "DisplayCountryCode" ).AsBoolean() )
+                {
+                    formattedNumber = PhoneNumber.FormattedNumber( cc, n, true );
+                }
+                else
+                {
+                    formattedNumber = PhoneNumber.FormattedNumber( cc, n );
+                }
             }
 
             var phoneType = DefinedValueCache.Read( phoneNumberTypeId );
@@ -308,21 +321,31 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
         private void SetFollowing()
         {
-            var personEntityType = EntityTypeCache.Read( "Rock.Model.Person" );
-            if ( Person != null && CurrentPersonId.HasValue && CurrentPersonAlias != null && personEntityType != null )
+            var personAliasEntityType = EntityTypeCache.Read( "Rock.Model.PersonAlias" );
+            if ( Person != null && CurrentPersonId.HasValue && CurrentPersonAlias != null && personAliasEntityType != null )
             {
-                if ( new FollowingService( new RockContext() ).Queryable()
-                    .Where( f =>
-                        f.EntityTypeId == personEntityType.Id &&
-                        f.EntityId == Person.Id &&
-                        f.PersonAlias.PersonId == CurrentPersonId )
-                    .Any())
+                using ( var rockContext = new RockContext() )
                 {
-                    pnlFollow.AddCssClass( "following" );
-                }
-                else
-                {
-                    pnlFollow.RemoveCssClass( "following" );
+                    var personAliasService = new PersonAliasService( rockContext );
+                    var followingService = new FollowingService( rockContext );
+
+                    var paQry = personAliasService.Queryable()
+                        .Where( p => p.PersonId == Person.Id )
+                        .Select( p => p.Id );
+
+                    if ( followingService.Queryable()
+                        .Where( f =>
+                            f.EntityTypeId == personAliasEntityType.Id &&
+                            paQry.Contains( f.EntityId ) &&
+                            f.PersonAlias.PersonId == CurrentPersonId )
+                        .Any() )
+                    {
+                        pnlFollow.AddCssClass( "following" );
+                    }
+                    else
+                    {
+                        pnlFollow.RemoveCssClass( "following" );
+                    }
                 }
 
                 string script = string.Format( @"
@@ -351,7 +374,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }});
             }}
         }});
-    ", personEntityType.Id, Person.Id, CurrentPersonId.Value, CurrentPersonAlias.Id );
+    ", personAliasEntityType.Id, Person.PrimaryAliasId, CurrentPersonId.Value, CurrentPersonAlias.Id );
                 ScriptManager.RegisterStartupScript( lImage, lImage.GetType(), "following", script, true );
             }
         }

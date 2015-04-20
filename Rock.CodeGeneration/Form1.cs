@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
@@ -37,14 +38,27 @@ namespace Rock.CodeGeneration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void btnLoad_Click( object sender, EventArgs e )
         {
-            var entityInterface = typeof( Rock.Data.IEntity );
-            rockAssembly = entityInterface.Assembly;
-            FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
+            if ( lblAssemblyPath.Text == string.Empty )
+            {
+                rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
+                FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
+                lblAssemblyPath.Text = fi.FullName;
+                toolTip1.SetToolTip(lblAssemblyPath, fi.LastWriteTime.ToString());
+            }
 
-            ofdAssembly.InitialDirectory = fi.DirectoryName;
+            ofdAssembly.InitialDirectory = Path.GetDirectoryName( lblAssemblyPath.Text );
             ofdAssembly.Filter = "dll files (*.dll)|*.dll";
             ofdAssembly.FileName = "Rock.dll";
             ofdAssembly.RestoreDirectory = true;
+
+            var projectName = Path.GetFileNameWithoutExtension( lblAssemblyPath.Text );
+            tbServiceFolder.Text = Path.Combine( RootFolder().FullName, projectName );
+            tbRestFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".Rest" );
+            tbClientFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".Client" );
+            if ( projectName != "Rock" )
+            {
+                tbRestFolder.Text = Path.Combine( RootFolder().FullName, projectName + "\\Rest" );
+            }
 
             if ( ofdAssembly.ShowDialog() == DialogResult.OK )
             {
@@ -54,18 +68,16 @@ namespace Rock.CodeGeneration
 
                 foreach ( var file in ofdAssembly.FileNames )
                 {
+                    lblAssemblyPath.Text = file;
                     var assembly = Assembly.LoadFrom( file );
 
                     foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
                     {
                         if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) && !type.IsAbstract && type.GetCustomAttribute<NotMappedAttribute>() == null )
                         {
-                            foreach ( Type interfaceType in type.GetInterfaces() )
+                            if ( typeof( Rock.Data.IEntity ).IsAssignableFrom( type ) || type.GetCustomAttribute( typeof( TableAttribute ) ) != null )
                             {
-                                if ( interfaceType == entityInterface )
-                                {
-                                    cblModels.Items.Add( type );
-                                }
+                                cblModels.Items.Add( type );
                             }
                         }
                     }
@@ -95,33 +107,15 @@ namespace Rock.CodeGeneration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void btnGenerate_Click( object sender, EventArgs e )
         {
-            string serviceFolder = Path.Combine( RootFolder().FullName, "Rock" );
-            string restFolder = Path.Combine( RootFolder().FullName, "Rock.Rest" );
-            string dataViewFolder = Path.Combine( RootFolder().FullName, "Rock" );
-            string rockClientFolder = Path.Combine( RootFolder().FullName, "Rock.Client" );
-
-            if ( cbService.Checked  )
-            {
-                fbdServiceOutput.SelectedPath = serviceFolder;
-                if ( fbdServiceOutput.ShowDialog() == DialogResult.OK )
-                {
-                    serviceFolder = fbdServiceOutput.SelectedPath;
-                }
-            }
-
-            if ( cbRest.Checked )
-            {
-                fbdRestOutput.SelectedPath = restFolder;
-                if ( fbdRestOutput.ShowDialog() == DialogResult.OK )
-                {
-                    restFolder = fbdRestOutput.SelectedPath;
-                }
-            }
-
-            
+            string serviceFolder = tbServiceFolder.Text;
+            string restFolder = tbRestFolder.Text;
+            string rockClientFolder = tbClientFolder.Text;
 
             Cursor = Cursors.WaitCursor;
 
+            progressBar1.Visible = true;
+            progressBar1.Maximum = cblModels.CheckedItems.Count;
+            progressBar1.Value = 0;
             if ( cblModels.CheckedItems.Count > 0 )
             {
                 var rootFolder = RootFolder();
@@ -129,16 +123,22 @@ namespace Rock.CodeGeneration
                 {
                     foreach ( object item in cblModels.CheckedItems )
                     {
+                        progressBar1.Value++;
                         Type type = (Type)item;
 
-                        if ( cbService.Checked )
+                        // only generate Service and REST for IEntity types
+                        if ( typeof( Rock.Data.IEntity ).IsAssignableFrom( type ) )
                         {
-                            WriteServiceFile( serviceFolder, type );
-                        }
 
-                        if ( cbRest.Checked )
-                        {
-                            WriteRESTFile( restFolder, type );
+                            if ( cbService.Checked )
+                            {
+                                WriteServiceFile( serviceFolder, type );
+                            }
+
+                            if ( cbRest.Checked )
+                            {
+                                WriteRESTFile( restFolder, type );
+                            }
                         }
 
                         if ( cbClient.Checked )
@@ -146,9 +146,16 @@ namespace Rock.CodeGeneration
                             WriteRockClientFile( rockClientFolder, type );
                         }
                     }
+
+                    if (cbClient.Checked)
+                    {
+                        WriteRockClientIncludeClientFiles( rockClientFolder, cblModels.CheckedItems.OfType<Type>().ToList() );
+                        WriteRockClientSystemGuidFiles( rockClientFolder );
+                    }
                 }
             }
 
+            progressBar1.Visible = false;
             Cursor = Cursors.Default;
 
             MessageBox.Show( "Files have been generated" );
@@ -173,14 +180,10 @@ namespace Rock.CodeGeneration
         /// <param name="type"></param>
         private void WriteServiceFile( string rootFolder, Type type )
         {
-            string repoConstructorParam = string.Empty;
-            if ( !type.Assembly.Equals( rockAssembly ) )
+            string dbContextFullName = Rock.Reflection.GetDbContextForEntityType( type ).GetType().FullName;
+            if ( dbContextFullName.StartsWith( "Rock.Data." ) )
             {
-                foreach ( var context in Rock.Reflection.SearchAssembly( type.Assembly, typeof( System.Data.Entity.DbContext ) ) )
-                {
-                    repoConstructorParam = string.Format( " new EFRepository<{0}>( new {1}() ) ", type.Name, context.Value.FullName );
-                    break;
-                }
+                dbContextFullName = dbContextFullName.Replace( "Rock.Data.", "" );
             }
 
             var properties = GetEntityProperties( type );
@@ -227,8 +230,9 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "        /// <summary>" );
             sb.AppendFormat( "        /// Initializes a new instance of the <see cref=\"{0}Service\"/> class" + Environment.NewLine, type.Name );
             sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <param name=\"context\">The context.</param>");
-            sb.AppendFormat( "        public {0}Service(RockContext context) : base(context)" + Environment.NewLine, type.Name );
+            sb.AppendLine( "        /// <param name=\"context\">The context.</param>" );
+
+            sb.AppendFormat( "        public {0}Service({1} context) : base(context)" + Environment.NewLine, type.Name, dbContextFullName );
             sb.AppendLine( "        {" );
             sb.AppendLine( "        }" );
 
@@ -271,7 +275,7 @@ namespace Rock.CodeGeneration
         /// <param name=""source"">The source.</param>
         public static void CopyPropertiesFrom( this {0} target, {0} source )
         {{
-", type.Name);
+", type.Name );
 
             foreach ( var property in properties )
             {
@@ -295,7 +299,12 @@ namespace Rock.CodeGeneration
         {
             public string Table { get; set; }
             public string Column { get; set; }
+            public bool IsPartOfPrimaryKey { get; set; }
             public bool Ignore { get; set; }
+            public override string ToString()
+            {
+                return string.Format( "{0} | {1} {2} {3}", Table, Column, IsPartOfPrimaryKey ? "| PrimaryKey" : null, Ignore ? "| Ignored" : null );
+            }
         }
 
         /// <summary>
@@ -325,6 +334,7 @@ select
   OBJECT_NAME([fk].[parent_object_id]) [parentTable], 
   OBJECT_NAME([fk].[referenced_object_id]) [refTable], 
   [cc].[name] [columnName],
+  isnull(OBJECTPROPERTY(OBJECT_ID('[' + kcu.constraint_name + ']'), 'IsPrimaryKey'), 0) [IsPrimaryKey],
   [fk].[delete_referential_action] [CascadeAction]
 from 
 sys.foreign_key_columns [fkc]
@@ -332,6 +342,8 @@ join sys.foreign_keys [fk]
 on fkc.constraint_object_id = fk.object_id
 join sys.columns cc
 on fkc.parent_column_id = cc.column_id
+left join INFORMATION_SCHEMA.KEY_COLUMN_USAGE [kcu]
+on kcu.COLUMN_NAME = cc.Name and kcu.TABLE_NAME = OBJECT_NAME([fk].[parent_object_id]) and OBJECTPROPERTY(OBJECT_ID('[' + kcu.constraint_name + ']'), 'IsPrimaryKey') = 1
 where cc.object_id = fk.parent_object_id
 and [fk].[delete_referential_action_desc] != 'CASCADE'
 ) sub
@@ -356,26 +368,26 @@ order by [parentTable], [columnName]
             {
                 string parentTable = reader["parentTable"] as string;
                 string columnName = reader["columnName"] as string;
+                bool isPrimaryKey = (int)reader["IsPrimaryKey"] == 1;
                 bool ignoreCanDelete = false;
 
-                Type parentEntityType = Type.GetType( string.Format( "Rock.Model.{0}, {1}", parentTable, type.Assembly.FullName ));
-                if (parentEntityType != null)
+                Type parentEntityType = Type.GetType( string.Format( "Rock.Model.{0}, {1}", parentTable, type.Assembly.FullName ) );
+                if ( parentEntityType != null )
                 {
                     PropertyInfo columnProp = parentEntityType.GetProperty( columnName );
-                    if (columnProp != null)
+                    if ( columnProp != null )
                     {
-                        if (columnProp.GetCustomAttribute<Rock.Data.IgnoreCanDelete>() != null)
+                        if ( columnProp.GetCustomAttribute<Rock.Data.IgnoreCanDelete>() != null )
                         {
                             ignoreCanDelete = true;
                         }
                     }
                 }
 
-                parentTableColumnNameList.Add( new TableColumnInfo { Table = parentTable, Column = columnName, Ignore = ignoreCanDelete } );
+                parentTableColumnNameList.Add( new TableColumnInfo { Table = parentTable, Column = columnName, IsPartOfPrimaryKey = isPrimaryKey, Ignore = ignoreCanDelete } );
             }
 
-            // detect associative table where more than one key is referencing the same table.  EF will automatically take care of it on the DELETE
-            List<string> parentTablesToIgnore = parentTableColumnNameList.GroupBy( a => a.Table ).Where( g => g.Count() > 1 ).Select( s => s.Key ).ToList();
+            parentTableColumnNameList = parentTableColumnNameList.OrderBy( a => a.Table ).ThenBy( a => a.Column ).ToList();
 
             string canDeleteBegin = string.Format( @"
         /// <summary>
@@ -401,29 +413,46 @@ order by [parentTable], [columnName]
                     continue;
                 }
 
-                if ( parentTablesToIgnore.Contains( item.Table ) || item.Ignore)
+                // detect associative table where the foreign key column is also part of the primary key.  EF will automatically take care of it on the DELETE
+                if ( item.IsPartOfPrimaryKey || item.Ignore )
                 {
                     canDeleteMiddle += string.Format(
 @"            
             // ignoring {0},{1} 
-", item.Table, item.Column);
+", item.Table, item.Column );
                     continue;
                 }
 
                 string parentTable = item.Table;
                 string columnName = item.Column;
+                string relationShipText;
+                string pluralizeCode;
+
+                if ( columnName.StartsWith( "Parent" + type.Name ) )
+                {
+                    relationShipText = "contains one or more child";
+                    pluralizeCode = ".Pluralize().ToLower()";
+                }
+                else
+                {
+                    relationShipText = "is assigned to a";
+                    pluralizeCode = "";
+                }
+
 
                 canDeleteMiddle += string.Format(
 @" 
             if ( new Service<{0}>( Context ).Queryable().Any( a => a.{1} == item.Id ) )
             {{
-                errorMessage = string.Format( ""This {{0}} is assigned to a {{1}}."", {2}.FriendlyTypeName, {0}.FriendlyTypeName );
+                errorMessage = string.Format( ""This {{0}} {3} {{1}}."", {2}.FriendlyTypeName, {0}.FriendlyTypeName{4} );
                 return false;
             }}  
 ",
                     parentTable,
                     columnName,
-                    type.Name 
+                    type.Name,
+                    relationShipText,
+                    pluralizeCode
                     );
             }
 
@@ -445,24 +474,8 @@ order by [parentTable], [columnName]
         private void WriteRESTFile( string rootFolder, Type type )
         {
             string pluralizedName = type.Name.Pluralize();
-
-            string baseName = new DirectoryInfo( rootFolder ).Name;
-            if ( baseName.EndsWith( ".Rest", StringComparison.OrdinalIgnoreCase ) )
-            {
-                baseName = baseName.Substring( 0, baseName.Length - 5 );
-            }
-
-            string restNamespace = type.Namespace;
-            if ( restNamespace.StartsWith( baseName + ".", true, null ) )
-            {
-                restNamespace = baseName + ".Rest" + restNamespace.Substring( baseName.Length );
-            }
-            else
-            {
-                restNamespace = ".Rest." + restNamespace;
-            }
-
-            restNamespace = restNamespace.Replace( ".Model", ".Controllers" );
+            string restNamespace = type.Assembly.GetName().Name + ".Rest.Controllers";
+            string dbContextFullName = Rock.Reflection.GetDbContextForEntityType( type ).GetType().FullName;
 
             var sb = new StringBuilder();
 
@@ -500,12 +513,12 @@ order by [parentTable], [columnName]
             sb.AppendLine( "    /// </summary>" );
             sb.AppendFormat( "    public partial class {0}Controller : Rock.Rest.ApiController<{1}.{2}>" + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
             sb.AppendLine( "    {" );
-            sb.AppendFormat( "        public {0}Controller() : base( new {1}.{2}Service( new Rock.Data.RockContext() ) ) {{ }} " + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
+            sb.AppendFormat( "        public {0}Controller() : base( new {1}.{2}Service( new {3}() ) ) {{ }} " + Environment.NewLine, pluralizedName, type.Namespace, type.Name, dbContextFullName );
             sb.AppendLine( "    }" );
             sb.AppendLine( "}" );
 
-
-            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, restNamespace ).FullName, "CodeGenerated", pluralizedName + "Controller.cs" ) );
+            var filePath1 = Path.Combine( rootFolder, "Controllers" );
+            var file = new FileInfo( Path.Combine( filePath1, "CodeGenerated", pluralizedName + "Controller.cs" ) );
             WriteFile( file, sb );
         }
 
@@ -522,8 +535,8 @@ order by [parentTable], [columnName]
         {
             // Should probably be read from config file, or selected from directory dialog.  
             // For now, just traverses parent folders looking for Rock.sln file
-            var dirInfo = new DirectoryInfo( Assembly.GetExecutingAssembly().Location );
-            while ( dirInfo != null && !File.Exists( Path.Combine( dirInfo.FullName, "Rock.sln" ) ) )
+            var dirInfo = new DirectoryInfo( Path.GetDirectoryName( lblAssemblyPath.Text ) );
+            while ( dirInfo != null && !dirInfo.GetDirectories().Any( a => a.Name == "RockWeb" ) )
             {
                 dirInfo = dirInfo.Parent;
             }
@@ -650,16 +663,16 @@ order by [parentTable], [columnName]
         private Dictionary<string, string> GetEntityProperties( Type type )
         {
             _entityProperties = _entityProperties ?? new Dictionary<Type, Dictionary<string, string>>();
-            if (_entityProperties.ContainsKey(type))
+            if ( _entityProperties.ContainsKey( type ) )
             {
                 return _entityProperties[type];
             }
-            
+
             var properties = new Dictionary<string, string>();
 
             var interfaces = type.GetInterfaces();
 
-            foreach ( var property in type.GetProperties() )
+            foreach ( var property in type.GetProperties().SortByStandardOrder() )
             {
                 var getMethod = property.GetGetMethod();
                 if ( getMethod.IsVirtual )
@@ -686,7 +699,7 @@ order by [parentTable], [columnName]
 
                 if ( !property.GetCustomAttributes( typeof( DatabaseGeneratedAttribute ) ).Any() )
                 {
-                    if ( property.SetMethod != null && property.SetMethod.IsPublic  && property.GetMethod.IsPublic)
+                    if ( property.SetMethod != null && property.SetMethod.IsPublic && property.GetMethod.IsPublic )
                     {
                         properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
                     }
@@ -698,6 +711,78 @@ order by [parentTable], [columnName]
             return properties;
         }
 
+        private void WriteRockClientSystemGuidFiles( string rootFolder )
+        {
+            rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine( "//------------------------------------------------------------------------------" );
+            sb.AppendLine( "// <auto-generated>" );
+            sb.AppendLine( "//     This code was generated by the Rock.CodeGeneration project" );
+            sb.AppendLine( "//     Changes to this file will be lost when the code is regenerated." );
+            sb.AppendLine( "// </auto-generated>" );
+            sb.AppendLine( "//------------------------------------------------------------------------------" );
+            sb.AppendLine( "// <copyright>" );
+            sb.AppendLine( "// Copyright 2013 by the Spark Development Network" );
+            sb.AppendLine( "//" );
+            sb.AppendLine( "// Licensed under the Apache License, Version 2.0 (the \"License\");" );
+            sb.AppendLine( "// you may not use this file except in compliance with the License." );
+            sb.AppendLine( "// You may obtain a copy of the License at" );
+            sb.AppendLine( "//" );
+            sb.AppendLine( "// http://www.apache.org/licenses/LICENSE-2.0" );
+            sb.AppendLine( "//" );
+            sb.AppendLine( "// Unless required by applicable law or agreed to in writing, software" );
+            sb.AppendLine( "// distributed under the License is distributed on an \"AS IS\" BASIS," );
+            sb.AppendLine( "// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied." );
+            sb.AppendLine( "// See the License for the specific language governing permissions and" );
+            sb.AppendLine( "// limitations under the License." );
+            sb.AppendLine( "// </copyright>" );
+            sb.AppendLine( "//" );
+            sb.AppendLine( "using System;" );
+            sb.AppendLine( "using System.Collections.Generic;" );
+            sb.AppendLine( "" );
+
+            sb.AppendLine( "namespace Rock.Client.SystemGuid" );
+            sb.AppendLine( "{" );
+
+            foreach ( var systemGuidType in rockAssembly.GetTypes().Where( a => a.Namespace == "Rock.SystemGuid" ).OrderBy( a => a.Name ) )
+            {
+                sb.AppendLine( "    /// <summary>" );
+                sb.AppendLine( "    /// </summary>" );
+                sb.AppendFormat( "    public class {0}" + Environment.NewLine, systemGuidType.Name );
+                sb.AppendLine( "    {" );
+                foreach ( var field in systemGuidType.GetFields().OrderBy( a => a.Name ) )
+                {
+                    sb.AppendFormat( "        public const string {0} = \"{1}\";", field.Name, field.GetValue( systemGuidType ) );
+                    sb.AppendLine( "" );
+                }
+
+                sb.AppendLine( "    }" );
+                sb.AppendLine( "" );
+            }
+
+
+            sb.AppendLine( "}");
+
+            var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated\\SystemGuid", "RockSystemGuids.cs" ) );
+            WriteFile( file, sb );
+        }
+
+        /// <summary>
+        /// Writes the rock client include client files.
+        /// </summary>
+        /// <param name="rootFolder">The root folder.</param>
+        /// <param name="alreadyIncludedTypes">The already included types.</param>
+        private void WriteRockClientIncludeClientFiles( string rootFolder, IEnumerable<Type> alreadyIncludedTypes)
+        {
+            foreach ( var rockClientIncludeType in rockAssembly.GetTypes().Where( a => a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null ).OrderBy( a => a.Name ) )
+            {
+                if ( !alreadyIncludedTypes.Any( a => a == rockClientIncludeType ) )
+                {
+                    WriteRockClientFile( rootFolder, rockClientIncludeType );
+                }
+            }
+        }
+
         /// <summary>
         /// Writes the DTO file for a given type
         /// </summary>
@@ -705,9 +790,31 @@ order by [parentTable], [columnName]
         /// <param name="type"></param>
         private void WriteRockClientFile( string rootFolder, Type type )
         {
-            string lcName = type.Name.Substring( 0, 1 ).ToLower() + type.Name.Substring( 1 );
+            var entityProperties = GetEntityProperties( type );
+            entityProperties.Remove( "CreatedDateTime" );
+            entityProperties.Remove( "ModifiedDateTime" );
+            entityProperties.Remove( "CreatedByPersonAliasId" );
+            entityProperties.Remove( "ModifiedByPersonAliasId" );
 
-            var properties = GetEntityProperties( type );//.Where( p => p.Key != "Id" && p.Key != "Guid" );
+            var dataMembers = type.GetProperties().SortByStandardOrder()
+                .Where( a => a.GetCustomAttribute( typeof( DataMemberAttribute ) ) != null )
+                .Where( a => (a.GetCustomAttribute( typeof( NotMappedAttribute ) ) == null || a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null) )
+                .Where( a => !entityProperties.Keys.Contains( a.Name ) );
+
+            var rockClientIncludeAttribute = type.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>();
+            string comments = null;
+
+            if ( rockClientIncludeAttribute != null)
+            {
+                comments = rockClientIncludeAttribute.DocumentationMessage;
+            }
+            
+            if ( !entityProperties.Any() && !dataMembers.Any() )
+            {
+                return;
+            }
+
+            string lcName = type.Name.Substring( 0, 1 ).ToLower() + type.Name.Substring( 1 );
 
             bool isSecured = typeof( Rock.Security.ISecured ).IsAssignableFrom( type );
 
@@ -736,35 +843,159 @@ order by [parentTable], [columnName]
             sb.AppendLine( "// </copyright>" );
             sb.AppendLine( "//" );
             sb.AppendLine( "using System;" );
+            sb.AppendLine( "using System.Collections.Generic;" );
             sb.AppendLine( "" );
             sb.AppendLine( "" );
 
             sb.AppendFormat( "namespace Rock.Client" + Environment.NewLine, type.Namespace );
             sb.AppendLine( "{" );
-            sb.AppendLine( "    /// <summary>" );
-            sb.AppendFormat( "    /// Simple Client Model for {0}" + Environment.NewLine, type.Name );
-            sb.AppendLine( "    /// </summary>" );
-            
-                sb.AppendFormat( "    public partial class {0}" + Environment.NewLine, type.Name );
-            
 
+            sb.AppendLine( "    /// <summary>" );
+            
+            
+            if ( !string.IsNullOrWhiteSpace( comments ) )
+            {
+                sb.AppendFormat( "    /// {0}" + Environment.NewLine, comments );
+            }
+            else
+            {
+                sb.AppendFormat( "    /// Base client model for {0} that only includes the non-virtual fields. Use this for PUT/POSTs" + Environment.NewLine, type.Name );
+            }
+
+            sb.AppendLine( "    /// </summary>" );
+
+            sb.AppendFormat( "    public partial class {0}Entity" + Environment.NewLine, type.Name );
             sb.AppendLine( "    {" );
 
-            foreach ( var property in properties )
+            foreach ( var keyVal in entityProperties )
             {
+                sb.AppendLine( "        /// <summary />" );
+                sb.AppendFormat( "        public {0} {1} {{ get; set; }}" + Environment.NewLine, keyVal.Value, keyVal.Key );
+                sb.AppendLine( "" );
+            }
+
+            sb.AppendLine( "    }" );
+
+            sb.AppendLine( "" );
+            
+            sb.AppendLine( "    /// <summary>" );
+
+            if ( !string.IsNullOrWhiteSpace( comments ) )
+            {
+                sb.AppendFormat( "    /// {0}" + Environment.NewLine, comments );
+            }
+            else
+            {
+                sb.AppendFormat( "    /// Client model for {0} that includes all the fields that are available for GETs. Use this for GETs (use {0}Entity for POST/PUTs)" + Environment.NewLine, type.Name );
+            }
+
+            sb.AppendLine( "    /// </summary>" );
+
+            sb.AppendFormat( "    public partial class {0} : {0}Entity" + Environment.NewLine, type.Name );
+            sb.AppendLine( "    {" );
+
+            foreach ( var dataMember in dataMembers )
+            {
+                var dataMemberRockClientIncludeAttribute = dataMember.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>();
+                string dataMemberComments = null;
+
+                if ( dataMemberRockClientIncludeAttribute != null )
+                {
+                    dataMemberComments = dataMemberRockClientIncludeAttribute.DocumentationMessage;
+                }
                 
-                    sb.AppendLine( "        /// <summary />" );
-                    sb.AppendFormat( "        public {0} {1} {{ get; set; }}" + Environment.NewLine, property.Value, property.Key );
-                    sb.AppendLine( "" );
+                if (!string.IsNullOrWhiteSpace(dataMemberComments))
+                {
+                    sb.AppendLine( "        /// <summary>" );
+                    sb.AppendFormat( "        /// {0}" + Environment.NewLine, dataMemberComments );
+                    sb.AppendLine( "        /// </summary>" );
+                }
+                else
+                {
+                    sb.AppendLine( "        /// <summary />" );    
+                }
+                
+                sb.AppendFormat( "        public {0} {1} {{ get; set; }}" + Environment.NewLine, PropertyTypeName( dataMember.PropertyType ), dataMember.Name );
+                sb.AppendLine( "" );
+            }
+
+            // if this is a IHasAttributes type, generate Attribute/AttributeValues since they can be fetched thru REST when ?loadAttributes is specified
+            if ( typeof( Rock.Attribute.IHasAttributes ).IsAssignableFrom( type ) )
+            {
+                sb.AppendLine( "        /// <summary>" );
+                sb.AppendLine( "        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' " );
+                sb.AppendLine( "        /// </summary>" );
+                sb.AppendLine( "        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }" );
+                sb.AppendLine( "" );
+                sb.AppendLine( "        /// <summary>" );
+                sb.AppendLine( "        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' " );
+                sb.AppendLine( "        /// </summary>" );
+                sb.AppendLine( "        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }" );
             }
 
             sb.AppendLine( "    }" );
             sb.AppendLine( "}" );
 
             //var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, "CodeGenerated", type.Name + "Dto.cs" ) );
-            var file = new FileInfo( Path.Combine( rootFolder , "CodeGenerated", type.Name + ".cs" ) );
+            var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated", type.Name + ".cs" ) );
             WriteFile( file, sb );
         }
 
+        private void tbServiceFolder_MouseDoubleClick( object sender, MouseEventArgs e )
+        {
+            fbdServiceOutput.SelectedPath = tbServiceFolder.Text;
+            if ( fbdServiceOutput.ShowDialog() == DialogResult.OK )
+            {
+                tbServiceFolder.Text = fbdServiceOutput.SelectedPath;
+            }
+        }
+
+        private void tbRestFolder_MouseDoubleClick( object sender, MouseEventArgs e )
+        {
+            fbdRestOutput.SelectedPath = tbRestFolder.Text;
+            if ( fbdRestOutput.ShowDialog() == DialogResult.OK )
+            {
+                tbRestFolder.Text = fbdRestOutput.SelectedPath;
+            }
+        }
+
+        private void tbClientFolder_MouseDoubleClick( object sender, MouseEventArgs e )
+        {
+            fdbRockClient.SelectedPath = tbClientFolder.Text;
+            if ( fdbRockClient.ShowDialog() == DialogResult.OK )
+            {
+                tbClientFolder.Text = fdbRockClient.SelectedPath;
+            }
+        }
+    }
+
+    public static class HelperExtensions
+    {
+        public static PropertyInfo[] SortByStandardOrder( this PropertyInfo[] properties )
+        {
+            string[] baseModelPropertyTypeNames = new string[] { "Id", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId" };
+            var result = new List<PropertyInfo>();
+
+            // Have Standard Order by "Id", <alphabetic list of other fields>, "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId"
+            result.AddRange( properties.Where( a => !baseModelPropertyTypeNames.Contains( a.Name ) ).OrderBy( a => a.Name ) );
+
+            foreach ( var name in baseModelPropertyTypeNames )
+            {
+                var property = properties.FirstOrDefault( a => a.Name == name );
+                if ( property != null )
+                {
+                    if ( property.Name == "Id" )
+                    {
+                        result.Insert( 0, property );
+                    }
+                    else
+                    {
+                        result.Add( property );
+                    }
+                }
+            }
+
+            return result.ToArray();
+        }
     }
 }

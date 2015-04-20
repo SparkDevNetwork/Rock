@@ -75,10 +75,10 @@ namespace Rock.Model
         {
             return Queryable()
                 .Where( v =>
-                    !v.Attribute.EntityTypeId.HasValue &&
-                    v.Attribute.EntityTypeQualifierColumn == string.Empty &&
-                    v.Attribute.EntityTypeQualifierColumn == string.Empty &&
                     v.Attribute.Key == key &&
+                    !v.Attribute.EntityTypeId.HasValue &&
+                    ( v.Attribute.EntityTypeQualifierColumn == null || v.Attribute.EntityTypeQualifierColumn == string.Empty ) &&
+                    ( v.Attribute.EntityTypeQualifierColumn == null || v.Attribute.EntityTypeQualifierColumn == string.Empty ) &&
                     !v.EntityId.HasValue )
                 .FirstOrDefault();
         }

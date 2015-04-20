@@ -1,0 +1,35 @@
+<img src="{{ Package.PackageIconBinaryFile.ImageUrl }}" style="width: 100%;" />
+
+<h1>{{ Package.Name }}</h1>
+
+<p>
+  <strong>Description:</strong><br />
+  {{ Package.Description }}
+</p>
+
+<div class="row">
+  <div class="col-md-4">
+    <p>
+      <strong>Vendor Infomation</strong><br />
+      {{ Package.Vendor.Name }} <br />
+      <a href="{{ Package.Vendor.Url }}">Website</a>
+    </p>
+
+    <p>
+      <strong>Cost</strong>
+      <br />
+      <div clas="well">
+        {% if Package.IsFree != false %}
+        ${{ Package.Cost }}
+        {% else %}
+        Free
+        {% endif %}
+      </div>
+    </p>
+    
+      
+  </div>
+  <div class="col-md-8">
+      
+  </div>
+</div>

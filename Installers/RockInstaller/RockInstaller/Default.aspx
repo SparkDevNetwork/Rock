@@ -37,7 +37,7 @@
 
                 <div class="form-group">
 					<label class="control-label" for="inputEmail">Version To Run</label>
-					<asp:TextBox ID="txtVersion" runat="server" CssClass="required-field form-control" Text="2_5_0"></asp:TextBox>
+					<asp:TextBox ID="txtVersion" runat="server" CssClass="required-field form-control" Text="2_7_0"></asp:TextBox>
 				</div>
 							
 				<div class="form-group">

@@ -146,14 +146,14 @@ namespace Rock.Extension
             string dir = Path.GetDirectoryName( path );
             if ( Directory.Exists( dir ) )
             {
-                catalog.Catalogs.Add( new SafeDirectoryCatalog( dir ) );
+                catalog.Catalogs.Add( new SafeDirectoryCatalog( dir, typeof( T ) ) );
             }
 
             // Add all the assemblies in the 'Plugins' subdirectory
             string pluginsFolder = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Plugins" );
             if ( Directory.Exists( pluginsFolder ) )
             {
-                catalog.Catalogs.Add( new SafeDirectoryCatalog( pluginsFolder ) );
+                catalog.Catalogs.Add( new SafeDirectoryCatalog( pluginsFolder, typeof( T ) ) );
             }
 
             // Create the container from the catalog

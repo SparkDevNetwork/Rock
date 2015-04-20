@@ -142,14 +142,7 @@ namespace Rock.Model
 
             set
             {
-                if ( string.IsNullOrWhiteSpace( value ) )
-                {
-                    AdditionalMergeValues = new Dictionary<string, string>();
-                }
-                else
-                {
-                    AdditionalMergeValues = JsonConvert.DeserializeObject<Dictionary<string, string>>( value );
-                }
+                AdditionalMergeValues = value.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
             }
         }
 
@@ -222,6 +215,33 @@ namespace Rock.Model
                         activity.ActivityDateTime.ToShortTimeString(),
                         activity.ActivityDetail );
                 }
+
+                return sb.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of activities.
+        /// </summary>
+        /// <value>
+        /// The activity list.
+        /// </value>
+        [NotMapped]
+        public virtual string ActivityListHtml
+        {
+            get
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append( "<ul>" );
+                foreach ( var activity in Activities )
+                {
+                    sb.AppendFormat( "<li>{0} <small>({1} {2})</small>: {3}</li>",
+                        activity.ActivityType,
+                        activity.ActivityDateTime.ToShortDateString(),
+                        activity.ActivityDateTime.ToShortTimeString(),
+                        activity.ActivityDetail );
+                }
+                sb.Append( "</ul>" );
 
                 return sb.ToString();
             }

@@ -87,17 +87,17 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this PageView target, PageView source )
         {
-            target.PageId = source.PageId;
-            target.SiteId = source.SiteId;
-            target.PersonAliasId = source.PersonAliasId;
-            target.DateTimeViewed = source.DateTimeViewed;
-            target.UserAgent = source.UserAgent;
-            target.ClientType = source.ClientType;
-            target.Url = source.Url;
-            target.PageTitle = source.PageTitle;
-            target.SessionId = source.SessionId;
-            target.IpAddress = source.IpAddress;
             target.Id = source.Id;
+            target.ClientType = source.ClientType;
+            target.DateTimeViewed = source.DateTimeViewed;
+            target.IpAddress = source.IpAddress;
+            target.PageId = source.PageId;
+            target.PageTitle = source.PageTitle;
+            target.PersonAliasId = source.PersonAliasId;
+            target.SessionId = source.SessionId;
+            target.SiteId = source.SiteId;
+            target.Url = source.Url;
+            target.UserAgent = source.UserAgent;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

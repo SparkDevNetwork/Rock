@@ -7,6 +7,7 @@
 // Load Master Styles
 // -------------------------
 @import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
 @import "../../../Styles/_rock-variables.less";
 @import "_variables.less";
 @import "_print.less";
@@ -76,6 +77,7 @@
     7. Responsive Overrides
     8. Side Navbar
     9. Person Details
+    10. First Word Weight
 
 */
 
@@ -89,6 +91,11 @@
 /*#region
 // 2. HTML Overrides         */
 // -------------------------
+
+html {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+}
 
 main {
     display: block;
@@ -135,6 +142,37 @@ pre {
 /*#region
 // 3. Bootstrap Overrides    */
 // -------------------------
+
+h1 small, 
+h2 small, 
+h3 small, 
+h4 small, 
+h5 small, 
+h6 small, 
+.h1 small, 
+.h2 small, 
+.h3 small, 
+.h4 small, 
+.h5 small, 
+.h6 small, 
+h1 .small, 
+h2 .small, 
+h3 .small, 
+h4 .small, 
+h5 .small, 
+h6 .small, 
+.h1 .small, 
+.h2 .small, 
+.h3 .small, 
+.h4 .small, 
+.h5 .small, 
+.h6 .small {
+    font-weight: inherit;
+}
+
+h4, .h4 {
+    font-weight: 500;
+}
 
 
 // panel tweaks
@@ -694,6 +732,10 @@ body#splash {
                     padding: 6px;
                     color: @accent-bold-text-color;
 
+                    &:focus {
+                        background-color: lighten(@accent-bold-color, 5%);
+                    }
+
                     &:hover {
                         background-color: darken(@accent-bold-color, 5%);
                     }
@@ -781,7 +823,8 @@ body.navbar-side-close {
     .personprofilebar-family,
     .pagetabs,
     .person-content {
-        padding: 0 15px;
+        padding-left: 15px;
+        padding-right: 15px;
     }
 
     .personprofilebar-bio {
@@ -793,4 +836,16 @@ body.navbar-side-close {
     }
 }
 
+/*#endregion */
+
+/*#region
+// 10. First Word Weight  */
+// -------------------------
+.title {
+    font-weight: @font-weight-light;
+
+    .first-word {
+        font-weight: @font-weight-bold;
+    }
+}
 /*#endregion */

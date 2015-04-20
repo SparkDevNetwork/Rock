@@ -63,7 +63,10 @@
                         var selectedFileId = $(this).closest('li').attr('data-id');
                         Rock.dialogs.confirm("Are you sure you want to delete this file?", function (confirmResult, data) {
                             if (confirmResult) {
-                                __doPostBack('<%=upnlFiles.ClientID %>', 'file-delete:' + selectedFileId + '');
+                                // use setTimeout so that the doPostBack happens later (to avoid javascript exception that occurs due to timing)
+                                setTimeout(function () {
+                                    __doPostBack('<%=upnlFiles.ClientID %>', 'file-delete:' + selectedFileId + '');
+                                });
                             }
                         });
                     });
@@ -73,7 +76,10 @@
                     $('.js-folder-treeview .treeview').on('rockTree:selected', function (e, data) {
                         var relativeFolderPath = data;
                         $('#<%=hfSelectedFolder.ClientID%>').val(data);
-                        __doPostBack('<%=upnlFiles.ClientID %>', 'folder-selected:' + relativeFolderPath + '');
+                        // use setTimeout so that the doPostBack happens later (to avoid javascript exception that occurs due to timing)
+                        setTimeout(function () {
+                            __doPostBack('<%=upnlFiles.ClientID %>', 'folder-selected:' + relativeFolderPath + '');
+                        });
                     });
 
                     // js for when a file is selected

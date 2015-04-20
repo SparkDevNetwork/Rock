@@ -28,7 +28,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column for displaying a badge
     /// </summary>
     [ToolboxData( "<{0}:BadgeField runat=server></{0}:BadgeField>" )]
-    public class BadgeField : BoundField
+    public class BadgeField : RockBoundField
     {
         /// <summary>
         /// Gets or sets the important minimum value rule.

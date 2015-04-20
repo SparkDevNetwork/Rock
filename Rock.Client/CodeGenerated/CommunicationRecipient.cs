@@ -21,20 +21,36 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for CommunicationRecipient
+    /// Base client model for CommunicationRecipient that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class CommunicationRecipient
+    public partial class CommunicationRecipientEntity
     {
+        /// <summary />
+        public int Id { get; set; }
+
+        /// <summary />
+        public string AdditionalMergeValuesJson { get; set; }
+
+        /// <summary />
+        public int CommunicationId { get; set; }
+
+        /// <summary />
+        public string OpenedClient { get; set; }
+
+        /// <summary />
+        public DateTime? OpenedDateTime { get; set; }
+
         /// <summary />
         public int PersonAliasId { get; set; }
 
         /// <summary />
-        public int CommunicationId { get; set; }
+        public string ResponseCode { get; set; }
 
         /// <summary />
         public int /* CommunicationRecipientStatus*/ Status { get; set; }
@@ -43,22 +59,32 @@ namespace Rock.Client
         public string StatusNote { get; set; }
 
         /// <summary />
-        public DateTime? OpenedDateTime { get; set; }
-
-        /// <summary />
-        public string OpenedClient { get; set; }
-
-        /// <summary />
         public string TransportEntityTypeName { get; set; }
 
         /// <summary />
         public string UniqueMessageId { get; set; }
 
         /// <summary />
-        public string ResponseCode { get; set; }
+        public Guid Guid { get; set; }
 
         /// <summary />
-        public string AdditionalMergeValuesJson { get; set; }
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Client model for CommunicationRecipient that includes all the fields that are available for GETs. Use this for GETs (use CommunicationRecipientEntity for POST/PUTs)
+    /// </summary>
+    public partial class CommunicationRecipient : CommunicationRecipientEntity
+    {
+        /// <summary />
+        public ICollection<CommunicationRecipientActivity> Activities { get; set; }
+
+        /// <summary />
+        public Dictionary<string, string> AdditionalMergeValues { get; set; }
+
+        /// <summary />
+        public PersonAlias PersonAlias { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -72,14 +98,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
-        public int Id { get; set; }
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

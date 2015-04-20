@@ -93,26 +93,26 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this FinancialScheduledTransaction target, FinancialScheduledTransaction source )
         {
+            target.Id = source.Id;
             target.AuthorizedPersonAliasId = source.AuthorizedPersonAliasId;
-            target.TransactionFrequencyValueId = source.TransactionFrequencyValueId;
-            target.CurrencyTypeValueId = source.CurrencyTypeValueId;
-            target.CreditCardTypeValueId = source.CreditCardTypeValueId;
-            target.StartDate = source.StartDate;
-            target.EndDate = source.EndDate;
-            target.NumberOfPayments = source.NumberOfPayments;
-            target.NextPaymentDate = source.NextPaymentDate;
-            target.LastStatusUpdateDateTime = source.LastStatusUpdateDateTime;
-            target.IsActive = source.IsActive;
-            target.GatewayEntityTypeId = source.GatewayEntityTypeId;
-            target.TransactionCode = source.TransactionCode;
-            target.GatewayScheduleId = source.GatewayScheduleId;
             target.CardReminderDate = source.CardReminderDate;
+            target.CreditCardTypeValueId = source.CreditCardTypeValueId;
+            target.CurrencyTypeValueId = source.CurrencyTypeValueId;
+            target.EndDate = source.EndDate;
+            target.FinancialGatewayId = source.FinancialGatewayId;
+            target.GatewayScheduleId = source.GatewayScheduleId;
+            target.IsActive = source.IsActive;
             target.LastRemindedDate = source.LastRemindedDate;
+            target.LastStatusUpdateDateTime = source.LastStatusUpdateDateTime;
+            target.NextPaymentDate = source.NextPaymentDate;
+            target.NumberOfPayments = source.NumberOfPayments;
+            target.StartDate = source.StartDate;
+            target.TransactionCode = source.TransactionCode;
+            target.TransactionFrequencyValueId = source.TransactionFrequencyValueId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

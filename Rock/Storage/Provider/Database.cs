@@ -14,13 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
-using System.Linq;
-using System.Web;
+
 using Rock.Model;
 
 namespace Rock.Storage.Provider
@@ -34,59 +31,44 @@ namespace Rock.Storage.Provider
     public class Database : ProviderComponent
     {
         /// <summary>
-        /// Removes the file from the external storage medium associated with the provider.
+        /// Saves the binary file contents to the external storage medium associated with the provider.
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
-        public override void RemoveFile( BinaryFile file, HttpContext context )
+        public override void SaveContent( BinaryFile file )
         {
-            // Database storage just stores everything in the BinaryFile table, so there is no external file data to delete
-        }
-
-        /// <summary>
-        /// Saves the file to the external storage medium associated with the provider.
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
-        public override void SaveFile( BinaryFile file, HttpContext context )
-        {
-            // Database storage just stores everything in the BinaryFile table, so there is no external file data to save, but we do need to set the Url
-            file.Url = GenerateUrl( file );
-        }
-
-        /// <summary>
-        /// Gets the file bytes in chunks from the external storage medium associated with the provider.
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        public override Stream GetFileContentStream( BinaryFile file, HttpContext context )
-        {
-            if ( file.Data != null )
+            if ( file.DatabaseData == null )
             {
-                return file.Data.ContentStream;
+                file.DatabaseData = new BinaryFileData();
             }
-            else
+
+            using ( var stream = file.ContentStream )
             {
-                return null;
+                file.DatabaseData.Content = stream.ReadBytesToEnd();
             }
         }
 
         /// <summary>
-        /// Generate a URL for the file based on the rules of the StorageProvider
+        /// Deletes the content from the external storage medium associated with the provider.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        public override void DeleteContent( BinaryFile file )
+        {
+            file.DatabaseData = null;
+        }
+
+        /// <summary>
+        /// Gets the contents from the external storage medium associated with the provider
         /// </summary>
         /// <param name="file">The file.</param>
         /// <returns></returns>
-        public override string GenerateUrl( BinaryFile file )
+        public override Stream GetContentStream( BinaryFile file )
         {
-            if ( file.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) )
+            if ( file.DatabaseData != null && file.DatabaseData.Content != null )
             {
-                return string.Format( "~/GetImage.ashx?guid={0}", file.Guid );
+                return new MemoryStream( file.DatabaseData.Content );
             }
-            else
-            {
-                return string.Format( "~/GetFile.ashx?guid={0}", file.Guid );
-            }
+            return new MemoryStream();
         }
+
     }
 }

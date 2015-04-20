@@ -41,23 +41,45 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure." )]
 
+    // Block Properties
     [BooleanField( "Update Page", "If True, provides fields for updating the parent page's Name and Description", true, "", 0 )]
-    [CodeEditorField( "Query", "The query to execute", CodeEditorMode.Sql, CodeEditorTheme.Rock, 400, false, "", "", 1 )]
-    [TextField( "Query Params", "Parameters to pass to query", false, "", "", 2 )]
-    [BooleanField( "Query is a Stored Procedure", "Is the query a stored procedure?", false, "", 3, "StoredProcedure" )]
-    [TextField( "Url Mask", "The Url to redirect to when a row is clicked", false, "", "", 4 )]
-    [BooleanField( "Show Columns", "Should the 'Columns' specified below be the only ones shown (vs. the only ones hidden)", false, "", 5 )]
-    [TextField( "Columns", "The columns to hide or show", false, "", "", 6 )]
+
+    // Custom Settings
+    [CodeEditorField( "Query", "The query to execute", CodeEditorMode.Sql, CodeEditorTheme.Rock, 400, false, "", "CustomSetting" )]
+    [TextField( "Query Params", "Parameters to pass to query", false, "", "CustomSetting" )]
+    [BooleanField( "Stored Procedure", "Is the query a stored procedure?", false, "CustomSetting" )]
+    [TextField( "Url Mask", "The Url to redirect to when a row is clicked", false, "", "CustomSetting" )]
+    [BooleanField( "Show Columns", "Should the 'Columns' specified below be the only ones shown (vs. the only ones hidden)", false, "CustomSetting" )]
+    [TextField( "Columns", "The columns to hide or show", false, "", "CustomSetting" )]
     [CodeEditorField( "Formatted Output", "Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }}<br/> {% endfor %}",
-        CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "", "", 7 )]
-    [BooleanField( "Person Report", "Is this report a list of people.?", false, "", 8 )]
-    [TextField( "Merge Fields", "Any fields to make available as merge fields for any new communications", false, "", "", 9 )]
-    public partial class DynamicData : RockBlock
+        CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
+    [BooleanField( "Person Report", "Is this report a list of people.?", false, "CustomSetting" )]
+    [TextField( "Merge Fields", "Any fields to make available as merge fields for any new communications", false, "", "CustomSetting" )]
+
+    public partial class DynamicData : RockBlockCustomSettings
     {
         #region Fields
 
         Dictionary<int, string> _sortExpressions = new Dictionary<int, string>();
         bool _updatePage = true;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the settings tool tip.
+        /// </summary>
+        /// <value>
+        /// The settings tool tip.
+        /// </value>
+        public override string SettingsToolTip
+        {
+            get
+            {
+                return "Edit Criteria";
+            }
+        }
 
         #endregion
 
@@ -79,75 +101,9 @@ namespace RockWeb.Blocks.Reporting
             _updatePage = GetAttributeValue( "UpdatePage" ).AsBoolean( true );
         }
 
-        /// <summary>
-        /// Adds icons to the configuration area of a <see cref="Rock.Model.Block" /> instance.  Can be overridden to
-        /// add additional icons
-        /// </summary>
-        /// <param name="canConfig">A <see cref="System.Boolean" /> flag that indicates if the user can configure the <see cref="Rock.Model.Block" /> instance.
-        /// This value will be <c>true</c> if the user is allowed to configure the <see cref="Rock.Model.Block" /> instance; otherwise <c>false</c>.</param>
-        /// <param name="canEdit">A <see cref="System.Boolean" /> flag that indicates if the user can edit the <see cref="Rock.Model.Block" /> instance.
-        /// This value will be <c>true</c> if the user is allowed to edit the <see cref="Rock.Model.Block" /> instance; otherwise <c>false</c>.</param>
-        /// <returns>
-        /// A <see cref="System.Collections.Generic.List{Control}" /> containing all the icon <see cref="System.Web.UI.Control">controls</see>
-        /// that will be available to the user in the configuration area of the block instance.
-        /// </returns>
-        public override List<Control> GetAdministrateControls( bool canConfig, bool canEdit )
-        {
-            List<Control> configControls = new List<Control>();
-
-            if ( IsUserAuthorized( Authorization.EDIT ) )
-            {
-                LinkButton lbEdit = new LinkButton();
-                lbEdit.CssClass = "edit";
-                lbEdit.ToolTip = "Edit Criteria";
-                lbEdit.Click += lbEdit_Click;
-                configControls.Add( lbEdit );
-                HtmlGenericControl iEdit = new HtmlGenericControl( "i" );
-                lbEdit.Controls.Add( iEdit );
-                lbEdit.CausesValidation = false;
-                iEdit.Attributes.Add( "class", "fa fa-pencil-square-o" );
-
-                // will toggle the block config so they are no longer showing
-                lbEdit.Attributes["onclick"] = "Rock.admin.pageAdmin.showBlockConfig()";
-
-                ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( lbEdit );
-            }
-
-            configControls.AddRange( base.GetAdministrateControls( canConfig, canEdit ) );
-
-            return configControls;
-        }
-
         #endregion
 
         #region Events
-
-        protected void lbEdit_Click( object sender, EventArgs e )
-        {
-            pnlEditModel.Visible = true;
-            upnlContent.Update();
-            mdEdit.Show();
-
-            if ( _updatePage )
-            {
-                var pageCache = PageCache.Read( RockPage.PageId );
-                tbName.Text = pageCache != null ? pageCache.PageTitle : string.Empty;
-                tbDesc.Text = pageCache != null ? pageCache.Description : string.Empty;
-            }
-
-            tbName.Visible = _updatePage;
-            tbDesc.Visible = _updatePage;
-
-            ceQuery.Text = GetAttributeValue( "Query" );
-            cbStoredProcedure.Checked = GetAttributeValue( "StoredProcedure" ).AsBoolean();
-            tbParams.Text = GetAttributeValue( "QueryParams" );
-            tbUrlMask.Text = GetAttributeValue( "UrlMask" );
-            ddlHideShow.SelectedValue = GetAttributeValue( "ShowColumns" );
-            tbColumns.Text = GetAttributeValue( "Columns" );
-            ceFormattedOutput.Text = GetAttributeValue( "FormattedOutput" );
-            cbPersonReport.Checked = GetAttributeValue( "PersonReport" ).AsBoolean();
-            tbMergeFields.Text = GetAttributeValue( "MergeFields" );
-        }
 
         void DynamicData_BlockUpdated( object sender, EventArgs e )
         {
@@ -282,6 +238,33 @@ namespace RockWeb.Blocks.Reporting
             return null;
         }
 
+        protected override void ShowSettings()
+        {
+            pnlEditModel.Visible = true;
+            upnlContent.Update();
+            mdEdit.Show();
+
+            if ( _updatePage )
+            {
+                var pageCache = PageCache.Read( RockPage.PageId );
+                tbName.Text = pageCache != null ? pageCache.PageTitle : string.Empty;
+                tbDesc.Text = pageCache != null ? pageCache.Description : string.Empty;
+            }
+
+            tbName.Visible = _updatePage;
+            tbDesc.Visible = _updatePage;
+
+            ceQuery.Text = GetAttributeValue( "Query" );
+            cbStoredProcedure.Checked = GetAttributeValue( "StoredProcedure" ).AsBoolean();
+            tbParams.Text = GetAttributeValue( "QueryParams" );
+            tbUrlMask.Text = GetAttributeValue( "UrlMask" );
+            ddlHideShow.SelectedValue = GetAttributeValue( "ShowColumns" );
+            tbColumns.Text = GetAttributeValue( "Columns" );
+            ceFormattedOutput.Text = GetAttributeValue( "FormattedOutput" );
+            cbPersonReport.Checked = GetAttributeValue( "PersonReport" ).AsBoolean();
+            tbMergeFields.Text = GetAttributeValue( "MergeFields" );
+        }
+
         /// <summary>
         /// Builds the controls.
         /// </summary>
@@ -356,6 +339,7 @@ namespace RockWeb.Blocks.Reporting
 
                         mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                         mergeFields.Add( "Campuses", CampusCache.All() );
+                        mergeFields.Add( "PageParameter", PageParameters() );
 
                         int i = 1;
                         foreach ( DataTable dataTable in dataSet.Tables )
@@ -401,13 +385,17 @@ namespace RockWeb.Blocks.Reporting
                 var matches = pattern.Matches( urlMask );
                 if ( matches.Count > 0 )
                 {
-                    string[] keyNames = new string[matches.Count];
+                    var keyNames = new List<string>();
                     for ( int i = 0; i < matches.Count; i++ )
                     {
-                        keyNames[i] = matches[i].Value.TrimStart( '{' ).TrimEnd( '}' );
+                        string colName = matches[i].Value.TrimStart( '{' ).TrimEnd( '}' );
+                        if ( dataTable.Columns.Contains( colName ) )
+                        {
+                            keyNames.Add( colName );
+                        }
                     }
 
-                    grid.DataKeyNames = keyNames;
+                    grid.DataKeyNames = keyNames.ToArray();
                 }
             }
             else

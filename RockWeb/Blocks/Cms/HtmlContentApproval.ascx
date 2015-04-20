@@ -23,11 +23,11 @@
                         </Rock:GridFilter>
                         <Rock:Grid ID="gContentList" runat="server" AllowSorting="true" OnRowSelected="gContentList_RowSelected">
                             <Columns>
-                                <asp:BoundField DataField="SiteName" HeaderText="Site" SortExpression="Block.Page.Layout.Site.Name,Block.Layout.Site.Name" />
-                                <asp:BoundField DataField="PageName" HeaderText="Page" SortExpression="Block.Page.InternalName" />
+                                <Rock:RockBoundField DataField="SiteName" HeaderText="Site" SortExpression="Block.Page.Layout.Site.Name,Block.Layout.Site.Name" />
+                                <Rock:RockBoundField DataField="PageName" HeaderText="Page" SortExpression="Block.Page.InternalName" />
                                 <Rock:DateTimeField DataField="ModifiedDateTime" HeaderText="Modified Date/Time" SortExpression="ModifiedDateTime" />
                                 <Rock:ToggleField DataField="IsApproved" HeaderText="Approved" ButtonSizeCssClass="btn-xs" Enabled="True" OnCssClass="btn-success" OnText="Yes" OffText="No" OnCheckedChanged="gContentList_CheckedChanged" SortExpression="IsApproved" />
-                                <asp:BoundField DataField="ApprovedByPerson" HeaderText="Approved By" SortExpression="ApprovedByPersonAlias.Person.NickName,ApprovedByPersonAlias.Person.LastName" />
+                                <Rock:RockBoundField DataField="ApprovedByPerson" HeaderText="Approved By" SortExpression="ApprovedByPersonAlias.Person.NickName,ApprovedByPersonAlias.Person.LastName" />
                                 <Rock:DateField DataField="ApprovedDateTime" HeaderText="Approval Date" SortExpression="ApprovedDateTime" />
                             </Columns>
                         </Rock:Grid>

@@ -107,5 +107,18 @@ namespace Rock.Data
         /// <returns></returns>
         IEntity Clone();
 
+        /// <summary>
+        /// Creates a dictionary containing the majority of the entity object's properties
+        /// </summary>
+        /// <returns></returns>
+        Dictionary<string, object> ToDictionary();
+
+        /// <summary>
+        /// Gets or sets the additional lava fields.
+        /// </summary>
+        /// <value>
+        /// The additional lava fields.
+        /// </value>
+        Dictionary<string, object> AdditionalLavaFields { get; set; }
     }
 }

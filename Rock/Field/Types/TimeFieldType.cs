@@ -17,10 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
 
-using Rock;
+using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -31,6 +30,9 @@ namespace Rock.Field.Types
     [Serializable]
     public class TimeFieldType : FieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Formats time display
         /// </summary>
@@ -51,6 +53,10 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -109,16 +115,38 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Filter Control
+
         /// <summary>
-        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// Gets the type of the filter comparison.
         /// </summary>
-        /// <param name="attribute"></param>
-        /// <returns></returns>
-        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute)
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
         {
-            var filterConfig = base.GetFilterConfig( attribute );
-            filterConfig.FilterFieldType = SystemGuid.FieldType.TIME;
-            return filterConfig;
+            get { return ComparisonHelper.DateFilterComparisonTypes; }
         }
+
+        /// <summary>
+        /// Converts the type of the value to property.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        public override object ConvertValueToPropertyType( string value, Type propertyType )
+        {
+            var timeValue = TimeSpan.MinValue;
+            if ( TimeSpan.TryParse( value, out timeValue ) )
+            {
+                return timeValue;
+            }
+            return null;
+        }
+
+        #endregion
+
     }
 }

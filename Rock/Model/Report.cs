@@ -166,6 +166,25 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
+        /// Gets the parent security authority for the Report which is its Category
+        /// </summary>
+        /// <value>
+        /// The parent authority of the DataView.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.Category != null )
+                {
+                    return this.Category;
+                }
+
+                return base.ParentAuthority;
+            }
+        }
+
+        /// <summary>
         /// Gets the data source.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
@@ -173,9 +192,10 @@ namespace Rock.Model
         /// <param name="attributes">The attributes.</param>
         /// <param name="selectComponents">The select components.</param>
         /// <param name="sortProperty">The sort property.</param>
+        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public List<object> GetDataSource( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, out List<string> errorMessages )
+        public List<object> GetDataSource( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, int? databaseTimeoutSeconds, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -183,6 +203,11 @@ namespace Rock.Model
             {
                 System.Data.Entity.DbContext reportDbContext = Reflection.GetDbContextForEntityType( entityType );
                 IService serviceInstance = Reflection.GetServiceForEntityType( entityType, reportDbContext );
+
+                if ( databaseTimeoutSeconds.HasValue )
+                {
+                    reportDbContext.Database.CommandTimeout = databaseTimeoutSeconds.Value;
+                }
 
                 if ( serviceInstance != null )
                 {

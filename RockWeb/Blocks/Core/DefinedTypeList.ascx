@@ -15,10 +15,9 @@
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
                     <Rock:Grid ID="gDefinedType" runat="server" AllowSorting="true" OnRowSelected="gDefinedType_Edit" TooltipField="Description">
                         <Columns>
-                            <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category.Name" />
-                            <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
-                            <asp:BoundField DataField="FieldTypeName" HeaderText="Field Type" SortExpression="FieldTypeName" />
+                            <Rock:RockBoundField DataField="Category" HeaderText="Category" SortExpression="Category.Name" />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                             <Rock:DeleteField OnClick="gDefinedType_Delete" />
                         </Columns>
                     </Rock:Grid>

@@ -16,20 +16,21 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Web.UI;
 using System.Web.UI.WebControls;
-
-using Rock.Constants;
-using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type to select a Day of the Week
+    /// stored as int value that can be cast to System.DayOfWeek (where Sunday = 0)
     /// </summary>
     public class DayOfWeekFieldType : FieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -51,7 +52,11 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
-        
+
+        #endregion
+
+        #region Edit Control
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -108,18 +113,53 @@ namespace Rock.Field.Types
             dayOfWeekPicker.SelectedDayOfWeek = dayOfWeek;
         }
 
+        #endregion
+
+        #region Filter Control
 
         /// <summary>
-        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// Gets the filter compare control.
         /// </summary>
-        /// <param name="attribute"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required"></param>
         /// <returns></returns>
-        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
+        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
         {
-            var filterConfig = base.GetFilterConfig( attribute );
-            filterConfig.ControlCount = 1;
-            filterConfig.FilterFieldType = SystemGuid.FieldType.DAY_OF_WEEK;
-            return filterConfig;
+            var lbl = new Label();
+            lbl.ID = string.Format( "{0}_lIs", id );
+            lbl.AddCssClass( "data-view-filter-label" );
+            lbl.Text = "Is";
+            return lbl;
         }
+
+        /// <summary>
+        /// Gets the filter compare value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public override string GetFilterCompareValue( Control control )
+        {
+            return "1";  // Equal to
+        }
+
+        /// <summary>
+        /// Converts the type of the value to property.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        public override object ConvertValueToPropertyType( string value, Type propertyType )
+        {
+            int? intValue = value.AsIntegerOrNull();
+            if ( intValue.HasValue )
+            {
+                return (System.DayOfWeek)intValue.Value;
+            }
+            return null;
+        }
+
+        #endregion
+
     }
 }

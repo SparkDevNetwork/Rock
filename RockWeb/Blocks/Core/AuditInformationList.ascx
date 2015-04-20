@@ -20,10 +20,10 @@
                     <Rock:Grid ID="gAuditInformationList" runat="server" AllowSorting="true" OnRowSelected="gAuditInformationList_Select">
                         <Columns>
                             <Rock:EnumField DataField="AuditType" HeaderText="Action" SortExpression="AuditType" />
-                            <asp:BoundField DataField="EntityType" HeaderText="Entity Type" SortExpression="EntityType" />
-                            <asp:BoundField DataField="EntityId" HeaderText="Entity Id" SortExpression="EntityId" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                            <Rock:RockBoundField DataField="EntityType" HeaderText="Entity Type" SortExpression="EntityType" />
+                            <Rock:RockBoundField DataField="EntityId" HeaderText="Entity Id" SortExpression="EntityId" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                             <Rock:RockBoundField DataField="Title" HeaderText="Entity Description" SortExpression="Title" TruncateLength="80" HtmlEncode="true" />
-                            <asp:BoundField DataField="Properties" HeaderText="Properties Updated" SortExpression="Properties" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                            <Rock:RockBoundField DataField="Properties" HeaderText="Properties Updated" SortExpression="Properties" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                             <Rock:DateTimeField DataField="DateTime" HeaderText="When" SortExpression="DateTime" />
                             <asp:HyperLinkField DataTextField="PersonName" DataNavigateUrlFields="PersonId" SortExpression="PersonName" DataNavigateUrlFormatString="~/Person/{0}" HeaderText="Who" />
                         </Columns>
@@ -45,9 +45,9 @@
                         <div class="grid grid-panel">
                             <Rock:Grid ID="gProperties" runat="server" AllowSorting="false" EmptyDataText="No Properties" ShowActionRow="false" AllowPaging="false">
                                 <Columns>
-                                    <asp:BoundField DataField="Property" HeaderText="Property" SortExpression="EntityType" />
-                                    <asp:BoundField DataField="OriginalValue" HeaderText="Original Value" SortExpression="OriginalValue" />
-                                    <asp:BoundField DataField="CurrentValue" HeaderText="New Value" SortExpression="CurrentValue" />
+                                    <Rock:RockBoundField DataField="Property" HeaderText="Property" SortExpression="EntityType" />
+                                    <Rock:RockBoundField DataField="OriginalValue" HeaderText="Original Value" SortExpression="OriginalValue" />
+                                    <Rock:RockBoundField DataField="CurrentValue" HeaderText="New Value" SortExpression="CurrentValue" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

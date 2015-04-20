@@ -19,6 +19,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -29,9 +30,9 @@ namespace Rock.Model
     /// </summary>
     [Table( "AttributeValue" )]
     [DataContract]
+    [JsonConverter( typeof( Rock.Utility.AttributeValueJsonConverter ) )]
     public partial class AttributeValue : Model<AttributeValue>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -42,6 +43,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [LavaIgnore]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -64,10 +66,11 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> that identifies the Id of the entity instance that uses this AttributeValue.
         /// </value>
         [DataMember]
+        [LavaIgnore]
         public int? EntityId { get; set; }
         
         /// <summary>
-        /// Gets or sets the value.
+        /// Gets or sets the value
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the value.
@@ -80,26 +83,65 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets the Value as a double
-        /// Calculated Field: alter table AttributeValue add ValueAsNumeric as (case when len([value]) &lt; (100) AND isnumeric([value])=(1) AND NOT [value] like %[^0-9.]%' AND NOT [value] like '%[.]%' then CONVERT([numeric](38,10),[value])  end
+        /// Gets the Value as a double (Computed Column)
         /// </summary>
         /// <value>
         /// </value>
+        /* Computed Column Spec:
+        CASE 
+        WHEN len([value]) < (100)
+            AND isnumeric([value]) = (1)
+            AND NOT [value] LIKE '%[^0-9.]%'
+            AND NOT [value] LIKE '%[.]%'
+            THEN CONVERT([numeric](38, 10), [value])
+        END         
+         */
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [LavaIgnore]
         public decimal? ValueAsNumeric { get; set; }
 
         /// <summary>
-        /// Gets the Value as a DateTime 
-        /// Calculated Field: ALTER TABLE [dbo].[AttributeValue] ADD [ValueAsDateTime] AS CASE WHEN [value] LIKE '____-__-__T__:__:__________' THEN CONVERT(datetime, CONVERT(datetimeoffset, [value])) ELSE NULL END
-        /// NOTE: Only supports "timezone neutral" ISO-8601 format
+        /// Gets the Value as a DateTime (Computed Column)
         /// </summary>
-        /// <value>
-        /// </value>
+        /// <remarks>
+        /// Computed Column Spec:
+        /// CASE 
+        /// -- make sure it isn't a big value or a date range, etc
+        /// WHEN LEN([value]) &lt;= 33
+        ///    THEN CASE 
+        ///            -- is it an ISO-8601
+        ///            WHEN VALUE LIKE '____-__-__T__:__:__%'
+        ///                THEN CONVERT(DATETIME, CONVERT(DATETIMEOFFSET, [value]))
+        ///            -- is it some other value SQL Date
+        ///            WHEN ISDATE([VALUE]) = 1
+        ///                THEN CONVERT(DATETIME, [VALUE])
+        ///            ELSE NULL
+        ///            END
+        /// ELSE NULL    
+        /// END
+        /// </remarks>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [LavaIgnore]
         public DateTime? ValueAsDateTime { get; private set; }
-        
+
+        /// <summary>
+        /// Gets a person alias guid value as a PersonId (ComputedColumn).
+        /// </summary>
+        /// <remarks>
+        /// Computed Column Spec:
+        /// case 
+        ///     when [Value] like '________-____-____-____-____________' 
+        ///         then [dbo].[ufnUtility_GetPersonIdFromPersonAliasGuid]([Value]) 
+        ///     else null 
+        /// end
+        /// </remarks>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [LavaIgnore]
+        public int? ValueAsPersonId { get; private set; }
+
         /// <summary>
         /// Gets the <see cref="Rock.Model.FieldType"/> that represents the type of value that is being represented by the AttributeValue, and provides a UI for the user to set the value.
         /// </summary>
@@ -133,7 +175,76 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Attribute"/> that uses this value.
         /// </value>
         [DataMember]
+        [LavaIgnore]
         public virtual Attribute Attribute { get; set; }
+
+        /// <summary>
+        /// Gets the value formatted.
+        /// </summary>
+        /// <value>
+        /// The value formatted.
+        /// </value>
+        [LavaInclude]
+        public virtual string ValueFormatted
+        {
+            get
+            {
+                var attribute = AttributeCache.Read( this.AttributeId );
+                if ( attribute != null )
+                {
+                    return attribute.FieldType.Field.FormatValue( null, Value, attribute.QualifierValues, false);
+                }
+                return Value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the attribute 
+        /// </summary>
+        /// <remarks>
+        /// Note: this property is provided specifically for Lava templates when the Attribute property is not available
+        /// as a navigable property
+        /// </remarks>
+        /// <value>
+        /// The name of the attribute.
+        /// </value>
+        [LavaInclude]
+        public virtual string AttributeName
+        {
+            get
+            {
+                var attribute = AttributeCache.Read( this.AttributeId );
+                if ( attribute != null )
+                {
+                    return attribute.Name;
+                }
+                return Value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the attribute key.
+        /// </summary>
+        /// <remarks>
+        /// Note: this property is provided specifically for Lava templates when the Attribute property is not available
+        /// as a navigable property
+        /// </remarks>
+        /// <value>
+        /// The attribute key.
+        /// </value>
+        [LavaInclude]
+        public virtual string AttributeKey
+        {
+            get
+            {
+                var attribute = AttributeCache.Read( this.AttributeId );
+                if ( attribute != null )
+                {
+                    return attribute.Key;
+                }
+                return Value;
+            }
+        }
 
         #endregion
 
@@ -143,20 +254,50 @@ namespace Rock.Model
         /// Pres the save.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        /// <param name="entry">The entry.</param>
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
             var attributeCache = AttributeCache.Read( this.AttributeId );
             if (attributeCache != null)
             {
-                // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
-                if ( attributeCache.FieldType.Field is Rock.Field.Types.BinaryFileFieldType )
+                // Check to see if this attribute value if for a Field or Image field type 
+                // ( we don't want BinaryFileFieldType as that type of attribute's file can be used by more than one attribute )
+                var field = attributeCache.FieldType.Field;
+                if ( field != null && (
+                    field is Rock.Field.Types.FileFieldType ||
+                    field is Rock.Field.Types.ImageFieldType ) )
                 {
-                    Guid? binaryFileGuid = Value.AsGuidOrNull();
-                    if ( binaryFileGuid.HasValue )
+                    Guid? newBinaryFileGuid = null;
+                    Guid? oldBinaryFileGuid = null;
+
+                    if ( entry.State == System.Data.Entity.EntityState.Added ||
+                        entry.State == System.Data.Entity.EntityState.Modified )
+                    {
+                        newBinaryFileGuid = Value.AsGuidOrNull();
+                    }
+
+                    if ( entry.State == System.Data.Entity.EntityState.Modified ||
+                        entry.State == System.Data.Entity.EntityState.Deleted )
+                    {
+                        if ( entry.OriginalValues["Value"] != null )
+                        {
+                            oldBinaryFileGuid = entry.OriginalValues["Value"].ToString().AsGuidOrNull();
+                        }
+                    }
+
+                    if ( oldBinaryFileGuid.HasValue )
+                    {
+                        if ( !newBinaryFileGuid.HasValue || !newBinaryFileGuid.Value.Equals( oldBinaryFileGuid.Value ) )
+                        {
+                            var transaction = new Rock.Transactions.DeleteAttributeBinaryFile( oldBinaryFileGuid.Value );
+                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                        }
+                    }
+
+                    if ( newBinaryFileGuid.HasValue )
                     {
                         BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );
-                        var binaryFile = binaryFileService.Get( binaryFileGuid.Value );
+                        var binaryFile = binaryFileService.Get( newBinaryFileGuid.Value );
                         if ( binaryFile != null && binaryFile.IsTemporary )
                         {
                             binaryFile.IsTemporary = false;

@@ -136,17 +136,21 @@ namespace Rock.Web.UI
                 return null;
             }
 
-            var service = new GroupMemberService( new RockContext() );
-            groups = service.Queryable()
-                .Where( m =>
-                    m.PersonId == Person.Id &&
-                    m.Group.GroupTypeId == groupTypeId )
-                .Select( m => m.Group )
-                .OrderByDescending( g => g.Name );
+            using ( var rockContext = new RockContext() )
+            {
+                var service = new GroupMemberService( rockContext );
+                groups = service.Queryable()
+                    .Where( m =>
+                        m.PersonId == Person.Id &&
+                        m.Group.GroupTypeId == groupTypeId )
+                    .Select( m => m.Group )
+                    .OrderByDescending( g => g.Name )
+                    .ToList();
 
-            Context.Items.Add( itemKey, groups );
+                Context.Items.Add( itemKey, groups );
 
-            return groups;
+                return groups;
+            }
         }
 
         #endregion

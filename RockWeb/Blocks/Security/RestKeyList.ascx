@@ -16,19 +16,19 @@
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gRestKeyList" runat="server" EmptyDataText="No Rest Keys Found" AllowSorting="true" OnRowDataBound="gRestKeyList_RowDataBound" ShowConfirmDeleteDialog="true" OnRowSelected="gRestKeyList_RowSelected">
                         <Columns>
-                            <asp:BoundField DataField="LastName" HeaderText="Name" SortExpression="LastName" />
-                            <asp:TemplateField>
+                            <Rock:RockBoundField DataField="LastName" HeaderText="Name" SortExpression="LastName" />
+                            <Rock:RockTemplateField>
                                 <HeaderTemplate>Description</HeaderTemplate>
                                 <ItemTemplate>
                                     <asp:Label ID="lblDescription" runat="server" />
                                 </ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:TemplateField>
+                            </Rock:RockTemplateField>
+                            <Rock:RockTemplateField>
                                 <HeaderTemplate>Key</HeaderTemplate>
                                 <ItemTemplate>
                                     <asp:Label ID="lblKey" runat="server" />
                                 </ItemTemplate>
-                            </asp:TemplateField>
+                            </Rock:RockTemplateField>
                             <Rock:DeleteField OnClick="gRestKeyList_Delete" />
                         </Columns>
                     </Rock:Grid>

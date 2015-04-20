@@ -53,13 +53,14 @@ namespace Rock.Web.UI.Controls
         #region Controls
 
         private List<Control> _customActions;
-        private LinkButton _lbMerge;
+        private LinkButton _lbPersonMerge;
         private LinkButton _lbBulkUpdate;
         private LinkButton _lbCommunicate;
         private HtmlGenericControl _aAdd;
         private LinkButton _lbAdd;
         private HtmlGenericControl _aExcelExport;
         private LinkButton _lbExcelExport;
+        private LinkButton _lbMergeTemplate;
 
         #endregion
 
@@ -109,6 +110,18 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["ShowExcelExport"] as bool? ?? true; }
             set { ViewState["ShowExcelExport"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show merge template].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show merge template]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowMergeTemplate
+        {
+            get { return ViewState["ShowMergeTemplate"] as bool? ?? true; }
+            set { ViewState["ShowMergeTemplate"] = value; }
         }
 
         /// <summary>
@@ -224,6 +237,7 @@ namespace Rock.Web.UI.Controls
             _lbAdd.Click += lbAdd_Click;
             _lbAdd.CausesValidation = false;
             _lbAdd.PreRender += lb_PreRender;
+            _lbAdd.AccessKey = "n";
             Controls.Add( _lbAdd );
             HtmlGenericControl iAdd = new HtmlGenericControl( "i" );
             iAdd.Attributes.Add( "class", "fa fa-plus-circle" );
@@ -243,19 +257,19 @@ namespace Rock.Web.UI.Controls
             iCommunicate.Attributes.Add( "class", "fa fa-comment" );
             _lbCommunicate.Controls.Add( iCommunicate );
 
-            // control for merge
-            _lbMerge = new LinkButton();
-            Controls.Add( _lbMerge );
-            _lbMerge.ID = "lbMerge";
-            _lbMerge.CssClass = "btn-merge btn btn-default btn-sm";
-            _lbMerge.ToolTip = "Merge Person Records";
-            _lbMerge.Click += lbMerge_Click;
-            _lbMerge.CausesValidation = false;
-            _lbMerge.PreRender += lb_PreRender;
-            Controls.Add( _lbMerge );
-            HtmlGenericControl iMerge = new HtmlGenericControl( "i" );
-            iMerge.Attributes.Add( "class", "fa fa-users" );
-            _lbMerge.Controls.Add( iMerge );
+            // control for person merge
+            _lbPersonMerge = new LinkButton();
+            Controls.Add( _lbPersonMerge );
+            _lbPersonMerge.ID = "lbPersonMerge";
+            _lbPersonMerge.CssClass = "btn-merge btn btn-default btn-sm";
+            _lbPersonMerge.ToolTip = "Merge Person Records";
+            _lbPersonMerge.Click += lbPersonMerge_Click;
+            _lbPersonMerge.CausesValidation = false;
+            _lbPersonMerge.PreRender += lb_PreRender;
+            Controls.Add( _lbPersonMerge );
+            HtmlGenericControl iPersonMerge = new HtmlGenericControl( "i" );
+            iPersonMerge.Attributes.Add( "class", "fa fa-users" );
+            _lbPersonMerge.Controls.Add( iPersonMerge );
 
             // control for bulk update
             _lbBulkUpdate = new LinkButton();
@@ -290,6 +304,20 @@ namespace Rock.Web.UI.Controls
             HtmlGenericControl iExcelExport = new HtmlGenericControl( "i" );
             iExcelExport.Attributes.Add( "class", "fa fa-table" );
             _lbExcelExport.Controls.Add( iExcelExport );
+
+            // control for merge template
+            _lbMergeTemplate = new LinkButton();
+            Controls.Add( _lbMergeTemplate );
+            _lbMergeTemplate.ID = "lbMergeTemplate";
+            _lbMergeTemplate.CssClass = "btn-merge-template btn btn-default btn-sm";
+            _lbMergeTemplate.ToolTip = "Merge Records into Merge Template";
+            _lbMergeTemplate.Click += _lbMergeTemplate_Click;
+            _lbMergeTemplate.CausesValidation = false;
+            _lbMergeTemplate.PreRender += lb_PreRender;
+            Controls.Add( _lbMergeTemplate );
+            HtmlGenericControl iMergeTemplate = new HtmlGenericControl( "i" );
+            iMergeTemplate.Attributes.Add( "class", "fa fa-files-o" );
+            _lbMergeTemplate.Controls.Add( iMergeTemplate );
         }
 
         /// <summary>
@@ -325,7 +353,7 @@ namespace Rock.Web.UI.Controls
         public override void RenderControl( HtmlTextWriter writer )
         {
             bool personGrid = !string.IsNullOrWhiteSpace( _parentGrid.PersonIdField );
-            _lbMerge.Visible = personGrid;
+            _lbPersonMerge.Visible = personGrid;
             _lbBulkUpdate.Visible = personGrid;
             _lbCommunicate.Visible = ShowCommunicate;
 
@@ -334,6 +362,8 @@ namespace Rock.Web.UI.Controls
 
             _aExcelExport.Visible = ShowExcelExport && !String.IsNullOrWhiteSpace( ClientExcelExportScript );
             _lbExcelExport.Visible = ShowExcelExport && String.IsNullOrWhiteSpace( ClientExcelExportScript );
+
+            _lbMergeTemplate.Visible = ShowMergeTemplate;
 
             base.RenderControl( writer );
         }
@@ -369,11 +399,11 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void lbMerge_Click( object sender, EventArgs e )
+        void lbPersonMerge_Click( object sender, EventArgs e )
         {
-            if ( MergeClick != null )
+            if ( PersonMergeClick != null )
             {
-                MergeClick( sender, e );
+                PersonMergeClick( sender, e );
             }
         }
 
@@ -429,6 +459,19 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the _lbMergeTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void _lbMergeTemplate_Click( object sender, EventArgs e )
+        {
+            if (MergeTemplateClick != null)
+            {
+                MergeTemplateClick( sender, e );
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -456,9 +499,9 @@ namespace Rock.Web.UI.Controls
         #region Event Handlers
 
         /// <summary>
-        /// Occurs when merge action is clicked.
+        /// Occurs when Person merge action is clicked.
         /// </summary>
-        public event EventHandler MergeClick;
+        public event EventHandler PersonMergeClick;
 
         /// <summary>
         /// Occurs when bulk update action is clicked.
@@ -479,6 +522,11 @@ namespace Rock.Web.UI.Controls
         /// Occurs when add action is clicked.
         /// </summary>
         public event EventHandler ExcelExportClick;
+
+        /// <summary>
+        /// Occurs when the Merge Template action is clicked
+        /// </summary>
+        public event EventHandler MergeTemplateClick;
 
         #endregion
     }

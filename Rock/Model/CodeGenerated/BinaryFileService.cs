@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<FinancialAccount>( Context ).Queryable().Any( a => a.ImageBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, FinancialAccount.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<FinancialTransactionImage>( Context ).Queryable().Any( a => a.BinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
@@ -61,6 +67,12 @@ namespace Rock.Model
             if ( new Service<Location>( Context ).Queryable().Any( a => a.ImageId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Location.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<MergeTemplate>( Context ).Queryable().Any( a => a.TemplateBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, MergeTemplate.FriendlyTypeName );
                 return false;
             }  
  
@@ -105,18 +117,20 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this BinaryFile target, BinaryFile source )
         {
-            target.IsTemporary = source.IsTemporary;
-            target.IsSystem = source.IsSystem;
+            target.Id = source.Id;
             target.BinaryFileTypeId = source.BinaryFileTypeId;
-            target.Url = source.Url;
-            target.FileName = source.FileName;
-            target.MimeType = source.MimeType;
+            target.ContentLastModified = source.ContentLastModified;
             target.Description = source.Description;
+            target.FileName = source.FileName;
+            target.IsSystem = source.IsSystem;
+            target.IsTemporary = source.IsTemporary;
+            target.MimeType = source.MimeType;
+            target.Path = source.Path;
+            target.StorageEntitySettings = source.StorageEntitySettings;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

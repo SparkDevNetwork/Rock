@@ -15,13 +15,15 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Configuration;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Security.Authentication
@@ -34,7 +36,8 @@ namespace Rock.Security.Authentication
     [ExportMetadata("ComponentName", "Database")]
     public class Database : AuthenticationComponent
     {
-        private static byte[] encryptionKey;
+        private static byte[] _encryptionKey;
+        private static List<byte[]> _oldEncryptionKeys;
 
         /// <summary>
         /// Gets the type of the service.
@@ -71,7 +74,18 @@ namespace Rock.Security.Authentication
                 throw new ConfigurationErrorsException( "Authentication requires a 'PasswordKey' app setting" );
             }
 
-            encryptionKey = HexToByte( passwordKey );
+            _encryptionKey = Encryption.HexToByte( passwordKey );
+
+            // Check for any old encryption keys
+            _oldEncryptionKeys = new List<byte[]>();
+            int i = 0;
+            passwordKey = ConfigurationManager.AppSettings["OldPasswordKey" + ( i > 0 ? i.ToString() : "" )];
+            while ( !string.IsNullOrWhiteSpace( passwordKey ) )
+            {
+                _oldEncryptionKeys.Add( Encryption.HexToByte( passwordKey ) );
+                i++;
+                passwordKey = ConfigurationManager.AppSettings["OldPasswordKey" + ( i > 0 ? i.ToString() : "" )];
+            }
         }
 
         /// <summary>
@@ -82,7 +96,31 @@ namespace Rock.Security.Authentication
         /// <returns></returns>
         public override Boolean Authenticate( UserLogin user, string password )
         {
-            return EncodePassword( user, password ) == user.Password;
+            bool authenticated = false;
+
+            try
+            {
+                authenticated = EncodePassword( user, password ) == user.Password;
+                if ( authenticated || !_oldEncryptionKeys.Any() )
+                {
+                    return authenticated;
+                }
+            }
+            catch { }
+
+            foreach( var encryptionKey in _oldEncryptionKeys )
+            {
+                try
+                {
+                    if ( EncodePassword( user, password, encryptionKey ) == user.Password )
+                    {
+                        return true;
+                    }
+                }
+                catch { }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -93,21 +131,25 @@ namespace Rock.Security.Authentication
         /// <returns></returns>
         public override String EncodePassword( UserLogin user, string password )
         {
+            return EncodePassword( user, password, _encryptionKey );
+        }
+
+        /// <summary>
+        /// Encodes the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="encryptionKey">The encryption key.</param>
+        /// <returns></returns>
+        private string EncodePassword( UserLogin user, string password, byte[] encryptionKey )
+        {
             HMACSHA1 hash = new HMACSHA1();
             hash.Key = encryptionKey;
 
             HMACSHA1 uniqueHash = new HMACSHA1();
-            uniqueHash.Key = HexToByte( user.Guid.ToString().Replace( "-", "" ) );
+            uniqueHash.Key = Encryption.HexToByte( user.Guid.ToString().Replace( "-", "" ) );
 
             return Convert.ToBase64String( uniqueHash.ComputeHash( hash.ComputeHash( Encoding.Unicode.GetBytes( password ) ) ) );
-        }
-
-        private static byte[] HexToByte( string hexString )
-        {
-            byte[] returnBytes = new byte[hexString.Length / 2];
-            for ( int i = 0; i < returnBytes.Length; i++ )
-                returnBytes[i] = Convert.ToByte( hexString.Substring( i * 2, 2 ), 16 );
-            return returnBytes;
         }
 
         /// <summary>
@@ -204,6 +246,36 @@ namespace Rock.Security.Authentication
             user.LastPasswordChangedDateTime = RockDateTime.Now;
 
             return true;
+        }
+
+        /// <summary>
+        /// Generates the username.
+        /// </summary>
+        /// <param name="firstName">The first name.</param>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="tryCount">The try count.</param>
+        /// <returns></returns>
+        public static string GenerateUsername( string firstName, string lastName, int tryCount = 0 )
+        {
+            // create username
+            string username = (firstName.Substring( 0, 1 ) + lastName).ToLower();
+
+            if ( tryCount != 0 )
+            {
+                username = username + tryCount.ToString();
+            }
+
+            // check if username exists
+            UserLoginService userService = new UserLoginService( new RockContext() );
+            var loginExists = userService.Queryable().Where( l => l.UserName == username ).Any();
+            if ( !loginExists )
+            {
+                return username;
+            }
+            else
+            {
+                return Database.GenerateUsername( firstName, lastName, tryCount + 1 );
+            }
         }
 
     }

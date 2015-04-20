@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Finance
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to cancel this scheduled transaction?', function (result) {
             if (result) {
-                eval(e.target.href);
+                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
             }
         });
     });
@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Finance
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to reactivate this scheduled transaction?', function (result) {
             if (result) {
-                eval(e.target.href);
+                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
             }
         });
     });
@@ -139,21 +139,31 @@ namespace RockWeb.Blocks.Finance
             int? txnId = PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull();
             if ( txnId.HasValue )
             {
-                var rockContext = new RockContext();
-                var txnService = new FinancialScheduledTransactionService( rockContext );
-                var txn = txnService.Queryable("AuthorizedPersonAlias.Person").FirstOrDefault( t => t.Id == txnId.Value );
-                if ( txn != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    string errorMessage = string.Empty;
-                    if ( txnService.GetStatus( txn, out errorMessage ) )
+                    var txnService = new FinancialScheduledTransactionService( rockContext );
+                    var txn = txnService
+                        .Queryable( "AuthorizedPersonAlias.Person,FinancialGateway" )
+                        .FirstOrDefault( t => t.Id == txnId.Value );
+
+                    if ( txn != null )
                     {
-                        rockContext.SaveChanges();
+                        if ( txn.FinancialGateway != null )
+                        {
+                            txn.FinancialGateway.LoadAttributes( rockContext );
+                        }
+
+                        string errorMessage = string.Empty;
+                        if ( txnService.GetStatus( txn, out errorMessage ) )
+                        {
+                            rockContext.SaveChanges();
+                        }
+                        else
+                        {
+                            ShowErrorMessage( errorMessage );
+                        }
+                        ShowView( txn );
                     }
-                    else
-                    {
-                        ShowErrorMessage( errorMessage );
-                    }
-                    ShowView( txn );
                 }
             }
         }
@@ -168,23 +178,32 @@ namespace RockWeb.Blocks.Finance
             int? txnId = PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull();
             if ( txnId.HasValue )
             {
-                var rockContext = new RockContext();
-                var txnService = new FinancialScheduledTransactionService( rockContext );
-                var txn = txnService.Queryable( "AuthorizedPersonAlias.Person" ).FirstOrDefault( t => t.Id == txnId.Value );
-                if ( txn != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    string errorMessage = string.Empty;
-                    if ( txnService.Cancel( txn, out errorMessage ) )
+                    var txnService = new FinancialScheduledTransactionService( rockContext );
+                    var txn = txnService
+                        .Queryable( "AuthorizedPersonAlias.Person,FinancialGateway" )
+                        .FirstOrDefault( t => t.Id == txnId.Value );
+                    if ( txn != null )
                     {
-                        txnService.GetStatus( txn, out errorMessage );
-                        rockContext.SaveChanges();
-                    }
-                    else
-                    {
-                        ShowErrorMessage( errorMessage );
-                    }
+                        if ( txn.FinancialGateway != null )
+                        {
+                            txn.FinancialGateway.LoadAttributes( rockContext );
+                        }
 
-                    ShowView( txn );
+                        string errorMessage = string.Empty;
+                        if ( txnService.Cancel( txn, out errorMessage ) )
+                        {
+                            txnService.GetStatus( txn, out errorMessage );
+                            rockContext.SaveChanges();
+                        }
+                        else
+                        {
+                            ShowErrorMessage( errorMessage );
+                        }
+
+                        ShowView( txn );
+                    }
                 }
             }
         }
@@ -199,23 +218,33 @@ namespace RockWeb.Blocks.Finance
             int? txnId = PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull();
             if ( txnId.HasValue )
             {
-                var rockContext = new RockContext();
-                var txnService = new FinancialScheduledTransactionService( rockContext );
-                var txn = txnService.Queryable( "AuthorizedPersonAlias.Person" ).FirstOrDefault( t => t.Id == txnId.Value );
-                if ( txn != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    string errorMessage = string.Empty;
-                    if ( txnService.Reactivate( txn, out errorMessage ) )
-                    {
-                        txnService.GetStatus( txn, out errorMessage );
-                        rockContext.SaveChanges();
-                    }
-                    else
-                    {
-                        ShowErrorMessage( errorMessage );
-                    }
+                    var txnService = new FinancialScheduledTransactionService( rockContext );
+                    var txn = txnService
+                        .Queryable( "AuthorizedPersonAlias.Person,FinancialGateway" )
+                        .FirstOrDefault( t => t.Id == txnId.Value );
 
-                    ShowView( txn );
+                    if ( txn != null )
+                    {
+                        if ( txn.FinancialGateway != null )
+                        {
+                            txn.FinancialGateway.LoadAttributes( rockContext );
+                        }
+
+                        string errorMessage = string.Empty;
+                        if ( txnService.Reactivate( txn, out errorMessage ) )
+                        {
+                            txnService.GetStatus( txn, out errorMessage );
+                            rockContext.SaveChanges();
+                        }
+                        else
+                        {
+                            ShowErrorMessage( errorMessage );
+                        }
+
+                        ShowView( txn );
+                    }
                 }
             }
         }
@@ -269,9 +298,9 @@ namespace RockWeb.Blocks.Finance
                     detailsLeft.Add( "Currency Type", currencyType );
                 }
 
-                if ( txn.GatewayEntityType != null )
+                if ( txn.FinancialGateway != null )
                 {
-                    detailsLeft.Add( "Payment Gateway", Rock.Financial.GatewayContainer.GetComponentName( txn.GatewayEntityType.Name ) );
+                    detailsLeft.Add( "Payment Gateway", Rock.Financial.GatewayContainer.GetComponentName( txn.FinancialGateway.Name ) );
                 }
 
                 detailsLeft
@@ -318,29 +347,9 @@ namespace RockWeb.Blocks.Finance
                 var rockContext = new RockContext();
                 var service = new FinancialScheduledTransactionService( rockContext );
                 return service
-                    .Queryable( "ScheduledTransactionDetails,GatewayEntityType,CurrencyTypeValue,CreditCardTypeValue" )
+                    .Queryable( "ScheduledTransactionDetails,FinancialGateway,CurrencyTypeValue,CreditCardTypeValue" )
                     .Where( t => t.Id == txnId.Value )
                     .FirstOrDefault();
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the gateway.
-        /// </summary>
-        /// <param name="scheduledTransaction">The scheduled transaction.</param>
-        /// <returns></returns>
-        private GatewayComponent GetGateway( FinancialScheduledTransaction scheduledTransaction )
-        {
-            if ( scheduledTransaction.GatewayEntityType != null )
-            {
-                Guid gatewayGuid = scheduledTransaction.GatewayEntityType.Guid;
-                var gateway = GatewayContainer.GetComponent( gatewayGuid.ToString() );
-                if ( gateway != null && gateway.IsActive )
-                {
-                    return gateway;
-                }
             }
 
             return null;

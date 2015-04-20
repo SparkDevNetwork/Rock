@@ -17,7 +17,7 @@
                     <Rock:Grid ID="gList" runat="server" OnRowDataBound="gList_RowDataBound" OnRowSelected="gList_RowSelected" DataKeyNames="PersonId" EmptyDataText="No one to show." RowItemText="photo">
                         <Columns>
                             <Rock:SelectField />
-                            <asp:TemplateField >
+                            <Rock:RockTemplateField >
                                 <HeaderTemplate>
                                     Photo
                                 </HeaderTemplate>
@@ -26,18 +26,18 @@
                                     <img class="person-image" id="imgPersonImage" src="" runat="server"/>
                                 </a>
                                 </itemtemplate>
-                            </asp:TemplateField>
-                            <asp:BoundField DataField="CreatedDateTime" HeaderText="Created" SortExpression="CreatedDateTime" />
-                            <asp:BoundField DataField="Person.FullName" HeaderText="Name" SortExpression="Person.FullName" />
-                            <asp:BoundField DataField="Person.Gender" HeaderText="Gender" SortExpression="Person.Gender" />
-                            <asp:BoundField DataField="Person.Email" HeaderText="Email" SortExpression="Person.Email" />
-                            <asp:TemplateField>
+                            </Rock:RockTemplateField>
+                            <Rock:RockBoundField DataField="CreatedDateTime" HeaderText="Created" SortExpression="CreatedDateTime" />
+                            <Rock:RockBoundField DataField="Person.FullName" HeaderText="Name" SortExpression="Person.FullName" />
+                            <Rock:RockBoundField DataField="Person.Gender" HeaderText="Gender" SortExpression="Person.Gender" />
+                            <Rock:RockBoundField DataField="Person.Email" HeaderText="Email" SortExpression="Person.Email" />
+                            <Rock:RockTemplateField>
                                 <HeaderTemplate>Status
                                 </HeaderTemplate>
                                 <ItemTemplate>
                                     <asp:Literal runat="server" ID="lStatus"></asp:Literal>
                                 </ItemTemplate>
-                            </asp:TemplateField>
+                            </Rock:RockTemplateField>
                             <Rock:DeleteField OnClick="rGrid_Delete" />
                         </Columns>
                     </Rock:Grid>

@@ -30,6 +30,7 @@
     27. List Extensions - additional list options
     28. Key Value Pair Control - styling for key/value pair control
     29. Context Setters
+    30. Paneled List Group - extends the bootstrap list group to behave in a panel
 */
 
 // 1. Pickers
@@ -193,7 +194,7 @@
 // 2. Banner
 // -------------------------
 
-.banner
+/*.banner
 {
     color: @banner-text-color;
     background-color: @banner-bg;
@@ -224,7 +225,7 @@
         margin-top: @spacing-md-px;
         margin-left: @spacing-md-px;
     }
-}
+}*/
 
 // 3. Tree
 // -------------------------
@@ -881,17 +882,6 @@ fieldset .actions {
     margin-top: 12px;
 }
 
-
-// 12. Titles
-// ------------------------
-.title {
-    font-weight: @title-default-weight;
-
-    .first-word {
-        font-weight: @title-firstword-weight;
-    }
-}
-
 // 13. Code Editor
 // -------------------------
 .code-editor {
@@ -1008,6 +998,35 @@ fieldset .actions {
 
 // 16. Time Picker
 // -------------------------
+
+.timepicker-input  {
+    .clearfix();
+    
+    .input-group {
+        float: left;
+    }
+    
+    & i.fa-times {
+        float: left;
+        margin-top: 4px;
+        padding: 6px;
+        cursor: pointer;
+
+        opacity: 0;
+        -webkit-transition: opacity .2s ease-out;
+        -moz-transition: opacity .2s ease-out;
+        -o-transition: opacity .2s ease-out;
+        transition: opacity .2s ease-out;
+    }
+
+    &:hover i.fa-times {
+        opacity: 1;
+    }
+}
+
+.touch .timepicker-input i.fa-times {
+    opacity: 1;
+}
 
 .bootstrap-timepicker {
     position: relative;
@@ -1337,10 +1356,8 @@ fieldset .actions {
     .upload-progress {
         position: absolute;
         z-index: 2;
-        left: 50%;
-        margin-left: -18px;
-        top: 50%;
-        margin-top: -37px;
+        left: 115%;
+        top: -20%;
         opacity: 0.3;
     }
 }
@@ -1421,6 +1438,51 @@ fieldset .actions {
 // 19. Group List
 // -------------------------
 
+.groupmembers {
+    list-style: none;
+    margin: 6px 0;
+    padding: 0;
+
+    .member {
+        float: left;
+        margin-right: @spacing-md-px;
+        margin-bottom: @spacing-md-px;
+        min-width: 160px;
+        border-radius: @border-radius-base;
+
+        .person-image {
+            border: 1px solid @accent-semibold-color;
+            float: left;
+            margin-right: 7.5px;
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+        }
+
+        .member-information {
+            float: left;
+        }
+
+        h4 {
+            font-size: 16px;
+            font-weight: @font-weight-semibold;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        small {
+            display: block;
+            line-height: 16px;
+            margin: 0;
+        }
+
+        .btn {
+            margin-top: 6px;
+        }
+    }
+}
+
 // 20. Well Messages
 // -------------------------
 .well-message {
@@ -1461,46 +1523,7 @@ fieldset .actions {
     }
 }
 
-ul.groupmembers {
-    list-style: none;
-    margin: 6px 0;
-    padding: 0;
 
-    li.member {
-        float: left;
-        margin-right: @spacing-md-px;
-        margin-bottom: @spacing-md-px;
-        min-width: 140px;
-        border-radius: @border-radius-base;
-
-        .person-image {
-            border: 1px solid @accent-semibold-color;
-            float: left;
-            margin-right: 7.5px;
-            display: inline-block;
-            width: 60px;
-            height: 60px;
-        }
-
-        h4 {
-            font-size: 16px;
-            font-weight: @font-weight-semibold;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            margin: 0;
-        }
-
-        small {
-            display: block;
-            line-height: 16px;
-            margin: 0;
-        }
-
-        .btn {
-            margin-top: 6px;
-        }
-    }
-}
 
 // 21. Security Controls
 // -------------------------
@@ -1666,7 +1689,8 @@ ul.rocklist {
 }
 
 .image-editor-fileinput {
-    display: none;
+    visibility: hidden;
+    height: 0;
 }
 
 .image-editor-group.imageupload-group {
@@ -1746,4 +1770,21 @@ ul.rocklist {
 // -------------------------
 .contextsetter {
     margin-right: 2px;
+}
+
+
+// 30. Paneled List Group
+// -------------------------
+ul.list-group-panel {
+    margin: 0;
+
+    .list-group-item {
+        border-radius: 0;
+        border: 0;
+        border-top: 1px solid @list-group-border;
+
+        &:first-child {
+            border: 0;
+        }
+    }
 }

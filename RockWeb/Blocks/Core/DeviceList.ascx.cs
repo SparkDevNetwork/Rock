@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Core
             fDevice.ApplyFilterClick += fDevice_ApplyFilterClick;
             fDevice.DisplayFilterValue += fDevice_DisplayFilterValue;
             
-            gDevice.DataKeyNames = new string[] { "id" };
+            gDevice.DataKeyNames = new string[] { "Id" };
             gDevice.Actions.ShowAdd = true;
             gDevice.Actions.AddClick += gDevice_Add;
             gDevice.GridRebind += gDevice_GridRebind;
@@ -248,6 +248,7 @@ namespace RockWeb.Blocks.Core
         {
             var deviceService = new DeviceService( new RockContext() );
             var sortProperty = gDevice.SortProperty;
+            gDevice.EntityTypeId = EntityTypeCache.Read<Device>().Id;
 
             var queryable = deviceService.Queryable().Select( a =>
                 new
@@ -309,6 +310,7 @@ namespace RockWeb.Blocks.Core
                 gDevice.DataSource = queryable.OrderBy( d => d.Name ).ToList();
             }
 
+            gDevice.EntityTypeId = EntityTypeCache.Read<Rock.Model.Device>().Id;
             gDevice.DataBind();
         }
 

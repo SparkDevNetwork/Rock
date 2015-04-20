@@ -85,9 +85,10 @@ namespace RockWeb.Blocks.Administration
 
             if ( page.Layout.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
-                gLayoutBlocks.DataKeyNames = new string[] { "id" };
+                gLayoutBlocks.DataKeyNames = new string[] { "Id" };
                 gLayoutBlocks.Actions.ShowAdd = true;
                 gLayoutBlocks.Actions.ShowExcelExport = false;
+                gLayoutBlocks.Actions.ShowMergeTemplate = false;
                 gLayoutBlocks.Actions.AddClick += LayoutBlocks_Add;
                 gLayoutBlocks.GridReorder += gLayoutBlocks_GridReorder;
                 gLayoutBlocks.GridRebind += gLayoutBlocks_GridRebind;
@@ -95,9 +96,10 @@ namespace RockWeb.Blocks.Administration
 
             if ( page.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
-                gPageBlocks.DataKeyNames = new string[] { "id" };
+                gPageBlocks.DataKeyNames = new string[] { "Id" };
                 gPageBlocks.Actions.ShowAdd = true;
                 gPageBlocks.Actions.ShowExcelExport = false;
+                gPageBlocks.Actions.ShowMergeTemplate = false;
                 gPageBlocks.Actions.AddClick += gPageBlocks_GridAdd;
                 gPageBlocks.GridReorder += gPageBlocks_GridReorder;
                 gPageBlocks.GridRebind += gPageBlocks_GridRebind;
@@ -221,7 +223,7 @@ namespace RockWeb.Blocks.Administration
 
             var rockContext = new RockContext();
             BlockService blockService = new BlockService( rockContext );
-            Rock.Model.Block block = blockService.Get( (int)gLayoutBlocks.DataKeys[e.RowIndex]["id"] );
+            Rock.Model.Block block = blockService.Get( e.RowKeyId );
             if ( block != null )
             {
                 blockService.Delete( block );
@@ -363,9 +365,13 @@ namespace RockWeb.Blocks.Administration
 
             int blockId = hfBlockId.ValueAsInt();
 
+            bool newBlock = false;
+
             if ( blockId == 0 )
             {
+
                 block = new Rock.Model.Block();
+                newBlock = true;
 
                 BlockLocation location = hfBlockLocation.Value.ConvertToEnum<BlockLocation>();
                 if ( location == BlockLocation.Layout )
@@ -404,7 +410,10 @@ namespace RockWeb.Blocks.Administration
 
             rockContext.SaveChanges();
 
-            Rock.Security.Authorization.CopyAuthorization( page, block );
+            if ( newBlock )
+            {
+                Rock.Security.Authorization.CopyAuthorization( page, block );
+            }
 
             if ( block.Layout != null )
             {

@@ -21,32 +21,55 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for WorkflowActionForm
+    /// Base client model for WorkflowActionForm that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class WorkflowActionForm
+    public partial class WorkflowActionFormEntity
     {
         /// <summary />
-        public int? NotificationSystemEmailId { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
-        public bool IncludeActionsInNotification { get; set; }
-
-        /// <summary />
-        public string Header { get; set; }
-
-        /// <summary />
-        public string Footer { get; set; }
+        public Guid? ActionAttributeGuid { get; set; }
 
         /// <summary />
         public string Actions { get; set; }
 
         /// <summary />
-        public Guid? ActionAttributeGuid { get; set; }
+        public bool? AllowNotes { get; set; }
+
+        /// <summary />
+        public string Footer { get; set; }
+
+        /// <summary />
+        public string Header { get; set; }
+
+        /// <summary />
+        public bool IncludeActionsInNotification { get; set; }
+
+        /// <summary />
+        public int? NotificationSystemEmailId { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Client model for WorkflowActionForm that includes all the fields that are available for GETs. Use this for GETs (use WorkflowActionFormEntity for POST/PUTs)
+    /// </summary>
+    public partial class WorkflowActionForm : WorkflowActionFormEntity
+    {
+        /// <summary />
+        public ICollection<WorkflowActionFormAttribute> FormAttributes { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -60,14 +83,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
-        public int Id { get; set; }
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

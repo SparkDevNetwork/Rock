@@ -87,17 +87,17 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this FinancialPledge target, FinancialPledge source )
         {
-            target.PersonAliasId = source.PersonAliasId;
+            target.Id = source.Id;
             target.AccountId = source.AccountId;
-            target.TotalAmount = source.TotalAmount;
+            target.EndDate = source.EndDate;
+            target.PersonAliasId = source.PersonAliasId;
             target.PledgeFrequencyValueId = source.PledgeFrequencyValueId;
             target.StartDate = source.StartDate;
-            target.EndDate = source.EndDate;
+            target.TotalAmount = source.TotalAmount;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

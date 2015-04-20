@@ -19,10 +19,10 @@
 
                     <Rock:Grid ID="gCommunication" runat="server" AllowSorting="true" TooltipField="Description" OnRowSelected="gCommunication_RowSelected">
                         <Columns>
-                            <asp:BoundField DataField="Name" SortExpression="Subject" HeaderText="Name" />
-                            <asp:BoundField DataField="Subject" SortExpression="Subject" HeaderText="Subject" />
-                            <asp:BoundField DataField="MediumEntityType.FriendlyName" SortExpression="MediumEntityType.FriendlyName" HeaderText="Medium" />
-                            <asp:BoundField DataField="CreatedByPersonAlias.Person.FullName" SortExpression="CreatedByPersonAlias.Person.FullName" HeaderText="Created By" />
+                            <Rock:RockBoundField DataField="Name" SortExpression="Subject" HeaderText="Name" />
+                            <Rock:RockBoundField DataField="Subject" SortExpression="Subject" HeaderText="Subject" />
+                            <Rock:RockBoundField DataField="MediumEntityType.FriendlyName" SortExpression="MediumEntityType.FriendlyName" HeaderText="Medium" />
+                            <Rock:RockBoundField DataField="CreatedByPersonAlias.Person.FullName" SortExpression="CreatedByPersonAlias.Person.FullName" HeaderText="Created By" />
                             <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gCommunication_Delete" />
                         </Columns>

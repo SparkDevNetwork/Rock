@@ -105,21 +105,21 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Campus target, Campus source )
         {
-            target.IsSystem = source.IsSystem;
-            target.Name = source.Name;
+            target.Id = source.Id;
             target.Description = source.Description;
             target.IsActive = source.IsActive;
+            target.IsSystem = source.IsSystem;
+            target.LeaderPersonAliasId = source.LeaderPersonAliasId;
+            target.LocationId = source.LocationId;
+            target.Name = source.Name;
+            target.PhoneNumber = source.PhoneNumber;
+            target.ServiceTimes = source.ServiceTimes;
             target.ShortCode = source.ShortCode;
             target.Url = source.Url;
-            target.LocationId = source.LocationId;
-            target.PhoneNumber = source.PhoneNumber;
-            target.LeaderPersonAliasId = source.LeaderPersonAliasId;
-            target.ServiceTimes = source.ServiceTimes;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

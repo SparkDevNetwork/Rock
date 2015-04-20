@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI.WebControls;
+using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -36,6 +37,7 @@ namespace RockWeb.Blocks.Groups
 
     [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter" )]
     [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 2, "PersonProfilePage" )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock
     {
         #region Private Variables
@@ -46,7 +48,32 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the available attributes.
+        /// </summary>
+        /// <value>
+        /// The available attributes.
+        /// </value>
+        public List<AttributeCache> AvailableAttributes { get; set; }
+
+        #endregion
+
         #region Control Methods
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
+
+            AddDynamicControls();
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -71,7 +98,7 @@ namespace RockWeb.Blocks.Groups
                 _group = RockPage.GetSharedItem( key ) as Group;
                 if ( _group == null )
                 {
-                    _group = new GroupService( new RockContext() ).Queryable( "GroupType" )
+                    _group = new GroupService( new RockContext() ).Queryable( "GroupType.Roles" )
                         .Where( g => g.Id == groupId || g.Guid == groupGuid )
                         .FirstOrDefault();
                     RockPage.SaveSharedItem( key, _group );
@@ -95,14 +122,14 @@ namespace RockWeb.Blocks.Groups
                     bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
                     gGroupMembers.Actions.ShowAdd = canEditBlock;
                     gGroupMembers.IsDeleteEnabled = canEditBlock;
+                }
 
-                    // Add attribute columns
-                    AddAttributeColumns();
-
-                    // Add delete column
-                    var deleteField = new DeleteField();
-                    gGroupMembers.Columns.Add( deleteField );
-                    deleteField.Click += DeleteGroupMember_Click;
+                // if group is being sync'ed remove ability to add/delete members 
+                if ( _group.SyncDataViewId.HasValue )
+                {
+                    gGroupMembers.IsDeleteEnabled = false;
+                    gGroupMembers.Actions.ShowAdd = false;
+                    hlSyncStatus.Visible = true;
                 }
             }
         }
@@ -115,19 +142,28 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnLoad( e );
 
-            pnlContent.Visible = _canView;
-
-            if ( !Page.IsPostBack && _canView )
+            if ( !Page.IsPostBack )
             {
-                BindFilter();
-
-                tbFirstName.Text = rFilter.GetUserPreference( "First Name" );
-                tbLastName.Text = rFilter.GetUserPreference( "Last Name" );
-                cblRole.SetValues( rFilter.GetUserPreference( "Role" ).Split( ';' ).ToList() );
-                cblStatus.SetValues( rFilter.GetUserPreference( "Status" ).Split( ';' ).ToList() );
-
-                BindGroupMembersGrid();
+                pnlContent.Visible = _canView;
+                if ( _canView )
+                {
+                    SetFilter();
+                    BindGroupMembersGrid();
+                }
             }
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            ViewState["AvailableAttributes"] = AvailableAttributes;
+
+            return base.SaveViewState();
         }
 
         #endregion
@@ -168,10 +204,27 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "First Name", tbFirstName.Text );
-            rFilter.SaveUserPreference( "Last Name", tbLastName.Text );
-            rFilter.SaveUserPreference( "Role", GetCheckBoxListValues( cblRole ) );
-            rFilter.SaveUserPreference( "Status", GetCheckBoxListValues( cblStatus ) );
+            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "First Name" ), "First Name", tbFirstName.Text );
+            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Last Name" ), "Last Name", tbLastName.Text );
+            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Role" ), "Role", cblRole.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Status" ), "Status", cblStatus.SelectedValues.AsDelimited( ";" ) );
+
+            if ( AvailableAttributes != null )
+            {
+                foreach( var attribute in AvailableAttributes )
+                {
+                    var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                    if ( filterControl != null )
+                    {
+                        try
+                        {
+                            var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
+                            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( attribute.Key ), attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues ).ToJson() );
+                        }
+                        catch { }
+                    }
+                }
+            }
 
             BindGroupMembersGrid();
         }
@@ -183,21 +236,43 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The e.</param>
         protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-            switch ( e.Key )
+
+            if ( AvailableAttributes != null )
             {
-                case "First Name":
-                case "Last Name":
-                    break;
-                case "Role":
-                    e.Value = ResolveValues( e.Value, cblRole );
-                    break;
-                case "Status":
-                    e.Value = ResolveValues( e.Value, cblStatus );
-                    break;
-                default:
-                    e.Value = string.Empty;
-                    break;
+                var attribute = AvailableAttributes.FirstOrDefault( a => MakeKeyUniqueToGroup( a.Key ) == e.Key );
+                if ( attribute != null )
+                {
+                    try
+                    {
+                        var values = JsonConvert.DeserializeObject<List<string>>( e.Value );
+                        e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
+                        return;
+                    }
+                    catch { }
+                }
             }
+
+            if ( e.Key == MakeKeyUniqueToGroup( "First Name" ) )
+            {
+                return;
+            }
+            else if ( e.Key == MakeKeyUniqueToGroup( "Last Name" ) )
+            {
+                return;
+            }
+            else if ( e.Key == MakeKeyUniqueToGroup( "Role" ) )
+            {
+                e.Value = ResolveValues( e.Value, cblRole );
+            }
+            else if ( e.Key == MakeKeyUniqueToGroup( "Status" ) )
+            {
+                e.Value = ResolveValues( e.Value, cblStatus );
+            }
+            else
+            {
+                e.Value = string.Empty;
+            }
+
         }
 
         /// <summary>
@@ -275,7 +350,7 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Binds the filter.
         /// </summary>
-        private void BindFilter()
+        private void SetFilter()
         {
             if ( _group != null )
             {
@@ -284,26 +359,37 @@ namespace RockWeb.Blocks.Groups
             }
 
             cblStatus.BindToEnum<GroupMemberStatus>();
-        }
 
-        /// <summary>
-        /// Adds the attribute columns.
-        /// </summary>
-        private void AddAttributeColumns()
-        {
-            // Remove attribute columns
-            foreach ( var column in gGroupMembers.Columns.OfType<AttributeField>().ToList() )
+            BindAttributes();
+            AddDynamicControls();
+
+            tbFirstName.Text = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "First Name" ) );
+            tbLastName.Text = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Last Name" ) );
+
+            string roleValue = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Role" ) );
+            if ( !string.IsNullOrWhiteSpace( roleValue ) )
             {
-                gGroupMembers.Columns.Remove( column );
+                cblRole.SetValues( roleValue.Split( ';' ).ToList() );
             }
 
+            string statusValue = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Status" ) );
+            if ( !string.IsNullOrWhiteSpace( statusValue ) )
+            {
+                cblStatus.SetValues( statusValue.Split( ';' ).ToList() );
+            }
+
+        }
+
+        private void BindAttributes()
+        {
+            // Parse the attribute filters 
+            AvailableAttributes = new List<AttributeCache>();
             if ( _group != null )
             {
-                // Add attribute columns
                 int entityTypeId = new GroupMember().TypeId;
                 string groupQualifier = _group.Id.ToString();
                 string groupTypeQualifier = _group.GroupTypeId.ToString();
-                foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
+                foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
                     .Where( a =>
                         a.EntityTypeId == entityTypeId &&
                         a.IsGridColumn &&
@@ -313,6 +399,60 @@ namespace RockWeb.Blocks.Groups
                     .ThenBy( a => a.Order )
                     .ThenBy( a => a.Name ) )
                 {
+                    AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the attribute columns.
+        /// </summary>
+        private void AddDynamicControls()
+        {
+            // Clear the filter controls
+            phAttributeFilters.Controls.Clear();
+
+            // Remove attribute columns
+            foreach ( var column in gGroupMembers.Columns.OfType<AttributeField>().ToList() )
+            {
+                gGroupMembers.Columns.Remove( column );
+            }
+
+            if ( AvailableAttributes != null )
+            {
+                foreach( var attribute in AvailableAttributes )
+                {
+                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false );
+                    if ( control != null )
+                    {
+                        if ( control is IRockControl )
+                        {
+                            var rockControl = (IRockControl)control;
+                            rockControl.Label = attribute.Name;
+                            rockControl.Help = attribute.Description;
+                            phAttributeFilters.Controls.Add( control );
+                        }
+                        else
+                        {
+                            var wrapper = new RockControlWrapper();
+                            wrapper.ID = control.ID + "_wrapper";
+                            wrapper.Label = attribute.Name;
+                            wrapper.Controls.Add( control );
+                            phAttributeFilters.Controls.Add( wrapper );
+                        }
+
+                        string savedValue = rFilter.GetUserPreference( MakeKeyUniqueToGroup( attribute.Key ) );
+                        if ( !string.IsNullOrWhiteSpace( savedValue ) )
+                        {
+                            try
+                            {
+                                var values = JsonConvert.DeserializeObject<List<string>>( savedValue );
+                                attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, values );
+                            }
+                            catch { }
+                        }
+                    }
+
                     string dataFieldExpression = attribute.Key;
                     bool columnExists = gGroupMembers.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
                     if ( !columnExists )
@@ -332,6 +472,33 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
             }
+
+            // Add Link to Profile Page Column
+            if ( !string.IsNullOrEmpty( GetAttributeValue( "PersonProfilePage" ) ) )
+            {
+                AddPersonProfileLinkColumn();
+            }
+
+            // Add delete column
+            var deleteField = new DeleteField();
+            gGroupMembers.Columns.Add( deleteField );
+            deleteField.Click += DeleteGroupMember_Click;
+        }
+
+        /// <summary>
+        /// Adds the column with a link to profile page.
+        /// </summary>
+        private void AddPersonProfileLinkColumn()
+        {
+            HyperLinkField hlPersonProfileLink = new HyperLinkField();
+            hlPersonProfileLink.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            hlPersonProfileLink.HeaderStyle.CssClass = "grid-columncommand";
+            hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
+            hlPersonProfileLink.DataNavigateUrlFields = new String[1] { "PersonId" };
+            hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( "###", "{0}" );
+            hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default'><i class='fa fa-user'></i></div>";
+            hlPersonProfileLink.DataTextField = "PersonId";
+            gGroupMembers.Columns.Add( hlPersonProfileLink );
         }
 
         /// <summary>
@@ -351,57 +518,86 @@ namespace RockWeb.Blocks.Groups
                     rFilter.Visible = true;
                     gGroupMembers.Visible = true;
 
-                    GroupMemberService groupMemberService = new GroupMemberService( new RockContext() );
+                    var rockContext = new RockContext();
+
+                    GroupMemberService groupMemberService = new GroupMemberService( rockContext );
                     var qry = groupMemberService.Queryable( "Person,GroupRole", true )
                         .Where( m => m.GroupId == _group.Id );
 
                     // Filter by First Name
-                    string firstName = rFilter.GetUserPreference( "First Name" );
+                    string firstName = tbFirstName.Text;
                     if ( !string.IsNullOrWhiteSpace( firstName ) )
                     {
                         qry = qry.Where( m => m.Person.FirstName.StartsWith( firstName ) );
                     }
 
                     // Filter by Last Name
-                    string lastName = rFilter.GetUserPreference( "Last Name" );
+                    string lastName = tbLastName.Text;
                     if ( !string.IsNullOrWhiteSpace( lastName ) )
                     {
                         qry = qry.Where( m => m.Person.LastName.StartsWith( lastName ) );
                     }
 
                     // Filter by role
+                    var validGroupTypeRoles = _group.GroupType.Roles.Select( r => r.Id ).ToList();
                     var roles = new List<int>();
-                    foreach ( string role in rFilter.GetUserPreference( "Role" ).Split( ';' ) )
+                    foreach ( string role in cblRole.SelectedValues )
                     {
                         if ( !string.IsNullOrWhiteSpace( role ) )
                         {
                             int roleId = int.MinValue;
-                            if ( int.TryParse( role, out roleId ) )
+                            if ( int.TryParse( role, out roleId ) && validGroupTypeRoles.Contains( roleId ) )
                             {
                                 roles.Add( roleId );
                             }
                         }
                     }
-
                     if ( roles.Any() )
                     {
                         qry = qry.Where( m => roles.Contains( m.GroupRoleId ) );
                     }
 
-                    // Filter by Sttus
+                    // Filter by Status
                     var statuses = new List<GroupMemberStatus>();
-                    foreach ( string status in rFilter.GetUserPreference( "Status" ).Split( ';' ) )
+                    foreach ( string status in cblStatus.SelectedValues )
                     {
                         if ( !string.IsNullOrWhiteSpace( status ) )
                         {
                             statuses.Add( status.ConvertToEnum<GroupMemberStatus>() );
                         }
                     }
-
                     if ( statuses.Any() )
                     {
                         qry = qry.Where( m => statuses.Contains( m.GroupMemberStatus ) );
                     }
+
+                    // Filter query by any configured attribute filters
+                    if ( AvailableAttributes != null && AvailableAttributes.Any() )
+                    {
+                        var attributeValueService = new AttributeValueService( rockContext );
+                        var parameterExpression = attributeValueService.ParameterExpression;
+
+                        foreach ( var attribute in AvailableAttributes )
+                        {
+                            var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                            if ( filterControl != null )
+                            {
+                                var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
+                                var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
+                                if ( expression != null )
+                                {
+                                    var attributeValues = attributeValueService
+                                        .Queryable()
+                                        .Where( v => v.Attribute.Id == attribute.Id );
+
+                                    attributeValues = attributeValues.Where( parameterExpression, expression, null );
+
+                                    qry = qry.Where( w => attributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
+                                }
+                            }
+                        }
+                    }
+
 
                     _inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
 
@@ -422,14 +618,14 @@ namespace RockWeb.Blocks.Groups
                     // we need to save the workflows into the grid's object list
                     gGroupMembers.ObjectList = new Dictionary<string, object>();
                     groupMembers.ForEach( m => gGroupMembers.ObjectList.Add( m.Id.ToString(), m ) );
+                    gGroupMembers.EntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
 
                     gGroupMembers.DataSource = groupMembers.Select( m => new
                     {
                         m.Id,
                         m.Guid,
                         m.PersonId,
-                        NickName = m.Person.NickName,
-                        LastName = m.Person.LastName,
+                        Name = m.Person.NickName + " " + m.Person.LastName,
                         GroupRole = m.GroupRole.Name,
                         m.GroupMemberStatus
                     } ).ToList();
@@ -456,34 +652,6 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
-        /// Gets the check box list values by evaluating the posted form values for each input item in the rendered checkbox list.  
-        /// This is required because of a bug in ASP.NET that results in the Selected property for CheckBoxList items to not be
-        /// set correctly on a postback.
-        /// </summary>
-        /// <param name="checkBoxList">The check box list.</param>
-        /// <returns></returns>
-        private string GetCheckBoxListValues( System.Web.UI.WebControls.CheckBoxList checkBoxList )
-        {
-            var selectedItems = new List<string>();
-
-            for ( int i = 0; i < checkBoxList.Items.Count; i++ )
-            {
-                string value = Request.Form[checkBoxList.UniqueID + "$" + i.ToString()];
-                if ( value != null )
-                {
-                    checkBoxList.Items[i].Selected = true;
-                    selectedItems.Add( value );
-                }
-                else
-                {
-                    checkBoxList.Items[i].Selected = false;
-                }
-            }
-
-            return selectedItems.AsDelimited( ";" );
-        }
-
-        /// <summary>
         /// Resolves the values.
         /// </summary>
         /// <param name="values">The values.</param>
@@ -503,6 +671,20 @@ namespace RockWeb.Blocks.Groups
             }
 
             return resolvedValues.AsDelimited( ", " );
+        }
+
+        /// <summary>
+        /// Makes the key unique to group.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        private string MakeKeyUniqueToGroup( string key )
+        {
+            if ( _group != null )
+            {
+                return string.Format( "{0}-{1}", _group.Id, key );
+            }
+            return key;
         }
 
         #endregion

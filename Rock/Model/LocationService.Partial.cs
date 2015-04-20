@@ -45,12 +45,7 @@ namespace Rock.Model
         public Location Get( string street1, string street2, string city, string state, string postalCode, string country )
         {
             // Make sure it's not an empty address
-            if ( string.IsNullOrWhiteSpace( street1 ) &&
-                string.IsNullOrWhiteSpace( street2 ) &&
-                string.IsNullOrWhiteSpace( city ) &&
-                string.IsNullOrWhiteSpace( state ) &&
-                string.IsNullOrWhiteSpace( postalCode ) &&
-                string.IsNullOrWhiteSpace( country ) )
+            if ( string.IsNullOrWhiteSpace( street1 ) )
             {
                 return null;
             }

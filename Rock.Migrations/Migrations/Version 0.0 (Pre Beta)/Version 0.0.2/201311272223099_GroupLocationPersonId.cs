@@ -18,6 +18,8 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
+
+    using Rock.Security;
     
     /// <summary>
     ///
@@ -29,6 +31,17 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            // Update the Admin's password to be encoded using the current passwordKey setting in web.config
+            string encryptionKey = System.Configuration.ConfigurationManager.AppSettings["PasswordKey"];
+            if ( !String.IsNullOrWhiteSpace( encryptionKey ) )
+            {
+                var hash = new System.Security.Cryptography.HMACSHA1();
+                hash.Key = Encryption.HexToByte( encryptionKey );
+                string newPassword = Convert.ToBase64String( hash.ComputeHash( System.Text.Encoding.Unicode.GetBytes( "admin" ) ) );
+
+                Sql( string.Format( "Update [UserLogin] SET [Password] = '{0}' WHERE [UserName] = 'Admin'", newPassword ) );
+            }
+
             AddColumn("dbo.GroupLocation", "GroupMemberPersonId", c => c.Int());
             CreateIndex("dbo.GroupLocation", "GroupMemberPersonId");
             AddForeignKey("dbo.GroupLocation", "GroupMemberPersonId", "dbo.Person", "Id", cascadeDelete: true);

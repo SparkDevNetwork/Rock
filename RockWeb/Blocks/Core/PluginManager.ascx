@@ -25,15 +25,15 @@
                     onrowdatabound="gPackageList_RowDataBound" DataKeyNames="Id,Version" GridLines="none"
                     onrowcommand="gPackageList_RowCommand" >
                         <Columns>
-                            <asp:TemplateField ItemStyle-VerticalAlign="Top">
+                            <Rock:RockTemplateField ItemStyle-VerticalAlign="Top">
                                 <ItemTemplate>
                                     <ul class="list-unstyled">
                                         <li><asp:Image runat="server" ID="imgIconUrl" alt="Plugin Icon" width="80" height="80" ImageUrl="http://quarry.rockrms.com/Content/Images/packageDefaultIcon1.png"  /></li>
                                         <li><a runat="server" id="lProjectUrl" href="#">Project Site</a></li>
                                     </ul>
                                 </ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:TemplateField ShowHeader="False" ItemStyle-VerticalAlign="Top" >
+                            </Rock:RockTemplateField>
+                            <Rock:RockTemplateField ShowHeader="False" ItemStyle-VerticalAlign="Top" >
                                 <ItemTemplate>
                                     <h3><asp:LinkButton runat="server" ID="lbView" CommandName="view"><%# Eval("Title") %></asp:LinkButton></h3>
                                     <p>by <asp:Literal runat="server" ID="lblAuthors"></asp:Literal></p>
@@ -50,7 +50,7 @@
                                     <asp:LinkButton CssClass="btn btn-primary" ID="lbUpdate" CommandName="update" Text="Update" runat="server" /> &nbsp;
                                 
                                 </ItemTemplate>
-                            </asp:TemplateField>
+                            </Rock:RockTemplateField>
                         </Columns>
                     </Rock:Grid>
                 </div>
@@ -85,15 +85,15 @@
                         <Rock:Grid runat="server" DisplayType="Light" ID="gvPackageVersions" DataKeyNames="Id,Version" GridLines="None" AutoGenerateColumns="false"
                          onrowdatabound="gvPackageVersions_RowDataBound" onrowcommand="gvPackageVersions_RowCommand">
                             <Columns>
-                                <asp:BoundField HeaderText="Version" DataField="Version" />
-                                <asp:BoundField HeaderText="Last updated" DataField="LastUpdated" DataFormatString="{0:MM/dd/yyyy}" />
-                                <asp:TemplateField ShowHeader="False" ItemStyle-VerticalAlign="Top" >
+                                <Rock:RockBoundField HeaderText="Version" DataField="Version" />
+                                <Rock:RockBoundField HeaderText="Last updated" DataField="LastUpdated" DataFormatString="{0:MM/dd/yyyy}" />
+                                <Rock:RockTemplateField ShowHeader="False" ItemStyle-VerticalAlign="Top" >
                                     <ItemTemplate>
                                         <i runat="server" ID="iInstalledIcon" visible="false" class="fa fa-check" title="this version is installed"></i>
                                         <asp:LinkButton CssClass="btn btn-default" ID="lbInstall" CommandName="Install" Text="<i class='fa fa-download'></i> &nbsp; Install" OnClientClick="$(this).button('loading')" data-loading-text="Installing..." runat="server" />
                                         <asp:LinkButton CssClass="btn btn-primary" ID="lbUpdate" CommandName="Update" Visible="false" Text="<i class='fa fa-download'></i> &nbsp; Update" OnClientClick="$(this).button('loading')" data-loading-text="Updating..." runat="server" />
                                     </ItemTemplate>
-                                </asp:TemplateField> 
+                                </Rock:RockTemplateField> 
                             </Columns>
                         </Rock:Grid>
                     </div>

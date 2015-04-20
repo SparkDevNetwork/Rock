@@ -15,11 +15,8 @@
 // </copyright>
 //
 using System;
-using System.Linq;
 using System.Reflection;
-using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock.Extension;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -43,16 +40,13 @@ namespace Rock.Web.UI.Controls
             {
                 return ViewState["ContainerType"] as string; 
             }
+
             set
             {
                 ViewState["ContainerType"] = value;
 
                 this.Items.Clear();
-
-                if ( !Required )
-                {
-                    this.Items.Add( new ListItem( string.Empty, string.Empty ) );
-                }
+                this.Items.Add( new ListItem() );
 
                 if ( !string.IsNullOrWhiteSpace( value ) )
                 {
@@ -72,7 +66,7 @@ namespace Rock.Web.UI.Controls
                                         var entityType = EntityTypeCache.Read( component.Value.Value.GetType() );
                                         if ( entityType != null )
                                         {
-                                            this.Items.Add( new ListItem( component.Value.Key, entityType.Guid.ToString().ToUpper() ) );
+                                            this.Items.Add( new ListItem( component.Value.Key.SplitCase(), entityType.Guid.ToString().ToUpper() ) );
                                         }
                                     }
                                 }
@@ -82,5 +76,30 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
+
+        /// <summary>
+        /// Gets the selected entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The selected entity type identifier.
+        /// </value>
+        public int? SelectedEntityTypeId
+        {
+            get
+            {
+                Guid? gatewayGuid = this.SelectedValueAsGuid();
+                if ( gatewayGuid.HasValue )
+                {
+                    var gatewayEntity = EntityTypeCache.Read( gatewayGuid.Value );
+                    if ( gatewayEntity != null )
+                    {
+                        return gatewayEntity.Id;
+                    }
+                }
+
+                return null;
+            }
+        }
+
     }
 }

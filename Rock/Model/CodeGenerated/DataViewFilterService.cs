@@ -93,15 +93,15 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this DataViewFilter target, DataViewFilter source )
         {
+            target.Id = source.Id;
+            target.EntityTypeId = source.EntityTypeId;
             target.ExpressionType = source.ExpressionType;
             target.ParentId = source.ParentId;
-            target.EntityTypeId = source.EntityTypeId;
             target.Selection = source.Selection;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

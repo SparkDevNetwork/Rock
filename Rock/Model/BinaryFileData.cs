@@ -49,42 +49,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
-        public byte[] Content {
-            get
-            {
-                if ( this.ContentStream != null )
-                {
-                    var result = new byte[this.ContentStream.Length];
-
-                    // set position to start to ensure we read the entire stream
-                    this.ContentStream.Seek( 0, SeekOrigin.Begin );
-                    this.ContentStream.Read( result, 0, result.Length );
-                    
-                    // set position back to start
-                    this.ContentStream.Seek( 0, SeekOrigin.Begin );
-                    return result;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-
-            set
-            {
-                this.ContentStream = new MemoryStream( value );
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the content stream.
-        /// </summary>
-        /// <value>
-        /// The content stream.
-        /// </value>
-        [HideFromReporting]
-        [NotMapped]
-        public virtual Stream ContentStream { get; set; }
+        public byte[] Content { get; set; }
 
         #endregion
     }

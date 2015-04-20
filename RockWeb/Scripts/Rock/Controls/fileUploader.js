@@ -30,13 +30,29 @@
                 submit: options.submitFunction,
                 start: function (e, data) {
                     var $el = $('#' + options.controlId).closest('.fileupload-group');
-                    //$el.find('.fileupload-dropzone').hide();
-                    $el.find('.js-upload-progress').css("height", $el.find('.fileupload-dropzone').css("height"));
-                    $el.find('.js-upload-progress').show();
+                    $el.find('.js-upload-progress').rockFadeIn();
                 },
                 progressall: function (e, data) {
-                    var $el = $('#' + options.controlId).closest('.fileupload-group');
-                    // implement this to show progress percentage
+                    try {
+                        if (data.total > 0) {
+                            var $el = $('#' + options.controlId).closest('.fileupload-group');
+                            var $progressPercent = $el.find('.progress-percent');
+                            if (!$progressPercent.length) {
+                                return;
+                            }
+
+                            var percent = (data.loaded * 100 / data.total).toFixed(0);
+                            if (percent > 1 && percent < 99) {
+                                $progressPercent.text(percent + "%");
+                            }
+                            else {
+                                $progressPercent.text("uploading");
+                            }
+                        }
+                    }
+                    catch (ex) {
+                        // ignore if any exception occurs
+                    }
                 },
                 stop: function (e) {
                     var $el = $('#' + options.controlId).closest('.fileupload-group');
@@ -52,7 +68,7 @@
                     else {
                         $('#' + options.hfFileId).val(data.response().result.Id);
                     }
-                    
+
                     var getFileUrl = Rock.settings.get('baseUrl')
                         + 'GetFile.ashx?'
                         + 'isBinaryFile=' + (options.isBinaryFile || 'T')
@@ -79,7 +95,10 @@
                     var msg = "unable to upload";
                     if (data.response().jqXHR && data.response().jqXHR.status == 406) {
                         msg = "file type not allowed";
+                    } else if (data.response().jqXHR && data.response().jqXHR.responseText) {
+                        msg = data.response().jqXHR.responseText;
                     }
+
                     if (options.maxUploadBytes && data.total) {
                         if (data.total >= options.maxUploadBytes) {
                             msg = "file size is limited to " + (options.maxUploadBytes / 1024 / 1024) + "MB";
@@ -98,6 +117,8 @@
                 var $el = $('#' + options.aFileName);
                 $('#' + options.hfFileId).val('0');
                 $el.attr('href', '#');
+                $el.text('');
+                $el.removeClass('file-exists');
 
                 if (options.postbackScript) {
                     eval(options.postbackScript);

@@ -21,32 +21,46 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for MetricCategory
+    /// Base client model for MetricCategory that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class MetricCategory
+    public partial class MetricCategoryEntity
     {
         /// <summary />
-        public int MetricId { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public int CategoryId { get; set; }
 
         /// <summary />
-        public int Order { get; set; }
+        public int MetricId { get; set; }
 
         /// <summary />
-        public int Id { get; set; }
+        public int Order { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
         public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Client model for MetricCategory that includes all the fields that are available for GETs. Use this for GETs (use MetricCategoryEntity for POST/PUTs)
+    /// </summary>
+    public partial class MetricCategory : MetricCategoryEntity
+    {
+        /// <summary />
+        public Category Category { get; set; }
+
+        /// <summary />
+        public Metric Metric { get; set; }
 
     }
 }

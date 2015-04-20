@@ -34,7 +34,6 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Member Detail" )]
     [Category( "Groups" )]
     [Description( "Displays the details of the given group member for editing role, status, etc." )]
-    [LinkedPage("Person Profile Page", "The person profile page to link to.")]
     public partial class GroupMemberDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
@@ -131,76 +130,11 @@ namespace RockWeb.Blocks.Groups
                 {
                     groupMember = new GroupMember { Id = 0 };
                     groupMember.GroupId = hfGroupId.ValueAsInt();
-
-                    // check to see if the person is alread a member of the gorup/role
-                    var existingGroupMember = groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId(
-                        hfGroupId.ValueAsInt(), ppGroupMemberPerson.SelectedValue ?? 0, ddlGroupRole.SelectedValueAsId() ?? 0 );
-
-                    if ( existingGroupMember != null )
-                    {
-                        // if so, don't add and show error message
-                        var person = new PersonService( rockContext ).Get( (int)ppGroupMemberPerson.PersonId );
-
-                        nbErrorMessage.Title = "Person already added";
-                        nbErrorMessage.Text = string.Format( 
-                            "{0} already belongs to the {1} role for this {2}, and cannot be added again with the same role. <a href=\"/page/{3}?groupMemberId={4}\">Click here</a> to view existing membership.",
-                            person.FullName,
-                            ddlGroupRole.SelectedItem.Text,
-                            role.GroupType.GroupTerm,
-                            RockPage.PageId,
-                            existingGroupMember.Id );
-                        return;
-                    }
                 }
                 else
                 {
                     // load existing group member
                     groupMember = groupMemberService.Get( groupMemberId );
-                }
-
-                int memberCountInRole = new GroupMemberService( rockContext ).Queryable()
-                    .Where( m =>
-                        m.GroupId == groupMember.GroupId &&
-                        m.GroupRoleId == role.Id &&
-                        m.GroupMemberStatus == GroupMemberStatus.Active )
-                    .Count();
-
-                bool roleMembershipAboveMax = false;
-
-                // if adding new active group member..
-                if ( groupMemberId.Equals( 0 ) && rblStatus.SelectedValueAsEnum<GroupMemberStatus>() == GroupMemberStatus.Active )
-                {
-                    // verify that active count has not exceeded the max
-                    if ( role.MaxCount != null && ( memberCountInRole + 1 ) > role.MaxCount )
-                    {
-                        roleMembershipAboveMax = true;
-                    }
-                }
-                else if ( groupMemberId > 0 && ( groupMember.GroupRoleId != role.Id || groupMember.GroupMemberStatus != rblStatus.SelectedValueAsEnum<GroupMemberStatus>() )
-                        && rblStatus.SelectedValueAsEnum<GroupMemberStatus>() == GroupMemberStatus.Active )
-                {
-                    // if existing group member changing role or status..
-                    // verify that active count has not exceeded the max
-                    if ( role.MaxCount != null && ( memberCountInRole + 1 ) > role.MaxCount )
-                    {
-                        roleMembershipAboveMax = true;
-                    }
-                }
-
-                // show error if above max.. do not proceed
-                if ( roleMembershipAboveMax )
-                {
-                    var person = new PersonService( rockContext ).Get( (int)ppGroupMemberPerson.PersonId );
-
-                    nbErrorMessage.Title = string.Format( "Maximum {0} Exceeded", role.Name.Pluralize() );
-                    nbErrorMessage.Text = string.Format( 
-                        "<br />The number of {0} for this {1} is at or above its maximum allowed limit of {2:N0} active {3}.",
-                        role.Name.Pluralize(), 
-                        role.GroupType.GroupTerm, 
-                        role.MaxCount,
-                        role.MaxCount == 1 ? role.GroupType.GroupMemberTerm : role.GroupType.GroupMemberTerm.Pluralize() );
-
-                    return;
                 }
 
                 groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
@@ -216,8 +150,11 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
-                if ( !groupMember.IsValid )
+                cvGroupMember.IsValid = groupMember.IsValid;
+
+                if ( !cvGroupMember.IsValid )
                 {
+                    cvGroupMember.ErrorMessage = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
                     return;
                 }
 
@@ -292,27 +229,26 @@ namespace RockWeb.Blocks.Groups
         /// <param name="groupId">The group id.</param>
         public void ShowDetail( int groupMemberId, int? groupId )
         {
+            // autoexpand the person picker if this is an add
+            this.Page.ClientScript.RegisterStartupScript(
+                this.GetType(),
+                "StartupScript", @"Sys.Application.add_load(function () {
+
+                // if the person picker is empty then open it for quick entry
+                var personPicker = $('.js-authorizedperson');
+                var currentPerson = personPicker.find('.picker-selectedperson').html();
+                if (currentPerson != null && currentPerson.length == 0) {
+                    $(personPicker).find('a.picker-label').trigger('click');
+                }
+
+            });", true );
+            
             var rockContext = new RockContext();
             GroupMember groupMember = null;
 
             if ( !groupMemberId.Equals( 0 ) )
             {
                 groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
-                if ( groupMember != null )
-                {
-                    groupMember.LoadAttributes();
-
-                    if ( !string.IsNullOrWhiteSpace(GetAttributeValue("PersonProfilePage")) )
-                    {
-                        var personPageParams = new Dictionary<string, string>();
-                        personPageParams.Add( "PersonId", groupMember.Person.Id.ToString() );
-                        var personProfilePage = LinkedPageUrl( "PersonProfilePage", personPageParams );
-
-                        hlProfilePage.NavigateUrl = personProfilePage;
-                        hlProfilePage.Visible = true;
-                    }
-                    
-                }
             }
             else
             {

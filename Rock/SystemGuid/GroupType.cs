@@ -70,5 +70,10 @@ namespace Rock.SystemGuid
         /// Application Group group type guid
         /// </summary>
         public const string GROUPTYPE_APPLICATION_GROUP = "3981CF6D-7D15-4B57-AACE-C0E25D28BD49";
+
+        /// <summary>
+        /// Organization Unit group type guid
+        /// </summary>
+        public const string GROUPTYPE_ORGANIZATION_UNIT = "AAB2E9F4-E828-4FEE-8467-73DC9DAB784C";
     }
 }

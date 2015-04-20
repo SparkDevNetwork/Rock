@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System;
-using System.Text.RegularExpressions;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -27,27 +27,38 @@ namespace Rock.Field.Types
     public class UrlLinkFieldType : FieldType
     {
 
+        #region Formatting
+
         /// <summary>
-        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
+        /// Returns the field's current value(s)
         /// </summary>
-        /// <param name="value"></param>
-        /// <param name="required"></param>
-        /// <param name="message"></param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues"></param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
-        public override bool IsValid( string value, bool required, out string message )
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( !string.IsNullOrWhiteSpace(value) )
+            if ( string.IsNullOrWhiteSpace( value ) )
             {
-                Uri validatedUri;
-                if (Uri.TryCreate( value, UriKind.Absolute, out validatedUri ))
+                return string.Empty;
+            }
+            else
+            {
+                if ( condensed )
                 {
-                    message = "The link provided is not valid";
-                    return true;
+                    return string.Format( "<a href='{0}'>Link</a>", value );
+                }
+                else
+                {
+                    return string.Format( "<a href='{0}'>{0}</a>", value );
                 }
             }
-
-            return base.IsValid( value, required, out message );
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -63,27 +74,46 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Returns the field's current value(s)
+        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
         /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <param name="value"></param>
+        /// <param name="required"></param>
+        /// <param name="message"></param>
         /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        public override bool IsValid( string value, bool required, out string message )
         {
-            if (string.IsNullOrWhiteSpace(value)) {
-                return string.Empty;
-            } else {
-                if ( condensed )
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                Uri validatedUri;
+                if ( Uri.TryCreate( value, UriKind.Absolute, out validatedUri ) )
                 {
-                    return string.Format( "<a href='{0}'>Link</a>", value );
-                }
-                else
-                {
-                    return string.Format( "<a href='{0}'>{0}</a>", value );
+                    message = "The link provided is not valid";
+                    return true;
                 }
             }
+
+            return base.IsValid( value, required, out message );
         }
+
+        #endregion
+
+        #region FilterControl
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override Model.ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.StringFilterComparisonTypes;
+            }
+        }
+
+        #endregion
+
     }
 }

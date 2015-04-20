@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -30,6 +31,38 @@ namespace Rock.Field.Types
     /// </summary>
     public class SystemEmailFieldType : FieldType
     {
+
+        #region Formatting
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            string formattedValue = string.Empty;
+
+            Guid guid = Guid.Empty;
+            if ( Guid.TryParse( value, out guid ) )
+            {
+                var systemEmail = new SystemEmailService( new RockContext() ).Get( guid );
+                if ( systemEmail != null )
+                {
+                    formattedValue = systemEmail.Title;
+                }
+            }
+
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
+        }
+
+        #endregion 
+        
+        #region Edit Control
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -43,6 +76,10 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
 
             var systemEmails = new SystemEmailService( new RockContext() ).Queryable().OrderBy( e => e.Title );
+            
+            // add a blank for the first option
+            editControl.Items.Add( new ListItem() );
+
             if ( systemEmails.Any() )
             {
                 foreach ( var systemEmail in systemEmails )
@@ -84,5 +121,8 @@ namespace Rock.Field.Types
                     ( (ListControl)control ).SelectedValue = value;
             }
         }
+
+        #endregion
+
     }
 }

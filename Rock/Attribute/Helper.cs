@@ -37,6 +37,16 @@ namespace Rock.Attribute
     /// </summary>
     public static class Helper
     {
+        private static object _initLock;
+
+        /// <summary>
+        /// Initializes the <see cref="Helper"/> class.
+        /// </summary>
+        static Helper()
+        {
+            _initLock = new object();
+        }
+
         /// <summary>
         /// Updates the attributes.
         /// </summary>
@@ -67,56 +77,59 @@ namespace Rock.Attribute
         /// </remarks>
         public static bool UpdateAttributes( Type type, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, RockContext rockContext = null )
         {
-            bool attributesUpdated = false;
-
-            List<string> existingKeys = new List<string>();
-
-            var blockProperties = new List<FieldAttribute>();
-
-            // If a ContextAwareAttribute exists without an EntityType defined, add a property attribute to specify the type
-            int properties = 0;
-            foreach ( var customAttribute in type.GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
+            lock ( _initLock )
             {
-                var contextAttribute = (ContextAwareAttribute)customAttribute;
-                if ( contextAttribute != null && contextAttribute.EntityType == null )
-                {
-                    if ( contextAttribute.IsConfigurable )
-                    {
-                        string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
-                        properties++;
+                bool attributesUpdated = false;
 
-                        blockProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
+                List<string> existingKeys = new List<string>();
+
+                var blockProperties = new List<FieldAttribute>();
+
+                // If a ContextAwareAttribute exists without an EntityType defined, add a property attribute to specify the type
+                int properties = 0;
+                foreach ( var customAttribute in type.GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
+                {
+                    var contextAttribute = (ContextAwareAttribute)customAttribute;
+                    if ( contextAttribute != null && contextAttribute.EntityType == null )
+                    {
+                        if ( contextAttribute.IsConfigurable )
+                        {
+                            string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
+                            properties++;
+
+                            blockProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
+                        }
                     }
                 }
-            }
 
-            // Add any property attributes that were defined for the block
-            foreach ( var customAttribute in type.GetCustomAttributes( typeof( FieldAttribute ), true ) )
-            {
-                blockProperties.Add( (FieldAttribute)customAttribute );
-            }
-
-            rockContext = rockContext ?? new RockContext();
-
-            // Create any attributes that need to be created
-            foreach ( var blockProperty in blockProperties )
-            {
-                attributesUpdated = UpdateAttribute( blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, rockContext ) || attributesUpdated;
-                existingKeys.Add( blockProperty.Key );
-            }
-
-            // Remove any old attributes
-            var attributeService = new Model.AttributeService( rockContext );
-            foreach ( var a in attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue ).ToList() )
-            {
-                if ( !existingKeys.Contains( a.Key ) )
+                // Add any property attributes that were defined for the block
+                foreach ( var customAttribute in type.GetCustomAttributes( typeof( FieldAttribute ), true ) )
                 {
-                    attributeService.Delete( a );
+                    blockProperties.Add( (FieldAttribute)customAttribute );
                 }
-            }
-            rockContext.SaveChanges();
 
-            return attributesUpdated;
+                rockContext = rockContext ?? new RockContext();
+
+                // Create any attributes that need to be created
+                foreach ( var blockProperty in blockProperties )
+                {
+                    attributesUpdated = UpdateAttribute( blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, rockContext ) || attributesUpdated;
+                    existingKeys.Add( blockProperty.Key );
+                }
+
+                // Remove any old attributes
+                var attributeService = new Model.AttributeService( rockContext );
+                foreach ( var a in attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue ).ToList() )
+                {
+                    if ( !existingKeys.Contains( a.Key ) )
+                    {
+                        attributeService.Delete( a );
+                    }
+                }
+                rockContext.SaveChanges();
+
+                return attributesUpdated;
+            }
         }
 
         /// <summary>
@@ -277,19 +290,30 @@ namespace Rock.Attribute
         /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object
         /// </summary>
         /// <param name="entity">The item.</param>
+        public static void LoadAttributes( Rock.Attribute.IHasAttributes entity )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                LoadAttributes( entity, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object
+        /// </summary>
+        /// <param name="entity">The item.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <remarks>
-        /// If a rockContext value is included, this method will save any previous changes made to the context
-        /// </remarks>
-        public static void LoadAttributes( Rock.Attribute.IHasAttributes entity, RockContext rockContext = null )
+        public static void LoadAttributes( Rock.Attribute.IHasAttributes entity, RockContext rockContext )
         {
             if ( entity != null )
             {
                 Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
 
                 Type entityType = entity.GetType();
-                if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+                if ( entityType.IsDynamicProxyType() )
+                {
                     entityType = entityType.BaseType;
+                }
 
                 rockContext = rockContext ?? new RockContext();
 
@@ -358,10 +382,12 @@ namespace Rock.Attribute
                 var attributes = new List<Rock.Web.Cache.AttributeCache>();
 
                 // Get all the attributes that apply to this entity type and this entity's properties match any attribute qualifiers
+                var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( entityType);
+
                 int entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType ).Id;
                 foreach ( var attribute in attributeService.Queryable()
                     .AsNoTracking()
-                    .Where( a => a.EntityTypeId == entityTypeId )
+                    .Where( a => a.EntityTypeId == entityTypeCache.Id )
                     .Select( a => new { 
                         a.Id, 
                         a.EntityTypeQualifierColumn, 
@@ -414,13 +440,16 @@ namespace Rock.Attribute
                         attributeValues.Add( attribute.Key, null );
                     }
 
-                    // Read this item's value(s) for each attribute 
-                    List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
-                    foreach ( var attributeValue in attributeValueService.Queryable().AsNoTracking()
-                        .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) ) )
+                    // If loading attributes for a saved item, read the item's value(s) for each attribute 
+                    if ( !entityTypeCache.IsEntity || entity.Id != 0 )
                     {
-                        var attributeKey = AttributeCache.Read( attributeValue.AttributeId ).Key;
-                        attributeValues[attributeKey] = attributeValue.Clone( false ) as Rock.Model.AttributeValue;
+                        List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
+                        foreach ( var attributeValue in attributeValueService.Queryable().AsNoTracking()
+                            .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) ) )
+                        {
+                            var attributeKey = AttributeCache.Read( attributeValue.AttributeId ).Key;
+                            attributeValues[attributeKey] = attributeValue.Clone( false ) as Rock.Model.AttributeValue;
+                        }
                     }
 
                     // Look for any attributes that don't have a value and create a default value entry
@@ -961,7 +990,7 @@ namespace Rock.Attribute
                             value = item.AttributeValues[attribute.Key].Value;
                         }
 
-                        string controlHtml = attribute.FieldType.Field.FormatValue( parentControl, value, attribute.QualifierValues, false );
+                        string controlHtml = attribute.FieldType.Field.FormatValueAsHtml( parentControl, value, attribute.QualifierValues );
                         
                         if ( string.IsNullOrWhiteSpace( controlHtml ) )
                         {

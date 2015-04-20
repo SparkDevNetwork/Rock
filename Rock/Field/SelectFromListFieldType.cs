@@ -17,8 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -28,6 +32,9 @@ namespace Rock.Field.Types
     /// </summary>
     public abstract class SelectFromListFieldType : FieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -41,6 +48,10 @@ namespace Rock.Field.Types
             var valueGuidList = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
             return this.ListSource.Where( a => valueGuidList.Contains( a.Key.AsGuid() ) ).Select( s => s.Value ).ToList().AsDelimited( "," );
         }
+
+        #endregion
+
+        #region Edit Control 
 
         /// <summary>
         /// Gets the list source.
@@ -122,5 +133,108 @@ namespace Rock.Field.Types
                 }
             }
         }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.ContainsFilterComparisonTypes;
+            }
+        }
+
+        /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required"></param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        {
+            var ddlList = new RockDropDownList();
+            ddlList.ID = string.Format( "{0}_ddlList", id );
+            ddlList.AddCssClass( "js-filter-control" );
+
+            if ( !required )
+            {
+                ddlList.Items.Add( new ListItem() );
+            }
+
+            if ( ListSource.Any() )
+            {
+                foreach ( var item in ListSource )
+                {
+                    ListItem listItem = new ListItem( item.Value, item.Key );
+                    ddlList.Items.Add( listItem );
+                }
+
+                return ddlList;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( control != null && control is RockDropDownList )
+            {
+                return ( (RockDropDownList)control ).SelectedValue;
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Sets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            if ( control != null && control is RockDropDownList )
+            {
+                ( (RockDropDownList)control ).SetValue( value );
+            }
+        }
+
+        /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var values = new List<string>();
+            foreach ( string key in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                if ( ListSource.ContainsKey(key))
+                {
+                    values.Add( ListSource[key] );
+                }
+            }
+
+            return values.Select( v => "'" + v + "'" ).ToList().AsDelimited( " or " );
+        }
+
+        #endregion
+
     }
 }

@@ -87,21 +87,21 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this CommunicationRecipient target, CommunicationRecipient source )
         {
-            target.PersonAliasId = source.PersonAliasId;
+            target.Id = source.Id;
+            target.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
             target.CommunicationId = source.CommunicationId;
+            target.OpenedClient = source.OpenedClient;
+            target.OpenedDateTime = source.OpenedDateTime;
+            target.PersonAliasId = source.PersonAliasId;
+            target.ResponseCode = source.ResponseCode;
             target.Status = source.Status;
             target.StatusNote = source.StatusNote;
-            target.OpenedDateTime = source.OpenedDateTime;
-            target.OpenedClient = source.OpenedClient;
             target.TransportEntityTypeName = source.TransportEntityTypeName;
             target.UniqueMessageId = source.UniqueMessageId;
-            target.ResponseCode = source.ResponseCode;
-            target.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

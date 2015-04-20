@@ -221,51 +221,48 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     int personEntityTypeId = EntityTypeCache.Read( typeof( Person ) ).Id;
 
                     var rockContext = new RockContext();
-                    rockContext.WrapTransaction( () =>
+
+                    var changes = new List<string>();
+                    foreach ( int attributeId in AttributeList )
                     {
-                        var changes = new List<string>();
+                        var attribute = AttributeCache.Read( attributeId );
 
-                        foreach ( int attributeId in AttributeList )
+                        if ( Person != null &&
+                            attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                         {
-                            var attribute = AttributeCache.Read( attributeId );
-
-                            if ( Person != null &&
-                                attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                            Control attributeControl = fsAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
+                            if ( attributeControl != null )
                             {
-                                Control attributeControl = fsAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
-                                if ( attributeControl != null )
+                                string originalValue = Person.GetAttributeValue( attribute.Key );
+                                string newValue = attribute.FieldType.Field.GetEditValue( attributeControl, attribute.QualifierValues );
+                                Rock.Attribute.Helper.SaveAttributeValue( Person, attribute, newValue, rockContext );
+
+                                // Check for changes to write to history
+                                if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
                                 {
-                                    string originalValue = Person.GetAttributeValue( attribute.Key );
-                                    string newValue = attribute.FieldType.Field.GetEditValue( attributeControl, attribute.QualifierValues );
-                                    Rock.Attribute.Helper.SaveAttributeValue( Person, attribute, newValue, rockContext );
-
-                                    // Check for changes to write to history
-                                    if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
+                                    string formattedOriginalValue = string.Empty;
+                                    if ( !string.IsNullOrWhiteSpace( originalValue ) )
                                     {
-                                        string formattedOriginalValue = string.Empty;
-                                        if ( !string.IsNullOrWhiteSpace( originalValue ) )
-                                        {
-                                            formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
-                                        }
-
-                                        string formattedNewValue = string.Empty;
-                                        if ( !string.IsNullOrWhiteSpace( newValue ) )
-                                        {
-                                            formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
-                                        }
-
-                                        History.EvaluateChange( changes, attribute.Name, formattedOriginalValue, formattedNewValue );
+                                        formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
                                     }
+
+                                    string formattedNewValue = string.Empty;
+                                    if ( !string.IsNullOrWhiteSpace( newValue ) )
+                                    {
+                                        formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
+                                    }
+
+                                    History.EvaluateChange( changes, attribute.Name, formattedOriginalValue, formattedNewValue );
                                 }
                             }
                         }
+                    }
 
-                        if ( changes.Any() )
-                        {
-                            HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                Person.Id, changes );
-                        }
-                    } );
+                    if ( changes.Any() )
+                    {
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                            Person.Id, changes );
+                    }
                 }
                 else if ( ViewMode == VIEW_MODE_ORDER && _canAdministrate )
                 {
@@ -348,6 +345,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             fsAttributes.Controls.Clear();
 
+            string validationGroup = string.Format("vgAttributeValues_{0}", this.BlockId );
+            btnSave.ValidationGroup = validationGroup;
+
             hfAttributeOrder.Value = AttributeList.AsDelimited( "|" );
 
             if ( Person != null )
@@ -378,7 +378,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
                         else
                         {
-                            formattedValue = attribute.FieldType.Field.FormatValue( fsAttributes, attributeValue, attribute.QualifierValues, false );
+                            formattedValue = attribute.FieldType.Field.FormatValueAsHtml( fsAttributes, attributeValue, attribute.QualifierValues, false );
                             if ( !string.IsNullOrWhiteSpace( formattedValue ) )
                             {
                                 fsAttributes.Controls.Add( new RockLiteral { Label = attribute.Name, Text = formattedValue } );
@@ -387,7 +387,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                     else
                     {
-                        attribute.AddControl( fsAttributes.Controls, attributeValue, string.Empty, setValues, true );
+                        attribute.AddControl( fsAttributes.Controls, attributeValue, validationGroup, setValues, true );
                     }
                 }
             }

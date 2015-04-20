@@ -28,7 +28,7 @@ namespace Rock.Web.UI.Controls
     public class BinaryFilePicker : RockDropDownList
     {
         /// <summary>
-        /// Gets or sets the binary file type id.
+        /// Loads the BinaryFilePicker with files of the specified BinaryFileType.Id
         /// </summary>
         /// <value>
         /// The binary file type id.
@@ -38,23 +38,25 @@ namespace Rock.Web.UI.Controls
             set
             {
                 this.Items.Clear();
-                this.DataTextField = "FileName";
-                this.DataValueField = "Id";
+                this.Items.Add( new ListItem() );
                 if ( value.HasValue )
                 {
-                    this.DataSource = new BinaryFileService( new RockContext() )
-                        .Queryable()
-                        .Where( f => f.BinaryFileTypeId == value.Value && !f.IsTemporary )
-                        .OrderBy( f => f.FileName )
-                        .Select( f => new { f.FileName, f.Id } )
-                        .ToList();
-                    this.DataBind();
+                    var qry = new BinaryFileService( new RockContext() )
+                            .Queryable()
+                            .Where( f => f.BinaryFileTypeId == value.Value && !f.IsTemporary )
+                            .OrderBy( f => f.FileName )
+                            .Select( f => new { f.FileName, f.Id } );
+
+                    foreach ( var item in qry.ToList() )
+                    {
+                        this.Items.Add( new ListItem( item.FileName, item.Id.ToString() ) );
+                    }
                 }
             }
         }
 
         /// <summary>
-        /// Sets the binary file type unique identifier.
+        /// Loads the BinaryFilePicker with files of the specified BinaryFileType.Guid
         /// </summary>
         /// <value>
         /// The binary file type unique identifier.
@@ -64,17 +66,19 @@ namespace Rock.Web.UI.Controls
             set
             {
                 this.Items.Clear();
-                this.DataTextField = "FileName";
-                this.DataValueField = "Id";
                 if ( value.HasValue )
                 {
-                    this.DataSource = new BinaryFileService( new RockContext() )
-                        .Queryable()
-                        .Where( f => f.BinaryFileType.Guid.Equals( value.Value ) && !f.IsTemporary )
-                        .OrderBy( f => f.FileName )
-                        .Select( f => new { f.FileName, f.Id } )
-                        .ToList();
-                    this.DataBind();
+                    this.Items.Add( new ListItem() );
+                    var qry = new BinaryFileService( new RockContext() )
+                            .Queryable()
+                            .Where( f => f.BinaryFileType.Guid == value.Value && !f.IsTemporary )
+                            .OrderBy( f => f.FileName )
+                            .Select( f => new { f.FileName, f.Id } );
+
+                    foreach ( var item in qry.ToList() )
+                    {
+                        this.Items.Add( new ListItem( item.FileName, item.Id.ToString() ) );
+                    }
                 }
             }
         }

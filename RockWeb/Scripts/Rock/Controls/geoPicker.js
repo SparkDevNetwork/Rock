@@ -451,7 +451,10 @@
             $('#' + controlId + ' a.picker-label').click(function (e) {
                 e.preventDefault();
                 var $control = $('#' + controlId)
-                $control.find('.picker-menu').first().toggle();
+                $control.find('.picker-menu').first().toggle(function () {
+                    Rock.dialogs.updateModalScrollBar(controlId);
+                });
+
                 if ( $control.find('.picker-menu').first().is(":visible") ) {
                     google.maps.event.trigger(self.map, "resize");
                     // now we can safely fit the map to any polygon boundary
@@ -463,6 +466,13 @@
                     }, 1000);
                 }
             });
+
+            /**
+            * Hide the expand button if we are in a modal
+            */
+            if ($control.closest('.modal').length) {
+                $('#btnExpandToggle_' + controlId).hide();
+            }
 
             /**
             * Handle the toggle expand fullscreen button click.
@@ -531,13 +541,18 @@
                 google.maps.event.trigger(self.map, 'resize');
                 self.fitBounds();
 
+                Rock.dialogs.updateModalScrollBar(self.controlId);
+
             });
 
             /**
             * Handle the Cancel button click by hiding the overlay.
             */
             $('#btnCancel_' + controlId).click(function () {
-                $(this).closest('.picker-menu').slideUp();
+                $(this).closest('.picker-menu').slideUp(function () {
+                    Rock.dialogs.updateModalScrollBar(controlId);
+                });
+
                 self.path = self.pathTemp;
 
                 if ( self.selectedShape ) {
@@ -581,7 +596,9 @@
                 //clear out any old map positioning
                 self.initMinMaxLatLng();
 
-                $(this).closest('.picker-menu').slideUp();
+                $(this).closest('.picker-menu').slideUp(function () {
+                    Rock.dialogs.updateModalScrollBar(controlId);
+                });
             });
 
 
@@ -719,18 +736,40 @@
             });
 
             self.initializeEventHandlers();
+
+            Rock.dialogs.updateModalScrollBar(self.controlId);
         };
 
         var exports = {
+            googleMapsLoadCallback: function () {
+                // callback for when google maps api is done loading (if it wasn't loaded already)
+                $.each(Rock.controls.geoPicker.geoPickerOptions, function (a, options) {
+                    var geoPicker = Rock.controls.geoPicker.geoPickers[options.controlId];
+                    if (!geoPicker) {
+
+                        geoPicker = new GeoPicker(options);
+                        Rock.controls.geoPicker.geoPickers[options.controlId] = geoPicker;
+                        geoPicker.initialize();
+                    }
+                });
+            },
             geoPickers: {},
+            geoPickerOptions: {},
             findControl: function (controlId) {
                 return exports.geoPickers[controlId];
             },
             initialize: function (options) {
                 if (!options.controlId) throw '`controlId` is required.';
-                var geoPicker = new GeoPicker(options);
-                exports.geoPickers[options.controlId] = geoPicker;
-                geoPicker.initialize();
+                exports.geoPickerOptions[options.controlId] = options;
+
+                $(window).on('googleMapsIsLoaded', this.googleMapsLoadCallback);
+
+                // if the google maps api isn't loaded uet, googleMapsLoadCallback will take care of it
+                if (typeof (google) != "undefined") {
+                    // null it out just in case, to force it to get recreated
+                    exports.geoPickers[options.controlId] = null;
+                    $(window).trigger('googleMapsIsLoaded');
+                }
             }
         };
 

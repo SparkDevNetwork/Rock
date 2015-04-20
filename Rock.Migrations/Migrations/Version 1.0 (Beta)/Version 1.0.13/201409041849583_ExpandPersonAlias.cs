@@ -220,7 +220,21 @@ namespace Rock.Migrations
             AddForeignKey( "dbo.GroupLocation", "GroupMemberPersonAliasId", "dbo.PersonAlias", "Id", cascadeDelete: true );
             AddForeignKey( "dbo.Tag", "OwnerPersonAliasId", "dbo.PersonAlias", "Id" );
 
-            Sql( "sp_changeobjectowner 'spCheckin_BadgeAttendance', 'dbo'" );
+            // change scheme owner if not dbo
+            Sql( @" DECLARE @ObjectName varchar(50) = 'spCheckin_BadgeAttendance'
+                    DECLARE @AlterSql nvarchar(MAX)
+                    DECLARE @SchemaOwner varchar(12) = (SELECT TOP 1 s.name
+										                    FROM sys.schemas AS s
+											                    INNER JOIN sys.all_objects AS o ON s.[schema_id] = o.[schema_id]
+										                    WHERE o.name = @ObjectName)
+
+                    IF (@SchemaOwner != 'dbo')
+	                    BEGIN
+		                    SELECT @AlterSql = 'ALTER SCHEMA dbo TRANSFER [' + @SchemaOwner + '].' + @ObjectName
+		                    EXEC sp_executesql @AlterSql
+	                    END" );
+
+
             Sql( @"
 /*
 <doc>
@@ -357,7 +371,20 @@ BEGIN
 END
 " );
 
-            Sql( "sp_changeobjectowner 'spCheckin_WeeksAttendedInDuration', 'dbo'" );
+            // change scheme owner if not dbo
+            Sql( @" DECLARE @ObjectName varchar(50) = 'spCheckin_WeeksAttendedInDuration'
+                    DECLARE @AlterSql nvarchar(MAX)
+                    DECLARE @SchemaOwner varchar(12) = (SELECT TOP 1 s.name
+										                    FROM sys.schemas AS s
+											                    INNER JOIN sys.all_objects AS o ON s.[schema_id] = o.[schema_id]
+										                    WHERE o.name = @ObjectName)
+
+                    IF (@SchemaOwner != 'dbo')
+	                    BEGIN
+		                    SELECT @AlterSql = 'ALTER SCHEMA dbo TRANSFER [' + @SchemaOwner + '].' + @ObjectName
+		                    EXEC sp_executesql @AlterSql
+	                    END" );
+
             Sql( @"
     -- create stored proc for attendance duration
     /*
@@ -403,7 +430,19 @@ END
     END
 " );
 
-            Sql( "sp_changeobjectowner 'spCrm_PersonMerge', 'dbo'" );
+            Sql( @" DECLARE @ObjectName varchar(50) = 'spCrm_PersonMerge'
+                    DECLARE @AlterSql nvarchar(MAX)
+                    DECLARE @SchemaOwner varchar(12) = (SELECT TOP 1 s.name
+										                    FROM sys.schemas AS s
+											                    INNER JOIN sys.all_objects AS o ON s.[schema_id] = o.[schema_id]
+										                    WHERE o.name = @ObjectName)
+
+                    IF (@SchemaOwner != 'dbo')
+	                    BEGIN
+		                    SELECT @AlterSql = 'ALTER SCHEMA dbo TRANSFER [' + @SchemaOwner + '].' + @ObjectName
+		                    EXEC sp_executesql @AlterSql
+	                    END" );
+
             Sql( @"
 	/*
 	<doc>
@@ -680,12 +719,36 @@ END
 	END
 " );
 
-            Sql( "sp_changeobjectowner 'spPersonMerge', 'dbo'" );
+            Sql( @" DECLARE @ObjectName varchar(50) = 'spPersonMerge'
+                    DECLARE @AlterSql nvarchar(MAX)
+                    DECLARE @SchemaOwner varchar(12) = (SELECT TOP 1 s.name
+										                    FROM sys.schemas AS s
+											                    INNER JOIN sys.all_objects AS o ON s.[schema_id] = o.[schema_id]
+										                    WHERE o.name = @ObjectName)
+
+                    IF (@SchemaOwner != 'dbo')
+	                    BEGIN
+		                    SELECT @AlterSql = 'ALTER SCHEMA dbo TRANSFER [' + @SchemaOwner + '].' + @ObjectName
+		                    EXEC sp_executesql @AlterSql
+	                    END" );
+
             Sql( @"
     DROP PROCEDURE [dbo].[spPersonMerge]
 " );
 
-            Sql( "sp_changeobjectowner 'spFinance_ContributionStatementQuery', 'dbo'" );
+            Sql( @" DECLARE @ObjectName varchar(50) = 'spFinance_ContributionStatementQuery'
+                    DECLARE @AlterSql nvarchar(MAX)
+                    DECLARE @SchemaOwner varchar(12) = (SELECT TOP 1 s.name
+										                    FROM sys.schemas AS s
+											                    INNER JOIN sys.all_objects AS o ON s.[schema_id] = o.[schema_id]
+										                    WHERE o.name = @ObjectName)
+
+                    IF (@SchemaOwner != 'dbo')
+	                    BEGIN
+		                    SELECT @AlterSql = 'ALTER SCHEMA dbo TRANSFER [' + @SchemaOwner + '].' + @ObjectName
+		                    EXEC sp_executesql @AlterSql
+	                    END" );
+
             Sql( @"
 	/*
 	<doc>

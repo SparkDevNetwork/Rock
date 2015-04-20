@@ -38,8 +38,6 @@ namespace RockWeb.Blocks.Prayer
     [CategoryField( "Category", "A top level category. This controls which categories are shown when starting a prayer session.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Filtering", 2, "CategoryGuid" )]
     [BooleanField( "Enable Prayer Team Flagging", "If enabled, members of the prayer team can flag a prayer request if they feel the request is inappropriate and needs review by an administrator.", false, "Flagging", 3, "EnableCommunityFlagging" )]
     [IntegerField( "Flag Limit", "The number of flags a prayer request has to get from the prayer team before it is automatically unapproved.", false, 1, "Flagging", 4 )]
-    [TextField( "Note Type", "The note type name for these prayer request comments.", false, "Prayer Comment", "Advanced", 0, "NoteType" )]
-
     public partial class PrayerSession : RockBlock
     {
         #region Fields
@@ -250,12 +248,9 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         private void SetNoteType()
         {
-            var entityTypeId = EntityTypeCache.Read( typeof( PrayerRequest ) ).Id;
-            string noteTypeName = GetAttributeValue( "NoteType" );
-
             var rockContext = new RockContext();
             var service = new NoteTypeService( rockContext );
-            var noteType = service.Get( entityTypeId, noteTypeName );
+            var noteType = service.Get( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() );
             NoteTypeId = noteType.Id;
         }
 

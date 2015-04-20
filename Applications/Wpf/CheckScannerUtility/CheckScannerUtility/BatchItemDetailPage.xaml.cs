@@ -14,11 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Rock.Model;
+using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
 {
@@ -41,7 +43,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The financial transaction.
         /// </value>
-        public FinancialTransaction FinancialTransaction { get; set; }
+        public IEnumerable<FinancialTransactionImage> FinancialTransactionImages { get; set; }
 
         /// <summary>
         /// Handles the Click event of the btnClose control.
@@ -60,13 +62,20 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
-            var images = FinancialTransaction.Images.OrderBy(a => a.Order).ToList();
+            var images = FinancialTransactionImages.OrderBy( a => a.Order ).ToList();
+
+            RockConfig config = RockConfig.Load();
+            RockRestClient client = new RockRestClient( config.RockBaseUrl );
+            client.Login( config.Username, config.Password );
 
             if ( images.Count > 0 )
             {
+                var imageUrl = string.Format( "{0}GetImage.ashx?Id={1}", config.RockBaseUrl.EnsureTrailingForwardslash(), images[0].BinaryFileId );
+                var imageBytes = client.DownloadData( imageUrl );
+
                 BitmapImage bitmapImage = new BitmapImage();
                 bitmapImage.BeginInit();
-                bitmapImage.StreamSource = new MemoryStream( images[0].BinaryFile.Data.Content );
+                bitmapImage.StreamSource = new MemoryStream( imageBytes );
                 bitmapImage.EndInit();
                 imgFront.Source = bitmapImage;
             }
@@ -77,9 +86,12 @@ namespace Rock.Apps.CheckScannerUtility
 
             if ( images.Count > 1 )
             {
+                var imageUrl = string.Format( "{0}GetImage.ashx?Id={1}", config.RockBaseUrl.EnsureTrailingForwardslash(), images[1].BinaryFileId );
+                var imageBytes = client.DownloadData( imageUrl );
+
                 BitmapImage bitmapImage = new BitmapImage();
                 bitmapImage.BeginInit();
-                bitmapImage.StreamSource = new MemoryStream( images[1].BinaryFile.Data.Content );
+                bitmapImage.StreamSource = new MemoryStream( imageBytes );
                 bitmapImage.EndInit();
                 imgBack.Source = bitmapImage;
             }

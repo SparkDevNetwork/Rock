@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Security
             }
         }
 
-        #endregion Control Methods
+        #endregion
 
         #region Events
 
@@ -86,6 +86,8 @@ namespace RockWeb.Blocks.Security
                 else
                 {
                     personService.Add( restUser );
+                    rockContext.SaveChanges();
+                    restUser.Aliases.Add( new PersonAlias { AliasPersonId = restUser.Id, AliasPersonGuid = restUser.Guid } );
                 }
 
                 // the rest user name gets saved as the last name on a person
@@ -118,10 +120,8 @@ namespace RockWeb.Blocks.Security
                 }
 
                 // the description gets saved as a system note for the person
-                var entityTypeService = new EntityTypeService( rockContext );
-                var entityType = entityTypeService.Get( "Rock.Model.Person" );
-                var noteTypeService = new NoteTypeService( rockContext );
-                var noteType = noteTypeService.Get( entityType.Id, "Timeline" );
+                var noteType = new NoteTypeService( rockContext )
+                    .Get( Rock.SystemGuid.NoteType.PERSON_TIMELINE.AsGuid() );
                 var noteService = new NoteService( rockContext );
                 var note = noteService.Get( noteType.Id, restUser.Id ).FirstOrDefault();
                 if ( note == null )
@@ -136,7 +136,8 @@ namespace RockWeb.Blocks.Security
                 rockContext.SaveChanges();
 
                 // the key gets saved in the api key field of a user login (which you have to create if needed)
-                entityType = entityTypeService.Get( "Rock.Security.Authentication.Database" );
+                var entityType = new EntityTypeService( rockContext )
+                    .Get( "Rock.Security.Authentication.Database" );
                 userLogin = userLoginService.GetByPersonId( restUser.Id ).FirstOrDefault();
                 if ( userLogin == null )
                 {
@@ -149,6 +150,7 @@ namespace RockWeb.Blocks.Security
                     userLogin.UserName = Guid.NewGuid().ToString();
                 }
 
+                userLogin.IsConfirmed = true;
                 userLogin.ApiKey = tbKey.Text;
                 userLogin.PersonId = restUser.Id;
                 userLogin.EntityTypeId = entityType.Id;
@@ -193,7 +195,7 @@ namespace RockWeb.Blocks.Security
             tbKey.Text = key;
         }
 
-        #endregion Events
+        #endregion
 
         #region Internal Methods
 
@@ -266,6 +268,6 @@ namespace RockWeb.Blocks.Security
             }
         }
 
-        #endregion Internal Methods
+        #endregion
     }
 }

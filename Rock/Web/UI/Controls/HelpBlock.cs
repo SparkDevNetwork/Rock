@@ -39,9 +39,7 @@ $(document).ready(function() {
     $('a.help').click(function (e) {
         e.preventDefault();
         $(this).siblings('div.alert-info').slideToggle(function(){
-            $('.scroll-container').each(function() {
-                $(this).tinyscrollbar_update('relative');
-            });
+            Rock.controls.modal.updateSize(this);
         });
     });
 });

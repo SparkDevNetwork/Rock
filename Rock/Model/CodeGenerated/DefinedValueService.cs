@@ -51,10 +51,36 @@ namespace Rock.Model
         public bool CanDelete( DefinedValue item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
-            // ignoring Attendance,QualifierValueId 
-            
-            // ignoring Attendance,SearchTypeValueId 
+ 
+            if ( new Service<Attendance>( Context ).Queryable().Any( a => a.QualifierValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Attendance.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Attendance>( Context ).Queryable().Any( a => a.SearchTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Attendance.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<BenevolenceRequest>( Context ).Queryable().Any( a => a.ConnectionStatusValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, BenevolenceRequest.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<BenevolenceRequest>( Context ).Queryable().Any( a => a.RequestStatusValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, BenevolenceRequest.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<BenevolenceResult>( Context ).Queryable().Any( a => a.ResultTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, BenevolenceResult.FriendlyTypeName );
+                return false;
+            }  
  
             if ( new Service<Device>( Context ).Queryable().Any( a => a.DeviceTypeValueId == item.Id ) )
             {
@@ -67,30 +93,66 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialAccount.FriendlyTypeName );
                 return false;
             }  
-            
-            // ignoring FinancialPersonSavedAccount,CreditCardTypeValueId 
-            
-            // ignoring FinancialPersonSavedAccount,CurrencyTypeValueId 
+ 
+            if ( new Service<FinancialPersonSavedAccount>( Context ).Queryable().Any( a => a.CreditCardTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialPersonSavedAccount.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialPersonSavedAccount>( Context ).Queryable().Any( a => a.CurrencyTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialPersonSavedAccount.FriendlyTypeName );
+                return false;
+            }  
  
             if ( new Service<FinancialPledge>( Context ).Queryable().Any( a => a.PledgeFrequencyValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialPledge.FriendlyTypeName );
                 return false;
             }  
-            
-            // ignoring FinancialScheduledTransaction,CreditCardTypeValueId 
-            
-            // ignoring FinancialScheduledTransaction,CurrencyTypeValueId 
-            
-            // ignoring FinancialScheduledTransaction,TransactionFrequencyValueId 
-            
-            // ignoring FinancialTransaction,CreditCardTypeValueId 
-            
-            // ignoring FinancialTransaction,CurrencyTypeValueId 
-            
-            // ignoring FinancialTransaction,SourceTypeValueId 
-            
-            // ignoring FinancialTransaction,TransactionTypeValueId 
+ 
+            if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.CreditCardTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.CurrencyTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.TransactionFrequencyValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.CreditCardTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.CurrencyTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.SourceTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.TransactionTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
+                return false;
+            }  
  
             if ( new Service<FinancialTransactionRefund>( Context ).Queryable().Any( a => a.RefundReasonValueId == item.Id ) )
             {
@@ -127,22 +189,54 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Note.FriendlyTypeName );
                 return false;
             }  
-            
-            // ignoring Person,ConnectionStatusValueId 
-            
-            // ignoring Person,MaritalStatusValueId 
-            
-            // ignoring Person,RecordStatusReasonValueId 
-            
-            // ignoring Person,RecordStatusValueId 
-            
-            // ignoring Person,RecordTypeValueId 
-            
-            // ignoring Person,ReviewReasonValueId 
-            
-            // ignoring Person,SuffixValueId 
-            
-            // ignoring Person,TitleValueId 
+ 
+            if ( new Service<Person>( Context ).Queryable().Any( a => a.ConnectionStatusValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Person.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Person>( Context ).Queryable().Any( a => a.MaritalStatusValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Person.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Person>( Context ).Queryable().Any( a => a.RecordStatusReasonValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Person.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Person>( Context ).Queryable().Any( a => a.RecordStatusValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Person.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Person>( Context ).Queryable().Any( a => a.RecordTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Person.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Person>( Context ).Queryable().Any( a => a.ReviewReasonValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Person.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Person>( Context ).Queryable().Any( a => a.SuffixValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Person.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Person>( Context ).Queryable().Any( a => a.TitleValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Person.FriendlyTypeName );
+                return false;
+            }  
  
             if ( new Service<PhoneNumber>( Context ).Queryable().Any( a => a.NumberTypeValueId == item.Id ) )
             {
@@ -185,16 +279,16 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this DefinedValue target, DefinedValue source )
         {
-            target.IsSystem = source.IsSystem;
+            target.Id = source.Id;
             target.DefinedTypeId = source.DefinedTypeId;
+            target.Description = source.Description;
+            target.IsSystem = source.IsSystem;
             target.Order = source.Order;
             target.Value = source.Value;
-            target.Description = source.Description;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

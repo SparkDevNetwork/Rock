@@ -577,7 +577,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 writer.Write( @"
-                    <div class='js-upload-progress upload-progress' style='display:none'>
+                    <div class='js-upload-progress upload-progress' style='display:none;'>
                         <i class='fa fa-refresh fa-3x fa-spin'></i>                    
                     </div>" );
 
@@ -632,7 +632,7 @@ namespace Rock.Web.UI.Controls
                 // intentionally ignore and don't tell the fileUploader the limit
             }
 
-            var postBackScript = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "FileUploaded" ), true );
+            var postBackScript = this.FileUploaded != null ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "FileUploaded" ), true ) : "";
             postBackScript = postBackScript.Replace( '\'', '"' );
             var script = string.Format(
 @"

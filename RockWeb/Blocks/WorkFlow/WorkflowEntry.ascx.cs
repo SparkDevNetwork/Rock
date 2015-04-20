@@ -241,6 +241,13 @@ namespace RockWeb.Blocks.WorkFlow
         {
             LoadWorkflowType();
 
+            // Set the note type if this is first request
+            if ( !Page.IsPostBack )
+            {
+                var noteType = new NoteTypeService( _rockContext ).Get( Rock.SystemGuid.NoteType.WORKFLOW_NOTE.AsGuid() );
+                ncWorkflowNotes.NoteTypeId = noteType.Id;
+            }
+
             if ( _workflowType == null )
             {
                 ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Workflow type was not configured or specified correctly." );
@@ -295,27 +302,62 @@ namespace RockWeb.Blocks.WorkFlow
             // If an existing workflow was not specified, activate a new instance of workflow and start processing
             if ( _workflow == null )
             {
-                _workflow = Rock.Model.Workflow.Activate( _workflowType, "Workflow" );
-
-                List<string> errorMessages;
-                if ( _workflow.Process( _rockContext, out errorMessages ) )
+                string workflowName = PageParameter( "WorkflowName" );
+                if ( string.IsNullOrWhiteSpace(workflowName))
                 {
-                    // If the workflow type is persisted, save the workflow
-                    if ( _workflow.IsPersisted || _workflowType.IsPersisted )
+                    workflowName = "New " + _workflowType.WorkTerm;
+                }
+
+                _workflow = Rock.Model.Workflow.Activate( _workflowType, workflowName);
+                if ( _workflow != null )
+                {
+                    // If a PersonId or GroupId parameter was included, load the corresponding
+                    // object and pass that to the actions for processing
+                    object entity = null;
+                    int? personId = PageParameter( "PersonId" ).AsIntegerOrNull();
+                    if ( personId.HasValue )
                     {
-                        _workflowService.Add( _workflow );
-
-                        _rockContext.WrapTransaction( () =>
+                        entity = new PersonService( _rockContext ).Get( personId.Value );
+                    }
+                    else
+                    {
+                        int? groupId = PageParameter( "GroupId" ).AsIntegerOrNull();
+                        if ( groupId.HasValue )
                         {
-                            _rockContext.SaveChanges();
-                            _workflow.SaveAttributeValues( _rockContext );
-                            foreach ( var activity in _workflow.Activities )
-                            {
-                                activity.SaveAttributeValues( _rockContext );
-                            }
-                        } );
+                            entity = new GroupService( _rockContext ).Get( groupId.Value );
+                        }
+                    }
 
-                        WorkflowId = _workflow.Id;
+                    // Loop through all the query string parameters and try to set any workflow
+                    // attributes that might have the same key
+                    foreach ( string key in Request.QueryString.AllKeys )
+                    {
+                        _workflow.SetAttributeValue( key, Request.QueryString[key] );
+                    }
+
+                    List<string> errorMessages;
+                    if ( _workflow.Process( _rockContext, entity, out errorMessages ) )
+                    {
+                        // If the workflow type is persisted, save the workflow
+                        if ( _workflow.IsPersisted || _workflowType.IsPersisted )
+                        {
+                            if ( _workflow.Id == 0 )
+                            {
+                                _workflowService.Add( _workflow );
+                            }
+
+                            _rockContext.WrapTransaction( () =>
+                            {
+                                _rockContext.SaveChanges();
+                                _workflow.SaveAttributeValues( _rockContext );
+                                foreach ( var activity in _workflow.Activities )
+                                {
+                                    activity.SaveAttributeValues( _rockContext );
+                                }
+                            } );
+
+                            WorkflowId = _workflow.Id;
+                        }
                     }
                 }
             }
@@ -340,12 +382,12 @@ namespace RockWeb.Blocks.WorkFlow
 
                             _actionType = _action.ActionType;
                             ActionTypeId = _actionType.Id;
-                            return true;
+                            return true; 
                         }
                     }
                 }
 
-                var canEdit = IsUserAuthorized( Authorization.EDIT );
+                var canEdit = UserCanEdit || _workflow.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                 // Find first active action form
                 int personId = CurrentPerson != null ? CurrentPerson.Id : 0;
@@ -353,6 +395,7 @@ namespace RockWeb.Blocks.WorkFlow
                     .Where( a =>
                         a.IsActive &&
                         (
+                            ( canEdit ) ||
                             ( !a.AssignedGroupId.HasValue && !a.AssignedPersonAliasId.HasValue ) ||
                             ( a.AssignedPersonAlias != null && a.AssignedPersonAlias.PersonId == personId ) ||
                             ( a.AssignedGroup != null && a.AssignedGroup.Members.Any( m => m.PersonId == personId ) )
@@ -379,6 +422,7 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
+            ShowNotes( false );
             ShowMessage( NotificationBoxType.Warning, string.Empty, "The selected workflow is not in a state that requires you to enter information." );
             return false;
 
@@ -480,7 +524,7 @@ namespace RockWeb.Blocks.WorkFlow
                     if ( formAttribute.IsReadOnly )
                     {
                         var field = attribute.FieldType.Field;
-                        string formattedValue = field.FormatValue( phAttributes, value, attribute.QualifierValues, false );
+                        string formattedValue = field.FormatValueAsHtml( phAttributes, value, attribute.QualifierValues );
 
                         if ( formAttribute.HideLabel )
                         {
@@ -520,6 +564,17 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
+            if ( form.AllowNotes.HasValue && form.AllowNotes.Value && _workflow != null && _workflow.Id != 0 )
+            {
+                ncWorkflowNotes.EntityId = _workflow.Id;
+                ncWorkflowNotes.RebuildNotes( setValues );
+                ShowNotes( true );
+            }
+            else
+            {
+                ShowNotes( false );
+            }
+
             phActions.Controls.Clear();
             foreach ( var action in form.Actions.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) )
             {
@@ -556,6 +611,22 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
+        }
+
+        private void ShowNotes(bool visible)
+        {
+            divNotes.Visible = visible;
+
+            if ( visible )
+            {
+                divForm.RemoveCssClass( "col-md-12" );
+                divForm.AddCssClass( "col-md-6" );
+            }
+            else
+            {
+                divForm.AddCssClass( "col-md-12" );
+                divForm.RemoveCssClass( "col-md-6" );
+            }
         }
 
         private void GetFormValues()

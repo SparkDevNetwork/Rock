@@ -21,6 +21,8 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -31,6 +33,9 @@ namespace Rock.Field.Types
     [Serializable]
     public class SelectMultiFieldType : FieldType
     {
+
+        #region Configuration
+
         /// <summary>
         /// Returns a list of the configuration keys
         /// </summary>
@@ -93,6 +98,10 @@ namespace Rock.Field.Types
                     ( ( TextBox )controls[0] ).Text = configurationValues["values"].Value;
         }
 
+        #endregion
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -115,6 +124,10 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, value, configurationValues, condensed );
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -207,17 +220,85 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Filter Control
+
         /// <summary>
-        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// Gets the filter value control.
         /// </summary>
-        /// <param name="attribute"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
-        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
         {
-            var filterConfig = base.GetFilterConfig( attribute );
-            filterConfig.ControlCount = 1;
-            filterConfig.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
-            return filterConfig;
+            var ddlList = new RockDropDownList();
+            ddlList.ID = string.Format( "{0}_ddlList", id );
+            ddlList.AddCssClass( "js-filter-control" );
+
+            if ( !required )
+            {
+                ddlList.Items.Add( new ListItem() );
+            }
+
+            var control = EditControl( configurationValues, id );
+            if ( control is RockCheckBoxList )
+            {
+                foreach( ListItem li in ((RockCheckBoxList)control).Items)
+                {
+                    ddlList.Items.Add( new ListItem( li.Text, li.Value ) );
+                }
+            }
+
+            return ddlList;
         }
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.ContainsFilterComparisonTypes;
+            }
+        }
+
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( control != null && control is RockDropDownList )
+            {
+                return ( (RockDropDownList)control ).SelectedValue;
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Sets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            if ( control != null && control is RockDropDownList )
+            {
+                ( (RockDropDownList)control ).SetValue( value );
+            }
+        }
+
+        #endregion
+
     }
 }

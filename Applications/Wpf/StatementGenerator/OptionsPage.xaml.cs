@@ -17,6 +17,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -63,6 +64,13 @@ namespace Rock.Apps.StatementGenerator
             try
             {
                 txtRockUrl.Text = txtRockUrl.Text.Trim();
+                Uri rockUrl = new Uri( txtRockUrl.Text );
+                var validSchemes = new string[] { Uri.UriSchemeHttp, Uri.UriSchemeHttps };
+                if ( !validSchemes.Contains( rockUrl.Scheme ) )
+                {
+                    txtRockUrl.Text = "http://" + rockUrl.AbsoluteUri;
+                }
+
                 RockRestClient client = new RockRestClient( txtRockUrl.Text );
                 client.Login( rockConfig.Username, rockConfig.Password );
             }
@@ -154,7 +162,7 @@ namespace Rock.Apps.StatementGenerator
                 // no directory specified. It's in the App Directory
                 imageFileUri = new Uri( Path.Combine( appDirectory, imageFileName ) );
             }
-            else if ( ( Path.GetDirectoryName( imageFileName ).Equals( appDirectory, StringComparison.OrdinalIgnoreCase ) ) )
+            else if ( Path.GetDirectoryName( imageFileName ).Equals( appDirectory, StringComparison.OrdinalIgnoreCase ) )
             {
                 // directory is App Directory, just put the filename without the directory
                 imageFileUri = new Uri( Path.GetFileName( imageFileName ) );

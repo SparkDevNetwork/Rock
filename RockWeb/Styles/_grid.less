@@ -2,19 +2,26 @@
     Used to manage styles related to Rock's internal grid component
     
     1. Bootstrap Overrides
-    2. Filter
-    3. Column Header
-    4. Footer
-    5. Light Style - Used for small grids
-    5. Reusable classes
-    6. Column Types
-    7. Row Types
+    2. Core Table
+    3. Filter
+    4. Column Header
+    5. Footer
+    6. Light Style - Used for small grids
+    7. Reusable classes
+    8. Column Types
+    9. Row Types
+    10. Responsive Columns
 
 */
 
 
 // 1. Bootstrap Overrides
 // -------------------------
+/*.table-responsive > .table-bordered,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered {
+    border: 1px solid @table-border-color;
+}*/
+
 .table-hover tbody tr:hover td,
 .table-hover tbody tr:hover th {
     background-color: rgba(0,0,0,.03);
@@ -40,15 +47,66 @@ td.wrap-contents { // keep cells from scrolling off screen
 
 .grid {
     margin-bottom: 20px;
+
+    .grid-table {
+        border: 1px solid @table-border-color;
+    }
+
+    .grid-table.table-light {
+        border: none;
+    }
 }
 
-// 2. Filter
+.grid.grid-panel {
+    .grid-table {
+        border: none !important;
+    }
+
+    th:first-child,
+    td:first-child {
+        border-left: 0;
+    }
+
+    th:last-child,
+    td:last-child {
+        border-right: 0;
+    }
+}
+
+// rwd responsive table override
+
+.grid-panel .table-responsive[data-pattern="priority-columns"],
+.table-responsive.table-no-border {
+    border: 0;
+}
+
+.table-responsive[data-pattern="priority-columns"] {
+    position: static; // the default for this is relative, but this causes the scrollbar to always show until you resize the window, then it goes away
+}
+
+/*.table-responsive[data-pattern="priority-columns"] {
+    margin-bottom: inherit;
+    border: inherit;
+    border-radius: inherit;
+}*/
+
+// 2. Core Table
+// -------------------------
+.table-wrapper {
+    .btn-toolbar {
+        display: none;
+    }
+}
+
+
+
+// 3. Filter
 // -------------------------
 .grid-filter {
     background-color: @grid-filter-bg;
     border-radius: @border-radius-base;
-    padding: 0 6px 12px 6px;
-	margin-bottom: -10px;
+    padding: 6px 12px;
+	border-bottom: 1px solid @table-border-color;
 
     header {
         border-radius: @border-radius-base @border-radius-base 0 0;
@@ -93,9 +151,9 @@ td.wrap-contents { // keep cells from scrolling off screen
     }
 }
 
-.grid-filter +  div .grid-table {
+/*.grid-filter +  div .grid-table {
     margin-top: -12px;   
-}
+}*/
 
 
 
@@ -107,7 +165,7 @@ td.wrap-contents { // keep cells from scrolling off screen
     margin-bottom: 12px;
 }
 
-// 3. Column Header
+// 4. Column Header
 // -------------------------
 
 .table thead th  {
@@ -135,7 +193,7 @@ td.wrap-contents { // keep cells from scrolling off screen
     }
 }
 
-// 4. Footer
+// 5. Footer
 // -------------------------
 
 // pagination
@@ -178,7 +236,7 @@ td.grid-col-actions {
     }
 }
 
-// 5. Light Style
+// 6. Light Style
 // -------------------------
 
 .table-light {
@@ -208,7 +266,7 @@ td.grid-col-actions {
     }
 }
 
-// 5. Disabled Styles
+// 7. Disabled Styles
 // -------------------------
 
 .table-padded {
@@ -217,7 +275,7 @@ td.grid-col-actions {
     }
 }
 
-// 6. Column Types
+// 8. Column Types
 // -------------------------
 
 .grid-select-field { // checkbox field
@@ -275,7 +333,7 @@ td.grid-col-actions {
 }
 
 
-// 6. Row Types
+// 9. Row Types
 // -------------------------
 .table > tbody > tr.grid-section-header {
     
@@ -289,3 +347,72 @@ td.grid-col-actions {
     }
     
  }
+
+tr.row-highlight {
+    td {
+        background-color: @accent-bold-color !important;
+        color: @accent-bold-text-color !important;
+    }
+}
+
+// 10. Responsive Columns
+// -------------------------
+
+// unlike Bootstrap's original .table-responsive, this is applied for all widths. (i.e. NOT only applied <768px)
+.table-responsive {
+    position: relative;
+    width: 100%;
+    overflow-y: hidden;
+    overflow-x: auto;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+    -webkit-overflow-scrolling: touch;
+}
+
+// classes to show and hide columns based on their priority
+.table-responsive {
+    
+    th[data-priority],
+    td[data-priority] {
+       display: none;
+    }
+
+    th[data-priority="1"], 
+    td[data-priority="1"] {
+        display: table-cell;
+    }
+
+    @media screen and (min-width: 480px) {
+        th[data-priority="2"], 
+        td[data-priority="2"] {
+            display: table-cell;
+        }
+    }
+
+    @media screen and (min-width: 640px) {
+        th[data-priority="3"], 
+        td[data-priority="3"] {
+            display: table-cell;
+        }
+    }
+
+    @media screen and (min-width: 800px) {
+        th[data-priority="4"], 
+        td[data-priority="4"] {
+            display: table-cell;
+        }
+    }
+
+    @media screen and (min-width: 960px) {
+        th[data-priority="5"], 
+        td[data-priority="5"] {
+            display: table-cell;
+        }
+    }
+
+    @media screen and (min-width: 1120px) {
+        th[data-priority="6"], 
+        td[data-priority="6"] {
+            display: table-cell;
+        }
+    }
+}

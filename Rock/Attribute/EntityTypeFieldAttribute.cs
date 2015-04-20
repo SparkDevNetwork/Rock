@@ -23,7 +23,7 @@ namespace Rock.Attribute
 {
     /// <summary>
     /// Field Attribute used to specify an EntityType
-    /// Value returns EntityType.Name
+    /// Value returns EntityType.Guid
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class EntityTypeFieldAttribute : FieldAttribute

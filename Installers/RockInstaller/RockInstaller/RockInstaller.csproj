@@ -109,7 +109,6 @@
     <Content Include="bin\RockInstaller.pdb" />
     <Content Include="bin\RockInstallTools.dll" />
     <Content Include="bin\RockInstallTools.pdb" />
-    <Content Include="bin\Subtext.Scripting.dll" />
     <Content Include="images\done.svg" />
     <Content Include="images\favicon.ico" />
     <Content Include="images\laptop-sm.png" />

@@ -31,8 +31,8 @@ namespace Rock.Web.UI.Controls
         public DayOfWeekPicker()
             : base()
         {
-            Label = "Day of Week";
             this.Items.Clear();
+            this.Items.Add( new ListItem() );
             foreach (var dow in Enum.GetValues(typeof(DayOfWeek)).OfType<DayOfWeek>().ToList())
             {
                 this.Items.Add( new ListItem( dow.ConvertToString(), dow.ConvertToInt().ToString() ) );
@@ -49,7 +49,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                int? result = this.SelectedValueAsInt( NoneAsNull: false );
+                int? result = this.SelectedValue.AsIntegerOrNull();
                 if (result.HasValue)
                 {
                     return (DayOfWeek)result.Value;

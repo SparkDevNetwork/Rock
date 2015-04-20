@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Linq.Expressions;
@@ -156,7 +155,7 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Gets the parent security authority for the DataView
+        /// Gets the parent security authority for the DataView which is its Category
         /// </summary>
         /// <value>
         /// The parent authority of the DataView.
@@ -194,7 +193,7 @@ namespace Rock.Model
                 authorizationMessage = Rock.Constants.EditModeMessage.ReadOnlyEditActionNotAllowed( DataView.FriendlyTypeName );
             }
 
-            if ( this.EntityType != null && !this.EntityType.IsAuthorized( Authorization.VIEW, person, rockContext ) )
+            if ( this.EntityType != null && !this.EntityType.IsAuthorized( Authorization.VIEW, person ) )
             {
                 isAuthorized = false;
                 authorizationMessage = "INFO: Data view uses an entity type that you do not have access to view.";
@@ -231,9 +230,10 @@ namespace Rock.Model
         /// Gets the query.
         /// </summary>
         /// <param name="sortProperty">The sort property.</param>
+        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public IQueryable<IEntity> GetQuery( SortProperty sortProperty, out List<string> errorMessages )
+        public IQueryable<IEntity> GetQuery( SortProperty sortProperty, int? databaseTimeoutSeconds,  out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -247,6 +247,11 @@ namespace Rock.Model
                     if ( entityType != null )
                     {
                         System.Data.Entity.DbContext reportDbContext = Reflection.GetDbContextForEntityType( entityType );
+                        if ( databaseTimeoutSeconds.HasValue )
+                        {
+                            reportDbContext.Database.CommandTimeout = databaseTimeoutSeconds.Value;
+                        }
+
                         IService serviceInstance = Reflection.GetServiceForEntityType( entityType, reportDbContext );
 
                         if ( serviceInstance != null )

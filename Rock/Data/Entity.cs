@@ -33,7 +33,7 @@ namespace Rock.Data
     /// </summary>
     /// <typeparam name="T">The Type entity that is being referenced <example>Entity&lt;Person&gt;</example></typeparam>
     [DataContract]
-    public abstract class Entity<T> : IEntity, DotLiquid.ILiquidizable, DotLiquid.IIndexable
+    public abstract class Entity<T> : IEntity, Lava.ILiquidizable
         where T : Entity<T>, new()
     {
         #region Entity Properties
@@ -67,6 +67,7 @@ namespace Rock.Data
         [Index( IsUnique = true )]
         [DataMember]
         [IncludeForReporting]
+        [NotEmptyGuidAttribute]
         public Guid Guid
         {
             get { return _guid; }
@@ -80,8 +81,10 @@ namespace Rock.Data
         /// <value>
         /// The foreign identifier.
         /// </value>
-        [MaxLength( 50 )]
+        [MaxLength( 100 )]
+        [Index]
         [DataMember]
+        [LavaIgnore]
         [HideFromReporting]
         public string ForeignId { get; set; }
 
@@ -202,7 +205,7 @@ namespace Rock.Data
         /// A <see cref="System.String"/> that represents a URL friendly version of the entity's unique key.
         /// </value>
         [NotMapped]
-        [DataMember]
+        [LavaInclude]
         public virtual string UrlEncodedKey
         {
             get
@@ -299,6 +302,42 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the available keys (for debuging info).
+        /// </summary>
+        /// <value>
+        /// The available keys.
+        /// </value>
+        [LavaIgnore]
+        public virtual List<string> AvailableKeys
+        {
+            get
+            {
+                var availableKeys = new List<string>();
+
+                foreach ( var propInfo in GetBaseType().GetProperties() )
+                {
+                    if ( propInfo != null && LiquidizableProperty( propInfo ) )
+                    {
+                        availableKeys.Add( propInfo.Name );
+                    }
+                }
+
+                if ( this.AdditionalLavaFields != null )
+                {
+                    foreach ( var field in AdditionalLavaFields.Keys )
+                    {
+                        if ( !availableKeys.Contains( field ) )
+                        {
+                            availableKeys.Add( field );
+                        }
+                    }
+                }
+
+                return availableKeys;
+            }
+        }
+
+        /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
         /// <value>
@@ -306,23 +345,25 @@ namespace Rock.Data
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [LavaIgnore]
         public virtual object this[object key]
         {
-            get 
+            get
             {
-                Type entityType = this.GetType();
-                if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
-                    entityType = entityType.BaseType;
+                string propertyKey = key.ToStringSafe();
+                var propInfo = GetBaseType().GetProperty( propertyKey );
 
-                var propInfo = entityType.GetProperty( key.ToStringSafe() );
-                if ( propInfo != null &&
-                    propInfo.Name != "Attributes" &&
-                    propInfo.Name != "AttributeValues" &&
-                    ( propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 ||
-                    propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIncludeAttribute ) ).Count() > 0 ) &&
-                    propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
+                try
                 {
-                    object propValue = propInfo.GetValue( this, null );
+                    object propValue = null;
+                    if ( propInfo != null && LiquidizableProperty( propInfo ) )
+                    {
+                        propValue = propInfo.GetValue( this, null );
+                    }
+                    else if ( this.AdditionalLavaFields != null && this.AdditionalLavaFields.ContainsKey( propertyKey ) )
+                    {
+                        propValue = this.AdditionalLavaFields[propertyKey];
+                    }
 
                     if ( propValue is Guid )
                     {
@@ -333,10 +374,24 @@ namespace Rock.Data
                         return propValue;
                     }
                 }
+                catch
+                {
+                    // intentionally ignore
+                }
 
                 return null;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the additional fields that can be added as fields to this object for Lava
+        /// </summary>
+        /// <value>
+        /// The additional Lava fields.
+        /// </value>
+        //[LavaIgnore]
+        [LavaIgnore]
+        public virtual Dictionary<string, object> AdditionalLavaFields { get; set; }
 
         /// <summary>
         /// Determines whether the specified key contains key.
@@ -345,17 +400,13 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool ContainsKey( object key )
         {
-            Type entityType = this.GetType();
-            if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
-                entityType = entityType.BaseType;
-
-            var propInfo = entityType.GetProperty( key.ToStringSafe() );
-            if ( propInfo != null &&
-                propInfo.Name != "Attributes" &&
-                propInfo.Name != "AttributeValues" &&
-                ( propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 ||
-                propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIncludeAttribute ) ).Count() > 0 ) &&
-                propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
+            string propertyKey = key.ToStringSafe();
+            var propInfo = GetBaseType().GetProperty( propertyKey );
+            if ( propInfo != null && LiquidizableProperty( propInfo ) )
+            {
+                return true;
+            }
+            else if ( this.AdditionalLavaFields != null && this.AdditionalLavaFields.ContainsKey( propertyKey ) )
             {
                 return true;
             }
@@ -363,6 +414,41 @@ namespace Rock.Data
             return false;
         }
 
+        private Type GetBaseType()
+        {
+            Type entityType = this.GetType();
+            if ( entityType.IsDynamicProxyType() )
+            {
+                entityType = entityType.BaseType;
+            }
+
+            return entityType;
+        }
+
+        private bool LiquidizableProperty( PropertyInfo propInfo )
+        {
+            // If property has a [LavaIgnore] attribute return false
+            if ( propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() > 0 )
+            {
+                return false;
+            }
+
+            // If property has a [DataMember] attribute return true
+            if ( propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
+            {
+                return true;
+            }
+
+            // If property has a [LavaInclude] attribute return true
+            if ( propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIncludeAttribute ) ).Count() > 0 )
+            {
+                return true;
+            }
+
+            // otherwise return false
+            return false;
+
+        }
         #endregion
 
         #region Static Methods

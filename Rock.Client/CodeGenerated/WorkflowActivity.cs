@@ -21,38 +21,58 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for WorkflowActivity
+    /// Base client model for WorkflowActivity that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class WorkflowActivity
+    public partial class WorkflowActivityEntity
     {
         /// <summary />
-        public int WorkflowId { get; set; }
-
-        /// <summary />
-        public int ActivityTypeId { get; set; }
-
-        /// <summary />
-        public int? AssignedPersonAliasId { get; set; }
-
-        /// <summary />
-        public int? AssignedGroupId { get; set; }
-
-        /// <summary />
-        public DateTime? ActivatedDateTime { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public int? ActivatedByActivityId { get; set; }
 
         /// <summary />
-        public DateTime? LastProcessedDateTime { get; set; }
+        public DateTime? ActivatedDateTime { get; set; }
+
+        /// <summary />
+        public int ActivityTypeId { get; set; }
+
+        /// <summary />
+        public int? AssignedGroupId { get; set; }
+
+        /// <summary />
+        public int? AssignedPersonAliasId { get; set; }
 
         /// <summary />
         public DateTime? CompletedDateTime { get; set; }
+
+        /// <summary />
+        public DateTime? LastProcessedDateTime { get; set; }
+
+        /// <summary />
+        public int WorkflowId { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Client model for WorkflowActivity that includes all the fields that are available for GETs. Use this for GETs (use WorkflowActivityEntity for POST/PUTs)
+    /// </summary>
+    public partial class WorkflowActivity : WorkflowActivityEntity
+    {
+        /// <summary />
+        public ICollection<WorkflowAction> Actions { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -66,14 +86,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
-        public int Id { get; set; }
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

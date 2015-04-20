@@ -21,44 +21,24 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for FinancialTransaction
+    /// Base client model for FinancialTransaction that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class FinancialTransaction
+    public partial class FinancialTransactionEntity
     {
+        /// <summary />
+        public int Id { get; set; }
+
         /// <summary />
         public int? AuthorizedPersonAliasId { get; set; }
 
         /// <summary />
         public int? BatchId { get; set; }
-
-        /// <summary />
-        public int? GatewayEntityTypeId { get; set; }
-
-        /// <summary />
-        public DateTime? TransactionDateTime { get; set; }
-
-        /// <summary />
-        public string TransactionCode { get; set; }
-
-        /// <summary />
-        public string Summary { get; set; }
-
-        /// <summary />
-        public int TransactionTypeValueId { get; set; }
-
-        /// <summary />
-        public int? CurrencyTypeValueId { get; set; }
-
-        /// <summary />
-        public int? CreditCardTypeValueId { get; set; }
-
-        /// <summary />
-        public int? SourceTypeValueId { get; set; }
 
         /// <summary />
         public string CheckMicrEncrypted { get; set; }
@@ -67,13 +47,71 @@ namespace Rock.Client
         public string CheckMicrHash { get; set; }
 
         /// <summary />
-        public int? ScheduledTransactionId { get; set; }
+        public int? CreditCardTypeValueId { get; set; }
+
+        /// <summary />
+        public int? CurrencyTypeValueId { get; set; }
+
+        /// <summary />
+        public int? FinancialGatewayId { get; set; }
 
         /// <summary />
         public int? ProcessedByPersonAliasId { get; set; }
 
         /// <summary />
         public DateTime? ProcessedDateTime { get; set; }
+
+        /// <summary />
+        public int? ScheduledTransactionId { get; set; }
+
+        /// <summary />
+        public int? SourceTypeValueId { get; set; }
+
+        /// <summary />
+        public string Summary { get; set; }
+
+        /// <summary />
+        public string TransactionCode { get; set; }
+
+        /// <summary />
+        public DateTime? TransactionDateTime { get; set; }
+
+        /// <summary />
+        public int TransactionTypeValueId { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Client model for FinancialTransaction that includes all the fields that are available for GETs. Use this for GETs (use FinancialTransactionEntity for POST/PUTs)
+    /// </summary>
+    public partial class FinancialTransaction : FinancialTransactionEntity
+    {
+        /// <summary />
+        public DefinedValue CreditCardTypeValue { get; set; }
+
+        /// <summary />
+        public DefinedValue CurrencyTypeValue { get; set; }
+
+        /// <summary />
+        public FinancialGateway FinancialGateway { get; set; }
+
+        /// <summary />
+        public ICollection<FinancialTransactionImage> Images { get; set; }
+
+        /// <summary />
+        public DefinedValue SourceTypeValue { get; set; }
+
+        /// <summary />
+        public ICollection<FinancialTransactionDetail> TransactionDetails { get; set; }
+
+        /// <summary />
+        public DefinedValue TransactionTypeValue { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -87,14 +125,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
-        public int Id { get; set; }
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

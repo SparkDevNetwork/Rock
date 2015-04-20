@@ -70,6 +70,11 @@ namespace RockWeb.Blocks.Examples
         private static BinaryFileType _binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
 
         /// <summary>
+        /// The Binary file type settings
+        /// </summary>
+        private string _binaryFileTypeSettings = string.Empty;
+
+        /// <summary>
         /// The id for the "child" role of a family.
         /// </summary>
         private static int _childRoleId = new GroupTypeRoleService( new RockContext() ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
@@ -87,7 +92,7 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// The storage type to use for the people photos.
         /// </summary>
-        private static EntityTypeCache _storageEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.STORAGE_PROVIDER_DATABASE.AsGuid() );
+        private static EntityType _storageEntityType = _binaryFileType.StorageEntityType;
 
         /// <summary>
         /// The Autnentication Database entity type.
@@ -456,6 +461,9 @@ namespace RockWeb.Blocks.Examples
 
             } );
 
+            // Clear the static object that contains all auth rules (so that it will be refreshed)
+            Rock.Security.Authorization.Flush();
+
             if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
             {
                 lTime.Text = _sb.ToString();
@@ -707,6 +715,18 @@ namespace RockWeb.Blocks.Examples
                 return;
             }
 
+            // Persist the storage type's settings specific to the photo binary file type
+            var settings = new Dictionary<string, string>();
+            if ( _binaryFileType.Attributes == null )
+            {
+                _binaryFileType.LoadAttributes();
+            }
+            foreach ( var attributeValue in _binaryFileType.AttributeValues )
+            {
+                settings.Add( attributeValue.Key, attributeValue.Value.Value );
+            }
+            _binaryFileTypeSettings = settings.ToJson();
+
             bool fabricateAttendance = GetAttributeValue( "FabricateAttendance" ).AsBoolean();
             GroupService groupService = new GroupService( rockContext );
             var allFamilies = rockContext.Groups;
@@ -836,6 +856,7 @@ namespace RockWeb.Blocks.Examples
             }
 
             GroupService groupService = new GroupService( rockContext );
+            DefinedTypeCache smallGroupTopicType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SMALL_GROUP_TOPIC.AsGuid() );
 
             // Next create the group along with its members.
             foreach ( var elemGroup in elemGroups.Elements( "group" ) )
@@ -880,7 +901,10 @@ namespace RockWeb.Blocks.Examples
                 if ( elemGroup.Attribute( "parentGroupGuid" ) != null )
                 {
                     var parentGroup = groupService.Get( elemGroup.Attribute( "parentGroupGuid" ).Value.AsGuid() );
-                    group.ParentGroupId = parentGroup.Id;
+                    if ( parentGroup != null )
+                    {
+                        group.ParentGroupId = parentGroup.Id;
+                    }
                 }
 
                 // Set the group's meeting location
@@ -909,13 +933,29 @@ namespace RockWeb.Blocks.Examples
                 // Set the study topic
                 if ( elemGroup.Attribute( "studyTopic" ) != null )
                 {
-                    group.SetAttributeValue( "StudyTopic", elemGroup.Attribute( "studyTopic" ).Value );
+                    var topic = elemGroup.Attribute( "studyTopic" ).Value;
+                    DefinedValueCache smallGroupTopicDefinedValue = smallGroupTopicType.DefinedValues.FirstOrDefault( a => a.Value == topic );
+
+                    // add it as new if we didn't find it.
+                    if ( smallGroupTopicDefinedValue == null )
+                    {
+                        smallGroupTopicDefinedValue = AddDefinedTypeValue( topic, smallGroupTopicType, rockContext );
+                    }
+
+                    group.SetAttributeValue( "Topic", smallGroupTopicDefinedValue.Guid.ToString() );
                 }
 
-                // Set the meeting time
-                if ( elemGroup.Attribute( "meetingTime" ) != null )
+                // Set the schedule and meeting time
+                if ( elemGroup.Attribute( "groupSchedule" ) != null )
                 {
-                    group.SetAttributeValue( "MeetingTime", elemGroup.Attribute( "meetingTime" ).Value );
+                    string[] schedule = elemGroup.Attribute( "groupSchedule" ).Value.SplitDelimitedValues( whitespace: false );
+
+                    if ( schedule[0] == "weekly" )
+                    {
+                        var dow = schedule[1];
+                        var time = schedule[2];
+                        AddWeeklySchedule( group, dow, time );
+                    }
                 }
 
                 // Add each person as a member
@@ -925,7 +965,24 @@ namespace RockWeb.Blocks.Examples
 
                     GroupMember groupMember = new GroupMember();
                     groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                    groupMember.GroupRoleId = roleId ?? -1;
+
+                    if ( elemPerson.Attribute( "isLeader" ) != null )
+                    {
+                        bool isLeader = elemPerson.Attribute( "isLeader" ).Value.Trim().AsBoolean();
+                        if ( isLeader )
+                        {
+                            var gtLeaderRole = groupType.Roles.Where( r => r.IsLeader ).FirstOrDefault();
+                            if ( gtLeaderRole != null )
+                            {
+                                groupMember.GroupRoleId = gtLeaderRole.Id;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        groupMember.GroupRoleId = roleId ?? -1;
+                    }
+
                     groupMember.PersonId = _peopleDictionary[personGuid];
                     group.Members.Add( groupMember );
                 }
@@ -965,6 +1022,56 @@ namespace RockWeb.Blocks.Examples
                     _sb.AppendFormat( "{0:00}:{1:00}.{2:00} group location schedules added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
                 }
              }
+        }
+
+        /// <summary>
+        /// Adds a Weekly schedule to the given group.
+        /// </summary>
+        /// <param name="group"></param>
+        /// <param name="dow"></param>
+        /// <param name="time"></param>
+        private void AddWeeklySchedule( Group group, string dayOfWeekName, string time )
+        {
+            group.Schedule = new Schedule();
+
+            DayOfWeek dow = (DayOfWeek)Enum.Parse(typeof(DayOfWeek), dayOfWeekName, true);
+
+            group.Schedule.iCalendarContent = null;
+            group.Schedule.WeeklyDayOfWeek = dow;
+
+            TimeSpan timespan;
+            if ( TimeSpan.TryParse( time, out timespan ))
+            {
+                group.Schedule.WeeklyTimeOfDay = timespan;
+            }            
+        }
+
+        /// <summary>
+        /// Adds a new defined value to a given DefinedType.
+        /// </summary>
+        /// <param name="topic">the string value of the new defined value</param>
+        /// <param name="definedTypeCache">a defined type cache to which the defined value will be added.</param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        private DefinedValueCache AddDefinedTypeValue( string topic, DefinedTypeCache definedTypeCache, RockContext rockContext )
+        {
+            DefinedValueService definedValueService = new DefinedValueService( rockContext );
+            
+            DefinedValue definedValue = new DefinedValue {
+                Id = 0,
+                IsSystem = false,
+                Value = topic,
+                Description = "",
+                CreatedDateTime = RockDateTime.Now,
+                DefinedTypeId = definedTypeCache.Id
+            };
+            definedValueService.Add( definedValue );
+            rockContext.SaveChanges();
+
+            Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
+            Rock.Web.Cache.DefinedTypeCache.Flush( definedTypeCache.Id );
+
+            return DefinedValueCache.Read( definedValue.Id, rockContext );
         }
 
         /// <summary>
@@ -1454,16 +1561,22 @@ namespace RockWeb.Blocks.Examples
 
                     if ( personElem.Attribute( "birthDate" ) != null )
                     {
-                        person.BirthDate = DateTime.Parse( personElem.Attribute( "birthDate" ).Value.Trim(), new CultureInfo( "en-US" ) );
+                        person.SetBirthDate( DateTime.Parse( personElem.Attribute( "birthDate" ).Value.Trim(), new CultureInfo( "en-US" ) ) );
                     }
 
                     if ( personElem.Attribute( "grade" ) != null )
                     {
-                        person.Grade = int.Parse( personElem.Attribute( "grade" ).Value.Trim() );
+                        int? grade = personElem.Attribute( "grade" ).Value.AsIntegerOrNull();
+                        if (grade.HasValue)
+                        {
+                            // convert the grade (0-12 where 12 = Senior), to a GradeOffset (12-0 where 12 = K and 0 = Senior)
+                            int gradeOffset = 12 - grade.Value;
+                            person.GradeOffset = gradeOffset >= 0 ? gradeOffset : (int?)null;
+                        }
                     }
                     else if ( personElem.Attribute( "graduationDate" ) != null )
                     {
-                        person.GraduationDate = DateTime.Parse( personElem.Attribute( "graduationDate" ).Value.Trim(), new CultureInfo( "en-US" ) );
+                        person.GraduationYear = DateTime.Parse( personElem.Attribute( "graduationDate" ).Value.Trim(), new CultureInfo( "en-US" ) ).Year;
                     }
 
                     // Now, if their age was given we'll change the given birth year to make them
@@ -1472,7 +1585,7 @@ namespace RockWeb.Blocks.Examples
                     {
                         int age = int.Parse( personElem.Attribute( "age" ).Value.Trim() );
                         int ageDiff = person.Age - age ?? 0;
-                        person.BirthDate = person.BirthDate.Value.AddYears( ageDiff );
+                        person.SetBirthDate( person.BirthDate.Value.AddYears( ageDiff ) );
                     }
 
                     person.EmailPreference = EmailPreference.EmailAllowed;
@@ -1750,13 +1863,11 @@ namespace RockWeb.Blocks.Examples
             binaryFile.IsTemporary = true;
             binaryFile.BinaryFileTypeId = _binaryFileType.Id;
             binaryFile.FileName = Path.GetFileName( photoUrl );
-            binaryFile.Data = new BinaryFileData();
-            binaryFile.SetStorageEntityTypeId( _storageEntityType.Id );
 
             var webClient = new WebClient();
             try
             {
-                binaryFile.Data.ContentStream = new MemoryStream( webClient.DownloadData( photoUrl ) );
+                binaryFile.ContentStream = new MemoryStream( webClient.DownloadData( photoUrl ) );
 
                 if ( webClient.ResponseHeaders != null )
                 {
@@ -1789,6 +1900,16 @@ namespace RockWeb.Blocks.Examples
                         default:
                             throw new NotSupportedException( string.Format( "unknown MimeType for {0}", photoUrl ) );
                     }
+                }
+
+                // Because prepost processing is disabled for this rockcontext, need to
+                // manually have the storage provider save the contents of the binary file
+                binaryFile.SetStorageEntityTypeId( _storageEntityType.Id );
+                binaryFile.StorageEntitySettings = _binaryFileTypeSettings;
+                if ( binaryFile.StorageProvider != null )
+                {
+                    binaryFile.StorageProvider.SaveContent( binaryFile );
+                    binaryFile.Path = binaryFile.StorageProvider.GetPath( binaryFile );
                 }
 
                 var binaryFileService = new BinaryFileService( context );

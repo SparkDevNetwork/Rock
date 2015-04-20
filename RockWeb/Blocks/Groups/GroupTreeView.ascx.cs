@@ -35,11 +35,13 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Creates a navigation tree for groups of the configured group type(s)." )]
 
-    [TextField( "Treeview Title", "Group Tree View", false )]
-    [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
-    [GroupField( "Root Group", "Select the root group to use as a starting point for the tree view.", false )]
-    [BooleanField( "Limit to Security Role Groups" )]
-    [LinkedPage( "Detail Page" )]
+    [TextField( "Treeview Title", "Group Tree View", false, order: 1 )]
+    [GroupTypesField( "Group Types Include", "Select group types to show in this block.  Leave all unchecked to show all but the excluded group types.", false, key: "GroupTypes", order: 2 )]
+    [GroupTypesField( "Group Types Exclude", "Select group types to exclude from this block.", false, key: "GroupTypesExclude", order: 3 )]
+    [GroupField( "Root Group", "Select the root group to use as a starting point for the tree view.", false, order: 4 )]
+    [BooleanField( "Limit to Security Role Groups", order: 5 )]
+    [BooleanField( "Show Filter Option to include Inactive Groups", defaultValue: true, key: "ShowFilterOption", order: 6 )]
+    [LinkedPage( "Detail Page", order: 7 )]
     public partial class GroupTreeView : RockBlock
     {
         #region Fields
@@ -75,6 +77,17 @@ namespace RockWeb.Blocks.Groups
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upGroupType );
+
+            tglHideInactiveGroups.Visible = this.GetAttributeValue( "ShowFilterOption" ).AsBooleanOrNull() ?? true;
+            if ( tglHideInactiveGroups.Visible )
+            {
+                tglHideInactiveGroups.Checked = this.GetUserPreference( "HideInactiveGroups" ).AsBooleanOrNull() ?? true;
+            }
+            else
+            {
+                // if the filter is hidden, don't show inactive groups
+                tglHideInactiveGroups.Checked = true;
+            }
         }
 
         /// <summary>
@@ -84,7 +97,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            NavigateToPage( this.RockPage.Guid, new Dictionary<string,string>() );
+            NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );
         }
 
         /// <summary>
@@ -139,14 +152,13 @@ namespace RockWeb.Blocks.Groups
 
             if ( !string.IsNullOrWhiteSpace( _groupId ) )
             {
-                List<int> allowedGroupTypes = hfGroupTypes.Value.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
-
                 string key = string.Format( "Group:{0}", _groupId );
+                var rockContext = new RockContext();
                 Group selectedGroup = RockPage.GetSharedItem( key ) as Group;
                 if ( selectedGroup == null )
                 {
                     int id = _groupId.AsInteger();
-                    selectedGroup = new GroupService( new RockContext() ).Queryable( "GroupType" )
+                    selectedGroup = new GroupService( rockContext ).Queryable( "GroupType" )
                         .Where( g => g.Id == id )
                         .FirstOrDefault();
                     RockPage.SaveSharedItem( key, selectedGroup );
@@ -158,7 +170,7 @@ namespace RockWeb.Blocks.Groups
                 var group = selectedGroup;
                 while ( group != null )
                 {
-                    if ( allowedGroupTypes.Any() && !allowedGroupTypes.Contains( group.GroupTypeId) )
+                    if ( !IsGroupTypeIncluded( group.GroupTypeId ) )
                     {
                         group = null;
                         selectedGroup = null;
@@ -200,7 +212,7 @@ namespace RockWeb.Blocks.Groups
 
                     // show the Add button if the selected Group's GroupType can have children and one or more of those child group types is allowed
                     if ( selectedGroup.GroupType.ChildGroupTypes.Count > 0 &&
-                        ( !allowedGroupTypes.Any() || ( allowedGroupTypes.Any( a => selectedGroup.GroupType.ChildGroupTypes.Any( c => c.Id == a ) ) ) ) )
+                        ( selectedGroup.GroupType.ChildGroupTypes.Any( c => IsGroupTypeIncluded( c.Id ) ) ) )
                     {
                         canAddChildGroup = canEditBlock;
 
@@ -243,6 +255,33 @@ namespace RockWeb.Blocks.Groups
             {
                 lbAddGroupChild.Enabled = false;
             }
+
+            hfIncludeInactiveGroups.Value = ( !tglHideInactiveGroups.Checked ).ToTrueFalse();
+        }
+
+        /// <summary>
+        /// Determines whether [is group type included] [the specified group type identifier].
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        private bool IsGroupTypeIncluded( int groupTypeId )
+        {
+            List<int> includeGroupTypes = hfGroupTypesInclude.Value.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
+            List<int> excludeGroupTypes = hfGroupTypesExclude.Value.SplitDelimitedValues().AsIntegerList();
+            if ( includeGroupTypes.Any() )
+            {
+                //// if includedGroupTypes has values, only include groupTypes from the includedGroupTypes list
+                return ( includeGroupTypes.Contains( groupTypeId ) );
+            }
+            else if ( excludeGroupTypes.Any() )
+            {
+                //// if includedGroupTypes doesn't have anything, exclude groupTypes that are in the excludeGroupTypes list
+                return !excludeGroupTypes.Contains( groupTypeId );
+            }
+            else
+            {
+                return true;
+            }
         }
 
         #endregion
@@ -260,7 +299,6 @@ namespace RockWeb.Blocks.Groups
             qryParams.Add( "GroupId", 0.ToString() );
             qryParams.Add( "ParentGroupId", hfRootGroupId.Value );
             qryParams.Add( "ExpandedIds", hfInitialGroupParentIds.Value );
-
 
             NavigateToLinkedPage( "DetailPage", qryParams );
         }
@@ -291,24 +329,55 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void SetAllowedGroupTypes()
         {
-            hfGroupTypes.Value = string.Empty;
-
             // limit GroupType selection to what Block Attributes allow
-            List<Guid> groupTypeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( Guid.Parse ).ToList();
-            if ( groupTypeGuids.Any() )
+
+            hfGroupTypesInclude.Value = string.Empty;
+            List<Guid> groupTypeIncludeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList();
+
+            if ( groupTypeIncludeGuids.Any() )
             {
-                var groupTypeIdList = new List<int>();
-                foreach ( Guid guid in groupTypeGuids )
+                var groupTypeIdIncludeList = new List<int>();
+                foreach ( Guid guid in groupTypeIncludeGuids )
                 {
                     var groupType = GroupTypeCache.Read( guid );
                     if ( groupType != null )
                     {
-                        groupTypeIdList.Add( groupType.Id );
+                        groupTypeIdIncludeList.Add( groupType.Id );
                     }
                 }
 
-                hfGroupTypes.Value = groupTypeIdList.AsDelimited( "," );
+                hfGroupTypesInclude.Value = groupTypeIdIncludeList.AsDelimited( "," );
             }
+
+            hfGroupTypesExclude.Value = string.Empty;
+            List<Guid> groupTypeExcludeGuids = GetAttributeValue( "GroupTypesExclude" ).SplitDelimitedValues().AsGuidList();
+            if ( groupTypeExcludeGuids.Any() )
+            {
+                var groupTypeIdExcludeList = new List<int>();
+                foreach ( Guid guid in groupTypeExcludeGuids )
+                {
+                    var groupType = GroupTypeCache.Read( guid );
+                    if ( groupType != null )
+                    {
+                        groupTypeIdExcludeList.Add( groupType.Id );
+                    }
+                }
+
+                hfGroupTypesExclude.Value = groupTypeIdExcludeList.AsDelimited( "," );
+            }
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the tglHideInactiveGroups control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglHideInactiveGroups_CheckedChanged( object sender, EventArgs e )
+        {
+            this.SetUserPreference( "HideInactiveGroups", tglHideInactiveGroups.Checked.ToTrueFalse() );
+
+            // reload the whole page
+            NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );
         }
 
         /// <summary>
@@ -318,7 +387,9 @@ namespace RockWeb.Blocks.Groups
         private Group FindFirstGroup()
         {
             var groupService = new GroupService( new RockContext() );
-            var qry = groupService.GetNavigationChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), hfGroupTypes.Value );
+            var includedGroupTypeIds = hfGroupTypesInclude.Value.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
+            var excludedGroupTypeIds = hfGroupTypesExclude.Value.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
+            var qry = groupService.GetNavigationChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), includedGroupTypeIds, excludedGroupTypeIds, !tglHideInactiveGroups.Checked );
 
             foreach ( var group in qry.OrderBy( g => g.Name ) )
             {

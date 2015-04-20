@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Finance
 
             bool canEdit = IsUserAuthorized( Authorization.EDIT );
 
-            gList.DataKeyNames = new string[] { "id" };
+            gList.DataKeyNames = new string[] { "Id" };
             gList.Actions.ShowAdd = false;
             gList.IsDeleteEnabled = canEdit;
             gList.GridRebind += gList_GridRebind;

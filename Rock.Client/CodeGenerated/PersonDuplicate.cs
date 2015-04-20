@@ -21,26 +21,33 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for PersonDuplicate
+    /// Base client model for PersonDuplicate that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class PersonDuplicate
+    public partial class PersonDuplicateEntity
     {
         /// <summary />
-        public int PersonAliasId { get; set; }
+        public int Id { get; set; }
+
+        /// <summary />
+        public int? Capacity { get; set; }
 
         /// <summary />
         public int DuplicatePersonAliasId { get; set; }
 
         /// <summary />
+        public bool IgnoreUntilScoreChanges { get; set; }
+
+        /// <summary />
         public bool IsConfirmedAsNotDuplicate { get; set; }
 
         /// <summary />
-        public bool IgnoreUntilScoreChanges { get; set; }
+        public int PersonAliasId { get; set; }
 
         /// <summary />
         public int? Score { get; set; }
@@ -49,10 +56,23 @@ namespace Rock.Client
         public string ScoreDetail { get; set; }
 
         /// <summary />
-        public int? Capacity { get; set; }
+        public int? TotalCapacity { get; set; }
 
         /// <summary />
-        public int? TotalCapacity { get; set; }
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Client model for PersonDuplicate that includes all the fields that are available for GETs. Use this for GETs (use PersonDuplicateEntity for POST/PUTs)
+    /// </summary>
+    public partial class PersonDuplicate : PersonDuplicateEntity
+    {
+        /// <summary />
+        public double? ConfidenceScore { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -66,14 +86,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
-        public int Id { get; set; }
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

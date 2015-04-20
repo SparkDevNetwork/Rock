@@ -52,9 +52,15 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<FinancialPersonSavedAccount>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, FinancialPersonSavedAccount.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Group>( Context ).Queryable().Any( a => a.ParentGroupId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Group.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} contains one or more child {1}.", Group.FriendlyTypeName, Group.FriendlyTypeName.Pluralize().ToLower() );
                 return false;
             }  
  
@@ -105,21 +111,26 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Group target, Group source )
         {
-            target.IsSystem = source.IsSystem;
-            target.ParentGroupId = source.ParentGroupId;
-            target.GroupTypeId = source.GroupTypeId;
-            target.CampusId = source.CampusId;
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.IsSecurityRole = source.IsSecurityRole;
-            target.IsActive = source.IsActive;
-            target.Order = source.Order;
+            target.Id = source.Id;
+            target.AddUserAccountsDuringSync = source.AddUserAccountsDuringSync;
             target.AllowGuests = source.AllowGuests;
+            target.CampusId = source.CampusId;
+            target.Description = source.Description;
+            target.ExitSystemEmailId = source.ExitSystemEmailId;
+            target.GroupTypeId = source.GroupTypeId;
+            target.IsActive = source.IsActive;
+            target.IsSecurityRole = source.IsSecurityRole;
+            target.IsSystem = source.IsSystem;
+            target.Name = source.Name;
+            target.Order = source.Order;
+            target.ParentGroupId = source.ParentGroupId;
+            target.ScheduleId = source.ScheduleId;
+            target.SyncDataViewId = source.SyncDataViewId;
+            target.WelcomeSystemEmailId = source.WelcomeSystemEmailId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

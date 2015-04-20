@@ -43,8 +43,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Description( "Allows you to edit a person." )]
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
-        DateTime _gradeTransitionDate = new DateTime( RockDateTime.Today.Year, 6, 1 );
-
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -55,8 +53,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             ddlTitle.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
             ddlSuffix.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
-            rblMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ) );
-            rblConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ) );
+            ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ), true );
+            ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
             ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
             ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
 
@@ -65,60 +63,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( Person != null )
             {
                 var personService = new PersonService( new RockContext() );
-                foreach ( var family in personService.GetFamilies( Person.Id ).Select( a => new { a.Name, a.Id } ))
+                foreach ( var family in personService.GetFamilies( Person.Id ).Select( a => new { a.Name, a.Id } ) )
                 {
                     ddlGivingGroup.Items.Add( new ListItem( family.Name, family.Id.ToString() ) );
                 }
             }
 
-            DateTime? gradeTransitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime();
-            if (gradeTransitionDate.HasValue)
-            {
-                _gradeTransitionDate = gradeTransitionDate.Value;
-            }
-
-            ddlGrade.Items.Clear();
-            ddlGrade.Items.Add( new ListItem( "", "" ) );
-            ddlGrade.Items.Add( new ListItem( "K", "0" ) );
-            ddlGrade.Items.Add( new ListItem( "1st", "1" ) );
-            ddlGrade.Items.Add( new ListItem( "2nd", "2" ) );
-            ddlGrade.Items.Add( new ListItem( "3rd", "3" ) );
-            ddlGrade.Items.Add( new ListItem( "4th", "4" ) );
-            ddlGrade.Items.Add( new ListItem( "5th", "5" ) );
-            ddlGrade.Items.Add( new ListItem( "6th", "6" ) );
-            ddlGrade.Items.Add( new ListItem( "7th", "7" ) );
-            ddlGrade.Items.Add( new ListItem( "8th", "8" ) );
-            ddlGrade.Items.Add( new ListItem( "9th", "9" ) );
-            ddlGrade.Items.Add( new ListItem( "10th", "10" ) );
-            ddlGrade.Items.Add( new ListItem( "11th", "11" ) );
-            ddlGrade.Items.Add( new ListItem( "12th", "12" ) );
-
-            int gradeFactorReactor = ( RockDateTime.Now < _gradeTransitionDate ) ? 12 : 13;
-
-            string script = string.Format( @"
-    $('#{0}').change(function(){{
-        if ($(this).val() == '') {{
-            $('#{1}').val('');
-        }} else {{
-            $('#{1}').val( {2} + ( {3} - parseInt( $(this).val() ) ) );
-        }} 
-    }});
-
-    $('#{1}').change(function(){{
-        if ($(this).val() == '') {{
-            $('#{0}').val('');
-        }} else {{
-            var grade = {3} - ( parseInt( $(this).val() ) - {4} );
-            if (grade >= 0 && grade <= 12) {{
-                $('#{0}').val(grade.toString());
-            }} else {{
-                $('#{0}').val('');
-            }}
-        }}
-    }});
-
-", ddlGrade.ClientID, ypGraduation.ClientID, _gradeTransitionDate.Year, gradeFactorReactor, RockDateTime.Now.Year );
-            ScriptManager.RegisterStartupScript( ddlGrade, ddlGrade.GetType(), "grade-selection-" + BlockId.ToString(), script, true );
+            ScriptManager.RegisterStartupScript( ddlGradePicker, ddlGradePicker.GetType(), "grade-selection-" + BlockId.ToString(), ddlGradePicker.GetJavascriptForYearPicker(ypGraduation), true );
 
             string smsScript = @"
     $('.js-sms-number').click(function () {
@@ -247,20 +198,20 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                     else
                     {
-                        person.BirthDate = null;
+                        person.SetBirthDate( null );
                     }
 
                     History.EvaluateChange( changes, "Birth Month", birthMonth, person.BirthMonth );
                     History.EvaluateChange( changes, "Birth Day", birthDay, person.BirthDay );
                     History.EvaluateChange( changes, "Birth Year", birthYear, person.BirthYear );
 
-                    DateTime? graduationDate = null;
+                    int? graduationYear = null;
                     if ( ypGraduation.SelectedYear.HasValue )
                     {
-                        graduationDate = new DateTime( ypGraduation.SelectedYear.Value, _gradeTransitionDate.Month, _gradeTransitionDate.Day );
+                        graduationYear = ypGraduation.SelectedYear.Value;
                     }
-                    History.EvaluateChange( changes, "Graduation Date", person.GraduationDate, graduationDate );
-                    person.GraduationDate = graduationDate;
+                    History.EvaluateChange( changes, "Graduation Year", person.GraduationYear, graduationYear );
+                    person.GraduationYear = graduationYear;
 
                     History.EvaluateChange( changes, "Anniversary Date", person.AnniversaryDate, dpAnniversaryDate.SelectedDate );
                     person.AnniversaryDate = dpAnniversaryDate.SelectedDate;
@@ -269,11 +220,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     History.EvaluateChange( changes, "Gender", person.Gender, newGender );
                     person.Gender = newGender;
 
-                    int? newMaritalStatusId = rblMaritalStatus.SelectedValueAsInt();
+                    int? newMaritalStatusId = ddlMaritalStatus.SelectedValueAsInt();
                     History.EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
                     person.MaritalStatusValueId = newMaritalStatusId;
 
-                    int? newConnectionStatusId = rblConnectionStatus.SelectedValueAsInt();
+                    int? newConnectionStatusId = ddlConnectionStatus.SelectedValueAsInt();
                     History.EvaluateChange( changes, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
                     person.ConnectionStatusValueId = newConnectionStatusId;
 
@@ -359,15 +310,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     History.EvaluateChange( changes, "Email Preference", person.EmailPreference, newEmailPreference );
                     person.EmailPreference = newEmailPreference;
 
-                int? newGivingGroupId = ddlGivingGroup.SelectedValueAsId();
-                if ( person.GivingGroupId != newGivingGroupId )
-                {
-                    string oldGivingGroupName = person.GivingGroup != null ? person.GivingGroup.Name : string.Empty;
-                    string newGivingGroupName = newGivingGroupId.HasValue ? ddlGivingGroup.Items.FindByValue( newGivingGroupId.Value.ToString() ).Text : string.Empty;
-                    History.EvaluateChange( changes, "Giving Group", oldGivingGroupName, newGivingGroupName );
-                }
-                
-                person.GivingGroupId = newGivingGroupId;
+                    int? newGivingGroupId = ddlGivingGroup.SelectedValueAsId();
+                    if ( person.GivingGroupId != newGivingGroupId )
+                    {
+                        string oldGivingGroupName = person.GivingGroup != null ? person.GivingGroup.Name : string.Empty;
+                        string newGivingGroupName = newGivingGroupId.HasValue ? ddlGivingGroup.Items.FindByValue( newGivingGroupId.Value.ToString() ).Text : string.Empty;
+                        History.EvaluateChange( changes, "Giving Group", oldGivingGroupName, newGivingGroupName );
+                    }
+
+                    person.GivingGroupId = newGivingGroupId;
 
                     int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
                     History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), DefinedValueCache.GetName( newRecordStatusId ) );
@@ -396,8 +347,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
                                 if ( binaryFile != null )
                                 {
-                                    // marked the old images as IsTemporary so they will get cleaned up later
-                                    binaryFile.IsTemporary = true;
+                                    binaryFileService.Delete( binaryFile );
                                     rockContext.SaveChanges();
                                 }
                             }
@@ -440,35 +390,45 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ddlSuffix.SelectedValue = Person.SuffixValueId.HasValue ? Person.SuffixValueId.Value.ToString() : string.Empty;
             bpBirthDay.SelectedDate = Person.BirthDate;
 
-            string selectedGrade = "";
-            if ( Person.GraduationDate.HasValue )
+            if ( Person.GraduationYear.HasValue )
             {
-                int gradeMaxFactorReactor = ( RockDateTime.Now < _gradeTransitionDate ) ? 12 : 13;
-                int grade = gradeMaxFactorReactor - ( Person.GraduationDate.Value.Year - RockDateTime.Now.Year );
-                if (grade >= 0 && grade <= 12)
-                {
-                    selectedGrade = grade.ToString();
-                }
-                ypGraduation.SelectedYear = Person.GraduationDate.Value.Year;
+                ypGraduation.SelectedYear = Person.GraduationYear.Value;
             }
             else
             {
                 ypGraduation.SelectedYear = null;
             }
-            ddlGrade.SelectedValue = selectedGrade;
+
+            if ( !Person.HasGraduated ?? false )
+            {
+                int gradeOffset = Person.GradeOffset.Value;
+                var maxGradeOffset = ddlGradePicker.MaxGradeOffset; ;
+                
+                // keep trying until we find a Grade that has a gradeOffset that that includes the Person's gradeOffset (for example, there might be combined grades)
+                while ( !ddlGradePicker.Items.OfType<ListItem>().Any( a => a.Value.AsInteger() == gradeOffset ) && gradeOffset <= maxGradeOffset )
+                {
+                    gradeOffset++;
+                }
+
+                ddlGradePicker.SetValue( gradeOffset );
+            }
+            else
+            {
+                ddlGradePicker.SelectedIndex = 0;
+            }
 
             dpAnniversaryDate.SelectedDate = Person.AnniversaryDate;
-            rblGender.SelectedValue = Person.Gender.ConvertToString(false);
-            rblMaritalStatus.SelectedValue = Person.MaritalStatusValueId.HasValue ? Person.MaritalStatusValueId.Value.ToString() : string.Empty;
-            rblConnectionStatus.SelectedValue = Person.ConnectionStatusValueId.HasValue ? Person.ConnectionStatusValueId.Value.ToString() : string.Empty;
+            rblGender.SelectedValue = Person.Gender.ConvertToString( false );
+            ddlMaritalStatus.SelectedValue = Person.MaritalStatusValueId.HasValue ? Person.MaritalStatusValueId.Value.ToString() : string.Empty;
+            ddlConnectionStatus.SelectedValue = Person.ConnectionStatusValueId.HasValue ? Person.ConnectionStatusValueId.Value.ToString() : string.Empty;
             tbEmail.Text = Person.Email;
             cbIsEmailActive.Checked = Person.IsEmailActive ?? true;
-            rblEmailPreference.SelectedValue = Person.EmailPreference.ConvertToString(false);
+            rblEmailPreference.SelectedValue = Person.EmailPreference.ConvertToString( false );
 
             ddlRecordStatus.SelectedValue = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValueId.Value.ToString() : string.Empty;
             ddlReason.SelectedValue = Person.RecordStatusReasonValueId.HasValue ? Person.RecordStatusReasonValueId.Value.ToString() : string.Empty;
-            ddlReason.Visible = Person.RecordStatusReasonValueId.HasValue && 
-                Person.RecordStatusValueId.Value == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id; 
+            ddlReason.Visible = Person.RecordStatusReasonValueId.HasValue &&
+                Person.RecordStatusValueId.Value == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
 
             var mobilePhoneType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
 

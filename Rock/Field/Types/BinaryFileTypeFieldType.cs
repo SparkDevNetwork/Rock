@@ -16,10 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
-using Rock;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -32,6 +30,9 @@ namespace Rock.Field.Types
     [Serializable]
     public class BinaryFileTypeFieldType : FieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -44,19 +45,26 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            Guid binaryFileTypeGuid = Guid.Empty;
-            if (Guid.TryParse( value, out binaryFileTypeGuid ))
+            Guid? binaryFileTypeGuid = value.AsGuidOrNull();
+            if ( binaryFileTypeGuid.HasValue )
             {
-                var binaryFiletype = new BinaryFileTypeService( new RockContext() ).Get( binaryFileTypeGuid );
-                if ( binaryFiletype != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = binaryFiletype.Name;
+                    var binaryFiletype = new BinaryFileTypeService( rockContext ).Get( binaryFileTypeGuid.Value );
+                    if ( binaryFiletype != null )
+                    {
+                        formattedValue = binaryFiletype.Name;
+                    }
                 }
             }
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
 
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -84,10 +92,13 @@ namespace Rock.Field.Types
                 int id = int.MinValue;
                 if ( Int32.TryParse( ( (BinaryFileTypePicker)control ).SelectedValue, out id ) )
                 {
-                    var binaryFiletype = new BinaryFileTypeService( new RockContext() ).Get( id );
-                    if ( binaryFiletype != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        return binaryFiletype.Guid.ToString();
+                        var binaryFiletype = new BinaryFileTypeService( rockContext ).Get( id );
+                        if ( binaryFiletype != null )
+                        {
+                            return binaryFiletype.Guid.ToString();
+                        }
                     }
                 }
             }
@@ -107,14 +118,19 @@ namespace Rock.Field.Types
             {
                 if ( control != null && control is BinaryFileTypePicker )
                 {
-                    var binaryFiletype = new BinaryFileTypeService( new RockContext() ).Get( binaryFileTypeGuid );
-                    if ( binaryFiletype != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        ( (BinaryFileTypePicker)control ).SetValue( binaryFiletype.Id.ToString() );
+                        var binaryFiletype = new BinaryFileTypeService( rockContext ).Get( binaryFileTypeGuid );
+                        if ( binaryFiletype != null )
+                        {
+                            ( (BinaryFileTypePicker)control ).SetValue( binaryFiletype.Id.ToString() );
+                        }
                     }
                 }
             }
         }
+
+        #endregion
 
     }
 }

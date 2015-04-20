@@ -32,10 +32,10 @@
                 <div class="grid">
                     <Rock:Grid ID="gTransactions" runat="server" >
                         <Columns>
-                            <asp:BoundField DataField="TransactionDateTime" DataFormatString="{0:d}" HeaderText="Date" />
-                            <asp:BoundField DataField="CurrencyType" HeaderText="Currency Type" HtmlEncode="false" />
-                            <asp:BoundField DataField="Summary" HeaderText="Summary" HtmlEncode="false" />
-                            <asp:BoundField DataField="TotalAmount" DataFormatString="{0:C}" HeaderText="Amount" />
+                            <Rock:RockBoundField DataField="TransactionDateTime" DataFormatString="{0:d}" HeaderText="Date" />
+                            <Rock:RockBoundField DataField="CurrencyType" HeaderText="Currency Type" HtmlEncode="false" />
+                            <Rock:RockBoundField DataField="Summary" HeaderText="Summary" HtmlEncode="false" />
+                            <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" />
                         </Columns>
                     </Rock:Grid>
                 </div>

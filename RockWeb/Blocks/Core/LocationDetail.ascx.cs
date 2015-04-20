@@ -152,6 +152,8 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
+                FlushCampus( location.Id );
+
                 locationService.Delete( location );
                 rockContext.SaveChanges();
             }
@@ -192,6 +194,7 @@ namespace RockWeb.Blocks.Core
             else
             {
                 location = locationService.Get( locationId );
+                FlushCampus( locationId );
             }
 
             int? orphanedImageId = null;
@@ -651,7 +654,17 @@ namespace RockWeb.Blocks.Core
 
             return string.Format( "<img src='{0}'{1}/>", photoUrl.ToString(), styleString );
         }
-        
+
+        // Flush any cached campus that uses location
+        private void FlushCampus( int locationId )
+        {
+            foreach ( var campus in CampusCache.All()
+                .Where( c => c.LocationId == locationId ) )
+            {
+                CampusCache.Flush( campus.Id );
+            }
+        }
+
         #endregion
     }
 }

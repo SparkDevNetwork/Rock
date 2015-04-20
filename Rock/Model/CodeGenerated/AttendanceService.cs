@@ -87,24 +87,27 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Attendance target, Attendance source )
         {
-            target.LocationId = source.LocationId;
-            target.CampusId = source.CampusId;
-            target.ScheduleId = source.ScheduleId;
-            target.GroupId = source.GroupId;
-            target.PersonAliasId = source.PersonAliasId;
-            target.DeviceId = source.DeviceId;
-            target.SearchTypeValueId = source.SearchTypeValueId;
+            target.Id = source.Id;
             target.AttendanceCodeId = source.AttendanceCodeId;
-            target.QualifierValueId = source.QualifierValueId;
-            target.StartDateTime = source.StartDateTime;
-            target.EndDateTime = source.EndDateTime;
+            target.CampusId = source.CampusId;
+            target.DeviceId = source.DeviceId;
             target.DidAttend = source.DidAttend;
+            target.DidNotOccur = source.DidNotOccur;
+            target.EndDateTime = source.EndDateTime;
+            target.GroupId = source.GroupId;
+            target.LocationId = source.LocationId;
             target.Note = source.Note;
+            target.PersonAliasId = source.PersonAliasId;
+            target.Processed = source.Processed;
+            target.QualifierValueId = source.QualifierValueId;
+            target.RSVP = source.RSVP;
+            target.ScheduleId = source.ScheduleId;
+            target.SearchTypeValueId = source.SearchTypeValueId;
+            target.StartDateTime = source.StartDateTime;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

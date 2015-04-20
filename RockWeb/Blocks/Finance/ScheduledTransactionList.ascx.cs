@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.Finance
 
             bool canEdit = IsUserAuthorized( Authorization.EDIT );
 
-            gList.DataKeyNames = new string[] { "id" };
+            gList.DataKeyNames = new string[] { "Id" };
             gList.Actions.ShowAdd = canEdit && !string.IsNullOrWhiteSpace( GetAttributeValue( "AddPage" ) );
             gList.IsDeleteEnabled = canEdit;
 
@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Finance
         protected void gList_Edit( object sender, RowEventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "ScheduledTransactionId", gList.DataKeys[e.RowIndex]["id"].ToString() );
+            parms.Add( "ScheduledTransactionId", e.RowKeyId.ToString() );
             NavigateToLinkedPage( "ViewPage", parms );
         }
 

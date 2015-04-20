@@ -1,0 +1,552 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+  ║▌║█║▌│║▌▌│║▌█
+  This file format is intended for internal use only.  There is no DTD which defines its 
+  specification yet.  It's purpose is to give us a way to quickly load some sample/play
+  data using the SampleData block.  The data in this file and it's specification is
+  not only subject to change, it will certainly change quite often.
+-->
+<data>
+  <families>
+
+    <!-- The Decker family kids attend service about 80% of the time and attend the regular service 88% of the time.
+         Ted serves as an usher and he and his wife, Cindy are in a small group bible study with the Marble family. 
+    -->
+    <family name="Decker Family" guid="53A02527-C2A7-4F36-8585-71A85B8E4601" campus="main campus"
+            startingAttendance="12/25/2012" endingAttendanceWeeksAgo="0" percentAttendance="80"
+            percentAttendedRegularService="88" attendingScheduleId="3" attendingAltScheduleId="4">
+      <addresses>
+        <address type="home" street1="11624 N 31st Dr" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.593043" long="-112.126518" />
+      </addresses>
+
+      <members>
+        <person guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"
+          firstName="Theodore" nickName="Ted" lastName="Decker" birthDate="2/10/1976" age="38" gender="male"
+          email="ted@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_ted.jpg"
+          homePhone="6235553322" mobilePhone="6235553322" workPhone="6235552444" graduationDate="1/1/1994">
+          <attributes>
+            <attribute BaptismDate="2001-09-13"/>
+            <attribute FirstVisit="2012-12-15"/>
+            <attribute Employer="Rock Solid Church"/>
+            <attribute Position="Outreach Pastor"/>
+
+            <attribute AdaptiveD="28"/>
+            <attribute AdaptiveI="46"/>
+            <attribute AdaptiveS="21"/>
+            <attribute AdaptiveC="8"/>
+            <attribute NaturalD="28"/>
+            <attribute NaturalI="29"/>
+            <attribute NaturalS="20"/>
+            <attribute NaturalC="18"/>
+            <attribute LastSaveDate="2/2/2013"/>
+            <attribute PersonalityType="ID"/>
+            
+          </attributes>
+          <logins>
+            <login userName="tdecker"/>
+          </logins>
+          <notes>
+            <note type="TimeLine" text="Talked to Ted today about starting a new Young Adults ministry"
+                  date="4/3/2014 2:23 PM" byGuid="69DC0FDC-B451-4303-BD91-EF17C0015D23" />
+            <note type="TimeLine" text="Called Ted and heard that his mother is in the hospital and could use prayer."
+                  date="4/2/2014 11:00 PM" byGuid="69DC0FDC-B451-4303-BD91-EF17C0015D23" />
+            <note type="TimeLine" text="Ted has strong leadership skills."
+                  byGuid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C" isPrivate="true" />
+          </notes>
+        </person>
+
+        <person guid="B71494DB-D809-451A-A950-28898D0FD92C"
+          firstName="Cynthia" nickName="Cindy" lastName="Decker" birthDate="3/10/1977" age="37" gender="female"
+          email="cindy@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_cindy.png"
+          homePhone="6235553323" mobilePhone="6235553323" workPhone="">
+          <attributes>
+            <attribute FirstVisit="2001-09-13"/>
+          </attributes>
+          <logins>
+            <login userName="cdecker"/>
+          </logins>
+        </person>
+
+        <person guid="32AAB9E4-970D-4551-A17E-385E66113BD5"
+          firstName="Noah" nickName="Noah" lastName="Decker" birthDate="3/10/2004" age="10" gender="male"
+          email="" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="attendee"  maritalStatus="single" familyRole="child"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_noah.jpg"
+          homePhone="" mobilePhone="" workPhone="" grade="5" />
+
+        <person guid="27919690-3CCE-4FA6-95C4-CD21419EB51F"
+          firstName="Alexis" nickName="Alex" lastName="Decker" birthDate="2/10/2007" age="7" gender="female"
+          email="" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="attendee"  maritalStatus="single" familyRole="child"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_alexis.jpg"
+          homePhone="" mobilePhone="" workPhone="" grade="2">
+          <attributes>
+            <attribute Allergy="Allergic to peanuts"/>
+          </attributes>
+        </person>
+      </members>
+    </family>
+
+    <!-- The Jones family started attending the church in October, 2012 and had a very low attendance rate (about 40%).
+    Unfortunately in August, 2013 Ben and Sarah divorced and now both have joint custody of their son, Brian.  Sarah
+    went on to marry Jim Simmons. -->
+    <family name="Jones Family" guid="3BE313A1-51B1-4B03-B396-CEB9C3D9B919" campus="main campus"
+            startingAttendance="10/15/2012" endingAttendance="08/15/2013" percentAttendance="40"
+            percentAttendedRegularService="50" attendingScheduleId="3" attendingAltScheduleId="4">
+      <addresses>
+        <address type="home" street1="10601 N 32nd Dr" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5822525" long="-112.1283722" />
+      </addresses>
+
+      <members>
+        <person guid="3C402382-3BD2-4337-A996-9E62F1BAB09D"
+          firstName="Benjamin" nickName="Ben" lastName="Jones" birthDate="7/10/1978" age="36" gender="male"
+          email="ben.jones@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/jones_ben.jpg"
+          homePhone="" mobilePhone="" workPhone=""/>
+
+        <person guid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E"
+          firstName="Brian" nickName="Brian" lastName="Jones" birthDate="6/9/2008" age="6" gender="male"
+          email="brian.jones@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="child"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/jones_brian.jpg"
+          homePhone="" mobilePhone="" workPhone="" grade="1">
+          <attributes>
+          </attributes>
+        </person>
+
+      </members>
+    </family>
+
+    <!-- Jim Simmons married Sarah (formerly Sarah Jones) and Jim is now the step-parent of Brian Jones,
+    who lives with them most of the time. They started attending church in November 2013 and have a high
+    percentage attendance rate (90%) and almost always attend the same service.
+    -->
+    <family name="Simmons Family" guid="FA7316E2-FFA9-4A55-B975-8F762353D0A8" campus="main campus"
+            startingAttendance="11/15/2013" endingAttendanceWeeksAgo="0" percentAttendance="90"
+            percentAttendedRegularService="98" attendingScheduleId="4" attendingAltScheduleId="3">
+      <addresses>
+        <address type="home" street1="10828 N Biltmore Dr" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5855064" long="-112.1186981" />
+      </addresses>
+
+      <members>
+        <person guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33"
+          firstName="James" nickName="Jim" lastName="Simmons" birthDate="6/1/1979" age="35" gender="male"
+          email="jim.simmons@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/simmons_jim.jpg"
+          homePhone="" mobilePhone="" workPhone=""/>
+
+        <person guid="FC6B9819-EF2E-44C9-93DB-05571B39E58F"
+          firstName="Sarah" nickName="Sarah" lastName="Simmons" birthDate="5/3/1980" age="34" gender="female"
+          email="sarah.simmons@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/simmons_sarah.jpg"
+          homePhone="" mobilePhone="" workPhone=""/>
+
+        <person guid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E" firstName="Brian"/>
+
+      </members>
+    </family>
+
+    <!-- Mariah Jackson has sole custody of her child Madison Lowe.  Madison is also the child of 
+    of her father Craig, of the Lowe family.
+    -->
+    <family name="Jackson Family" guid="DFBF8D82-3D34-406B-8C84-9F10046ADE30" campus="main campus"
+        startingAttendance="9/25/2013" endingAttendanceWeeksAgo="0" percentAttendance="65"
+        percentAttendedRegularService="50" attendingScheduleId="4" attendingAltScheduleId="3">
+      <addresses>
+        <address type="home" street1="4931 E White Gates Dr" street2="" city="Phoenix" state="AZ" postalCode="85018" lat="33.5123291" long="-111.9730911" />
+      </addresses>
+
+      <members>
+        <person guid="9C2A020B-CF34-403E-A948-3E91FDFB958B"
+          firstName="Mariah" nickName="Mariah" lastName="Jackson" birthDate="1/11/1970" age="37" gender="female"
+          email="mariah.jackson@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/jackson_mariah.jpg"
+          homePhone="" mobilePhone="" workPhone=""/>
+
+        <person guid="C398A8E3-C9BC-4017-A3F6-7C2BFF654056"
+          firstName="Madison" nickName="Maddie" lastName="Lowe" birthDate="10/4/2006" age="7" gender="female"
+          email="madison.lowe@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="child"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/lowe_madison.jpg"
+          homePhone="" mobilePhone="" workPhone="" grade="2">
+          <attributes>
+            <attribute LegalNotes="Frank Lowe (uncle) is not allowed to have contact."/>
+          </attributes>
+        </person>
+      </members>
+    </family>
+
+    <!-- Not too much is known about the Lowe family but Craig Lowe has a "Can-Check-in" relationship
+    with his child Madison Lowe who lives exclusively with Madison Jackson of the Jackson family.
+    -->
+    <family name="Lowe Family" guid="61DC882F-0064-48D6-833F-226B60E79168" campus="main campus">
+      <addresses>
+        <address type="home" street1="3224 W Sahuaro Dr" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5837936" long="-112.1293106" />
+      </addresses>
+
+      <members>
+        <person guid="B701E5D2-ADBD-4C66-91E8-3D6CD298D9A0"
+          firstName="Craig" nickName="Craig" lastName="Lowe" birthDate="8/1/1970" age="37" gender="male"
+          email="craig.lowe@rocksoliddemochurch.com" emailIsActive="false" emailDoNotEmail="true" recordType="person"
+          recordStatus="active" connectionStatus="visitor"  maritalStatus="married" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/lowe_craig.jpg"
+          homePhone="" mobilePhone="" workPhone=""/>
+
+        <person guid="20A2C167-D16E-43B3-A5B0-80CE912589AF"
+         firstName="Tricia" nickName="Trish" lastName="Lowe" birthDate="9/15/1970" age="35" gender="female"
+         email="trish.lowe@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+         recordStatus="active" connectionStatus="visitor"  maritalStatus="married" familyRole="adult"
+         photoUrl="http://storage.rockrms.com/sampledata/person-images/lowe_tricia.jpg"
+         homePhone="" mobilePhone="" workPhone=""/>
+      </members>
+    </family>
+
+    <!-- Alisha Marble, who is the Rock administrator at the church, is married to Bill. They are in 
+    a bible study group with the Decker family. Interesting side note about Bill.  He is one of only
+    0.3% of the population who was born on a leap day (February 29, 1967). 
+    -->
+    <family name="Marble Family" guid="6F2E6B64-3592-4543-8D8E-6BA4040CDC4E" campus="main campus"
+            startingAttendance="1/1/2012" endingAttendanceWeeksAgo="0" percentAttendance="88"
+            percentAttendedRegularService="88" attendingScheduleId="4" attendingAltScheduleId="3">
+      <addresses>
+        <address type="home" street1="3002 W Lupine Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.591269" long="-112.123658" />
+      </addresses>
+
+      <members>
+        <person guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"
+          firstName="Alisha" nickName="Alisha" lastName="Marble" birthDate="5/29/1967" age="48" gender="female"
+          email="alisha.marble@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/marble_alisha.jpg"
+          homePhone="" mobilePhone="" workPhone="6235552444">
+          <attributes>
+            <attribute Employer="Rock Solid Church"/>
+            <attribute Position="Assistant"/>
+          </attributes>
+          <logins>
+            <login userName="amarble"/>
+          </logins>
+        </person>
+        
+        <person guid="1EA811BB-3118-42D1-B020-32A82BC8081A"
+         firstName="William" nickName="Bill" lastName="Marble" birthDate="2/29/1964" gender="male"
+         email="bill.marble@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+         recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
+         photoUrl="http://storage.rockrms.com/sampledata/person-images/marble_bill.jpg"
+         homePhone="" mobilePhone="" workPhone=""/>
+
+      </members>
+
+    </family>
+
+    <!-- Tom and Thomas Miller are actually the same person (duplicate) that needs
+        to be merged. The records have the same email and same phone number.
+        Tom Miller used to live at one address but later moved to a new address.
+        Someone created the Thomas Miller account from a 'connection card' placed
+        in the offering satchel because they did not know that the Tom record (which had 
+        a different address) was the same person.
+     -->
+    <family name="Miller Family" guid="ED6AC70A-4022-446D-B116-A1CD611151C4" campus="main campus">
+      <addresses>
+        <address type="home" street1="2302 E Curnow Dr" street2="" city="Phoenix" state="AZ" postalCode="85016" lat="33.4840026" long="-112.0321966" />
+      </addresses>
+
+      <members>
+        <person guid="47A42BD0-38A3-49D6-A32A-0FCD5E386CC3"
+          firstName="Tom" nickName="Tom" lastName="Miller" birthDate="4/1/1979" gender="male"
+          email="tom.miller@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/miller_tom.jpg"
+          homePhone="6235550909" mobilePhone="" workPhone=""/>
+      </members>
+    </family>
+
+    <family name="Miller Family" guid="A1C61DF4-8C5B-4BD6-90D2-0F09117950A8" campus="main campus">
+      <addresses>
+        <address type="home" street1="11827 N 33rd Circle" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5943947" long="-112.1305923" />
+      </addresses>
+
+      <members>
+        <person guid="955BF3E9-D38A-4DCB-A6F2-EDF5EC2571C5"
+          firstName="Thomas" nickName="Thomas" lastName="Miller" gender="male"
+          email="tom.miller@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="web prospect"  maritalStatus="single" familyRole="adult"
+          homePhone="6235550909" mobilePhone="" workPhone=""/>
+      </members>
+    </family>
+
+
+    <!-- Peter Foster is the senior pastor of Rock Solid Church and is a member of the Prayer Team,
+         Staff User, and Pastoral Staff roles.  Peter's wife, Adelle (Pamela) is on the Prayer Team
+         and is a Staff-Like user.
+    -->
+    <family name="Foster Family" guid="FFE1DA77-B596-46B9-AAF8-C7C8E3AC8F2C" campus="main campus">
+      <addresses>
+        <address type="home" street1="1543 W Joan de Arc Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.6075439" long="-112.0931931" />
+      </addresses>
+
+      <members>
+        <person guid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C"
+          firstName="Peter" nickName="Pete" lastName="Foster" birthDate="1/7/1976" age="50" gender="male"
+          email="peter@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/foster_peter.jpg"
+          homePhone="4805551234" mobilePhone="6025554321" workPhone="6235552444">
+          <attributes>
+            <attribute Employer="Rock Solid Church"/>
+            <attribute Position="Outreach Pastor"/>
+          </attributes>
+          <logins>
+            <login userName="pfoster"/>
+          </logins>
+        </person>
+        
+        <person guid="F4450E80-F221-4556-881D-CB92B008C2DA"
+          firstName="Adelle" nickName="Pamela" lastName="Foster" birthDate="7/4/1976" age="50" gender="female"
+          email="pamela@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/foster_pamela.jpg"
+          homePhone="4805551234" mobilePhone="" workPhone="">
+          <attributes>
+          </attributes>
+        </person>
+        <logins>
+          <login userName="afoster"/>
+        </logins>
+      </members>
+    </family>
+
+    <!-- Jenny Michaels is not on staff, but she helps coordinate the Annual Car Show so that’s why she has the Staff-Like User role.
+    -->
+    <family name="Michaels Family" guid="F53EC4A4-300B-4B5D-9A81-CB6198F3583F" campus="main campus">
+      <addresses>
+        <address type="home" street1="3139 W Bloomfield Rd" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.598404" long="-112.12709" />
+      </addresses>
+
+      <members>
+        <person guid="82309081-A110-496F-8295-CE6A4720D7A8"
+          firstName="Jennifer" nickName="Jenny" lastName="Michaels" birthDate="9/19/1992" age="28" gender="female"
+          email="jenny@rocksolidchurchdemo.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/michaels_jenny.jpg"
+          homePhone="602-555-9659" mobilePhone="" workPhone="">
+          <attributes>
+            <attribute Employer="Honeywell"/>
+            <attribute Position="Systems Engineer"/>
+          </attributes>
+
+        </person>
+
+      </members>
+
+    </family>
+
+    <!-- Paul Smith and Taylor (Ty) McClintock are friends who took the DISC Personality Assessment.  Check out their DISC scores.
+    -->
+    <family name="Smith Family" guid="A93BA69D-FC5E-4F03-B6AE-87CD49D5202D" campus="main campus">
+      <addresses>
+        <address type="home" street1="3935 E Rough Rider Rd" street2="" city="Phoenix" state="AZ" postalCode="85050" lat="33.6878242" long="-111.9908905" />
+      </addresses>
+
+      <members>
+        <person guid="D7CE30DF-58F8-4268-BA19-56FDF17D3890"
+          firstName="Paul" nickName="Paul" lastName="Smith" birthDate="2/27/1995" age="20" gender="male"
+          email="paul@rocksolidchurchdemo.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="attendee" maritalStatus="single" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/smith_paul.jpg"
+          homePhone="" mobilePhone="623-555-9981" workPhone="">
+          <attributes>
+            <attribute Employer="Arizona State University"/>
+            <attribute Position="Teacher"/>
+            
+            <attribute AdaptiveD="7"/>
+            <attribute AdaptiveI="18"/>
+            <attribute AdaptiveS="32"/>
+            <attribute AdaptiveC="43"/>
+            <attribute NaturalD="26"/>
+            <attribute NaturalI="18"/>
+            <attribute NaturalS="28"/>
+            <attribute NaturalC="28"/>
+            <attribute LastSaveDate="12/2/2014"/>
+            <attribute PersonalityType="SC"/>
+
+          </attributes>
+        </person>
+      </members>
+      
+    </family>
+
+    <family name="McClintock Family" guid="6296F68F-E89B-4DCA-90E2-5DA5141DC662" campus="main campus">
+      <addresses>
+        <address type="home" street1="3944 E Cat Balue Dr" street2="" city="Phoenix" state="AZ" postalCode="85050" lat="33.685314" long="-111.991045" />
+      </addresses>
+
+      <members>
+        <person guid="A08C02C7-ED75-4F24-8F75-FB3956521804"
+          firstName="Taylor" nickName="Ty" lastName="McClintock" birthDate="7/1/1995" age="20" gender="male"
+          email="taylor@rocksolidchurchdemo.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="attendee" maritalStatus="single" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/mcclintock_taylor.jpg"
+          homePhone="" mobilePhone="623-555-9876" workPhone="">
+          <attributes>
+            <attribute Employer="Arizona State University"/>
+            <attribute Position="Graduate Assistant"/>
+
+            <attribute AdaptiveD="46"/>
+            <attribute AdaptiveI="18"/>
+            <attribute AdaptiveS="7"/>
+            <attribute AdaptiveC="29"/>
+            <attribute NaturalD="28"/>
+            <attribute NaturalI="22"/>
+            <attribute NaturalS="21"/>
+            <attribute NaturalC="29"/>
+            <attribute LastSaveDate="12/2/2014"/>
+            <attribute PersonalityType="CD"/>
+            
+          </attributes>
+        </person>
+      </members>
+
+    </family>
+    
+  </families>
+
+  <relationships>
+    <relationship a="Ben" personGuid="3C402382-3BD2-4337-A996-9E62F1BAB09D" has="step-child" forGuid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E" name="Brian" />
+    <relationship a="Brian" personGuid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E" has="step-parent" forGuid="3C402382-3BD2-4337-A996-9E62F1BAB09D" name="Ben" />
+
+    <relationship a="Craig" personGuid="B701E5D2-ADBD-4C66-91E8-3D6CD298D9A0" has="can-check-in" forGuid="C398A8E3-C9BC-4017-A3F6-7C2BFF654056" name="Madison Lowe"/>
+    <relationship a="Madison" personGuid="C398A8E3-C9BC-4017-A3F6-7C2BFF654056" has="allow-check-in-by" forGuid="B701E5D2-ADBD-4C66-91E8-3D6CD298D9A0" name="Craig"/>
+  </relationships>
+
+  <groups>
+    <group type="serving" name="Ushers" guid="0BA93D66-21B1-4229-979D-F76CEB57666D">
+      <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
+      <person fullname="Jim Simmons" guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33"/>
+      <location guid="D5171D44-C801-4B7D-9335-D23FB4EA0E60">
+        <schedule guid="7883CAC8-6E30-482B-95A7-2F0DEE859BE1"/>
+        <schedule guid="33FF69E9-059B-4702-B1E5-4D499CB7B07A"/>
+        <schedule guid="FF6FB240-0C32-4542-BE40-159C522F7E51"/>
+        <schedule guid="4628D917-EC9C-4269-B39C-5BCBEF3658E7"/>
+        <schedule guid="1F6C15DA-982F-43B1-BDE9-D4E70CFBCB45"/>
+      </location>
+    </group>
+
+    <group type="smallgroup" name="Decker Group" guid="62DC3753-01D5-48B5-B22D-D2825D92900B" parentGroupGuid="C05E60C4-6DFC-420D-8DBA-28DBB5F0E3F9"
+           meetsAtHomeOfFamily="53A02527-C2A7-4F36-8585-71A85B8E4601" meetsAtHomeOfPerson="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"
+           studyTopic="Book of Genesis" groupSchedule="weekly,Monday,19:00:00"
+           description ="Small group with Ted as the group leader.">
+      <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4" isLeader="true"/>
+      <person fullname="Cindy Decker" guid="B71494DB-D809-451A-A950-28898D0FD92C"/>
+      <person fullname="Bill Marble" guid="1EA811BB-3118-42D1-B020-32A82BC8081A"/>
+      <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
+    </group>
+
+    <group type="smallgroup" name="Alisha Marble’s Group" guid="10B60F8D-0F23-4FAA-B35F-9A5F19F5F995" parentGroupGuid="C05E60C4-6DFC-420D-8DBA-28DBB5F0E3F9"
+          meetsAtHomeOfFamily="6F2E6B64-3592-4543-8D8E-6BA4040CDC4E" meetsAtHomeOfPerson="69DC0FDC-B451-4303-BD91-EF17C0015D23"
+          studyTopic="Women of the Bible" groupSchedule="weekly,Wednesday,19:00:00"
+          description ="Small group topics involve studying the women of the Bible.">
+      <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23" isLeader="true"/>
+      <person fullname="Jenny Michaels" guid="82309081-A110-496F-8295-CE6A4720D7A8"/>
+    </group>
+
+    <group type="smallgroup" name="Pete's Group" guid="0E42C572-3662-4AC5-9DC8-684762439A64" parentGroupGuid="C05E60C4-6DFC-420D-8DBA-28DBB5F0E3F9"
+          meetsAtHomeOfFamily="FFE1DA77-B596-46B9-AAF8-C7C8E3AC8F2C" meetsAtHomeOfPerson="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C"
+          studyTopic="Book of Genesis" groupSchedule="weekly,Monday,20:00:00"
+          description ="Small group bible study group.">
+      <person fullname="Peter Foster" guid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C" isLeader="true"/>
+      <person fullname="Thomas Miller" guid="955BF3E9-D38A-4DCB-A6F2-EDF5EC2571C5"/>
+      <person fullname="James Simmons" guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33"/>
+    </group>
+
+    <group type="smallgroup" name="ASU Student Group" guid="CD65C668-B324-4F41-BBB7-BEC9C62233F1" parentGroupGuid="3CBC1A3F-DD26-430A-9B53-B476CB385ABC"
+
+        studyTopic="Students of the Bible" groupSchedule="weekly,Saturday,13:00:00"
+        description ="We hang out and study the bible in an informal way.">
+      <person fullname="Paul Smith" guid="D7CE30DF-58F8-4268-BA19-56FDF17D3890"/>
+      <person fullname="Taylor McClintock" guid="A08C02C7-ED75-4F24-8F75-FB3956521804"/>
+    </group>
+    
+  </groups>
+
+  <securityRoles>
+    <group name="Communication Administrators" guid="B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B" >
+      <members>
+        <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
+      </members>
+    </group>
+    <group name="Finance Administrators" guid="6246A7EF-B7A3-4C8C-B1E4-3FF114B84559" >
+      <members>
+        <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
+      </members>
+    </group>
+    <group name="Finance Users" guid="2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9" >
+      <members>
+        <person fullname="Cindy Decker" guid="B71494DB-D809-451A-A950-28898D0FD92C"/>
+      </members>
+    </group>
+    <group name="Pastoral Staff" guid="26E7148C-2059-4F45-BCFE-32230A12F0DC" >
+      <members>
+        <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
+        <person fullname="Peter Foster" guid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C"/>
+      </members>
+    </group>
+    <group name="Prayer Administrators" guid="59DA53FC-AE18-4052-BC90-CE75B3979943" >
+      <members>
+        <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
+      </members>
+    </group>
+    <group name="Prayer Team" guid="9E17621E-F559-44E9-8C40-E8CF44CF8FCF" >
+      <members>
+        <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
+        <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
+        <person fullname="Cindy Decker" guid="B71494DB-D809-451A-A950-28898D0FD92C"/>
+        <person fullname="Peter Foster" guid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C"/>
+        <person fullname="Adelle Foster" guid="F4450E80-F221-4556-881D-CB92B008C2DA"/>
+      </members>
+    </group>
+    <group name="Rock Administrators" guid="628C51A8-4613-43ED-A18D-4A6FB999273E" >
+      <members>
+        <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
+      </members>
+    </group>
+    <group name="Staff-Like Users" guid="300BA2C8-49A3-44BA-A82A-82E3FD8C3745" >
+      <members>
+        <person fullname="Cindy Decker" guid="B71494DB-D809-451A-A950-28898D0FD92C"/>
+        <person fullname="Adelle Foster" guid="F4450E80-F221-4556-881D-CB92B008C2DA"/>
+        <person fullname="Jenny Michaels" guid="82309081-A110-496F-8295-CE6A4720D7A8"/>
+      </members>
+    </group>
+    <group name="Staff Users" guid="2C112948-FF4C-46E7-981A-0257681EADF4" >
+      <members>
+        <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
+        <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
+        <person fullname="Peter Foster" guid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C"/>
+      </members>
+    </group>
+    <group name="Website Administrators" guid="1918E74F-C00D-4DDD-94C4-2E7209CE12C3" >
+      <members>
+        <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
+      </members>
+    </group>
+    <group name="Website Content Editors" guid="CDF68207-2795-42DE-B060-FE01C33BEAEA" >
+      <members>
+        <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
+        <person fullname="Cindy Decker" guid="B71494DB-D809-451A-A950-28898D0FD92C"/>
+      </members>
+    </group>
+    <group name="Background Check Administrators" guid="A6BCC49E-103F-46B0-8BAC-84EA03FF04D5" >
+      <members>
+        <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
+      </members>
+    </group>
+  </securityRoles>
+</data>

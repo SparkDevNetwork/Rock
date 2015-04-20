@@ -60,9 +60,15 @@ namespace Rock.Address
             bool verified = false;
             result = string.Empty;
 
-            if ( location != null &&
-                !( location.IsGeoPointLocked ?? false ) &&
-                ( !location.GeocodeAttemptedDateTime.HasValue || reVerify ) )
+            // Only verify if location is valid, has not been locked, and 
+            // has either never been attempted or last attempt was in last 30 secs (prev active service failed) or reverifying
+            if ( location != null && 
+                !(location.IsGeoPointLocked ?? false) &&  
+                (
+                    !location.GeocodeAttemptedDateTime.HasValue || 
+                    location.GeocodeAttemptedDateTime.Value.CompareTo( RockDateTime.Now.AddSeconds(-30) ) > 0 ||
+                    reVerify
+                ) )
             {
 
                 string authId = GetAttributeValue( "AuthID" );

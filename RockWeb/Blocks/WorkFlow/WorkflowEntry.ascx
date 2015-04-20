@@ -3,32 +3,50 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <div class="panel panel-block">
+        <div class="row">
+            <div id="divForm" runat="server" class="col-md-6">
 
-            <div class="panel-heading">
-                <h1 class="panel-title">
-                    <asp:Literal ID="lIconHtml" runat="server" ><i class="fa fa-gear"></i></asp:Literal>
-                    <asp:Literal ID="lTitle" runat="server" >Workflow Entry</asp:Literal>
-            </div>
-            <div class="panel-body">
+                <div class="panel panel-block">
 
-                <asp:Panel ID="pnlForm" CssClass="workflow-entry-panel" runat="server">
+                    <div class="panel-heading">
+                        <h1 class="panel-title">
+                            <asp:Literal ID="lIconHtml" runat="server" ><i class="fa fa-gear"></i></asp:Literal>
+                            <asp:Literal ID="lTitle" runat="server" >Workflow Entry</asp:Literal>
+                    </div>
+                    <div class="panel-body">
 
-                    <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                        <asp:Panel ID="pnlForm" CssClass="workflow-entry-panel" runat="server">
 
-                    <asp:Literal ID="lheadingText" runat="server" />
+                            <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-                    <asp:PlaceHolder ID="phAttributes" runat="server" />
+                            <asp:Literal ID="lheadingText" runat="server" />
+
+                            <asp:PlaceHolder ID="phAttributes" runat="server" />
             
-                    <asp:Literal ID="lFootingText" runat="server" />
+                            <asp:Literal ID="lFootingText" runat="server" />
 
-                    <div class="actions">
-                        <asp:PlaceHolder ID="phActions" runat="server" />
+                            <div class="actions">
+                                <asp:PlaceHolder ID="phActions" runat="server" />
+                            </div>
+
+                        </asp:Panel>
+
+                        <Rock:NotificationBox ID="nbMessage" runat="server" Dismissable="true" CssClass="margin-t-lg" />
+
                     </div>
 
-                </asp:Panel>
+                </div>
 
-                <Rock:NotificationBox ID="nbMessage" runat="server" Dismissable="true" />
+            </div>
+
+            <div id="divNotes" runat="server" class="col-md-6">
+
+                <Rock:NoteContainer ID="ncWorkflowNotes" runat="server" Term="Note" 
+                    ShowHeading="true" Title="Notes" TitleIconCssClass="fa fa-comment"
+                    DisplayType="Full" UsePersonIcon="false" ShowAlertCheckBox="true"
+                    ShowPrivateCheckBox="false" ShowSecurityButton="false"
+                    AllowAnonymousEntry="false" AddAlwaysVisible="false"
+                    SortDirection="Descending" />
 
             </div>
 

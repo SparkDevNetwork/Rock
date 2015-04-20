@@ -329,6 +329,11 @@
                 <Label Content="Scanned Items"
                        Style="{StaticResource labelStyleGridTitle}"
                        Grid.Row="1" />
+                <Label Content="Count"
+                       Name="lblCount"
+                       Style="{StaticResource labelStyleHighlightInfo}"
+                       HorizontalAlignment="Right" 
+                       Grid.Row="1" />
                 <DataGrid Grid.Row="2"
                           x:Name="grdBatchItems"
                           AutoGenerateColumns="False"

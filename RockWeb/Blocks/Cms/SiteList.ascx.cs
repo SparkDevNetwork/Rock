@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            gSites.DataKeyNames = new string[] { "id" };
+            gSites.DataKeyNames = new string[] { "Id" };
             gSites.Actions.AddClick += gSites_Add;
             gSites.GridRebind += gSites_GridRebind;
 
@@ -161,8 +161,8 @@ namespace RockWeb.Blocks.Cms
             {
                 gSites.DataSource = qry.OrderBy( s => s.Name ).ToList();
             }
-            
-            
+
+            gSites.EntityTypeId = EntityTypeCache.Read<Site>().Id;
             gSites.DataBind();
         }
 

@@ -91,8 +91,11 @@ namespace RockWeb.Blocks.Core
                     if ( _block.Attributes != null )
                     {
                         foreach ( var attributeCategory in Rock.Attribute.Helper.GetAttributeCategories( _block ) )
-                        { 
-                            if (attributeCategory.Category != null && attributeCategory.Category.Name.Equals("advanced", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if ( attributeCategory.Category != null && attributeCategory.Category.Name.Equals( "customsetting", StringComparison.OrdinalIgnoreCase ) )
+                            {
+                            }
+                            else if (attributeCategory.Category != null && attributeCategory.Category.Name.Equals("advanced", StringComparison.OrdinalIgnoreCase))
                             {
                                 Rock.Attribute.Helper.AddEditControls(
                                     string.Empty, attributeCategory.Attributes.Select( a => a.Key ).ToList(),

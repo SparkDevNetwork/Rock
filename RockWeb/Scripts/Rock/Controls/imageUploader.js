@@ -34,17 +34,16 @@
                 submit: options.submitFunction,
                 start: function (e, data) {
                     var $el = $('#' + options.controlId).closest('.imageupload-group');
-                    //$el.find('.imageupload-dropzone').hide();
-                    $el.find('.js-upload-progress').show();
+                    $el.find('.js-upload-progress').rockFadeIn();
                 },
                 progressall: function (e, data) {
-                    var $el = $('#' + options.controlId).closest('.imageupload-group');
+                    // var $el = $('#' + options.controlId).closest('.imageupload-group');
                     // implement this to show progress percentage
                 },
                 stop: function (e) {
                     var $el = $('#' + options.controlId).closest('.imageupload-group');
                     $el.find('.js-upload-progress').hide();
-                    $el.find('.imageupload-dropzone').show();
+                    $el.find('.imageupload-dropzone').rockFadeIn();
                 },
                 done: function (e, data) {
                     var $el = $('#' + options.imgThumbnail);
@@ -87,6 +86,14 @@
                     var msg = "unable to upload";
                     if (data.response().jqXHR && data.response().jqXHR.status == 406) {
                         msg = "file type not allowed";
+                    } else if (data.response().jqXHR && data.response().jqXHR.responseText) {
+                        msg = data.response().jqXHR.responseText;
+                    }
+
+                    if (options.maxUploadBytes && data.total) {
+                        if (data.total >= options.maxUploadBytes) {
+                            msg = "file size is limited to " + (options.maxUploadBytes / 1024 / 1024) + "MB";
+                        }
                     }
 
                     $warning.append('<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>')
@@ -99,13 +106,17 @@
             $('#' + options.aRemove).click(function () {
                 $(this).hide();
                 var $el = $('#' + options.imgThumbnail);
-                $('#' + options.hfFileId).val('0');
                 var noPictureUrl = options.noPictureUrl || Rock.settings.get('baseUrl') + 'Assets/Images/no-picture.svg';
                 if ($el.is('img')) {
                     $el.attr('src', noPictureUrl);
                 }
                 else {
                     $el.attr('style', 'background-image:url(' + noPictureUrl + ');background-size:cover;background-position:50%');
+                }
+                if (options.postbackRemovedScript) {
+                    eval(options.postbackRemovedScript);
+                } else {
+                    $('#' + options.hfFileId).val('0');
                 }
                 return false;
             });

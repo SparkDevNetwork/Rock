@@ -36,17 +36,15 @@
     <DocumentationFile>bin\Rock.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AjaxControlToolkit">
-      <HintPath>..\packages\AjaxControlToolkit.7.1213\lib\45\AjaxControlToolkit.dll</HintPath>
-    </Reference>
-    <Reference Include="AjaxMin">
-      <HintPath>..\packages\AjaxMin.5.8.5172.27710\lib\net40\AjaxMin.dll</HintPath>
-    </Reference>
-    <Reference Include="CronExpressionDescriptor">
-      <HintPath>..\packages\CronExpressionDescriptor.1.9.1\lib\net35\CronExpressionDescriptor.dll</HintPath>
+    <Reference Include="CronExpressionDescriptor, Version=1.12.0.0, Culture=neutral, PublicKeyToken=a2ab0e0f73f9b037, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\CronExpressionDescriptor.1.12.0\lib\net35\CronExpressionDescriptor.dll</HintPath>
     </Reference>
     <Reference Include="DDay.iCal">
       <HintPath>..\packages\DDay.iCal.1.0.2.575\lib\DDay.iCal.dll</HintPath>
+    </Reference>
+    <Reference Include="DocumentFormat.OpenXml">
+      <HintPath>..\packages\DocumentFormat.OpenXml.2.5\lib\DocumentFormat.OpenXml.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework">
       <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.dll</HintPath>
@@ -57,54 +55,39 @@
     <Reference Include="EPPlus">
       <HintPath>..\libs\EPPlus\EPPlus.dll</HintPath>
     </Reference>
-    <Reference Include="Facebook">
-      <HintPath>..\packages\Facebook.6.4.2\lib\net45\Facebook.dll</HintPath>
-    </Reference>
-    <Reference Include="HtmlAgilityPack">
-      <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
-    </Reference>
-    <Reference Include="Humanizer, Version=1.31.0.0, Culture=neutral, PublicKeyToken=979442b78dfc278e, processorArchitecture=MSIL">
+    <Reference Include="HtmlAgilityPack, Version=1.4.9.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Humanizer.1.31.0\lib\portable-win+net40+sl50+wp8+wpa81\Humanizer.dll</HintPath>
+      <HintPath>..\packages\HtmlAgilityPack.1.4.9\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
+    <Reference Include="Humanizer">
+      <HintPath>..\packages\Humanizer.1.32.0\lib\portable-win+net40+sl50+wp8+wpa81\Humanizer.dll</HintPath>
     </Reference>
     <Reference Include="ImageResizer, Version=3.4.3.103, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ImageResizer.3.4.3\lib\ImageResizer.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Data.Edm, Version=5.6.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.Web.XmlTransform, Version=2.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Data.Edm.5.6.3\lib\net40\Microsoft.Data.Edm.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Data.OData, Version=5.6.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Data.OData.5.6.3\lib\net40\Microsoft.Data.OData.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Data.Services.Client, Version=5.6.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Data.Services.Client.5.6.3\lib\net40\Microsoft.Data.Services.Client.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Web.XmlTransform">
-      <HintPath>..\packages\Microsoft.Web.Xdt.1.0.0\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.WindowsAzure.Configuration">
-      <HintPath>..\packages\Microsoft.WindowsAzure.ConfigurationManager.2.0.3\lib\net40\Microsoft.WindowsAzure.Configuration.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.WindowsAzure.Storage">
-      <HintPath>..\packages\WindowsAzure.Storage.3.1.0.1\lib\net40\Microsoft.WindowsAzure.Storage.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.7\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Core, Version=2.8.50320.36, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="NuGet.Core, Version=2.8.50926.602, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Nuget.Core.2.8.1\lib\net40-Client\NuGet.Core.dll</HintPath>
+      <HintPath>..\packages\NuGet.Core.2.8.3\lib\net40-Client\NuGet.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenXmlPowerTools, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\OpenXmlPowerTools.3.1.07.0\lib\OpenXmlPowerTools.dll</HintPath>
     </Reference>
     <Reference Include="Quartz">
       <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
     </Reference>
-    <Reference Include="RestSharp">
-      <HintPath>..\packages\RestSharp.104.4.0\lib\net4\RestSharp.dll</HintPath>
+    <Reference Include="RestSharp, Version=105.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\RestSharp.105.0.1\lib\net4\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -113,7 +96,6 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Entity.Design" />
     <Reference Include="System.Data.Services" />
-    <Reference Include="System.Data.Services.Client" />
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
@@ -131,7 +113,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\System.Spatial.5.6.3\lib\net40\System.Spatial.dll</HintPath>
     </Reference>
-    <Reference Include="System.Transactions" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Web.Http, Version=5.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -147,18 +128,26 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Twilio.Api">
-      <HintPath>..\packages\Twilio.3.6.11\lib\3.5\Twilio.Api.dll</HintPath>
+    <Reference Include="Twilio.Api, Version=3.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Twilio.3.6.25\lib\3.5\Twilio.Api.dll</HintPath>
     </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Address\SmartyStreets.cs" />
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\FinancialGatewayFieldAttribute.cs" />
+    <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
     <Compile Include="Attribute\CurrencyFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelFieldAttribute.cs" />
+    <Compile Include="Attribute\DateTimeFieldAttribute.cs" />
+    <Compile Include="Attribute\DefinedValueRangeFieldAttribute.cs" />
+    <Compile Include="Attribute\GroupAndRoleFieldAttribute.cs" />
+    <Compile Include="Attribute\KeyValueListFieldAttribute.cs" />
     <Compile Include="Attribute\SystemEmailFieldAttribute.cs" />
     <Compile Include="Attribute\EnumsFieldAttribute.cs" />
     <Compile Include="Attribute\EnumFieldAttribute.cs" />
@@ -183,7 +172,7 @@
     <Compile Include="Attribute\SiteFieldAttribute.cs" />
     <Compile Include="Attribute\PersonBadgesAttribute.cs" />
     <Compile Include="Attribute\CampusFieldAttribute.cs" />
-    <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\BinaryFileFieldAttribute.cs" />
     <Compile Include="Attribute\ComponentFieldAttribute.cs" />
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
@@ -202,6 +191,7 @@
     <Compile Include="Attribute\DecimalFieldAttribute.cs" />
     <Compile Include="Attribute\DateFieldAttribute.cs" />
     <Compile Include="Attribute\AccountFieldAttribute.cs" />
+    <Compile Include="Attribute\ValueListFieldAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
@@ -225,20 +215,30 @@
     <Compile Include="Communication\Transport\MandrillSmtp.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
     <Compile Include="Constants\SystemSettingKeys.cs" />
+    <Compile Include="Data\BoundFieldTypeAttribute.cs" />
     <Compile Include="Data\IChartData.cs" />
     <Compile Include="Data\IgnoreLiquid.cs" />
+    <Compile Include="Data\RockClientIncludeAttribute.cs" />
     <Compile Include="Data\LavaIncludeAttribute.cs" />
     <Compile Include="Data\LavaIgnoreAttribute.cs" />
     <Compile Include="Data\IMigration.cs" />
     <Compile Include="Data\IncludeForReportingAttribute.cs" />
     <Compile Include="Data\MigrationHelper.cs" />
+    <Compile Include="Data\NotEmptyGuidAttribute.cs" />
+    <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
+    <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
+    <Compile Include="Data\Udf\RockUdfHelper.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
+    <Compile Include="Field\Types\FinancialGatewayFieldType.cs" />
     <Compile Include="Field\Types\CurrencyFieldType.cs" />
     <Compile Include="Field\Types\AttributeFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelFieldType.cs" />
+    <Compile Include="Field\Types\DateTimeFieldType.cs" />
+    <Compile Include="Field\Types\DefinedValueFieldType.cs" />
+    <Compile Include="Field\Types\GroupAndRoleFieldType.cs" />
+    <Compile Include="Field\Types\RatingFieldType.cs" />
     <Compile Include="Field\Types\SystemEmailFieldType.cs" />
-    <Compile Include="Field\Types\FilterDateFieldType.cs" />
     <Compile Include="Field\Types\SchedulesFieldType.cs" />
     <Compile Include="Field\Types\EncryptedTextFieldType.cs" />
     <Compile Include="Field\Types\UrlLinkFieldType.cs" />
@@ -257,15 +257,37 @@
     <Compile Include="Field\Types\VideoFileFieldType.cs" />
     <Compile Include="Field\Types\WorkflowTextOrAttributeFieldType.cs" />
     <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
-    <Compile Include="Field\Types\WorkflowTypesFieldType.cs" />
+    <Compile Include="Field\Types\WorkflowTypeFieldType.cs" />
     <Compile Include="Financial\TestGateway.cs" />
+    <Compile Include="Jobs\CalculateMetrics.cs" />
     <Compile Include="Jobs\GetScheduledPayments.cs" />
+    <Compile Include="Jobs\GroupSync.cs" />
+    <Compile Include="Jobs\SendAttendanceReminders.cs" />
+    <Compile Include="Lava\ILiquidizable.cs" />
     <Compile Include="Lava\RockFilters.cs" />
+    <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
+    <Compile Include="MergeTemplates\MergeTemplateType.cs" />
+    <Compile Include="MergeTemplates\MergeTemplateTypeContainer.cs" />
+    <Compile Include="MergeTemplates\WordDocumentMergeTemplateType.cs" />
+    <Compile Include="Model\BenevolenceRequest.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\BenevolenceRequestService.Partial.cs" />
+    <Compile Include="Model\BenevolenceResult.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\BenevolenceResultService.Partial.cs" />
+    <Compile Include="Model\CampusService.partial.cs" />
+    <Compile Include="Model\CodeGenerated\BenevolenceRequestService.cs" />
+    <Compile Include="Model\CodeGenerated\BenevolenceResultService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelItemService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelTypeService.cs" />
     <Compile Include="Model\CodeGenerated\EntitySetItemService.cs" />
     <Compile Include="Model\CodeGenerated\EntitySetService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialGatewayService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupScheduleExclusionService.cs" />
+    <Compile Include="Model\CodeGenerated\MergeTemplateService.cs" />
     <Compile Include="Model\CodeGenerated\PersonDuplicateService.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
     <Compile Include="Model\ContentChannel.cs">
@@ -277,16 +299,24 @@
     <Compile Include="Model\ContentChannelType.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\EntitySetService.Partial.cs" />
     <Compile Include="Model\EntitySetItemService.Partial.cs" />
+    <Compile Include="Model\FinancialGateway.cs" />
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Model\EntitySet.cs" />
     <Compile Include="Model\EntitySetItem.cs" />
+    <Compile Include="Model\GroupScheduleExclusion.cs" />
+    <Compile Include="Model\MergeTemplate.cs" />
+    <Compile Include="Model\PersonBadgeService.partial.cs" />
     <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PluginMigration.cs" />
+    <Compile Include="Model\RestActionService.partial.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
     <Compile Include="Model\WorkflowActivityTypeService.Partial.cs" />
     <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
+    <Compile Include="Net\RockRestClient.cs" />
+    <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
     <Compile Include="Reporting\DataFilter\BaseAccountFilter.cs" />
@@ -300,11 +330,55 @@
     <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\TotalGivingAmountSelect.cs" />
+    <Compile Include="Security\Authentication\Facebook.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Security\BackgroundCheckComponent.cs" />
     <Compile Include="Security\BackgroundCheckContainer.cs" />
     <Compile Include="Security\BackgroundCheck\ProtectMyMinistry.cs" />
     <Compile Include="Services\NuGet\RockProjectManager.cs" />
+    <Compile Include="Store\Package.cs" />
+    <Compile Include="Store\InstalledPackageService.cs" />
+    <Compile Include="Store\Organization.cs" />
+    <Compile Include="Store\OrganizationService.cs" />
+    <Compile Include="Store\PackageInstallStep.cs" />
+    <Compile Include="Store\PurchaseResponse.cs" />
+    <Compile Include="Store\StoreService.cs" />
+    <Compile Include="Store\PackageVersionService.cs" />
+    <Compile Include="Store\PackageVersionRating.cs" />
+    <Compile Include="Store\PackageVersion.cs" />
+    <Compile Include="Store\PackageCategory.cs" />
+    <Compile Include="Store\PackageCategoryService.cs" />
+    <Compile Include="Store\PackageService.cs" />
+    <Compile Include="Store\InstalledPackage.cs" />
+    <Compile Include="Store\Promo.cs" />
+    <Compile Include="Store\PromoService.cs" />
+    <Compile Include="Store\StoreImage.cs" />
+    <Compile Include="Store\StoreModel.cs" />
+    <Compile Include="Store\StoreServiceBase.cs" />
+    <Compile Include="SystemGuid\Attribute.cs" />
+    <Compile Include="SystemGuid\NoteType.cs" />
+    <Compile Include="SystemGuid\ServiceJob.cs" />
+    <Compile Include="Transactions\RunJobNowTransaction.cs" />
+    <Compile Include="Transactions\DeleteAttributeBinaryFile.cs" />
+    <Compile Include="Transactions\UpdateFacebookFriends.cs" />
+    <Compile Include="Utility\AttributeCacheJsonConverter.cs" />
+    <Compile Include="Utility\AttributeValueJsonConverter.cs" />
+    <Compile Include="Utility\RockJsonMediaTypeFormatter.cs" />
+    <Compile Include="Utility\RockJsonTextWriter.cs" />
+    <Compile Include="Utility\RockSemanticVersion.cs" />
+    <Compile Include="Utility\SimpleModeJsonConverter.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
+    <Compile Include="Web\UI\Controls\Grid\CurrencyField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\CallbackField.cs" />
+    <Compile Include="Web\UI\Controls\IDisplayRequiredIndicator.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\FinancialGatewayPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\GroupAndRolePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\MergeTemplatePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DataViewPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\GradePicker.cs" />
+    <Compile Include="Web\UI\Controls\RockRating.cs" />
+    <Compile Include="Web\UI\RockBlockWrapper.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">
@@ -462,7 +536,6 @@
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
     <Compile Include="Model\BinaryFileData.cs" />
-    <Compile Include="Net\RockRestClient.cs" />
     <Compile Include="Net\RockWebRequest.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -548,7 +621,7 @@
     <Compile Include="Field\Types\CampusFieldType.cs" />
     <Compile Include="Field\Types\BinaryFileTypeFieldType.cs" />
     <Compile Include="Field\Types\AccountFieldType.cs" />
-    <Compile Include="Field\Types\WorkflowTypeFieldType.cs" />
+    <Compile Include="Field\Types\WorkflowTypesFieldType.cs" />
     <Compile Include="Field\Types\GroupTypeFieldType.cs" />
     <Compile Include="Field\Types\FileFieldType.cs">
       <SubType>Code</SubType>
@@ -664,10 +737,14 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\Grid\IPriorityColumn.cs" />
+    <Compile Include="Web\UI\Controls\Grid\RockTemplateField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\RockTemplateFieldUnselected.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\ContactInfoRow.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\ContactInfo.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SchedulePicker.cs" />
     <Compile Include="Web\UI\Controls\RockRadioButton.cs" />
+    <Compile Include="Web\UI\Controls\ToolkitScriptManager.cs" />
     <Compile Include="Web\UI\Controls\UrlLinkBox.cs" />
     <Compile Include="Web\UI\Controls\EmailBox.cs" />
     <Compile Include="Web\UI\Controls\Chart\BarChart.cs" />
@@ -791,6 +868,9 @@
     <Compile Include="Web\UI\Controls\Grid\AttributeField.cs" />
     <Compile Include="Web\UI\Controls\IRockControl.cs" />
     <Compile Include="Web\UI\BreadCrumb.cs" />
+    <Compile Include="Web\UI\RockBlockCustomSettings.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Web\UI\RockMasterPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -799,6 +879,7 @@
     <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Workflow\Action\ActivateActions.cs" />
+    <Compile Include="Workflow\Action\AddPersonToGroupAttribute.cs" />
     <Compile Include="Workflow\Action\AssignActivityFromAttributeValue.cs" />
     <Compile Include="Workflow\Action\AssignActivityToSecurityRole.cs" />
     <Compile Include="Workflow\Action\AssignActivityToPerson.cs" />
@@ -806,6 +887,7 @@
     <Compile Include="Workflow\Action\Delay.cs" />
     <Compile Include="Workflow\Action\DeleteWorkflow.cs" />
     <Compile Include="Workflow\Action\BackgroundCheckRequest.cs" />
+    <Compile Include="Workflow\Action\AddPersonToGroup.cs" />
     <Compile Include="Workflow\Action\PersonTagRemove.cs" />
     <Compile Include="Workflow\Action\SendSms.cs" />
     <Compile Include="Workflow\Action\PersonTagAdd.cs" />
@@ -819,6 +901,7 @@
     <Compile Include="Workflow\Action\PersistWorkflow.cs" />
     <Compile Include="Workflow\Action\SetWorkflowName.cs" />
     <Compile Include="Workflow\Action\LogError.cs" />
+    <Compile Include="Workflow\Action\AddWorkflowNote.cs" />
     <Compile Include="Workflow\Action\WriteToLog.cs" />
     <Compile Include="Workflow\Action\UserForm.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
@@ -925,7 +1008,7 @@
     <Compile Include="Field\Types\SelectMultiFieldType.cs" />
     <Compile Include="Field\Types\PersonFieldType.cs" />
     <Compile Include="Field\Types\DecimalFieldType.cs" />
-    <Compile Include="Field\Types\DefinedValueFieldType.cs" />
+    <Compile Include="Field\Types\DefinedValueRangeFieldType.cs" />
     <Compile Include="Field\Types\DefinedTypeFieldType.cs" />
     <Compile Include="Field\Types\DateFieldType.cs" />
     <Compile Include="Field\Types\ImageFieldType.cs" />
@@ -968,9 +1051,6 @@
     <Compile Include="Security\Authentication\ActiveDirectory.cs" />
     <Compile Include="Security\Authentication\Database.cs" />
     <Compile Include="Security\Encryption.cs" />
-    <Compile Include="Security\Authentication\Facebook.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Security\GlobalDefault.cs" />
     <Compile Include="Security\AuthenticationComponent.cs" />
     <Compile Include="Security\AuthenticationContainer.cs" />
@@ -1184,7 +1264,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Auth\" />
-    <Folder Include="Workflow\Attribute\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">

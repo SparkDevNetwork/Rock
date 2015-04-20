@@ -59,13 +59,11 @@ namespace RockWeb.Blocks.Core
 
             _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
 
-            BindFilter();
-
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
             if ( _canConfigure )
             {
-                rGrid.DataKeyNames = new string[] { "id" };
+                rGrid.DataKeyNames = new string[] { "Id" };
                 rGrid.Actions.ShowAdd = true;
 
                 rGrid.Actions.AddClick += rGrid_Add;
@@ -93,6 +91,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( _canConfigure )
                 {
+                    BindFilter();
                     BindGrid();
                 }
             }
@@ -157,7 +156,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void rGrid_Edit( object sender, RowEventArgs e )
         {
-            ShowEdit( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( e.RowKeyId );
         }
 
         /// <summary>
@@ -170,7 +169,7 @@ namespace RockWeb.Blocks.Core
             var rockContext = new RockContext();
             var service = new CategoryService( rockContext );
 
-            var category = service.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+            var category = service.Get( e.RowKeyId );
             if ( category != null )
             {
                 string errorMessage = string.Empty;
@@ -188,6 +187,7 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
+            BindFilter();
             BindGrid();
         }
 
@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rGrid_Add( object sender, EventArgs e )
         {
-            ShowEdit( 0 );
+            ShowEdit( null );
         }
 
         /// <summary>
@@ -291,7 +291,7 @@ namespace RockWeb.Blocks.Core
                 category.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
                 category.EntityTypeQualifierColumn = "EntityTypeId";
 
-                var lastCategory = GetUnorderedCategories()
+                var lastCategory = GetUnorderedCategories( category.EntityTypeId )
                     .OrderByDescending( c => c.Order ).FirstOrDefault();
                 category.Order = lastCategory != null ? lastCategory.Order + 1 : 0;
 
@@ -331,6 +331,7 @@ namespace RockWeb.Blocks.Core
                 hfIdValue.Value = string.Empty;
                 modalDetails.Hide();
 
+                BindFilter();
                 BindGrid();
             }
         }
@@ -369,7 +370,7 @@ namespace RockWeb.Blocks.Core
                 .Select( c => c.AsInteger() );
 
             entityTypeFilter.EntityTypes = entityTypes.Where( e => categoryEntities.Contains( e.Id ) ).ToList();
-            entityTypeFilter.SelectedValue = rFilter.GetUserPreference( "EntityType" );
+            entityTypeFilter.SetValue( rFilter.GetUserPreference( "EntityType" ) );
         }
 
         /// <summary>
@@ -377,27 +378,35 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            bool filtered = !string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "EntityType" ) );
-            nbOrdering.Visible = !filtered;
+            int? entityTypeId = entityTypeFilter.SelectedValueAsInt( false );
 
-            rGrid.Columns.OfType<ReorderField>().FirstOrDefault().Visible = filtered;
+            nbOrdering.Visible = entityTypeId.HasValue;
+
+            rGrid.Columns.OfType<ReorderField>().FirstOrDefault().Visible = entityTypeId.HasValue;
             rGrid.DataSource = GetCategories().ToList();
             rGrid.DataBind();
         }
 
         private IQueryable<Category> GetCategories( RockContext rockContext = null )
         {
+            int? entityTypeId = entityTypeFilter.SelectedValueAsInt( false );
+
             rockContext = rockContext ?? new RockContext();
-            return GetUnorderedCategories( rockContext )
-                .OrderBy( a => a.Order )
-                .ThenBy( a => a.Name );
+            var unorderedCategories = GetUnorderedCategories( entityTypeId, rockContext );
+
+            if ( entityTypeId.HasValue )
+            {
+                return unorderedCategories.OrderBy( a => a.Order ).ThenBy( a => a.Name );
+            }
+            else
+            {
+                return unorderedCategories.OrderBy( a => a.Name );
+            }
         }
 
-        private IQueryable<Category> GetUnorderedCategories( RockContext rockContext = null )
+        private IQueryable<Category> GetUnorderedCategories( int? entityTypeId, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
-
-            string selectedValue = rFilter.GetUserPreference( "EntityType" );
 
             var attributeEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
             var queryable = new CategoryService( rockContext ).Queryable()
@@ -405,16 +414,12 @@ namespace RockWeb.Blocks.Core
                     c.EntityTypeId == attributeEntityTypeId && 
                     c.EntityTypeQualifierColumn == "EntityTypeId" );
 
-            if ( !string.IsNullOrWhiteSpace( selectedValue ) )
+            if ( entityTypeId.HasValue )
             {
-                if ( selectedValue == "0" )
-                {
-                    queryable = queryable.Where( c => c.EntityTypeQualifierValue == null );
-                }
-                else
-                {
-                    queryable = queryable.Where( c => c.EntityTypeQualifierValue == selectedValue );
-                }
+                var stringValue = entityTypeId.Value.ToString();
+                queryable = queryable.Where( c => 
+                    ( entityTypeId.Value == 0 && c.EntityTypeQualifierValue == null ) ||
+                    ( entityTypeId.Value != 0 && c.EntityTypeQualifierValue != null && c.EntityTypeQualifierValue == stringValue ) );
             }
             else
             {
@@ -430,7 +435,9 @@ namespace RockWeb.Blocks.Core
                     .Select( e => e.ToString() )
                     .ToList();
 
-                queryable = queryable.Where( c => entities.Contains( c.EntityTypeQualifierValue ) );
+                queryable = queryable.Where( c => 
+                    c.EntityTypeQualifierValue == null ||
+                    entities.Contains( c.EntityTypeQualifierValue ) );
             }
 
             return queryable;
@@ -441,9 +448,13 @@ namespace RockWeb.Blocks.Core
         /// Shows the edit.
         /// </summary>
         /// <param name="attributeId">The attribute id.</param>
-        protected void ShowEdit( int categoryId )
+        protected void ShowEdit( int? categoryId )
         {
-            var category = new CategoryService( new RockContext() ).Get( categoryId );
+            Category category = null;
+            if ( categoryId.HasValue )
+            {
+                category = new CategoryService( new RockContext() ).Get( categoryId.Value );
+            }
 
             if ( category != null )
             {
@@ -451,34 +462,15 @@ namespace RockWeb.Blocks.Core
                 tbDescription.Text = category.Description;
                 tbIconCssClass.Text = category.IconCssClass;
                 tbHighlightColor.Text = category.HighlightColor;
+                entityTypePicker.SelectedEntityTypeId = category.EntityTypeQualifierValue.AsIntegerOrNull();
             }
             else
             {
                 tbName.Text = string.Empty;
                 tbDescription.Text = string.Empty;
                 tbIconCssClass.Text = string.Empty;
+                entityTypePicker.SelectedEntityTypeId = entityTypeFilter.SelectedValueAsInt( false );
             }
-
-            int entityTypeId = 0;
-            if ( category == null || category.EntityTypeQualifierValue == null ||
-                !int.TryParse( category.EntityTypeQualifierValue, out entityTypeId ) )
-            {
-                entityTypeId = 0;
-            }
-
-            if ( entityTypeId == 0 )
-            {
-                var filterValue = rFilter.GetUserPreference( "EntityType" );
-                if ( !string.IsNullOrWhiteSpace( filterValue ) )
-                {
-                    if ( !int.TryParse( filterValue, out entityTypeId ) )
-                    {
-                        entityTypeId = 0;
-                    }
-                }
-            }
-
-            entityTypePicker.SelectedEntityTypeId = entityTypeId;
 
             hfIdValue.Value = categoryId.ToString();
             modalDetails.Show();

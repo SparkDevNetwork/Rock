@@ -55,8 +55,27 @@ namespace RockWeb.Blocks.Cms
     [BooleanField( "Enable Debug", "Show lava merge fields.", false, "", 9 )]
 
     [ContextAware]
-    public partial class HtmlContentDetail : RockBlock
+    public partial class HtmlContentDetail : RockBlockCustomSettings
     {
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the settings tool tip.
+        /// </summary>
+        /// <value>
+        /// The settings tool tip.
+        /// </value>
+        public override string SettingsToolTip
+        {
+            get
+            {
+                return "Edit HTML";
+            }
+        }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -69,6 +88,8 @@ namespace RockWeb.Blocks.Cms
 
             this.BlockUpdated += HtmlContentDetail_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlHtmlContent );
+
+            gVersions.GridRebind += gVersions_GridRebind;
         }
 
         /// <summary>
@@ -83,163 +104,15 @@ namespace RockWeb.Blocks.Cms
             {
                 ShowView();
             }
-        }
-
-        /// <summary>
-        /// Adds icons to the configuration area of a block instance.  Can be overridden to
-        /// add additionsl icons
-        /// </summary>
-        /// <param name="canConfig"></param>
-        /// <param name="canEdit"></param>
-        /// <returns></returns>
-        public override List<Control> GetAdministrateControls( bool canConfig, bool canEdit )
-        {
-            List<Control> configControls = new List<Control>();
-
-            // add edit icon to config controls if user has edit permission
-            if ( canEdit )
+            else
             {
-                LinkButton lbEdit = new LinkButton();
-                lbEdit.CssClass = "edit";
-                lbEdit.ToolTip = "Edit HTML";
-                lbEdit.Click += lbEdit_Click;
-                configControls.Add( lbEdit );
-                HtmlGenericControl iEdit = new HtmlGenericControl( "i" );
-                lbEdit.Controls.Add( iEdit );
-                lbEdit.CausesValidation = false;
-                iEdit.Attributes.Add( "class", "fa fa-pencil-square-o" );
-
-                // will toggle the block config so they are no longer showing
-                lbEdit.Attributes["onclick"] = "Rock.admin.pageAdmin.showBlockConfig()";
-
-                ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( lbEdit );
+                nbApprovalRequired.Visible = false;
             }
-
-            configControls.AddRange( base.GetAdministrateControls( canConfig, canEdit ) );
-
-            return configControls;
         }
 
         #endregion
 
         #region Events
-
-        /// <summary>
-        /// Handles the Click event of the lbEdit control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbEdit_Click( object sender, EventArgs e )
-        {
-            // only enable viewstate for htmlEditor when needed (it is really big)
-            pnlEdit.EnableViewState = true;
-
-            pnlEdit.Visible = true;
-            pnlVersionGrid.Visible = false;
-            pnlEditModel.Visible = true;
-            upnlHtmlContent.Update();
-            mdEdit.Show();
-
-            bool useCodeEditor = GetAttributeValue( "UseCodeEditor" ).AsBoolean();
-
-            ceHtml.Visible = useCodeEditor;
-            htmlEditor.Visible = !useCodeEditor;
-
-            htmlEditor.Toolbar = HtmlEditor.ToolbarConfig.Full;
-
-            // if the current user can't approve their own edits, set the approval to Not-Approved when they change something
-            if ( !IsUserAuthorized( "Approve" ) )
-            {
-                string onchangeScriptFormat = @"
-   $('#{0}').removeClass('label label-success label-danger').addClass('label label-danger');
-   $('#{0}').text('Not-Approved');
-   $('#{1}').val('false');
-   $('#{2}').val('');
-   $('#{3}').hide();";
-
-                string onchangeScript = string.Format( onchangeScriptFormat, lblApprovalStatus.ClientID, hfApprovalStatus.ClientID, hfApprovalStatusPersonId.ClientID, lblApprovalStatusPerson.ClientID );
-
-                htmlEditor.OnChangeScript = onchangeScript;
-                ceHtml.OnChangeScript = onchangeScript;
-            }
-
-            htmlEditor.MergeFields.Clear();
-            htmlEditor.MergeFields.Add( "GlobalAttribute" );
-            htmlEditor.MergeFields.Add( "Rock.Model.Person|Current Person" );
-            htmlEditor.MergeFields.Add( "Campuses" );
-            htmlEditor.MergeFields.Add( "PageParameter" );
-            htmlEditor.MergeFields.Add( "RockVersion" );
-            htmlEditor.MergeFields.Add( "Date" );
-            htmlEditor.MergeFields.Add( "Time" );
-            htmlEditor.MergeFields.Add( "DayOfWeek" );
-
-            ceHtml.MergeFields.Clear();
-            ceHtml.MergeFields.Add( "GlobalAttribute" );
-            ceHtml.MergeFields.Add( "Rock.Model.Person|Current Person" );
-            ceHtml.MergeFields.Add( "Campuses" );
-            ceHtml.MergeFields.Add( "RockVersion" );
-            ceHtml.MergeFields.Add( "PageParameter" );
-            ceHtml.MergeFields.Add( "Date" );
-            ceHtml.MergeFields.Add( "Time" );
-            ceHtml.MergeFields.Add( "DayOfWeek" );
-
-            var contextObjects = new Dictionary<string, object>();
-            foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
-            {
-                var contextEntity = RockPage.GetCurrentContext( contextEntityType );
-                if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
-                {
-                    var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
-                    if ( type != null )
-                    {
-                        string mergeField = string.Format( "{0}|Current {1} (Context)|Context", type.FullName, type.Name );  
-                        htmlEditor.MergeFields.Add( mergeField );
-                        ceHtml.MergeFields.Add( mergeField );
-                    }
-                }
-            }
-
-            string documentRoot = GetAttributeValue("DocumentRootFolder");
-            string imageRoot = GetAttributeValue("ImageRootFolder");
-            htmlEditor.UserSpecificRoot = GetAttributeValue( "UserSpecificFolders" ).AsBoolean();
-            htmlEditor.DocumentFolderRoot = documentRoot;
-            htmlEditor.ImageFolderRoot = imageRoot;
-
-            bool supportsVersioning = GetAttributeValue( "SupportVersions" ).AsBoolean();
-            bool requireApproval = GetAttributeValue( "RequireApproval" ).AsBoolean();
-
-            lVersion.Visible = supportsVersioning;
-            lbShowVersionGrid.Visible = supportsVersioning;
-            cbOverwriteVersion.Visible = supportsVersioning;
-            cbOverwriteVersion.Checked = false;
-
-            // RequireApproval only applies if SupportsVersioning=True
-            upnlApproval.Visible = supportsVersioning && requireApproval;
-            lbApprove.Enabled = IsUserAuthorized( "Approve" );
-            lbDeny.Enabled = IsUserAuthorized( "Approve" );
-
-            string entityValue = EntityValue();
-            HtmlContent htmlContent = new HtmlContentService( new RockContext() ).GetActiveContent( this.BlockId, entityValue );
-
-            // set Height of editors
-            if ( supportsVersioning && requireApproval )
-            {
-                ceHtml.EditorHeight = "280";
-                htmlEditor.Height = 280;
-            }
-            else if ( supportsVersioning )
-            {
-                ceHtml.EditorHeight = "350";
-                htmlEditor.Height = 350;
-            }
-            else
-            {
-                ceHtml.EditorHeight = "380";
-                htmlEditor.Height = 380;
-            }
-
-            ShowEditDetail( htmlContent );
-        }
 
         /// <summary>
         /// Handles the BlockUpdated event of the HtmlContentDetail control.
@@ -351,7 +224,7 @@ namespace RockWeb.Blocks.Cms
                     // if the content has changed
                     if ( htmlContent.Content != newContent )
                     {
-                        lPreHtml.Text += "<div class='alert alert-info'>Your changes will not be visible until they are reviewed and approved.</div>";
+                        nbApprovalRequired.Visible = true;
                         htmlContent.IsApproved = false;
                     }
                 }
@@ -407,6 +280,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbShowVersionGrid_Click( object sender, EventArgs e )
         {
+            // make sure grid goes back to first page
+            gVersions.PageIndex = 0;
             BindGrid();
             pnlVersionGrid.Visible = true;
             pnlEdit.Visible = false;
@@ -469,9 +344,126 @@ namespace RockWeb.Blocks.Cms
                     v.ExpireDateTime
                 } ).ToList();
 
+            gVersions.EntityTypeId = EntityTypeCache.Read<HtmlContent>().Id;
             gVersions.DataSource = versions;
-            gVersions.GridRebind += gVersions_GridRebind;
+            
             gVersions.DataBind();
+        }
+
+        /// <summary>
+        /// Shows the settings.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected override void ShowSettings()
+        {
+            // only enable viewstate for htmlEditor when needed (it is really big)
+            pnlEdit.EnableViewState = true;
+
+            pnlEdit.Visible = true;
+            pnlVersionGrid.Visible = false;
+            pnlEditModel.Visible = true;
+            upnlHtmlContent.Update();
+            mdEdit.Show();
+
+            bool useCodeEditor = GetAttributeValue( "UseCodeEditor" ).AsBoolean();
+
+            ceHtml.Visible = useCodeEditor;
+            htmlEditor.Visible = !useCodeEditor;
+
+            htmlEditor.Toolbar = HtmlEditor.ToolbarConfig.Full;
+
+            // if the current user can't approve their own edits, set the approval to Not-Approved when they change something
+            if ( !IsUserAuthorized( "Approve" ) )
+            {
+                string onchangeScriptFormat = @"
+   $('#{0}').removeClass('label label-success label-danger').addClass('label label-danger');
+   $('#{0}').text('Not-Approved');
+   $('#{1}').val('false');
+   $('#{2}').val('');
+   $('#{3}').hide();";
+
+                string onchangeScript = string.Format( onchangeScriptFormat, lblApprovalStatus.ClientID, hfApprovalStatus.ClientID, hfApprovalStatusPersonId.ClientID, lblApprovalStatusPerson.ClientID );
+
+                htmlEditor.OnChangeScript = onchangeScript;
+                ceHtml.OnChangeScript = onchangeScript;
+            }
+
+            htmlEditor.MergeFields.Clear();
+            htmlEditor.MergeFields.Add( "GlobalAttribute" );
+            htmlEditor.MergeFields.Add( "CurrentPerson^Rock.Model.Person|Current Person" );
+            htmlEditor.MergeFields.Add( "Campuses" );
+            htmlEditor.MergeFields.Add( "PageParameter" );
+            htmlEditor.MergeFields.Add( "RockVersion" );
+            htmlEditor.MergeFields.Add( "Date" );
+            htmlEditor.MergeFields.Add( "Time" );
+            htmlEditor.MergeFields.Add( "DayOfWeek" );
+
+            ceHtml.MergeFields.Clear();
+            ceHtml.MergeFields.Add( "GlobalAttribute" );
+            ceHtml.MergeFields.Add( "CurrentPerson^Rock.Model.Person|Current Person" );
+            ceHtml.MergeFields.Add( "Campuses" );
+            ceHtml.MergeFields.Add( "RockVersion" );
+            ceHtml.MergeFields.Add( "PageParameter" );
+            ceHtml.MergeFields.Add( "Date" );
+            ceHtml.MergeFields.Add( "Time" );
+            ceHtml.MergeFields.Add( "DayOfWeek" );
+
+            var contextObjects = new Dictionary<string, object>();
+            foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
+            {
+                var contextEntity = RockPage.GetCurrentContext( contextEntityType );
+                if ( contextEntity != null && contextEntity is Rock.Lava.ILiquidizable )
+                {
+                    var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
+                    if ( type != null )
+                    {
+                        string mergeField = string.Format( "Context.{0}^{1}|Current {0} (Context)|Context", type.Name, type.FullName );
+                        htmlEditor.MergeFields.Add( mergeField );
+                        ceHtml.MergeFields.Add( mergeField );
+                    }
+                }
+            }
+
+            string documentRoot = GetAttributeValue( "DocumentRootFolder" );
+            string imageRoot = GetAttributeValue( "ImageRootFolder" );
+            htmlEditor.UserSpecificRoot = GetAttributeValue( "UserSpecificFolders" ).AsBoolean();
+            htmlEditor.DocumentFolderRoot = documentRoot;
+            htmlEditor.ImageFolderRoot = imageRoot;
+
+            bool supportsVersioning = GetAttributeValue( "SupportVersions" ).AsBoolean();
+            bool requireApproval = GetAttributeValue( "RequireApproval" ).AsBoolean();
+
+            lVersion.Visible = supportsVersioning;
+            lbShowVersionGrid.Visible = supportsVersioning;
+            cbOverwriteVersion.Visible = supportsVersioning;
+            cbOverwriteVersion.Checked = false;
+
+            // RequireApproval only applies if SupportsVersioning=True
+            upnlApproval.Visible = supportsVersioning && requireApproval;
+            lbApprove.Enabled = IsUserAuthorized( "Approve" );
+            lbDeny.Enabled = IsUserAuthorized( "Approve" );
+
+            string entityValue = EntityValue();
+            HtmlContent htmlContent = new HtmlContentService( new RockContext() ).GetActiveContent( this.BlockId, entityValue );
+
+            // set Height of editors
+            if ( supportsVersioning && requireApproval )
+            {
+                ceHtml.EditorHeight = "280";
+                htmlEditor.Height = 280;
+            }
+            else if ( supportsVersioning )
+            {
+                ceHtml.EditorHeight = "350";
+                htmlEditor.Height = 350;
+            }
+            else
+            {
+                ceHtml.EditorHeight = "380";
+                htmlEditor.Height = 380;
+            }
+
+            ShowEditDetail( htmlContent );
         }
 
         /// <summary>
@@ -574,67 +566,69 @@ namespace RockWeb.Blocks.Cms
             // if content not cached load it from DB
             if ( cachedContent == null )
             {
-                var rockContext = new RockContext();
-                var htmlContentService = new HtmlContentService( rockContext );
-                HtmlContent content = htmlContentService.GetActiveContent( this.BlockId, entityValue );
-
-                if ( content != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
+                    var htmlContentService = new HtmlContentService( rockContext );
+                    HtmlContent content = htmlContentService.GetActiveContent( this.BlockId, entityValue );
 
-                    if ( content.Content.HasMergeFields() || enableDebug )
+                    if ( content != null )
                     {
-                        var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-                        if ( CurrentPerson != null )
-                        {
-                            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                            mergeFields.Add( "Person", CurrentPerson );
-                            mergeFields.Add( "CurrentPerson", CurrentPerson );
-                        }
+                        bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
 
-                        mergeFields.Add( "Campuses", CampusCache.All() );
-                        mergeFields.Add( "PageParameter", PageParameters() );
-
-                        var contextObjects = new Dictionary<string, object>();
-                        foreach( var contextEntityType in RockPage.GetContextEntityTypes() )
+                        if ( content.Content.HasMergeFields() || enableDebug )
                         {
-                            var contextEntity = RockPage.GetCurrentContext( contextEntityType );
-                            if (contextEntity != null && contextEntity is DotLiquid.ILiquidizable)
+                            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+                            if ( CurrentPerson != null )
                             {
-                                var type = Type.GetType(contextEntityType.AssemblyName ?? contextEntityType.Name);
-                                if (type != null)
-                                {
-                                    contextObjects.Add( type.Name, contextEntity );
-                                }
+                                // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+                                mergeFields.Add( "Person", CurrentPerson );
+                                mergeFields.Add( "CurrentPerson", CurrentPerson );
                             }
 
+                            mergeFields.Add( "Campuses", CampusCache.All() );
+                            mergeFields.Add( "PageParameter", PageParameters() );
+
+                            var contextObjects = new Dictionary<string, object>();
+                            foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
+                            {
+                                var contextEntity = RockPage.GetCurrentContext( contextEntityType );
+                                if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
+                                {
+                                    var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
+                                    if ( type != null )
+                                    {
+                                        contextObjects.Add( type.Name, contextEntity );
+                                    }
+                                }
+
+                            }
+
+                            if ( contextObjects.Any() )
+                            {
+                                mergeFields.Add( "Context", contextObjects );
+                            }
+
+                            mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+
+                            html = content.Content.ResolveMergeFields( mergeFields );
+
+                            // show merge fields if enable debug true
+                            if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
+                            {
+                                // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+                                mergeFields.Remove( "Person" );
+                                html += mergeFields.lavaDebugInfo();
+                            }
                         }
-
-                        if ( contextObjects.Any() )
+                        else
                         {
-                            mergeFields.Add( "Context", contextObjects );
-                        }
-
-                        mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-
-                        html = content.Content.ResolveMergeFields( mergeFields );
-
-                        // show merge fields if enable debug true
-                        if ( enableDebug )
-                        {
-                            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                            mergeFields.Remove( "Person" );
-                            html += mergeFields.lavaDebugInfo();
+                            html = content.Content;
                         }
                     }
                     else
                     {
-                        html = content.Content;
+                        html = string.Empty;
                     }
-                }
-                else
-                {
-                    html = string.Empty;
                 }
 
                 // Resolve any dynamic url references

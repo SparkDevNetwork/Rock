@@ -39,14 +39,14 @@
         <Rock:RockControlWrapper ID="rcwCheckinHistory" runat="server" Label="Checkin History">
             <Rock:Grid ID="gHistory" runat="server" DisplayType="Light" AllowPaging="false" CssClass="table-condensed">
                 <Columns>
-                    <asp:BoundField DataField="Date" HeaderText="Date" DataFormatString="{0:MM/dd/yy}" />
-                    <asp:BoundField DataField="Group" HeaderText="Group"  />
-                    <asp:BoundField DataField="Location" HeaderText="Location" HtmlEncode="false" />
-                    <asp:TemplateField HeaderText="Schedule">
+                    <Rock:RockBoundField DataField="Date" HeaderText="Date" DataFormatString="{0:MM/dd/yy}" />
+                    <Rock:RockBoundField DataField="Group" HeaderText="Group"  />
+                    <Rock:RockBoundField DataField="Location" HeaderText="Location" HtmlEncode="false" />
+                    <Rock:RockTemplateField HeaderText="Schedule">
                         <ItemTemplate>
                             <%# Eval("Schedule") %> <asp:Literal id="lActive" runat="server"></asp:Literal>
                         </ItemTemplate>
-                    </asp:TemplateField>
+                    </Rock:RockTemplateField>
                 </Columns>
             </Rock:Grid>
         </Rock:RockControlWrapper>

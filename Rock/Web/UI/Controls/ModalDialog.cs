@@ -14,14 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using AjaxControlToolkit;
 using System;
 using System.ComponentModel;
-using System.Security.Permissions;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
@@ -29,9 +26,9 @@ namespace Rock.Web.UI.Controls
     /// A Modal Popup Dialog Window
     /// </summary>
     [ToolboxData( "<{0}:ModalDialog runat=server></{0}:ModalDialog>" )]
-    public class ModalDialog : ModalPopupExtender, INamingContainer, IHasValidationGroup
+    public class ModalDialog : CompositeControl, INamingContainer, IHasValidationGroup
     {
-        private Button _dfltShowButton;
+        private HiddenFieldWithClass _hfModalVisible;
         private Panel _dialogPanel;
 
         private Panel _headerPanel;
@@ -41,9 +38,8 @@ namespace Rock.Web.UI.Controls
         private HtmlGenericControl _subtitleSmall;
         private LiteralControl _subtitle;
 
-        private Literal _scrollStartLiteral;
+        private Panel _bodyPanel;
         private Panel _contentPanel;
-        private Literal _scrollEndLiteral;
 
         private Panel _footerPanel;
 
@@ -72,8 +68,6 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            this.BackgroundCssClass = "modal-backdrop";
-            this.Y = 50;
 
             var sm = ScriptManager.GetCurrent( this.Page );
             EnsureChildControls();
@@ -105,6 +99,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return _title.Text;
             }
+
             set
             {
                 EnsureChildControls();
@@ -130,6 +125,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return _subtitle.Text;
             }
+
             set
             {
                 EnsureChildControls();
@@ -160,15 +156,27 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [scrollbar enabled].
+        /// Gets or sets the on ok script.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [scrollbar enabled]; otherwise, <c>false</c>.
+        /// The on ok script.
         /// </value>
-        public bool ScrollbarEnabled
+        public string OnOkScript
         {
-            get { return ViewState["ScrollbarEnabled"] as bool? ?? true; }
-            set { ViewState["ScrollbarEnabled"] = value; }
+            get { return ViewState["OnOkScript"] as string ?? string.Empty; }
+            set { ViewState["OnOkScript"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the on cancel script.
+        /// </summary>
+        /// <value>
+        /// The on cancel script.
+        /// </value>
+        public string OnCancelScript
+        {
+            get { return ViewState["OnCancelScript"] as string ?? string.Empty; }
+            set { ViewState["OnCancelScript"] = value; }
         }
 
         /// <summary>
@@ -192,95 +200,95 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Hides this instance.
+        /// </summary>
+        public void Hide()
+        {
+            EnsureChildControls();
+            _hfModalVisible.Value = "0";
+
+            // make sure the close script gets fired, even if the modal isn't rendered
+            string hideScript = string.Format("Rock.controls.modal.closeModalDialog($('#{0}'));", _dialogPanel.ClientID);
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "modaldialog-hide-" + this.ClientID, hideScript, true );
+        }
+
+        /// <summary>
+        /// Shows this instance.
+        /// </summary>
+        public void Show()
+        {
+            EnsureChildControls();
+            _hfModalVisible.Value = "1";
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
-            base.Controls.Clear();
+            Controls.Clear();
 
-            _dfltShowButton = new Button();
-            base.Controls.Add( _dfltShowButton );
-            _dfltShowButton.ID = "default";
-            _dfltShowButton.Attributes.Add( "style", "display:none" );
-
+            // main container
             _dialogPanel = new Panel();
-            base.Controls.Add( _dialogPanel );
-            _dialogPanel.ID = "panel";
-            _dialogPanel.CssClass = "modal-content rock-modal rock-modal-frame";
-            _dialogPanel.Attributes.Add( "style", "display:none" );
+            Controls.Add( _dialogPanel );
+            _dialogPanel.ID = "modal_dialog_panel";
+            _dialogPanel.CssClass = "modal container modal-content rock-modal rock-modal-frame";
 
+            _hfModalVisible = new HiddenFieldWithClass();
+            _hfModalVisible.CssClass = "js-modal-visible";
+            _dialogPanel.Controls.Add( _hfModalVisible );
+
+            // modal-header
             _headerPanel = new Panel();
             _dialogPanel.Controls.Add( _headerPanel );
-            //_headerPanel.ID = "headerPanel";
             _headerPanel.CssClass = "modal-header";
 
-            // add start div of modal-body
-            _dialogPanel.Controls.Add( new Literal { Text = @"<div class='modal-body'>" } );
-
-            // Content Panel wrapper with scroll-container
-            _scrollStartLiteral = new Literal();
-            _scrollStartLiteral.Text = @"
-                <div class='modal-dialog-scroll-container scroll-container scroll-container-vertical'>                
-                    <div class='scrollbar'>
-                        <div class='track'>
-                            <div class='thumb'>
-                                <div class='end'></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class='viewport'>
-                        <div class='overview'>";
-
-            _dialogPanel.Controls.Add( _scrollStartLiteral );
-
-            _contentPanel = new Panel();
-            _dialogPanel.Controls.Add( _contentPanel );
-            _contentPanel.ID = "contentPanel";
-
-            _scrollEndLiteral = new Literal();
-            _scrollEndLiteral.Text = @"
-                        </div>
-                    </div>
-                </div>";
-
-            _dialogPanel.Controls.Add( _scrollEndLiteral );
-
-            // add end div of modal-body
-            _dialogPanel.Controls.Add( new Literal { Text = "</div>" } );
-
-            // Footer
-            _footerPanel = new Panel();
-            _dialogPanel.Controls.Add( _footerPanel );
-            //_footerPanel.ID = "footerPanel";
-            _footerPanel.CssClass = "modal-footer";
-
-            _closeLink = new HtmlGenericControl( "A" );
+            _closeLink = new HtmlGenericControl( "button" );
             _headerPanel.Controls.Add( _closeLink );
             _closeLink.ID = "closeLink";
-            _closeLink.Attributes.Add( "HRef", "#" );
-            _closeLink.Attributes.Add( "class", "close" );
+            _closeLink.Attributes.Add( "class", "close js-modaldialog-close-link" );
+            _closeLink.Attributes.Add( "aria-hidden", "true" );
+            _closeLink.Attributes.Add( "type", "button" );
+            _closeLink.Attributes.Add( "data-dismiss", "modal" );
             _closeLink.InnerHtml = "&times;";
 
             _titleH3 = new HtmlGenericControl( "h3" );
             _titleH3.AddCssClass( "modal-title" );
             _headerPanel.Controls.Add( _titleH3 );
 
+            // _title control for public this.Title
             _title = new LiteralControl();
             _title.Text = string.Empty;
             _titleH3.Controls.Add( _title );
 
+            // _subtitle controls for public this.Subtitle
             _subtitleSmall = new HtmlGenericControl( "small" );
             _headerPanel.Controls.Add( _subtitleSmall );
-
             _subtitle = new LiteralControl();
             _subtitle.Text = string.Empty;
             _subtitleSmall.Controls.Add( _subtitle );
 
+            // modal-body and content
+            _bodyPanel = new Panel();
+            _bodyPanel.CssClass = "modal-body";
+            _dialogPanel.Controls.Add( _bodyPanel );
+
+            // for this.Content
+            _contentPanel = new Panel();
+            _bodyPanel.Controls.Add( _contentPanel );
+            _contentPanel.ID = "contentPanel";
+
+            // modal-footer
+            _footerPanel = new Panel();
+            _dialogPanel.Controls.Add( _footerPanel );
+            _footerPanel.CssClass = "modal-footer";
+
             _cancelLink = new HtmlAnchor();
             _footerPanel.Controls.Add( _cancelLink );
             _cancelLink.ID = "cancelLink";
-            _cancelLink.Attributes.Add( "class", "btn btn-link" );
+            _cancelLink.Attributes.Add( "class", "btn btn-link js-modaldialog-cancel-link" );
+            _cancelLink.Attributes.Add( "data-dismiss", "modal" );
             _cancelLink.InnerText = "Cancel";
 
             _serverSaveLink = new HtmlAnchor();
@@ -292,10 +300,7 @@ namespace Rock.Web.UI.Controls
             _saveLink = new HtmlAnchor();
             _footerPanel.Controls.Add( _saveLink );
             _saveLink.ID = "saveLink";
-            _saveLink.Attributes.Add( "class", "btn btn-primary modaldialog-save-button" );
-
-            this.PopupControlID = _dialogPanel.ID;
-            this.CancelControlID = _cancelLink.ID;
+            _saveLink.Attributes.Add( "class", "btn btn-primary js-modaldialog-save-link" );
         }
 
         /// <summary>
@@ -306,36 +311,17 @@ namespace Rock.Web.UI.Controls
         {
             RegisterJavaScript();
 
-            _closeLink.Attributes["onclick"] = string.Format(
-                "{0} $find('{1}').hide();return false;", this.OnCancelScript, this.BehaviorID );
-
             _serverSaveLink.Visible = SaveClick != null;
             _serverSaveLink.InnerText = SaveButtonText;
             _serverSaveLink.ValidationGroup = this.ValidationGroup;
 
-            _saveLink.Visible = SaveClick == null && !( string.IsNullOrWhiteSpace( OnOkScript ) );
+            _saveLink.Visible = SaveClick == null && !string.IsNullOrWhiteSpace( OnOkScript );
             _saveLink.InnerText = SaveButtonText;
             _saveLink.ValidationGroup = this.ValidationGroup;
 
-            _scrollStartLiteral.Visible = ScrollbarEnabled;
-            _scrollEndLiteral.Visible = ScrollbarEnabled;
-
-            if ( !_serverSaveLink.Visible )
+            if ( !_serverSaveLink.Visible && !_saveLink.Visible )
             {
-                if ( _saveLink.Visible )
-                {
-                    this.OkControlID = _saveLink.ID;
-                }
-                else
-                {
-                    _cancelLink.InnerText = "Ok";
-                }
-            }
-
-            // If no target control has been defined, use a hidden default button.
-            if ( this.TargetControlID == string.Empty )
-            {
-                this.TargetControlID = _dfltShowButton.ID;
+                _cancelLink.InnerText = "Ok";
             }
 
             base.OnPreRender( e );
@@ -347,15 +333,31 @@ namespace Rock.Web.UI.Controls
         protected void RegisterJavaScript()
         {
             string scriptFormat = @"
-            // use setTimeout so that tinyscrollbar will get initialized after renders
-            setTimeout(function () {{
-                $('#{0} .modal-dialog-scroll-container').tinyscrollbar({{ size: 150, sizethumb: 20 }});
-            }}, 0);
+if ($('#{0}').find('.js-modal-visible').val() == '1') {{
+    Rock.controls.modal.showModalDialog($('#{0}'), '{3}');
+}} 
+else {{
+    Rock.controls.modal.closeModalDialog($('#{0}'));
+}}
+
+$('#{0}').find('.js-modaldialog-close-link, .js-modaldialog-cancel-link').click(function () {{
+    {1}
+    $('#{0}').find('.js-modal-visible').val('0');
+    Rock.controls.modal.closeModalDialog($('#{0}'));
+}});
+
+$('#{0}').find('.js-modaldialog-save-link').click(function () {{
+    {2}
+    $('#{0}').find('.js-modal-visible').val('0');
+    Rock.controls.modal.closeModalDialog($('#{0}'));
+}});
+
 ";
+            var parentPanel = this.ParentUpdatePanel();
+            var modalManager = parentPanel != null ? "#" + parentPanel.ClientID : "body";
+            var script = string.Format( scriptFormat, _dialogPanel.ClientID, this.OnCancelScript, this.OnOkScript, modalManager );
 
-            var script = string.Format( scriptFormat, _dialogPanel.ClientID );
-
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "modaldialog-scroll-" + this.ClientID, script, true );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "modaldialog-show-" + this.ClientID, script, true );
         }
 
         /// <summary>
@@ -363,10 +365,12 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        void SaveLink_ServerClick( object sender, EventArgs e )
+        public void SaveLink_ServerClick( object sender, EventArgs e )
         {
             if ( SaveClick != null )
+            {
                 SaveClick( sender, e );
+            }
         }
 
         /// <summary>

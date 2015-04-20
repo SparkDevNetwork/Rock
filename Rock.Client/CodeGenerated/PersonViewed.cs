@@ -21,23 +21,18 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for PersonViewed
+    /// Base client model for PersonViewed that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class PersonViewed
+    public partial class PersonViewedEntity
     {
         /// <summary />
-        public int? ViewerPersonAliasId { get; set; }
-
-        /// <summary />
-        public int? TargetPersonAliasId { get; set; }
-
-        /// <summary />
-        public DateTime? ViewDateTime { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public string IpAddress { get; set; }
@@ -46,7 +41,13 @@ namespace Rock.Client
         public string Source { get; set; }
 
         /// <summary />
-        public int Id { get; set; }
+        public int? TargetPersonAliasId { get; set; }
+
+        /// <summary />
+        public DateTime? ViewDateTime { get; set; }
+
+        /// <summary />
+        public int? ViewerPersonAliasId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -54,5 +55,12 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+    }
+
+    /// <summary>
+    /// Client model for PersonViewed that includes all the fields that are available for GETs. Use this for GETs (use PersonViewedEntity for POST/PUTs)
+    /// </summary>
+    public partial class PersonViewed : PersonViewedEntity
+    {
     }
 }

@@ -21,80 +21,36 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for Page
+    /// Base client model for Page that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class Page
+    public partial class PageEntity
     {
         /// <summary />
-        public string InternalName { get; set; }
-
-        /// <summary />
-        public string PageTitle { get; set; }
-
-        /// <summary />
-        public string BrowserTitle { get; set; }
-
-        /// <summary />
-        public int? ParentPageId { get; set; }
-
-        /// <summary />
-        public bool IsSystem { get; set; }
-
-        /// <summary />
-        public int LayoutId { get; set; }
-
-        /// <summary />
-        public bool RequiresEncryption { get; set; }
-
-        /// <summary />
-        public bool EnableViewState { get; set; }
-
-        /// <summary />
-        public bool PageDisplayTitle { get; set; }
-
-        /// <summary />
-        public bool PageDisplayBreadCrumb { get; set; }
-
-        /// <summary />
-        public bool PageDisplayIcon { get; set; }
-
-        /// <summary />
-        public bool PageDisplayDescription { get; set; }
-
-        /// <summary />
-        public int /* DisplayInNavWhen*/ DisplayInNavWhen { get; set; }
-
-        /// <summary />
-        public bool MenuDisplayDescription { get; set; }
-
-        /// <summary />
-        public bool MenuDisplayIcon { get; set; }
-
-        /// <summary />
-        public bool MenuDisplayChildPages { get; set; }
-
-        /// <summary />
-        public bool BreadCrumbDisplayName { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public bool BreadCrumbDisplayIcon { get; set; }
 
         /// <summary />
-        public int Order { get; set; }
+        public bool BreadCrumbDisplayName { get; set; }
 
         /// <summary />
-        public int OutputCacheDuration { get; set; }
+        public string BrowserTitle { get; set; }
 
         /// <summary />
         public string Description { get; set; }
 
         /// <summary />
-        public string KeyWords { get; set; }
+        public int /* DisplayInNavWhen*/ DisplayInNavWhen { get; set; }
+
+        /// <summary />
+        public bool EnableViewState { get; set; }
 
         /// <summary />
         public string HeaderContent { get; set; }
@@ -104,6 +60,79 @@ namespace Rock.Client
 
         /// <summary />
         public bool IncludeAdminFooter { get; set; }
+
+        /// <summary />
+        public string InternalName { get; set; }
+
+        /// <summary />
+        public bool IsSystem { get; set; }
+
+        /// <summary />
+        public string KeyWords { get; set; }
+
+        /// <summary />
+        public int LayoutId { get; set; }
+
+        /// <summary />
+        public bool MenuDisplayChildPages { get; set; }
+
+        /// <summary />
+        public bool MenuDisplayDescription { get; set; }
+
+        /// <summary />
+        public bool MenuDisplayIcon { get; set; }
+
+        /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
+        public int OutputCacheDuration { get; set; }
+
+        /// <summary />
+        public bool PageDisplayBreadCrumb { get; set; }
+
+        /// <summary />
+        public bool PageDisplayDescription { get; set; }
+
+        /// <summary />
+        public bool PageDisplayIcon { get; set; }
+
+        /// <summary />
+        public bool PageDisplayTitle { get; set; }
+
+        /// <summary />
+        public string PageTitle { get; set; }
+
+        /// <summary />
+        public int? ParentPageId { get; set; }
+
+        /// <summary />
+        public bool RequiresEncryption { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public string ForeignId { get; set; }
+
+    }
+
+    /// <summary>
+    /// Client model for Page that includes all the fields that are available for GETs. Use this for GETs (use PageEntity for POST/PUTs)
+    /// </summary>
+    public partial class Page : PageEntity
+    {
+        /// <summary />
+        public ICollection<Block> Blocks { get; set; }
+
+        /// <summary />
+        public ICollection<PageContext> PageContexts { get; set; }
+
+        /// <summary />
+        public ICollection<PageRoute> PageRoutes { get; set; }
+
+        /// <summary />
+        public ICollection<Page> Pages { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -117,14 +146,14 @@ namespace Rock.Client
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary />
-        public int Id { get; set; }
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-        /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

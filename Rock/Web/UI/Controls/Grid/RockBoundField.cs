@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column to display a boolean value.
     /// </summary>
     [ToolboxData( "<{0}:RockBoundField runat=server></{0}:RockBoundField>" )]
-    public class RockBoundField : BoundField
+    public class RockBoundField : BoundField, IPriorityColumn
     {
         /// <summary>
         /// Gets or sets the length of the truncate.
@@ -36,6 +36,21 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["TruncateLength"] as int? ?? 0; }
             set { ViewState["TruncateLength"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the column priority.
+        /// </summary>
+        /// <value>
+        /// The priority of the column.
+        /// </value>
+        public ColumnPriority ColumnPriority
+        {
+            get {
+                object t = ViewState["ColumnPriority"];
+                return (t == null) ? ColumnPriority.AlwaysVisible : (ColumnPriority)t; 
+            }
+            set { ViewState["ColumnPriority"] = value; }
         }
 
         /// <summary>
@@ -54,6 +69,20 @@ namespace Rock.Web.UI.Controls
             }
 
             return base.FormatDataValue( dataValue, encode );
+        }
+
+        /// <summary>
+        /// Performs basic instance initialization for a data control field.
+        /// </summary>
+        /// <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>
+        /// <param name="control">The data control that owns the <see cref="T:System.Web.UI.WebControls.DataControlField"/>.</param>
+        /// <returns>
+        /// Always returns false.
+        /// </returns>
+        public override bool Initialize( bool sortingEnabled, Control control )
+        {
+            
+            return base.Initialize( sortingEnabled, control );
         }
     }
 }

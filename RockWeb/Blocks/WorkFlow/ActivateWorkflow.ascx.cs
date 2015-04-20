@@ -34,9 +34,9 @@ namespace RockWeb.Blocks.WorkFlow
     /// <summary>
     /// Activates a workflow and then redirects user to workflow entry page.
     /// </summary>
-    [DisplayName( "Activate Workflow" )]
+    [DisplayName( "Activate Workflow (Deprecated)" )]
     [Category( "WorkFlow" )]
-    [Description( "Activates a workflow and then redirects user to workflow entry page." )]
+    [Description( "Activates a workflow and then redirects user to workflow entry page. NOTE: This block has been deprecated and will be removed in a future update. The Workflow Entry block now supports the same functionality." )]
 
     [LinkedPage( "Workflow Entry Page" )]
     public partial class ActivateWorkflow : Rock.Web.UI.RockBlock
@@ -54,85 +54,32 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnInit( e );
 
-            int? workflowTypeId = PageParameter( "WorkflowTypeId" ).AsIntegerOrNull();
-            if ( workflowTypeId.HasValue )
+            // Notify the Rock Administrators that an obsolete block is being used
+            try
             {
-                var rockContext = new RockContext();
-                var workflowType = new WorkflowTypeService( rockContext ).Get( workflowTypeId.Value );
-                if ( workflowType != null )
-                {
-                    var workflow = Workflow.Activate( workflowType, PageParameter( "WorkflowName" ) );
-                    if ( workflow != null )
-                    {
-
-                        object entity = null;
-
-                        int? personId = PageParameter( "PersonId" ).AsIntegerOrNull();
-                        if ( personId.HasValue )
-                        {
-                            entity = new PersonService( rockContext ).Get( personId.Value );
-                        }
-                        else
-                        {
-                            int? groupId = PageParameter( "GroupId" ).AsIntegerOrNull();
-                            if ( groupId.HasValue )
-                            {
-                                entity = new GroupService( rockContext ).Get( groupId.Value );
-                            }
-                        }
-
-                        foreach( string key in Request.QueryString.AllKeys )
-                        {
-                            workflow.SetAttributeValue( key, Request.QueryString[key] );
-                        }
-
-                        var qryParams = new Dictionary<string, string>();
-                        qryParams.Add( "WorkflowTypeId", workflowTypeId.ToString() );
-
-                        List<string> workflowErrors;
-                        if ( workflow.Process( rockContext, entity, out workflowErrors ) )
-                        {
-                            if ( workflow.IsPersisted || workflowType.IsPersisted )
-                            {
-                                var workflowService = new Rock.Model.WorkflowService( rockContext );
-                                workflowService.Add( workflow );
-
-                                rockContext.WrapTransaction( () =>
-                                {
-                                    rockContext.SaveChanges();
-                                    workflow.SaveAttributeValues( rockContext );
-                                    foreach ( var activity in workflow.Activities )
-                                    {
-                                        activity.SaveAttributeValues( rockContext );
-                                    }
-                                } );
-
-                                qryParams.Add( "WorkflowId", workflow.Id.ToString() );
-                            }
-
-                            NavigateToLinkedPage( "WorkflowEntryPage", qryParams );
-
-                        }
-                        else
-                        {
-                            nbError.Heading = "Workflow Processing Error(s)";
-                            nbError.Text = "<ul><li>" + workflowErrors.AsDelimited( "</li><li>" ) + "</li></ul>";
-                        }
-                    }
-                    else
-                    {
-                        nbError.Text = "Could not activate workflow.";
-                    }
-                }
-                else
-                {
-                    nbError.Text = "Invalid Workflow Type Id.";
-                }
+                var pageReference = new Rock.Web.PageReference( GetAttributeValue( "WorkflowEntryPage" ) );
+                string subject = string.Format( "Your '{0}' site is using an obsolete block!", RockPage.Site.Name );
+                string message = string.Format( @"Your '{0}' site is still using the 'Activate Workflow' block on page:
+{1}!<br/><br/>The Activate Workflow block has been deprecated and will be removed during a future update. 
+This block was previously used to activate a workflow, set attribute values from any existing query string parameters, 
+and then redirect the user to a page with the Workflow Entry block. Because the Workflow Entry block now also 
+supports setting attribute values from query string parameters, the Activate Workflow block is no 
+longer needed.<br/><br/>Please update any place that links to page ID: {1}, to instead link directly to the Workflow 
+Entry page (Page ID: {2}).", RockPage.Site.Name, RockPage.PageId, pageReference.PageId );
+                Rock.Communication.Email.NotifyAdmins( subject, message );
             }
-            else
+            catch ( Exception ex )
             {
-                nbError.Text = "A workflow could not be activated due to missing Workflow Type Id query string parameter.";
+                ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
             }
+
+            // Pass all the query string parameters to the entry page
+            var pageParams = new Dictionary<string, string>();
+            foreach( var param in PageParameters())
+            {
+                pageParams.Add( param.Key, param.Value.ToString() );
+            }
+            NavigateToLinkedPage( "WorkflowEntryPage", pageParams );
         }
 
         #endregion

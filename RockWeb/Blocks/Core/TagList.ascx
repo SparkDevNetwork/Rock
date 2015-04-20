@@ -24,12 +24,12 @@
                     <Rock:Grid ID="rGrid" runat="server" RowItemText="Tag" OnRowSelected="rGrid_Edit" TooltipField="Description">
                         <Columns>
                             <Rock:ReorderField />
-                            <asp:BoundField DataField="Id" HeaderText="Id" Visible="false" />
-                            <asp:BoundField DataField="Name" HeaderText="Name" />
-                            <asp:BoundField DataField="EntityTypeName" HeaderText="Entity Type" />
-                            <asp:BoundField DataField="EntityTypeQualifierColumn" HeaderText="Qualifier Column" />
-                            <asp:BoundField DataField="EntityTypeQualifierValue" HeaderText="Qualifier Value" />
-                            <asp:BoundField DataField="Owner" HeaderText="Owner" />
+                            <Rock:RockBoundField DataField="Id" HeaderText="Id" Visible="false" />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                            <Rock:RockBoundField DataField="EntityTypeName" HeaderText="Entity Type" />
+                            <Rock:RockBoundField DataField="EntityTypeQualifierColumn" HeaderText="Qualifier Column" />
+                            <Rock:RockBoundField DataField="EntityTypeQualifierValue" HeaderText="Qualifier Value" />
+                            <Rock:RockBoundField DataField="Owner" HeaderText="Owner" />
 
                             <Rock:DeleteField OnClick="rGrid_Delete" />
                         </Columns>

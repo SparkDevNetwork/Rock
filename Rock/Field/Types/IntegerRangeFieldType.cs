@@ -15,57 +15,58 @@
 // </copyright>
 //
 using System;
+
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Field used to save and display a pair of integer values
+    /// Stored as a comma-delimited pair of integers
     /// </summary>
     [Serializable]
     public class IntegerRangeFieldType : FieldType
     {
+
+        #region Formatting
+
         /// <summary>
-        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="message">The message.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified value is valid; otherwise, <c>false</c>.
-        /// </returns>
-        public override bool IsValid( string value, bool required, out string message )
+        /// Returns the field's current value(s)
+        /// </summary> 
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            string formattedValue = string.Empty;
+
+            if ( value != null )
             {
-                int result;
                 string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
-                if ( valuePair.Length <= 2 )
+                if ( valuePair.Length == 2 )
                 {
-                    foreach ( string v in valuePair )
+                    string lowerValue = string.IsNullOrWhiteSpace( valuePair[0] ) ? Rock.Constants.None.TextHtml : valuePair[0];
+                    string upperValue = string.IsNullOrWhiteSpace( valuePair[1] ) ? Rock.Constants.None.TextHtml : valuePair[1];
+                    if ( !string.IsNullOrWhiteSpace( lowerValue ) || !string.IsNullOrWhiteSpace( upperValue ) )
                     {
-                        if ( !string.IsNullOrWhiteSpace(v) )
-                        {
-                            if ( !string.IsNullOrWhiteSpace( v ) )
-                            {
-                                if ( !int.TryParse( v, out result ) )
-                                {
-                                    message = "The input provided contains invalid integer values";
-                                    return false;
-                                }
-                            }
-                        }
+                        return string.Format( "{0} to {1}", lowerValue, upperValue );
                     }
-                }
-                else
-                {
-                    message = "The input provided is not a valid integer range.";
-                    return false;
+                    else
+                    {
+                        return string.Empty;
+                    }
                 }
             }
 
-            return base.IsValid( value, required, out message );
+            // something unexpected.  Let the base format it
+            return base.FormatValue( parentControl, value, configurationValues, condensed );
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -132,37 +133,65 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary> 
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="message">The message.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified value is valid; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsValid( string value, bool required, out string message )
         {
-            string formattedValue = string.Empty;
-
-            if ( value != null )
+            if ( !string.IsNullOrWhiteSpace( value ) )
             {
+                int result;
                 string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
-                if ( valuePair.Length == 2 )
+                if ( valuePair.Length <= 2 )
                 {
-                    string lowerValue = string.IsNullOrWhiteSpace( valuePair[0] ) ? Rock.Constants.None.TextHtml : valuePair[0];
-                    string upperValue = string.IsNullOrWhiteSpace( valuePair[1] ) ? Rock.Constants.None.TextHtml : valuePair[1];
-                    if ( !string.IsNullOrWhiteSpace( lowerValue ) || !string.IsNullOrWhiteSpace( upperValue ) )
+                    foreach ( string v in valuePair )
                     {
-                        return string.Format( "{0} to {1}", lowerValue, upperValue );
+                        if ( !string.IsNullOrWhiteSpace( v ) )
+                        {
+                            if ( !string.IsNullOrWhiteSpace( v ) )
+                            {
+                                if ( !int.TryParse( v, out result ) )
+                                {
+                                    message = "The input provided contains invalid integer values";
+                                    return false;
+                                }
+                            }
+                        }
                     }
-                    else
-                    {
-                        return string.Empty;
-                    }
+                }
+                else
+                {
+                    message = "The input provided is not a valid integer range.";
+                    return false;
                 }
             }
 
-            // something unexpected.  Let the base format it
-            return base.FormatValue( parentControl, value, configurationValues, condensed );
+            return base.IsValid( value, required, out message );
         }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Creates the control needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <returns></returns>
+        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        {
+            // This fieldtype does not support filtering
+            return null;
+        }
+
+        #endregion
+
     }
 }

@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using System.Web;
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -122,6 +122,7 @@ namespace Rock.CheckIn
             foreach ( var item in kioskLabel.MergeFields )
             {
                 MergeFields.Add( item.Key, item.Value.ResolveMergeFields( mergeObjects ) );
+                MergeFields[item.Key] = HttpUtility.HtmlDecode( MergeFields[item.Key] );
             }
         }
 

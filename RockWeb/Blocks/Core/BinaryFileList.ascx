@@ -19,8 +19,8 @@
         
                     <Rock:Grid ID="gBinaryFile" runat="server" AllowSorting="true" OnRowSelected="gBinaryFile_Edit">
                         <Columns>
-                            <asp:BoundField DataField="FileName" HeaderText="File Name" SortExpression="FileName" />
-                            <asp:BoundField DataField="MimeType" HeaderText="Mime Type" SortExpression="MimeType" />
+                            <Rock:RockBoundField DataField="FileName" HeaderText="File Name" SortExpression="FileName" />
+                            <Rock:RockBoundField DataField="MimeType" HeaderText="Mime Type" SortExpression="MimeType" />
                             <Rock:DateTimeField DataField="ModifiedDateTime" HeaderText="Last Modified" SortExpression="ModifiedDateTime" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                             <Rock:DeleteField OnClick="gBinaryFile_Delete" />

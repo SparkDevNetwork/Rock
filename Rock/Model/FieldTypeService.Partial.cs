@@ -58,35 +58,54 @@ namespace Rock.Model
         {
             var fieldTypes = new Dictionary<string, EntityType>();
 
-            var rockContext = new RockContext();
-            var fieldTypeService = new FieldTypeService( rockContext );
-
-            var existingFieldTypes = fieldTypeService.Queryable().ToList();
-
-            foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Field.IFieldType ) ) )
+            using ( var rockContext = new RockContext() )
             {
-                string assemblyName = type.Value.Assembly.GetName().Name;
-                string className = type.Value.FullName;
+                var fieldTypeService = new FieldTypeService( rockContext );
 
-                if ( !existingFieldTypes.Where( f =>
-                    f.Assembly == assemblyName &&
-                    f.Class == className ).Any() )
+                var existingFieldTypes = fieldTypeService.Queryable().ToList();
+
+                foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Field.IFieldType ) ) )
                 {
-                    string fieldTypeName = type.Value.Name.SplitCase();
-                    if (fieldTypeName.EndsWith(" Field Type"))
+                    string assemblyName = type.Value.Assembly.GetName().Name;
+                    string className = type.Value.FullName;
+
+                    if ( !existingFieldTypes.Where( f =>
+                        f.Assembly == assemblyName &&
+                        f.Class == className ).Any() )
                     {
-                        fieldTypeName = fieldTypeName.Substring( 0, fieldTypeName.Length - 11 );
+                        string fieldTypeName = type.Value.Name.SplitCase();
+                        if ( fieldTypeName.EndsWith( " Field Type" ) )
+                        {
+                            fieldTypeName = fieldTypeName.Substring( 0, fieldTypeName.Length - 11 );
+                        }
+                        var fieldType = new FieldType();
+                        fieldType.Name = fieldTypeName;
+                        fieldType.Assembly = assemblyName;
+                        fieldType.Class = className;
+                        fieldType.IsSystem = false;
+                        fieldTypeService.Add( fieldType );
                     }
-                    var fieldType = new FieldType();
-                    fieldType.Name = fieldTypeName;
-                    fieldType.Assembly = assemblyName;
-                    fieldType.Class = className;
-                    fieldType.IsSystem = false;
-                    fieldTypeService.Add( fieldType );
                 }
+
+                rockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// Gets the Guid for the FieldType that has the specified Id
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Guid? GetGuid( int id )
+        {
+            var cacheItem = Rock.Web.Cache.FieldTypeCache.Read( id );
+            if ( cacheItem != null )
+            {
+                return cacheItem.Guid;
             }
 
-            rockContext.SaveChanges();
+            return null;
+
         }
     }
 }

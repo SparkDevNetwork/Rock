@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -23,6 +24,9 @@ namespace Rock.Field.Types
     /// </summary>
     public class CurrencyFieldType : FieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Gets the align value that should be used when displaying value
         /// </summary>
@@ -32,6 +36,23 @@ namespace Rock.Field.Types
             {
                 return System.Web.UI.WebControls.HorizontalAlign.Right;
             }
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            return new CurrencyBox { ID = id }; 
         }
 
         /// <summary>
@@ -58,17 +79,25 @@ namespace Rock.Field.Types
             return base.IsValid( value, required, out message );
         }
 
+        #endregion
+
+        #region Filter Control
+
         /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
+        /// Gets the type of the filter comparison.
         /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override Model.ComparisonType FilterComparisonType
         {
-            return new CurrencyBox { ID = id }; 
+            get
+            {
+                return ComparisonHelper.NumericFilterComparisonTypes;
+            }
         }
+
+        #endregion
+
     }
 }

@@ -25,7 +25,7 @@ namespace Rock.CheckIn
     /// A person option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInPerson : DotLiquid.ILiquidizable, DotLiquid.IIndexable
+    public class CheckInPerson : Lava.ILiquidizable
     {
         /// <summary>
         /// Gets or sets the person.
@@ -80,6 +80,15 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public DateTime? LastCheckIn { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this is the person's first time checking in.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [first checkin]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool FirstTime { get; set; }
 
         /// <summary>
         /// Gets or sets the the unique code for check-in labels
@@ -142,6 +151,26 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets the available keys (for debuging info).
+        /// </summary>
+        /// <value>
+        /// The available keys.
+        /// </value>
+        [Rock.Data.LavaIgnore]
+        public List<string> AvailableKeys
+        {
+            get
+            {
+                var availableKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode" };
+                if ( this.Person != null )
+                {
+                    availableKeys.AddRange( this.Person.AvailableKeys );
+                }
+                return availableKeys;
+            }
+        }
+
+        /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
         /// <value>
@@ -149,6 +178,7 @@ namespace Rock.CheckIn
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Rock.Data.LavaIgnore]
         public object this[object key]
         {
            get
@@ -157,6 +187,7 @@ namespace Rock.CheckIn
                {
                    case "FamilyMember": return FamilyMember;
                    case "LastCheckIn": return LastCheckIn;
+                   case "FirstTime": return FirstTime;
                    case "SecurityCode": return SecurityCode;
                    default: return Person[key];
                }
@@ -170,8 +201,8 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public bool ContainsKey( object key )
         {
-            var additionalProperties = new List<string> { "FamilyMember", "LastCheckIn", "SecurityCode" };
-            if ( additionalProperties.Contains( key.ToStringSafe() ) )
+            var additionalKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode" };
+            if ( additionalKeys.Contains( key.ToStringSafe() ) )
             {
                 return true;
             }

@@ -19,13 +19,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -46,11 +46,6 @@ namespace RockWeb.Blocks.Prayer
         /// The prayer request key parameter used in the QueryString for detail page.
         /// </summary>
         private static readonly string _PrayerRequestKeyParameter = "prayerRequestId";
-
-        /// <summary>
-        /// The PrayerRequest entity type id.  This causes only categories that are appropriate to the PrayerRequest entity to be listed.
-        /// </summary>
-        private int? _prayerRequestEntityTypeId = null;
 
         /// <summary>
         /// Holds whether or not the person can add, edit, and delete.
@@ -76,7 +71,8 @@ namespace RockWeb.Blocks.Prayer
             public static readonly string UrgentStatus = "Urgent Status";
             public static readonly string ActiveStatus = "Active Status";
             public static readonly string PublicStatus = "Public/Private";
-            public static readonly string CommentingStatus = "Commenting Status";
+            public static readonly string Comments = "Comments";
+            public static readonly string ShowExpired = "Show Expired";
         }
         #endregion
 
@@ -90,13 +86,9 @@ namespace RockWeb.Blocks.Prayer
         {
             base.OnInit( e );
 
-            PrayerRequest prayerRequest = new PrayerRequest();
-            Type type = prayerRequest.GetType();
-            _prayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type.FullName );
-
             BindFilter();
 
-            gPrayerRequests.DataKeyNames = new string[] { "id" };
+            gPrayerRequests.DataKeyNames = new string[] { "Id" };
             gPrayerRequests.Actions.AddClick += gPrayerRequests_Add;
             gPrayerRequests.GridRebind += gPrayerRequests_GridRebind;
 
@@ -130,47 +122,31 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         private void BindFilter()
         {
-            // Set the Approval Status
-            var item = ddlApprovedFilter.Items.FindByValue( gfFilter.GetUserPreference( FilterSetting.ApprovalStatus ) );
-            if ( item != null )
-            {
-                item.Selected = true;
-            }
-
-            // Set the Public Status
-            var itemPublic = ddlPublicFilter.Items.FindByValue( gfFilter.GetUserPreference( FilterSetting.PublicStatus ) );
-            if ( itemPublic != null )
-            {
-                itemPublic.Selected = true;
-            }
-
-            // Set the Commenting Status
-            var itemAllowComments = ddlAllowCommentsFilter.Items.FindByValue( gfFilter.GetUserPreference( FilterSetting.CommentingStatus ) );
-            if ( itemAllowComments != null )
-            {
-                itemAllowComments.Selected = true;
-            }
-
-            // Set the Active Status
-            var itemActiveStatus = ddlActiveFilter.Items.FindByValue( gfFilter.GetUserPreference( FilterSetting.ActiveStatus ) );
-            if ( itemActiveStatus != null )
-            {
-                itemActiveStatus.Selected = true;
-            }
-
-            // Set the Active Status
-            var itemUrgentStatus = ddlUrgentFilter.Items.FindByValue( gfFilter.GetUserPreference( FilterSetting.UrgentStatus ) );
-            if ( itemUrgentStatus != null )
-            {
-                itemUrgentStatus.Selected = true;
-            }
-            
+            // set the date range filter
             drpDateRange.DelimitedValues = gfFilter.GetUserPreference( FilterSetting.DateRange );
+
+            // Set the Approval Status filter
+            ddlApprovedFilter.SetValue( gfFilter.GetUserPreference( FilterSetting.ApprovalStatus ) );
+
+            // Set the Urgent Status filter
+            ddlUrgentFilter.SetValue( gfFilter.GetUserPreference( FilterSetting.UrgentStatus ) );
+
+            // Set the Public Status filter
+            ddlPublicFilter.SetValue( gfFilter.GetUserPreference( FilterSetting.PublicStatus ) );
+
+            // Set the Active Status filter
+            ddlActiveFilter.SetValue( gfFilter.GetUserPreference( FilterSetting.ActiveStatus ) );
+
+            // Set the Allow Comments filter
+            ddlAllowCommentsFilter.SetValue( gfFilter.GetUserPreference( FilterSetting.Comments ) );
 
             // Set the category picker's selected value
             int selectedPrayerCategoryId = gfFilter.GetUserPreference( FilterSetting.PrayerCategory ).AsInteger();
             Category prayerCategory = new CategoryService( new RockContext() ).Get( selectedPrayerCategoryId );
             catpPrayerCategoryFilter.SetValue( prayerCategory );
+
+            // Set the Show Expired filter
+            cbShowExpired.Checked = gfFilter.GetUserPreference( FilterSetting.ShowExpired ).AsBooleanOrNull() ?? false;
         }
 
         /// <summary>
@@ -180,7 +156,6 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e"></param>
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfFilter.SaveUserPreference( FilterSetting.PrayerCategory, catpPrayerCategoryFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty : catpPrayerCategoryFilter.SelectedValue );
             gfFilter.SaveUserPreference( FilterSetting.DateRange, drpDateRange.DelimitedValues );
 
             // only save settings that are not the default "all" preference...
@@ -222,12 +197,16 @@ namespace RockWeb.Blocks.Prayer
 
             if ( ddlAllowCommentsFilter.SelectedValue == "all" )
             {
-                gfFilter.SaveUserPreference( FilterSetting.CommentingStatus, string.Empty );
+                gfFilter.SaveUserPreference( FilterSetting.Comments, string.Empty );
             }
             else
             {
-                gfFilter.SaveUserPreference( FilterSetting.CommentingStatus, ddlAllowCommentsFilter.SelectedValue );
+                gfFilter.SaveUserPreference( FilterSetting.Comments, ddlAllowCommentsFilter.SelectedValue );
             }
+
+            gfFilter.SaveUserPreference( FilterSetting.PrayerCategory, catpPrayerCategoryFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty : catpPrayerCategoryFilter.SelectedValue );
+
+            gfFilter.SaveUserPreference( FilterSetting.ShowExpired, cbShowExpired.Checked ? "True" : string.Empty );
 
             BindGrid();
         }
@@ -394,26 +373,21 @@ namespace RockWeb.Blocks.Prayer
             }
 
             // Don't show expired prayer requests.
-            // TODO save users filter setting?
             if ( !cbShowExpired.Checked )
             {
                 prayerRequests = prayerRequests.Where( a => a.ExpirationDate == null || RockDateTime.Today <= a.ExpirationDate );
             }
 
-            // Sort by the given property otherwise sort by the EnteredDate (and Id)
-            // (this is a hack because the Date field alone doesn't sort in the descending direction well)
             if ( sortProperty != null )
             {
                 gPrayerRequests.DataSource = prayerRequests.Sort( sortProperty ).ToList();
             }
             else
             {
-                // TODO Figure out how to tell Grid what Direction and Property it's sorting on
-                //sortProperty.Direction = SortDirection.Ascending;
-                //sortProperty.Property = "EnteredDate";
                 gPrayerRequests.DataSource = prayerRequests.OrderByDescending( p => p.EnteredDate ).ThenByDescending( p => p.Id ).ToList();
             }
 
+            gPrayerRequests.EntityTypeId = EntityTypeCache.Read<PrayerRequest>().Id;
             gPrayerRequests.DataBind();
         }
 
@@ -522,13 +496,14 @@ namespace RockWeb.Blocks.Prayer
         private void DeleteAllRelatedNotes( PrayerRequest prayerRequest, RockContext rockContext )
         {
             var noteTypeService = new NoteTypeService( rockContext );
-            var noteType = noteTypeService.Get( _prayerRequestEntityTypeId.Value, "Prayer Comment" );
+            var noteType = noteTypeService.Get( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() );
             var noteService = new NoteService( rockContext );
             var prayerComments = noteService.Get( noteType.Id, prayerRequest.Id );
             foreach ( Note prayerComment in prayerComments )
             {
                 noteService.Delete( prayerComment );
             }
+
             rockContext.SaveChanges();
         }
 

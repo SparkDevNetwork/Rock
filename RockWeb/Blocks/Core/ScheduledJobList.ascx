@@ -14,14 +14,15 @@
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gScheduledJobs" runat="server" TooltipField="Description" OnRowSelected="gScheduledJobs_Edit" AllowSorting="true" OnRowDataBound="gScheduledJobs_RowDataBound">
                         <Columns>
-                            <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:DateTimeField DataField="LastSuccessfulRunDateTime" HeaderText="Last Successful Run" SortExpression="LastSuccessfulRunDateTime" />
                             <Rock:DateTimeField DataField="LastRunDateTime" HeaderText="Last Run Date" SortExpression="LastRunDateTime" />
-                            <asp:BoundField SortExpression="LastRunDurationSeconds" HeaderText="Last Run Duration" ItemStyle-HorizontalAlign="Center" />
-                            <asp:BoundField DataField="LastStatus" HeaderText="Last Status" SortExpression="LastStatus" ItemStyle-HorizontalAlign="Center" />
-                            <asp:BoundField DataField="LastStatusMessage" HeaderText="Last Status Message" SortExpression="LastStatusMessage" />
+                            <Rock:RockBoundField SortExpression="LastRunDurationSeconds" HeaderText="Last Run Duration" ItemStyle-HorizontalAlign="Center" />
+                            <Rock:RockBoundField DataField="LastStatus" HeaderText="Last Status" SortExpression="LastStatus" ItemStyle-HorizontalAlign="Center" />
+                            <Rock:RockBoundField DataField="LastStatusMessage" HeaderText="Last Status Message" SortExpression="LastStatusMessage" TruncateLength="255" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
+                            <Rock:EditField OnClick="gScheduledJobs_RunNow" IconCssClass="fa fa-play" HeaderText="Run Now" ToolTip="Run Now" />
                             <Rock:DeleteField OnClick="gScheduledJobs_Delete" />
                         </Columns>
                     </Rock:Grid>

@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-
+using System.Text.RegularExpressions;
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
@@ -30,6 +30,7 @@ namespace RockWeb.Blocks.CheckIn
     [Description("Displays keypad for searching on phone numbers.")]
     [IntegerField( "Minimum Phone Number Length", "Minimum length for phone number searches (defaults to 4).", false, 4 )]
     [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10 )]
+    [TextField("Search Regex", "Regular Expression to run the search input through before sending it to the workflow. Useful for stripping off characters.", false)]
     public partial class Search : CheckInBlock
     {
         protected override void OnInit( EventArgs e )
@@ -50,7 +51,6 @@ namespace RockWeb.Blocks.CheckIn
             base.OnLoad( e );
             if ( !Page.IsPostBack )
             {
-                tbPhone.Focus();
                 this.Page.Form.DefaultButton = lbSearch.UniqueID;
             }
         }
@@ -64,10 +64,26 @@ namespace RockWeb.Blocks.CheckIn
                 int maxLength = int.Parse( GetAttributeValue( "MaximumPhoneNumberLength" ) );
                 if ( tbPhone.Text.Length >= minLength && tbPhone.Text.Length <= maxLength )
                 {
+                    string searchInput = tbPhone.Text;
+                    
+                    // run regex expression on input if provided
+                    if (! string.IsNullOrWhiteSpace(GetAttributeValue("SearchRegex")))
+                    {
+                        Regex regex = new Regex( GetAttributeValue( "SearchRegex" ) );
+                        Match match = regex.Match( searchInput );
+                        if ( match.Success )
+                        {
+                            if ( match.Groups.Count == 2 )
+                            {
+                                searchInput = match.Groups[1].ToString();
+                            }
+                        }
+                    }
+                    
                     CurrentCheckInState.CheckIn.UserEnteredSearch = true;
                     CurrentCheckInState.CheckIn.ConfirmSingleFamily = true;
                     CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER );
-                    CurrentCheckInState.CheckIn.SearchValue = tbPhone.Text;
+                    CurrentCheckInState.CheckIn.SearchValue = searchInput;
 
                     ProcessSelection();
                 }

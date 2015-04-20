@@ -39,10 +39,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
-    <Reference Include="Humanizer, Version=1.31.0.0, Culture=neutral, PublicKeyToken=979442b78dfc278e, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Humanizer.1.31.0\lib\portable-win+net40+sl50+wp8+wpa81\Humanizer.dll</HintPath>
-    </Reference>
     <Reference Include="ImageResizer, Version=3.4.3.103, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ImageResizer.3.4.3\lib\ImageResizer.dll</HintPath>
@@ -57,7 +53,7 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.7\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -102,21 +98,20 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="UAParser, Version=1.0.2.0, Culture=neutral, PublicKeyToken=f7377bf021646069, processorArchitecture=MSIL">
+    <Reference Include="UAParser, Version=1.2.0.0, Culture=neutral, PublicKeyToken=f7377bf021646069, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\UAParser.1.0.2.0\lib\net40\UAParser.dll</HintPath>
-    </Reference>
-    <Reference Include="YamlDotNet, Version=2.0.1.41986, Culture=neutral, PublicKeyToken=2b53052c5884d7a1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\YamlDotNet.3.0.0\lib\net35\YamlDotNet.dll</HintPath>
+      <HintPath>..\packages\UAParser.1.2.0.0\lib\net35-Client\UAParser.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiController.cs" />
+    <Compile Include="ApiControllerBase.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Constraints\ValidControllerNameConstraint.cs" />
     <Compile Include="Controllers\AttendancesController.partial.cs" />
     <Compile Include="Controllers\CampusController.cs" />
+    <Compile Include="Controllers\CodeGenerated\BenevolenceRequestsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\BenevolenceResultsController.cs" />
     <Compile Include="Controllers\CodeGenerated\CampusesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationRecipientActivitiesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplatesController.cs" />
@@ -125,7 +120,10 @@
     <Compile Include="Controllers\CodeGenerated\ContentChannelTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\EntitySetItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\EntitySetsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialGatewaysController.cs" />
     <Compile Include="Controllers\CodeGenerated\FollowingsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupScheduleExclusionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\MergeTemplatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetricCategoriesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PageViewsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonDuplicatesController.cs" />
@@ -135,6 +133,7 @@
     <Compile Include="Controllers\MetricValuesController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormAttributesController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormsController.cs" />
+    <Compile Include="Controllers\WorkflowsController.Partial.cs" />
     <Compile Include="Controllers\PersonBadgesController.cs" />
     <Compile Include="Controllers\AuthController.cs" />
     <Compile Include="Controllers\CategoriesController.Partial.cs" />
@@ -235,9 +234,11 @@
     <Compile Include="Filters\SecuredAttribute.cs" />
     <Compile Include="Filters\RequireHttpsAttribute.cs" />
     <Compile Include="Filters\ValidateAttribute.cs" />
+    <Compile Include="Handler\RockApiExceptionHandler.cs" />
     <Compile Include="Handler\RockApiExceptionLogger.cs" />
     <Compile Include="IHasCustomRoutes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utility\HttpRequestMessageExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">

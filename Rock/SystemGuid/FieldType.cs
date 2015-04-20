@@ -114,6 +114,11 @@ namespace Rock.SystemGuid
         public const string DATE = "6B6AA175-4758-453F-8D83-FCD8044B5F36";
 
         /// <summary>
+        /// Date Time field type
+        /// </summary>
+        public const string DATE_TIME = "FE95430C-322D-4B67-9C77-DFD1D4408725";
+
+        /// <summary>
         /// Date Range field type
         /// </summary>
         public const string DATE_RANGE = "9C7D431C-875C-4792-9E76-93F3A32BB850";

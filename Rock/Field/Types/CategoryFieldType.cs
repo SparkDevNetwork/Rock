@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -32,6 +33,9 @@ namespace Rock.Field.Types
     /// </summary>
     public class CategoryFieldType : FieldType, IEntityFieldType
     {
+
+        #region Configuration
+
         /// <summary>
         /// Entity Type Name Key
         /// </summary>
@@ -144,6 +148,10 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -167,6 +175,10 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -252,6 +264,10 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Entity Methods
+
         /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
@@ -305,5 +321,8 @@ namespace Rock.Field.Types
 
             return null;
         }
+
+        #endregion
+
     }
 }

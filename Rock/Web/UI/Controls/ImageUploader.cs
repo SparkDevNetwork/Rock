@@ -16,6 +16,8 @@
 //
 using System;
 using System.ComponentModel;
+using System.Configuration;
+using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -26,7 +28,7 @@ namespace Rock.Web.UI.Controls
     /// 
     /// </summary>
     [ToolboxData( "<{0}:ImageUploader runat=server></{0}:ImageUploader>" )]
-    public class ImageUploader : CompositeControl, IRockControl
+    public class ImageUploader : CompositeControl, IRockControl, IPostBackEventHandler
     {
         #region IRockControl implementation
 
@@ -539,6 +541,27 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterStartupScript()
         {
+            int? maxUploadBytes = null;
+            try
+            {
+                HttpRuntimeSection section = ConfigurationManager.GetSection( "system.web/httpRuntime" ) as HttpRuntimeSection;
+                if ( section != null )
+                {
+                    // MaxRequestLength is in KB
+                    maxUploadBytes = section.MaxRequestLength * 1024;
+                }
+            }
+            catch
+            {
+                // intentionally ignore and don't tell the fileUploader the limit
+            }
+
+            var postBackScript = this.ImageUploaded != null ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "ImageUploaded" ), true ) : "";
+            postBackScript = postBackScript.Replace( '\'', '"' );
+
+            var postBackRemovedScript = this.ImageRemoved != null ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "ImageRemoved" ), true ) : "";
+            postBackRemovedScript = postBackRemovedScript.Replace( '\'', '"' );
+
             var script = string.Format(
 @"
 Rock.controls.imageUploader.initialize({{
@@ -548,16 +571,19 @@ Rock.controls.imageUploader.initialize({{
     hfFileId: '{3}',
     imgThumbnail: '{4}',
     aRemove: '{5}',
+    postbackScript: '{6}',
     fileType: 'image',
-    isBinaryFile: '{6}',
-    rootFolder: '{7}',
-    noPictureUrl: '{10}',
+    isBinaryFile: '{7}',
+    rootFolder: '{8}',
+    noPictureUrl: '{11}',
     submitFunction: function (e, data) {{
-        {8}
+        {9}
     }},
     doneFunction: function (e, data) {{
-        {9}
-    }}
+        {10}
+    }},
+    postbackRemovedScript: '{12}',
+    maxUploadBytes: {13}
 }});",
                 _fileUpload.ClientID,
                 this.BinaryFileId,
@@ -565,11 +591,14 @@ Rock.controls.imageUploader.initialize({{
                 _hfBinaryFileId.ClientID,
                 this.ClientID + "-thumbnail",
                 _aRemove.ClientID,
+                postBackScript,
                 this.IsBinaryFile ? "T" : "F",
                 Rock.Security.Encryption.EncryptString( this.RootFolder ),
                 this.SubmitFunctionClientScript,
                 this.DoneFunctionClientScript,
-                this.NoPictureUrl);
+                this.NoPictureUrl,
+                postBackRemovedScript,
+                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null" );
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ClientID, script, true );
         }
 
@@ -590,6 +619,62 @@ Rock.controls.imageUploader.initialize({{
                 _fileUpload.Visible = value;
                 _aRemove.Visible = value;
             }
+        }
+
+        /// <summary>
+        /// Occurs when a file is uploaded.
+        /// </summary>
+        public event EventHandler<ImageUploaderEventArgs> ImageUploaded;
+
+        /// <summary>
+        /// Occurs when a file is removed.
+        /// </summary>
+        public event EventHandler<ImageUploaderEventArgs> ImageRemoved;
+
+        /// <summary>
+        /// When implemented by a class, enables a server control to process an event raised when a form is posted to the server.
+        /// </summary>
+        /// <param name="eventArgument">A <see cref="T:System.String" /> that represents an optional event argument to be passed to the event handler.</param>
+        public void RaisePostBackEvent( string eventArgument )
+        {
+            if ( eventArgument == "ImageUploaded" && ImageUploaded != null )
+            {
+                ImageUploaded( this, new ImageUploaderEventArgs( this.BinaryFileId ) );
+            }
+
+            if ( eventArgument == "ImageRemoved" )
+            {
+                if ( ImageRemoved != null )
+                {
+                    ImageRemoved( this, new ImageUploaderEventArgs( this.BinaryFileId ) );
+
+                }
+                this.BinaryFileId = 0;
+            }
+        }
+
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ImageUploaderEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Gets the field value.
+        /// </summary>
+        /// <value>
+        /// The field value.
+        /// </value>
+        public int? BinaryFileId { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImageUploaderEventArgs"/> class.
+        /// </summary>
+        /// <param name="binaryFileId">The binary file identifier.</param>
+        public ImageUploaderEventArgs(int? binaryFileId) : base()
+        {
+            BinaryFileId = binaryFileId;
         }
     }
 }

@@ -87,26 +87,26 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this UserLogin target, UserLogin source )
         {
+            target.Id = source.Id;
+            target.ApiKey = source.ApiKey;
             target.EntityTypeId = source.EntityTypeId;
-            target.UserName = source.UserName;
-            target.Password = source.Password;
-            target.IsConfirmed = source.IsConfirmed;
-            target.LastActivityDateTime = source.LastActivityDateTime;
-            target.LastLoginDateTime = source.LastLoginDateTime;
-            target.LastPasswordChangedDateTime = source.LastPasswordChangedDateTime;
-            target.IsOnLine = source.IsOnLine;
-            target.IsLockedOut = source.IsLockedOut;
-            target.LastLockedOutDateTime = source.LastLockedOutDateTime;
             target.FailedPasswordAttemptCount = source.FailedPasswordAttemptCount;
             target.FailedPasswordAttemptWindowStartDateTime = source.FailedPasswordAttemptWindowStartDateTime;
+            target.IsConfirmed = source.IsConfirmed;
+            target.IsLockedOut = source.IsLockedOut;
+            target.IsOnLine = source.IsOnLine;
+            target.LastActivityDateTime = source.LastActivityDateTime;
+            target.LastLockedOutDateTime = source.LastLockedOutDateTime;
+            target.LastLoginDateTime = source.LastLoginDateTime;
+            target.LastPasswordChangedDateTime = source.LastPasswordChangedDateTime;
             target.LastPasswordExpirationWarningDateTime = source.LastPasswordExpirationWarningDateTime;
-            target.ApiKey = source.ApiKey;
+            target.Password = source.Password;
             target.PersonId = source.PersonId;
+            target.UserName = source.UserName;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -22,8 +23,9 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// A Template field with the INotRowSelectedField interface to prevent clicks on this field from selecting row
     /// </summary>
+    [Obsolete("Use RockTemplateFieldUnselected instead.")]
     [ToolboxData( "<{0}:TemplateFieldUnselected runat=server></{0}:TemplateFieldUnselected>" )]
-    public class TemplateFieldUnselected : TemplateField, INotRowSelectedField
+    public class TemplateFieldUnselected : RockTemplateFieldUnselected
     {
     }
 }

@@ -239,7 +239,7 @@ namespace RockWeb.Blocks.Cms
                     feedFinal.Add( "PreviousItem", previousItem );
                     feedFinal.Add( "NextItem", nextItem );
 
-                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
                     {
                         string debugValue = LoadDebugData( feedFinal );
                         phFeedItem.Controls.Clear();

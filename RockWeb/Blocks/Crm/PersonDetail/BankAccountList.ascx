@@ -15,7 +15,7 @@
                     <Rock:Grid ID="gList" AllowSorting="true" runat="server" EmptyDataText="No Bank Accounts Found"
                         ShowConfirmDeleteDialog="true" RowItemText="Bank Account">
                         <Columns>
-                            <asp:BoundField DataField="AccountNumberMasked" HeaderText="Account Number" SortExpression="AccountNumberMasked" />
+                            <Rock:RockBoundField DataField="AccountNumberMasked" HeaderText="Account Number" SortExpression="AccountNumberMasked" />
                             <Rock:DeleteField OnClick="gList_Delete" />
                         </Columns>
                     </Rock:Grid>

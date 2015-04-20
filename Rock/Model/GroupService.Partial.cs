@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
@@ -26,7 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Data access/service class for <see cref="Rock.Model.Group"/> objects.
     /// </summary>
-    public partial class GroupService 
+    public partial class GroupService
     {
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Group"/> entities that by their <see cref="Rock.Model.GroupType"/> Id.
@@ -88,9 +89,11 @@ namespace Rock.Model
         /// <param name="id">The identifier.</param>
         /// <param name="rootGroupId">The root group identifier.</param>
         /// <param name="limitToSecurityRoleGroups">if set to <c>true</c> [limit to security role groups].</param>
-        /// <param name="groupTypeIds">The group type ids.</param>
+        /// <param name="groupTypeIncludedIds">The group type included ids.</param>
+        /// <param name="groupTypeExcludedIds">The group type excluded ids.</param>
+        /// <param name="includeInactiveGroups">if set to <c>true</c> [include inactive groups].</param>
         /// <returns></returns>
-        public IQueryable<Group> GetNavigationChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, string groupTypeIds )
+        public IQueryable<Group> GetNavigationChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, List<int> groupTypeIncludedIds, List<int> groupTypeExcludedIds, bool includeInactiveGroups )
         {
             var qry = Queryable();
 
@@ -110,15 +113,25 @@ namespace Rock.Model
                 qry = qry.Where( a => a.ParentGroupId == id );
             }
 
+            if ( !includeInactiveGroups )
+            {
+                qry = qry.Where( a => a.IsActive );
+            }
+
             if ( limitToSecurityRoleGroups )
             {
                 qry = qry.Where( a => a.IsSecurityRole );
             }
 
-            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) && groupTypeIds != "0" )
+            if ( groupTypeIncludedIds.Any() )
             {
-                List<int> groupTypes = groupTypeIds.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
-                qry = qry.Where( a => groupTypes.Contains( a.GroupTypeId ) );
+                // if groupTypeIncludedIds is specified, only get grouptypes that are in the groupTypeIncludedIds
+                // NOTE: no need to factor in groupTypeExcludedIds since included would take precendance and the excluded ones would already not be included
+                qry = qry.Where( a => groupTypeIncludedIds.Contains( a.GroupTypeId ) );
+            }
+            else if (groupTypeExcludedIds.Any() )
+            {
+                qry = qry.Where( a => !groupTypeExcludedIds.Contains( a.GroupTypeId ) );
             }
 
             qry = qry.Where( a => a.GroupType.ShowInNavigation == true );
@@ -133,7 +146,7 @@ namespace Rock.Model
         /// <returns>An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendants of referenced group.</returns>
         public IEnumerable<Group> GetAllDescendents( int parentGroupId )
         {
-            return this.ExecuteQuery( 
+            return this.ExecuteQuery(
                 @"
                 with CTE as (
                 select * from [Group] where [ParentGroupId]={0}
@@ -146,6 +159,57 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns an enumerable collection of the <see cref="Rock.Model.Group" /> Ids that are ancestors of a specified groupId sorted starting with the most immediate parent
+        /// </summary>
+        /// <param name="childGroupId">The child group identifier.</param>
+        /// <returns>
+        /// An enumerable collection of the group Ids that are descendants of referenced groupId.
+        /// </returns>
+        public IOrderedEnumerable<int> GetAllAncestorIds( int childGroupId )
+        {
+            var result = this.Context.Database.SqlQuery<int>(
+                @"
+                with CTE as (
+                select *, 0 as [Level] from [Group] where [Id]={0}
+                union all
+                select [a].*, [Level] + 1 as [Level] from [Group] [a]
+                inner join CTE pcte on pcte.ParentGroupId = [a].[Id]
+                )
+                select Id from CTE where Id != {0} order by Level
+                ", childGroupId );
+
+            // already ordered within the sql, so do a dummy order by to get IOrderedEnumerable
+            return result.OrderBy(a => 0);
+        }
+
+        /// <summary>
+        /// Groups the name of the ancestor path.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns></returns>
+        public string GroupAncestorPathName( int groupId )
+        {
+            return this.Context.Database.SqlQuery<string>( @"
+                WITH CTE AS 
+                (
+	                SELECT [ParentGroupId], CAST ( [Name] AS VARCHAR(MAX) ) AS [Name]
+	                FROM [Group] 
+	                WHERE [Id] = {0}
+	
+	                UNION ALL
+	
+	                SELECT G.[ParentGroupId], CAST ( G.[Name] + ' > ' + CTE.[Name] AS VARCHAR(MAX) )
+	                FROM [Group] G
+	                INNER JOIN CTE ON CTE.[ParentGroupId] = G.[Id]
+                )
+
+                SELECT [Name]
+                FROM CTE
+                WHERE [ParentGroupId] IS NULL
+", groupId ).FirstOrDefault();
+
+        }
+        /// <summary>
         /// Adds the person to a new family record
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -153,21 +217,10 @@ namespace Rock.Model
         /// <param name="campusId">The campus identifier.</param>
         /// <param name="savePersonAttributes">if set to <c>true</c> [save person attributes].</param>
         /// <returns></returns>
+        [Obsolete("Use PersonService.SaveNewPerson() instead!")]
         public static Group SaveNewFamily( RockContext rockContext, Person person, int? campusId, bool savePersonAttributes )
         {
-            var groupMember = new GroupMember();
-            groupMember.Person = person;
-
-            var adultRole = new GroupTypeRoleService( rockContext ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() );
-            if (adultRole != null)
-            {
-                groupMember.GroupRoleId = adultRole.Id;
-            }
-
-            var groupMembers = new List<GroupMember>();
-            groupMembers.Add( groupMember );
-
-            return SaveNewFamily( rockContext, groupMembers, campusId, savePersonAttributes );
+            return PersonService.SaveNewPerson( person, rockContext, campusId, savePersonAttributes );
         }
 
         /// <summary>
@@ -235,7 +288,7 @@ namespace Rock.Model
                         History.EvaluateChange( demographicChanges, "Gender", null, person.Gender );
                         History.EvaluateChange( demographicChanges, "Marital Status", string.Empty, person.MaritalStatusValueId.HasValue ? DefinedValueCache.GetName( person.MaritalStatusValueId ) : string.Empty );
                         History.EvaluateChange( demographicChanges, "Anniversary Date", null, person.AnniversaryDate );
-                        History.EvaluateChange( demographicChanges, "Graduation Date", null, person.GraduationDate );
+                        History.EvaluateChange( demographicChanges, "Graduation Year", null, person.GraduationYear );
                         History.EvaluateChange( demographicChanges, "Email", string.Empty, person.Email );
                         History.EvaluateChange( demographicChanges, "Email Active", false.ToString(), ( person.IsEmailActive ?? false ).ToString() );
                         History.EvaluateChange( demographicChanges, "Email Note", string.Empty, person.EmailNote );
@@ -246,7 +299,7 @@ namespace Rock.Model
                         familyDemographicChanges.Add( person.Guid, demographicChanges );
 
                         var memberChanges = new List<string>();
-                        
+
                         string roleName = familyGroupType.Roles
                             .Where( r => r.Id == familyMember.GroupRoleId )
                             .Select( r => r.Name )
@@ -269,7 +322,7 @@ namespace Rock.Model
                     if ( savePersonAttributes )
                     {
                         var newValues = person.AttributeValues;
-                        
+
                         person.LoadAttributes();
                         foreach ( var attributeCache in person.Attributes.Select( a => a.Value ) )
                         {
@@ -314,13 +367,13 @@ namespace Rock.Model
                             rockContext.SaveChanges();
                         }
 
-                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), 
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
                             person.Id, changes );
 
-                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), 
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
                             person.Id, familyMemberChanges[person.Guid], familyGroup.Name, typeof( Group ), familyGroup.Id );
 
-                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), 
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
                             person.Id, familyChanges, familyGroup.Name, typeof( Group ), familyGroup.Id );
                     }
                 }
@@ -344,13 +397,13 @@ namespace Rock.Model
         /// <param name="postalCode">The postal code.</param>
         /// <param name="country">The country.</param>
         /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
-        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid, 
+        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid,
             string street1, string street2, string city, string state, string postalCode, string country, bool moveExistingToPrevious = false )
         {
             if ( !String.IsNullOrWhiteSpace( street1 ) ||
                  !String.IsNullOrWhiteSpace( street2 ) ||
                  !String.IsNullOrWhiteSpace( city ) ||
-                 !String.IsNullOrWhiteSpace( postalCode ) || 
+                 !String.IsNullOrWhiteSpace( postalCode ) ||
                  !string.IsNullOrWhiteSpace( country ) )
             {
                 var locationType = Rock.Web.Cache.DefinedValueCache.Read( locationTypeGuid.AsGuid() );
@@ -359,7 +412,7 @@ namespace Rock.Model
                     var location = new LocationService( rockContext ).Get( street1, street2, city, state, postalCode, country );
                     if ( location != null )
                     {
-                        var groupLocationService = new GroupLocationService(rockContext);
+                        var groupLocationService = new GroupLocationService( rockContext );
                         if ( !groupLocationService.Queryable()
                             .Where( gl =>
                                 gl.GroupId == family.Id &&
@@ -375,10 +428,10 @@ namespace Rock.Model
                                 var prevLocationType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS );
                                 if ( prevLocationType != null )
                                 {
-                                    foreach( var prevLoc in groupLocationService.Queryable()
+                                    foreach ( var prevLoc in groupLocationService.Queryable( "Location,GroupLocationTypeValue" )
                                         .Where( gl =>
                                             gl.GroupId == family.Id &&
-                                            gl.GroupLocationTypeValueId == locationType.Id ))
+                                            gl.GroupLocationTypeValueId == locationType.Id ) )
                                     {
                                         History.EvaluateChange( familyChanges, prevLoc.Location.ToString(), prevLoc.GroupLocationTypeValue.Value, prevLocationType.Value );
                                         prevLoc.GroupLocationTypeValueId = prevLocationType.Id;
@@ -395,7 +448,7 @@ namespace Rock.Model
                                     gl.GroupId == family.Id &&
                                     gl.LocationId == location.Id )
                                 .FirstOrDefault();
-                            if (groupLocation == null)
+                            if ( groupLocation == null )
                             {
                                 groupLocation = new GroupLocation();
                                 groupLocation.Location = location;

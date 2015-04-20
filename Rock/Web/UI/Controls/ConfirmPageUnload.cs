@@ -76,7 +76,7 @@ namespace Rock.Web.UI.Controls
           (e || window.event).returnValue = confirmationMessage;
           return confirmationMessage;
         }}
-    }})
+    }});
 ", this.ClientID, this.ParentUpdatePanel().ClientID );
 
             ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "ConfirmPageUnload", script, true );

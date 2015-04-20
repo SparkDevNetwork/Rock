@@ -111,23 +111,25 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this FinancialAccount target, FinancialAccount source )
         {
-            target.ParentAccountId = source.ParentAccountId;
-            target.CampusId = source.CampusId;
-            target.Name = source.Name;
-            target.PublicName = source.PublicName;
-            target.Description = source.Description;
-            target.IsTaxDeductible = source.IsTaxDeductible;
-            target.GlCode = source.GlCode;
-            target.Order = source.Order;
-            target.IsActive = source.IsActive;
-            target.StartDate = source.StartDate;
-            target.EndDate = source.EndDate;
+            target.Id = source.Id;
             target.AccountTypeValueId = source.AccountTypeValueId;
+            target.CampusId = source.CampusId;
+            target.Description = source.Description;
+            target.EndDate = source.EndDate;
+            target.GlCode = source.GlCode;
+            target.ImageBinaryFileId = source.ImageBinaryFileId;
+            target.IsActive = source.IsActive;
+            target.IsTaxDeductible = source.IsTaxDeductible;
+            target.Name = source.Name;
+            target.Order = source.Order;
+            target.ParentAccountId = source.ParentAccountId;
+            target.PublicName = source.PublicName;
+            target.StartDate = source.StartDate;
+            target.Url = source.Url;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

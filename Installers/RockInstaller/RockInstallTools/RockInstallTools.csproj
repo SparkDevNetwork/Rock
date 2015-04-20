@@ -46,6 +46,7 @@
     <Compile Include="RockEnvironmentChecks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RockInstallUtilities.cs" />
+    <Compile Include="RockScriptParser.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

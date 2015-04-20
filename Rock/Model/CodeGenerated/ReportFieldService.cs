@@ -87,20 +87,20 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this ReportField target, ReportField source )
         {
-            target.ReportId = source.ReportId;
-            target.ReportFieldType = source.ReportFieldType;
-            target.ShowInGrid = source.ShowInGrid;
-            target.DataSelectComponentEntityTypeId = source.DataSelectComponentEntityTypeId;
-            target.Selection = source.Selection;
-            target.ColumnOrder = source.ColumnOrder;
-            target.SortOrder = source.SortOrder;
-            target.SortDirection = source.SortDirection;
+            target.Id = source.Id;
             target.ColumnHeaderText = source.ColumnHeaderText;
+            target.ColumnOrder = source.ColumnOrder;
+            target.DataSelectComponentEntityTypeId = source.DataSelectComponentEntityTypeId;
+            target.ReportFieldType = source.ReportFieldType;
+            target.ReportId = source.ReportId;
+            target.Selection = source.Selection;
+            target.ShowInGrid = source.ShowInGrid;
+            target.SortDirection = source.SortDirection;
+            target.SortOrder = source.SortOrder;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

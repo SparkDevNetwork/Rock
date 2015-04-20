@@ -201,9 +201,9 @@ namespace RockWeb
                     // If we didn't get it from the cache, get it from the binaryFileService
                     BinaryFile binaryFile = GetFromBinaryFileService( context, fileId, fileGuid );
 
-                    if ( binaryFile != null && binaryFile.Data != null )
+                    if ( binaryFile != null )
                     {
-                        fileContent = binaryFile.Data.ContentStream;
+                        fileContent = binaryFile.ContentStream;
                     }
 
                     // If we got the image from the binaryFileService, it might need to be resized and cached
@@ -243,10 +243,16 @@ namespace RockWeb
 
                 context.Response.ContentType = binaryFileMetaData.MimeType;
 
-                context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName );
-                fileContent.Seek( 0, SeekOrigin.Begin );
-                fileContent.CopyTo( context.Response.OutputStream );
-                context.Response.Flush();
+                using ( var responseStream = fileContent )
+                {
+                    context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName );
+                    if ( responseStream.CanSeek )
+                    {
+                        responseStream.Seek( 0, SeekOrigin.Begin );
+                    }
+                    responseStream.CopyTo( context.Response.OutputStream );
+                    context.Response.Flush();
+                }
             }
             finally
             {
@@ -363,7 +369,10 @@ namespace RockWeb
 
                 using ( var writeStream = File.OpenWrite( physFilePath ) )
                 {
-                    fileContent.Seek( 0, SeekOrigin.Begin );
+                    if ( fileContent.CanSeek )
+                    {
+                        fileContent.Seek( 0, SeekOrigin.Begin );
+                    }
                     fileContent.CopyTo( writeStream );
                 }
             }

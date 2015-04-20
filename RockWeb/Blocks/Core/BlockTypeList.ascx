@@ -19,12 +19,12 @@
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
                     <Rock:Grid ID="gBlockTypes" runat="server" AllowSorting="true" OnRowDataBound="gBlockTypes_RowDataBound" OnRowSelected="gBlockTypes_Edit" TooltipField="Description">
                         <Columns>
-                            <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <asp:BoundField HeaderText="Category" DataField="Category" SortExpression="Category" />
-                            <asp:BoundField HeaderText="Path" DataField="Path" SortExpression="Path" />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField HeaderText="Category" DataField="Category" SortExpression="Category" />
+                            <Rock:RockBoundField HeaderText="Path" DataField="Path" SortExpression="Path" />
                             <Rock:BadgeField HeaderText="Usage" DataField="BlocksCount" SortExpression="BlocksCount"
                                 ImportantMin="0" ImportantMax="0" InfoMin="1" InfoMax="1" SuccessMin="2" />
-                            <asp:BoundField HeaderText="Status" SortExpression="Status" />
+                            <Rock:RockBoundField HeaderText="Status" SortExpression="Status" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                             <Rock:DeleteField OnClick="gBlockTypes_Delete" />
                         </Columns>

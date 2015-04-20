@@ -18,16 +18,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// stored as comma delimited list of int value that can each be cast to System.DayOfWeek (where Sunday = 0)
     /// </summary>
     public class DaysOfWeekFieldType : FieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -49,6 +54,10 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
+
+        #endregion
+
+        #region EditControl
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -94,5 +103,26 @@ namespace Rock.Field.Types
                 daysOfWeekPicker.SelectedDaysOfWeek = (value ?? string.Empty).Split( ',' ).Select( a => (DayOfWeek)( a.AsInteger() ) ).ToList();
             }
         }
+
+        #endregion 
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.ContainsFilterComparisonTypes;
+            }
+        }
+
+        #endregion
+
     }
 }

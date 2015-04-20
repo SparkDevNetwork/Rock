@@ -21,17 +21,18 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for EntityType
+    /// Base client model for EntityType that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class EntityType
+    public partial class EntityTypeEntity
     {
         /// <summary />
-        public string Name { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public string AssemblyName { get; set; }
@@ -40,22 +41,22 @@ namespace Rock.Client
         public string FriendlyName { get; set; }
 
         /// <summary />
+        public bool IsCommon { get; set; }
+
+        /// <summary />
         public bool IsEntity { get; set; }
 
         /// <summary />
         public bool IsSecured { get; set; }
 
         /// <summary />
-        public bool IsCommon { get; set; }
-
-        /// <summary />
-        public int? SingleValueFieldTypeId { get; set; }
-
-        /// <summary />
         public int? MultiValueFieldTypeId { get; set; }
 
         /// <summary />
-        public int Id { get; set; }
+        public string Name { get; set; }
+
+        /// <summary />
+        public int? SingleValueFieldTypeId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -63,5 +64,12 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+    }
+
+    /// <summary>
+    /// Client model for EntityType that includes all the fields that are available for GETs. Use this for GETs (use EntityTypeEntity for POST/PUTs)
+    /// </summary>
+    public partial class EntityType : EntityTypeEntity
+    {
     }
 }

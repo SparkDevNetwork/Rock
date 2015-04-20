@@ -382,7 +382,7 @@ namespace Rock.Web.UI.Controls
             _hfPageRouteId.ID = string.Format( "hfPageRouteId_{0}", this.ID );
 
             _btnShowPageRoutePicker = new HyperLink();
-            _btnShowPageRoutePicker.CssClass = "btn btn-xs btn-link";
+            _btnShowPageRoutePicker.CssClass = "btn btn-xs btn-link js-hide-on-select-none";
             _btnShowPageRoutePicker.ID = string.Format( "btnShowPageRoutePicker_{0}", this.ID );
             _btnShowPageRoutePicker.Text = "Pick Route";
             _btnShowPageRoutePicker.Style[HtmlTextWriterStyle.Display] = "none";

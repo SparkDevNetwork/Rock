@@ -26,12 +26,12 @@
                 <Rock:HiddenFieldWithClass ID="hfAttributeOrder" runat="server" CssClass="js-attribute-values-order" />
                 <fieldset id="fsAttributes" runat="server" class="attribute-values"></fieldset>
                 <asp:Panel ID="pnlActions" runat="server" CssClass="actions" Visible="false">
-                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary btn-xs" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link btn-xs" OnClick="btnCancel_Click" CausesValidation="false" />
+                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary btn-xs" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link btn-xs" OnClick="btnCancel_Click" CausesValidation="false" />
                 </asp:Panel>
             </div>
  
-            <Rock:ModalDialog ID="dlgKeyAttribute" runat="server" Title="Bookmarked Attributes" Content-Height="380" ValidationGroup="KeyAttribute" OnCancelScript="clearActiveDialog();" >
+            <Rock:ModalDialog ID="dlgKeyAttribute" runat="server" Title="Bookmarked Attributes" ValidationGroup="KeyAttribute" OnCancelScript="clearActiveDialog();" >
             <Content>
 
                 <Rock:RockDropDownList ID="ddlCategories" runat="server" Label="Category" AutoPostBack="true" OnSelectedIndexChanged="ddlCategories_SelectedIndexChanged" />

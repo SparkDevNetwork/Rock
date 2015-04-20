@@ -24,6 +24,16 @@ namespace Rock.SystemGuid
     public class DefinedType
     {
         /// <summary>
+        /// Guid for the types of Benevolence Request status (e.g. pending, active, answered, etc.)
+        /// </summary>
+        public const string BENEVOLENCE_REQUEST_STATUS = "2787B088-D607-4D69-84FF-850A6891EE34";
+
+        /// <summary>
+        /// The types of results for a Benevolence Request
+        /// </summary>
+        public const string BENEVOLENCE_RESULT_TYPE = "35FC0225-3DAC-48B4-BDF7-AFDE104FB60E";
+
+        /// <summary>
         /// The types of communication supported (i.e. email, sms, twitter, app-push, etc)
         /// </summary>
         public const string COMMUNICATION_MEDIUM = "DC8A841C-E91D-4BD4-A6A7-0DE765308E8F";
@@ -200,9 +210,23 @@ namespace Rock.SystemGuid
         public const string BUTTON_HTML = "407A3A73-A3EF-4970-B856-2A33F62AC72E";
 
         /// <summary>
-        /// The resource t_ ap i_ allowe d_ domains
+        /// The REST allowed domains
         /// </summary>
         public const string REST_API_ALLOWED_DOMAINS = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8";
 
+        /// <summary>
+        /// The workflow note type
+        /// </summary>
+        public const string WORKFLOW_NOTE_TYPE = "FDC7A191-717E-4CA6-9DCF-A2B5BB09C782";
+
+        /// <summary>
+        /// The school grades defined type which has values that determine which grade gext to display
+        /// </summary>
+        public const string SCHOOL_GRADES = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D";
+
+        /// <summary>
+        /// Used to manage the topic options for small groups.
+        /// </summary>
+        public const string SMALL_GROUP_TOPIC = "D4111631-6B42-1CBD-4019-427D6BC6F475";
     }
 }

@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column for editing the security of an item in a row in a grid
     /// </summary>
     [ToolboxData( "<{0}:SecurityField BoundField=server></{0}:SecurityField>" )]
-    public class SecurityField : TemplateField, INotRowSelectedField
+    public class SecurityField : RockTemplateField, INotRowSelectedField
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SecurityField" /> class.

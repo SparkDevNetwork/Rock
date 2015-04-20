@@ -58,10 +58,33 @@ namespace Rock.Workflow.Action
             // Use the current action type' guid as the key for a 'Delay Activated' attribute 
             string AttrKey = action.ActionType.Guid.ToString();
 
-            // Check to see if the action's activity has the 'Delay Activated' attribute.
-            // The first time this action runs on any workflow instance using this action instance,
-            // the attribute will be created and should exist
-            if ( action.Activity.Attributes.ContainsKey( AttrKey ) )
+            // Check to see if the action's activity does not yet have the the 'Delay Activated' attribute.
+            // The first time this action runs on any workflow instance using this action instance, the 
+            // attribute will not exist and need to be created
+            if ( !action.Activity.Attributes.ContainsKey( AttrKey ) )
+            {
+                var attribute = new Rock.Model.Attribute();
+                attribute.EntityTypeId = action.Activity.TypeId;
+                attribute.EntityTypeQualifierColumn = "ActivityTypeId";
+                attribute.EntityTypeQualifierValue = action.Activity.ActivityTypeId.ToString();
+                attribute.Name = "Delay Activated";
+                attribute.Key = AttrKey;
+                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ).Id;
+
+                // Need to save the attribute now (using different context) so that an attribute id is returned.
+                var newRockContext = new RockContext();
+                new AttributeService( newRockContext ).Add( attribute );
+                newRockContext.SaveChanges();
+
+                action.Activity.Attributes.Add( AttrKey, AttributeCache.Read( attribute ) );
+                var attributeValue = new Rock.Model.AttributeValue();
+                attributeValue.AttributeId = attribute.Id;
+                attributeValue.Value = RockDateTime.Now.ToString( "o" );
+                action.Activity.AttributeValues.Add( AttrKey, attributeValue );
+
+                action.AddLogEntry( string.Format( "{0:N0} Minute Delay Activated.", minutes.Value ), true );
+            }
+            else
             {
                 // Check to see if this action instance has a value for the 'Delay Activated' attrbute
                 DateTime? activated = action.Activity.GetAttributeValue( AttrKey ).AsDateTime();
@@ -83,27 +106,6 @@ namespace Rock.Workflow.Action
                         return true;
                     }
                 }
-            }
-            else
-            {
-                // If activity attribute doesn't exist, create it 
-                // ( should only happen on first workflow using this action for the current activity)
-                var attribute = new Rock.Model.Attribute();
-                attribute.EntityTypeId = action.Activity.TypeId;
-                attribute.EntityTypeQualifierColumn = "ActivityTypeId";
-                attribute.EntityTypeQualifierValue = action.Activity.ActivityTypeId.ToString();
-                attribute.Name = "Delay Activated";
-                attribute.Key = AttrKey;
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ).Id;
-
-                // Set the value for this action's instance to the current time
-                var attributeValue = new Rock.Model.AttributeValue();
-                attributeValue.Attribute = attribute;
-                attributeValue.EntityId = action.Activity.Id;
-                attributeValue.Value = RockDateTime.Now.ToString( "o" );
-                new AttributeValueService( rockContext ).Add( attributeValue );
-
-                action.AddLogEntry( string.Format( "{0:N0} Minute Delay Activated.", minutes.Value ), true );
             }
 
             // If delay has not elapsed, return false so that processing of activity stops

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -11,9 +11,6 @@
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)CodeGenerated\" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Attendance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttendanceCode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Attribute.cs" />
@@ -22,6 +19,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Audit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AuditDetail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Auth.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BenevolenceRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BenevolenceResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BinaryFile.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BinaryFileData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BinaryFileType.cs" />
@@ -33,6 +32,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationRecipient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationRecipientActivity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationTemplate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ContentChannel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ContentChannelItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ContentChannelType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DataView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DataViewFilter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DefinedType.cs" />
@@ -54,22 +56,19 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionDetail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionImage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionRefund.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionScannedCheck.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Following.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Group.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupLocation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMember.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupScheduleExclusion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupTypeLocationType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupTypeRole.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\History.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\HtmlContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Layout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Location.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MarketingCampaign.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MarketingCampaignAd.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MarketingCampaignAdType.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MarketingCampaignAudience.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MarketingCampaignCampus.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\LoginParameters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Metric.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricCategory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricValue.cs" />
@@ -97,9 +96,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Site.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SiteDomain.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SystemEmail.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SystemGuid\RockSystemGuids.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Tag.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\TaggedItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\UserLogin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\UserLoginWithPlainTextPassword.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Workflow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowActionForm.cs" />

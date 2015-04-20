@@ -36,7 +36,6 @@ namespace RockWeb.Blocks.Security
     [DisplayName( "User Login List" )]
     [Category( "Security" )]
     [Description( "Block for displaying logins.  By default displays all logins, but can be configured to use person context to display logins for a specific person." )]
-
     [ContextAware]
     public partial class UserLoginList : Rock.Web.UI.RockBlock
     {
@@ -75,7 +74,7 @@ namespace RockWeb.Blocks.Security
             gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
             gfSettings.DisplayFilterValue += gfSettings_DisplayFilterValue;
 
-            gUserLogins.DataKeyNames = new string[] { "id" };
+            gUserLogins.DataKeyNames = new string[] { "Id" };
             gUserLogins.Actions.ShowAdd = _personId.HasValue && _canEdit;
             gUserLogins.Actions.AddClick += gUserLogins_Add;
             gUserLogins.IsDeleteEnabled = _canEdit;
@@ -107,7 +106,6 @@ namespace RockWeb.Blocks.Security
                 }
 
                 ShowDialog();
-
             }
 
             base.OnLoad( e );
@@ -197,7 +195,7 @@ namespace RockWeb.Blocks.Security
         {
             if ( _canEdit )
             {
-                ShowEdit( (int)gUserLogins.DataKeys[e.RowIndex]["id"] );
+                ShowEdit( e.RowKeyId );
             }
         }
 
@@ -373,11 +371,11 @@ namespace RockWeb.Blocks.Security
         private void BindGrid()
         {
             int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-            if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && ContextEntity<Person>() == null)
+            if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && ContextEntity<Person>() == null )
             {
                 return;
             }
-    
+
             var qry = new UserLoginService( new RockContext() ).Queryable()
                 .Where( l => !_personId.HasValue || l.PersonId == _personId.Value );
 
@@ -444,6 +442,7 @@ namespace RockWeb.Blocks.Security
                 sortProperty = new SortProperty( new GridViewSortEventArgs( "UserName", SortDirection.Ascending ) );
             }
 
+            gUserLogins.EntityTypeId = EntityTypeCache.Read<UserLogin>().Id;
             gUserLogins.DataSource = qry.Sort( sortProperty )
                 .Select( l => new
                     {
@@ -478,7 +477,7 @@ namespace RockWeb.Blocks.Security
             }
 
             tbUserName.Text = userLogin.UserName;
-            cbIsConfirmed.Checked = userLogin.IsConfirmed ?? true;
+            cbIsConfirmed.Checked = userLogin.IsConfirmed ?? false;
             cbIsLockedOut.Checked = userLogin.IsLockedOut ?? false;
             if ( userLogin.EntityType != null )
             {
@@ -563,7 +562,6 @@ namespace RockWeb.Blocks.Security
             hfActiveDialog.Value = string.Empty;
         }
 
-
         #endregion
-}
+    }
 }

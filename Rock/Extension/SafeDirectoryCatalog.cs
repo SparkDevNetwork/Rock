@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Primitives;
 using System.IO;
@@ -31,27 +32,49 @@ public class SafeDirectoryCatalog : ComposablePartCatalog
     /// Initializes a new instance of the <see cref="SafeDirectoryCatalog" /> class.
     /// </summary>
     /// <param name="directory">The directory.</param>
-    public SafeDirectoryCatalog( string directory )
+    /// <param name="baseType">Type of the base.</param>
+    public SafeDirectoryCatalog( string directory, Type baseType )
     {
-        var files = Directory.EnumerateFiles( directory, "*.dll", SearchOption.AllDirectories );
+        // get all *.dll in the current and subdirectories, except for *.resources.dll
+        var files = Directory.EnumerateFiles( directory, "*.dll", SearchOption.AllDirectories ).Where( a => !a.EndsWith( ".resources.dll", StringComparison.OrdinalIgnoreCase ) );
 
         _catalog = new AggregateCatalog();
+        string baseTypeAssemblyName = baseType.Assembly.GetName().Name;
+
+        var loadedAssembliesDictionary = AppDomain.CurrentDomain.GetAssemblies().Where( a => !a.IsDynamic && !a.GlobalAssemblyCache ).ToDictionary( k => new Uri( k.CodeBase ).LocalPath, v => v );
 
         foreach ( var file in files )
         {
             try
             {
-                var asmCat = new AssemblyCatalog( file );
+                Assembly loadedAssembly = loadedAssembliesDictionary.Where( a => a.Key.Equals( file, StringComparison.OrdinalIgnoreCase ) ).Select( a => a.Value ).FirstOrDefault();
+                AssemblyCatalog assemblyCatalog = null;
 
-                //Force MEF to load the plugin and figure out if there are any exports
-                // good assemblies will not throw the RTLE exception and can be added to the catalog
-                if ( asmCat.Parts.ToList().Count > 0 )
-                    _catalog.Catalogs.Add( asmCat );
+                if ( loadedAssembly != null )
+                {
+                    if ( loadedAssembly == baseType.Assembly || loadedAssembly.GetReferencedAssemblies().Any( a => a.Name.Equals( baseTypeAssemblyName, StringComparison.OrdinalIgnoreCase ) ) )
+                    {
+                        assemblyCatalog = new AssemblyCatalog( loadedAssembly );
+                    }
+                }
+                else
+                {
+                    assemblyCatalog = new AssemblyCatalog( file );
+                }
+
+                if ( assemblyCatalog != null )
+                {
+                    // Force MEF to load the plugin and figure out if there are any exports
+                    // good assemblies will not throw the RTLE exception and can be added to the catalog
+                    if ( assemblyCatalog.Parts.ToList().Count > 0 )
+                    {
+                        _catalog.Catalogs.Add( assemblyCatalog );
+                    }
+                }
             }
-
-            catch ( ReflectionTypeLoadException e)
+            catch ( ReflectionTypeLoadException e )
             {
-                //TODO: Add error logging
+                // TODO: Add error logging
                 string msg = e.Message;
             }
         }

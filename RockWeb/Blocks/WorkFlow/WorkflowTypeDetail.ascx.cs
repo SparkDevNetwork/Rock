@@ -656,6 +656,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                             workflowActionType.WorkflowForm.NotificationSystemEmailId = editorWorkflowActionType.WorkflowForm.NotificationSystemEmailId;
                             workflowActionType.WorkflowForm.IncludeActionsInNotification = editorWorkflowActionType.WorkflowForm.IncludeActionsInNotification;
+                            workflowActionType.WorkflowForm.AllowNotes = editorWorkflowActionType.WorkflowForm.AllowNotes;
                             workflowActionType.WorkflowForm.Header = editorWorkflowActionType.WorkflowForm.Header;
                             workflowActionType.WorkflowForm.Footer = editorWorkflowActionType.WorkflowForm.Footer;
                             workflowActionType.WorkflowForm.Actions = editorWorkflowActionType.WorkflowForm.Actions;
@@ -1801,7 +1802,19 @@ namespace RockWeb.Blocks.WorkFlow
         /// </summary>
         private void BindAttributesGrid()
         {
-            gAttributes.DataSource = AttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            gAttributes.DataSource = AttributesState
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .Select( a => new
+                {
+                    a.Id,
+                    a.Guid,
+                    a.Name,
+                    a.Description,
+                    FieldType = FieldTypeCache.GetName(a.FieldTypeId),
+                    a.IsRequired
+                } )
+                .ToList();
             gAttributes.DataBind();
         }
 

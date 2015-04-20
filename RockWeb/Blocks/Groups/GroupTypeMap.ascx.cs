@@ -33,6 +33,7 @@ using System.Collections.Generic;
 using DotLiquid;
 using System.Dynamic;
 using Rock.Web;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -121,6 +122,8 @@ namespace RockWeb.Blocks.Groups
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            this.LoadGoogleMapsApi();
         }
 
         /// <summary>
@@ -315,7 +318,7 @@ namespace RockWeb.Blocks.Groups
 
                             if ( attrCache != null )
                             {
-                                dictAttribute.Add( "Value", attrCache.FieldType.Field.FormatValue( null, value.Value, attrCache.QualifierValues, false ) );
+                                dictAttribute.Add( "Value", attrCache.FieldType.Field.FormatValueAsHtml( null, value.Value, attrCache.QualifierValues, false ) );
                             }
                             else
                             {
@@ -359,7 +362,7 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     // enable showing debug info
-                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                     {
                         lDebug.Visible = true;
                         lDebug.Text = dynamicGroups.Take( 5 ).lavaDebugInfo();

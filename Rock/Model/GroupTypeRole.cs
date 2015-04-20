@@ -116,6 +116,24 @@ namespace Rock.Model
         [DataMember]
         public bool IsLeader { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can view.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can view; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool CanView { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can edit.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can edit; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool CanEdit { get; set; }
+
         #endregion
 
         #region Virtual Properties

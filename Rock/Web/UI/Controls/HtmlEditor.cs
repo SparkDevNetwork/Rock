@@ -335,6 +335,25 @@ namespace Rock.Web.UI.Controls
         /// Gets or sets the merge fields to make available.  This should include either a list of
         /// entity type names (full name), or other non-object string values
         /// </summary>
+        /// <remarks>
+        /// Format should be one of the following formats
+        ///     "FieldName"                     - Label will be a case delimited version of FieldName (i.e. "Field Name")
+        ///     "FieldName|LabelName"
+        ///     "FieldName^EntityType           - Will evaluate the entity type and add a navigable tree for the objects 
+        ///                                       properties and attributes. Label will be a case delimited version of 
+        ///                                       FieldName (i.e. "Field Name")
+        ///     "FieldName^EntityType|LabelName - Will evaluate the entity type and add a navigable tree for the objects 
+        ///                                       properties and attributes.    
+        ///                                  
+        /// Supports the following "special" field names
+        ///     "GlobalAttribute"               - Provides navigable list of global attributes
+        ///     "Campuses"                      - Will return an array of all campuses
+        ///     "Date"                          - Will return lava syntax for displaying current date
+        ///     "Time"                          - Will return lava syntax for displaying current time
+        ///     "DayOfWeek"                     - Will return lava syntax for displaying the current day of the week
+        ///     "PageParameter"                 - Will return lava synax and support for rendering any page parameter 
+        ///                                       (query string and/or route parameter value)
+        /// </remarks>
         /// <value>
         /// The merge fields.
         /// </value>
@@ -467,6 +486,7 @@ CKEDITOR.replace('{0}', {{
     fileTypeBlackList: '{9}'
     }},
     rockMergeFieldOptions: {{ mergeFields: '{10}' }},
+    rockTheme: '{13}',
     on : {{
         change: function (e) {{
             // update the underlying TextElement on every little change (when in WYSIWIG mode) to ensure that Posting and Validation works consistently (doing it OnSubmit or OnBlur misses some cases)
@@ -547,14 +567,14 @@ CKEDITOR.replace('{0}', {{
             }
 
             // Make sure that if additional configurations are defined, that the string ends in a comma.
-            if (!string.IsNullOrWhiteSpace(this.AdditionalConfigurations) && !this.AdditionalConfigurations.Trim().EndsWith(","))
+            if ( !string.IsNullOrWhiteSpace( this.AdditionalConfigurations ) && !this.AdditionalConfigurations.Trim().EndsWith( "," ) )
             {
                 this.AdditionalConfigurations = this.AdditionalConfigurations.Trim() + ",";
             }
 
             string ckEditorLib = ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/ckeditor/ckeditor.js", true );
 
-            string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, 
+            string ckeditorInitScript = string.Format( ckeditorInitScriptFormat,
                 this.ClientID,                                                  // {0}
                 this.Toolbar.ConvertToString(),                                 // {1}
                 this.Height,                                                    // {2}
@@ -567,7 +587,9 @@ CKEDITOR.replace('{0}', {{
                 fileTypeBlackList,                                              // {9}
                 this.MergeFields.AsDelimited( "," ),                            // {10}
                 this.AdditionalConfigurations,                                  // {11}
-                ckEditorLib );                                                  // {12}
+                ckEditorLib,                                                    // {12}
+                ( (RockPage)this.Page ).Site.Theme                              // {13}
+                );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
 

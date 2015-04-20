@@ -157,14 +157,8 @@ namespace RockWeb
                             }
                         }
 
-                        if ( binaryFile.Data != null )
-                        {
-                            if ( binaryFile.Data.ContentStream != null )
-                            {
-                                SendFile( context, binaryFile.Data.ContentStream, binaryFile.MimeType, binaryFile.FileName, binaryFile.Guid.ToString("N") );
-                                return;
-                            }
-                        }
+                        SendFile( context, binaryFile.ContentStream, binaryFile.MimeType, binaryFile.FileName, binaryFile.Guid.ToString("N") );
+                        return;
                     }
                 }
                 else
@@ -228,7 +222,10 @@ namespace RockWeb
             context.Response.Clear();
             context.Response.Buffer = false;
             context.Response.Headers["Accept-Ranges"] = "bytes";
-            context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", fileName ) );
+
+            bool sendAsAttachment = context.Request.QueryString["attachment"].AsBooleanOrNull() ?? false;
+
+            context.Response.AddHeader( "content-disposition", string.Format( "{1};filename={0}", fileName, sendAsAttachment ? "attachment" : "inline" ) );
             context.Response.AddHeader( "content-length", responseLength.ToString() );
             context.Response.Cache.SetCacheability( HttpCacheability.Public ); // required for etag output
 
@@ -238,34 +235,40 @@ namespace RockWeb
 
             if ( context.Response.IsClientConnected )
             {
-                fileContents.Seek( startIndex, SeekOrigin.Begin );
-                while (true)
+                using ( var fileStream = fileContents )
                 {
-                    var bytesRead = fileContents.Read( buffer, 0, buffer.Length );
-                    if ( bytesRead == 0 )
+                    if ( fileStream.CanSeek )
                     {
-                        break;
+                        fileStream.Seek( startIndex, SeekOrigin.Begin );
                     }
-
-                    if ( !context.Response.IsClientConnected )
+                    while ( true )
                     {
-                        // quit sending if the client isn't connected
-                        break;
-                    }
-
-                    try
-                    {
-                        context.Response.OutputStream.Write( buffer, 0, bytesRead );
-                    }
-                    catch (HttpException ex)
-                    {
-                        if (!context.Response.IsClientConnected)
+                        var bytesRead = fileStream.Read( buffer, 0, buffer.Length );
+                        if ( bytesRead == 0 )
                         {
-                            // if client disconnected during the .write, ignore
+                            break;
                         }
-                        else
+
+                        if ( !context.Response.IsClientConnected )
                         {
-                            throw ex;
+                            // quit sending if the client isn't connected
+                            break;
+                        }
+
+                        try
+                        {
+                            context.Response.OutputStream.Write( buffer, 0, bytesRead );
+                        }
+                        catch ( HttpException ex )
+                        {
+                            if ( !context.Response.IsClientConnected )
+                            {
+                                // if client disconnected during the .write, ignore
+                            }
+                            else
+                            {
+                                throw ex;
+                            }
                         }
                     }
                 }

@@ -23,7 +23,7 @@
 
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" Text="Save" OnClick="btnSave_Click" CssClass="btn btn-primary" />
+                        <asp:LinkButton ID="btnSave" AccessKey="s" runat="server" Text="Save" OnClick="btnSave_Click" CssClass="btn btn-primary" />
 
                     </div>
 

@@ -54,7 +54,7 @@ namespace Rock.Model
  
             if ( new Service<EntitySet>( Context ).Queryable().Any( a => a.ParentEntitySetId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntitySet.FriendlyTypeName, EntitySet.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} contains one or more child {1}.", EntitySet.FriendlyTypeName, EntitySet.FriendlyTypeName.Pluralize().ToLower() );
                 return false;
             }  
             return true;
@@ -93,16 +93,16 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this EntitySet target, EntitySet source )
         {
-            target.ParentEntitySetId = source.ParentEntitySetId;
-            target.Name = source.Name;
+            target.Id = source.Id;
             target.EntityTypeId = source.EntityTypeId;
             target.ExpireDateTime = source.ExpireDateTime;
+            target.Name = source.Name;
             target.Order = source.Order;
+            target.ParentEntitySetId = source.ParentEntitySetId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

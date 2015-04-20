@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Core
 
             if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
             {
-                gEntityTypes.DataKeyNames = new string[] { "id" };
+                gEntityTypes.DataKeyNames = new string[] { "Id" };
                 gEntityTypes.Actions.ShowAdd = false;
                 gEntityTypes.Actions.AddClick += Actions_AddClick;
                 gEntityTypes.RowSelected += gEntityTypes_EditRow;

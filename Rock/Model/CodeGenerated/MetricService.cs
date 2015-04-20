@@ -87,27 +87,27 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Metric target, Metric source )
         {
-            target.IsSystem = source.IsSystem;
-            target.Title = source.Title;
-            target.Subtitle = source.Subtitle;
+            target.Id = source.Id;
+            target.AdminPersonAliasId = source.AdminPersonAliasId;
+            target.DataViewId = source.DataViewId;
             target.Description = source.Description;
+            target.EntityTypeId = source.EntityTypeId;
             target.IconCssClass = source.IconCssClass;
             target.IsCumulative = source.IsCumulative;
-            target.SourceValueTypeId = source.SourceValueTypeId;
+            target.IsSystem = source.IsSystem;
+            target.LastRunDateTime = source.LastRunDateTime;
+            target.MetricChampionPersonAliasId = source.MetricChampionPersonAliasId;
+            target.ScheduleId = source.ScheduleId;
             target.SourceSql = source.SourceSql;
-            target.DataViewId = source.DataViewId;
+            target.SourceValueTypeId = source.SourceValueTypeId;
+            target.Subtitle = source.Subtitle;
+            target.Title = source.Title;
             target.XAxisLabel = source.XAxisLabel;
             target.YAxisLabel = source.YAxisLabel;
-            target.MetricChampionPersonAliasId = source.MetricChampionPersonAliasId;
-            target.AdminPersonAliasId = source.AdminPersonAliasId;
-            target.ScheduleId = source.ScheduleId;
-            target.LastRunDateTime = source.LastRunDateTime;
-            target.EntityTypeId = source.EntityTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

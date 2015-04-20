@@ -419,6 +419,10 @@ namespace Rockweb.Blocks.Crm
             pnlQuestions.Visible = false;
             pnlResults.Visible = true;
 
+            if ( CurrentPersonId == _targetPerson.Id )
+            {
+                lPrintTip.Visible = true;
+            }
             lHeading.Text = string.Format( "<div class='disc-heading'><h1>{0}</h1><h4>Personality Type: {1}</h4></div>", _targetPerson.FullName, savedScores.PersonalityType );
 
             // Show re-take test button if MinDaysToRetake has passed...

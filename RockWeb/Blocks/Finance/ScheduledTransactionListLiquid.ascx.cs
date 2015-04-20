@@ -29,6 +29,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using DotLiquid;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -38,16 +39,7 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Scheduled Transaction List Liquid" )]
     [Category( "Finance" )]
     [Description( "Block that shows a list of scheduled transactions for the currently logged in user with the ability to modify the formatting using liquid." )]
-    [CodeEditorField("Template", "Liquid template for the display of the scheduled transactions.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"
-<div class=""scheduledtransaction-summary"">
-    ${{ScheduledTransaction.ScheduledAmount}} on {{ScheduledTransaction.CurrencyType}}
-    {{ScheduledTransaction.FrequencyDescription | downcase}}. 
-     
-    {% if ScheduledTransaction.NextPaymentDate != null %}
-        Next gift will be on {{ScheduledTransaction.NextPaymentDate | Date:""MMMM d, yyyy""}}.
-    {% endif %}
-</div>
-", "", 1)]
+    [CodeEditorField( "Template", "Liquid template for the display of the scheduled transactions.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/ScheduledTransactionListLiquid.lava'  %}", "", 1 )]
     [BooleanField("Enable Debug", "Displays a list of available merge fields using the current person's scheduled transactions.", false, "", 2)]
     [LinkedPage("Scheduled Transaction Edit Page", "Link to be used for managing an individual's scheduled transactions.", false, "", "", 3)]
     [LinkedPage( "Scheduled Transaction Entry Page", "Link to use when adding new transactions.", false, "", "", 4 )]
@@ -96,7 +88,7 @@ namespace RockWeb.Blocks.Finance
             // set initial debug info
             if ( !IsPostBack )
             {
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                 {
                     lDebug.Text = "<pre>At least one scheduled transaction needs to exist for the current user in order to display debug information.</pre>";
                 }
@@ -193,7 +185,7 @@ namespace RockWeb.Blocks.Finance
                 lLiquidContent.Text = GetAttributeValue( "Template" ).ResolveMergeFields( schedule );
 
                 // set debug info
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                 {
                     lDebug.Text = schedule.lavaDebugInfo();
                 }
@@ -209,21 +201,26 @@ namespace RockWeb.Blocks.Finance
             Literal content = (Literal)riItem.FindControl( "lLiquidContent" );
             Button btnEdit = (Button)riItem.FindControl( "btnEdit" );
 
-            var rockContext = new Rock.Data.RockContext();
-            FinancialScheduledTransactionService fstService = new FinancialScheduledTransactionService( rockContext );
-            var currentTransaction = fstService.Get( Int32.Parse(hfScheduledTransactionId.Value) );
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                FinancialScheduledTransactionService fstService = new FinancialScheduledTransactionService( rockContext );
+                var currentTransaction = fstService.Get( Int32.Parse( hfScheduledTransactionId.Value ) );
+                if ( currentTransaction != null && currentTransaction.FinancialGateway != null )
+                {
+                    currentTransaction.FinancialGateway.LoadAttributes( rockContext );
+                }
+                string errorMessage = string.Empty;
+                if ( fstService.Cancel( currentTransaction, out errorMessage ) )
+                {
+                    rockContext.SaveChanges();
+                    content.Text = String.Format( "<div class='alert alert-success'>Your recurring {0} has been deleted.</div>", GetAttributeValue( "TransactionLabel" ).ToLower() );
+                }
+                else
+                {
+                    content.Text = String.Format( "<div class='alert alert-danger'>An error occured while deleting your scheduled transation. Message: {0}</div>", errorMessage );
+                }
+            }
 
-            string errorMessage = string.Empty;
-            if ( fstService.Cancel( currentTransaction, out errorMessage ) )
-            {
-                rockContext.SaveChanges();
-                content.Text = String.Format( "<div class='alert alert-success'>Your recurring {0} has been deleted.</div>", GetAttributeValue( "TransactionLabel" ).ToLower() );
-            }
-            else
-            {
-                content.Text = String.Format( "<div class='alert alert-danger'>An error occured while deleting your scheduled transation. Message: {0}</div>", errorMessage );
-            }
-            
             bbtnDelete.Visible = false;
             btnEdit.Visible = false;
 

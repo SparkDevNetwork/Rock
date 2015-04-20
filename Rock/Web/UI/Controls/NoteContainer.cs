@@ -253,6 +253,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to show the create date input.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [show create date input]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowCreateDateInput
+        {
+            get
+            {
+                EnsureChildControls();
+                return _noteNew.ShowCreateDateInput;
+            }
+            set
+            {
+                EnsureChildControls();
+                _noteNew.ShowCreateDateInput = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the allow anonymous.
         /// </summary>
         public bool AllowAnonymousEntry
@@ -299,38 +319,33 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [show more option].
-        /// </summary>
-
-        public bool ShowMoreOption
-        {
-            get
-            {
-                if ( SortDirection == ListSortDirection.Ascending )
-                {
-                    return false;
-                }
-                else
-                {
-                    EnsureChildControls();
-                    return _lbShowMore.Visible;
-                }
-            }
-            set
-            {
-                EnsureChildControls();
-                _lbShowMore.Visible = value;
-            }
-        }
 
         /// <summary>
-        /// Gets or sets the current display count.  
+        /// Gets or sets the current display count. Only applies if notes are in descending order. 
+        /// If notes are displayed in ascending order, all notes will always be displayed
         /// </summary>
         public int DisplayCount
         {
             get { return ViewState["DisplayCount"] as int? ?? 10; }
             set { ViewState["DisplayCount"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show more option].
+        /// </summary>
+        private bool ShowMoreOption
+        {
+            get { return ViewState["ShowMoreOption"] as bool? ?? true; }
+            set { ViewState["ShowMoreOption"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the entity identifier.
+        /// </summary>
+        public int NoteCount
+        {
+            get { return ViewState["NoteCount"] as int? ?? 0; }
+            private set { ViewState["NoteCount"] = value; }
         }
 
         #endregion
@@ -486,6 +501,7 @@ namespace Rock.Web.UI.Controls
                         noteEditor.ShowAlertCheckBox = this.ShowAlertCheckBox;
                         noteEditor.ShowPrivateCheckBox = this.ShowPrivateCheckBox;
                         noteEditor.ShowSecurityButton = this.ShowSecurityButton;
+                        noteEditor.ShowCreateDateInput = this.ShowCreateDateInput;
                         noteEditor.UsePersonIcon = this.UsePersonIcon;
                         control.RenderControl( writer );
                     }
@@ -616,44 +632,51 @@ namespace Rock.Web.UI.Controls
             {
                 ShowMoreOption = false;
 
-                int noteCount = 0;
+                int i = 0;
 
-                var qry = new NoteService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person" )
-                    .Where( n =>
-                        n.NoteTypeId == NoteTypeId.Value &&
-                        n.EntityId == EntityId.Value );
+                using ( var rockContext = new RockContext() )
+                {
+                    var qry = new NoteService( rockContext ).Queryable( "CreatedByPersonAlias.Person" )
+                        .Where( n =>
+                            n.NoteTypeId == NoteTypeId.Value &&
+                            n.EntityId == EntityId.Value );
 
-                if ( SortDirection == ListSortDirection.Descending )
-                {
-                    qry = qry.OrderByDescending( n => n.IsAlert )
-                        .ThenByDescending( n => n.CreatedDateTime );
-                }
-                else
-                {
-                    qry = qry.OrderByDescending( n => n.IsAlert )
-                        .ThenBy( n => n.CreatedDateTime );
-                }
-
-                foreach ( var note in qry )
-                {
-                    if ( noteCount >= DisplayCount )
+                    if ( SortDirection == ListSortDirection.Descending )
                     {
-                        ShowMoreOption = true;
-                        break;
+                        qry = qry.OrderByDescending( n => n.IsAlert )
+                            .ThenByDescending( n => n.CreatedDateTime );
+                    }
+                    else
+                    {
+                        qry = qry.OrderByDescending( n => n.IsAlert )
+                            .ThenBy( n => n.CreatedDateTime );
                     }
 
-                    if ( note.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                    {
-                        var noteEditor = new NoteControl();
-                        noteEditor.ID = string.Format( "note_{0}", note.Guid.ToString().Replace( "-", "_" ) );
-                        noteEditor.Note = note;
-                        noteEditor.IsPrivate = note.IsPrivate( Authorization.VIEW, currentPerson );
-                        noteEditor.CanEdit = note.IsAuthorized( Authorization.EDIT, currentPerson );
-                        noteEditor.SaveButtonClick += note_Updated;
-                        noteEditor.DeleteButtonClick += note_Updated;
-                        Controls.Add( noteEditor );
+                    var notes = qry.ToList();
 
-                        noteCount++;
+                    NoteCount = notes.Count();
+
+                    foreach ( var note in notes )
+                    {
+                        if ( SortDirection == ListSortDirection.Descending && i >= DisplayCount )
+                        {
+                            ShowMoreOption = true;
+                            break;
+                        }
+
+                        if ( note.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                        {
+                            var noteEditor = new NoteControl();
+                            noteEditor.ID = string.Format( "note_{0}", note.Guid.ToString().Replace( "-", "_" ) );
+                            noteEditor.Note = note;
+                            noteEditor.IsPrivate = note.IsPrivate( Authorization.VIEW, currentPerson );
+                            noteEditor.CanEdit = note.IsAuthorized( Authorization.EDIT, currentPerson );
+                            noteEditor.SaveButtonClick += note_Updated;
+                            noteEditor.DeleteButtonClick += note_Updated;
+                            Controls.Add( noteEditor );
+
+                            i++;
+                        }
                     }
                 }
             }
