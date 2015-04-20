@@ -182,6 +182,11 @@ namespace Rock.Model
             return result.OrderBy(a => 0);
         }
 
+        /// <summary>
+        /// Groups the name of the ancestor path.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns></returns>
         public string GroupAncestorPathName( int groupId )
         {
             return this.Context.Database.SqlQuery<string>( @"

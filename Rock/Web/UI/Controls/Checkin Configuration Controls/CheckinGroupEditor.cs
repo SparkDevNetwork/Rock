@@ -280,6 +280,10 @@ $('.checkin-group > .panel-body').on('validation-error', function() {
             }
         }
 
+        /// <summary>
+        /// Gets the parent group type editor.
+        /// </summary>
+        /// <returns></returns>
         public CheckinGroupTypeEditor GetParentGroupTypeEditor()
         {
             return GetParentGroupTypeEditor( this );
@@ -602,11 +606,6 @@ $('.checkin-group > .panel-body').on('validation-error', function() {
 
             // article tag
             writer.RenderEndTag();
-        }
-
-        public void ResetGroupAttributeControls(  RockContext rockContext )
-        {
-
         }
 
         /// <summary>
