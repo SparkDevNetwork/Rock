@@ -9,7 +9,7 @@
                 <div class="persondetails-family rollover-container">
 
                     <div class="actions rollover-item">
-                        <asp:HyperLink ID="hlEditFamily" runat="server" CssClass="edit btn btn-action btn-xs"><i class="fa fa-pencil"></i> Edit Family</asp:HyperLink>
+                        <asp:HyperLink ID="hlEditFamily" runat="server" AccessKey="O" CssClass="edit btn btn-action btn-xs"><i class="fa fa-pencil"></i> Edit Family</asp:HyperLink>
                     </div>
 
                     <div class="row">
