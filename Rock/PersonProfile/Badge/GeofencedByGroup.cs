@@ -51,8 +51,8 @@ namespace Rock.PersonProfile.Badge
             if ( groupTypeGuid.HasValue &&  !String.IsNullOrEmpty( badgeColor ) )
             {
                 writer.Write( String.Format( 
-                    "<span title='{0}' data-toggle='tooltip' class='label badge-geofenced-group badge-id-{1}' style='background-color:{2};display:none' ></span>", 
-                    badge.Name.EscapeQuotes(), badge.Id, badgeColor.EscapeQuotes() ) );
+                    "<span class='label badge-geofenced-group badge-id-{0}' style='background-color:{1};display:none' ></span>", 
+                    badge.Id, badgeColor.EscapeQuotes() ) );
 
                 writer.Write( String.Format( @"
 <script>
@@ -63,10 +63,10 @@ Sys.Application.add_load(function () {{
             url: Rock.settings.get('baseUrl') + 'api/PersonBadges/GeofencedGroups/{0}/{1}' ,
             statusCode: {{
                 200: function (result, status, xhr) {{
-                    var $badge = $('.badge-geofenced-group.badge-id-{3}');
+                    var $badge = $('.badge-geofenced-group.badge-id-{2}');
                     var badgeHtml = '';
                     if (result && result != '') {{
-                        badgeHtml = '<span class=\'label label-{2}\'>' + result + '</span>';
+                        badgeHtml = result;
                         $badge.show();
                     }} else {{
                         $badge.hide();
@@ -78,7 +78,7 @@ Sys.Application.add_load(function () {{
 }});
 </script>
                 
-", Person.Id.ToString(), groupTypeGuid.ToString(), badgeColor, badge.Id ) );
+", Person.Id.ToString(), groupTypeGuid.ToString(), badge.Id ) );
             }
 
         }
