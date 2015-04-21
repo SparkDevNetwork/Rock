@@ -218,7 +218,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
                 decimal totalOtherHours = ( timeCardDay.PaidVacationHours ?? 0 ) + ( timeCardDay.TotalHolidayHours ?? 0 ) + ( timeCardDay.PaidSickHours ?? 0 );
                 Literal lTotalHours = repeaterItem.FindControl( "lTotalHours" ) as Literal;
-                lTotalHours.Text = FormatTimeCardHours( timeCardDay.TotalWorkedDuration + totalOtherHours );
+                lTotalHours.Text = FormatTimeCardHours( timeCardDay.TotalWorkedDuration ?? 0 + totalOtherHours );
 
                 Literal lNotes = repeaterItem.FindControl( "lNotes" ) as Literal;
                 lNotes.Text = timeCardDay.Notes;
@@ -232,15 +232,15 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
                     var workedRegularSummaryHours = timeCardDay.TimeCard.GetRegularHours()
                         .Where( a => a.TimeCardDay.StartDateTime.Date <= timeCardDay.StartDateTime.Date
-                            && a.TimeCardDay.StartDateTime.Date >= timeCardDay.StartDateTime.Date.AddDays( -7 ) )
+                            && a.TimeCardDay.StartDateTime.Date >= timeCardDay.StartDateTime.Date.AddDays( -6 ) )
                             .Sum( a => a.Hours );
                     var workedOvertimeSummaryHours = timeCardDay.TimeCard.GetOvertimeHours()
                         .Where( a => a.TimeCardDay.StartDateTime.Date <= timeCardDay.StartDateTime.Date
-                            && a.TimeCardDay.StartDateTime.Date >= timeCardDay.StartDateTime.Date.AddDays( -7 ) )
+                            && a.TimeCardDay.StartDateTime.Date >= timeCardDay.StartDateTime.Date.AddDays( -6 ) )
                             .Sum( a => a.Hours );
                     var otherSummaryHours = timeCardDay.TimeCard.TimeCardDays
                         .Where( a => a.StartDateTime.Date <= timeCardDay.StartDateTime.Date
-                            && a.StartDateTime.Date >= timeCardDay.StartDateTime.Date.AddDays( -7 ) )
+                            && a.StartDateTime.Date >= timeCardDay.StartDateTime.Date.AddDays( -6 ) )
                             .Sum( a => ( a.PaidHolidayHours ?? 0 ) + ( a.PaidSickHours ?? 0 ) + ( a.PaidVacationHours ?? 0 ) + ( a.EarnedHolidayHours ?? 0 ) );
 
                     string subtotalItemFormat = "{0}";
