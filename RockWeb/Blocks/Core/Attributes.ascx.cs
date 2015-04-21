@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Net;
 
 using Rock;
 using Rock.Attribute;
@@ -91,7 +92,7 @@ namespace RockWeb.Blocks.Core
                 _entityId = null;
             }
 
-            _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
+            _canConfigure = IsUserAuthorized( Rock.Security.Authorization.ADMINISTRATE );
 
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
@@ -380,11 +381,11 @@ namespace RockWeb.Blocks.Core
                         var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId );
                         if ( attributeValue != null && !string.IsNullOrWhiteSpace( attributeValue.Value ) )
                         {
-                            lValue.Text = fieldType.Field.FormatValueAsHtml( lValue, attributeValue.Value, attribute.QualifierValues, true );
+                            lValue.Text = WebUtility.HtmlEncode(fieldType.Field.FormatValueAsHtml( lValue, attributeValue.Value, attribute.QualifierValues, true ));
                         }
                         else
                         {
-                            lValue.Text = string.Format( "<span class='text-muted'>{0}</span>", fieldType.Field.FormatValueAsHtml( lValue, attribute.DefaultValue, attribute.QualifierValues, true ) );
+                            lValue.Text = string.Format( "<span class='text-muted'>{0}</span>", WebUtility.HtmlEncode( fieldType.Field.FormatValueAsHtml( lValue, attribute.DefaultValue, attribute.QualifierValues, true ) ) );
                         }
                     }
                 }
@@ -397,6 +398,17 @@ namespace RockWeb.Blocks.Core
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlAttrEntityType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlAttrEntityType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            edtAttribute.AttributeEntityTypeId = ddlAttrEntityType.SelectedValueAsInt( false );
+            edtAttribute.CategoryIds = new List<int>();
         }
 
         /// <summary>
@@ -595,6 +607,12 @@ namespace RockWeb.Blocks.Core
                         attributeModel.EntityTypeId = entityTypeId;
                     }
                 }
+                else
+                {
+                    attributeModel.EntityTypeId = _entityTypeId;
+                    attributeModel.EntityTypeQualifierColumn = _entityQualifierColumn;
+                    attributeModel.EntityTypeQualifierValue = _entityQualifierValue;
+                }
 
                 List<int> selectedCategoryIds = cpCategoriesFilter.SelectedValuesAsInt().ToList();
                 new CategoryService( rockContext ).Queryable().Where( c => selectedCategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>
@@ -608,10 +626,10 @@ namespace RockWeb.Blocks.Core
             }
 
             Type type = null;
-            if ( _entityTypeId.HasValue )
+            if ( attributeModel.EntityTypeId.HasValue )
             {
-                type = EntityTypeCache.Read( _entityTypeId.Value ).GetEntityType();
-                edtAttribute.ReservedKeyNames = attributeService.Get( _entityTypeId, _entityQualifierColumn, _entityQualifierValue )
+                type = EntityTypeCache.Read( attributeModel.EntityTypeId.Value ).GetEntityType();
+                edtAttribute.ReservedKeyNames = attributeService.Get( attributeModel.EntityTypeId, attributeModel.EntityTypeQualifierColumn, attributeModel.EntityTypeQualifierValue )
                     .Where( a => a.Id != attributeId )
                     .Select( a => a.Key )
                     .Distinct()
@@ -619,6 +637,7 @@ namespace RockWeb.Blocks.Core
             }
 
             edtAttribute.SetAttributeProperties( attributeModel, type );
+            edtAttribute.AttributeEntityTypeId = attributeModel.EntityTypeId;
 
             if ( _configuredType )
             {
@@ -718,5 +737,5 @@ namespace RockWeb.Blocks.Core
         }
 
         #endregion
-    }
+}
 }
