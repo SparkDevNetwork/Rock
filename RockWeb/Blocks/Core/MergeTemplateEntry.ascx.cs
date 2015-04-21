@@ -291,7 +291,7 @@ namespace RockWeb.Blocks.Core
                             var nickNameList = combinedFamilyItem.Persons.Select( a => ( a as Person ).NickName ).ToList();
 
                             combinedPerson.FirstName = firstNameList.AsDelimited( ", ", " & " );
-                            combinedPerson.NickName = firstNameList.AsDelimited( ", ", " & " );
+                            combinedPerson.NickName = nickNameList.AsDelimited( ", ", " & " );
                             combinedPerson.LastName = primaryGroupPerson.LastName;
                             combinedPerson.SuffixValueId = null;
                             combinedPerson.SuffixValue = null;
