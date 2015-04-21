@@ -633,7 +633,7 @@ namespace RockWeb.Blocks.Groups
                 else
                 {
                     // Cancelling on Add.  Return to Grid
-                    NavigateToParentPage();
+                    NavigateToPage( RockPage.Guid, null );
                 }
             }
             else
