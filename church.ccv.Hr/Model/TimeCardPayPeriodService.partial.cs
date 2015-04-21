@@ -53,6 +53,43 @@ namespace church.ccv.Hr.Model
         }
 
         /// <summary>
+        /// Ensures the previous pay period.
+        /// </summary>
+        /// <param name="firstPayPeriodStartDate">The first pay period start date.</param>
+        /// <returns></returns>
+        public TimeCardPayPeriod EnsurePreviousPayPeriod( DateTime firstPayPeriodStartDate )
+        {
+            // ensure that previous pay period exists in case they need to edit it but it hasn't been created yet
+            TimeCardPayPeriod previousPayPeriod = GetPreviousPayPeriod();
+            if ( previousPayPeriod == null )
+            {
+                // assume 14-day PayPeriods starting on firstPayPeriodStartDate
+                DateTime lastPayPeriodDate = RockDateTime.Today.AddDays( -14 );
+
+                var payPeriodEnd = firstPayPeriodStartDate.AddDays( 14 );
+                while ( payPeriodEnd <= lastPayPeriodDate )
+                {
+                    payPeriodEnd = payPeriodEnd.AddDays( 14 );
+                }
+
+                previousPayPeriod = new TimeCardPayPeriod();
+                previousPayPeriod.StartDate = payPeriodEnd.AddDays( -14 );
+                previousPayPeriod.EndDate = payPeriodEnd;
+                this.Add( previousPayPeriod );
+                this.Context.SaveChanges();
+            }
+
+            return previousPayPeriod;
+        }
+
+        /// Gets the previous pay period or null if the previous pay period doesn't exist yet
+        public TimeCardPayPeriod GetPreviousPayPeriod()
+        {
+            var lastPayPeriodDate = RockDateTime.Today.AddDays(-14);
+            return this.Queryable().Where( a => lastPayPeriodDate >= a.StartDate && lastPayPeriodDate < a.EndDate ).FirstOrDefault();
+        }
+
+        /// <summary>
         /// Gets a list of Person Ids for people that are Staff that report to specified approverPerson or are co-staff of the approverPerson if the approverPerson CanApproveTimecard
         /// </summary>
         /// <param name="rockContext">The rock context.</param>

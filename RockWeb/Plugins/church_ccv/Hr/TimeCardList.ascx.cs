@@ -110,13 +110,13 @@ namespace RockWeb.Plugins.church_ccv.Hr
                 nbBlockWarning.Text = "The first pay period start date must be set in block settings";
                 return;
             }
-
-            var currentPayPeriod = timeCardPayPeriodService.EnsureCurrentPayPeriod( firstPayPeriodStartDate.Value );
+            
             SortProperty sortProperty = gList.SortProperty;
 
             var qry = timeCardService.Queryable().Where( a => a.PersonAlias.PersonId == this.CurrentPersonId );
 
             // ensure that employee has a timecard for the current pay period
+            var currentPayPeriod = timeCardPayPeriodService.EnsureCurrentPayPeriod( firstPayPeriodStartDate.Value );
             var currentEmployeeTimeCard = qry.Where( a => a.TimeCardPayPeriodId == currentPayPeriod.Id ).FirstOrDefault();
             if ( currentEmployeeTimeCard == null )
             {
@@ -126,6 +126,20 @@ namespace RockWeb.Plugins.church_ccv.Hr
                 currentEmployeeTimeCard.PersonAliasId = this.CurrentPersonAliasId.Value;
                 currentEmployeeTimeCard.TimeCardDays = new List<TimeCardDay>();
                 timeCardService.Add( currentEmployeeTimeCard );
+                hrContext.SaveChanges();
+            }
+
+            // also ensure that employee has a timecard for the previous pay period
+            var previousPayPeriod = timeCardPayPeriodService.EnsurePreviousPayPeriod( firstPayPeriodStartDate.Value );
+            var previousEmployeeTimeCard = qry.Where( a => a.TimeCardPayPeriodId == previousPayPeriod.Id ).FirstOrDefault();
+            if ( previousEmployeeTimeCard == null )
+            {
+                previousEmployeeTimeCard = new TimeCard();
+                previousEmployeeTimeCard.TimeCardPayPeriodId = previousPayPeriod.Id;
+                previousEmployeeTimeCard.TimeCardStatus = TimeCardStatus.InProgress;
+                previousEmployeeTimeCard.PersonAliasId = this.CurrentPersonAliasId.Value;
+                previousEmployeeTimeCard.TimeCardDays = new List<TimeCardDay>();
+                timeCardService.Add( previousEmployeeTimeCard );
                 hrContext.SaveChanges();
             }
 
