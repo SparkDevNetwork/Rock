@@ -341,6 +341,47 @@ namespace Rock.Model
 
         #region Static Methods
 
+        private static object _obj = null;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Communication"/> class.
+        /// </summary>
+        public Communication()
+        {
+            _obj = new object();
+        }
+
+        /// <summary>
+        /// Gets the next pending.
+        /// </summary>
+        /// <param name="communicationId">The communication identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static Rock.Model.CommunicationRecipient GetNextPending( int communicationId, Rock.Data.RockContext rockContext )
+        {
+            CommunicationRecipient recipient = null;
+
+            var delayTime = RockDateTime.Now.AddMinutes( -10 );
+
+            lock( _obj )
+            {
+                recipient = new CommunicationRecipientService( rockContext ).Queryable( "Communication,PersonAlias.Person" )
+                    .Where( r =>
+                        r.CommunicationId == communicationId &&
+                        ( !r.PersonAlias.Person.IsDeceased.HasValue || !r.PersonAlias.Person.IsDeceased.Value ) &&
+                        ( r.Status == CommunicationRecipientStatus.Pending ||
+                            ( r.Status == CommunicationRecipientStatus.Sending && r.ModifiedDateTime < delayTime ) ) )
+                    .FirstOrDefault();
+
+                if ( recipient != null )
+                {
+                    recipient.Status = CommunicationRecipientStatus.Sending;
+                    rockContext.SaveChanges();
+                }
+            }
+
+            return recipient;
+        }
         #endregion
 
     }
