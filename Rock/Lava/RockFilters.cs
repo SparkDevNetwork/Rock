@@ -961,12 +961,20 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Rock.Model.Group> Groups( DotLiquid.Context context, object input, string groupTypeId )
         {
-            if ( input != null && input is Person )
+            if ( input != null )
             {
-                var person = (Person)input;
-
+                var person = input as Person;
+                if ( person == null )
+                {
+                    var checkinPerson = input as CheckIn.CheckInPerson;
+                    if ( checkinPerson != null )
+                    {
+                        person = checkinPerson.Person;
+                    }
+                }
+                                
                 int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
-                if ( numericalGroupTypeId.HasValue )
+                if ( person != null && numericalGroupTypeId.HasValue )
                 {
                     return new GroupMemberService( GetRockContext( context ) )
                         .Queryable().AsNoTracking()
