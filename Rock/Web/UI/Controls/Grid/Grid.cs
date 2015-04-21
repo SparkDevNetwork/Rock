@@ -1235,7 +1235,7 @@ namespace Rock.Web.UI.Controls
             ExcelPackage excel = new ExcelPackage( ms );
 
             // if the grid has a caption customize on it
-            if ( this.Caption != null && this.Caption != string.Empty )
+            if ( !string.IsNullOrEmpty(this.Caption) )
             {
                 excel.Workbook.Properties.Title = this.Caption;
                 workSheetName = this.Caption;
@@ -1268,212 +1268,10 @@ namespace Rock.Web.UI.Controls
             int rowCounter = 4;
             int columnCounter = 1;
 
-            if ( this.DataSourceAsDataTable != null )
-            {
-                DataTable data = this.DataSourceAsDataTable;
-
-                // print headings
-                foreach ( DataColumn column in data.Columns )
-                {
-                    worksheet.Cells[3, columnCounter].Value = column.ColumnName.SplitCase();
-                    columnCounter++;
-                }
-
-                // print data
-                foreach ( DataRow row in data.Rows )
-                {
-                    for ( int i = 0; i < data.Columns.Count; i++ )
-                    {
-                        worksheet.Cells[rowCounter, i + 1].Value = row[i].ToString().ConvertBrToCrLf();
-
-                        // format background color for alternating rows
-                        if ( rowCounter % 2 == 1 )
-                        {
-                            worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                            worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
-                        }
-                    }
-
-                    rowCounter++;
-                }
-            }
+            if ( DataSourceAsDataTable != null )
+                AddExportDataFromDataTable( worksheet, ref rowCounter, ref columnCounter );
             else
-            {
-                var oType = GetDataSourceObjectType();
-
-                // get all properties of the objects in the grid
-                IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
-                IList<PropertyInfo> props = new List<PropertyInfo>();
-
-                var gridDataFields = this.Columns.OfType<BoundField>();
-
-                // figure out which properties we can get data from and put those in the grid
-                foreach ( PropertyInfo prop in allprops )
-                {
-                    if ( !gridDataFields.Any( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) ) && prop.GetGetMethod().IsVirtual )
-                    {
-                        // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
-                        continue;
-                    }
-
-                    props.Add( prop );
-                }
-
-                // print column headings
-                foreach ( PropertyInfo prop in props )
-                {
-                    var gridDataField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
-                    if ( gridDataField != null )
-                    {
-                        worksheet.Cells[3, columnCounter].Value = gridDataField.HeaderText;
-                    }
-                    else
-                    {
-                        worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();
-                    }
-
-                    columnCounter++;
-                }
-
-                // Get any defined value columns
-                List<DefinedValueField> definedValueFields = this.Columns.OfType<DefinedValueField>().ToList();
-
-                // Get any attribute columns
-                List<AttributeField> attributeFields = this.Columns.OfType<AttributeField>().ToList();
-                foreach ( var attributeField in attributeFields )
-                {
-                    worksheet.Cells[3, columnCounter].Value = attributeField.HeaderText;
-                    columnCounter++;
-                }
-
-                // print data
-                int dataIndex = 0;
-
-                IList data = this.DataSourceAsList;
-                foreach ( var item in data )
-                {
-                    columnCounter = 0;
-                    foreach ( PropertyInfo prop in props )
-                    {
-                        columnCounter++;
-
-                        object propValue = prop.GetValue( item, null );
-                        string value = "";
-                        if ( propValue != null )
-                        {
-                            var definedValueAttribute = prop.GetCustomAttributes( typeof( Rock.Data.DefinedValueAttribute ), true ).FirstOrDefault();
-                            if ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) )
-                            {
-                                int definedValueId = 0;
-
-                                if ( prop.PropertyType == typeof( int? ) )
-                                {
-                                    definedValueId = (int?)propValue ?? 0;
-                                }
-                                else if ( prop.PropertyType == typeof( int ) )
-                                {
-                                    definedValueId = (int)propValue;
-                                }
-
-                                if ( definedValueId > 0 )
-                                {
-                                    var definedValue = DefinedValueCache.Read( definedValueId );
-                                    value = definedValue != null ? definedValue.Value : definedValueId.ToString();
-                                }
-                            }
-
-                            else if ( propValue is IEnumerable<object> )
-                            {
-                                value = ( propValue as IEnumerable<object> ).ToList().AsDelimited( "," );
-                            }
-                            else if ( propValue is DateTime? && propValue != null )
-                            {
-                                DateTime dateTimeValue = ( propValue as DateTime? ).Value;
-                                var columnAttribute = prop.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.ColumnAttribute>( true );
-                                if ( ( columnAttribute != null && columnAttribute.Name == "Date" ) || prop.Name.EndsWith( "Date" ) )
-                                {
-                                    value = dateTimeValue.ToShortDateString();
-                                }
-                                else
-                                {
-                                    value = dateTimeValue.ToString();
-                                }
-                            }
-                            else
-                            {
-                                value = propValue.ToString();
-                            }
-                        }
-
-                        worksheet.Cells[rowCounter, columnCounter].Value = value.ConvertBrToCrLf();
-
-                        // format background color for alternating rows
-                        if ( rowCounter % 2 == 1 )
-                        {
-                            worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                            worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
-                        }
-
-                        if ( propValue is DateTime )
-                        {
-                            worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
-                        }
-
-                    }
-
-                    if ( attributeFields.Any() )
-                    {
-                        // First check if DataItem has attributes
-                        var dataItem = item as Rock.Attribute.IHasAttributes;
-                        if ( dataItem == null )
-                        {
-                            // If the DataItem does not have attributes, check to see if there is an object list
-                            if ( ObjectList != null )
-                            {
-                                // If an object list exists, check to see if the associated object has attributes
-                                string key = DataKeys[dataIndex].Value.ToString();
-                                if ( !string.IsNullOrWhiteSpace( key ) && ObjectList.ContainsKey( key ) )
-                                {
-                                    dataItem = ObjectList[key] as Rock.Attribute.IHasAttributes;
-                                }
-                            }
-                        }
-
-                        if ( dataItem != null )
-                        {
-                            if ( dataItem.Attributes == null )
-                            {
-                                dataItem.LoadAttributes();
-                            }
-
-                            foreach ( var attributeField in attributeFields )
-                            {
-                                columnCounter++;
-
-                                bool exists = dataItem.Attributes.ContainsKey( attributeField.DataField );
-                                if ( exists )
-                                {
-                                    var attrib = dataItem.Attributes[attributeField.DataField];
-                                    string rawValue = dataItem.GetAttributeValue( attributeField.DataField );
-                                    string resultHtml = attrib.FieldType.Field.FormatValue( null, rawValue, attrib.QualifierValues, false );
-                                    worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
-                                }
-
-                                // format background color for alternating rows
-                                if ( rowCounter % 2 == 1 )
-                                {
-                                    worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                    worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
-                                }
-
-                            }
-                        }
-                    }
-
-                    rowCounter++;
-                    dataIndex++;
-                }
-            }
+                AddExportDataFromDataViewOrList(worksheet, ref rowCounter, ref columnCounter);
 
             // format header range
             using ( ExcelRange r = worksheet.Cells[3, 1, 3, columnCounter] )
@@ -1535,6 +1333,284 @@ namespace Rock.Web.UI.Controls
             this.Page.Response.BinaryWrite( byteArray );
             this.Page.Response.Flush();
             this.Page.Response.End();
+        }
+
+        /// <summary>
+        /// Adds the current grid rows to an Excel Worksheet if the grid data source is a DataTable.
+        /// </summary>
+        /// <param name="worksheet"></param>
+        /// <param name="rowCounter"></param>
+        /// <param name="columnCounter"></param>
+        private void AddExportDataFromDataTable(ExcelWorksheet worksheet, ref int rowCounter, ref int columnCounter )
+        {
+            DataTable data = this.DataSourceAsDataTable;
+
+            // print headings
+            foreach ( DataColumn column in data.Columns )
+            {
+                worksheet.Cells[3, columnCounter].Value = column.ColumnName.SplitCase();
+                columnCounter++;
+            }
+
+            // print data
+            foreach ( DataRow row in data.Rows )
+            {
+                for ( int i = 0; i < data.Columns.Count; i++ )
+                {
+                    worksheet.Cells[rowCounter, i + 1].Value = row[i].ToString().ConvertBrToCrLf();
+
+                    // format background color for alternating rows
+                    if ( rowCounter % 2 == 1 )
+                    {
+                        worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
+                    }
+                }
+
+                rowCounter++;
+            }            
+        }
+
+        /// <summary>
+        /// Adds the current grid rows to an Excel Worksheet if the grid data source is a DataView or List.
+        /// </summary>
+        /// <param name="worksheet"></param>
+        /// <param name="rowCounter"></param>
+        /// <param name="columnCounter"></param>
+        private void AddExportDataFromDataViewOrList(ExcelWorksheet worksheet, ref int rowCounter, ref int columnCounter )
+        {
+            var oType = GetDataSourceObjectType();
+
+            // get all properties of the objects in the grid
+            IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
+            IList<PropertyInfo> props = new List<PropertyInfo>();
+
+            var gridDataFields = this.Columns.OfType<BoundField>().ToList();
+
+            // figure out which properties we can get data from and put those in the grid
+            var orderedProps = new SortedDictionary<int, PropertyInfo>();
+
+            foreach ( PropertyInfo prop in allprops )
+            {
+                // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
+                if ( prop.GetGetMethod().IsVirtual )
+                    continue;
+
+                // Find a matching field in the Grid and add it to the list of exported properties.
+                var gridField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
+
+                if ( gridField == null )
+                    continue;
+
+                int fieldIndex = gridDataFields.IndexOf( gridField );
+
+                orderedProps.Add( fieldIndex, prop );
+            }
+
+            props = orderedProps.Values.ToList();
+
+            // print column headings
+            foreach ( PropertyInfo prop in props )
+            {
+                var gridDataField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
+                if ( gridDataField != null )
+                {
+                    worksheet.Cells[3, columnCounter].Value = gridDataField.HeaderText;
+                }
+                else
+                {
+                    worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();
+                }
+
+                columnCounter++;
+            }
+
+            // Get any defined value columns
+            List<DefinedValueField> definedValueFields = this.Columns.OfType<DefinedValueField>().ToList();
+
+            // Get any attribute columns
+            List<AttributeField> attributeFields = this.Columns.OfType<AttributeField>().ToList();
+            foreach ( var attributeField in attributeFields )
+            {
+                worksheet.Cells[3, columnCounter].Value = attributeField.HeaderText;
+                columnCounter++;
+            }
+
+            // print data
+            int dataIndex = 0;
+
+            IList data = this.DataSourceAsList;
+            foreach ( var item in data )
+            {
+                columnCounter = 0;
+                foreach ( PropertyInfo prop in props )
+                {
+                    columnCounter++;
+
+                    object propValue = prop.GetValue( item, null );
+
+                    var definedValueAttribute = prop.GetCustomAttributes( typeof( DefinedValueAttribute ), true ).FirstOrDefault();
+
+                    bool isDefinedValue = (definedValueAttribute != null || definedValueFields.Any(f => f.DataField == prop.Name));
+
+                    string value = this.GetExportValue( prop, propValue, isDefinedValue );
+
+                    worksheet.Cells[rowCounter, columnCounter].Value = value.ConvertBrToCrLf();
+
+                    // format background color for alternating rows
+                    if ( rowCounter % 2 == 1 )
+                    {
+                        worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
+                    }
+
+                    if ( propValue is DateTime )
+                    {
+                        worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
+                    }
+
+                }
+
+                if ( attributeFields.Any() )
+                {
+                    // First check if DataItem has attributes
+                    var dataItem = item as Rock.Attribute.IHasAttributes;
+                    if ( dataItem == null )
+                    {
+                        // If the DataItem does not have attributes, check to see if there is an object list
+                        if ( ObjectList != null )
+                        {
+                            // If an object list exists, check to see if the associated object has attributes
+                            string key = DataKeys[dataIndex].Value.ToString();
+                            if ( !string.IsNullOrWhiteSpace( key ) && ObjectList.ContainsKey( key ) )
+                            {
+                                dataItem = ObjectList[key] as Rock.Attribute.IHasAttributes;
+                            }
+                        }
+                    }
+
+                    if ( dataItem != null )
+                    {
+                        if ( dataItem.Attributes == null )
+                            dataItem.LoadAttributes();
+
+                        foreach ( var attributeField in attributeFields )
+                        {
+                            columnCounter++;
+
+                            bool exists = dataItem.Attributes.ContainsKey( attributeField.DataField );
+                            if ( exists )
+                            {
+                                var attrib = dataItem.Attributes[attributeField.DataField];
+                                string rawValue = dataItem.GetAttributeValue( attributeField.DataField );
+                                string resultHtml = attrib.FieldType.Field.FormatValue( null, rawValue, attrib.QualifierValues, false );
+                                worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
+                            }
+
+                            // format background color for alternating rows
+                            if ( rowCounter % 2 == 1 )
+                            {
+                                worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
+                            }
+
+                        }
+                    }
+                }
+
+                rowCounter++;
+                dataIndex++;
+            }            
+        }
+
+        /// <summary>
+        /// Formats a raw value from the Grid DataSource so that it is suitable for export to an Excel Worksheet.
+        /// </summary>
+        /// <param name="prop"></param>
+        /// <param name="propValue"></param>
+        /// <param name="isDefinedValueField"></param>
+        /// <returns></returns>
+        private string GetExportValue(PropertyInfo prop, object propValue, bool isDefinedValueField)
+        {            
+            // Get the formatted value string for export.
+            string value = string.Empty;
+
+            if ( propValue != null )
+            {
+                if ( isDefinedValueField )
+                {
+                    if ( prop.PropertyType == typeof( int? ) || prop.PropertyType == typeof( int ) )
+                    {
+                        // Attempt to parse the value as a single Defined Value Id.
+                        int definedValueId;
+
+                        if ( prop.PropertyType == typeof( int ) )
+                            definedValueId = (int)propValue;
+                        else
+                            definedValueId = (int?)propValue ?? 0;
+
+                        if ( definedValueId > 0 )
+                        {
+                            var definedValue = DefinedValueCache.Read( definedValueId );
+                            value = definedValue != null ? definedValue.Value : definedValueId.ToString();
+                        }
+                    }
+                    else if ( prop.PropertyType == typeof( string ) )
+                    {
+                        // Attempt to parse the value as a list of Defined Value Guids.
+                        // If a value is not a Guid or cannot be matched to a Defined Value, the raw value will be shown.
+                        var guids = propValue.ToString().Split( ',' );
+                        var definedValues = new List<string>();
+
+                        foreach ( var guidString in guids )
+                        {
+                            Guid definedValueGuid;
+
+                            bool isGuid = Guid.TryParse( guidString, out definedValueGuid );
+                            bool addRaw = true;
+
+                            if ( isGuid )
+                            {
+                                var definedValue = DefinedValueCache.Read( definedValueGuid );
+
+                                if ( definedValue != null )
+                                {
+                                    definedValues.Add( definedValue.Value );
+                                    addRaw = false;
+                                }
+                            }
+
+                            if ( addRaw )
+                                definedValues.Add( guidString );
+                        }
+
+                        value = definedValues.AsDelimited( ", " );
+                    }
+                }
+                else if ( propValue is IEnumerable<object> )
+                {
+                    value = ( propValue as IEnumerable<object> ).ToList().AsDelimited( ", " );
+                }
+                else if ( propValue is DateTime? )
+                {
+                    DateTime dateTimeValue = ( propValue as DateTime? ).Value;
+                    var columnAttribute = prop.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.ColumnAttribute>( true );
+                    if ( ( columnAttribute != null && columnAttribute.Name == "Date" ) || prop.Name.EndsWith( "Date" ) )
+                    {
+                        value = dateTimeValue.ToShortDateString();
+                    }
+                    else
+                    {
+                        value = dateTimeValue.ToString();
+                    }
+                }
+                else
+                {
+                    value = propValue.ToString();
+                }
+            }
+
+            return value;
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -590,7 +590,7 @@ namespace RockWeb.Blocks.Reporting
                         listItem.Attributes["optiongroup"] = "Other";
                     }
 
-                    if ( entityField.FieldKind == FieldKind.Attribute && entityField.AttributeGuid.HasValue)
+                    if ( entityField.FieldKind == FieldKind.Attribute && entityField.AttributeGuid.HasValue )
                     {
                         var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
                         if ( attribute != null )
@@ -883,12 +883,12 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 Type entityType = EntityTypeCache.Read( report.EntityTypeId.Value, rockContext ).GetEntityType();
-                if (entityType == null)
+                if ( entityType == null )
                 {
                     nbEditModeMessage.NotificationBoxType = NotificationBoxType.Danger;
-                    nbEditModeMessage.Text = string.Format("Unable to determine entityType for {0}", report.EntityType);
+                    nbEditModeMessage.Text = string.Format( "Unable to determine entityType for {0}", report.EntityType );
                     nbEditModeMessage.Visible = true;
-                    return; 
+                    return;
                 }
 
                 gReport.EntityTypeId = report.EntityTypeId;
@@ -962,13 +962,11 @@ namespace RockWeb.Blocks.Reporting
                                 BoundField boundField;
 
                                 if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.BOOLEAN.AsGuid() ) )
-                                {
                                     boundField = new BoolField();
-                                }
+                                else if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid() ) )
+                                    boundField = new DefinedValueField();
                                 else
-                                {
                                     boundField = new BoundField();
-                                }
 
                                 boundField.DataField = string.Format( "Attribute_{0}_{1}", attribute.Id, columnIndex );
                                 boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? attribute.Name : reportField.ColumnHeaderText;
@@ -1036,8 +1034,8 @@ namespace RockWeb.Blocks.Reporting
                         boundField.Visible = showAllColumns || entityField.IsPreviewable;
                         gReport.Columns.Add( boundField );
                     }
-                } 
-                   
+                }
+
                 try
                 {
                     gReport.Visible = true;
