@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.Caching;
 using Rock.Data;
@@ -31,10 +32,7 @@ namespace Rock.Web.Cache
     {
         #region Static Fields
 
-        // Locking object
-        private static readonly object obj = new object();
-
-        private static Dictionary<string, int> entityTypes = new Dictionary<string, int>();
+        private static ConcurrentDictionary<string, int> entityTypes = new ConcurrentDictionary<string, int>();
 
         #endregion
 
@@ -187,18 +185,7 @@ namespace Rock.Web.Cache
             this.SingleValueFieldTypeId = entityType.SingleValueFieldTypeId;
             this.MultiValueFieldTypeId = entityType.MultiValueFieldTypeId;
 
-            lock ( obj )
-            {
-                // update static dictionary object with name/id combination
-                if ( entityTypes.ContainsKey( entityType.Name ) )
-                {
-                    entityTypes[entityType.Name] = entityType.Id;
-                }
-                else
-                {
-                    entityTypes.Add( entityType.Name, entityType.Id );
-                }
-            }
+            entityTypes.AddOrUpdate( entityType.Name, entityType.Id, ( k, v ) => entityType.Id );
         }
 
         /// <summary>
@@ -255,24 +242,15 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static EntityTypeCache Read( Type type, bool createIfNotFound = true, RockContext rockContext = null )
         {
-            int? entityTypeId = null;
-
             if ( type.IsDynamicProxyType() )
             {
                 type = type.BaseType;
             }
 
-            lock ( obj )
+            int entityTypeId = 0;
+            if ( entityTypes.TryGetValue( type.FullName, out entityTypeId ) )
             {
-                if ( entityTypes.ContainsKey( type.FullName ) )
-                {
-                    entityTypeId = entityTypes[type.FullName];
-                }
-            }
-
-            if ( entityTypeId.HasValue )
-            {
-                return Read( entityTypeId.Value );
+                return Read( entityTypeId );
             }
 
             if ( rockContext != null )
@@ -330,19 +308,10 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static EntityTypeCache Read( string name, bool createNew, RockContext rockContext = null )
         {
-            int? entityTypeId = null;
-
-            lock ( obj )
+            int entityTypeId = 0;
+            if ( entityTypes.TryGetValue( name, out entityTypeId ) )
             {
-                if ( entityTypes.ContainsKey( name ) )
-                {
-                    entityTypeId = entityTypes[name];
-                }
-            }
-
-            if ( entityTypeId.HasValue )
-            {
-                return Read( entityTypeId.Value );
+                return Read( entityTypeId );
             }
 
             if ( rockContext != null )
