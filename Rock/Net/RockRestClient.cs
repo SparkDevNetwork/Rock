@@ -351,9 +351,12 @@ namespace Rock.Net
             {
                 if ( postTask.Result.IsSuccessStatusCode )
                 {
-                    postTask.Result.Content.ReadAsAsync<HttpError>().ContinueWith( c =>
+                    postTask.Result.Content.ReadAsAsync<object>().ContinueWith( c =>
                     {
-                        httpError = c.Result;
+                        if ( c.Result is HttpError )
+                        {
+                            httpError = c.Result as HttpError;
+                        }
                     } ).Wait();
 
                     postTask.Result.Content.ReadAsStringAsync().ContinueWith( c =>
@@ -423,9 +426,12 @@ namespace Rock.Net
             {
                 if ( postTask.Result.IsSuccessStatusCode )
                 {
-                    postTask.Result.Content.ReadAsAsync<HttpError>().ContinueWith( c =>
+                    postTask.Result.Content.ReadAsAsync<object>().ContinueWith( c =>
                     {
-                        httpError = c.Result;
+                        if ( c.Result is HttpError )
+                        {
+                            httpError = c.Result as HttpError;
+                        }
                     } ).Wait();
 
                     postTask.Result.Content.ReadAsStringAsync().ContinueWith( c =>
