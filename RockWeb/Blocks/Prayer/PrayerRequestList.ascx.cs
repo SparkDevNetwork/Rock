@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Prayer
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve prayer requests and comments." )]
 
     [LinkedPage( "Detail Page", Order = 0 )]
+    [IntegerField( "Expires After (Days)", "Number of days until the request will expire.", false, 14, "", 1, "ExpireDays" )]
     public partial class PrayerRequestList : RockBlock
     {
         #region Fields
@@ -445,6 +446,9 @@ namespace RockWeb.Blocks.Prayer
                         {
                             prayerRequest.FlagCount = 0;
                         }
+
+                        var expireDays = Convert.ToDouble( GetAttributeValue( "ExpireDays" ) );
+                        prayerRequest.ExpirationDate = RockDateTime.Now.AddDays( expireDays );
                     }
 
                     rockContext.SaveChanges();
