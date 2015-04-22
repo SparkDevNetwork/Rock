@@ -278,6 +278,32 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Handles the Delete event of the gList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gList_Delete( object sender, RowEventArgs e )
+        {
+            var rockContext = new RockContext();
+            BenevolenceRequestService service = new BenevolenceRequestService( rockContext );
+            BenevolenceRequest benevolenceRequest = service.Get( e.RowKeyId );
+            if ( benevolenceRequest != null )
+            {
+                string errorMessage;
+                if ( !service.CanDelete( benevolenceRequest, out errorMessage ) )
+                {
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
+                }
+
+                service.Delete( benevolenceRequest );
+                rockContext.SaveChanges();
+            }
+
+            BindGrid();
+        }
+
+        /// <summary>
         /// Handles the GridRebind event of the gPledges control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -390,6 +416,30 @@ namespace RockWeb.Blocks.Finance
                 qry = qry.Where( b => b.RequestStatusValueId == requestStatusValueId );
             }
 
+            SortProperty sortProperty = gList.SortProperty;
+            if (sortProperty != null)
+            {
+                if ( sortProperty.Property == "TotalAmount" )
+                {
+                    if ( sortProperty.Direction == SortDirection.Descending )
+                    {
+                        qry = qry.OrderByDescending( a => a.BenevolenceResults.Sum( b => b.Amount ) );
+                    }
+                    else
+                    {
+                        qry = qry.OrderBy( a => a.BenevolenceResults.Sum( b => b.Amount ) );
+                    }
+                }
+                else
+                {
+                    qry = qry.Sort( sortProperty );
+                }
+            }
+            else
+            {
+                qry = qry.OrderByDescending( a => a.RequestDateTime ).ThenByDescending( a => a.Id );
+            }
+
             gList.DataSource = qry.ToList();
             gList.DataBind();
 
@@ -423,5 +473,6 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
-    }
+        
+}
 }
