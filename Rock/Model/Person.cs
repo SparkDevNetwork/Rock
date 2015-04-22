@@ -1722,14 +1722,17 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a queryable collection of <see cref="Rock.Model.Person"/> entities containing the Person's family.
+        /// Gets a queryable collection of <see cref="Rock.Model.Person" /> entities containing the Person's family.
         /// </summary>
-        /// <param name="person">The <see cref="Rock.Model.Person"/> to retrieve family members for.</param>
-        /// <param name="includeSelf">A <see cref="System.Boolean"/> value that is <c>true</c> if the provided person should be returned in the results, otherwise <c>false</c>.</param>
-        /// <returns>Returns a queryable collection of <see cref="Rock.Model.Person"/> entities representing the provided Person's family.</returns>
-        public static IQueryable<GroupMember> GetFamilyMembers( this Person person, bool includeSelf = false )
+        /// <param name="person">The <see cref="Rock.Model.Person" /> to retrieve family members for.</param>
+        /// <param name="includeSelf">A <see cref="System.Boolean" /> value that is <c>true</c> if the provided person should be returned in the results, otherwise <c>false</c>.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// Returns a queryable collection of <see cref="Rock.Model.Person" /> entities representing the provided Person's family.
+        /// </returns>
+        public static IQueryable<GroupMember> GetFamilyMembers( this Person person, bool includeSelf = false, RockContext rockContext = null )
         {
-            return new PersonService( new RockContext() ).GetFamilyMembers( person != null ? person.Id : 0, includeSelf );
+            return new PersonService( rockContext ?? new RockContext() ).GetFamilyMembers( person != null ? person.Id : 0, includeSelf );
         }
 
         /// <summary>
