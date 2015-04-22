@@ -17,20 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
-using System.Web.UI;
-using System.Text;
-using System.Web.UI.WebControls;
 using System.Runtime.Serialization;
-
+using System.Web.UI;
+using System.Web.UI.WebControls;
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -97,10 +93,12 @@ namespace RockWeb.Blocks.Finance
             {
                 benevolenceRequest = new BenevolenceRequestService( new RockContext() ).Get( benevolenceRequestId );
             }
+
             if ( benevolenceRequest == null )
             {
                 benevolenceRequest = new BenevolenceRequest { Id = 0 };
             }
+
             if ( ViewState["BenevolenceResultInfoState"] == null )
             {
                 List<BenevolenceResultInfo> brInfoList = new List<BenevolenceResultInfo>();
@@ -115,6 +113,7 @@ namespace RockWeb.Blocks.Finance
                     benevolenceResultInfo.ResultTypeName = benevolenceResult.ResultTypeValue.Value;
                     brInfoList.Add( benevolenceResultInfo );
                 }
+
                 BenevolenceResultsState = brInfoList;
             }
         }
@@ -163,8 +162,8 @@ namespace RockWeb.Blocks.Finance
             ddlResultType.AutoPostBack = false;
             ddlResultType.Required = true;
             ddlResultType.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) ), true );
-            dtbResultSummary.Text = String.Empty;
-            dtbAmount.Text = String.Empty;
+            dtbResultSummary.Text = string.Empty;
+            dtbAmount.Text = string.Empty;
 
             mdAddResult.Show();
         }
@@ -209,6 +208,7 @@ namespace RockWeb.Blocks.Finance
             {
                 resultList.Remove( resultInfo );
             }
+
             BenevolenceResultsState = resultList;
             BindGridFromViewState();
         }
@@ -230,42 +230,33 @@ namespace RockWeb.Blocks.Finance
                 var resultInfo = benevolenceResultInfoViewStateList.FirstOrDefault( r => r.TempGuid == infoGuid );
                 if ( resultInfo != null )
                 {
-                    try
-                    {
-                        resultInfo.Amount = Decimal.Parse( dtbAmount.Text );
-                    }
-                    catch
-                    {
-
-                    }
+                    resultInfo.Amount = dtbAmount.Text.AsDecimalOrNull();
                     resultInfo.ResultSummary = dtbResultSummary.Text;
                     if ( resultType != null )
                     {
                         resultInfo.ResultTypeValueId = resultType.Value;
                     }
+
                     resultInfo.ResultTypeName = ddlResultType.SelectedItem.Text;
                 }
             }
             else
             {
                 BenevolenceResultInfo benevolenceResultInfo = new BenevolenceResultInfo();
-                try
-                {
-                    benevolenceResultInfo.Amount = Decimal.Parse( dtbAmount.Text );
-                }
-                catch
-                {
 
-                }
+                benevolenceResultInfo.Amount = dtbAmount.Text.AsDecimalOrNull();
+
                 benevolenceResultInfo.ResultSummary = dtbResultSummary.Text;
                 if ( resultType != null )
                 {
                     benevolenceResultInfo.ResultTypeValueId = resultType.Value;
                 }
+
                 benevolenceResultInfo.ResultTypeName = ddlResultType.SelectedItem.Text;
                 benevolenceResultInfo.TempGuid = Guid.NewGuid();
                 benevolenceResultInfoViewStateList.Add( benevolenceResultInfo );
             }
+
             BenevolenceResultsState = benevolenceResultInfoViewStateList;
 
             mdAddResult.Hide();
@@ -358,7 +349,7 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     rockContext.SaveChanges();
-                    
+
                     var personId = this.PageParameter( "PersonId" ).AsIntegerOrNull();
                     var qryParams = new Dictionary<string, string>();
                     if ( personId.HasValue )
@@ -382,7 +373,7 @@ namespace RockWeb.Blocks.Finance
             var qryParams = new Dictionary<string, string>();
             if ( personId.HasValue )
             {
-                qryParams.Add("PersonId", personId.ToString());
+                qryParams.Add( "PersonId", personId.ToString() );
             }
 
             NavigateToParentPage( qryParams );
@@ -484,11 +475,11 @@ namespace RockWeb.Blocks.Finance
             {
                 benevolenceRequest = new BenevolenceRequest { Id = 0 };
                 benevolenceRequest.RequestDateTime = RockDateTime.Now;
-                var personId  = this.PageParameter("PersonId").AsIntegerOrNull();
-                if (personId.HasValue)
+                var personId = this.PageParameter( "PersonId" ).AsIntegerOrNull();
+                if ( personId.HasValue )
                 {
-                    var person = new PersonService(rockContext).Get(personId.Value);
-                    if (person != null)
+                    var person = new PersonService( rockContext ).Get( personId.Value );
+                    if ( person != null )
                     {
                         benevolenceRequest.RequestedByPersonAliasId = person.PrimaryAliasId;
                         benevolenceRequest.RequestedByPersonAlias = person.PrimaryAlias;
@@ -518,14 +509,17 @@ namespace RockWeb.Blocks.Finance
             {
                 pnbHomePhone.Text = benevolenceRequest.HomePhoneNumber;
             }
+
             if ( benevolenceRequest.CellPhoneNumber != null )
             {
                 pnbCellPhone.Text = benevolenceRequest.CellPhoneNumber;
             }
+
             if ( benevolenceRequest.WorkPhoneNumber != null )
             {
                 pnbWorkPhone.Text = benevolenceRequest.WorkPhoneNumber;
             }
+
             lapAddress.SetValue( benevolenceRequest.Location );
 
             LoadDropDowns( benevolenceRequest );
