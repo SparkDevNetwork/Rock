@@ -17,19 +17,18 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Text;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -57,10 +56,7 @@ namespace RockWeb.Blocks.Finance
 
         #endregion
 
-
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -125,8 +121,8 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Start Date", "Start Date", ( drpDate.LowerValue.HasValue ) ? drpDate.LowerValue.Value.ToString( "o" ) : "" );
-            rFilter.SaveUserPreference( "End Date", "End Date", ( drpDate.UpperValue.HasValue ) ? drpDate.UpperValue.Value.ToString( "o" ) : "" );
+            rFilter.SaveUserPreference( "Start Date", "Start Date", drpDate.LowerValue.HasValue ? drpDate.LowerValue.Value.ToString( "o" ) : string.Empty );
+            rFilter.SaveUserPreference( "End Date", "End Date", drpDate.UpperValue.HasValue ? drpDate.UpperValue.Value.ToString( "o" ) : string.Empty );
             rFilter.SaveUserPreference( "First Name", "First Name", tbFirstName.Text );
             rFilter.SaveUserPreference( "Last Name", "Last Name", tbLastName.Text );
             rFilter.SaveUserPreference( "Government ID", "Government ID", tbGovernmentId.Text );
@@ -144,17 +140,20 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The e.</param>
         protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-            int definedValueId = 0;
-
             switch ( e.Key )
             {
                 case "Start Date":
-
-                    e.Value = DateTime.Parse( e.Value ).ToShortDateString();
-                    return;
-
                 case "End Date":
-                    e.Value = DateTime.Parse( e.Value ).ToShortDateString();
+                    var dateTime = e.Value.AsDateTime();
+                    if ( dateTime.HasValue )
+                    {
+                        e.Value = dateTime.Value.ToShortDateString();
+                    }
+                    else
+                    {
+                        e.Value = null;
+                    }
+
                     return;
 
                 case "First Name":
@@ -167,37 +166,30 @@ namespace RockWeb.Blocks.Finance
                     return;
 
                 case "Case Worker":
-                    int personAliasId = 0;
-                    if ( int.TryParse( e.Value, out personAliasId ) )
+                    int? personAliasId = e.Value.AsIntegerOrNull();
+                    if ( personAliasId.HasValue )
                     {
-                        var personAlias = new PersonAliasService( new RockContext() ).Get( personAliasId );
+                        var personAlias = new PersonAliasService( new RockContext() ).Get( personAliasId.Value );
                         if ( personAlias != null )
                         {
                             e.Value = personAlias.Person.FullName;
                         }
                     }
+
                     return;
 
                 case "Result":
-                    if ( int.TryParse( e.Value, out definedValueId ) )
-                    {
-                        var definedValue = DefinedValueCache.Read( definedValueId );
-                        if ( definedValue != null )
-                        {
-                            e.Value = definedValue.Value;
-                        }
-                    }
-                    return;
-
                 case "Status":
-                    if ( int.TryParse( e.Value, out definedValueId ) )
+                    var definedValueId = e.Value.AsIntegerOrNull();
+                    if ( definedValueId.HasValue )
                     {
-                        var definedValue = DefinedValueCache.Read( definedValueId );
+                        var definedValue = DefinedValueCache.Read( definedValueId.Value );
                         if ( definedValue != null )
                         {
                             e.Value = definedValue.Value;
                         }
                     }
+
                     return;
 
                 default:
@@ -223,11 +215,11 @@ namespace RockWeb.Blocks.Finance
                     {
                         if ( benevolenceRequest.RequestedByPersonAlias != null )
                         {
-                            lName.Text = String.Format( "<a href=\"{0}\">{1}</a>", ResolveUrl( string.Format( "~/Person/{0}", benevolenceRequest.RequestedByPersonAlias.PersonId ) ), benevolenceRequest.RequestedByPersonAlias.Person.FullName ?? "" );
+                            lName.Text = string.Format( "<a href=\"{0}\">{1}</a>", ResolveUrl( string.Format( "~/Person/{0}", benevolenceRequest.RequestedByPersonAlias.PersonId ) ), benevolenceRequest.RequestedByPersonAlias.Person.FullName ?? string.Empty );
                         }
                         else
                         {
-                            lName.Text = String.Format( "{0} {1}", benevolenceRequest.FirstName, benevolenceRequest.LastName );
+                            lName.Text = string.Format( "{0} {1}", benevolenceRequest.FirstName, benevolenceRequest.LastName );
                         }
                     }
 
@@ -240,13 +232,14 @@ namespace RockWeb.Blocks.Finance
                         {
                             if ( result.Amount != null )
                             {
-                                stringBuilder.Append( String.Format( "<div class='row'>{0} ({1}{2:0.00})</div>", result.ResultTypeValue, GlobalAttributesCache.Value( "CurrencySymbol" ), result.Amount ) );
+                                stringBuilder.Append( string.Format( "<div class='row'>{0} ({1}{2:0.00})</div>", result.ResultTypeValue, GlobalAttributesCache.Value( "CurrencySymbol" ), result.Amount ) );
                             }
                             else
                             {
-                                stringBuilder.Append( String.Format( "<div class='row'>{0}</div>", result.ResultTypeValue ) );
+                                stringBuilder.Append( string.Format( "<div class='row'>{0}</div>", result.ResultTypeValue ) );
                             }
                         }
+
                         stringBuilder.Append( "</div>" );
                         lResults.Text = stringBuilder.ToString();
                     }
@@ -283,7 +276,7 @@ namespace RockWeb.Blocks.Finance
         protected void gList_AddClick( object sender, EventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
-            qryParams.Add("BenevolenceRequestId", 0.ToString());
+            qryParams.Add( "BenevolenceRequestId", 0.ToString() );
             if ( TargetPerson != null )
             {
                 qryParams.Add( "PersonId", TargetPerson.Id.ToString() );
@@ -389,14 +382,14 @@ namespace RockWeb.Blocks.Finance
             BenevolenceRequestService benevolenceRequestService = new BenevolenceRequestService( rockContext );
             var qry = benevolenceRequestService.Queryable( "BenevolenceResults,RequestedByPersonAlias,RequestedByPersonAlias.Person,CaseWorkerPersonAlias,CaseWorkerPersonAlias.Person" );
 
-            //Filter by Start Date
+            // Filter by Start Date
             DateTime? startDate = drpDate.LowerValue;
             if ( startDate != null )
             {
                 qry = qry.Where( b => b.RequestDateTime >= startDate );
             }
 
-            //Filter by End Date
+            // Filter by End Date
             DateTime? endDate = drpDate.UpperValue;
             if ( endDate != null )
             {
@@ -433,21 +426,21 @@ namespace RockWeb.Blocks.Finance
                 qry = qry.Where( b => b.GovernmentId.StartsWith( governmentId ) );
             }
 
-            //Filter by Case Worker
+            // Filter by Case Worker
             int? caseWorkerPersonAliasId = ddlCaseWorker.SelectedItem.Value.AsIntegerOrNull();
             if ( caseWorkerPersonAliasId != null )
             {
                 qry = qry.Where( b => b.CaseWorkerPersonAliasId == caseWorkerPersonAliasId );
             }
 
-            //Filter by Result
+            // Filter by Result
             int? resultTypeValueId = ddlResult.SelectedItem.Value.AsIntegerOrNull();
             if ( resultTypeValueId != null )
             {
                 qry = qry.Where( b => b.BenevolenceResults.Where( r => r.ResultTypeValueId == resultTypeValueId ).Count() > 0 );
             }
 
-            //Filter by Request Status
+            // Filter by Request Status
             int? requestStatusValueId = ddlStatus.SelectedItem.Value.AsIntegerOrNull();
             if ( requestStatusValueId != null )
             {
@@ -481,7 +474,7 @@ namespace RockWeb.Blocks.Finance
             gList.DataSource = qry.ToList();
             gList.DataBind();
 
-            //Builds the Totals section
+            // Builds the Totals section
             var definedTypeCache = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) );
             Dictionary<string, decimal> resultTotals = new Dictionary<string, decimal>();
             decimal grandTotal = 0;
@@ -499,18 +492,20 @@ namespace RockWeb.Blocks.Finance
                         {
                             resultTotals.Add( result.ResultTypeValue.Value, result.Amount.Value );
                         }
+
                         grandTotal += result.Amount.Value;
                     }
                 }
             }
+
             foreach ( KeyValuePair<string, decimal> keyValuePair in resultTotals )
             {
-                phSummary.Controls.Add( new LiteralControl( String.Format( "<div class='row'><div class='col-xs-8'>{0}: </div><div class='col-xs-4 text-right'>{1}{2:0.00}</div></div>", keyValuePair.Key, GlobalAttributesCache.Value( "CurrencySymbol" ), keyValuePair.Value ) ) );
+                phSummary.Controls.Add( new LiteralControl( string.Format( "<div class='row'><div class='col-xs-8'>{0}: </div><div class='col-xs-4 text-right'>{1}{2:0.00}</div></div>", keyValuePair.Key, GlobalAttributesCache.Value( "CurrencySymbol" ), keyValuePair.Value ) ) );
             }
-            phSummary.Controls.Add( new LiteralControl( String.Format( "<div class='row'><div class='col-xs-8'><b>Total: </div><div class='col-xs-4 text-right'>{0}{1:0.00}</b></div></div>", GlobalAttributesCache.Value( "CurrencySymbol" ), grandTotal ) ) );
+
+            phSummary.Controls.Add( new LiteralControl( string.Format( "<div class='row'><div class='col-xs-8'><b>Total: </div><div class='col-xs-4 text-right'>{0}{1:0.00}</b></div></div>", GlobalAttributesCache.Value( "CurrencySymbol" ), grandTotal ) ) );
         }
 
         #endregion
-
     }
 }
