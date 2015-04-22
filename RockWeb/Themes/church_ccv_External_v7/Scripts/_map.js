@@ -70,13 +70,32 @@
       this.bounds = new google.maps.LatLngBounds()
       this.zoom = this.zoom || 12
       this.useZoom = this.useZoom || false
-      this.mapOptions = this.mapOptions || {
-        mapTypeId: 'CCV',
-        disableDefaultUI: true
-      }
+      this.useScrollZoom = this.useScrollZoom || true
     }
     CCV.baseMap.prototype = {
       draw: function () {
+        var options = {}
+        if (this.useScrollZoom) {
+          options = {
+            mapTypeId: 'CCV',
+            disableDefaultUI: true
+          }
+        }
+        else {
+          options = {
+            mapTypeId: 'CCV',
+            scrollwheel: false,
+            zoomControl: true,
+            zoomControlOptions: {
+              style: google.maps.ZoomControlStyle.SMALL,
+              position: google.maps.ControlPosition.TOP_RIGHT
+            },
+            streetViewControl: false,
+            mapTypeControl: false
+          }
+        }
+        this.mapOptions = this.mapOptions || options
+
         if (this.holder)
           this.map = new google.maps.Map(this.holder, this.mapOptions)
         else

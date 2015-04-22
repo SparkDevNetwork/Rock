@@ -10,9 +10,16 @@
       <div class="packagesummary-image card-header" id="groupMap" style="height: 200px;">
       </div>
       <div class="card-footer">
-        {% if AllowedActions.Edit == true %}
-        <a class="margin-t-md btn btn-default btn-xs pull-right" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}"><i class="fa fa-pencil"></i> Edit</a>
-        {% endif %}
+        <div class="margin-t-md pull-right">
+          {% if LinkedPages.CommunicationPage != '' and AllowedActions.Edit == true %}
+            <a href="#" onclick="{{ '' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
+              <i class="fa fa-envelope-o"></i> Email Roster
+            </a>
+          {% endif %}
+          {% if AllowedActions.Edit == true %}
+            <a class="btn btn-default btn-xs" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}"><i class="fa fa-pencil"></i> Edit</a>
+          {% endif %}
+        </div>
         <h1 class="margin-t-sm">{{ Group.Name }}</h1>
         <div class="row">
           <div class="col-md-5">
@@ -298,11 +305,6 @@
           <i class="fa fa-plus"></i> Add Member
         </a>
       {% endif %}
-      {% if LinkedPages.CommunicationPage != '' and AllowedActions.Edit == true %}
-        <a href="#" onclick="{{ '' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
-          <i class="fa fa-envelope-o"></i> Email Roster
-        </a>
-      {% endif %}
     </div>
     </p>
   {% endif %}
@@ -311,14 +313,20 @@
   <script src="/Themes/church_ccv_External_v7/Scripts/_map.js"></script>
 
   <script>
-    var mapPoint = [{
-      title: "{{ Group.Name }}",
-      lat: {{ groupgeo[0] }},
-      lng: {{ groupgeo[1] }}
-    }]
-    var groupMap = new CCV.baseMap(document.getElementById('groupMap'), mapPoint)
-    // groupMap.zoom = 13
-    groupMap.draw()
+    var groupMap;
+    Sys.Application.add_load(function(){
+      var mapHolder = document.getElementById('groupMap')
+      if (mapHolder) {
+        var mapPoint = [{
+          title: "{{ Group.Name }}",
+          lat: {{ groupgeo[0] }},
+          lng: {{ groupgeo[1] }}
+        }]
+        groupMap = new CCV.baseMap(mapHolder, mapPoint)
+        groupMap.useScrollZoom = false
+        groupMap.draw()
+      }
+    })
   </script>
 
 {% else %}
