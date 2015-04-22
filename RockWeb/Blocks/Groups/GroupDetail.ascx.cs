@@ -633,7 +633,7 @@ namespace RockWeb.Blocks.Groups
                 else
                 {
                     // Cancelling on Add.  Return to Grid
-                    NavigateToParentPage();
+                    NavigateToPage( RockPage.Guid, null );
                 }
             }
             else
@@ -1068,6 +1068,19 @@ namespace RockWeb.Blocks.Groups
                 // Save value to viewstate for use later when binding location grid
                 AllowMultipleLocations = groupType != null && groupType.AllowMultipleLocations;
 
+                // show/hide group sync panel based on permissions from the group type
+                if ( group.GroupTypeId != 0 )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        GroupType selectedGroupType = new GroupTypeService( rockContext ).Get( group.GroupTypeId );
+                        if ( selectedGroupType != null )
+                        {
+                            wpGroupSync.Visible = selectedGroupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                        }
+                    }
+                }
+                
                 if ( groupType != null && groupType.LocationSelectionMode != GroupLocationPickerMode.None )
                 {
                     wpMeetingDetails.Visible = true;

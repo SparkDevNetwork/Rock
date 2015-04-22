@@ -310,6 +310,7 @@ namespace Rock.Data
                 }
                 else
                 {
+                    TriggerWorkflows( item.Entity, WorkflowTriggerType.ImmediatePostSave, personAlias );
                     TriggerWorkflows( item.Entity, WorkflowTriggerType.PostSave, personAlias );
                 }
             }
@@ -346,7 +347,7 @@ namespace Rock.Data
 
                     if ( match )
                     {
-                        if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete )
+                        if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete || triggerType == WorkflowTriggerType.ImmediatePostSave )
                         {
                             var workflowType = workflowTypeService.Get( trigger.WorkflowTypeId );
 
