@@ -47,6 +47,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FieldType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialAccount.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialBatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialGateway.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialPersonBankAccount.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialPersonSavedAccount.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialPledge.cs" />
@@ -69,6 +70,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Layout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Location.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\LoginParameters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MergeTemplate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Metaphone.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Metric.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricCategory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricValue.cs" />
