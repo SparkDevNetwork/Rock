@@ -402,6 +402,7 @@ namespace Rock.Model
         /// The primary alias.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual PersonAlias PrimaryAlias
         {
             get
