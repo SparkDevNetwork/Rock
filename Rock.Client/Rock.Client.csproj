@@ -71,6 +71,7 @@
     <Compile Include="CodeGenerated\FieldType.cs" />
     <Compile Include="CodeGenerated\FinancialAccount.cs" />
     <Compile Include="CodeGenerated\FinancialBatch.cs" />
+    <Compile Include="CodeGenerated\FinancialGateway.cs" />
     <Compile Include="CodeGenerated\FinancialPersonBankAccount.cs" />
     <Compile Include="CodeGenerated\FinancialPersonSavedAccount.cs" />
     <Compile Include="CodeGenerated\FinancialPledge.cs" />
@@ -93,6 +94,7 @@
     <Compile Include="CodeGenerated\Layout.cs" />
     <Compile Include="CodeGenerated\Location.cs" />
     <Compile Include="CodeGenerated\LoginParameters.cs" />
+    <Compile Include="CodeGenerated\MergeTemplate.cs" />
     <Compile Include="CodeGenerated\Metaphone.cs" />
     <Compile Include="CodeGenerated\Metric.cs" />
     <Compile Include="CodeGenerated\MetricCategory.cs" />
