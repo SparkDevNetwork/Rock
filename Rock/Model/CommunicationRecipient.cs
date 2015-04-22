@@ -361,7 +361,12 @@ namespace Rock.Model
         /// <summary>
         /// Communication was sent and opened (viewed) by the recipient
         /// </summary>
-        Opened = 4
+        Opened = 4,
+
+        /// <summary>
+        /// Temporary status used while sending ( to prevent transaction and job sending same record )
+        /// </summary>
+        Sending = 5
     }
 }
 
