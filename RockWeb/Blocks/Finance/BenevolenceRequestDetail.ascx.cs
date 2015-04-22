@@ -358,7 +358,15 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     rockContext.SaveChanges();
-                    NavigateToParentPage();
+                    
+                    var personId = this.PageParameter( "PersonId" ).AsIntegerOrNull();
+                    var qryParams = new Dictionary<string, string>();
+                    if ( personId.HasValue )
+                    {
+                        qryParams.Add( "PersonId", personId.ToString() );
+                    }
+
+                    NavigateToParentPage( qryParams );
                 }
             }
         }
@@ -370,7 +378,14 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            var personId = this.PageParameter( "PersonId" ).AsIntegerOrNull();
+            var qryParams = new Dictionary<string, string>();
+            if ( personId.HasValue )
+            {
+                qryParams.Add("PersonId", personId.ToString());
+            }
+
+            NavigateToParentPage( qryParams );
         }
 
         /// <summary>
@@ -458,7 +473,8 @@ namespace RockWeb.Blocks.Finance
         public void ShowDetail( int benevolenceRequestId )
         {
             BenevolenceRequest benevolenceRequest = null;
-            BenevolenceRequestService benevolenceRequestService = new BenevolenceRequestService( new RockContext() );
+            var rockContext = new RockContext();
+            BenevolenceRequestService benevolenceRequestService = new BenevolenceRequestService( rockContext );
             if ( !benevolenceRequestId.Equals( 0 ) )
             {
                 benevolenceRequest = benevolenceRequestService.Get( benevolenceRequestId );
@@ -468,6 +484,16 @@ namespace RockWeb.Blocks.Finance
             {
                 benevolenceRequest = new BenevolenceRequest { Id = 0 };
                 benevolenceRequest.RequestDateTime = RockDateTime.Now;
+                var personId  = this.PageParameter("PersonId").AsIntegerOrNull();
+                if (personId.HasValue)
+                {
+                    var person = new PersonService(rockContext).Get(personId.Value);
+                    if (person != null)
+                    {
+                        benevolenceRequest.RequestedByPersonAliasId = person.PrimaryAliasId;
+                        benevolenceRequest.RequestedByPersonAlias = person.PrimaryAlias;
+                    }
+                }
             }
 
             dtbFirstName.Text = benevolenceRequest.FirstName;
@@ -481,6 +507,7 @@ namespace RockWeb.Blocks.Finance
             if ( benevolenceRequest.RequestedByPersonAlias != null )
             {
                 ppPerson.SetValue( benevolenceRequest.RequestedByPersonAlias.Person );
+                ppPerson_SelectPerson( null, null );
             }
             else
             {

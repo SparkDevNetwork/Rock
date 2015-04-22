@@ -29,6 +29,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -38,10 +39,25 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Benevolence Request List" )]
     [Category( "Finance" )]
     [Description( "Block used to list Benevolence Requests." )]
+
+    [ContextAware( typeof( Person ) )]
     [LinkedPage( "Detail Page" )]
     [GroupField( "Case Worker Group", "The group to draw case workers from", true, "26E7148C-2059-4F45-BCFE-32230A12F0DC" )]
-    public partial class BenevolenceRequestList : Rock.Web.UI.RockBlock
+    public partial class BenevolenceRequestList : RockBlock
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets the target person
+        /// </summary>
+        /// <value>
+        /// The target person.
+        /// </value>
+        protected Person TargetPerson { get; private set; }
+
+        #endregion
+
+
         #region Base Control Methods
 
         //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
@@ -66,6 +82,8 @@ namespace RockWeb.Blocks.Finance
             gList.Actions.ShowAdd = true;
             gList.IsDeleteEnabled = true;
 
+            // in case this is used as a Person Block, set the TargetPerson 
+            TargetPerson = ContextEntity<Person>();
         }
 
         /// <summary>
@@ -264,7 +282,14 @@ namespace RockWeb.Blocks.Finance
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gList_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "BenevolenceRequestId", 0 );
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add("BenevolenceRequestId", 0.ToString());
+            if ( TargetPerson != null )
+            {
+                qryParams.Add( "PersonId", TargetPerson.Id.ToString() );
+            }
+
+            NavigateToLinkedPage( "DetailPage", qryParams );
         }
 
         /// <summary>
@@ -325,6 +350,10 @@ namespace RockWeb.Blocks.Finance
             drpDate.LowerValue = rFilter.GetUserPreference( "Start Date" ).AsDateTime();
             drpDate.UpperValue = rFilter.GetUserPreference( "End Date" ).AsDateTime();
 
+            // hide the First/Last name filter if this is being used as a Person block
+            tbFirstName.Visible = TargetPerson == null;
+            tbLastName.Visible = TargetPerson == null;
+
             tbFirstName.Text = rFilter.GetUserPreference( "First Name" );
             tbLastName.Text = rFilter.GetUserPreference( "Last Name" );
             tbLastName.Text = rFilter.GetUserPreference( "Government ID" );
@@ -358,7 +387,7 @@ namespace RockWeb.Blocks.Finance
             gList.Visible = true;
             RockContext rockContext = new RockContext();
             BenevolenceRequestService benevolenceRequestService = new BenevolenceRequestService( rockContext );
-            var qry = benevolenceRequestService.Queryable( "BenevolenceResults,BenevolenceResults.ResultTypeValue,RequestedByPersonAlias,RequestedByPersonAlias.Person,CaseWorkerPersonAlias,CaseWorkerPersonAlias.Person" );
+            var qry = benevolenceRequestService.Queryable( "BenevolenceResults,RequestedByPersonAlias,RequestedByPersonAlias.Person,CaseWorkerPersonAlias,CaseWorkerPersonAlias.Person" );
 
             //Filter by Start Date
             DateTime? startDate = drpDate.LowerValue;
@@ -374,18 +403,27 @@ namespace RockWeb.Blocks.Finance
                 qry = qry.Where( b => b.RequestDateTime <= endDate );
             }
 
-            // Filter by First Name
-            string firstName = tbFirstName.Text;
-            if ( !string.IsNullOrWhiteSpace( firstName ) )
+            if ( TargetPerson != null )
             {
-                qry = qry.Where( b => b.FirstName.StartsWith( firstName ) );
+                // show benevolence request for the target person and also for their family members
+                var qryFamilyMembers = TargetPerson.GetFamilyMembers( true, rockContext );
+                qry = qry.Where( a => a.RequestedByPersonAliasId.HasValue && qryFamilyMembers.Any( b => b.PersonId == a.RequestedByPersonAlias.PersonId ) );
             }
-
-            // Filter by Last Name
-            string lastName = tbLastName.Text;
-            if ( !string.IsNullOrWhiteSpace( lastName ) )
+            else
             {
-                qry = qry.Where( b => b.LastName.StartsWith( lastName ) );
+                // Filter by First Name 
+                string firstName = tbFirstName.Text;
+                if ( !string.IsNullOrWhiteSpace( firstName ) )
+                {
+                    qry = qry.Where( b => b.FirstName.StartsWith( firstName ) );
+                }
+
+                // Filter by Last Name 
+                string lastName = tbLastName.Text;
+                if ( !string.IsNullOrWhiteSpace( lastName ) )
+                {
+                    qry = qry.Where( b => b.LastName.StartsWith( lastName ) );
+                }
             }
 
             // Filter by Government Id
@@ -417,7 +455,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             SortProperty sortProperty = gList.SortProperty;
-            if (sortProperty != null)
+            if ( sortProperty != null )
             {
                 if ( sortProperty.Property == "TotalAmount" )
                 {
@@ -473,6 +511,6 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
-        
-}
+
+    }
 }
