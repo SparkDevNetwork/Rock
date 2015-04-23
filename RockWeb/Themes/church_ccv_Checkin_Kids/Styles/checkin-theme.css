@@ -1,7 +1,7 @@
 /*
-     
-     Rock Park Check-in Theme
-     Crafted by: Spark Development Network
+
+   Rock Park Check-in Theme
+   Crafted by: Spark Development Network
 
  */
 /*!
@@ -4602,8 +4602,8 @@ fieldset[disabled] .btn-default.active {
 }
 .btn-primary {
   color: #ffffff;
-  background-color: #e3151a;
-  border-color: #b00a0e;
+  background-color: #ff5000;
+  border-color: #cc4000;
 }
 .btn-primary:hover,
 .btn-primary:focus,
@@ -4611,8 +4611,8 @@ fieldset[disabled] .btn-default.active {
 .btn-primary.active,
 .open > .dropdown-toggle.btn-primary {
   color: #ffffff;
-  background-color: #b41115;
-  border-color: #760709;
+  background-color: #cc4000;
+  border-color: #8f2d00;
 }
 .btn-primary:active,
 .btn-primary.active,
@@ -4634,11 +4634,11 @@ fieldset[disabled] .btn-primary:active,
 .btn-primary.disabled.active,
 .btn-primary[disabled].active,
 fieldset[disabled] .btn-primary.active {
-  background-color: #e3151a;
-  border-color: #b00a0e;
+  background-color: #ff5000;
+  border-color: #cc4000;
 }
 .btn-primary .badge {
-  color: #e3151a;
+  color: #ff5000;
   background-color: #ffffff;
 }
 .btn-success {
@@ -8015,18 +8015,12 @@ h1 {
   opacity: 0.33;
 }
 body {
-  background: #85b11c url('../Assets/Images/background.jpg') top right no-repeat fixed;
+  background-color: #999999;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
   background-size: cover;
   overflow-x: hidden;
-}
-@media all and (-webkit-min-device-pixel-ratio: 1.5) {
-  body {
-    background-image: url('../Assets/Images/background@2x.jpg');
-    background-size: 1348px 1024px;
-  }
 }
 .checkin-header {
   margin-top: 45px;
@@ -8102,9 +8096,9 @@ body {
   font-size: 20px;
 }
 .btn-checkbox.active {
-  background-color: #e3151a;
+  background-color: #ff5000;
   color: #ffffff;
-  border-color: #b00a0e;
+  border-color: #cc4000;
 }
 .btn-checkbox i {
   font-size: 92px;
@@ -8137,10 +8131,10 @@ body {
   z-index: 1060;
 }
 .bootbox .modal-content {
-  background-color: #85b11c;
+  background-color: #999999;
 }
 .bootbox .modal-footer {
-  border-top-color: #b8e350;
+  border-top-color: #cccccc;
 }
 .checkin-search-body {
   margin-right: auto !important;
@@ -8504,12 +8498,12 @@ Copyright (c) 2012 Dan Eden*/
 .modal-content.rock-modal,
 .rock-modal .modal-content {
   border: 0;
-  background-color: #85b11c;
+  background-color: #999999;
   color: #ffffff;
 }
 .modal-content.rock-modal .modal-header,
 .rock-modal .modal-content .modal-header {
-  background-color: #85b11c;
+  background-color: #999999;
   color: #ffffff;
   padding: 5px 15px;
   min-height: 34px;
@@ -8583,7 +8577,7 @@ Copyright (c) 2012 Dan Eden*/
 .rock-modal .modal-content .modal-footer {
   padding: 8px;
   margin-top: 10px;
-  background-color: #85b11c;
+  background-color: #999999;
   color: #ffffff;
   border-radius: 0 0 4px 4px;
 }
@@ -8629,13 +8623,13 @@ Copyright (c) 2012 Dan Eden*/
 
 */
 .accent-color {
-  background-color: #e3151a;
+  background-color: #ff5000;
   color: #ffffff;
 }
 .accent-color-bordered {
-  background-color: #e3151a;
+  background-color: #ff5000;
   color: #ffffff;
-  border: 1px solid #b41115;
+  border: 1px solid #cc4000;
 }
 .accent-light-color {
   background-color: #7f7e7e;
@@ -8656,13 +8650,13 @@ Copyright (c) 2012 Dan Eden*/
   border: 1px solid #656565;
 }
 .accent-bold-color {
-  background-color: #e3151a;
+  background-color: #ff5000;
   color: #ffffff;
 }
 .accent-bold-color-bordered {
-  background-color: #e3151a;
+  background-color: #ff5000;
   color: #ffffff;
-  border: 1px solid #b41115;
+  border: 1px solid #cc4000;
 }
 .bg-color {
   background-color: #ffffff;
@@ -8931,4 +8925,39 @@ Copyright (c) 2012 Dan Eden*/
 .checkin-count h3,
 .checkin-count li {
   color: #4c4c4b;
+}
+.bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: center center no-repeat;
+  background-size: cover;
+  opacity: 0;
+  z-index: -1;
+  -webkit-transition: opacity 3s;
+  -o-transition: opacity 3s;
+  transition: opacity 3s;
+}
+.bg.in {
+  opacity: 1;
+}
+.bg:before {
+  content: ' ';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(70, 70, 70, 0.3);
+}
+.logo {
+  background: url('../Assets/Images/logo.svg') bottom no-repeat;
+  background-size: contain;
+  height: 183px;
+  width: 240px;
+  position: absolute;
+  bottom: 0;
+  margin: 5%;
 }

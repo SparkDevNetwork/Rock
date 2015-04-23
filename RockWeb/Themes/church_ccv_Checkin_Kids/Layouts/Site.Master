@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <meta charset="utf-8">
     <title></title>
-    
+
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>" ></script>
     <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js", true) %>"></script>
 
@@ -21,6 +21,9 @@
 
     <script src="<%# ResolveRockUrl("~/Scripts/fastclick.js", true) %>" ></script>
 
+    <!-- @todo use minified version in production -->
+    <script src="<%# ResolveRockUrl("~~/Scripts/main.js", true) %>" ></script>
+
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
     <!-- Icons -->
@@ -33,20 +36,25 @@
 </head>
 <body>
     <form id="form1" runat="server">
-            
+
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
-            
+
     </form>
+
+    <div class="bg bg-2 js-bg-2"></div>
+    <div class="bg bg-1 js-bg-1"></div>
+
+    <div class="logo hide"></div>
 
     <script>
         window.addEventListener('load', function () {
             new FastClick(document.body);
         }, false);
 
-        // add quick fade-in effect to the page
-        $(document).ready(function () {
-            $("body").rockFadeIn();
-        });
+        // // add quick fade-in effect to the page
+        // $(document).ready(function () {
+        //     $("body").rockFadeIn();
+        // });
     </script>
 </body>
 </html>
