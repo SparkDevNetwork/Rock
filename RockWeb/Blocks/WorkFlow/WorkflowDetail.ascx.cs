@@ -417,7 +417,9 @@ namespace RockWeb.Blocks.WorkFlow
 
                 }
 
-                Workflow = service.Get( Workflow.Id );
+                Workflow = service
+                    .Queryable("WorkflowType,Activities.ActivityType,Activities.Actions.ActionType")
+                    .FirstOrDefault( w => w.Id == Workflow.Id );
 
                 var errorMessages = new List<string>();
                 service.Process( Workflow, out errorMessages );
