@@ -742,7 +742,16 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                qry = qry.OrderBy( t => t.Id );
+                // Default sort by Id if the transations are seen via the batch,
+                // otherwise sort by descending date time.
+                if ( ContextTypesRequired.Any( e => e.Id == batchEntityTypeId ) )
+                {
+                    qry = qry.OrderBy( t => t.Id );
+                }
+                else
+                {
+                    qry = qry.OrderByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.Id );
+                }
             }
 
             // Row Limit
