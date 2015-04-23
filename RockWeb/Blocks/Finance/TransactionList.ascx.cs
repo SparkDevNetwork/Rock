@@ -742,7 +742,7 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                qry = qry.OrderBy( t => t.Id );
+                qry = qry.OrderBy( t => t.TransactionDateTime );
             }
 
             // Row Limit
