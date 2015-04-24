@@ -1,9 +1,6 @@
 $(document).ready(function(){
-  if ($('.block-instance.welcome').length)
-    $('.logo').removeClass('hide')
-})
-$(window).load(function(){
   if ($('.block-instance.welcome').length) {
+    $('.logo').removeClass('hide')
     $one = $('.js-bg-1')
     $two = $('.js-bg-2')
     switchBg()
@@ -15,7 +12,7 @@ var $one,
     currentBg = 0,
     delay = 3000,
     bgs = 8,
-    lastBg = 0
+    lastBg = 5
 
 function randomIntFromInterval(min,max) {
   return Math.floor(Math.random()*(max-min+1)+min)
@@ -55,11 +52,11 @@ function switchBg() {
       currentBg = 1
       break;
     default:
-      $one.css('background-image', 'url('+randBg()+')').ready(function(){
+      // $one.css('background-image', 'url('+randBg()+')').ready(function(){
         $one.addClass('in')
         setTimeout(function(){$two.addClass('in')}, delay)
         setTimeout(switchBg, delay*1.5)
-      })
+      // })
       currentBg = 1
   }
 }

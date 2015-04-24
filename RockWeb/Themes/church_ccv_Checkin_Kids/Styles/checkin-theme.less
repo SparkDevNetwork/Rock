@@ -25,7 +25,9 @@
 @font-weight-bold:      700;
 @font-weight-semibold:  600;
 
-@bg-color:      #999;
+@kids-orange: #ff5000;
+
+@bg-color:      @kids-orange;
 @text-color:    #fff;
 
 @modal-body-bg: @bg-color;
@@ -42,15 +44,15 @@
 @subheader-font-weight:     @font-weight-light;
 
 // Button Styles
-@btn-default-bg: #7f7e7e;
+@btn-default-bg: darken(@kids-orange, 40%);
 @btn-default-color:     #fff;
-@btn-default-border:   #9d9c9c;
+@btn-default-border:   @btn-default-bg;
 @checkin-button-text-weight:    @font-weight-bold;
 @checkin-button-alttext-weight: @font-weight-light;
 
-@btn-primary-color:    #fff;
-@btn-primary-border:   darken(#ff5000, 10%);
-@btn-primary-bg:    #ff5000;
+@btn-primary-color:    @kids-orange;
+@btn-primary-border:   darken(@btn-primary-bg, 10%);
+@btn-primary-bg:    #fff;
 
 @btn-disabled-color: @btn-primary-border;
 @btn-disabled-bg: darken(@btn-primary-bg, 20%);
@@ -142,6 +144,8 @@
 // Custom Overrides
 // --------------------------------------------------
 
+@border-radius-base: .5em;
+
 .checkin-count h3,
 .checkin-count li {
   color: #4c4c4b;
@@ -153,7 +157,7 @@
   left: 0;
   bottom: 0;
   right: 0;
-  background: center center no-repeat;
+  background: url('../Assets/Images/5.jpg') center center no-repeat;
   background-size: cover;
   opacity: 0;
   z-index: -1;
@@ -170,7 +174,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(70, 70, 70, 0.3);
+    background-color: rgba(70, 70, 70, 0.4);
   }
 }
 
@@ -184,3 +188,22 @@
   margin: 5%;
 }
 
+.welcome .checkin-start a {
+  padding-left: 0;
+  background: @btn-default-bg;
+  color: #fff;
+  border: none;
+  overflow: hidden;
+  position: relative;
+  padding-left: 120px;
+  &:before {
+    .fa-icon();
+    content: '\f046';
+    background: @kids-orange;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    padding: 22.5px 25px 22.5px 30px;
+  }
+}

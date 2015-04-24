@@ -51,10 +51,10 @@
             new FastClick(document.body);
         }, false);
 
-        // // add quick fade-in effect to the page
-        // $(document).ready(function () {
-        //     $("body").rockFadeIn();
-        // });
+        // add quick fade-in effect to the page
+        $(document).ready(function () {
+            $("body").rockFadeIn();
+        });
     </script>
 </body>
 </html>
