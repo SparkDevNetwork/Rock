@@ -96,7 +96,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/PersonBadges/GeofencedGroups/{personId}/{groupTypeGuid}" )]
-        public string GetGeofencedGroups( int personId, Guid groupTypeGuid )
+        public List<GroupAndLeaderInfo> GetGeofencedGroups( int personId, Guid groupTypeGuid )
         {
             var rockContext = (Rock.Data.RockContext)Service.Context;
             var groupMemberService = new GroupMemberService( rockContext );
@@ -118,20 +118,32 @@ namespace Rock.Rest.Controllers
                 .ToList();
 
             // Get the groups that have a location that intersects with any of the family's locations
-            var groupNames = groupService
+            var result = new List<GroupAndLeaderInfo>();
+            foreach( var group in groupService
                 .Queryable().AsNoTracking()
-                .Where( g => 
+                .Where( g =>
                     g.GroupType.Guid.Equals( groupTypeGuid ) &&
                     g.IsActive &&
                     g.GroupLocations.Any( l =>
                         l.Location.GeoFence != null &&
                         familyGeoPoints.Any( p => p.Intersects( l.Location.GeoFence ) )
-                    ))
-                .OrderBy( g => g.Name )
-                .Select( g => g.Name )
-                .ToList();
+                    ) )
+                .OrderBy( g => g.Name ) )
+            {
+                var info = new GroupAndLeaderInfo();
+                info.GroupName = group.Name;
+                info.LeaderNames = groupMemberService
+                    .Queryable().AsNoTracking()
+                    .Where( m => 
+                        m.GroupId == group.Id &&
+                        m.GroupRole.IsLeader )
+                    .Select( m => m.Person.NickName + " " + m.Person.LastName )
+                    .ToList()
+                    .AsDelimited(", ");
+                result.Add(info);
+            }
 
-            return groupNames.AsDelimited( " | ");
+            return result;
         }
 
         /// <summary>
@@ -312,6 +324,28 @@ namespace Rock.Rest.Controllers
             /// The group member role name.
             /// </value>
             public string RoleName { get; set; }
+        }
+
+        /// <summary>
+        /// Group and Leader name info
+        /// </summary>
+        public class GroupAndLeaderInfo
+        {
+            /// <summary>
+            /// Gets or sets the name of the group.
+            /// </summary>
+            /// <value>
+            /// The name of the group.
+            /// </value>
+            public string GroupName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the leader names.
+            /// </summary>
+            /// <value>
+            /// The leader names.
+            /// </value>
+            public string LeaderNames { get; set; }
         }
 
         /// <summary>
