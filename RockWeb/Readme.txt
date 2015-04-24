@@ -1,5 +1,6 @@
 Rock McKinley 3.2
 
++ Fixed Facebook login to match with existing person correctly (Fixes #983).
 + Fixed exception that would occur when trying to activate a new activity on an existing workflow (Fixes #978).
 + Updated the Checkin Schedule to have it's 'StartTime' property available to Lava (Fixes #981).
 + Updated the default ordering of transactions in Contributions tab of person profile be datetime of the transaction (Fixes #980).
