@@ -461,7 +461,12 @@ namespace RockWeb.Blocks.Examples
 
             } );
 
-            // Clear the static object that contains all auth rules (so that it will be refreshed)
+            // Clear the static objects that contains all security roles and auth rules (so that it will be refreshed)
+            foreach ( var role in Rock.Security.Role.AllRoles() )
+            {
+                Rock.Security.Role.Flush(role.Id);
+            }
+
             Rock.Security.Authorization.Flush();
 
             if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
