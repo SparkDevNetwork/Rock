@@ -19,11 +19,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -127,7 +127,23 @@ namespace RockWeb.Blocks.Cms
 
             bool isExpanded = expandedPageIdList.Contains( page.Id );
 
-            sb.AppendFormat( "<li data-expanded='{4}' data-model='Page' data-id='p{0}'><span><i class=\"fa fa-file-o\">&nbsp;</i> <a href='{1}'>{2}</a></span>{3}", page.Id, new PageReference( page.Id ).BuildUrl(), isSelected ? "<strong>" + page.InternalName + "</strong>" : page.InternalName, Environment.NewLine, isExpanded.ToString().ToLower() );
+            var authRoles = Authorization.AuthRules( EntityTypeCache.Read<Rock.Model.Page>().Id, page.Id, Authorization.VIEW );
+            string authHtml = string.Empty;
+            if (authRoles.Any())
+            {
+                authHtml += string.Format(
+                    "&nbsp<i class=\"fa fa-lock\">&nbsp;</i>{0}",
+                    authRoles.Select( a => "<span class=\"badge badge-" + (a.AllowOrDeny == "A" ? "success" : "danger")  + "\">" + a.DisplayName + "</span>"  ).ToList().AsDelimited( " " ) );
+            }
+
+            sb.AppendFormat(
+                "<li data-expanded='{4}' data-model='Page' data-id='p{0}'><span><i class=\"fa fa-file-o\">&nbsp;</i> <a href='{1}'>{2}</a><span class='js-auth-roles hidden'>{5}</span></span>{3}", 
+                page.Id, 
+                new PageReference( page.Id ).BuildUrl(), 
+                isSelected ? "<strong>" + page.InternalName + "</strong>" : page.InternalName, 
+                Environment.NewLine, 
+                isExpanded.ToString().ToLower(),
+                authHtml);
 
             if ( page.Pages.Any() || page.Blocks.Any() )
             {

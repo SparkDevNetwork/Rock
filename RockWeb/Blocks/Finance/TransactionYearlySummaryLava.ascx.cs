@@ -33,7 +33,7 @@ namespace RockWeb.Blocks.Finance
 {
     [DisplayName( "Transaction Yearly Summary Lava" )]
     [Category( "Finance" )]
-    [Description( "Presents a summary financial transactions broke out by year and account using lava" )]
+    [Description( "Presents a summary of financial transactions broke out by year and account using lava" )]
 
     [ContextAware( typeof( Person ) )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the transaction summary.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/TransactionYearlySummary.lava' %}", "", 1 )]
