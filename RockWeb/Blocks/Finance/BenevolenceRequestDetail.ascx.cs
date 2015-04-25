@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Benevolence Request Detail" )]
     [Category( "Finance" )]
     [Description( "Block for users to create, edit, and view benevolence requests." )]
-    [GroupField( "Case Worker Group", "The group to draw case workers from", true, "26E7148C-2059-4F45-BCFE-32230A12F0DC" )]
+    [SecurityRoleField( "Case Worker Role", "The security role to draw case workers from", true, Rock.SystemGuid.Group.GROUP_BENEVOLENCE )]
     public partial class BenevolenceRequestDetail : Rock.Web.UI.RockBlock
     {
         #region ViewState and Dynamic Controls
@@ -545,8 +545,18 @@ namespace RockWeb.Blocks.Finance
             {
                 ddlConnectionStatus.SelectedValue = benevolenceRequest.ConnectionStatusValueId.ToString();
             }
+            
+            string caseWorkerPersonAliasValue = benevolenceRequest.CaseWorkerPersonAliasId.ToString();
+            if (!string.IsNullOrWhiteSpace(caseWorkerPersonAliasValue))
+            {
+                if (!ddlCaseWorker.Items.OfType<ListItem>().Any(a => a.Value == caseWorkerPersonAliasValue))
+                {
+                    // if the current case worker is no longer part of the Case Worker Role, add them to the list
+                    ddlCaseWorker.Items.Add( new ListItem( benevolenceRequest.CaseWorkerPersonAlias.Person.FullName, caseWorkerPersonAliasValue ) );
+                }
+            }
 
-            ddlCaseWorker.SelectedValue = benevolenceRequest.CaseWorkerPersonAliasId.ToString();
+            ddlCaseWorker.SelectedValue = caseWorkerPersonAliasValue;
 
             BindGridFromViewState();
         }
@@ -568,7 +578,7 @@ namespace RockWeb.Blocks.Finance
         {
             ddlRequestStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS ) ), false );
             ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
-            Guid groupGuid = GetAttributeValue( "CaseWorkerGroup" ).AsGuid();
+            Guid groupGuid = GetAttributeValue( "CaseWorkerRole" ).AsGuid();
             var listData = new GroupMemberService( new RockContext() ).Queryable( "Person, Group" )
                 .Where( gm => gm.Group.Guid == groupGuid )
                 .Select( gm => gm.Person )

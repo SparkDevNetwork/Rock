@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Finance
 
     [ContextAware( typeof( Person ) )]
     [LinkedPage( "Detail Page" )]
-    [GroupField( "Case Worker Group", "The group to draw case workers from", true, "26E7148C-2059-4F45-BCFE-32230A12F0DC" )]
+    [SecurityRoleField( "Case Worker Role", "The security role to draw case workers from", true, Rock.SystemGuid.Group.GROUP_BENEVOLENCE )]
     public partial class BenevolenceRequestList : RockBlock
     {
         #region Properties
@@ -351,7 +351,7 @@ namespace RockWeb.Blocks.Finance
             tbLastName.Text = rFilter.GetUserPreference( "Last Name" );
             tbLastName.Text = rFilter.GetUserPreference( "Government ID" );
 
-            Guid groupGuid = GetAttributeValue( "CaseWorkerGroup" ).AsGuid();
+            Guid groupGuid = GetAttributeValue( "CaseWorkerRole" ).AsGuid();
             var listData = new GroupMemberService( new RockContext() ).Queryable( "Person, Group" )
                 .Where( gm => gm.Group.Guid == groupGuid )
                 .Select( gm => gm.Person )
