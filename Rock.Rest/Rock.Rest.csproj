@@ -122,6 +122,9 @@
     <Compile Include="Controllers\CodeGenerated\EntitySetsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialGatewaysController.cs" />
     <Compile Include="Controllers\CodeGenerated\FollowingsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupMemberRequirementsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupRequirementsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupRequirementTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupScheduleExclusionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\MergeTemplatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetricCategoriesController.cs" />
