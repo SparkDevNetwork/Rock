@@ -395,6 +395,39 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Updates the layout file for the Site to have a known Guid and update the Name, Description and IsSystem
+        /// </summary>
+        /// <param name="siteGuid">The site unique identifier.</param>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="IsSystem">if set to <c>true</c> [is system].</param>
+        public void UpdateLayout( string siteGuid, string fileName, string name, string description, string guid, bool IsSystem = true )
+        {
+            Migration.Sql( string.Format( @"
+
+                DECLARE @SiteId int
+                SET @SiteId = (SELECT TOP 1 [Id] FROM [Site] WHERE [Guid] = '{0}')
+
+                UPDATE [Layout] 
+                SET [Guid]= '{4}', 
+                    [Name] = '{2}', 
+                    [Description] = '{3}',
+                    [IsSystem] = {5}
+                WHERE [SiteId] =  @SiteId
+                  AND [FileName] = '{1}';
+",
+                    siteGuid, // {0}
+                    fileName, // {1}
+                    name, // {2}
+                    description.Replace( "'", "''" ), // {3}
+                    guid, // {4}
+                    IsSystem ? 1 : 0 // {5}
+                    ) );
+        }
+
+        /// <summary>
         /// Deletes the Layout.
         /// </summary>
         /// <param name="guid">The GUID.</param>
