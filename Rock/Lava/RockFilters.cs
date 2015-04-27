@@ -699,7 +699,7 @@ namespace Rock.Lava
                     if ( theValue.HasMergeFields() )
                     {
                         // Global attributes may reference other global attributes, so try to resolve this value again
-                        rawValue = theValue.ResolveMergeFields( new Dictionary<string, object>() );
+                        // rawValue = theValue.ResolveMergeFields( new Dictionary<string, object>() );
                     }
                     else
                     {
