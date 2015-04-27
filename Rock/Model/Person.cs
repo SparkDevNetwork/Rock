@@ -402,6 +402,7 @@ namespace Rock.Model
         /// The primary alias.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual PersonAlias PrimaryAlias
         {
             get
@@ -435,10 +436,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the Full Name of the Person using the Title FirstName LastName format.
+        /// Gets the Full Name of the Person using the NickName LastName Suffix format.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName format.
+        /// A <see cref="System.String"/> representing the Full Name of a Person using the NickName LastName Suffix format.
         /// </value>
         [DataMember]
         [NotMapped]
@@ -812,6 +813,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [Column( TypeName = "Date" )]
         public DateTime? BirthDate
         {
             get
@@ -1176,6 +1178,7 @@ namespace Rock.Model
             var dictionary = base.ToDictionary();
             dictionary.Add( "Age", AgePrecise );
             dictionary.Add( "DaysToBirthday", DaysToBirthday );
+            dictionary.AddOrIgnore( "FullName", FullName );
             return dictionary;
         }
 
@@ -1234,9 +1237,10 @@ namespace Rock.Model
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public override bool IsAuthorized( string action, Person person, RockContext rockContext = null )
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsAuthorized( string action, Person person )
         {
             if ( person.Guid.Equals( this.Guid ) )
             {
@@ -1244,7 +1248,7 @@ namespace Rock.Model
             }
             else
             {
-                return base.IsAuthorized( action, person, rockContext );
+                return base.IsAuthorized( action, person );
             }
         }
 
@@ -1719,14 +1723,17 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a queryable collection of <see cref="Rock.Model.Person"/> entities containing the Person's family.
+        /// Gets a queryable collection of <see cref="Rock.Model.Person" /> entities containing the Person's family.
         /// </summary>
-        /// <param name="person">The <see cref="Rock.Model.Person"/> to retrieve family members for.</param>
-        /// <param name="includeSelf">A <see cref="System.Boolean"/> value that is <c>true</c> if the provided person should be returned in the results, otherwise <c>false</c>.</param>
-        /// <returns>Returns a queryable collection of <see cref="Rock.Model.Person"/> entities representing the provided Person's family.</returns>
-        public static IQueryable<GroupMember> GetFamilyMembers( this Person person, bool includeSelf = false )
+        /// <param name="person">The <see cref="Rock.Model.Person" /> to retrieve family members for.</param>
+        /// <param name="includeSelf">A <see cref="System.Boolean" /> value that is <c>true</c> if the provided person should be returned in the results, otherwise <c>false</c>.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// Returns a queryable collection of <see cref="Rock.Model.Person" /> entities representing the provided Person's family.
+        /// </returns>
+        public static IQueryable<GroupMember> GetFamilyMembers( this Person person, bool includeSelf = false, RockContext rockContext = null )
         {
-            return new PersonService( new RockContext() ).GetFamilyMembers( person != null ? person.Id : 0, includeSelf );
+            return new PersonService( rockContext ?? new RockContext() ).GetFamilyMembers( person != null ? person.Id : 0, includeSelf );
         }
 
         /// <summary>

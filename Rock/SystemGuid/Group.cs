@@ -32,6 +32,11 @@ namespace Rock.SystemGuid
         public const string GROUP_ADMINISTRATORS= "628C51A8-4613-43ED-A18D-4A6FB999273E";
 
         /// <summary>
+        /// RSR - Benevolence Group Guid
+        /// </summary>
+        public const string GROUP_BENEVOLENCE = "02FA0881-3552-42B8-A519-D021139B800F";
+
+        /// <summary>
         /// The Communication Administrators Group guid
         /// </summary>
         public const string GROUP_COMMUNICATION_ADMINISTRATORS = "B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B";
@@ -61,5 +66,9 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string GROUP_STAFF_MEMBERS = "2C112948-FF4C-46E7-981A-0257681EADF4";
 
+        /// <summary>
+        /// Gets the staff-like member group guid (Staff Users)
+        /// </summary>
+        public const string GROUP_STAFF_LIKE_MEMBERS = "300BA2C8-49A3-44BA-A82A-82E3FD8C3745";
     }
 }

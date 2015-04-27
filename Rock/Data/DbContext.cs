@@ -37,19 +37,13 @@ namespace Rock.Data
         /// <summary>
         /// Initializes a new instance of the <see cref="DbContext"/> class.
         /// </summary>
-        public DbContext()
-            : base()
-        {
-        }
+        public DbContext() : base() { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DbContext"/> class.
         /// </summary>
         /// <param name="nameOrConnectionString">Either the database name or a connection string.</param>
-        public DbContext( string nameOrConnectionString )
-            : base( nameOrConnectionString )
-        {
-        }
+        public DbContext( string nameOrConnectionString ) : base( nameOrConnectionString ) { }
 
         /// <summary>
         /// Gets any error messages that occurred during a SaveChanges
@@ -186,7 +180,7 @@ namespace Rock.Data
                 personAliasId = personAlias.Id;
             }
 
-            var preSavedEntities = new List<Guid>();
+            var preSavedEntities = new HashSet<Guid>();
 
             // First loop through all models calling the PreSaveChanges
             foreach ( var entry in dbContext.ChangeTracker.Entries()
@@ -310,7 +304,7 @@ namespace Rock.Data
 
             foreach ( var item in updatedItems )
             {
-                if ( item.State == EntityState.Detached )
+                if ( item.State == EntityState.Detached || item.State == EntityState.Deleted )
                 {
                     TriggerWorkflows( item.Entity, WorkflowTriggerType.PostDelete, personAlias );
                 }
@@ -326,66 +320,69 @@ namespace Rock.Data
         {
             Dictionary<string, PropertyInfo> properties = null;
 
-            var rockContext = new RockContext();
-            var workflowTypeService = new WorkflowTypeService( rockContext );
-            var workflowService = new WorkflowService( rockContext );
-
-            foreach ( var trigger in TriggerCache.Triggers( entity.TypeName, triggerType ).Where( t => t.IsActive == true ) )
+            using ( var rockContext = new RockContext() )
             {
-                bool match = true;
+                var workflowTypeService = new WorkflowTypeService( rockContext );
+                var workflowService = new WorkflowService( rockContext );
 
-                if ( !string.IsNullOrWhiteSpace( trigger.EntityTypeQualifierColumn ) )
+                foreach ( var trigger in TriggerCache.Triggers( entity.TypeName, triggerType ).Where( t => t.IsActive == true ) )
                 {
-                    if ( properties == null )
+                    bool match = true;
+
+                    if ( !string.IsNullOrWhiteSpace( trigger.EntityTypeQualifierColumn ) )
                     {
-                        properties = new Dictionary<string, PropertyInfo>();
-                        foreach ( PropertyInfo propertyInfo in entity.GetType().GetProperties() )
+                        if ( properties == null )
                         {
-                            properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
+                            properties = new Dictionary<string, PropertyInfo>();
+                            foreach ( PropertyInfo propertyInfo in entity.GetType().GetProperties() )
+                            {
+                                properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
+                            }
                         }
+
+                        match = ( properties.ContainsKey( trigger.EntityTypeQualifierColumn.ToLower() ) &&
+                            properties[trigger.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ).ToString()
+                                == trigger.EntityTypeQualifierValue );
                     }
 
-                    match = ( properties.ContainsKey( trigger.EntityTypeQualifierColumn.ToLower() ) &&
-                        properties[trigger.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ).ToString()
-                            == trigger.EntityTypeQualifierValue );
-                }
-
-                if ( match )
-                {
-                    if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete || triggerType == WorkflowTriggerType.ImmediatePostSave )
+                    if ( match )
                     {
-                        var workflowType = workflowTypeService.Get( trigger.WorkflowTypeId );
-
-                        if ( workflowType != null )
+                        if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete || triggerType == WorkflowTriggerType.ImmediatePostSave )
                         {
-                            var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
+                            var workflowType = workflowTypeService.Get( trigger.WorkflowTypeId );
 
-                            List<string> workflowErrors;
-                            if ( !workflow.Process( rockContext, entity, out workflowErrors ) )
+                            if ( workflowType != null )
                             {
-                                SaveErrorMessages.AddRange( workflowErrors );
-                                return false;
-                            }
-                            else
-                            {
-                                if ( workflow.IsPersisted || workflowType.IsPersisted )
+                                var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
+
+                                List<string> workflowErrors;
+                                if ( !workflow.Process( rockContext, entity, out workflowErrors ) )
                                 {
-                                    workflowService.Add( workflow );
-                                    rockContext.SaveChanges();
+                                    SaveErrorMessages.AddRange( workflowErrors );
+                                    return false;
+                                }
+                                else
+                                {
+                                    if ( workflow.IsPersisted || workflowType.IsPersisted )
+                                    {
+                                        workflowService.Add( workflow );
+                                        rockContext.SaveChanges();
+                                    }
                                 }
                             }
                         }
-                    }
-                    else
-                    {
-                        var transaction = new Rock.Transactions.WorkflowTriggerTransaction();
-                        transaction.Trigger = trigger;
-                        transaction.Entity = entity.Clone();
-                        transaction.PersonAlias = personAlias;
-                        Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                        else
+                        {
+                            var transaction = new Rock.Transactions.WorkflowTriggerTransaction();
+                            transaction.Trigger = trigger;
+                            transaction.Entity = entity.Clone();
+                            transaction.PersonAlias = personAlias;
+                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                        }
                     }
                 }
             }
+
             return true;
         }
 

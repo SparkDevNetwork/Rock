@@ -35,8 +35,31 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PeopleController
     {
-
         #region Get
+
+        // GET api/<controller>/5
+        [Authenticate, Secured]
+        [ActionName( "GetById" )]
+        public override Person GetById( int id )
+        {
+            // NOTE: We want PrimaryAliasId to be populated, so call this.Get( true ) which includes "Aliases"
+            var person = this.Get( true ).FirstOrDefault( a => a.Id == id );
+            if ( person == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            return person;
+        }
+
+        // GET api/<controller>(5)
+        [Authenticate, Secured]
+        [EnableQuery]
+        public override Person Get( [FromODataUri] int key )
+        {
+            // NOTE: We want PrimaryAliasId to be populated, so call this.GetById( key ) which includes "Aliases"
+            return this.GetById( key );
+        }
 
         /// <summary>
         /// Returns a Queryable of Person records
@@ -48,8 +71,8 @@ namespace Rock.Rest.Controllers
         [EnableQuery]
         public override IQueryable<Person> Get()
         {
-            // NOTE: We want PrimaryAliasId to be populated, so call this.Get( false ) which includes "Aliases"
-            return this.Get( false );
+            // NOTE: We want PrimaryAliasId to be populated, so include Aliases
+            return base.Get().Include( a => a.Aliases );
         }
 
         /// <summary>
@@ -64,7 +87,7 @@ namespace Rock.Rest.Controllers
             var rockContext = this.Service.Context as RockContext;
 
             // NOTE: We want PrimaryAliasId to be populated, so include "Aliases"
-            return new PersonService( rockContext ).Queryable( "Aliases", includeDeceased );
+            return new PersonService( rockContext ).Queryable( includeDeceased ).Include( a => a.Aliases );
         }
 
         /// <summary>
@@ -79,7 +102,7 @@ namespace Rock.Rest.Controllers
         public IQueryable<Person> GetByEmail( string email )
         {
             var rockContext = new Rock.Data.RockContext();
-            return new PersonService( rockContext ).GetByEmail( email, true );
+            return new PersonService( rockContext ).GetByEmail( email, true ).Include( a => a.Aliases );
         }
 
         /// <summary>
@@ -94,7 +117,7 @@ namespace Rock.Rest.Controllers
         public IQueryable<Person> GetByPhoneNumber( string number )
         {
             var rockContext = new Rock.Data.RockContext();
-            return new PersonService( rockContext ).GetByPhonePartial( number, true );
+            return new PersonService( rockContext ).GetByPhonePartial( number, true ).Include( a => a.Aliases );
         }
 
         /// <summary>
@@ -114,7 +137,7 @@ namespace Rock.Rest.Controllers
 
             if ( personId != null )
             {
-                return Service.Queryable( "PhoneNumbers" )
+                return Service.Queryable().Include( a => a.PhoneNumbers).Include(a => a.Aliases )
                     .FirstOrDefault( p => p.Id == personId.Value );
             }
 

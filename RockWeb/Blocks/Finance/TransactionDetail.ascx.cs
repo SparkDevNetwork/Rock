@@ -259,25 +259,7 @@ namespace RockWeb.Blocks.Finance
                 txn.TransactionDateTime = dtTransactionDateTime.SelectedDateTime;
                 txn.TransactionTypeValueId = ddlTransactionType.SelectedValue.AsInteger();
                 txn.SourceTypeValueId = ddlSourceType.SelectedValueAsInt();
-
-                Guid? gatewayGuid = cpPaymentGateway.SelectedValueAsGuid();
-                if ( gatewayGuid.HasValue )
-                {
-                    var gatewayEntity = EntityTypeCache.Read( gatewayGuid.Value );
-                    if ( gatewayEntity != null )
-                    {
-                        txn.GatewayEntityTypeId = gatewayEntity.Id;
-                    }
-                    else
-                    {
-                        txn.GatewayEntityTypeId = null;
-                    }
-                }
-                else
-                {
-                    txn.GatewayEntityTypeId = null;
-                }
-
+                txn.FinancialGatewayId = gpPaymentGateway.SelectedValueAsInt();
                 txn.TransactionCode = tbTransactionCode.Text;
                 txn.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
                 txn.CreditCardTypeValueId = ddlCreditCardType.SelectedValueAsInt();
@@ -659,7 +641,7 @@ namespace RockWeb.Blocks.Finance
         {
             rockContext = rockContext ?? new RockContext();
             var txn = new FinancialTransactionService( rockContext )
-                .Queryable( "AuthorizedPersonAlias.Person,TransactionTypeValue,SourceTypeValue,GatewayEntityType,CurrencyTypeValue,TransactionDetails,ScheduledTransaction,ProcessedByPersonAlias.Person" )
+                .Queryable( "AuthorizedPersonAlias.Person,TransactionTypeValue,SourceTypeValue,FinancialGateway,CurrencyTypeValue,TransactionDetails,ScheduledTransaction,ProcessedByPersonAlias.Person" )
                 .Where( t => t.Id == transactionId )
                 .FirstOrDefault();
             return txn;
@@ -704,7 +686,7 @@ namespace RockWeb.Blocks.Finance
                 txn.BatchId = batchId;
 
                 // Hide processor fields when adding a new transaction
-                cpPaymentGateway.Visible = false;
+                gpPaymentGateway.Visible = false;
                 tbTransactionCode.Visible = false;
 
                 // Set values based on previously saved txn values
@@ -727,7 +709,7 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                cpPaymentGateway.Visible = true;
+                gpPaymentGateway.Visible = true;
                 tbTransactionCode.Visible = true;
             }
 
@@ -801,9 +783,9 @@ namespace RockWeb.Blocks.Finance
 
                 detailsLeft.Add( "Source", txn.SourceTypeValue != null ? txn.SourceTypeValue.Value : string.Empty );
 
-                if ( txn.GatewayEntityType != null )
+                if ( txn.FinancialGateway != null )
                 {
-                    detailsLeft.Add( "Payment Gateway", Rock.Financial.GatewayContainer.GetComponentName( txn.GatewayEntityType.Name ) );
+                    detailsLeft.Add( "Payment Gateway", Rock.Financial.GatewayContainer.GetComponentName( txn.FinancialGateway.Name ) );
                 }
 
                 detailsLeft.Add( "Transaction Code", txn.TransactionCode );
@@ -920,7 +902,7 @@ namespace RockWeb.Blocks.Finance
                 dtTransactionDateTime.SelectedDateTime = txn.TransactionDateTime;
                 ddlTransactionType.SetValue( txn.TransactionTypeValueId );
                 ddlSourceType.SetValue( txn.SourceTypeValueId );
-                cpPaymentGateway.SetValue( txn.GatewayEntityType != null ? txn.GatewayEntityType.Guid.ToString().ToUpper() : string.Empty );
+                gpPaymentGateway.SetValue( txn.FinancialGatewayId );
                 tbTransactionCode.Text = txn.TransactionCode;
                 ddlCurrencyType.SetValue( txn.CurrencyTypeValueId );
                 ddlCreditCardType.SetValue( txn.CreditCardTypeValueId );

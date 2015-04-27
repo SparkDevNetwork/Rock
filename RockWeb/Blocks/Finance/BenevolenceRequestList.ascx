@@ -2,10 +2,12 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+        <Rock:ModalAlert ID="mdGridWarning" runat="server" />
+
         <asp:Panel ID="pnlView" runat="server" CssClass="">
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-paste"></i>Benevolence Requests</h1>
+                    <h1 class="panel-title"><i class="fa fa-paste"></i> Benevolence Requests</h1>
                 </div>
                 <div class="panel-body">
 
@@ -21,38 +23,38 @@
                         </Rock:GridFilter>
                         <Rock:Grid ID="gList" runat="server" DisplayType="Full" AllowSorting="true" OnRowDataBound="gList_RowDataBound" OnRowSelected="gList_Edit">
                             <Columns>
-                                <Rock:RockBoundField DataField="RequestDateTime" HeaderText="Date" DataFormatString="{0:d}" SortExpression="Date" />
+                                <Rock:RockBoundField DataField="RequestDateTime" HeaderText="Date" DataFormatString="{0:d}" SortExpression="RequestDateTime" />
 
-                                <Rock:RockTemplateField SortExpression="Name" HeaderText="Name">
+                                <Rock:RockTemplateField SortExpression="RequestedByPersonAlias.Person.LastName, RequestedByPersonAlias.Person.NickName, LastName, FirstName" HeaderText="Name">
                                     <ItemTemplate>
                                         <asp:Literal ID="lName" runat="server" />
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
 
-                                <Rock:RockBoundField DataField="ConnectionStatusValue.Value" HeaderText="Connection Status" SortExpression="ConnectionStatus" ColumnPriority="DesktopSmall" />
+                                <Rock:DefinedValueField DataField="ConnectionStatusValueId" HeaderText="Connection Status" SortExpression="ConnectionStatusValue.Value" ColumnPriority="DesktopSmall" />
 
                                 <Rock:RockBoundField DataField="GovernmentId" HeaderText="Government ID" SortExpression="GovernmentId" ColumnPriority="DesktopLarge" />
 
-                                <Rock:RockBoundField DataField="RequestText" HeaderText="Request" SortExpression="Request" />
+                                <Rock:RockBoundField DataField="RequestText" HeaderText="Request" SortExpression="RequestText" />
 
-                                <Rock:PersonField DataField="CaseWorkerPersonAlias.Person" SortExpression="Case Worker" HeaderText="Case Worker" ColumnPriority="Tablet" />
+                                <Rock:PersonField DataField="CaseWorkerPersonAlias.Person" SortExpression="CaseWorkerPersonAlias.Person.LastName, CaseWorkerPersonAlias.Person.NickName" HeaderText="Case Worker" ColumnPriority="Tablet" />
 
                                 <Rock:RockBoundField DataField="ResultSummary" HeaderText="Result Summary" SortExpression="ResultSummary" ColumnPriority="DesktopLarge" />
 
-                                <Rock:RockTemplateField SortExpression="ResultSpecifics" HeaderText="Result Specifics" ColumnPriority="DesktopLarge">
+                                <Rock:RockTemplateField HeaderText="Result Specifics" ColumnPriority="DesktopLarge">
                                     <ItemTemplate>
                                         <asp:Literal ID="lResults" runat="server" />
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
 
-                                <Rock:RockTemplateField SortExpression="RequestStatus" HeaderText="Status">
+                                <Rock:RockTemplateField SortExpression="RequestStatusValue.Value" HeaderText="Status">
                                     <ItemTemplate>
                                         <Rock:HighlightLabel ID="hlStatus" runat="server" />
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
 
                                 <Rock:CurrencyField DataField="TotalAmount" HeaderText="Total Amount" SortExpression="TotalAmount" />
-
+                                <Rock:DeleteField OnClick="gList_Delete" />
                             </Columns>
                         </Rock:Grid>
                     </div>

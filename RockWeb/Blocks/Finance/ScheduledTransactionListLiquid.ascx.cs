@@ -201,21 +201,26 @@ namespace RockWeb.Blocks.Finance
             Literal content = (Literal)riItem.FindControl( "lLiquidContent" );
             Button btnEdit = (Button)riItem.FindControl( "btnEdit" );
 
-            var rockContext = new Rock.Data.RockContext();
-            FinancialScheduledTransactionService fstService = new FinancialScheduledTransactionService( rockContext );
-            var currentTransaction = fstService.Get( Int32.Parse(hfScheduledTransactionId.Value) );
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                FinancialScheduledTransactionService fstService = new FinancialScheduledTransactionService( rockContext );
+                var currentTransaction = fstService.Get( Int32.Parse( hfScheduledTransactionId.Value ) );
+                if ( currentTransaction != null && currentTransaction.FinancialGateway != null )
+                {
+                    currentTransaction.FinancialGateway.LoadAttributes( rockContext );
+                }
+                string errorMessage = string.Empty;
+                if ( fstService.Cancel( currentTransaction, out errorMessage ) )
+                {
+                    rockContext.SaveChanges();
+                    content.Text = String.Format( "<div class='alert alert-success'>Your recurring {0} has been deleted.</div>", GetAttributeValue( "TransactionLabel" ).ToLower() );
+                }
+                else
+                {
+                    content.Text = String.Format( "<div class='alert alert-danger'>An error occured while deleting your scheduled transation. Message: {0}</div>", errorMessage );
+                }
+            }
 
-            string errorMessage = string.Empty;
-            if ( fstService.Cancel( currentTransaction, out errorMessage ) )
-            {
-                rockContext.SaveChanges();
-                content.Text = String.Format( "<div class='alert alert-success'>Your recurring {0} has been deleted.</div>", GetAttributeValue( "TransactionLabel" ).ToLower() );
-            }
-            else
-            {
-                content.Text = String.Format( "<div class='alert alert-danger'>An error occured while deleting your scheduled transation. Message: {0}</div>", errorMessage );
-            }
-            
             bbtnDelete.Visible = false;
             btnEdit.Visible = false;
 

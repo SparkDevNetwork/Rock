@@ -57,24 +57,26 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            var rockContext = new RockContext();
-            var metaPhones = rockContext.Metaphones;
-
-            foreach( string name in names.Where( n => !metaPhones.Any( m => m.Name == n ) ) )
+            using ( var rockContext = new RockContext() )
             {
-                string mp1 = string.Empty;
-                string mp2 = string.Empty;
-                Rock.Utility.DoubleMetaphone.doubleMetaphone( name, ref mp1, ref mp2 );
+                var metaPhones = rockContext.Metaphones;
 
-                var metaphone = new Metaphone();
-                metaphone.Name = name;
-                metaphone.Metaphone1 = mp1;
-                metaphone.Metaphone2 = mp2;
+                foreach ( string name in names.Where( n => !metaPhones.Any( m => m.Name == n ) ) )
+                {
+                    string mp1 = string.Empty;
+                    string mp2 = string.Empty;
+                    Rock.Utility.DoubleMetaphone.doubleMetaphone( name, ref mp1, ref mp2 );
 
-                metaPhones.Add( metaphone );
+                    var metaphone = new Metaphone();
+                    metaphone.Name = name;
+                    metaphone.Metaphone1 = mp1;
+                    metaphone.Metaphone2 = mp2;
+
+                    metaPhones.Add( metaphone );
+                }
+
+                rockContext.SaveChanges();
             }
-
-            rockContext.SaveChanges();
         }
     }
 }

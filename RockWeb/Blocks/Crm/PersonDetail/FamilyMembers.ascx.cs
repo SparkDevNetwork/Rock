@@ -15,20 +15,16 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using System.Xml.Linq;
-using System.Xml.Xsl;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Data;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -37,10 +33,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Description( "Allows you to view the members of a family." )]
     public partial class FamilyMembers : Rock.Web.UI.PersonBlock
     {
-
         #region Fields
 
         private bool _allowEdit = false;
+
+        // private global rockContext that is specifically for rptrFamilies binding and rptrFamilies_ItemDataBound
+        private RockContext _bindFamiliesRockContext = null;
 
         #endregion
         #region Base Control Methods
@@ -49,9 +47,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit(EventArgs e)
+        protected override void OnInit( EventArgs e )
         {
- 	        base.OnInit(e);
+            base.OnInit( e );
 
             rptrFamilies.ItemDataBound += rptrFamilies_ItemDataBound;
 
@@ -73,12 +71,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         #region Events
 
-        void rptrFamilies_ItemDataBound(object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e)
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptrFamilies control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptrFamilies_ItemDataBound( object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e )
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
                 var group = e.Item.DataItem as Group;
-                if (group != null)
+                if ( group != null )
                 {
                     HyperLink hlEditFamily = e.Item.FindControl( "hlEditFamily" ) as HyperLink;
                     if ( hlEditFamily != null )
@@ -87,49 +90,48 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         hlEditFamily.NavigateUrl = string.Format( "~/EditFamily/{0}/{1}", Person.Id, group.Id );
                     }
 
-                    var rockContext = new RockContext();
-
                     Repeater rptrMembers = e.Item.FindControl( "rptrMembers" ) as Repeater;
-                    if (rptrMembers != null)
+                    if ( rptrMembers != null )
                     {
-                        var members = new GroupMemberService( rockContext ).Queryable( "GroupRole,Person", true )
-                            .Where( m => 
+                        // use the _bindFamiliesRockContext that is created/disposed in BindFamilies()
+                        var members = new GroupMemberService( _bindFamiliesRockContext ).Queryable( "GroupRole,Person", true )
+                            .Where( m =>
                                 m.GroupId == group.Id &&
                                 m.PersonId != Person.Id )
                             .OrderBy( m => m.GroupRole.Order )
                             .ToList();
 
                         var orderedMembers = new List<GroupMember>();
-                        
+
                         // Add adult males
-                        orderedMembers.AddRange(members
-                            .Where( m => m.GroupRole.Guid.Equals(new Guid(Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT)) &&
-                                m.Person.Gender == Gender.Male)
-                            .OrderByDescending( m => m.Person.Age));
-                        
+                        orderedMembers.AddRange( members
+                            .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) &&
+                                m.Person.Gender == Gender.Male )
+                            .OrderByDescending( m => m.Person.Age ) );
+
                         // Add adult females
-                        orderedMembers.AddRange(members
-                            .Where( m => m.GroupRole.Guid.Equals(new Guid(Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT)) &&
-                                m.Person.Gender != Gender.Male)
-                            .OrderByDescending( m => m.Person.Age));
+                        orderedMembers.AddRange( members
+                            .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) &&
+                                m.Person.Gender != Gender.Male )
+                            .OrderByDescending( m => m.Person.Age ) );
 
                         // Add non-adults
-                        orderedMembers.AddRange(members
-                            .Where( m => !m.GroupRole.Guid.Equals(new Guid(Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT)))
-                            .OrderByDescending( m => m.Person.Age));
+                        orderedMembers.AddRange( members
+                            .Where( m => !m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) )
+                            .OrderByDescending( m => m.Person.Age ) );
 
                         rptrMembers.ItemDataBound += rptrMembers_ItemDataBound;
                         rptrMembers.DataSource = orderedMembers;
                         rptrMembers.DataBind();
                     }
 
-                    Repeater rptrAddresses =  e.Item.FindControl("rptrAddresses") as Repeater;
+                    Repeater rptrAddresses = e.Item.FindControl( "rptrAddresses" ) as Repeater;
                     {
                         rptrAddresses.ItemDataBound += rptrAddresses_ItemDataBound;
                         rptrAddresses.ItemCommand += rptrAddresses_ItemCommand;
-                        rptrAddresses.DataSource = new GroupLocationService( rockContext ).Queryable( "Location,GroupLocationTypeValue" )
-                            .Where( l => l.GroupId == group.Id)
-                            .OrderBy( l => l.GroupLocationTypeValue.Order)
+                        rptrAddresses.DataSource = new GroupLocationService( _bindFamiliesRockContext ).Queryable( "Location,GroupLocationTypeValue" )
+                            .Where( l => l.GroupId == group.Id )
+                            .OrderBy( l => l.GroupLocationTypeValue.Order )
                             .ToList();
                         rptrAddresses.DataBind();
                     }
@@ -137,7 +139,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
         }
 
-        void rptrMembers_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptrMembers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptrMembers_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
@@ -151,19 +158,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     if ( divPersonImage != null )
                     {
                         divPersonImage.Style.Add( "background-image", @String.Format( @"url({0})", Person.GetPhotoUrl( fm.PhotoId, fm.Age, fm.Gender ) + "&width=65" ) );
-                        divPersonImage.Style.Add("background-size",  "cover");
-                        divPersonImage.Style.Add("background-position", "50%");
+                        divPersonImage.Style.Add( "background-size", "cover" );
+                        divPersonImage.Style.Add( "background-position", "50%" );
                     }
                 }
             }
         }
 
-        void rptrAddresses_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptrAddresses control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptrAddresses_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
                 var groupLocation = e.Item.DataItem as GroupLocation;
-                if (groupLocation != null && groupLocation.Location != null)
+                if ( groupLocation != null && groupLocation.Location != null )
                 {
                     Location loc = groupLocation.Location;
 
@@ -184,7 +196,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                             if ( loc.GeoPoint != null )
                             {
-                                lbVerify.ToolTip = string.Format( "{0} {1}",
+                                lbVerify.ToolTip = string.Format( 
+                                    "{0} {1}",
                                     loc.GeoPoint.Latitude,
                                     loc.GeoPoint.Longitude );
                             }
@@ -202,7 +215,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
         }
 
-        void rptrAddresses_ItemCommand( object source, RepeaterCommandEventArgs e )
+        /// <summary>
+        /// Handles the ItemCommand event of the rptrAddresses control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
+        protected void rptrAddresses_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             int locationId = int.MinValue;
             if ( int.TryParse( e.CommandArgument.ToString(), out locationId ) )
@@ -228,81 +246,112 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         #region Methods
 
+        /// <summary>
+        /// Binds the families.
+        /// </summary>
         private void BindFamilies()
         {
             if ( Person != null && Person.Id > 0 )
             {
                 Guid familyGroupGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
-                var rockContext = new RockContext();
-
-                var memberService = new GroupMemberService( rockContext );
-                var families = memberService.Queryable( true )
-                    .Where( m =>
-                        m.PersonId == Person.Id &&
-                        m.Group.GroupType.Guid == familyGroupGuid
-                    )
-                    .Select( m => m.Group )
-                    .ToList();
-
-                if ( !families.Any() )
+                using ( _bindFamiliesRockContext = new RockContext() )
                 {
-                    var familyGroupType = GroupTypeCache.GetFamilyGroupType();
-                    if ( familyGroupType != null )
+                    var memberService = new GroupMemberService( _bindFamiliesRockContext );
+                    var families = memberService.Queryable( true )
+                        .Where( m =>
+                            m.PersonId == Person.Id &&
+                            m.Group.GroupType.Guid == familyGroupGuid )
+                        .Select( m => m.Group )
+                        .ToList();
+
+                    if ( !families.Any() )
                     {
-                        var groupMember = new GroupMember();
-                        groupMember.PersonId = Person.Id;
-                        groupMember.GroupRoleId = familyGroupType.DefaultGroupRoleId.Value;
+                        // ensure that the person is in a family
+                        var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+                        if ( familyGroupType != null )
+                        {
+                            var groupMember = new GroupMember();
+                            groupMember.PersonId = Person.Id;
+                            groupMember.GroupRoleId = familyGroupType.DefaultGroupRoleId.Value;
 
-                        var family = new Group();
-                        family.Name = Person.LastName;
-                        family.GroupTypeId = familyGroupType.Id;
-                        family.Members.Add( groupMember );
+                            var family = new Group();
+                            family.Name = Person.LastName;
+                            family.GroupTypeId = familyGroupType.Id;
+                            family.Members.Add( groupMember );
 
-                        var groupService = new GroupService( rockContext );
-                        groupService.Add( family );
-                        rockContext.SaveChanges();
+                            // use the _bindFamiliesRockContext that is created/disposed in BindFamilies()
+                            var groupService = new GroupService( _bindFamiliesRockContext );
+                            groupService.Add( family );
+                            _bindFamiliesRockContext.SaveChanges();
 
-                        families.Add( groupService.Get( family.Id ) );
+                            families.Add( groupService.Get( family.Id ) );
+                        }
                     }
-                }
 
-                rptrFamilies.DataSource = families;
-                rptrFamilies.DataBind();
+                    rptrFamilies.DataSource = families;
+                    rptrFamilies.DataBind();
+                }
             }
         }
 
-        protected string FormatAddressType(object addressType)
+        /// <summary>
+        /// Formats the type of the address.
+        /// </summary>
+        /// <param name="addressType">Type of the address.</param>
+        /// <returns></returns>
+        protected string FormatAddressType( object addressType )
         {
             string type = addressType.ToString();
-            return type.EndsWith("Address", StringComparison.CurrentCultureIgnoreCase) ? type : type + " Address";
+            return type.EndsWith( "Address", StringComparison.CurrentCultureIgnoreCase ) ? type : type + " Address";
         }
 
-        protected string FormatPersonLink(string personId)
+        /// <summary>
+        /// Formats the person link.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        protected string FormatPersonLink( string personId )
         {
             return ResolveRockUrl( string.Format( "~/Person/{0}", personId ) );
         }
 
+        /// <summary>
+        /// Formats the name of the person.
+        /// </summary>
+        /// <param name="nickName">Name of the nick.</param>
+        /// <param name="lastName">The last name.</param>
+        /// <returns></returns>
         protected string FormatPersonName( string nickName, string lastName )
         {
             if ( Person != null && Person.LastName != lastName )
             {
                 return string.Format( "{0} {1}", nickName, lastName );
             }
+
             return nickName;
         }
 
+        /// <summary>
+        /// Formats the person CSS class.
+        /// </summary>
+        /// <param name="isDeceased">The is deceased.</param>
+        /// <returns></returns>
         protected string FormatPersonCssClass( bool? isDeceased )
         {
             return ( isDeceased ?? false ) ? "member deceased" : "member";
         }
 
+        /// <summary>
+        /// Formats as HTML title.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
         protected string FormatAsHtmlTitle( string str )
         {
             return str.FormatAsHtmlTitle();
         }
 
         #endregion
-
     }
 }

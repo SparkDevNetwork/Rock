@@ -37,15 +37,6 @@ namespace Rock.Attribute
     /// </summary>
     public static class Helper
     {
-        private static object _initLock;
-
-        /// <summary>
-        /// Initializes the <see cref="Helper"/> class.
-        /// </summary>
-        static Helper()
-        {
-            _initLock = new object();
-        }
 
         /// <summary>
         /// Updates the attributes.
@@ -77,47 +68,54 @@ namespace Rock.Attribute
         /// </remarks>
         public static bool UpdateAttributes( Type type, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, RockContext rockContext = null )
         {
-            lock ( _initLock )
+            bool attributesUpdated = false;
+
+            List<string> existingKeys = new List<string>();
+
+            var blockProperties = new List<FieldAttribute>();
+
+            // If a ContextAwareAttribute exists without an EntityType defined, add a property attribute to specify the type
+            int properties = 0;
+            foreach ( var customAttribute in type.GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
             {
-                bool attributesUpdated = false;
-
-                List<string> existingKeys = new List<string>();
-
-                var blockProperties = new List<FieldAttribute>();
-
-                // If a ContextAwareAttribute exists without an EntityType defined, add a property attribute to specify the type
-                int properties = 0;
-                foreach ( var customAttribute in type.GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
+                var contextAttribute = (ContextAwareAttribute)customAttribute;
+                if ( contextAttribute != null && contextAttribute.EntityType == null )
                 {
-                    var contextAttribute = (ContextAwareAttribute)customAttribute;
-                    if ( contextAttribute != null && contextAttribute.EntityType == null )
+                    if ( contextAttribute.IsConfigurable )
                     {
-                        if ( contextAttribute.IsConfigurable )
-                        {
-                            string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
-                            properties++;
+                        string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
+                        properties++;
 
-                            blockProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
-                        }
+                        blockProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
                     }
                 }
+            }
 
-                // Add any property attributes that were defined for the block
-                foreach ( var customAttribute in type.GetCustomAttributes( typeof( FieldAttribute ), true ) )
-                {
-                    blockProperties.Add( (FieldAttribute)customAttribute );
-                }
+            // Add any property attributes that were defined for the block
+            foreach ( var customAttribute in type.GetCustomAttributes( typeof( FieldAttribute ), true ) )
+            {
+                blockProperties.Add( (FieldAttribute)customAttribute );
+            }
 
-                rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? new RockContext();
 
-                // Create any attributes that need to be created
-                foreach ( var blockProperty in blockProperties )
+            // Create any attributes that need to be created
+            foreach ( var blockProperty in blockProperties )
+            {
+                try
                 {
                     attributesUpdated = UpdateAttribute( blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, rockContext ) || attributesUpdated;
                     existingKeys.Add( blockProperty.Key );
                 }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( new Exception( string.Format( "Could not update a block attribute ( Entity Type Id: {0}; Property Name: {1} ). ", entityTypeId, blockProperty.Name ), ex ), null );
+                }
+            }
 
-                // Remove any old attributes
+            // Remove any old attributes
+            try
+            {
                 var attributeService = new Model.AttributeService( rockContext );
                 foreach ( var a in attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue ).ToList() )
                 {
@@ -127,9 +125,13 @@ namespace Rock.Attribute
                     }
                 }
                 rockContext.SaveChanges();
-
-                return attributesUpdated;
             }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( new Exception( "Could not delete one or more old attributes.", ex ), null );
+            }
+
+            return attributesUpdated;
         }
 
         /// <summary>
@@ -290,11 +292,20 @@ namespace Rock.Attribute
         /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object
         /// </summary>
         /// <param name="entity">The item.</param>
+        public static void LoadAttributes( Rock.Attribute.IHasAttributes entity )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                LoadAttributes( entity, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object
+        /// </summary>
+        /// <param name="entity">The item.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <remarks>
-        /// If a rockContext value is included, this method will save any previous changes made to the context
-        /// </remarks>
-        public static void LoadAttributes( Rock.Attribute.IHasAttributes entity, RockContext rockContext = null )
+        public static void LoadAttributes( Rock.Attribute.IHasAttributes entity, RockContext rockContext )
         {
             if ( entity != null )
             {
@@ -374,36 +385,40 @@ namespace Rock.Attribute
 
                 // Get all the attributes that apply to this entity type and this entity's properties match any attribute qualifiers
                 var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( entityType);
-
-                int entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType ).Id;
-                foreach ( var attribute in attributeService.Queryable()
-                    .AsNoTracking()
-                    .Where( a => a.EntityTypeId == entityTypeCache.Id )
-                    .Select( a => new { 
-                        a.Id, 
-                        a.EntityTypeQualifierColumn, 
-                        a.EntityTypeQualifierValue } 
-                    ) )
+                if ( entityTypeCache != null )
                 {
-                    // group type ids exist (entity is either GroupMember, Group, or GroupType) and qualifier is for a group type id
-                    if ( groupTypeIds.Any() && (
-                            ( entity is GroupMember && string.Compare( attribute.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
-                            ( entity is Group && string.Compare( attribute.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
-                            ( entity is GroupType && string.Compare( attribute.EntityTypeQualifierColumn, "Id", true ) == 0 ) ) )
-                    {
-                        int groupTypeIdValue = int.MinValue;
-                        if ( int.TryParse( attribute.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
+                    int entityTypeId = entityTypeCache.Id;
+                    foreach ( var attribute in attributeService.Queryable()
+                        .AsNoTracking()
+                        .Where( a => a.EntityTypeId == entityTypeCache.Id )
+                        .Select( a => new
                         {
-                            inheritedAttributes[groupTypeIdValue].Add( Rock.Web.Cache.AttributeCache.Read( attribute.Id ) );
+                            a.Id,
+                            a.EntityTypeQualifierColumn,
+                            a.EntityTypeQualifierValue
                         }
-                    }
-
-                    else if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) ||
-                        ( properties.ContainsKey( attribute.EntityTypeQualifierColumn.ToLower() ) &&
-                        ( string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) ||
-                        ( properties[attribute.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ) ?? "" ).ToString() == attribute.EntityTypeQualifierValue ) ) )
+                        ) )
                     {
-                        attributes.Add( Rock.Web.Cache.AttributeCache.Read( attribute.Id ) );
+                        // group type ids exist (entity is either GroupMember, Group, or GroupType) and qualifier is for a group type id
+                        if ( groupTypeIds.Any() && (
+                                ( entity is GroupMember && string.Compare( attribute.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
+                                ( entity is Group && string.Compare( attribute.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
+                                ( entity is GroupType && string.Compare( attribute.EntityTypeQualifierColumn, "Id", true ) == 0 ) ) )
+                        {
+                            int groupTypeIdValue = int.MinValue;
+                            if ( int.TryParse( attribute.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
+                            {
+                                inheritedAttributes[groupTypeIdValue].Add( Rock.Web.Cache.AttributeCache.Read( attribute.Id ) );
+                            }
+                        }
+
+                        else if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) ||
+                            ( properties.ContainsKey( attribute.EntityTypeQualifierColumn.ToLower() ) &&
+                            ( string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) ||
+                            ( properties[attribute.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ) ?? "" ).ToString() == attribute.EntityTypeQualifierValue ) ) )
+                        {
+                            attributes.Add( Rock.Web.Cache.AttributeCache.Read( attribute.Id ) );
+                        }
                     }
                 }
 

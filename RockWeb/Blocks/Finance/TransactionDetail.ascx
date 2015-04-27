@@ -73,7 +73,7 @@
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source" />
                             <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" />
                             <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
-                            <Rock:ComponentPicker ID="cpPaymentGateway" runat="server" Label="Payment Gateway" ContainerType="Rock.Financial.GatewayContainer" />
+                            <Rock:FinancialGatewayPicker ID="gpPaymentGateway" runat="server" Label="Payment Gateway" />
                             <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code"
                                 SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionCode" />
                         </div>
@@ -131,7 +131,7 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" AccessKey="e" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
+                        <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" AccessKey="m" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
                         <asp:LinkButton ID="lbAddTransaction" runat="server" Text="Add New Transaction" AccessKey="a" CssClass="btn btn-default pull-right" CausesValidation="false" OnClick="lbAddTransaction_Click" />
                     </div>
 

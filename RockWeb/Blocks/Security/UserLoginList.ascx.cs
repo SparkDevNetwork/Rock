@@ -442,6 +442,7 @@ namespace RockWeb.Blocks.Security
                 sortProperty = new SortProperty( new GridViewSortEventArgs( "UserName", SortDirection.Ascending ) );
             }
 
+            gUserLogins.EntityTypeId = EntityTypeCache.Read<UserLogin>().Id;
             gUserLogins.DataSource = qry.Sort( sortProperty )
                 .Select( l => new
                     {

@@ -590,7 +590,7 @@ namespace RockWeb.Blocks.Reporting
                         listItem.Attributes["optiongroup"] = "Other";
                     }
 
-                    if ( entityField.FieldKind == FieldKind.Attribute && entityField.AttributeGuid.HasValue)
+                    if ( entityField.FieldKind == FieldKind.Attribute && entityField.AttributeGuid.HasValue )
                     {
                         var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
                         if ( attribute != null )
@@ -691,7 +691,7 @@ namespace RockWeb.Blocks.Reporting
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Report.FriendlyTypeName );
             }
 
-            btnSecurity.Visible = report.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
+            btnSecurity.Visible = report.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.Title = report.Name;
             btnSecurity.EntityId = report.Id;
 
@@ -731,13 +731,13 @@ namespace RockWeb.Blocks.Reporting
             authorizationMessage = string.Empty;
 
             // can't edit an existing report if not authorized for that report
-            if ( report.Id != 0 && !report.IsAuthorized( reportAction, CurrentPerson, rockContext ) )
+            if ( report.Id != 0 && !report.IsAuthorized( reportAction, CurrentPerson ) )
             {
                 isAuthorized = false;
                 authorizationMessage = EditModeMessage.ReadOnlyEditActionNotAllowed( Report.FriendlyTypeName );
             }
 
-            if ( report.EntityType != null && !report.EntityType.IsAuthorized( Authorization.VIEW, CurrentPerson, rockContext ) )
+            if ( report.EntityType != null && !report.EntityType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 isAuthorized = false;
                 authorizationMessage = "INFO: This report uses an entity type that you do not have access to view.";
@@ -753,7 +753,7 @@ namespace RockWeb.Blocks.Reporting
                         var dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
                         if ( dataSelectComponent != null )
                         {
-                            if ( !dataSelectComponent.IsAuthorized( Authorization.VIEW, this.CurrentPerson, rockContext ) )
+                            if ( !dataSelectComponent.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
                             {
                                 isAuthorized = false;
                                 authorizationMessage = "INFO: This report contains a data selection component that you do not have access to view.";
@@ -766,7 +766,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( report.DataView != null )
             {
-                if ( !report.DataView.IsAuthorized( Authorization.VIEW, this.CurrentPerson, rockContext ) )
+                if ( !report.DataView.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
                 {
                     isAuthorized = false;
                     authorizationMessage = "INFO: This Reports uses a data view that you do not have access to view.";
@@ -876,13 +876,22 @@ namespace RockWeb.Blocks.Reporting
 
                 var rockContext = new RockContext();
 
-                if ( !report.IsAuthorized( Authorization.VIEW, this.CurrentPerson, rockContext ) )
+                if ( !report.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
                 {
                     gReport.Visible = false;
                     return;
                 }
 
                 Type entityType = EntityTypeCache.Read( report.EntityTypeId.Value, rockContext ).GetEntityType();
+                if ( entityType == null )
+                {
+                    nbEditModeMessage.NotificationBoxType = NotificationBoxType.Danger;
+                    nbEditModeMessage.Text = string.Format( "Unable to determine entityType for {0}", report.EntityType );
+                    nbEditModeMessage.Visible = true;
+                    return;
+                }
+
+                gReport.EntityTypeId = report.EntityTypeId;
 
                 bool isPersonDataSet = report.EntityTypeId == EntityTypeCache.Read( typeof( Rock.Model.Person ), true, rockContext ).Id;
 
@@ -956,6 +965,10 @@ namespace RockWeb.Blocks.Reporting
                                 {
                                     boundField = new BoolField();
                                 }
+                                else if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid() ) )
+                                {
+                                    boundField = new DefinedValueField();
+                                }
                                 else
                                 {
                                     boundField = new BoundField();
@@ -1027,8 +1040,8 @@ namespace RockWeb.Blocks.Reporting
                         boundField.Visible = showAllColumns || entityField.IsPreviewable;
                         gReport.Columns.Add( boundField );
                     }
-                } 
-                   
+                }
+
                 try
                 {
                     gReport.Visible = true;

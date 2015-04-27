@@ -135,7 +135,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 string script = string.Format( @"
     $('a.js-confirm-marital-status').click(function( e ){{
-        if ( $(""input[id$='_rblRole_0']"").prop('checked', true).length ) {{
+
+        var anyAdults = false;
+        $(""input[id$='_rblRole_0']"").each(function() {{
+            if ( $(this).prop('checked') ) {{
+                anyAdults = true;
+            }}
+        }});
+
+        if ( anyAdults ) {{
             if ( $('#{0}').val() == '' ) {{
                 e.preventDefault();
                 Rock.dialogs.confirm('You have not selected a marital status for the adults in this new family. Are you sure you want to continue?', function (result) {{

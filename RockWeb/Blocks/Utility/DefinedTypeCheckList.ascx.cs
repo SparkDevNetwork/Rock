@@ -83,25 +83,27 @@ $('.checklist-item label strong, .checklist-desc-toggle').on('click', function (
 
             if ( Page.IsPostBack )
             {
-                var rockContext = new RockContext();
-                var definedValueService = new DefinedValueService(rockContext);
-
-                foreach ( RepeaterItem item in rptrValues.Items )
+                using ( var rockContext = new RockContext() )
                 {
-                    var hfValue = item.FindControl( "hfValue" ) as HiddenField;
-                    var cbValue = item.FindControl( "cbValue" ) as CheckBox;
+                    var definedValueService = new DefinedValueService( rockContext );
 
-                    if ( hfValue != null && cbValue != null )
+                    foreach ( RepeaterItem item in rptrValues.Items )
                     {
-                        var value = definedValueService.Get( hfValue.ValueAsInt() );
-                        if ( value != null )
+                        var hfValue = item.FindControl( "hfValue" ) as HiddenField;
+                        var cbValue = item.FindControl( "cbValue" ) as CheckBox;
+
+                        if ( hfValue != null && cbValue != null )
                         {
-                            Helper.LoadAttributes( value );
-                            if ( value.GetAttributeValue( attributeKey ) != cbValue.Checked.ToString() )
+                            var value = definedValueService.Get( hfValue.ValueAsInt() );
+                            if ( value != null )
                             {
-                                value.SetAttributeValue( attributeKey, cbValue.Checked.ToString() );
-                                value.SaveAttributeValues();
-                                DefinedValueCache.Flush( value.Id );
+                                Helper.LoadAttributes( value );
+                                if ( value.GetAttributeValue( attributeKey ) != cbValue.Checked.ToString() )
+                                {
+                                    value.SetAttributeValue( attributeKey, cbValue.Checked.ToString() );
+                                    value.SaveAttributeValues( rockContext );
+                                    DefinedValueCache.Flush( value.Id );
+                                }
                             }
                         }
                     }

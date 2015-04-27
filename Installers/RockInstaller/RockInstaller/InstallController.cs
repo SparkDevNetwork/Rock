@@ -568,6 +568,8 @@ namespace RockInstaller
             result.Success = true;
             SqlConnection conn = null;
 
+            string currentScript = string.Empty;
+
             try
             {
                 string sql = System.IO.File.ReadAllText( sqlScriptFile );
@@ -592,8 +594,13 @@ namespace RockInstaller
                 {
                     foreach ( var script in scriptParser.ScriptCollection )
                     {
-                        SqlCommand command = new SqlCommand( script, conn, transaction );
-                        command.ExecuteNonQuery();
+                        currentScript = script;
+
+                        if ( !string.IsNullOrWhiteSpace( script ) )
+                        {
+                            SqlCommand command = new SqlCommand( script, conn, transaction );
+                            command.ExecuteNonQuery();
+                        }
 
                         scriptsRun++;
 
@@ -635,7 +642,7 @@ namespace RockInstaller
             catch ( Exception ex )
             {
                 result.Success = false;
-                result.Message = ex.Message;
+                result.Message = ex.Message + " Current Script: " + currentScript;
             }
             finally
             {

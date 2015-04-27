@@ -43,6 +43,8 @@ namespace Rock.Web.UI.Controls
         private PlaceHolder _phGroupAttributes;
         private Grid _gLocations;
 
+        private LinkButton _lbAddCheckinGroup;
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="WorkflowActionTypeEditor"/> is expanded.
         /// </summary>
@@ -279,6 +281,25 @@ $('.checkin-group > .panel-body').on('validation-error', function() {
         }
 
         /// <summary>
+        /// Gets the parent group type editor.
+        /// </summary>
+        /// <returns></returns>
+        public CheckinGroupTypeEditor GetParentGroupTypeEditor()
+        {
+            return GetParentGroupTypeEditor( this );
+        }
+
+        private CheckinGroupTypeEditor GetParentGroupTypeEditor( Control control )
+        {
+            if ( control != null )
+            {
+                var groupTypeControl = control as CheckinGroupTypeEditor;
+                return groupTypeControl != null ? groupTypeControl : GetParentGroupTypeEditor( control.Parent );
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Gets or sets the group.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -296,7 +317,7 @@ $('.checkin-group > .panel-body').on('validation-error', function() {
             result.GroupTypeId = _hfGroupTypeId.ValueAsInt();
 
             // get the current InheritedGroupTypeId from the Parent Editor just in case it hasn't been saved to the database
-            CheckinGroupTypeEditor checkinGroupTypeEditor = this.Parent as CheckinGroupTypeEditor;
+            CheckinGroupTypeEditor checkinGroupTypeEditor = GetParentGroupTypeEditor( this.Parent );
             if ( checkinGroupTypeEditor != null )
             {
                 result.GroupType = new GroupType();
@@ -316,6 +337,15 @@ $('.checkin-group > .panel-body').on('validation-error', function() {
                 groupLocation.LocationId = item.LocationId;
                 groupLocation.Location = new Location { Id = item.LocationId, Name = item.Name, ParentLocationId = item.ParentLocationId };
                 result.GroupLocations.Add( groupLocation );
+            }
+
+            result.Groups = new List<Group>();
+            int childGroupOrder = 0;
+            foreach ( CheckinGroupEditor checkinGroupEditor in this.Controls.OfType<CheckinGroupEditor>() )
+            {
+                Group childGroup = checkinGroupEditor.GetGroup( rockContext );
+                childGroup.Order = childGroupOrder++;
+                result.Groups.Add( childGroup );
             }
 
             Rock.Attribute.Helper.GetEditValues( _phGroupAttributes, result );
@@ -391,12 +421,20 @@ $('.checkin-group > .panel-body').on('validation-error', function() {
             _phGroupAttributes = new PlaceHolder();
             _phGroupAttributes.ID = this.ID + "_phGroupAttributes";
 
+            _lbAddCheckinGroup = new LinkButton();
+            _lbAddCheckinGroup.ID = this.ID + "_lbAddCheckinGroup";
+            _lbAddCheckinGroup.CssClass = "btn btn-xs btn-action checkin-grouptype-add-checkin-group";
+            _lbAddCheckinGroup.Click += lbAddGroup_Click;
+            _lbAddCheckinGroup.CausesValidation = false;
+            _lbAddCheckinGroup.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> Add Check-in Group" } );
+
             Controls.Add( _hfGroupGuid );
             Controls.Add( _hfGroupId );
             Controls.Add( _hfGroupTypeId );
             Controls.Add( _lblGroupName );
             Controls.Add( _tbGroupName );
             Controls.Add( _phGroupAttributes );
+            Controls.Add( _lbAddCheckinGroup );
 
             // Locations Grid
             CreateLocationsGrid();
@@ -504,6 +542,14 @@ $('.checkin-group > .panel-body').on('validation-error', function() {
             // Add/ChevronUpDown/Delete div
             writer.RenderEndTag();
 
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right panel-actions btn-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            _lbAddCheckinGroup.RenderControl( writer );
+            writer.WriteLine();
+
+            writer.RenderEndTag();
+            
             // header div
             writer.RenderEndTag();
 
@@ -545,6 +591,16 @@ $('.checkin-group > .panel-body').on('validation-error', function() {
             // rowfluid
             writer.RenderEndTag();
 
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkin-group-list" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            foreach ( CheckinGroupEditor checkinGroupEditor in this.Controls.OfType<CheckinGroupEditor>() )
+            {
+                checkinGroupEditor.RenderControl( writer );
+            }
+
+            // checkin-group-list div
+            writer.RenderEndTag();
+
             // widget-content div
             writer.RenderEndTag();
 
@@ -560,7 +616,7 @@ $('.checkin-group > .panel-body').on('validation-error', function() {
         public void CreateGroupAttributeControls( Group group, RockContext rockContext )
         {
             // get the current InheritedGroupTypeId from the Parent Editor just in case it hasn't been saved to the database
-            CheckinGroupTypeEditor checkinGroupTypeEditor = this.Parent as CheckinGroupTypeEditor;
+            CheckinGroupTypeEditor checkinGroupTypeEditor = GetParentGroupTypeEditor( this.Parent );
             if ( checkinGroupTypeEditor != null )
             {
                 group.GroupType = new GroupType();
@@ -591,9 +647,27 @@ $('.checkin-group > .panel-body').on('validation-error', function() {
         }
 
         /// <summary>
+        /// Handles the Click event of the lbAddGroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddGroup_Click( object sender, EventArgs e )
+        {
+            if ( AddGroupClick != null )
+            {
+                AddGroupClick( this, e );
+            }
+        }
+
+        /// <summary>
         /// Occurs when [delete group click].
         /// </summary>
         public event EventHandler DeleteGroupClick;
+
+        /// <summary>
+        /// Occurs when [add group click].
+        /// </summary>
+        public event EventHandler AddGroupClick;
 
         /// <summary>
         /// Occurs when [delete location click].

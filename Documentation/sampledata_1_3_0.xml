@@ -349,6 +349,8 @@
 
     </family>
 
+    <!-- Paul Smith and Taylor (Ty) McClintock are friends who took the DISC Personality Assessment.  Check out their DISC scores.
+    -->
     <family name="Smith Family" guid="A93BA69D-FC5E-4F03-B6AE-87CD49D5202D" campus="main campus">
       <addresses>
         <address type="home" street1="3935 E Rough Rider Rd" street2="" city="Phoenix" state="AZ" postalCode="85050" lat="33.6878242" long="-111.9908905" />
