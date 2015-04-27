@@ -23,7 +23,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Security.Authentication
@@ -246,6 +246,36 @@ namespace Rock.Security.Authentication
             user.LastPasswordChangedDateTime = RockDateTime.Now;
 
             return true;
+        }
+
+        /// <summary>
+        /// Generates the username.
+        /// </summary>
+        /// <param name="firstName">The first name.</param>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="tryCount">The try count.</param>
+        /// <returns></returns>
+        public static string GenerateUsername( string firstName, string lastName, int tryCount = 0 )
+        {
+            // create username
+            string username = (firstName.Substring( 0, 1 ) + lastName).ToLower();
+
+            if ( tryCount != 0 )
+            {
+                username = username + tryCount.ToString();
+            }
+
+            // check if username exists
+            UserLoginService userService = new UserLoginService( new RockContext() );
+            var loginExists = userService.Queryable().Where( l => l.UserName == username ).Any();
+            if ( !loginExists )
+            {
+                return username;
+            }
+            else
+            {
+                return Database.GenerateUsername( firstName, lastName, tryCount + 1 );
+            }
         }
 
     }

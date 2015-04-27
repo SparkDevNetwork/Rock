@@ -90,7 +90,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.CreditCardTypeValueId = source.CreditCardTypeValueId;
             target.CurrencyTypeValueId = source.CurrencyTypeValueId;
-            target.GatewayEntityTypeId = source.GatewayEntityTypeId;
+            target.FinancialGatewayId = source.FinancialGatewayId;
             target.GroupId = source.GroupId;
             target.MaskedAccountNumber = source.MaskedAccountNumber;
             target.Name = source.Name;

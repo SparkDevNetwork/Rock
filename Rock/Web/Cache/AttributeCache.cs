@@ -319,7 +319,9 @@ namespace Rock.Web.Cache
 
             this.QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )
+            {
                 this.QualifierValues.Add( qualifier.Key, new ConfigurationValue( qualifier.Value ) );
+            }
 
             this.categoryIds = attribute.Categories.Select( c => c.Id ).ToList();
         }
@@ -337,7 +339,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public Control AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null, string labelText = null )
         {
-            if (labelText == null)
+            if ( labelText == null )
             {
                 labelText = this.Name;
             }
@@ -363,8 +365,8 @@ namespace Rock.Web.Cache
                 }
                 else
                 {
-                    bool renderLabel = ( !string.IsNullOrEmpty( labelText ) );
-                    bool renderHelp = ( !string.IsNullOrWhiteSpace( Description ) );
+                    bool renderLabel = !string.IsNullOrEmpty( labelText );
+                    bool renderHelp = !string.IsNullOrWhiteSpace( Description );
 
                     if ( renderLabel || renderHelp )
                     {
@@ -377,6 +379,7 @@ namespace Rock.Web.Cache
                         {
                             div.AddCssClass( "required" );
                         }
+
                         div.ClientIDMode = ClientIDMode.AutoID;
 
                         if ( renderLabel )
@@ -388,13 +391,15 @@ namespace Rock.Web.Cache
                             label.CssClass = "control-label";
                             label.AssociatedControlID = attributeControl.ID;
                         }
+
                         if ( renderHelp )
                         {
-                            var HelpBlock = new Rock.Web.UI.Controls.HelpBlock();
-                            div.Controls.Add( HelpBlock );
-                            HelpBlock.ClientIDMode = ClientIDMode.AutoID;
-                            HelpBlock.Text = this.Description;
+                            var helpBlock = new Rock.Web.UI.Controls.HelpBlock();
+                            div.Controls.Add( helpBlock );
+                            helpBlock.ClientIDMode = ClientIDMode.AutoID;
+                            helpBlock.Text = this.Description;
                         }
+
                         div.Controls.Add( attributeControl );
                     }
                     else
@@ -425,6 +430,7 @@ namespace Rock.Web.Cache
             {
                 return attributeControl;
             }
+
             {
                 return attributeControl.FindControl( id );
             }
@@ -493,13 +499,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsAuthorized( string action, Person person, RockContext rockContext = null )
+        public virtual bool IsAuthorized( string action, Person person )
         {
-            return Security.Authorization.Authorized( this, action, person, rockContext );
+            return Security.Authorization.Authorized( this, action, person );
         }
 
         /// <summary>
@@ -518,13 +523,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsPrivate( string action, Person person, RockContext rockContext = null )
+        public virtual bool IsPrivate( string action, Person person )
         {
-            return Security.Authorization.IsPrivate( this, action, person, rockContext );
+            return Security.Authorization.IsPrivate( this, action, person );
         }
 
         /// <summary>
@@ -535,7 +539,14 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         public virtual void MakePrivate( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakePrivate( this, action, person, rockContext );
+            if ( rockContext != null )
+            {
+                Security.Authorization.MakePrivate( this, action, person, rockContext );
+            }
+            else
+            {
+                Security.Authorization.MakePrivate( this, action, person );
+            }
         }
 
         /// <summary>
@@ -546,7 +557,14 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakePrivate( this, action, person, rockContext );
+            if ( rockContext != null )
+            {
+                Security.Authorization.MakeUnPrivate( this, action, person, rockContext );
+            }
+            else
+            {
+                Security.Authorization.MakeUnPrivate( this, action, person );
+            }
         }
 
         #endregion
@@ -574,13 +592,20 @@ namespace Rock.Web.Cache
 
             if ( attribute == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var attributeService = new Rock.Model.AttributeService( rockContext );
-                var attributeModel = attributeService.Get( id );
-                if ( attributeModel != null )
+                if ( rockContext != null )
                 {
-                    attribute = new AttributeCache( attributeModel );
+                    attribute = LoadById( id, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        attribute = LoadById( id, myRockContext );
+                    }
+                }
 
+                if ( attribute != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, attribute, cachePolicy );
                     cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
@@ -588,6 +613,18 @@ namespace Rock.Web.Cache
             }
 
             return attribute;
+        }
+
+        private static AttributeCache LoadById( int id, RockContext rockContext )
+        {
+            var attributeService = new Rock.Model.AttributeService( rockContext );
+            var attributeModel = attributeService.Get( id );
+            if ( attributeModel != null )
+            {
+                return new AttributeCache( attributeModel );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -609,13 +646,20 @@ namespace Rock.Web.Cache
 
             if ( attribute == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var attributeService = new AttributeService( rockContext );
-                var attributeModel = attributeService.Get( guid );
-                if ( attributeModel != null )
+                if ( rockContext != null )
                 {
-                    attribute = new AttributeCache( attributeModel );
+                    attribute = LoadByGuid( guid, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        attribute = LoadByGuid( guid, myRockContext );
+                    }
+                }
 
+                if ( attribute != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( AttributeCache.CacheKey( attribute.Id ), attribute, cachePolicy );
                     cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
@@ -623,6 +667,18 @@ namespace Rock.Web.Cache
             }
 
             return attribute;
+        }
+
+        private static AttributeCache LoadByGuid( Guid guid, RockContext rockContext )
+        {
+            var attributeService = new AttributeService( rockContext );
+            var attributeModel = attributeService.Get( guid );
+            if ( attributeModel != null )
+            {
+                return new AttributeCache( attributeModel );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -771,6 +827,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
     }
 }

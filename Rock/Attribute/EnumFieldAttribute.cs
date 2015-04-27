@@ -46,7 +46,7 @@ namespace Rock.Attribute
             var list = new List<string>();
             foreach ( var value in Enum.GetValues( enumSourceType ) )
             {
-                list.Add( string.Format( "{0}^{1}", (int)value, value ) );
+                list.Add( string.Format( "{0}^{1}", (int)value, value.ToString().SplitCase() ) );
             }
             
             var listSource = string.Join( ",", list );

@@ -46,6 +46,10 @@ namespace Rock.Rest
             config.Services.Replace( typeof( IExceptionHandler ), new RockApiExceptionHandler() );
             config.Formatters.Insert( 0, new Rock.Utility.RockJsonMediaTypeFormatter() );
 
+            // Change DateTimeZoneHandling to Unspecified instead of the default of RoundTripKind since Rock doesn't store dates in a timezone aware format
+            // So, since Rock doesn't do TimeZones, we don't want Transmission of DateTimes to specify TimeZone either.
+            config.Formatters.JsonFormatter.SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Unspecified;
+
             // Add API route for dataviews
             config.Routes.MapHttpRoute(
                 name: "DataViewApi",

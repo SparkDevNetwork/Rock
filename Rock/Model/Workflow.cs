@@ -84,6 +84,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this instance is processing; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
+        [NotAudited]
         public bool IsProcessing { get; set; }
 
         /// <summary>
@@ -102,6 +103,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> that represents when the Workflow was last processed.
         /// </value>
         [DataMember]
+        [NotAudited]
         public DateTime? LastProcessedDateTime { get; set; }
 
         /// <summary>
@@ -482,6 +484,23 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.Workflow"/> instance.</returns>
         public static Workflow Activate( WorkflowType workflowType, string name )
         {
+            using( var rockContext = new RockContext() )
+            {
+                return Activate( workflowType, name, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Activates the specified <see cref="Rock.Model.WorkflowType" />.
+        /// </summary>
+        /// <param name="workflowType">The <see cref="Rock.Model.WorkflowType" />  being activated.</param>
+        /// <param name="name">A <see cref="System.String" /> representing the name of the <see cref="Rock.Model.Workflow" /> instance.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// The <see cref="Rock.Model.Workflow" /> instance.
+        /// </returns>
+        public static Workflow Activate( WorkflowType workflowType, string name, RockContext rockContext )
+        {
             var workflow = new Workflow();
             workflow.WorkflowType = workflowType;
             workflow.WorkflowTypeId = workflowType.Id;
@@ -498,7 +517,7 @@ namespace Rock.Model
             workflow.Status = "Active";
             workflow.IsProcessing = false;
             workflow.ActivatedDateTime = RockDateTime.Now;
-            workflow.LoadAttributes();
+            workflow.LoadAttributes( rockContext );
 
             workflow.AddLogEntry( "Activated" );
 
@@ -506,7 +525,7 @@ namespace Rock.Model
             {
                 if ( activityType.IsActivatedWithWorkflow)
                 {
-                    WorkflowActivity.Activate(activityType, workflow);
+                    WorkflowActivity.Activate(activityType, workflow, rockContext );
                 }
             }
 

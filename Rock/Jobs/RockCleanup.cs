@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Quartz;
@@ -46,98 +47,93 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary> 
+        /// <summary>
         /// Job that executes routine Rock cleanup tasks
-        /// 
         /// Called by the <see cref="IScheduler" /> when a
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
+        /// <param name="context">The context.</param>
         public virtual void Execute( IJobExecutionContext context )
         {
             // get the job map
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            // delete accounts that have not been confirmed in X hours
-            int? userExpireHours = dataMap.GetString( "HoursKeepUnconfirmedAccounts" ).AsIntegerOrNull();
-            if ( userExpireHours.HasValue )
-            {
-                var userLoginRockContext = new Rock.Data.RockContext();
-                DateTime userAccountExpireDate = RockDateTime.Now.Add( new TimeSpan( userExpireHours.Value * -1, 0, 0 ) );
+            List<Exception> rockCleanupExceptions = new List<Exception>();
 
-                var userLoginService = new UserLoginService( userLoginRockContext );
-                userLoginService.DeleteRange( userLoginService.Queryable().Where( u => u.IsConfirmed == false && ( u.CreatedDateTime ?? DateTime.MinValue ) < userAccountExpireDate ).ToList() );
-                userLoginRockContext.SaveChanges();
+            try
+            {
+                CleanupUnconfirmedUserLogins( dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupUnconfirmedUserLogins", ex ) );
             }
 
-            // purge exception log
-            int? exceptionExpireDays = dataMap.GetString( "DaysKeepExceptions" ).AsIntegerOrNull();
-            if ( exceptionExpireDays.HasValue )
+            try
             {
-                var exceptionLogRockContext = new Rock.Data.RockContext();
-                DateTime exceptionExpireDate = RockDateTime.Now.Add( new TimeSpan( exceptionExpireDays.Value * -1, 0, 0, 0 ) );
-
-                ExceptionLogService exceptionLogService = new ExceptionLogService( exceptionLogRockContext );
-                exceptionLogService.DeleteRange( exceptionLogService.Queryable().Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime < exceptionExpireDate ).ToList() );
-                exceptionLogRockContext.SaveChanges();
+                PurgeExceptionLog( dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in PurgeExceptionLog", ex ) );
             }
 
-            // purge audit log
-            int? auditExpireDays = dataMap.GetString( "AuditLogExpirationDays" ).AsIntegerOrNull();
-            if ( auditExpireDays.HasValue )
+            try
             {
-                var auditLogRockContext = new Rock.Data.RockContext();
-                DateTime auditExpireDate = RockDateTime.Now.Add( new TimeSpan( auditExpireDays.Value * -1, 0, 0, 0 ) );
-                AuditService auditService = new AuditService( auditLogRockContext );
-
-                auditService.DeleteRange( auditService.Queryable().Where( a => a.DateTime < auditExpireDate ).ToList() );
-
-                auditLogRockContext.SaveChanges();
+                PurgeAuditLog( dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in PurgeAuditLog", ex ) );
             }
 
-            // clean the cached file directory
-
-            // get the attributes
-            string cacheDirectoryPath = dataMap.GetString( "BaseCacheDirectory" );
-            int? cacheExpirationDays = dataMap.GetString( "DaysKeepCachedFiles" ).AsIntegerOrNull();
-            if ( cacheExpirationDays.HasValue )
+            try
             {
-                DateTime cacheExpirationDate = RockDateTime.Now.Add( new TimeSpan( cacheExpirationDays.Value * -1, 0, 0, 0 ) );
-
-                // if job is being run by the IIS scheduler and path is not null
-                if ( context.Scheduler.SchedulerName == "RockSchedulerIIS" && !string.IsNullOrEmpty( cacheDirectoryPath ) )
-                {
-                    // get the physical path of the cache directory
-                    cacheDirectoryPath = System.Web.Hosting.HostingEnvironment.MapPath( cacheDirectoryPath );
-                }
-
-                // if directory is not blank and cache expiration date not in the future
-                if ( !string.IsNullOrEmpty( cacheDirectoryPath ) && cacheExpirationDate <= RockDateTime.Now )
-                {
-                    // Clean cache directory
-                    CleanCacheDirectory( cacheDirectoryPath, cacheExpirationDate );
-                }
+                CleanCachedFileDirectory( context, dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanCachedFileDirectory", ex ) );
             }
 
-            var binaryFileRockContext = new Rock.Data.RockContext();
-
-            // clean out any temporary binary files
-            BinaryFileService binaryFileService = new BinaryFileService( binaryFileRockContext );
-            foreach ( var binaryFile in binaryFileService.Queryable().Where( bf => bf.IsTemporary == true ).ToList() )
+            try
             {
-                if ( binaryFile.ModifiedDateTime < RockDateTime.Now.AddDays( -1 ) )
-                {
-                    binaryFileService.Delete( binaryFile );
-                }
+                CleanupTemporaryBinaryFiles();
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupTemporaryBinaryFiles", ex ) );
             }
 
-            binaryFileRockContext.SaveChanges();
+            try
+            {
+                PersonCleanup( dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in PersonCleanup", ex ) );
+            }
 
+            if (rockCleanupExceptions.Count > 0)
+            {
+                throw new AggregateException( "One or more exceptions occurred in RockCleanup.", rockCleanupExceptions );
+            }
+        }
+
+        /// <summary>
+        /// Does cleanup of Person Aliases and Metaphones
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        private void PersonCleanup( JobDataMap dataMap )
+        {
             // Add any missing person aliases
             var personRockContext = new Rock.Data.RockContext();
             PersonService personService = new PersonService( personRockContext );
+            PersonAliasService personAliasService = new PersonAliasService( personRockContext );
+            var personAliasServiceQry = personAliasService.Queryable();
             foreach ( var person in personService.Queryable( "Aliases" )
-                .Where( p => !p.Aliases.Any() )
+                .Where( p => !p.Aliases.Any() && !personAliasServiceQry.Any( pa => pa.AliasPersonId == p.Id ))
                 .Take( 300 ) )
             {
                 person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
@@ -178,6 +174,110 @@ namespace Rock.Jobs
                 }
 
                 personRockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// Cleanups the temporary binary files.
+        /// </summary>
+        private void CleanupTemporaryBinaryFiles()
+        {
+            var binaryFileRockContext = new Rock.Data.RockContext();
+            // clean out any temporary binary files
+            BinaryFileService binaryFileService = new BinaryFileService( binaryFileRockContext );
+            foreach ( var binaryFile in binaryFileService.Queryable().Where( bf => bf.IsTemporary == true ).ToList() )
+            {
+                if ( binaryFile.ModifiedDateTime < RockDateTime.Now.AddDays( -1 ) )
+                {
+                    binaryFileService.Delete( binaryFile );
+                }
+            }
+
+            binaryFileRockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Cleans the cached file directory.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="dataMap">The data map.</param>
+        private void CleanCachedFileDirectory( IJobExecutionContext context, JobDataMap dataMap )
+        {
+            string cacheDirectoryPath = dataMap.GetString( "BaseCacheDirectory" );
+            int? cacheExpirationDays = dataMap.GetString( "DaysKeepCachedFiles" ).AsIntegerOrNull();
+            if ( cacheExpirationDays.HasValue )
+            {
+                DateTime cacheExpirationDate = RockDateTime.Now.Add( new TimeSpan( cacheExpirationDays.Value * -1, 0, 0, 0 ) );
+
+                // if job is being run by the IIS scheduler and path is not null
+                if ( context.Scheduler.SchedulerName == "RockSchedulerIIS" && !string.IsNullOrEmpty( cacheDirectoryPath ) )
+                {
+                    // get the physical path of the cache directory
+                    cacheDirectoryPath = System.Web.Hosting.HostingEnvironment.MapPath( cacheDirectoryPath );
+                }
+
+                // if directory is not blank and cache expiration date not in the future
+                if ( !string.IsNullOrEmpty( cacheDirectoryPath ) && cacheExpirationDate <= RockDateTime.Now )
+                {
+                    // Clean cache directory
+                    CleanCacheDirectory( cacheDirectoryPath, cacheExpirationDate );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Purges the audit log.
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        private void PurgeAuditLog( JobDataMap dataMap )
+        {
+            // purge audit log
+            int? auditExpireDays = dataMap.GetString( "AuditLogExpirationDays" ).AsIntegerOrNull();
+            if ( auditExpireDays.HasValue )
+            {
+                var auditLogRockContext = new Rock.Data.RockContext();
+                DateTime auditExpireDate = RockDateTime.Now.Add( new TimeSpan( auditExpireDays.Value * -1, 0, 0, 0 ) );
+                AuditService auditService = new AuditService( auditLogRockContext );
+
+                auditService.DeleteRange( auditService.Queryable().Where( a => a.DateTime < auditExpireDate ).ToList() );
+
+                auditLogRockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// Purges the exception log.
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        private void PurgeExceptionLog( JobDataMap dataMap )
+        {
+            int? exceptionExpireDays = dataMap.GetString( "DaysKeepExceptions" ).AsIntegerOrNull();
+            if ( exceptionExpireDays.HasValue )
+            {
+                var exceptionLogRockContext = new Rock.Data.RockContext();
+                DateTime exceptionExpireDate = RockDateTime.Now.Add( new TimeSpan( exceptionExpireDays.Value * -1, 0, 0, 0 ) );
+
+                ExceptionLogService exceptionLogService = new ExceptionLogService( exceptionLogRockContext );
+                exceptionLogService.DeleteRange( exceptionLogService.Queryable().Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime < exceptionExpireDate ).ToList() );
+                exceptionLogRockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// Cleanups the unconfirmed user logins that have not been confirmed in X hours
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        private void CleanupUnconfirmedUserLogins( JobDataMap dataMap )
+        {
+            int? userExpireHours = dataMap.GetString( "HoursKeepUnconfirmedAccounts" ).AsIntegerOrNull();
+            if ( userExpireHours.HasValue )
+            {
+                var userLoginRockContext = new Rock.Data.RockContext();
+                DateTime userAccountExpireDate = RockDateTime.Now.Add( new TimeSpan( userExpireHours.Value * -1, 0, 0 ) );
+
+                var userLoginService = new UserLoginService( userLoginRockContext );
+                userLoginService.DeleteRange( userLoginService.Queryable().Where( u => u.IsConfirmed == false && ( u.CreatedDateTime ?? DateTime.MinValue ) < userAccountExpireDate ).ToList() );
+                userLoginRockContext.SaveChanges();
             }
         }
 

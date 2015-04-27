@@ -33,10 +33,6 @@ namespace Rock.Web.Cache
     {
         #region constructors
 
-        private CategoryCache()
-        {
-        }
-
         private CategoryCache( Rock.Model.Category model )
         {
             CopyFromModel( model );
@@ -150,10 +146,8 @@ namespace Rock.Web.Cache
                 {
                     return CategoryCache.Read( ParentCategoryId.Value );
                 }
-                else
-                {
-                    return null;
-                }
+
+                return null;
             }
         }
 
@@ -168,24 +162,37 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( categoryIds == null )
-                {
-                    categoryIds = new Model.CategoryService( new RockContext() )
-                        .Get( this.Id, this.EntityTypeId )
-                        .Select( v => v.Id )
-                        .ToList();
-                }
-
                 var categories = new List<CategoryCache>();
-                foreach ( int id in categoryIds )
+
+                if ( categoryIds != null )
                 {
-                    var category = CategoryCache.Read( id );
-                    if ( category != null )
+                    foreach ( int id in categoryIds )
                     {
-                        categories.Add( category );
+                        var category = CategoryCache.Read( id );
+                        if ( category != null )
+                        {
+                            categories.Add( category );
+                        }
                     }
                 }
-                return categories; 
+                else
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var categoryModels = new Model.CategoryService( rockContext )
+                            .Get( this.Id, this.EntityTypeId )
+                            .ToList();
+
+                        categoryIds = categoryModels.Select( c => c.Id ).ToList();
+
+                        foreach( var category in categoryModels )
+                        {
+                            categories.Add( CategoryCache.Read( category ) );
+                        }
+                    }
+                }
+
+                return categories;
             }
         }
         private List<int> categoryIds = null;
@@ -253,14 +260,20 @@ namespace Rock.Web.Cache
 
             if ( category == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var categoryService = new Rock.Model.CategoryService( rockContext );
-                var categoryModel = categoryService.Get( id );
-                if ( categoryModel != null )
+                if ( rockContext != null )
                 {
-                    categoryModel.LoadAttributes( rockContext );
-                    category = new CategoryCache( categoryModel );
+                    category = LoadById( id, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        category = LoadById( id, myRockContext );
+                    }
+                }
 
+                if ( category != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, category, cachePolicy );
                     cache.Set( category.Guid.ToString(), category.Id, cachePolicy );
@@ -268,6 +281,19 @@ namespace Rock.Web.Cache
             }
 
             return category;
+        }
+
+        private static CategoryCache LoadById( int id, RockContext rockContext )
+        {
+            var categoryService = new Rock.Model.CategoryService( rockContext );
+            var categoryModel = categoryService.Get( id );
+            if ( categoryModel != null )
+            {
+                categoryModel.LoadAttributes( rockContext );
+                return new CategoryCache( categoryModel );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -284,20 +310,25 @@ namespace Rock.Web.Cache
             CategoryCache category = null;
             if ( cacheObj != null )
             {
-                category = Read( (int)cacheObj, rockContext );
+                category = Read( (int)cacheObj );
             }
 
             if ( category == null )
             {
-                rockContext = rockContext ?? new RockContext();
-                var categoryService = new CategoryService( rockContext );
-                var categoryModel = categoryService.Get( guid );
-
-                if ( categoryModel != null )
+                if ( rockContext != null )
                 {
-                    categoryModel.LoadAttributes( rockContext );
-                    category = new CategoryCache( categoryModel );
+                    category = LoadByGuid( guid, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
+                    {
+                        category = LoadByGuid( guid, myRockContext );
+                    }
+                }
 
+                if ( category != null )
+                {
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( CategoryCache.CacheKey( category.Id ), category, cachePolicy );
                     cache.Set( category.Guid.ToString(), category.Id, cachePolicy );
@@ -305,6 +336,20 @@ namespace Rock.Web.Cache
             }
 
             return category;
+        }
+
+        private static CategoryCache LoadByGuid( Guid guid, RockContext rockContext )
+        {
+            var categoryService = new CategoryService( rockContext );
+            var categoryModel = categoryService.Get( guid );
+
+            if ( categoryModel != null )
+            {
+                categoryModel.LoadAttributes( rockContext );
+                return new CategoryCache( categoryModel );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -344,7 +389,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
-
     }
 }

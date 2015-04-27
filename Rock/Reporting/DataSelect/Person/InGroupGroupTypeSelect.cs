@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
@@ -63,7 +64,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Group Type";
+                return "In Group Type";
             }
         }
 
@@ -235,9 +236,21 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
-        {
-            var value1 = ( controls[0] as GroupTypePicker ).SelectedValue.AsGuidOrNull();
+        {            
+            // Get the selected Group Type as a Guid.
+            var groupTypeId = ( controls[0] as GroupTypePicker ).SelectedValueAsId().GetValueOrDefault(0);
+
+            string value1 = string.Empty;
+
+            if (groupTypeId > 0)
+            {
+                var groupType = GroupTypeCache.Read(groupTypeId);
+                value1 = (groupType == null) ? string.Empty : groupType.Guid.ToString();
+            }
+
+            // Get the selected Roles
             var value2 = ( controls[1] as RockCheckBoxList ).SelectedValues.AsDelimited( "," );
+            
             return value1 + "|" + value2;
         }
 

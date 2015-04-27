@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
     /// Control for capturing a rating on a scale of 1-?
     /// </summary>
     [ToolboxData( "<{0}:RockRating runat=server></{0}:RockRating>" )]
-    public class RockRating : TextBox, IRockControl
+    public class RockRating : TextBox, IRockControl, IDisplayRequiredIndicator
     {
         #region IRockControl implementation
 

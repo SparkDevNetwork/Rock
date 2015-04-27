@@ -155,31 +155,33 @@ namespace Rock.Reporting
             }
 
             // Get Attributes
-            var rockContext = new RockContext();
-            var entityTypeCache = EntityTypeCache.Read( entityType, true, rockContext );
+            var entityTypeCache = EntityTypeCache.Read( entityType, true );
             if ( entityTypeCache != null )
             {
                 int entityTypeId = entityTypeCache.Id;
-                var qryAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeId );
-                if ( entityType == typeof( Group ) )
+                using ( var rockContext = new RockContext() )
                 {
-                    // in the case of Group, show attributes that are entity global, but also ones that are qualified by GroupTypeId
-                    qryAttributes = qryAttributes
-                        .Where( a =>
-                            a.EntityTypeQualifierColumn == null ||
-                            a.EntityTypeQualifierColumn == string.Empty ||
-                            a.EntityTypeQualifierColumn == "GroupTypeId" );
-                }
-                else
-                {
-                    qryAttributes = qryAttributes.Where( a => a.EntityTypeQualifierColumn == string.Empty && a.EntityTypeQualifierValue == string.Empty );
-                }
+                    var qryAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeId );
+                    if ( entityType == typeof( Group ) )
+                    {
+                        // in the case of Group, show attributes that are entity global, but also ones that are qualified by GroupTypeId
+                        qryAttributes = qryAttributes
+                            .Where( a =>
+                                a.EntityTypeQualifierColumn == null ||
+                                a.EntityTypeQualifierColumn == string.Empty ||
+                                a.EntityTypeQualifierColumn == "GroupTypeId" );
+                    }
+                    else
+                    {
+                        qryAttributes = qryAttributes.Where( a => a.EntityTypeQualifierColumn == string.Empty && a.EntityTypeQualifierValue == string.Empty );
+                    }
 
-                var attributeIdList = qryAttributes.Select( a => a.Id ).ToList();
+                    var attributeIdList = qryAttributes.Select( a => a.Id ).ToList();
 
-                foreach ( var attributeId in attributeIdList )
-                {
-                    AddEntityFieldForAttribute( entityFields, AttributeCache.Read( attributeId ) );
+                    foreach ( var attributeId in attributeIdList )
+                    {
+                        AddEntityFieldForAttribute( entityFields, AttributeCache.Read( attributeId ) );
+                    }
                 }
             }
 
@@ -230,10 +232,13 @@ namespace Rock.Reporting
 
                 if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Group ) ) && attribute.EntityTypeQualifierColumn == "GroupTypeId" )
                 {
-                    var groupType = new GroupTypeService( new RockContext() ).Get( attribute.EntityTypeQualifierValue.AsInteger() );
-                    if ( groupType != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        entityField.Title = string.Format( "{0} ({1})", attribute.Name, groupType.Name );
+                        var groupType = new GroupTypeService( rockContext ).Get( attribute.EntityTypeQualifierValue.AsInteger() );
+                        if ( groupType != null )
+                        {
+                            entityField.Title = string.Format( "{0} ({1})", attribute.Name, groupType.Name );
+                        }
                     }
                 }
 

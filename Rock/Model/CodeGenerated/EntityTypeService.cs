@@ -118,27 +118,15 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<FinancialPersonSavedAccount>( Context ).Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
+            if ( new Service<FinancialGateway>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialPersonSavedAccount.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialGateway.FriendlyTypeName );
                 return false;
             }  
  
             if ( new Service<FinancialScheduledTransactionDetail>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialScheduledTransactionDetail.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
                 return false;
             }  
  
@@ -157,6 +145,12 @@ namespace Rock.Model
             if ( new Service<History>( Context ).Queryable().Any( a => a.RelatedEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, History.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<MergeTemplate>( Context ).Queryable().Any( a => a.MergeTemplateTypeEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, MergeTemplate.FriendlyTypeName );
                 return false;
             }  
  

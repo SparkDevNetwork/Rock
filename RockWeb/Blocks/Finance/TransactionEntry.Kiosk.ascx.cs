@@ -46,9 +46,8 @@ namespace RockWeb.Blocks.Finance
     [Description( "Block used to process giving from a kiosk." )]
 
     #region Block Attributes
-    [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", true, "", "", 0 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false,
-        Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_KIOSK, "", 1 )]
+    [FinancialGatewayField( "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", true, "", "", 0 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_KIOSK, "", 1 )]
     [AccountsField( "Accounts", "Accounts to allow giving. This list will be filtered by campus context when displayed.", true, "", "", 1 )]
     [TextField( "Batch Name Prefix", "The prefix to add to the financial batch.", true, "Kiosk Giving", "", 2 )]
     [LinkedPage( "Homepage", "Homepage of the kiosk.", true, "", "", 2 )]
@@ -347,123 +346,137 @@ namespace RockWeb.Blocks.Finance
         // Swipe Panel Events
         //
 
-        private void ProcessSwipe(string swipeData) {
+        private void ProcessSwipe(string swipeData) 
+        {
             try
             {
-                RockContext rockContext = new RockContext();
-
-                // create swipe object
-                SwipePaymentInfo swipeInfo = new SwipePaymentInfo(swipeData);
-                swipeInfo.Amount = this.Amounts.Sum( a => a.Value );
-
-                // if not anonymous then add contact info to the gateway transaction
-                if (this.AnonymousGiverPersonAliasId != this.SelectedGivingUnit.PersonAliasId)
+                using ( var rockContext = new RockContext() )
                 {
-                    var giver = new PersonAliasService( rockContext).Queryable("Person, Person.PhoneNumbers").Where(p => p.Id == this.SelectedGivingUnit.PersonAliasId).FirstOrDefault();
-                    swipeInfo.FirstName = giver.Person.NickName;
-                    swipeInfo.LastName = giver.Person.LastName;
+                    // create swipe object
+                    SwipePaymentInfo swipeInfo = new SwipePaymentInfo( swipeData );
+                    swipeInfo.Amount = this.Amounts.Sum( a => a.Value );
 
-                    if ( giver.Person.PhoneNumbers != null )
+                    // if not anonymous then add contact info to the gateway transaction
+                    if ( this.AnonymousGiverPersonAliasId != this.SelectedGivingUnit.PersonAliasId )
                     {
-                        Guid homePhoneValueGuid = new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
-                        var homephone = giver.Person.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == homePhoneValueGuid ).FirstOrDefault();
-                        if ( homephone != null )
+                        var giver = new PersonAliasService( rockContext ).Queryable( "Person, Person.PhoneNumbers" ).Where( p => p.Id == this.SelectedGivingUnit.PersonAliasId ).FirstOrDefault();
+                        swipeInfo.FirstName = giver.Person.NickName;
+                        swipeInfo.LastName = giver.Person.LastName;
+
+                        if ( giver.Person.PhoneNumbers != null )
                         {
-                            swipeInfo.Phone = homephone.NumberFormatted;
+                            Guid homePhoneValueGuid = new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+                            var homephone = giver.Person.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == homePhoneValueGuid ).FirstOrDefault();
+                            if ( homephone != null )
+                            {
+                                swipeInfo.Phone = homephone.NumberFormatted;
+                            }
                         }
+
+                        var homeLocation = giver.Person.GetHomeLocation();
+
+                        if ( homeLocation != null )
+                        {
+                            swipeInfo.Street1 = homeLocation.Street1;
+
+                            if ( !string.IsNullOrWhiteSpace( homeLocation.Street2 ) )
+                            {
+                                swipeInfo.Street2 = homeLocation.Street2;
+                            }
+
+                            swipeInfo.City = homeLocation.City;
+                            swipeInfo.State = homeLocation.State;
+                            swipeInfo.PostalCode = homeLocation.PostalCode;
+                        }
+
                     }
 
-                    var homeLocation = giver.Person.GetHomeLocation();
+                    // add comment to the transation
+                    swipeInfo.Comment1 = DefinedValueCache.Read( GetAttributeValue( "Source" ) ).Value;
 
-                    if ( homeLocation != null )
+                    // get gateway
+                    FinancialGateway financialGateway = null;
+                    GatewayComponent gateway = null;
+                    Guid? gatewayGuid = GetAttributeValue( "CreditCardGateway" ).AsGuidOrNull();
+                    if ( gatewayGuid.HasValue )
                     {
-                        swipeInfo.Street1 = homeLocation.Street1;
-
-                        if ( !string.IsNullOrWhiteSpace( homeLocation.Street2 ) )
+                        financialGateway = new FinancialGatewayService( rockContext ).Get( gatewayGuid.Value );
+                        if ( financialGateway != null )
                         {
-                            swipeInfo.Street2 = homeLocation.Street2;
+                            financialGateway.LoadAttributes( rockContext );
                         }
-
-                        swipeInfo.City = homeLocation.City;
-                        swipeInfo.State = homeLocation.State;
-                        swipeInfo.PostalCode = homeLocation.PostalCode;
+                        gateway = financialGateway.GetGatewayComponent();
                     }
-                     
-                }
 
-                // add comment to the transation
-                swipeInfo.Comment1 = DefinedValueCache.Read( GetAttributeValue( "Source" ) ).Value;
-            
-                // get gateway
-                GatewayComponent gateway = GatewayContainer.GetComponent( GetAttributeValue("CreditCardGateway"));
-            
-                if ( gateway != null )
-                {
-                
-                    string errorMessage = string.Empty;
-                    var transaction = gateway.Charge( swipeInfo, out errorMessage );
-
-                    if ( transaction != null )
+                    if ( gateway != null )
                     {
-                        _transactionCode = transaction.TransactionCode;
-                        transaction.TransactionDateTime = RockDateTime.Now;
-                        transaction.AuthorizedPersonAliasId = this.SelectedGivingUnit.PersonAliasId;
-                        transaction.GatewayEntityTypeId = gateway.TypeId;
-                        transaction.TransactionTypeValueId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) ).Id;
-                        transaction.CurrencyTypeValueId = swipeInfo.CurrencyTypeValue.Id;
 
-                        Guid sourceGuid = Guid.Empty;
-                        if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
+                        string errorMessage = string.Empty;
+                        var transaction = gateway.Charge( financialGateway, swipeInfo, out errorMessage );
+
+                        if ( transaction != null )
                         {
-                            transaction.SourceTypeValueId = DefinedValueCache.Read( sourceGuid ).Id;
-                        }
-                        
-                        //transaction.CreditCardTypeValueId = swipeInfo.CreditCardTypeValue.Id;
+                            _transactionCode = transaction.TransactionCode;
+                            transaction.TransactionDateTime = RockDateTime.Now;
+                            transaction.AuthorizedPersonAliasId = this.SelectedGivingUnit.PersonAliasId;
+                            transaction.FinancialGatewayId = financialGateway.Id;
+                            transaction.TransactionTypeValueId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) ).Id;
+                            transaction.CurrencyTypeValueId = swipeInfo.CurrencyTypeValue.Id;
 
-                        foreach ( var accountAmount in this.Amounts.Where(a => a.Value > 0 ))
+                            Guid sourceGuid = Guid.Empty;
+                            if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
+                            {
+                                transaction.SourceTypeValueId = DefinedValueCache.Read( sourceGuid ).Id;
+                            }
+
+                            //transaction.CreditCardTypeValueId = swipeInfo.CreditCardTypeValue.Id;
+
+                            foreach ( var accountAmount in this.Amounts.Where( a => a.Value > 0 ) )
+                            {
+                                var transactionDetail = new FinancialTransactionDetail();
+                                transactionDetail.Amount = accountAmount.Value;
+                                transactionDetail.AccountId = accountAmount.Key;
+                                transaction.TransactionDetails.Add( transactionDetail );
+                            }
+
+                            var batchService = new FinancialBatchService( rockContext );
+
+                            // Get the batch 
+                            var batch = batchService.Get(
+                                GetAttributeValue( "BatchNamePrefix" ),
+                                swipeInfo.CurrencyTypeValue,
+                                swipeInfo.CreditCardTypeValue,
+                                transaction.TransactionDateTime.Value,
+                                financialGateway.GetBatchTimeOffset() );
+
+                            batch.ControlAmount += transaction.TotalAmount;
+
+                            transaction.BatchId = batch.Id;
+                            batch.Transactions.Add( transaction );
+                            rockContext.SaveChanges();
+
+                            // send receipt in one is configured and not giving anonymously
+                            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ReceiptEmail" ) ) && ( this.AnonymousGiverPersonAliasId != this.SelectedGivingUnit.PersonAliasId ) )
+                            {
+                                _receiptSent = true;
+
+                                SendReceipt();
+                            }
+
+                            HidePanels();
+                            ShowReceiptPanel();
+                        }
+                        else
                         {
-                            var transactionDetail = new FinancialTransactionDetail();
-                            transactionDetail.Amount = accountAmount.Value;
-                            transactionDetail.AccountId = accountAmount.Key;
-                            transaction.TransactionDetails.Add( transactionDetail );
+                            lSwipeErrors.Text = String.Format( "<div class='alert alert-danger'>An error occurred while process this transaction. Message: {0}</div>", errorMessage );
                         }
 
-                        var batchService = new FinancialBatchService( rockContext );
-
-                        // Get the batch 
-                        var batch = batchService.Get(
-                            GetAttributeValue( "BatchNamePrefix" ),
-                            swipeInfo.CurrencyTypeValue,
-                            swipeInfo.CreditCardTypeValue,
-                            transaction.TransactionDateTime.Value,
-                            gateway.BatchTimeOffset );
-
-                        batch.ControlAmount += transaction.TotalAmount;
-
-                        transaction.BatchId = batch.Id;
-                        batch.Transactions.Add( transaction );
-                        rockContext.SaveChanges();
-
-                        // send receipt in one is configured and not giving anonymously
-                        if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ReceiptEmail" ) ) && (this.AnonymousGiverPersonAliasId != this.SelectedGivingUnit.PersonAliasId))
-                        {
-                            _receiptSent = true;
-                            
-                            SendReceipt();
-                        }
-
-                        HidePanels();
-                        ShowReceiptPanel();
                     }
                     else
                     {
-                        lSwipeErrors.Text = String.Format( "<div class='alert alert-danger'>An error occurred while process this transaction. Message: {0}</div>", errorMessage );
+                        lSwipeErrors.Text = "<div class='alert alert-danger'>Invalid gateway provided. Please provide a gateway. Transaction not processed.</div>";
                     }
-                
-                } else {
-                    lSwipeErrors.Text = "<div class='alert alert-danger'>Invalid gateway provided. Please provide a gateway. Transaction not processed.</div>";
                 }
-
             }
             catch ( Exception ex )
             {

@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Net;
 
 using Rock;
 using Rock.Attribute;
@@ -91,7 +92,7 @@ namespace RockWeb.Blocks.Core
                 _entityId = null;
             }
 
-            _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
+            _canConfigure = IsUserAuthorized( Rock.Security.Authorization.ADMINISTRATE );
 
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
@@ -380,11 +381,11 @@ namespace RockWeb.Blocks.Core
                         var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId );
                         if ( attributeValue != null && !string.IsNullOrWhiteSpace( attributeValue.Value ) )
                         {
-                            lValue.Text = fieldType.Field.FormatValueAsHtml( lValue, attributeValue.Value, attribute.QualifierValues, true );
+                            lValue.Text = WebUtility.HtmlEncode(fieldType.Field.FormatValueAsHtml( lValue, attributeValue.Value, attribute.QualifierValues, true ));
                         }
                         else
                         {
-                            lValue.Text = string.Format( "<span class='text-muted'>{0}</span>", fieldType.Field.FormatValueAsHtml( lValue, attribute.DefaultValue, attribute.QualifierValues, true ) );
+                            lValue.Text = string.Format( "<span class='text-muted'>{0}</span>", WebUtility.HtmlEncode( fieldType.Field.FormatValueAsHtml( lValue, attribute.DefaultValue, attribute.QualifierValues, true ) ) );
                         }
                     }
                 }
