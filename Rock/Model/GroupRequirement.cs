@@ -42,6 +42,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 0 )]
         public int GroupId { get; set; }
 
         /// <summary>
@@ -52,6 +53,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 1 )]
         public int GroupRequirementTypeId { get; set; }
 
         /// <summary>
@@ -61,6 +63,7 @@ namespace Rock.Model
         /// The group role identifier.
         /// </value>
         [DataMember]
+        [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 2 )]
         public int? GroupRoleId { get; set; }
 
         #endregion
@@ -142,16 +145,16 @@ namespace Rock.Model
                 if ( this.GroupRequirementType.DataViewId.HasValue )
                 {
                     var errorMessages = new List<string>();
-                    var personService = new PersonService(rockContext);
+                    var personService = new PersonService( rockContext );
                     var paramExpression = personService.ParameterExpression;
                     var dataViewWhereExpression = this.GroupRequirementType.DataView.GetExpression( personService, paramExpression, out errorMessages );
                     var dataViewQry = personService.Get( paramExpression, dataViewWhereExpression );
                     if ( dataViewQry != null )
                     {
-                        var join = personQry.Join( 
-                            dataViewQry.DefaultIfEmpty(), 
-                            pr => pr.Id, 
-                            pq => pq.Id, 
+                        var join = personQry.Join(
+                            dataViewQry.DefaultIfEmpty(),
+                            pr => pr.Id,
+                            pq => pq.Id,
                             ( pr, pq ) =>
                             new
                             {
@@ -217,7 +220,7 @@ namespace Rock.Model
         {
             var rockContext = new RockContext();
             var personQuery = new PersonService( rockContext ).Queryable().Where( a => a.Id == personId );
-            var result = this.PersonQueryableMeetsGroupRequirement(rockContext, personQuery, groupRoleId ).FirstOrDefault();
+            var result = this.PersonQueryableMeetsGroupRequirement( rockContext, personQuery, groupRoleId ).FirstOrDefault();
             if ( result == null )
             {
                 // no result. probably because personId was zero
