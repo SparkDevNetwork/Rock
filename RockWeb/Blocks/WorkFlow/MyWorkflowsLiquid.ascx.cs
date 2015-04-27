@@ -300,7 +300,7 @@ as fields on the workflow or activity)...
                 {
                     var categoryIds = GetCategories( rockContext );
 
-                    var qry = new WorkflowService( rockContext ).Queryable()
+                    var qry = new WorkflowService( rockContext ).Queryable( "WorkflowType" )
                         .Where( w =>
                             w.ActivatedDateTime.HasValue &&
                             !w.CompletedDateTime.HasValue &&

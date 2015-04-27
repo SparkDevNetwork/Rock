@@ -33,15 +33,7 @@ namespace Rock.Web.Cache
     {
         #region Constructors
 
-        private object _lockObj;
-
-        private DefinedTypeCache()
-        {
-            _lockObj = new object();
-        }
-
         private DefinedTypeCache( DefinedType model )
-            : this()
         {
             CopyFromModel( model );
         }
@@ -148,32 +140,31 @@ namespace Rock.Web.Cache
             {
                 var definedValues = new List<DefinedValueCache>();
 
-                lock ( _lockObj )
+                if ( definedValueIds != null )
                 {
-                    if ( definedValueIds != null )
+                    foreach ( int id in definedValueIds )
                     {
-                        foreach ( int id in definedValueIds )
+                        var definedValue = DefinedValueCache.Read( id );
+                        if ( definedValue != null )
                         {
-                            var definedValue = DefinedValueCache.Read( id );
-                            if ( definedValue != null )
-                            {
-                                definedValues.Add( definedValue );
-                            }
+                            definedValues.Add( definedValue );
                         }
                     }
-                    else
+                }
+                else
+                {
+                    using ( var rockContext = new RockContext() )
                     {
-                        definedValueIds = new List<int>();
+                        var definedValueModels = new Model.DefinedValueService( rockContext )
+                            .GetByDefinedTypeId( this.Id )
+                            .ToList();
 
-                        using ( var rockContext = new RockContext() )
-                        {
-                            foreach ( var definedValue in new Model.DefinedValueService( rockContext )
-                                .GetByDefinedTypeId( this.Id ) )
-                            {
-                                definedValueIds.Add( definedValue.Id );
-                                definedValue.LoadAttributes( rockContext );
-                                definedValues.Add( DefinedValueCache.Read( definedValue, rockContext ) );
-                            }
+                        definedValueIds = definedValueModels.Select( v => v.Id ).ToList();
+
+                        foreach ( var definedValue in definedValueModels )
+                        { 
+                            definedValue.LoadAttributes( rockContext );
+                            definedValues.Add( DefinedValueCache.Read( definedValue, rockContext ) );
                         }
                     }
                 }

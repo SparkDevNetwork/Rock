@@ -387,13 +387,9 @@ namespace Rock.Web.UI.Controls
             
             _btnOn = new HtmlAnchor();
             _btnOn.ID = this.ID + "_btnOn";
-            _btnOn.Attributes["class"] = "btn btn-default js-toggle-on " + this.ButtonSizeCssClass;
-            _btnOn.InnerText = this.OnText;
 
             _btnOff = new HtmlAnchor();
             _btnOff.ID = this.ID + "_btnOff";
-            _btnOff.Attributes["class"] = "btn btn-default js-toggle-off " + this.ButtonSizeCssClass;
-            _btnOff.InnerText = this.OffText;
 
             Controls.Add( _hfChecked );
             Controls.Add( _btnOn );
@@ -427,6 +423,11 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "btn-group btn-toggle " + this.CssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+            _btnOn.Attributes["class"] = "btn btn-default js-toggle-on " + this.ButtonSizeCssClass;
+            _btnOn.InnerText = this.OnText;
+            _btnOff.Attributes["class"] = "btn btn-default js-toggle-off " + this.ButtonSizeCssClass;
+            _btnOff.InnerText = this.OffText;
+            
             if ( this.Checked )
             {
                 _btnOn.AddCssClass( this.ActiveButtonCssClass + " " + this.OnCssClass + " active" );

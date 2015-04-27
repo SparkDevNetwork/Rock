@@ -14,6 +14,7 @@
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger"  Visible="false"/>
 
                 <fieldset>
 
