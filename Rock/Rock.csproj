@@ -273,11 +273,9 @@
     <Compile Include="Model\BenevolenceRequest.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\BenevolenceRequestService.Partial.cs" />
     <Compile Include="Model\BenevolenceResult.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\BenevolenceResultService.Partial.cs" />
     <Compile Include="Model\CampusService.partial.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceRequestService.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceResultService.cs" />
@@ -323,7 +321,7 @@
     <Compile Include="Model\WorkflowActivityTypeService.Partial.cs" />
     <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
     <Compile Include="Net\RockRestClient.cs" />
-    <Compile Include="PersonProfile\Badge\GeofencedGroup.cs" />
+    <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
     <Compile Include="Reporting\DataFilter\BaseAccountFilter.cs" />

@@ -482,7 +482,7 @@ namespace RockWeb.Blocks.Groups
             group.Name = tbName.Text;
             group.Description = tbDescription.Text;
             group.CampusId = ddlCampus.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( ddlCampus.SelectedValue );
-            group.GroupTypeId = int.Parse( ddlGroupType.SelectedValue );
+            group.GroupTypeId = ddlGroupType.SelectedValue.AsInteger();
             group.ParentGroupId = gpParentGroup.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( gpParentGroup.SelectedValue );
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
@@ -491,9 +491,9 @@ namespace RockWeb.Blocks.Groups
             // save sync settings
             if ( wpGroupSync.Visible )
             {
-                group.SyncDataViewId = dvpSyncDataview.SelectedItem.Value.AsIntegerOrNull();
-                group.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedItem.Value.AsIntegerOrNull();
-                group.ExitSystemEmailId = ddlExitEmail.SelectedItem.Value.AsIntegerOrNull();
+                group.SyncDataViewId = dvpSyncDataview.SelectedValue.AsIntegerOrNull();
+                group.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedValue.AsIntegerOrNull();
+                group.ExitSystemEmailId = ddlExitEmail.SelectedValue.AsIntegerOrNull();
                 group.AddUserAccountsDuringSync = rbCreateLoginDuringSync.Checked;
             }
 
@@ -692,7 +692,7 @@ namespace RockWeb.Blocks.Groups
                 else
                 {
                     // Cancelling on Add.  Return to Grid
-                    NavigateToParentPage();
+                    NavigateToPage( RockPage.Guid, null );
                 }
             }
             else
@@ -1132,6 +1132,19 @@ namespace RockWeb.Blocks.Groups
                 // Save value to viewstate for use later when binding location grid
                 AllowMultipleLocations = groupType != null && groupType.AllowMultipleLocations;
 
+                // show/hide group sync panel based on permissions from the group type
+                if ( group.GroupTypeId != 0 )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        GroupType selectedGroupType = new GroupTypeService( rockContext ).Get( group.GroupTypeId );
+                        if ( selectedGroupType != null )
+                        {
+                            wpGroupSync.Visible = selectedGroupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                        }
+                    }
+                }
+                
                 if ( groupType != null && groupType.LocationSelectionMode != GroupLocationPickerMode.None )
                 {
                     wpMeetingDetails.Visible = true;

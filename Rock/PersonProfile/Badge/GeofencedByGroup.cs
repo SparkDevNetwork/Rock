@@ -32,11 +32,11 @@ namespace Rock.PersonProfile.Badge
     /// </summary>
     [Description( "Displays the group(s) of a particular type that have a geo-fence location around one or more of the the person's map locations." )]
     [Export( typeof( BadgeComponent ) )]
-    [ExportMetadata( "ComponentName", "Geofenced Group" )]
+    [ExportMetadata( "ComponentName", "Geofenced By Group" )]
 
     [GroupTypeField( "Group Type", "The type of group to use.", true )]
     [TextField( "Badge Color", "The color of the badge (#ffffff).", true, "#0ab4dd" )]
-    public class GeofencedGroup : BadgeComponent
+    public class GeofencedByGroup : BadgeComponent
     {
         /// <summary>
         /// Renders the specified writer.
@@ -51,8 +51,8 @@ namespace Rock.PersonProfile.Badge
             if ( groupTypeGuid.HasValue &&  !String.IsNullOrEmpty( badgeColor ) )
             {
                 writer.Write( String.Format( 
-                    "<span title='{0}' data-toggle='tooltip' class='label badge-geofenced-group badge-id-{1}' style='background-color:{2};display:none' ></span>", 
-                    badge.Name.EscapeQuotes(), badge.Id, badgeColor.EscapeQuotes() ) );
+                    "<span class='label badge-geofenced-group badge-id-{0}' style='background-color:{1};display:none' ></span>", 
+                    badge.Id, badgeColor.EscapeQuotes() ) );
 
                 writer.Write( String.Format( @"
 <script>
@@ -62,23 +62,31 @@ Sys.Application.add_load(function () {{
             type: 'GET',
             url: Rock.settings.get('baseUrl') + 'api/PersonBadges/GeofencedGroups/{0}/{1}' ,
             statusCode: {{
-                200: function (result, status, xhr) {{
-                    var $badge = $('.badge-geofenced-group.badge-id-{3}');
+                200: function (data, status, xhr) {{
+                    var $badge = $('.badge-geofenced-group.badge-id-{2}');
                     var badgeHtml = '';
-                    if (result && result != '') {{
-                        badgeHtml = '<span class=\'label label-{2}\'>' + result + '</span>';
-                        $badge.show();
+
+                    $.each(data, function() {{
+                        if ( badgeHtml != '' ) {{ 
+                            badgeHtml += ' | ';
+                        }}
+                        badgeHtml += '<span title=""' + this.LeaderNames + '"" data-toggle=""tooltip"">' + this.GroupName + '</span>';
+                    }});
+
+                    if (badgeHtml != '') {{
+                        $badge.show('fast');
                     }} else {{
                         $badge.hide();
                     }}
                     $badge.html(badgeHtml);
+                    $badge.find('span').tooltip();
                 }}
             }},
     }});
 }});
 </script>
                 
-", Person.Id.ToString(), groupTypeGuid.ToString(), badgeColor, badge.Id ) );
+", Person.Id.ToString(), groupTypeGuid.ToString(), badge.Id ) );
             }
 
         }

@@ -114,7 +114,7 @@ namespace Rock.Model
         /// </summary>
         public BenevolenceResultConfiguration()
         {
-            this.HasRequired( p => p.BenevolenceRequest ).WithMany( p => p.BenevolenceResults ).HasForeignKey( p => p.BenevolenceRequestId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.BenevolenceRequest ).WithMany( p => p.BenevolenceResults ).HasForeignKey( p => p.BenevolenceRequestId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.ResultTypeValue ).WithMany().HasForeignKey( p => p.ResultTypeValueId ).WillCascadeOnDelete( false );
 
         }

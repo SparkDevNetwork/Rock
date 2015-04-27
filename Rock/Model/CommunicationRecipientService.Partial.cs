@@ -27,6 +27,7 @@ namespace Rock.Model
     /// </summary>
     public partial class CommunicationRecipientService 
     {
+
         /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> by <see cref="Rock.Model.Communication"/> and <see cref="Rock.Model.CommunicationRecipientStatus"/>
         /// </summary>

@@ -820,17 +820,51 @@ namespace Rock.Lava
                 var person = (Person)input;
                
                 Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-                var location = new GroupMemberService( GetRockContext(context) )
-                    .Queryable( "GroupLocations.Location" )
-                    .AsNoTracking()
-                    .Where( m => 
-                        m.PersonId == person.Id && 
-                        m.Group.GroupType.Guid == familyGuid )
-                    .SelectMany( m => m.Group.GroupLocations )
-                    .Where( gl => 
-                        gl.GroupLocationTypeValue.Value == addressType )
-                    .Select( gl => gl.Location )
-                    .FirstOrDefault();
+
+                Location location = null;
+
+                switch ( addressType )
+                {
+                    case "Mailing":
+                        location = new GroupMemberService( GetRockContext( context ) )
+                            .Queryable( "GroupLocations.Location" )
+                            .AsNoTracking()
+                            .Where( m =>
+                                m.PersonId == person.Id &&
+                                m.Group.GroupType.Guid == familyGuid )
+                            .SelectMany( m => m.Group.GroupLocations )
+                            .Where( gl =>
+                                gl.IsMailingLocation == true )
+                            .Select( gl => gl.Location )
+                            .FirstOrDefault();
+                        break;
+                    case "MapLocation":
+                        location = new GroupMemberService( GetRockContext( context ) )
+                            .Queryable( "GroupLocations.Location" )
+                            .AsNoTracking()
+                            .Where( m =>
+                                m.PersonId == person.Id &&
+                                m.Group.GroupType.Guid == familyGuid )
+                            .SelectMany( m => m.Group.GroupLocations )
+                            .Where( gl =>
+                                gl.IsMappedLocation == true )
+                            .Select( gl => gl.Location )
+                            .FirstOrDefault();
+                        break;
+                    default:
+                        location = new GroupMemberService( GetRockContext( context ) )
+                            .Queryable( "GroupLocations.Location" )
+                            .AsNoTracking()
+                            .Where( m =>
+                                m.PersonId == person.Id &&
+                                m.Group.GroupType.Guid == familyGuid )
+                            .SelectMany( m => m.Group.GroupLocations )
+                            .Where( gl =>
+                                gl.GroupLocationTypeValue.Value == addressType )
+                            .Select( gl => gl.Location )
+                            .FirstOrDefault();
+                        break;
+                }
 
                 if (location != null)
                 {
@@ -923,16 +957,24 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
-        /// <param name="addressType">Type of the group.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
         /// <returns></returns>
         public static List<Rock.Model.Group> Groups( DotLiquid.Context context, object input, string groupTypeId )
         {
-            if ( input != null && input is Person )
+            if ( input != null )
             {
-                var person = (Person)input;
-
+                var person = input as Person;
+                if ( person == null )
+                {
+                    var checkinPerson = input as CheckIn.CheckInPerson;
+                    if ( checkinPerson != null )
+                    {
+                        person = checkinPerson.Person;
+                    }
+                }
+                                
                 int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
-                if ( numericalGroupTypeId.HasValue )
+                if ( person != null && numericalGroupTypeId.HasValue )
                 {
                     return new GroupMemberService( GetRockContext( context ) )
                         .Queryable().AsNoTracking()
