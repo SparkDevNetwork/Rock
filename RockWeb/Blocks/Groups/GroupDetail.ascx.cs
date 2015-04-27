@@ -424,7 +424,7 @@ namespace RockWeb.Blocks.Groups
             group.Name = tbName.Text;
             group.Description = tbDescription.Text;
             group.CampusId = ddlCampus.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( ddlCampus.SelectedValue );
-            group.GroupTypeId = int.Parse( ddlGroupType.SelectedValue );
+            group.GroupTypeId = ddlGroupType.SelectedValue.AsInteger();
             group.ParentGroupId = gpParentGroup.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( gpParentGroup.SelectedValue );
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
@@ -432,9 +432,9 @@ namespace RockWeb.Blocks.Groups
             // save sync settings
             if ( wpGroupSync.Visible )
             {
-                group.SyncDataViewId = dvpSyncDataview.SelectedItem.Value.AsIntegerOrNull();
-                group.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedItem.Value.AsIntegerOrNull();
-                group.ExitSystemEmailId = ddlExitEmail.SelectedItem.Value.AsIntegerOrNull();
+                group.SyncDataViewId = dvpSyncDataview.SelectedValue.AsIntegerOrNull();
+                group.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedValue.AsIntegerOrNull();
+                group.ExitSystemEmailId = ddlExitEmail.SelectedValue.AsIntegerOrNull();
                 group.AddUserAccountsDuringSync = rbCreateLoginDuringSync.Checked;
             }
 

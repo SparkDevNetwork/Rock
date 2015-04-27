@@ -56,6 +56,8 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnLoad( e );
 
+            nbErrorMessage.Visible = false;
+
             if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( "pageRouteId" ).AsInteger() );
@@ -162,18 +164,28 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
-            rockContext.SaveChanges();
-
-            // new or updated route
-            var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == pageRoute.Id );
-            if ( existingRoute != null )
+            if ( pageRouteService.Queryable().Any( r => r.Route == pageRoute.Route && r.Id != pageRoute.Id ) )
             {
-                RouteTable.Routes.Remove( existingRoute );
+                // Duplicate
+                nbErrorMessage.Title = "Duplicate Route";
+                nbErrorMessage.Text = "<p>There is already an existing route with this name and route names must be unique. Please choose a different route name.</p>";
+                nbErrorMessage.Visible = true;
             }
+            else
+            {
+                rockContext.SaveChanges();
 
-            RouteTable.Routes.AddPageRoute( pageRoute );
+                // new or updated route
+                var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == pageRoute.Id );
+                if ( existingRoute != null )
+                {
+                    RouteTable.Routes.Remove( existingRoute );
+                }
 
-            NavigateToParentPage();
+                RouteTable.Routes.AddPageRoute( pageRoute );
+
+                NavigateToParentPage();
+            }
         }
 
         #endregion

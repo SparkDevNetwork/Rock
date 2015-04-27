@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Prayer
     [Category( "Prayer" )]
     [Description( "Displays the details of a given Prayer Request for viewing or editing." )]
 
-    [IntegerField( "Expires After (Days)", "Number of days until the request will expire (only applies when auto-approved is enabled).", false, 14, "", 0, "ExpireDays" )]
+    [IntegerField( "Expires After (Days)", "Default number of days until the request will expire.", false, 14, "", 0, "ExpireDays" )]
     [CategoryField( "Default Category", "If a category is not selected, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "", 1, "DefaultCategory" )]
     public partial class PrayerRequestDetail : RockBlock, IDetailBlock
     {
@@ -355,7 +355,7 @@ namespace RockWeb.Blocks.Prayer
                 if ( prayerRequest.FlagCount.HasValue && prayerRequest.FlagCount > 0 )
                 {
                     prayerRequest.FlagCount = 0;
-                }
+                } 
             }
 
             // If no expiration date was manually set, then use the default setting.

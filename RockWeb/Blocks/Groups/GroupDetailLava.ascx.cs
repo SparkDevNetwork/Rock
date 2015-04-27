@@ -516,7 +516,7 @@ namespace RockWeb.Blocks.Groups
                 bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
 
                 var qry = groupService
-                    .Queryable( "GroupLocations,Members,Members.Person,GroupType" )
+                    .Queryable( "GroupLocations,Members,Members.Person,Members.Person.PhoneNumbers,GroupType" )
                     .Where( g => g.Id == _groupId );
 
                 if ( !enableDebug )
