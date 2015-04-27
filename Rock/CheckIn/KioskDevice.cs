@@ -140,43 +140,44 @@ namespace Rock.CheckIn
                 }
             }
 
-            if (device != null)
+            if ( device != null )
             {
                 return device;
             }
             else
             {
-                var rockContext = new RockContext();
-
-                var campusLocations = new Dictionary<int, int>();
-                Rock.Web.Cache.CampusCache.All()
-                    .Where( c => c.LocationId.HasValue )
-                    .Select( c => new
-                    {
-                        CampusId = c.Id,
-                        LocationId = c.LocationId.Value
-                    } )
-                    .ToList()
-                    .ForEach( c => campusLocations.Add( c.CampusId, c.LocationId ) );
-
-                var deviceModel = new DeviceService( rockContext )
-                    .Queryable( "Locations" )
-                    .Where( d => d.Id == id )
-                    .FirstOrDefault();
-
-                if ( deviceModel != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    device = new KioskDevice( deviceModel );
-                    foreach ( Location location in deviceModel.Locations )
+                    var campusLocations = new Dictionary<int, int>();
+                    Rock.Web.Cache.CampusCache.All()
+                        .Where( c => c.LocationId.HasValue )
+                        .Select( c => new
+                        {
+                            CampusId = c.Id,
+                            LocationId = c.LocationId.Value
+                        } )
+                        .ToList()
+                        .ForEach( c => campusLocations.Add( c.CampusId, c.LocationId ) );
+
+                    var deviceModel = new DeviceService( rockContext )
+                        .Queryable( "Locations" )
+                        .Where( d => d.Id == id )
+                        .FirstOrDefault();
+
+                    if ( deviceModel != null )
                     {
-                        LoadKioskLocations( device, location, campusLocations, rockContext );
+                        device = new KioskDevice( deviceModel );
+                        foreach ( Location location in deviceModel.Locations )
+                        {
+                            LoadKioskLocations( device, location, campusLocations, rockContext );
+                        }
+
+                        var cachePolicy = new CacheItemPolicy();
+                        cachePolicy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( 60 );
+                        cache.Set( cacheKey, device, cachePolicy );
+
+                        return device;
                     }
-
-                    var cachePolicy = new CacheItemPolicy();
-                    cachePolicy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( 60 );
-                    cache.Set( cacheKey, device, cachePolicy );
-
-                    return device;
                 }
             }
 
@@ -258,7 +259,7 @@ namespace Rock.CheckIn
                     if ( kioskGroupType == null )
                     {
                         kioskGroupType = new KioskGroupType( groupLocation.Group.GroupType );
-                        kioskGroupType.GroupType.LoadAttributes();
+                        kioskGroupType.GroupType.LoadAttributes( rockContext );
                         kioskGroupType.NextActiveTime = DateTime.MaxValue;
                         kioskDevice.KioskGroupTypes.Add( kioskGroupType );
                     }
@@ -275,11 +276,11 @@ namespace Rock.CheckIn
                         if ( kioskGroup == null )
                         {
                             kioskGroup = new KioskGroup( groupLocation.Group );
-                            kioskGroup.Group.LoadAttributes();
+                            kioskGroup.Group.LoadAttributes( rockContext );
                             kioskGroupType.KioskGroups.Add( kioskGroup );
                         }
 
-                        kioskLocation.Location.LoadAttributes();
+                        kioskLocation.Location.LoadAttributes( rockContext );
                         kioskGroup.KioskLocations.Add( kioskLocation );
                     }
                 }

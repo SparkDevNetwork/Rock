@@ -60,15 +60,18 @@ namespace Rock.Workflow
             {
                 EntityTriggers = new Dictionary<string, List<WorkflowTrigger>>();
 
-                var service = new WorkflowTriggerService( new RockContext() );
-
-                foreach ( var trigger in service.Queryable() )
+                using ( var rockContext = new RockContext() )
                 {
-                    if ( !EntityTriggers.ContainsKey( trigger.EntityType.Name ) )
+                    var service = new WorkflowTriggerService( rockContext );
+
+                    foreach ( var trigger in service.Queryable() )
                     {
-                        EntityTriggers.Add( trigger.EntityType.Name, new List<WorkflowTrigger>() );
+                        if ( !EntityTriggers.ContainsKey( trigger.EntityType.Name ) )
+                        {
+                            EntityTriggers.Add( trigger.EntityType.Name, new List<WorkflowTrigger>() );
+                        }
+                        EntityTriggers[trigger.EntityType.Name].Add( trigger.Clone() as WorkflowTrigger );
                     }
-                    EntityTriggers[trigger.EntityType.Name].Add( trigger.Clone() as WorkflowTrigger );
                 }
             }
         }

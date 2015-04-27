@@ -202,10 +202,13 @@ namespace Rock.Model
                 if ( result )
                 {
                     string errorMessage;
-                    if ( !ValidateGroupMembership( new RockContext(), out errorMessage ) )
+                    using ( var rockContext = new RockContext() )
                     {
-                        ValidationResults.Add( new ValidationResult( errorMessage ) );
-                        result = false;
+                        if ( !ValidateGroupMembership( rockContext, out errorMessage ) )
+                        {
+                            ValidationResults.Add( new ValidationResult( errorMessage ) );
+                            result = false;
+                        }
                     }
                 }
 

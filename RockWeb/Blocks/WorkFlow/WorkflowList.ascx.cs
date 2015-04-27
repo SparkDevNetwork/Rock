@@ -673,6 +673,7 @@ namespace RockWeb.Blocks.WorkFlow
                 gWorkflows.ObjectList = new Dictionary<string, object>();
                 workflows.ForEach( w => gWorkflows.ObjectList.Add( w.Id.ToString(), w ) );
 
+                gWorkflows.EntityTypeId = EntityTypeCache.Read<Workflow>().Id;
                 gWorkflows.DataSource = workflows.Select( w => new
                 {
                     w.Id,

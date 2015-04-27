@@ -292,7 +292,7 @@ img.jcrop-preview {
   bottom: 0;
   width: 100%;
   height: 26px;
-  z-index: 1001;
+  z-index: 1049;
   position: fixed;
   right: 0;
   margin-right: 0;
@@ -2037,7 +2037,8 @@ ul.rocklist .rocklist-item.selected {
   opacity: 0.5;
 }
 .image-editor-fileinput {
-  display: none;
+  visibility: hidden;
+  height: 0;
 }
 .image-editor-group.imageupload-group {
   border: 0;
@@ -3075,6 +3076,9 @@ table.inherited-attribute-grid tr td:nth-child(2),
 table.attribute-grid tr th:nth-child(3) {
   width: 550px;
 }
+.group-detail .panel-heading {
+  cursor: pointer;
+}
 /*
     Used to manage styles for specific blocks.
 
@@ -3429,9 +3433,6 @@ table.attribute-grid tr th:nth-child(3) {
   -moz-animation: bar-grow 1s ease-in-out;
   -o-animation: bar-grow 1s ease-in-out;
   animation: bar-grow 1s ease-in-out;
-}
-.badge-ingroupoftype {
-  width: 45px;
 }
 .badge-attendingduration {
   position: relative;

@@ -50,6 +50,9 @@ namespace Rock.Client
         public string GlCode { get; set; }
 
         /// <summary />
+        public int? ImageBinaryFileId { get; set; }
+
+        /// <summary />
         public bool IsActive { get; set; }
 
         /// <summary />
@@ -71,6 +74,9 @@ namespace Rock.Client
         public DateTime? StartDate { get; set; }
 
         /// <summary />
+        public string Url { get; set; }
+
+        /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
@@ -88,6 +94,9 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<FinancialAccount> ChildAccounts { get; set; }
+
+        /// <summary />
+        public BinaryFile ImageBinaryFile { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

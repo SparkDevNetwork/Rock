@@ -50,7 +50,7 @@ namespace Rock.Client
         public DateTime? EndDate { get; set; }
 
         /// <summary />
-        public int? GatewayEntityTypeId { get; set; }
+        public int? FinancialGatewayId { get; set; }
 
         /// <summary />
         public string GatewayScheduleId { get; set; }
@@ -99,7 +99,7 @@ namespace Rock.Client
         public DefinedValue CurrencyTypeValue { get; set; }
 
         /// <summary />
-        public EntityType GatewayEntityType { get; set; }
+        public FinancialGateway FinancialGateway { get; set; }
 
         /// <summary />
         public ICollection<FinancialScheduledTransactionDetail> ScheduledTransactionDetails { get; set; }

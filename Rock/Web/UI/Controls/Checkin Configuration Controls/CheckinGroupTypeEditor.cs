@@ -517,12 +517,13 @@ $('.checkin-grouptype > .panel-body').on('validation-error', function() {
         {
             this.Expanded = true;
 
-            var rockContext = new RockContext();
-
-            foreach ( var groupEditor in this.Controls.OfType<CheckinGroupEditor>().ToList() )
+            using ( var rockContext = new RockContext() )
             {
-                Group group = groupEditor.GetGroup( rockContext );
-                groupEditor.CreateGroupAttributeControls( group, rockContext );
+                foreach ( var groupEditor in this.ControlsOfTypeRecursive<CheckinGroupEditor>().ToList() )
+                {
+                    Group group = groupEditor.GetGroup( rockContext );
+                    groupEditor.CreateGroupAttributeControls( group, rockContext );
+                }
             }
         }
 

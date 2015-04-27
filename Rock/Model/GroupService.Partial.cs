@@ -91,8 +91,9 @@ namespace Rock.Model
         /// <param name="limitToSecurityRoleGroups">if set to <c>true</c> [limit to security role groups].</param>
         /// <param name="groupTypeIncludedIds">The group type included ids.</param>
         /// <param name="groupTypeExcludedIds">The group type excluded ids.</param>
+        /// <param name="includeInactiveGroups">if set to <c>true</c> [include inactive groups].</param>
         /// <returns></returns>
-        public IQueryable<Group> GetNavigationChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, List<int> groupTypeIncludedIds, List<int> groupTypeExcludedIds )
+        public IQueryable<Group> GetNavigationChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, List<int> groupTypeIncludedIds, List<int> groupTypeExcludedIds, bool includeInactiveGroups )
         {
             var qry = Queryable();
 
@@ -112,6 +113,11 @@ namespace Rock.Model
                 qry = qry.Where( a => a.ParentGroupId == id );
             }
 
+            if ( !includeInactiveGroups )
+            {
+                qry = qry.Where( a => a.IsActive );
+            }
+
             if ( limitToSecurityRoleGroups )
             {
                 qry = qry.Where( a => a.IsSecurityRole );
@@ -119,6 +125,8 @@ namespace Rock.Model
 
             if ( groupTypeIncludedIds.Any() )
             {
+                // if groupTypeIncludedIds is specified, only get grouptypes that are in the groupTypeIncludedIds
+                // NOTE: no need to factor in groupTypeExcludedIds since included would take precendance and the excluded ones would already not be included
                 qry = qry.Where( a => groupTypeIncludedIds.Contains( a.GroupTypeId ) );
             }
             else if (groupTypeExcludedIds.Any() )
@@ -174,6 +182,33 @@ namespace Rock.Model
             return result.OrderBy(a => 0);
         }
 
+        /// <summary>
+        /// Groups the name of the ancestor path.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns></returns>
+        public string GroupAncestorPathName( int groupId )
+        {
+            return this.Context.Database.SqlQuery<string>( @"
+                WITH CTE AS 
+                (
+	                SELECT [ParentGroupId], CAST ( [Name] AS VARCHAR(MAX) ) AS [Name]
+	                FROM [Group] 
+	                WHERE [Id] = {0}
+	
+	                UNION ALL
+	
+	                SELECT G.[ParentGroupId], CAST ( G.[Name] + ' > ' + CTE.[Name] AS VARCHAR(MAX) )
+	                FROM [Group] G
+	                INNER JOIN CTE ON CTE.[ParentGroupId] = G.[Id]
+                )
+
+                SELECT [Name]
+                FROM CTE
+                WHERE [ParentGroupId] IS NULL
+", groupId ).FirstOrDefault();
+
+        }
         /// <summary>
         /// Adds the person to a new family record
         /// </summary>

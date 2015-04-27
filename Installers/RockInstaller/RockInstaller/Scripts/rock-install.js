@@ -1,8 +1,8 @@
 ﻿$(document).ready(function() {
 
     // fade in page
-    $("#content-box").css("display", "none");
-    $("#content-box").fadeIn(1000);
+    $("#content-box").not(".no-fade").css("display", "none");
+    $("#content-box").not(".no-fade").fadeIn(1000);
 
     // reusable show password control
     // checkbox toggle should have class of '.show-password'

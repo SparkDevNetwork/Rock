@@ -161,8 +161,8 @@ namespace RockWeb.Blocks.Cms
             {
                 gSites.DataSource = qry.OrderBy( s => s.Name ).ToList();
             }
-            
-            
+
+            gSites.EntityTypeId = EntityTypeCache.Read<Site>().Id;
             gSites.DataBind();
         }
 

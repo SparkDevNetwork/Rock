@@ -40,13 +40,30 @@ namespace RockWeb.Blocks.Core
     [EntityTypeField( "Entity Type", "The type of entity to associate category with" )]
     [TextField( "Entity Type Qualifier Property", "", false )]
     [TextField( "Entity Type Qualifier Value", "", false )]
-    public partial class CategoryDetail : RockBlock, IDetailBlock
+
+    [CategoryField( "Root Category", "Select the root category to use as a starting point for the parent category picker.", false, Category = "CustomSetting" )]
+    [CategoryField( "Exclude Categories", "Select any category that you need to exclude from the parent category picker", true, Category = "CustomSetting" )]
+    public partial class CategoryDetail : RockBlockCustomSettings, IDetailBlock
     {
         #region Control Methods
 
         private int entityTypeId = 0;
         private string entityTypeQualifierProperty = string.Empty;
         private string entityTypeQualifierValue = string.Empty;
+
+        /// <summary>
+        /// Gets the settings tool tip.
+        /// </summary>
+        /// <value>
+        /// The settings tool tip.
+        /// </value>
+        public override string SettingsToolTip
+        {
+            get
+            {
+                return "Set Category Options";
+            }
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -65,6 +82,20 @@ namespace RockWeb.Blocks.Core
             entityTypeQualifierValue = GetAttributeValue( "EntityTypeQualifierValue" );
 
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Category ) ).Id;
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upDetail );
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the Block control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );
         }
 
         /// <summary>
@@ -397,9 +428,27 @@ namespace RockWeb.Blocks.Core
                 lblEntityTypeName.Text = string.Empty;
             }
 
+            var excludeCategoriesGuids = this.GetAttributeValue( "ExcludeCategories" ).SplitDelimitedValues().AsGuidList();
+            List<int> excludedCategoriesIds = new List<int>();
+            if ( excludeCategoriesGuids != null && excludeCategoriesGuids.Any() )
+            {
+                foreach ( var excludeCategoryGuid in excludeCategoriesGuids )
+                {
+                    var excludedCategory = CategoryCache.Read( excludeCategoryGuid );
+                    if ( excludedCategory != null )
+                    {
+                        excludedCategoriesIds.Add( excludedCategory.Id );
+                    }
+                }
+            }
+
             cpParentCategory.EntityTypeId = category.EntityTypeId;
             cpParentCategory.EntityTypeQualifierColumn = category.EntityTypeQualifierColumn;
             cpParentCategory.EntityTypeQualifierValue = category.EntityTypeQualifierValue;
+            cpParentCategory.ExcludedCategoryIds = excludedCategoriesIds.AsDelimited( "," );
+            var rootCategory = CategoryCache.Read( this.GetAttributeValue( "RootCategory" ).AsGuid() );
+
+            cpParentCategory.RootCategoryId = rootCategory != null ? rootCategory.Id : (int?)null;
             cpParentCategory.SetValue( category.ParentCategoryId );
 
             lblEntityTypeQualifierColumn.Visible = !string.IsNullOrWhiteSpace( category.EntityTypeQualifierColumn );
@@ -436,6 +485,74 @@ namespace RockWeb.Blocks.Core
                 .Add( "Entity Type", category.EntityType.Name )
                 .Html;
 
+        }
+
+        /// <summary>
+        /// Shows the settings.
+        /// </summary>
+        protected override void ShowSettings()
+        {
+            var entityType = EntityTypeCache.Read( this.GetAttributeValue( "EntityType" ).AsGuid() );
+            var rootCategory = new CategoryService( new RockContext() ).Get( this.GetAttributeValue( "RootCategory" ).AsGuid() );
+
+            cpRootCategoryDetail.EntityTypeId = entityType != null ? entityType.Id : 0;
+
+            // make sure the rootCategory matches the EntityTypeId (just in case they changed the EntityType after setting RootCategory
+            if ( rootCategory != null && cpRootCategoryDetail.EntityTypeId == rootCategory.EntityTypeId )
+            {
+                cpRootCategoryDetail.SetValue( rootCategory );
+            }
+            else
+            {
+                cpRootCategoryDetail.SetValue( null );
+            }
+
+            cpRootCategoryDetail.Enabled = entityType != null;
+            nbRootCategoryEntityTypeWarning.Visible = entityType == null;
+
+            var excludedCategories = new CategoryService( new RockContext() ).GetByGuids( this.GetAttributeValue( "ExcludeCategories" ).SplitDelimitedValues().AsGuidList() );
+            cpExcludeCategoriesDetail.EntityTypeId = entityType != null ? entityType.Id : 0;
+
+            // make sure the excluded categories matches the EntityTypeId (just in case they changed the EntityType after setting excluded categories
+            if ( excludedCategories != null && excludedCategories.All( a => a.EntityTypeId == cpExcludeCategoriesDetail.EntityTypeId ) )
+            {
+                cpExcludeCategoriesDetail.SetValues( excludedCategories );
+            }
+            else
+            {
+                cpExcludeCategoriesDetail.SetValue( null );
+            }
+
+            mdCategoryDetailConfig.Show();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdCategoryDetailConfig control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdCategoryDetailConfig_SaveClick( object sender, EventArgs e )
+        {
+            var selectedCategory = CategoryCache.Read( cpRootCategoryDetail.SelectedValue.AsInteger() );
+            this.SetAttributeValue( "RootCategory", selectedCategory != null ? selectedCategory.Guid.ToString() : string.Empty );
+
+            var excludedCategoryIds = cpExcludeCategoriesDetail.SelectedValuesAsInt();
+            var excludedCategoryGuids = new List<Guid>();
+            foreach ( int excludedCategoryId in excludedCategoryIds )
+            {
+                var excludedCategory = CategoryCache.Read( excludedCategoryId );
+                if ( excludedCategory != null )
+                {
+                    excludedCategoryGuids.Add( excludedCategory.Guid );
+                }
+            }
+
+            this.SetAttributeValue( "ExcludeCategories", excludedCategoryGuids.AsDelimited( "," ) );
+
+            this.SaveAttributeValues();
+
+            mdCategoryDetailConfig.Hide();
+            Block_BlockUpdated( sender, e );
         }
 
         #endregion

@@ -19,13 +19,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Prayer
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve prayer requests and comments." )]
 
     [LinkedPage( "Detail Page", Order = 0 )]
+    [IntegerField( "Expires After (Days)", "Number of days until the request will expire.", false, 14, "", 1, "ExpireDays" )]
     public partial class PrayerRequestList : RockBlock
     {
         #region Fields
@@ -387,6 +388,7 @@ namespace RockWeb.Blocks.Prayer
                 gPrayerRequests.DataSource = prayerRequests.OrderByDescending( p => p.EnteredDate ).ThenByDescending( p => p.Id ).ToList();
             }
 
+            gPrayerRequests.EntityTypeId = EntityTypeCache.Read<PrayerRequest>().Id;
             gPrayerRequests.DataBind();
         }
 
@@ -445,6 +447,9 @@ namespace RockWeb.Blocks.Prayer
                         {
                             prayerRequest.FlagCount = 0;
                         }
+
+                        var expireDays = Convert.ToDouble( GetAttributeValue( "ExpireDays" ) );
+                        prayerRequest.ExpirationDate = RockDateTime.Now.AddDays( expireDays );
                     }
 
                     rockContext.SaveChanges();

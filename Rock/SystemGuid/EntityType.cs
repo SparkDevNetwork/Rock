@@ -62,6 +62,11 @@ namespace Rock.SystemGuid
         public const string METRICCATEGORY = "3D35C859-DF37-433F-A20A-0FFD0FCB9862";
 
         /// <summary>
+        /// The guid for the Rock.Model.MergeTemplate entity
+        /// </summary>
+        public const string MERGE_TEMPLATE = "CD1DB988-6891-4B0F-8D1B-B0A311A3BC3E";
+
+        /// <summary>
         /// The guid for the Rock.Model.Person entity
         /// </summary>
         public const string PERSON = "72657ED8-D16E-492E-AC12-144C5E7567E7";

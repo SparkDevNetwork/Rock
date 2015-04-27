@@ -495,6 +495,7 @@ namespace RockWeb.Blocks.Administraton
                 gExceptionOccurrences.DataSource = query.Sort( gExceptionOccurrences.SortProperty ).ToList();
             }
 
+            gExceptionOccurrences.EntityTypeId = EntityTypeCache.Read<ExceptionLog>().Id;
             gExceptionOccurrences.DataBind();
         }
 

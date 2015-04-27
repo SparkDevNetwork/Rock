@@ -117,6 +117,7 @@ namespace Rock.Model
             target.Description = source.Description;
             target.EndDate = source.EndDate;
             target.GlCode = source.GlCode;
+            target.ImageBinaryFileId = source.ImageBinaryFileId;
             target.IsActive = source.IsActive;
             target.IsTaxDeductible = source.IsTaxDeductible;
             target.Name = source.Name;
@@ -124,6 +125,7 @@ namespace Rock.Model
             target.ParentAccountId = source.ParentAccountId;
             target.PublicName = source.PublicName;
             target.StartDate = source.StartDate;
+            target.Url = source.Url;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

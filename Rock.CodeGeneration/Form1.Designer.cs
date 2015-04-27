@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.btnLoad = new System.Windows.Forms.Button();
             this.btnGenerate = new System.Windows.Forms.Button();
@@ -46,6 +47,7 @@
             this.tbRestFolder = new System.Windows.Forms.TextBox();
             this.tbClientFolder = new System.Windows.Forms.TextBox();
             this.fdbRockClient = new System.Windows.Forms.FolderBrowserDialog();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.SuspendLayout();
             // 
             // btnLoad
@@ -259,6 +261,7 @@
         private System.Windows.Forms.TextBox tbRestFolder;
         private System.Windows.Forms.TextBox tbClientFolder;
         private System.Windows.Forms.FolderBrowserDialog fdbRockClient;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }
 

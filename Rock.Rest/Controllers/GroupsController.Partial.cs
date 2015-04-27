@@ -60,10 +60,11 @@ namespace Rock.Rest.Controllers
         /// <param name="limitToSecurityRoleGroups">if set to <c>true</c> [limit to security role groups].</param>
         /// <param name="includedGroupTypeIds">The included group type ids.</param>
         /// <param name="excludedGroupTypeIds">The excluded group type ids.</param>
+        /// <param name="includeInactiveGroups">if set to <c>true</c> [include inactive groups].</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetChildren/{id}" )]
-        public IQueryable<TreeViewItem> GetChildren( int id, int rootGroupId = 0, bool limitToSecurityRoleGroups = false, string includedGroupTypeIds = "", string excludedGroupTypeIds = "" )
+        public IQueryable<TreeViewItem> GetChildren( int id, int rootGroupId = 0, bool limitToSecurityRoleGroups = false, string includedGroupTypeIds = "", string excludedGroupTypeIds = "", bool includeInactiveGroups = false )
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
             SetProxyCreation( true );
@@ -72,7 +73,7 @@ namespace Rock.Rest.Controllers
             var excludedGroupTypeIdList = excludedGroupTypeIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
 
             var groupService = (GroupService)Service;
-            var qry = groupService.GetNavigationChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIdList, excludedGroupTypeIdList );
+            var qry = groupService.GetNavigationChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIdList, excludedGroupTypeIdList, includeInactiveGroups );
 
             List<Group> groupList = new List<Group>();
             List<TreeViewItem> groupNameList = new List<TreeViewItem>();
