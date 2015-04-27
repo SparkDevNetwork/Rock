@@ -851,7 +851,7 @@ namespace RockWeb.Blocks.Groups
             bool viewAllowed = false;
             bool editAllowed = IsUserAuthorized( Authorization.EDIT );
             
-            RockContext rockContext = null;
+            RockContext rockContext = new RockContext();
 
             if ( !groupId.Equals( 0 ) )
             {
@@ -865,8 +865,6 @@ namespace RockWeb.Blocks.Groups
 
                 if ( parentGroupId.HasValue )
                 {
-                    rockContext = rockContext ?? new RockContext();
-
                     // Set the new group's parent group (so security checks work)
                     var parentGroup = new GroupService( rockContext ).Get(parentGroupId.Value);
                     if ( parentGroup != null )
@@ -931,13 +929,8 @@ namespace RockWeb.Blocks.Groups
             {
                 foreach ( var role in group.GroupType.Roles )
                 {
-                    int curCount = 0;
-                    if ( group.Members != null )
-                    {
-                        curCount = group.Members
-                            .Where( m => m.GroupRoleId == role.Id && m.GroupMemberStatus == GroupMemberStatus.Active )
-                            .Count();
-                    }
+                    var groupMemberService = new GroupMemberService( rockContext );
+                    int curCount = groupMemberService.Queryable().Where( m => m.GroupRoleId == role.Id && m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
 
                     if ( role.MinCount.HasValue && role.MinCount.Value > curCount )
                     {
