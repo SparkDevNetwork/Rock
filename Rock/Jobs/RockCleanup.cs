@@ -130,8 +130,10 @@ namespace Rock.Jobs
             // Add any missing person aliases
             var personRockContext = new Rock.Data.RockContext();
             PersonService personService = new PersonService( personRockContext );
+            PersonAliasService personAliasService = new PersonAliasService( personRockContext );
+            var personAliasServiceQry = personAliasService.Queryable();
             foreach ( var person in personService.Queryable( "Aliases" )
-                .Where( p => !p.Aliases.Any() )
+                .Where( p => !p.Aliases.Any() && !personAliasServiceQry.Any( pa => pa.AliasPersonId == p.Id ))
                 .Take( 300 ) )
             {
                 person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
