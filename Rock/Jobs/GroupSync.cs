@@ -152,6 +152,8 @@ namespace Rock.Jobs
                 {
                     string newPassword = string.Empty;
 
+                    var recipients = new List<RecipientData>();
+
                     var mergeFields = new Dictionary<string, object>();
                     mergeFields.Add( "Group", syncGroup );
 
@@ -179,15 +181,9 @@ namespace Rock.Jobs
                         mergeFields.Add( "Person", recipient );
                         mergeFields.Add( "NewPassword", newPassword );
                         mergeFields.Add( "CreateLogin", createLogin );
-
-                        var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-                        globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
-
-                        var recipients = new List<RecipientData>();
                         recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
 
+                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
                         Email.Send( systemEmail.Guid, recipients, appRoot );
                     }
                 }
@@ -212,18 +208,13 @@ namespace Rock.Jobs
 
                     if ( systemEmail != null )
                     {
+                        var recipients = new List<RecipientData>();
                         var mergeFields = new Dictionary<string, object>();
                         mergeFields.Add( "Group", syncGroup );
                         mergeFields.Add( "Person", recipient );
-
-                        var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields(null);
-                        globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
-
-                        var recipients = new List<RecipientData>();
                         recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
 
+                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
                         Email.Send( systemEmail.Guid, recipients, appRoot );
                     }
                 }
