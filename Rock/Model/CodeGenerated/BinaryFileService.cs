@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<FinancialAccount>( Context ).Queryable().Any( a => a.ImageBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, FinancialAccount.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<FinancialTransactionImage>( Context ).Queryable().Any( a => a.BinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
@@ -61,6 +67,12 @@ namespace Rock.Model
             if ( new Service<Location>( Context ).Queryable().Any( a => a.ImageId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Location.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<MergeTemplate>( Context ).Queryable().Any( a => a.TemplateBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, MergeTemplate.FriendlyTypeName );
                 return false;
             }  
  

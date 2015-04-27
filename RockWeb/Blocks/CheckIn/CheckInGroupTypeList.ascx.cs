@@ -99,25 +99,28 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void BindGrid()
         {
-            GroupTypeService groupTypeService = new GroupTypeService( new RockContext() );
-            SortProperty sortProperty = gGroupType.SortProperty;
-
-            var qry = groupTypeService.Queryable();
-
-            // limit to show only GroupTypes that have a group type purpose of Checkin Template
-            int groupTypePurposeCheckInTemplateId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
-            qry = qry.Where( a => a.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId );
-
-            if ( sortProperty != null )
+            using ( var rockContext = new RockContext() )
             {
-                gGroupType.DataSource = qry.Sort( sortProperty ).ToList();
-            }
-            else
-            {
-                gGroupType.DataSource = qry.OrderBy( p => p.Name ).ToList();
-            }
+                GroupTypeService groupTypeService = new GroupTypeService( rockContext );
+                SortProperty sortProperty = gGroupType.SortProperty;
 
-            gGroupType.DataBind();
+                var qry = groupTypeService.Queryable();
+
+                // limit to show only GroupTypes that have a group type purpose of Checkin Template
+                int groupTypePurposeCheckInTemplateId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
+                qry = qry.Where( a => a.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId );
+
+                if ( sortProperty != null )
+                {
+                    gGroupType.DataSource = qry.Sort( sortProperty ).ToList();
+                }
+                else
+                {
+                    gGroupType.DataSource = qry.OrderBy( p => p.Name ).ToList();
+                }
+
+                gGroupType.DataBind();
+            }
         }
 
         #endregion
@@ -143,13 +146,16 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gGroupType_RowSelected( object sender, RowEventArgs e )
         {
-            var groupType = new GroupTypeService( new RockContext() ).Get( e.RowKeyId );
-            if ( groupType != null )
+            using ( var rockContext = new RockContext() )
             {
-                hfGroupTypeId.Value = groupType.Id.ToString();
-                tbGroupTypeName.Text = groupType.Name;
-                tbGroupTypeDescription.Text = groupType.Description;
-                mdAddEditCheckinGroupType.Show();
+                var groupType = new GroupTypeService( rockContext ).Get( e.RowKeyId );
+                if ( groupType != null )
+                {
+                    hfGroupTypeId.Value = groupType.Id.ToString();
+                    tbGroupTypeName.Text = groupType.Name;
+                    tbGroupTypeDescription.Text = groupType.Description;
+                    mdAddEditCheckinGroupType.Show();
+                }
             }
         }
 
@@ -188,27 +194,42 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdAddCheckinGroupType_SaveClick( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
-            var groupTypeService = new GroupTypeService( rockContext );
-            GroupType groupType;
-
-            if ( hfGroupTypeId.Value.AsInteger() == 0 )
+            using ( var rockContext = new RockContext() )
             {
-                groupType = new GroupType();
-                groupTypeService.Add( groupType );
-                groupType.GroupTypePurposeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ).Id;
-                groupType.ShowInNavigation = false;
-                groupType.ShowInGroupList = false;
-            }
-            else
-            {
-                groupType = groupTypeService.Get( hfGroupTypeId.Value.AsInteger() );
-            }
+                var groupTypeService = new GroupTypeService( rockContext );
+                GroupType groupType;
 
-            groupType.Name = tbGroupTypeName.Text;
-            groupType.Description = tbGroupTypeDescription.Text;
+                if ( hfGroupTypeId.Value.AsInteger() == 0 )
+                {
+                    groupType = new GroupType();
+                    groupTypeService.Add( groupType );
+                    groupType.GroupTypePurposeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ).Id;
+                    groupType.ShowInNavigation = false;
+                    groupType.ShowInGroupList = false;
+                
+                    var defaultRole = new GroupTypeRole();
+                    defaultRole.Name = "Member";
+                    groupType.Roles.Add( defaultRole );
+                }
+                else
+                {
+                    groupType = groupTypeService.Get( hfGroupTypeId.Value.AsInteger() );
+                }
 
-            rockContext.SaveChanges();
+                groupType.Name = tbGroupTypeName.Text;
+                groupType.Description = tbGroupTypeDescription.Text;
+
+                rockContext.SaveChanges();
+
+                // Reload to check for setting default role
+                groupType = groupTypeService.Get( groupType.Id );
+                if ( groupType != null && !groupType.DefaultGroupRoleId.HasValue && groupType.Roles.Any() )
+                {
+                    groupType.DefaultGroupRoleId = groupType.Roles.First().Id;
+                    rockContext.SaveChanges();
+                }
+            
+            }
 
             mdAddEditCheckinGroupType.Hide();
 

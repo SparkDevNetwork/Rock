@@ -43,6 +43,9 @@
     <Reference Include="DDay.iCal">
       <HintPath>..\packages\DDay.iCal.1.0.2.575\lib\DDay.iCal.dll</HintPath>
     </Reference>
+    <Reference Include="DocumentFormat.OpenXml">
+      <HintPath>..\packages\DocumentFormat.OpenXml.2.5\lib\DocumentFormat.OpenXml.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework">
       <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -74,6 +77,10 @@
     <Reference Include="NuGet.Core, Version=2.8.50926.602, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NuGet.Core.2.8.3\lib\net40-Client\NuGet.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenXmlPowerTools, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\OpenXmlPowerTools.3.1.07.0\lib\OpenXmlPowerTools.dll</HintPath>
     </Reference>
     <Reference Include="Quartz">
       <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
@@ -125,18 +132,21 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Twilio.3.6.25\lib\3.5\Twilio.Api.dll</HintPath>
     </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Address\SmartyStreets.cs" />
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\FinancialGatewayFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
     <Compile Include="Attribute\CurrencyFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelFieldAttribute.cs" />
     <Compile Include="Attribute\DateTimeFieldAttribute.cs" />
     <Compile Include="Attribute\DefinedValueRangeFieldAttribute.cs" />
+    <Compile Include="Attribute\GroupAndRoleFieldAttribute.cs" />
     <Compile Include="Attribute\KeyValueListFieldAttribute.cs" />
     <Compile Include="Attribute\SystemEmailFieldAttribute.cs" />
     <Compile Include="Attribute\EnumsFieldAttribute.cs" />
@@ -220,11 +230,13 @@
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
+    <Compile Include="Field\Types\FinancialGatewayFieldType.cs" />
     <Compile Include="Field\Types\CurrencyFieldType.cs" />
     <Compile Include="Field\Types\AttributeFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelFieldType.cs" />
     <Compile Include="Field\Types\DateTimeFieldType.cs" />
     <Compile Include="Field\Types\DefinedValueFieldType.cs" />
+    <Compile Include="Field\Types\GroupAndRoleFieldType.cs" />
     <Compile Include="Field\Types\RatingFieldType.cs" />
     <Compile Include="Field\Types\SystemEmailFieldType.cs" />
     <Compile Include="Field\Types\SchedulesFieldType.cs" />
@@ -249,17 +261,20 @@
     <Compile Include="Financial\TestGateway.cs" />
     <Compile Include="Jobs\CalculateMetrics.cs" />
     <Compile Include="Jobs\GetScheduledPayments.cs" />
+    <Compile Include="Jobs\GroupSync.cs" />
     <Compile Include="Jobs\SendAttendanceReminders.cs" />
     <Compile Include="Lava\ILiquidizable.cs" />
     <Compile Include="Lava\RockFilters.cs" />
+    <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
+    <Compile Include="MergeTemplates\MergeTemplateType.cs" />
+    <Compile Include="MergeTemplates\MergeTemplateTypeContainer.cs" />
+    <Compile Include="MergeTemplates\WordDocumentMergeTemplateType.cs" />
     <Compile Include="Model\BenevolenceRequest.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\BenevolenceRequestService.Partial.cs" />
     <Compile Include="Model\BenevolenceResult.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\BenevolenceResultService.Partial.cs" />
     <Compile Include="Model\CampusService.partial.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceRequestService.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceResultService.cs" />
@@ -268,7 +283,9 @@
     <Compile Include="Model\CodeGenerated\ContentChannelTypeService.cs" />
     <Compile Include="Model\CodeGenerated\EntitySetItemService.cs" />
     <Compile Include="Model\CodeGenerated\EntitySetService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialGatewayService.cs" />
     <Compile Include="Model\CodeGenerated\GroupScheduleExclusionService.cs" />
+    <Compile Include="Model\CodeGenerated\MergeTemplateService.cs" />
     <Compile Include="Model\CodeGenerated\PersonDuplicateService.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
     <Compile Include="Model\ContentChannel.cs">
@@ -280,11 +297,14 @@
     <Compile Include="Model\ContentChannelType.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\EntitySetService.Partial.cs" />
     <Compile Include="Model\EntitySetItemService.Partial.cs" />
+    <Compile Include="Model\FinancialGateway.cs" />
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Model\EntitySet.cs" />
     <Compile Include="Model\EntitySetItem.cs" />
     <Compile Include="Model\GroupScheduleExclusion.cs" />
+    <Compile Include="Model\MergeTemplate.cs" />
     <Compile Include="Model\PersonBadgeService.partial.cs" />
     <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PluginMigration.cs" />
@@ -294,6 +314,7 @@
     <Compile Include="Model\WorkflowActivityTypeService.Partial.cs" />
     <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
     <Compile Include="Net\RockRestClient.cs" />
+    <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
     <Compile Include="Reporting\DataFilter\BaseAccountFilter.cs" />
@@ -348,6 +369,10 @@
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
     <Compile Include="Web\UI\Controls\Grid\CurrencyField.cs" />
     <Compile Include="Web\UI\Controls\Grid\CallbackField.cs" />
+    <Compile Include="Web\UI\Controls\IDisplayRequiredIndicator.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\FinancialGatewayPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\GroupAndRolePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\MergeTemplatePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DataViewPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GradePicker.cs" />
     <Compile Include="Web\UI\Controls\RockRating.cs" />
@@ -852,6 +877,7 @@
     <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Workflow\Action\ActivateActions.cs" />
+    <Compile Include="Workflow\Action\AddPersonToGroupAttribute.cs" />
     <Compile Include="Workflow\Action\AssignActivityFromAttributeValue.cs" />
     <Compile Include="Workflow\Action\AssignActivityToSecurityRole.cs" />
     <Compile Include="Workflow\Action\AssignActivityToPerson.cs" />
@@ -859,6 +885,7 @@
     <Compile Include="Workflow\Action\Delay.cs" />
     <Compile Include="Workflow\Action\DeleteWorkflow.cs" />
     <Compile Include="Workflow\Action\BackgroundCheckRequest.cs" />
+    <Compile Include="Workflow\Action\AddPersonToGroup.cs" />
     <Compile Include="Workflow\Action\PersonTagRemove.cs" />
     <Compile Include="Workflow\Action\SendSms.cs" />
     <Compile Include="Workflow\Action\PersonTagAdd.cs" />
@@ -1235,7 +1262,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Auth\" />
-    <Folder Include="Workflow\Attribute\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">

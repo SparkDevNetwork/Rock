@@ -53,7 +53,7 @@ namespace Rock.Client
         public int? CurrencyTypeValueId { get; set; }
 
         /// <summary />
-        public int? GatewayEntityTypeId { get; set; }
+        public int? FinancialGatewayId { get; set; }
 
         /// <summary />
         public int? ProcessedByPersonAliasId { get; set; }
@@ -99,7 +99,7 @@ namespace Rock.Client
         public DefinedValue CurrencyTypeValue { get; set; }
 
         /// <summary />
-        public EntityType GatewayEntityType { get; set; }
+        public FinancialGateway FinancialGateway { get; set; }
 
         /// <summary />
         public ICollection<FinancialTransactionImage> Images { get; set; }

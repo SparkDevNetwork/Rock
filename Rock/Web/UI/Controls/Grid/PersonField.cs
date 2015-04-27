@@ -23,7 +23,7 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Control for selecting a defined value
+    /// Grid Bound Field for showing a Person as a link to the person profile page
     /// </summary>
     [ToolboxData("<{0}:PersonField runat=server></{0}:PersonField>")]
     public class PersonField : RockBoundField

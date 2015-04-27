@@ -6,6 +6,7 @@
         <asp:HiddenField ID="hfInitialGroupId" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfGroupTypesInclude" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfGroupTypesExclude" runat="server" ClientIDMode="Static" />
+        <asp:HiddenField ID="hfIncludeInactiveGroups" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfInitialGroupParentIds" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfLimitToSecurityRoleGroups" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfSelectedGroupId" runat="server" ClientIDMode="Static" />
@@ -25,6 +26,7 @@
                             <asp:LinkButton ID="lbAddGroupChild" OnClick="lbAddGroupChild_Click" Enabled="false" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
                     </ul>
                 </div>
+                <Rock:Toggle ID="tglHideInactiveGroups" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveGroups_CheckedChanged" />
 
             </div>
 
@@ -102,7 +104,8 @@
                         restParams: '?rootGroupId=' + ($('#hfRootGroupId').val() || 0)
                             + '&limitToSecurityRoleGroups=' + ($('#hfLimitToSecurityRoleGroups').val() || false)
                             + '&includedGroupTypeIds=' + ($('#hfGroupTypesInclude').val() || '0')
-                            + '&excludedGroupTypeIds=' + ($('#hfGroupTypesExclude').val() || '0'),
+                            + '&excludedGroupTypeIds=' + ($('#hfGroupTypesExclude').val() || '0')
+                            + '&includeInactiveGroups=' + ($('#hfIncludeInactiveGroups').val() || false),
                         multiSelect: false,
                         selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
                         expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null

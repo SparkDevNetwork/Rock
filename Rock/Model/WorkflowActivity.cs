@@ -97,6 +97,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the date and time that this WorkflowActivity was last processed.
         /// </value>
         [DataMember]
+        [NotAudited]
         public DateTime? LastProcessedDateTime { get; set; }
 
         /// <summary>
@@ -327,18 +328,35 @@ namespace Rock.Model
         /// <returns>The activated <see cref="Rock.Model.WorkflowActivity"/>.</returns>
         public static WorkflowActivity Activate( WorkflowActivityType activityType, Workflow workflow )
         {
+            using ( var rockContext = new RockContext() )
+            {
+                return Activate( activityType, workflow, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Activates the specified WorkflowActivity
+        /// </summary>
+        /// <param name="activityType">The <see cref="Rock.Model.WorkflowActivityType" /> to activate.</param>
+        /// <param name="workflow">The persisted <see cref="Rock.Model.Workflow" /> instance that this Workflow activity belongs to.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// The activated <see cref="Rock.Model.WorkflowActivity" />.
+        /// </returns>
+        public static WorkflowActivity Activate( WorkflowActivityType activityType, Workflow workflow, RockContext rockContext )
+        {
             var activity = new WorkflowActivity();
             activity.Workflow = workflow;
             activity.ActivityTypeId = activityType.Id;
             activity.ActivityType = activityType;
             activity.ActivatedDateTime = RockDateTime.Now;
-            activity.LoadAttributes();
+            activity.LoadAttributes( rockContext );
 
             activity.AddLogEntry( "Activated" );
 
             foreach ( var actionType in activityType.ActionTypes )
             {
-                activity.Actions.Add( WorkflowAction.Activate(actionType, activity) );
+                activity.Actions.Add( WorkflowAction.Activate(actionType, activity, rockContext) );
             }
 
             workflow.Activities.Add( activity );

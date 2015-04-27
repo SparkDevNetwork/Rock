@@ -69,7 +69,6 @@ namespace Rock.Model
         /// <param name="refreshAll">if set to <c>true</c> will refresh name, category, and description for all block types (not just the new ones)</param>
         public static void RegisterBlockTypes( string physWebAppPath, System.Web.UI.Page page, bool refreshAll = false)
         {
-
             // Dictionary for block types.  Key is path, value is friendly name
             var list = new Dictionary<string, string>();
 
@@ -90,42 +89,50 @@ namespace Rock.Model
                 if ( refreshAll || !registered.Any( b => b.Path.Equals( path, StringComparison.OrdinalIgnoreCase ) ) )
                 {
                     // Attempt to load the control
-                    System.Web.UI.Control control = page.LoadControl( path );
-                    if ( control is Rock.Web.UI.RockBlock )
+                    try
                     {
-                        var blockType = registered.FirstOrDefault( b => b.Path.Equals( path, StringComparison.OrdinalIgnoreCase ) );
-                        if ( blockType == null )
-                        {
-                            // Create new BlockType record and save it
-                            blockType = new BlockType();
-                            blockType.Path = path;
-                            blockTypeService.Add( blockType );
-                        }
+                        System.Web.UI.Control control = page.LoadControl( path );
 
-                        Type controlType = control.GetType();
-
-                        // Update Name, Category, and Description based on block's attribute definitions
-                        blockType.Name = Rock.Reflection.GetDisplayName( controlType ) ?? string.Empty;
-                        if ( string.IsNullOrWhiteSpace( blockType.Name ) )
+                        if ( control is Rock.Web.UI.RockBlock )
                         {
-                            // Parse the relative path to get the name
-                            var nameParts = list[path].Split( '/' );
-                            for ( int i = 0; i < nameParts.Length; i++ )
+                            var blockType = registered.FirstOrDefault( b => b.Path.Equals( path, StringComparison.OrdinalIgnoreCase ) );
+                            if ( blockType == null )
                             {
-                                if ( i == nameParts.Length - 1 )
-                                {
-                                    nameParts[i] = Path.GetFileNameWithoutExtension( nameParts[i] );
-                                }
-                                nameParts[i] = nameParts[i].SplitCase();
+                                // Create new BlockType record and save it
+                                blockType = new BlockType();
+                                blockType.Path = path;
+                                blockTypeService.Add( blockType );
                             }
-                            blockType.Name = string.Join( " > ", nameParts );
+
+                            Type controlType = control.GetType();
+
+                            // Update Name, Category, and Description based on block's attribute definitions
+                            blockType.Name = Rock.Reflection.GetDisplayName( controlType ) ?? string.Empty;
+                            if ( string.IsNullOrWhiteSpace( blockType.Name ) )
+                            {
+                                // Parse the relative path to get the name
+                                var nameParts = list[path].Split( '/' );
+                                for ( int i = 0; i < nameParts.Length; i++ )
+                                {
+                                    if ( i == nameParts.Length - 1 )
+                                    {
+                                        nameParts[i] = Path.GetFileNameWithoutExtension( nameParts[i] );
+                                    }
+                                    nameParts[i] = nameParts[i].SplitCase();
+                                }
+                                blockType.Name = string.Join( " > ", nameParts );
+                            }
+                            if ( blockType.Name.Length > 100 )
+                            {
+                                blockType.Name = blockType.Name.Truncate( 100 );
+                            }
+                            blockType.Category = Rock.Reflection.GetCategory( controlType ) ?? string.Empty;
+                            blockType.Description = Rock.Reflection.GetDescription( controlType ) ?? string.Empty;
                         }
-                        if ( blockType.Name.Length > 100 )
-                        {
-                            blockType.Name = blockType.Name.Truncate( 100 );
-                        }
-                        blockType.Category = Rock.Reflection.GetCategory( controlType ) ?? string.Empty;
-                        blockType.Description = Rock.Reflection.GetDescription( controlType ) ?? string.Empty;
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( new Exception( string.Format("Problem processing block with path '{0}'.", path ), ex ), null );
                     }
                 }
             }

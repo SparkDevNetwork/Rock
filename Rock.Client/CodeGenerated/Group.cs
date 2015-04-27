@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public bool? AddUserAccountsDuringSync { get; set; }
+
+        /// <summary />
         public bool? AllowGuests { get; set; }
 
         /// <summary />
@@ -42,6 +45,9 @@ namespace Rock.Client
 
         /// <summary />
         public string Description { get; set; }
+
+        /// <summary />
+        public int? ExitSystemEmailId { get; set; }
 
         /// <summary />
         public int GroupTypeId { get; set; }
@@ -68,6 +74,12 @@ namespace Rock.Client
         public int? ScheduleId { get; set; }
 
         /// <summary />
+        public int? SyncDataViewId { get; set; }
+
+        /// <summary />
+        public int? WelcomeSystemEmailId { get; set; }
+
+        /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
@@ -84,6 +96,9 @@ namespace Rock.Client
         public Campus Campus { get; set; }
 
         /// <summary />
+        public SystemEmail ExitSystemEmail { get; set; }
+
+        /// <summary />
         public ICollection<GroupLocation> GroupLocations { get; set; }
 
         /// <summary />
@@ -97,6 +112,12 @@ namespace Rock.Client
 
         /// <summary />
         public Schedule Schedule { get; set; }
+
+        /// <summary />
+        public DataView SyncDataView { get; set; }
+
+        /// <summary />
+        public SystemEmail WelcomeSystemEmail { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

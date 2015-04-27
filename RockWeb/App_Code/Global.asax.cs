@@ -101,7 +101,7 @@ namespace RockWeb
             try
             {
                 var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-                LogMessage( APP_LOG_FILENAME, "Application Starting..." );
+                LogMessage( APP_LOG_FILENAME, "Application Starting..." ); 
                 
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
@@ -112,97 +112,107 @@ namespace RockWeb
                 RockMemoryCache.Clear();
 
                 // Get a db context
-                var rockContext = new RockContext();
-
-                //// Run any needed Rock and/or plugin migrations
-                //// NOTE: MigrateDatabase must be the first thing that touches the database to help prevent EF from creating empty tables for a new database
-                MigrateDatabase( rockContext );
-
-                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                using ( var rockContext = new RockContext() )
                 {
-                    try
-                    {
-                        new AttributeService( rockContext ).Get( 0 );
-                        System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
-                        stopwatch.Restart();
-                    }
-                    catch
-                    {
-                        // Intentionally Blank
-                    }
-                }
-
-                RegisterRoutes( rockContext, RouteTable.Routes );
-
-                // Configure Rock Rest API
-                GlobalConfiguration.Configure( Rock.Rest.WebApiConfig.Register );
-
-                // Preload the commonly used objects
-                LoadCacheObjects( rockContext );
-                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
-                {
-                    System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
-                    stopwatch.Restart();
-                }
-
-                // setup and launch the jobs infrastructure if running under IIS
-                bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
-                if ( runJobsInContext )
-                {
-
-                    ISchedulerFactory sf;
-
-                    // create scheduler
-                    sf = new StdSchedulerFactory();
-                    sched = sf.GetScheduler();
-
-                    // get list of active jobs
-                    ServiceJobService jobService = new ServiceJobService( rockContext );
-                    foreach ( ServiceJob job in jobService.GetActiveJobs().ToList() )
+                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                     {
                         try
                         {
-                            IJobDetail jobDetail = jobService.BuildQuartzJob( job );
-                            ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
-
-                            sched.ScheduleJob( jobDetail, jobTrigger );
+                            new AttributeService( rockContext ).Get( 0 );
+                            System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
                         }
-                        catch ( Exception ex )
+                        catch
                         {
-                            // create a friendly error message
-                            string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assembly, ex.Message );
-                            job.LastStatusMessage = message;
-                            job.LastStatus = "Error Loading Job";
-                            rockContext.SaveChanges();
+                            // Intentionally Blank
                         }
                     }
+                    
+                    //// Run any needed Rock and/or plugin migrations
+                    //// NOTE: MigrateDatabase must be the first thing that touches the database to help prevent EF from creating empty tables for a new database
+                    MigrateDatabase( rockContext );
+                    
+                    // Preload the commonly used objects
+                    stopwatch.Restart();
+                    LoadCacheObjects( rockContext );
 
-                    // set up the listener to report back from jobs as they complete
-                    sched.ListenerManager.AddJobListener( new RockJobListener(), EverythingMatcher<JobKey>.AllJobs() );
+                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                    {
+                        System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
+                    }
 
-                    // start the scheduler
-                    sched.Start();
+                    // Run any plugin migrations
+                    MigratePlugins( rockContext );
+
+                    RegisterRoutes( rockContext, RouteTable.Routes );
+
+                    // Configure Rock Rest API
+                    stopwatch.Restart();
+                    GlobalConfiguration.Configure( Rock.Rest.WebApiConfig.Register );
+                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                    {
+                        System.Diagnostics.Debug.WriteLine( string.Format( "Configure WebApiConfig - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
+                        stopwatch.Restart();
+                    }
+
+                    // setup and launch the jobs infrastructure if running under IIS
+                    bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
+                    if ( runJobsInContext )
+                    {
+
+                        ISchedulerFactory sf;
+
+                        // create scheduler
+                        sf = new StdSchedulerFactory();
+                        sched = sf.GetScheduler();
+
+                        // get list of active jobs
+                        ServiceJobService jobService = new ServiceJobService( rockContext );
+                        foreach ( ServiceJob job in jobService.GetActiveJobs().ToList() )
+                        {
+                            try
+                            {
+                                IJobDetail jobDetail = jobService.BuildQuartzJob( job );
+                                ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
+
+                                sched.ScheduleJob( jobDetail, jobTrigger );
+                            }
+                            catch ( Exception ex )
+                            {
+                                // create a friendly error message
+                                string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assembly, ex.Message );
+                                job.LastStatusMessage = message;
+                                job.LastStatus = "Error Loading Job";
+                                rockContext.SaveChanges();
+                            }
+                        }
+
+                        // set up the listener to report back from jobs as they complete
+                        sched.ListenerManager.AddJobListener( new RockJobListener(), EverythingMatcher<JobKey>.AllJobs() );
+
+                        // start the scheduler
+                        sched.Start();
+                    }
+
+                    // Force the static Liquid class to get instantiated so that the standard filters are loaded prior 
+                    // to the custom RockFilter.  This is to allow the custom 'Date' filter to replace the standard 
+                    // Date filter.
+                    Liquid.UseRubyDateFormat = false;
+
+                    //// NOTE: This means that template filters will also use CSharpNamingConvention
+                    //// For example the dotliquid documentation says to do this for formatting dates: 
+                    //// {{ some_date_value | date:"MMM dd, yyyy" }}
+                    //// However, if CSharpNamingConvention is enabled, it needs to be: 
+                    //// {{ some_date_value | Date:"MMM dd, yyyy" }}
+                    Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+                    Template.FileSystem = new RockWeb.LavaFileSystem();
+                    Template.RegisterSafeType( typeof( Enum ), o => o.ToString() );
+                    Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
+
+                    // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
+                    AddCallBack();
+                    
+                    Rock.Security.Authorization.Load();
                 }
-
-                // Force the static Liquid class to get instantiated so that the standard filters are loaded prior 
-                // to the custom RockFilter.  This is to allow the custom 'Date' filter to replace the standard 
-                // Date filter.
-                Liquid.UseRubyDateFormat = false;
-
-                //// NOTE: This means that template filters will also use CSharpNamingConvention
-                //// For example the dotliquid documentation says to do this for formatting dates: 
-                //// {{ some_date_value | date:"MMM dd, yyyy" }}
-                //// However, if CSharpNamingConvention is enabled, it needs to be: 
-                //// {{ some_date_value | Date:"MMM dd, yyyy" }}
-                Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-                Template.FileSystem = new RockWeb.LavaFileSystem();
-                Template.RegisterSafeType( typeof( Enum ), o => o.ToString() );
-                Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
-
-                // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
-                AddCallBack();
-
-                Rock.Security.Authorization.Load( rockContext );
 
                 EntityTypeService.RegisterEntityTypes( Server.MapPath( "~" ) );
                 FieldTypeService.RegisterFieldTypes( Server.MapPath( "~" ) );
@@ -214,7 +224,11 @@ namespace RockWeb
 
                 SqlServerTypes.Utilities.LoadNativeAssemblies( Server.MapPath( "~" ) );
 
-                LogMessage( APP_LOG_FILENAME, "Application Started Succesfully" );
+                LogMessage( APP_LOG_FILENAME, "Application Started Successfully" );
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    System.Diagnostics.Debug.WriteLine( string.Format( "Application_Started_Successfully: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                }
             }
             catch (Exception ex)
             {
@@ -252,13 +266,15 @@ namespace RockWeb
                 // mark user offline
                 if ( this.Session["RockUserId"] != null )
                 {
-                    var rockContext = new RockContext();
-                    var userLoginService = new UserLoginService( rockContext );
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var userLoginService = new UserLoginService( rockContext );
 
-                    var user = userLoginService.Get( Int32.Parse( this.Session["RockUserId"].ToString() ) );
-                    user.IsOnLine = false;
+                        var user = userLoginService.Get( Int32.Parse( this.Session["RockUserId"].ToString() ) );
+                        user.IsOnLine = false;
 
-                    rockContext.SaveChanges();
+                        rockContext.SaveChanges();
+                    }
                 }
             }
             catch { }
@@ -425,6 +441,22 @@ namespace RockWeb
                 Database.SetInitializer<Rock.Data.RockContext>( null );
             }
 
+            return result;
+        }
+
+        /// <summary>
+        /// Migrates the plugins.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">
+        /// Could not connect to the SQL database! Please check the 'RockContext' connection string in the web.ConnectionString.config file.
+        /// or
+        /// </exception>
+        public bool MigratePlugins( RockContext rockContext )
+        {
+            bool result = false;
+
             // Migrate any plugins that have pending migrations
             List<Type> migrationList = Rock.Reflection.FindTypes( typeof( Migration ) ).Select( a => a.Value ).ToList();
 
@@ -549,15 +581,17 @@ namespace RockWeb
         /// </summary>
         private void MarkOnlineUsersOffline()
         {
-            var rockContext = new RockContext();
-            var userLoginService = new UserLoginService( rockContext );
-
-            foreach ( var user in userLoginService.Queryable().Where( u => u.IsOnLine == true ) )
+            using ( var rockContext = new RockContext() )
             {
-                user.IsOnLine = false;
-            }
+                var userLoginService = new UserLoginService( rockContext );
 
-            rockContext.SaveChanges();
+                foreach ( var user in userLoginService.Queryable().Where( u => u.IsOnLine == true ) )
+                {
+                    user.IsOnLine = false;
+                }
+
+                rockContext.SaveChanges();
+            }
         }
 
         /// <summary>
@@ -589,6 +623,15 @@ namespace RockWeb
         /// </summary>
         private void LoadCacheObjects( RockContext rockContext )
         {
+            // Cache all the entity types
+            foreach ( var entityType in new Rock.Model.EntityTypeService( rockContext ).Queryable() )
+            {
+                EntityTypeCache.Read( entityType );
+            }
+
+            // Cache all the Field Types
+            var all = Rock.Web.Cache.FieldTypeCache.All();
+
             // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
             var qualifiers = new Dictionary<int, Dictionary<string, string>>();
             foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService( rockContext ).Queryable() )
@@ -617,8 +660,6 @@ namespace RockWeb
                     Rock.Web.Cache.AttributeCache.Read( attribute, new Dictionary<string, string>() );
             }
 
-            // Cache all the Field Types
-            var all = Rock.Web.Cache.FieldTypeCache.All();
         }
 
 

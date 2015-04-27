@@ -135,6 +135,26 @@
                             </div>
                         </Rock:PanelWidget>
 
+
+                        <Rock:PanelWidget ID="wpGroupSync" runat="server" Title="Group Sync Settings">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:DataViewPicker ID="dvpSyncDataview" Label="Sync Dataview" runat="server"></Rock:DataViewPicker>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockCheckbox ID="rbCreateLoginDuringSync" runat="server" Label="Create Login During Sync" Help="If the individual does not have a login should one be created during the sync process?" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlWelcomeEmail" runat="server" Label="Welcome Email"></Rock:RockDropDownList>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlExitEmail" runat="server" Label="Exit Email"></Rock:RockDropDownList>
+                                </div>
+                           </div>
+                        </Rock:PanelWidget>
+
                         <div class="actions">
                             <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                             <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
@@ -166,7 +186,7 @@
 
 
                         <div class="actions">
-                            <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
+                            <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                             <span class="pull-right">

@@ -130,8 +130,8 @@ namespace Rock.Reporting
                 if ( valueExpression.Type == typeof( string ) )
                 {
                     Expression trimmed = Expression.Call( valueExpression, typeof( string ).GetMethod( "Trim", System.Type.EmptyTypes ) );
-                    Expression emtpyString = Expression.Constant( string.Empty );
-                    comparisonExpression = Expression.NotEqual( trimmed, value );
+                    Expression emptyString = Expression.Constant( string.Empty );
+                    comparisonExpression = Expression.And( Expression.NotEqual( trimmed, emptyString ), Expression.NotEqual( valueExpression, Expression.Constant( null, valueExpression.Type ) ) );
                 }
                 else
                 {

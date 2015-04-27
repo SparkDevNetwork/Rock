@@ -61,31 +61,33 @@ namespace Rock.Transactions
         {
             if ( Trigger != null )
             {
-                var rockContext = new RockContext();
-                var workflowTypeService = new WorkflowTypeService( rockContext );
-                var workflowType = workflowTypeService.Get( Trigger.WorkflowTypeId );
-
-                if ( workflowType != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    var workflow = Rock.Model.Workflow.Activate( workflowType, Trigger.WorkflowName );
+                    var workflowTypeService = new WorkflowTypeService( rockContext );
+                    var workflowType = workflowTypeService.Get( Trigger.WorkflowTypeId );
 
-                    List<string> workflowErrors;
-                    if ( workflow.Process( rockContext, Entity, out workflowErrors ) )
+                    if ( workflowType != null )
                     {
-                        if ( workflow.IsPersisted || workflowType.IsPersisted )
-                        {
-                            var workflowService = new Rock.Model.WorkflowService( rockContext );
-                            workflowService.Add( workflow );
+                        var workflow = Rock.Model.Workflow.Activate( workflowType, Trigger.WorkflowName );
 
-                            rockContext.WrapTransaction( () =>
+                        List<string> workflowErrors;
+                        if ( workflow.Process( rockContext, Entity, out workflowErrors ) )
+                        {
+                            if ( workflow.IsPersisted || workflowType.IsPersisted )
                             {
-                                rockContext.SaveChanges();
-                                workflow.SaveAttributeValues( rockContext );
-                                foreach ( var activity in workflow.Activities )
+                                var workflowService = new Rock.Model.WorkflowService( rockContext );
+                                workflowService.Add( workflow );
+
+                                rockContext.WrapTransaction( () =>
                                 {
-                                    activity.SaveAttributeValues( rockContext );
-                                }
-                            } ); 
+                                    rockContext.SaveChanges();
+                                    workflow.SaveAttributeValues( rockContext );
+                                    foreach ( var activity in workflow.Activities )
+                                    {
+                                        activity.SaveAttributeValues( rockContext );
+                                    }
+                                } );
+                            }
                         }
                     }
                 }

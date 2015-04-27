@@ -56,13 +56,13 @@ namespace Rock.Model
         public int? BatchId { get; set; }
 
         /// <summary>
-        /// Gets or sets EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the financial gateway (service) that processed this transaction.
+        /// Gets or sets the gateway identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32" /> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the financial gateway (service) that processed this transaction.
+        /// The gateway identifier.
         /// </value>
         [DataMember]
-        public int? GatewayEntityTypeId { get; set; }
+        public int? FinancialGatewayId { get; set; }
 
         /// <summary>
         /// Gets or sets date and time that the transaction occurred. This is the local server time.
@@ -213,13 +213,13 @@ namespace Rock.Model
         public virtual FinancialBatch Batch { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the Payment Gateway service that was used to process this transaction.
+        /// Gets or sets the gateway.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.EntityType"/> of the payment gateway service that was used.  If this was not an electronic transaction, this value will be null.
+        /// The gateway.
         /// </value>
         [DataMember]
-        public virtual EntityType GatewayEntityType { get; set; }
+        public virtual FinancialGateway FinancialGateway { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction type <see cref="Rock.Model.DefinedValue"/> indicating the type of transaction that occurred.
@@ -407,7 +407,7 @@ namespace Rock.Model
         {
             this.HasOptional( t => t.AuthorizedPersonAlias ).WithMany().HasForeignKey( t => t.AuthorizedPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Batch ).WithMany( t => t.Transactions ).HasForeignKey( t => t.BatchId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.GatewayEntityType ).WithMany().HasForeignKey( t => t.GatewayEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.FinancialGateway ).WithMany().HasForeignKey( t => t.FinancialGatewayId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.TransactionTypeValue ).WithMany().HasForeignKey( t => t.TransactionTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );

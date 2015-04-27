@@ -100,13 +100,13 @@ namespace Rock.Model
         public string TransactionCode { get; set; }
 
         /// <summary>
-        /// Gets or sets EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the financial gateway (service) that processed this transaction.
+        /// Gets or sets the gateway identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32" /> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the financial gateway (service) that processed this transaction.
+        /// The gateway identifier.
         /// </value>
         [DataMember]
-        public int? GatewayEntityTypeId { get; set; }
+        public int? FinancialGatewayId { get; set; }
 
         /// <summary>
         /// Gets or sets the DefinedValueId of the currency type <see cref="Rock.Model.DefinedValue"/> indicating the currency that the
@@ -152,13 +152,13 @@ namespace Rock.Model
         public virtual Group Group { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the Payment Gateway service that was used to process this transaction.
+        /// Gets or sets the gateway.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.EntityType"/> of the payment gateway service that was used.  If this was not an electronic transaction, this value will be null.
+        /// The gateway.
         /// </value>
         [DataMember]
-        public virtual EntityType GatewayEntityType { get; set; }
+        public virtual FinancialGateway FinancialGateway { get; set; }
 
         /// <summary>
         /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this 
@@ -232,7 +232,7 @@ namespace Rock.Model
         {
             this.HasOptional( t => t.PersonAlias ).WithMany().HasForeignKey( t => t.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Group ).WithMany().HasForeignKey( t => t.GroupId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.GatewayEntityType ).WithMany().HasForeignKey( t => t.GatewayEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.FinancialGateway ).WithMany().HasForeignKey( t => t.FinancialGatewayId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );
         }

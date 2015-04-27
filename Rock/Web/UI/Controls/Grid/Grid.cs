@@ -262,6 +262,7 @@ namespace Rock.Web.UI.Controls
                     this.AllowPaging = false;
                     this.AllowSorting = false;
                     this.Actions.ShowExcelExport = false;
+                    this.Actions.ShowMergeTemplate = false;
                 }
             }
         }
@@ -317,6 +318,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// The EntityTypeId in cases where the EntityType of the Dataset can't be determined from the DataSource (like DynamicData, .Select( new {..}), or Report Output)
+        /// </summary>
+        /// <value>
+        /// The entity type identifier.
+        /// </value>
+        public int? EntityTypeId
+        {
+            get
+            {
+                return ViewState["EntityTypeId"] as int?;
+            }
+
+            set
+            {
+                ViewState["EntityTypeId"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the description field.  If specified, the description will be 
         /// added as a tooltip (title) attribute on the row
         /// </summary>
@@ -343,15 +363,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the merge page route.
+        /// Gets or sets the person merge page route.
         /// </summary>
         /// <value>
         /// The merge page route.
         /// </value>
-        public virtual string MergePageRoute
+        public virtual string PersonMergePageRoute
         {
-            get { return ViewState["MergePageRoute"] as string ?? "~/PersonMerge/{0}"; }
-            set { ViewState["MergePageRoute"] = value; }
+            get { return ViewState["PersonMergePageRoute"] as string ?? "~/PersonMerge/{0}"; }
+            set { ViewState["PersonMergePageRoute"] = value; }
         }
 
         /// <summary>
@@ -376,6 +396,18 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["CommunicationPageRoute"] as string; }
             set { ViewState["CommunicationPageRoute"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the merge template page route.
+        /// </summary>
+        /// <value>
+        /// The merge template page route.
+        /// </value>
+        public virtual string MergeTemplatePageRoute
+        {
+            get { return ViewState["MergeTemplatePageRoute"] as string ?? "~/MergeTemplate/{0}"; }
+            set { ViewState["MergeTemplatePageRoute"] = value; }
         }
 
         private Dictionary<int, string> RowSelectedColumns
@@ -524,10 +556,11 @@ namespace Rock.Web.UI.Controls
 
             this.Sorting += Grid_Sorting;
 
-            this.Actions.MergeClick += Actions_MergeClick;
+            this.Actions.PersonMergeClick += Actions_PersonMergeClick;
             this.Actions.BulkUpdateClick += Actions_BulkUpdateClick;
             this.Actions.CommunicateClick += Actions_CommunicateClick;
             this.Actions.ExcelExportClick += Actions_ExcelExportClick;
+            this.Actions.MergeTemplateClick += Actions_MergeTemplateClick;
 
             var rockPage = this.Page as RockPage;
             if ( rockPage != null )
@@ -679,7 +712,7 @@ namespace Rock.Web.UI.Controls
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
-            
+
             this.AddCssClass( "grid-table" );
             this.AddCssClass( "table" );
 
@@ -835,20 +868,13 @@ namespace Rock.Web.UI.Controls
 
             // Get ItemCount
             int itemCount = 0;
-            if ( this.DataSource is DataTable || this.DataSource is DataView )
+            if ( this.DataSourceAsDataTable != null )
             {
-                if ( this.DataSource is DataTable )
-                {
-                    itemCount = ( (DataTable)this.DataSource ).Rows.Count;
-                }
-                else if ( this.DataSource is DataView )
-                {
-                    itemCount = ( (DataView)this.DataSource ).Table.Rows.Count;
-                }
+                itemCount = this.DataSourceAsDataTable.Rows.Count;
             }
-            else if ( this.DataSource is IList )
+            else if ( this.DataSourceAsList != null )
             {
-                itemCount = ( (IList)this.DataSource ).Count;
+                itemCount = DataSourceAsList.Count;
             }
             else
             {
@@ -947,12 +973,12 @@ namespace Rock.Web.UI.Controls
                 string desc = SortDirection.Descending.ToString();
 
                 // Remove the sort css classes and add the data priority
-                for ( int i = 0; i < e.Row.Cells.Count ; i++)
+                for ( int i = 0; i < e.Row.Cells.Count; i++ )
                 {
                     var cell = e.Row.Cells[i];
                     cell.RemoveCssClass( asc );
                     cell.RemoveCssClass( desc );
-                    cell.Attributes.Add( "data-priority", _columnDataPriorities[i]);
+                    cell.Attributes.Add( "data-priority", _columnDataPriorities[i] );
                 }
 
                 // Add the new sort css class
@@ -1077,12 +1103,12 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void Actions_MergeClick( object sender, EventArgs e )
+        void Actions_PersonMergeClick( object sender, EventArgs e )
         {
             int? entitySetId = GetPersonEntitySet( e );
             if ( entitySetId.HasValue )
             {
-                Page.Response.Redirect( string.Format( MergePageRoute, entitySetId.Value ), false );
+                Page.Response.Redirect( string.Format( PersonMergePageRoute, entitySetId.Value ), false );
                 Context.ApplicationInstance.CompleteRequest();
             }
         }
@@ -1149,7 +1175,7 @@ namespace Rock.Web.UI.Controls
 
                     // Get the URL to communication page
                     string url = CommunicationPageRoute;
-                    if ( string.IsNullOrWhiteSpace(url) )
+                    if ( string.IsNullOrWhiteSpace( url ) )
                     {
                         var pageRef = rockPage.Site.CommunicationPageReference;
                         if ( pageRef.PageId > 0 )
@@ -1162,7 +1188,7 @@ namespace Rock.Web.UI.Controls
                             url = "~/Communication/{0}";
                         }
                     }
-                    if ( url.Contains("{0}"))
+                    if ( url.Contains( "{0}" ) )
                     {
                         url = string.Format( url, communication.Id );
                     }
@@ -1171,6 +1197,24 @@ namespace Rock.Web.UI.Controls
                     Context.ApplicationInstance.CompleteRequest();
                 }
             }
+        }
+
+        /// <summary>
+        /// Handles the MergeTemplateClick event of the Actions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void Actions_MergeTemplateClick( object sender, EventArgs e )
+        {
+            OnGridRebind( e );
+            int? entitySetId = GetEntitySetFromGrid( e );
+            if ( entitySetId.HasValue )
+            {
+                Page.Response.Redirect( string.Format( MergeTemplatePageRoute, entitySetId.Value ), false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
+
         }
 
         /// <summary>
@@ -1191,7 +1235,7 @@ namespace Rock.Web.UI.Controls
             ExcelPackage excel = new ExcelPackage( ms );
 
             // if the grid has a caption customize on it
-            if ( this.Caption != null && this.Caption != string.Empty )
+            if ( !string.IsNullOrEmpty(this.Caption) )
             {
                 excel.Workbook.Properties.Title = this.Caption;
                 workSheetName = this.Caption;
@@ -1224,18 +1268,9 @@ namespace Rock.Web.UI.Controls
             int rowCounter = 4;
             int columnCounter = 1;
 
-            if ( this.DataSource is DataTable || this.DataSource is DataView )
+            if ( this.DataSourceAsDataTable != null )
             {
-                DataTable data = null;
-
-                if ( this.DataSource is DataTable )
-                {
-                    data = (DataTable)this.DataSource;
-                }
-                else if ( this.DataSource is DataView )
-                {
-                    data = ( (DataView)this.DataSource ).Table;
-                }
+                DataTable data = this.DataSourceAsDataTable;
 
                 // print headings
                 foreach ( DataColumn column in data.Columns )
@@ -1264,41 +1299,41 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                // get access to the List<> and its properties
-                IList data = (IList)this.DataSource;
-                Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
-
-                // if the list is just List<object>, try to find out what the properties of specific type of object are by examining the first item in the list
-                if ( oType == typeof( object ) || oType.IsInterface )
-                {
-                    if ( data.Count > 0 )
-                    {
-                        oType = data[0].GetType();
-                    }
-                }
+                var oType = GetDataSourceObjectType();
 
                 // get all properties of the objects in the grid
                 IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
                 IList<PropertyInfo> props = new List<PropertyInfo>();
 
-                var gridDataFields = this.Columns.OfType<BoundField>();
+                var gridDataFields = this.Columns.OfType<BoundField>().ToList();
 
-                // figure out which properties we can get data from and put those in the grid
+                // Inspect the collection of Fields that appear in the Grid and add the corresponding data item properties to the set of fields to be exported.
+                // The fields are exported in the same order as they appear in the Grid.
+                var orderedProps = new SortedDictionary<int, PropertyInfo>();
+
                 foreach ( PropertyInfo prop in allprops )
                 {
-                    if ( !gridDataFields.Any( a => a.DataField == prop.Name || a.DataField.StartsWith(prop.Name + ".")) && prop.GetGetMethod().IsVirtual )
-                    {
-                        // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
+                    // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
+                    if ( prop.GetGetMethod().IsVirtual )
                         continue;
-                    }
 
-                    props.Add( prop );
+                    // Find a matching field in the Grid and add it to the list of exported properties.
+                    var gridField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
+
+                    if ( gridField == null )
+                        continue;
+
+                    int fieldIndex = gridDataFields.IndexOf( gridField );
+
+                    orderedProps.Add( fieldIndex, prop );
                 }
+
+                props = orderedProps.Values.ToList();
 
                 // print column headings
                 foreach ( PropertyInfo prop in props )
                 {
-                    var gridDataField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith(prop.Name + "."));
+                    var gridDataField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
                     if ( gridDataField != null )
                     {
                         worksheet.Cells[3, columnCounter].Value = gridDataField.HeaderText;
@@ -1307,7 +1342,7 @@ namespace Rock.Web.UI.Controls
                     {
                         worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();
                     }
-                    
+
                     columnCounter++;
                 }
 
@@ -1324,6 +1359,8 @@ namespace Rock.Web.UI.Controls
 
                 // print data
                 int dataIndex = 0;
+
+                IList data = this.DataSourceAsList;
                 foreach ( var item in data )
                 {
                     columnCounter = 0;
@@ -1332,39 +1369,12 @@ namespace Rock.Web.UI.Controls
                         columnCounter++;
 
                         object propValue = prop.GetValue( item, null );
-                        string value = "";
-                        if ( propValue != null )
-                        {
-                            var definedValueAttribute = prop.GetCustomAttributes( typeof( Rock.Data.DefinedValueAttribute ), true ).FirstOrDefault();
-                            if ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) )
-                            {
-                                int definedValueId = 0;
 
-                                if ( prop.PropertyType == typeof( int? ) )
-                                {
-                                    definedValueId = (int?)propValue ?? 0;
-                                }
-                                else if ( prop.PropertyType == typeof( int ) )
-                                {
-                                    definedValueId = (int)propValue;
-                                }
+                        var definedValueAttribute = prop.GetCustomAttributes( typeof( DefinedValueAttribute ), true ).FirstOrDefault();
 
-                                if ( definedValueId > 0 )
-                                {
-                                    var definedValue = DefinedValueCache.Read( definedValueId );
-                                    value = definedValue != null ? definedValue.Value : definedValueId.ToString();
-                                }
-                            }
+                        bool isDefinedValue = ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) );
 
-                            else if ( propValue is IEnumerable<object> )
-                            {
-                                value = ( propValue as IEnumerable<object> ).ToList().AsDelimited( "," );
-                            }
-                            else
-                            {
-                                value = propValue.ToString();
-                            }
-                        }
+                        string value = this.GetExportValue( prop, propValue, isDefinedValue );
 
                         worksheet.Cells[rowCounter, columnCounter].Value = value.ConvertBrToCrLf();
 
@@ -1433,7 +1443,7 @@ namespace Rock.Web.UI.Controls
 
                     rowCounter++;
                     dataIndex++;
-                }
+                }            
             }
 
             // format header range
@@ -1496,6 +1506,131 @@ namespace Rock.Web.UI.Controls
             this.Page.Response.BinaryWrite( byteArray );
             this.Page.Response.Flush();
             this.Page.Response.End();
+        }
+
+        /// <summary>
+        /// Formats a raw value from the Grid DataSource so that it is suitable for export to an Excel Worksheet.
+        /// </summary>
+        /// <param name="prop"></param>
+        /// <param name="propValue"></param>
+        /// <param name="isDefinedValueField"></param>
+        /// <returns></returns>
+        private string GetExportValue(PropertyInfo prop, object propValue, bool isDefinedValueField)
+        {            
+            // Get the formatted value string for export.
+            string value = string.Empty;
+
+            if ( propValue != null )
+            {
+                if ( isDefinedValueField )
+                {
+                    if ( prop.PropertyType == typeof( int? ) || prop.PropertyType == typeof( int ) )
+                    {
+                        // Attempt to parse the value as a single Defined Value Id.
+                        int definedValueId;
+
+                        if ( prop.PropertyType == typeof(int) )
+                        {
+                            definedValueId = (int)propValue;
+                        }
+                        else
+                        {
+                            definedValueId = (int?)propValue ?? 0;
+                        }
+
+                        if ( definedValueId > 0 )
+                        {
+                            var definedValue = DefinedValueCache.Read( definedValueId );
+                            value = definedValue != null ? definedValue.Value : definedValueId.ToString();
+                        }
+                    }
+                    else if ( prop.PropertyType == typeof( string ) )
+                    {
+                        // Attempt to parse the value as a list of Defined Value Guids.
+                        // If a value is not a Guid or cannot be matched to a Defined Value, the raw value will be shown.
+                        var guids = propValue.ToString().Split( ',' );
+                        var definedValues = new List<string>();
+
+                        foreach ( var guidString in guids )
+                        {
+                            Guid definedValueGuid;
+
+                            bool isGuid = Guid.TryParse( guidString, out definedValueGuid );
+                            bool addRaw = true;
+
+                            if ( isGuid )
+                            {
+                                var definedValue = DefinedValueCache.Read( definedValueGuid );
+
+                                if ( definedValue != null )
+                                {
+                                    definedValues.Add( definedValue.Value );
+                                    addRaw = false;
+                                }
+                            }
+
+                            if ( addRaw )
+                            {
+                                definedValues.Add(guidString);
+                            }
+                        }
+
+                        value = definedValues.AsDelimited( ", " );
+                    }
+                }
+                else if ( propValue is IEnumerable<object> )
+                {
+                    value = ( propValue as IEnumerable<object> ).ToList().AsDelimited( ", " );
+                }
+                else if ( propValue is DateTime? )
+                {
+                    DateTime dateTimeValue = ( propValue as DateTime? ).Value;
+                    var columnAttribute = prop.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.ColumnAttribute>( true );
+                    if (( columnAttribute != null && columnAttribute.Name == "Date" ) || prop.Name.EndsWith( "Date" ))
+                    {
+                        value = dateTimeValue.ToShortDateString();
+                    }
+                    else
+                    {
+                        value = dateTimeValue.ToString();
+                    }
+                }
+                else
+                {
+                    value = propValue.ToString();
+                }
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Gets the Type of the data source entity when the DataSource is a List (not a DataTable)
+        /// </summary>
+        /// <returns></returns>
+        private Type GetDataSourceObjectType()
+        {
+            if ( this.DataSourceAsDataTable != null )
+            {
+                return null;
+            }
+            else
+            {
+                var data = this.DataSourceAsList;
+
+                Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
+
+                // if the list is just List<object>, try to find out what the properties of specific type of object are by examining the first item in the list
+                if ( oType == typeof( object ) || oType.IsInterface )
+                {
+                    if ( data.Count > 0 )
+                    {
+                        oType = data[0].GetType();
+                    }
+                }
+
+                return oType;
+            }
         }
 
         #endregion
@@ -1585,6 +1720,13 @@ namespace Rock.Web.UI.Controls
 
             columns.AddRange( displayColumns.Count > 0 ? displayColumns : allColumns );
 
+            if ( columns.Count == 1 )
+            {
+                // if the only column is the Id column, show it
+                idCol.HeaderText = "Id";
+                idCol.Visible = true;
+            }
+
             return columns;
         }
 
@@ -1598,18 +1740,9 @@ namespace Rock.Web.UI.Controls
                 var keysSelected = SelectedKeys.ToList();
                 string dataKeyColumn = this.DataKeyNames.FirstOrDefault();
 
-                if ( !string.IsNullOrWhiteSpace( dataKeyColumn ) && this.DataSource is DataTable || this.DataSource is DataView )
+                if ( !string.IsNullOrWhiteSpace( dataKeyColumn ) && this.DataSourceAsDataTable != null )
                 {
-                    DataTable data = null;
-
-                    if ( this.DataSource is DataTable )
-                    {
-                        data = (DataTable)this.DataSource;
-                    }
-                    else if ( this.DataSource is DataView )
-                    {
-                        data = ( (DataView)this.DataSource ).Table;
-                    }
+                    DataTable data = this.DataSourceAsDataTable;
 
                     foreach ( DataRow row in data.Rows )
                     {
@@ -1641,7 +1774,7 @@ namespace Rock.Web.UI.Controls
                 else
                 {
                     // get access to the List<> and its properties
-                    IList data = (IList)this.DataSource;
+                    IList data = this.DataSourceAsList;
                     if ( data != null )
                     {
                         Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
@@ -1689,7 +1822,7 @@ namespace Rock.Web.UI.Controls
             return personData;
         }
 
-        private int? GetPersonEntitySet( EventArgs e)
+        private int? GetPersonEntitySet( EventArgs e )
         {
             OnGridRebind( e );
 
@@ -1697,7 +1830,7 @@ namespace Rock.Web.UI.Controls
             if ( keys.Any() )
             {
                 var entitySet = new Rock.Model.EntitySet();
-                entitySet.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                entitySet.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read<Rock.Model.Person>().Id;
                 entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
 
                 foreach ( var key in keys )
@@ -1719,6 +1852,299 @@ namespace Rock.Web.UI.Controls
                     rockContext.SaveChanges();
                     return entitySet.Id;
                 }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the data source as List when the DataSource is a List (not a DataTable)
+        /// </summary>
+        /// <value>
+        /// The data source as List.
+        /// </value>
+        public IList DataSourceAsList
+        {
+            get
+            {
+                if ( DataSource is IList )
+                {
+                    return ( DataSource as IList );
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the data source as a DataTable.
+        /// </summary>
+        /// <value>
+        /// The data source as data table.
+        /// </value>
+        public DataTable DataSourceAsDataTable
+        {
+            get
+            {
+                if ( this.DataSource is DataTable )
+                {
+
+                    return (DataTable)this.DataSource;
+                }
+                else if ( this.DataSource is DataView )
+                {
+                    return ( (DataView)this.DataSource ).Table;
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the entity set from grid.
+        /// </summary>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <returns></returns>
+        private int? GetEntitySetFromGrid( EventArgs e )
+        {
+            if ( this.DataSourceAsDataTable != null )
+            {
+                return GetEntitySetFromGridSourceDataTable();
+            }
+            else if ( this.DataSourceAsList != null )
+            {
+                return GetEntitySetFromGridSourceList();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the entity set from grid if it's datasource is a data table.
+        /// </summary>
+        /// <returns></returns>
+        private int? GetEntitySetFromGridSourceDataTable()
+        {
+            var entitySet = new Rock.Model.EntitySet();
+
+            // the datasource is a DataTable so there isn't an EntityTypeId
+            entitySet.EntityTypeId = null;
+
+            entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
+
+            int itemOrder = 0;
+            foreach ( var row in this.DataSourceAsDataTable.Rows.OfType<DataRow>() )
+            {
+                try
+                {
+                    var item = new Rock.Model.EntitySetItem();
+
+                    // the datasource is a DataTable (not an Entity), so just set it to zero.  The entire datarow will be put into AdditionalMergeValues
+                    item.EntityId = 0;
+
+                    item.Order = itemOrder++;
+                    item.AdditionalMergeValues = new Dictionary<string, object>();
+                    foreach ( var col in this.DataSourceAsDataTable.Columns.OfType<DataColumn>() )
+                    {
+                        item.AdditionalMergeValues.Add( col.ColumnName, row[col] );
+                    }
+
+                    entitySet.Items.Add( item );
+                }
+                catch { }
+            }
+
+            if ( entitySet.Items.Any() )
+            {
+                var rockContext = new RockContext();
+                var service = new Rock.Model.EntitySetService( rockContext );
+                service.Add( entitySet );
+                rockContext.SaveChanges();
+                return entitySet.Id;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the entity set from grid when the DataSource is a List (Grid datasource is not a DataTable)
+        /// </summary>
+        /// <returns></returns>
+        private int? GetEntitySetFromGridSourceList()
+        {
+            var dataSourceObjectType = this.GetDataSourceObjectType();
+            if ( dataSourceObjectType == null )
+            {
+                // Not an IList datasource
+                return null;
+            }
+
+            int? entityTypeId = null;
+            string dataKeyColumn = this.DataKeyNames.FirstOrDefault() ?? "Id";
+            PropertyInfo idProp = dataSourceObjectType.GetProperty( dataKeyColumn );
+
+            if ( this.EntityTypeId.HasValue )
+            {
+                entityTypeId = this.EntityTypeId.Value;
+            }
+            else
+            {
+                Type entityType = null;
+                if ( typeof( IEntity ).IsAssignableFrom( dataSourceObjectType ) )
+                {
+                    if ( dataSourceObjectType.Assembly.IsDynamic )
+                    {
+                        // if the grid datasource is Dynamic (for example, DynamicProxy)
+                        entityType = dataSourceObjectType.BaseType;
+                    }
+                    else
+                    {
+                        entityType = dataSourceObjectType;
+                    }
+
+                    var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( entityType, false );
+                    if ( entityTypeCache != null )
+                    {
+                        entityTypeId = entityTypeCache.Id;
+                    }
+                }
+            }
+
+
+
+            // first try to get the SelectedKeys from the SelectField (if there is one)
+            var selectedKeys = this.SelectedKeys.Select( a => a as int? ).Where( a => a.HasValue ).Select( a => a.Value ).Distinct().ToList();
+            if ( selectedKeys == null || !selectedKeys.Any() )
+            {
+                if ( entityTypeId.HasValue && dataSourceObjectType is IEntity )
+                {
+                    // we know this is an IEntity Type so the datakey is Id
+                    selectedKeys = ( this.DataSourceAsList ).OfType<IEntity>().Select( a => a.Id ).Distinct().ToList();
+                }
+                else
+                {
+                    // this is something else, so try to figure it out from dataKeyColumn
+                    selectedKeys = new List<int>();
+
+                    foreach ( var item in this.DataSourceAsList )
+                    {
+                        int? idValue = null;
+                        if ( idProp != null )
+                        {
+                            idValue = idProp.GetValue( item ) as int?;
+                        }
+
+                        if ( idValue.HasValue )
+                        {
+                            selectedKeys.Add( idValue.Value );
+                        }
+                    }
+                }
+            }
+
+            List<PropertyInfo> additionalMergeProperties = null;
+
+            if ( entityTypeId.HasValue )
+            {
+                var dataSourceObjectTypeEntityType = EntityTypeCache.Read( dataSourceObjectType, false );
+                if ( dataSourceObjectTypeEntityType != null && dataSourceObjectTypeEntityType.Id == entityTypeId )
+                {
+                    // the entityType and the Datasource type are the same, so no additional merge fields 
+                }
+                else
+                {
+                    // the entityType and the Datasource type are different, so figure out the extra properties and put them into AdditionalMergeFields
+                    var entityType = EntityTypeCache.Read( entityTypeId.Value ).GetEntityType();
+                    var entityTypePropertyNames = entityType.GetProperties().Select( a => a.Name ).ToList();
+
+                    additionalMergeProperties = new List<PropertyInfo>();
+                    foreach ( var objProp in dataSourceObjectType.GetProperties().Where( a => !entityTypePropertyNames.Contains( a.Name ) ) )
+                    {
+                        additionalMergeProperties.Add( objProp );
+                    }
+                }
+            }
+            else
+            {
+                // we don't know the EntityType, so throw all the data into the AdditionalMergeFields
+                additionalMergeProperties = dataSourceObjectType.GetProperties().ToList();
+            }
+
+
+            var gridDataFields = this.Columns.OfType<BoundField>();
+
+            Dictionary<int, Dictionary<string, object>> itemMergeFieldsList = new Dictionary<int, Dictionary<string, object>>();
+            if ( additionalMergeProperties != null && additionalMergeProperties.Any() && idProp != null )
+            {
+                foreach ( var item in this.DataSourceAsList )
+                {
+                    var idVal = idProp.GetValue( item ) as int?;
+                    if ( idVal.HasValue && selectedKeys.Contains( idVal.Value ) )
+                    {
+                        var mergeFields = new Dictionary<string, object>();
+                        foreach ( var mergeProperty in additionalMergeProperties )
+                        {
+                            var objValue = mergeProperty.GetValue( item );
+
+                            var dataField = gridDataFields.FirstOrDefault( a => a.DataField == mergeProperty.Name );
+                            string mergeFieldKey;
+                            if ( dataField != null && !string.IsNullOrWhiteSpace( dataField.HeaderText ) )
+                            {
+                                mergeFieldKey = dataField.HeaderText.RemoveSpecialCharacters().Replace( " ", "_" );
+                            }
+                            else
+                            {
+                                mergeFieldKey = mergeProperty.Name;
+                            }
+
+                            mergeFields.AddOrIgnore( mergeFieldKey, objValue );
+                        }
+
+                        itemMergeFieldsList.Add( idVal.Value, mergeFields );
+                    }
+                }
+            }
+
+            var entitySet = new Rock.Model.EntitySet();
+            if ( entityTypeId.HasValue )
+            {
+                entitySet.EntityTypeId = entityTypeId.Value;
+            }
+            else
+            {
+                // unable to determine EntityTypeId, create the EntitySet has a list of "Anonymous" objects, putting everything in AdditionalMergeFieldsJson    
+                entitySet.EntityTypeId = null;
+            }
+
+            entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
+
+            int itemOrder = 0;
+            foreach ( var key in selectedKeys )
+            {
+                try
+                {
+                    var item = new Rock.Model.EntitySetItem();
+                    item.EntityId = key;
+                    item.Order = itemOrder++;
+                    if ( itemMergeFieldsList.ContainsKey( key ) )
+                    {
+                        item.AdditionalMergeValues = itemMergeFieldsList[key];
+                    }
+
+                    entitySet.Items.Add( item );
+                }
+                catch { }
+            }
+
+            if ( entitySet.Items.Any() )
+            {
+                var rockContext = new RockContext();
+                var service = new Rock.Model.EntitySetService( rockContext );
+                service.Add( entitySet );
+                rockContext.SaveChanges();
+                return entitySet.Id;
             }
 
             return null;
@@ -1832,7 +2258,7 @@ namespace Rock.Web.UI.Controls
         public static BoundField GetGridField( PropertyInfo propertyInfo )
         {
             var specifiedBoundFieldType = propertyInfo.GetCustomAttribute<BoundFieldTypeAttribute>();
-            if (specifiedBoundFieldType != null)
+            if ( specifiedBoundFieldType != null )
             {
                 return Activator.CreateInstance( specifiedBoundFieldType.BoundFieldType ) as BoundField;
             }

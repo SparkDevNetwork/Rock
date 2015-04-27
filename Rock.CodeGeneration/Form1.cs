@@ -43,6 +43,7 @@ namespace Rock.CodeGeneration
                 rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
                 FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
                 lblAssemblyPath.Text = fi.FullName;
+                toolTip1.SetToolTip(lblAssemblyPath, fi.LastWriteTime.ToString());
             }
 
             ofdAssembly.InitialDirectory = Path.GetDirectoryName( lblAssemblyPath.Text );

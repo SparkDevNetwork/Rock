@@ -123,6 +123,14 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.Actions.ShowAdd = canEditBlock;
                     gGroupMembers.IsDeleteEnabled = canEditBlock;
                 }
+
+                // if group is being sync'ed remove ability to add/delete members 
+                if ( _group.SyncDataViewId.HasValue )
+                {
+                    gGroupMembers.IsDeleteEnabled = false;
+                    gGroupMembers.Actions.ShowAdd = false;
+                    hlSyncStatus.Visible = true;
+                }
             }
         }
 
@@ -610,6 +618,7 @@ namespace RockWeb.Blocks.Groups
                     // we need to save the workflows into the grid's object list
                     gGroupMembers.ObjectList = new Dictionary<string, object>();
                     groupMembers.ForEach( m => gGroupMembers.ObjectList.Add( m.Id.ToString(), m ) );
+                    gGroupMembers.EntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
 
                     gGroupMembers.DataSource = groupMembers.Select( m => new
                     {

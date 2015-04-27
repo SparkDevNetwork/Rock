@@ -311,7 +311,7 @@ namespace Rock
 
                     if ( objAttrs.Any() )
                     {
-                        result.Add( string.Format( "Attributes <p class='attributes'>Below is a list of attributes that can be retrieved using <code>{{ {0} | Attribute:'[AttributeKey]' }}</code>.</p>", parentElement ), objAttrs );
+                        result.Add( string.Format( "Attributes <p class='attributes'>Below is a list of attributes that can be retrieved using <code>{{{{ {0} | Attribute:'[AttributeKey]' }}}}</code>.</p>", parentElement ), objAttrs );
                     }
                 }
 
@@ -844,6 +844,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough()] 
         public static int? AsIntegerOrNull( this string str )
         {
             int value;
@@ -2618,11 +2619,20 @@ namespace Rock
         #region IHasAttributes extensions
 
         /// <summary>
+        /// Loads the attribute.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity )
+        {
+            Rock.Attribute.Helper.LoadAttributes( entity );
+        }
+
+        /// <summary>
         /// Loads the attributes.
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <param name="rockContext">The rock context.</param>
-        public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity, RockContext rockContext = null )
+        public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity, RockContext rockContext )
         {
             Rock.Attribute.Helper.LoadAttributes( entity, rockContext );
         }

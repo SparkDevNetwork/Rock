@@ -424,10 +424,19 @@ namespace RockWeb.Blocks.Groups
             group.Name = tbName.Text;
             group.Description = tbDescription.Text;
             group.CampusId = ddlCampus.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( ddlCampus.SelectedValue );
-            group.GroupTypeId = int.Parse( ddlGroupType.SelectedValue );
+            group.GroupTypeId = ddlGroupType.SelectedValue.AsInteger();
             group.ParentGroupId = gpParentGroup.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( gpParentGroup.SelectedValue );
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
+
+            // save sync settings
+            if ( wpGroupSync.Visible )
+            {
+                group.SyncDataViewId = dvpSyncDataview.SelectedValue.AsIntegerOrNull();
+                group.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedValue.AsIntegerOrNull();
+                group.ExitSystemEmailId = ddlExitEmail.SelectedValue.AsIntegerOrNull();
+                group.AddUserAccountsDuringSync = rbCreateLoginDuringSync.Checked;
+            }
 
             string iCalendarContent = string.Empty;
 
@@ -624,7 +633,7 @@ namespace RockWeb.Blocks.Groups
                 else
                 {
                     // Cancelling on Add.  Return to Grid
-                    NavigateToParentPage();
+                    NavigateToPage( RockPage.Guid, null );
                 }
             }
             else
@@ -782,7 +791,7 @@ namespace RockWeb.Blocks.Groups
 
             bool viewAllowed = false;
             bool editAllowed = IsUserAuthorized( Authorization.EDIT );
-
+            
             RockContext rockContext = null;
 
             if ( !groupId.Equals( 0 ) )
@@ -944,6 +953,47 @@ namespace RockWeb.Blocks.Groups
 
             gpParentGroup.SetValue( group.ParentGroup ?? groupService.Get( group.ParentGroupId ?? 0 ) );
 
+            // hide sync panel if no admin access
+            wpGroupSync.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+
+            // load system emails
+            if ( wpGroupSync.Visible )
+            {
+                var systemEmails = new SystemEmailService( new RockContext() ).Queryable().OrderBy( e => e.Title );
+
+                // add a blank for the first option
+                ddlWelcomeEmail.Items.Add( new ListItem() );
+                ddlExitEmail.Items.Add( new ListItem() );
+
+                if ( systemEmails.Any() )
+                {
+                    foreach ( var systemEmail in systemEmails )
+                    {
+                        ddlWelcomeEmail.Items.Add( new ListItem( systemEmail.Title, systemEmail.Id.ToString() ) );
+                        ddlExitEmail.Items.Add( new ListItem( systemEmail.Title, systemEmail.Id.ToString() ) );
+                    }
+                }
+
+                // set dataview
+                dvpSyncDataview.EntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                dvpSyncDataview.SetValue( group.SyncDataViewId );
+
+                if ( group.AddUserAccountsDuringSync.HasValue )
+                {
+                    rbCreateLoginDuringSync.Checked = group.AddUserAccountsDuringSync.Value;
+                }
+
+                if ( group.WelcomeSystemEmailId.HasValue )
+                {
+                    ddlWelcomeEmail.SetValue( group.WelcomeSystemEmailId );
+                }
+
+                if ( group.ExitSystemEmailId.HasValue )
+                {
+                    ddlExitEmail.SetValue( group.ExitSystemEmailId );
+                }
+            }
+
             // GroupType depends on Selected ParentGroup
             ddlParentGroup_SelectedIndexChanged( null, null );
             gpParentGroup.Label = "Parent Group";
@@ -1018,6 +1068,19 @@ namespace RockWeb.Blocks.Groups
                 // Save value to viewstate for use later when binding location grid
                 AllowMultipleLocations = groupType != null && groupType.AllowMultipleLocations;
 
+                // show/hide group sync panel based on permissions from the group type
+                if ( group.GroupTypeId != 0 )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        GroupType selectedGroupType = new GroupTypeService( rockContext ).Get( group.GroupTypeId );
+                        if ( selectedGroupType != null )
+                        {
+                            wpGroupSync.Visible = selectedGroupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                        }
+                    }
+                }
+                
                 if ( groupType != null && groupType.LocationSelectionMode != GroupLocationPickerMode.None )
                 {
                     wpMeetingDetails.Visible = true;
@@ -1158,16 +1221,8 @@ namespace RockWeb.Blocks.Groups
 
             lblMainDetails.Text = descriptionList.Html;
 
-            var attributes = new List<Rock.Web.Cache.AttributeCache>();
-
-            // Get the attributes inherited from group type
-            GroupType groupType = new GroupTypeService( rockContext ).Get( group.GroupTypeId );
-            groupType.LoadAttributes();
-            attributes = groupType.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
-
-            // Combine with the group attributes
             group.LoadAttributes();
-            attributes.AddRange( group.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) );
+            var attributes = group.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
 
             // display attribute values
             var attributeCategories = Helper.GetAttributeCategories( attributes );
@@ -1176,7 +1231,7 @@ namespace RockWeb.Blocks.Groups
             var pageParams = new Dictionary<string, string>();
             pageParams.Add("GroupId", group.Id.ToString());
 
-            hlAttendance.Visible = groupType.TakesAttendance;
+            hlAttendance.Visible = group.GroupType.TakesAttendance;
             hlAttendance.NavigateUrl = LinkedPageUrl( "AttendancePage", pageParams );
 
             string groupMapUrl = LinkedPageUrl("GroupMapPage", pageParams);

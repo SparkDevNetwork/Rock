@@ -109,6 +109,7 @@ namespace RockWeb.Blocks.Finance
         // helper functional methods (like BindGrid(), etc.)
         private void ShowContent()
         {
+            List<Dictionary<string, object>> scheduleSummaries = new List<Dictionary<string, object>>();
 
             // get pledges for current user
             if ( CurrentPerson != null )
@@ -118,8 +119,6 @@ namespace RockWeb.Blocks.Finance
 
                 var schedules = transactionService.Queryable( "ScheduledTransactionDetails.Account" )
                                 .Where( s => s.AuthorizedPersonAlias.PersonId == CurrentPerson.Id && s.IsActive == true );
-
-                List<Dictionary<string, object>> scheduleSummaries = new List<Dictionary<string, object>>();
 
                 foreach ( FinancialScheduledTransaction schedule in schedules )
                 {
@@ -179,34 +178,35 @@ namespace RockWeb.Blocks.Finance
 
                     scheduleSummaries.Add( scheduleSummary );
                 }
-                
-                // added linked pages to mergefields
-                Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-                linkedPages.Add( "ManageScheduledTransactionsPage", LinkedPageUrl( "ManageScheduledTransactionsPage", null ));
-                linkedPages.Add( "TransactionHistoryPage", LinkedPageUrl( "TransactionHistoryPage", null ) );
-                linkedPages.Add( "TransactionEntryPage", LinkedPageUrl( "TransactionEntryPage", null ) );
-                
 
-
-                var scheduleValues = new Dictionary<string, object>();
-                scheduleValues.Add( "ScheduledTransactions", scheduleSummaries.ToList() );
-                scheduleValues.Add( "LinkedPages", linkedPages );
-                // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                scheduleValues.Add( "Person", CurrentPerson );
-                scheduleValues.Add( "CurrentPerson", CurrentPerson );  
-
-                string content = GetAttributeValue( "Template" ).ResolveMergeFields( scheduleValues );
-
-                // show merge fields if needed
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                    scheduleValues.Remove( "Person" );
-                    content += scheduleValues.lavaDebugInfo();
-                }
-
-                lContent.Text = content;
             }
+
+            // added linked pages to mergefields
+            Dictionary<string, object> linkedPages = new Dictionary<string, object>();
+            linkedPages.Add( "ManageScheduledTransactionsPage", LinkedPageUrl( "ManageScheduledTransactionsPage", null ) );
+            linkedPages.Add( "TransactionHistoryPage", LinkedPageUrl( "TransactionHistoryPage", null ) );
+            linkedPages.Add( "TransactionEntryPage", LinkedPageUrl( "TransactionEntryPage", null ) );
+
+
+
+            var scheduleValues = new Dictionary<string, object>();
+            scheduleValues.Add( "ScheduledTransactions", scheduleSummaries.ToList() );
+            scheduleValues.Add( "LinkedPages", linkedPages );
+            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+            scheduleValues.Add( "Person", CurrentPerson );
+            scheduleValues.Add( "CurrentPerson", CurrentPerson );
+
+            string content = GetAttributeValue( "Template" ).ResolveMergeFields( scheduleValues );
+
+            // show merge fields if needed
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+            {
+                // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+                scheduleValues.Remove( "Person" );
+                content += scheduleValues.lavaDebugInfo();
+            }
+
+            lContent.Text = content;
             
         }
 

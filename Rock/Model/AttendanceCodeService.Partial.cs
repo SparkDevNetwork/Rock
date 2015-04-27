@@ -51,35 +51,37 @@ namespace Rock.Model
         {
             lock ( _obj )
             {
-                var rockContext = new Rock.Data.RockContext();
-                var service = new AttendanceCodeService( rockContext );
-
-                DateTime today = RockDateTime.Today;
-                if ( _todaysCodes == null || !_today.HasValue || !_today.Value.Equals( today ) )
+                using ( var rockContext = new Rock.Data.RockContext() )
                 {
-                    _today = today;
-                    DateTime tomorrow = today.AddDays( 1 );
-                    _todaysCodes = service.Queryable().AsNoTracking()
-                        .Where( c => c.IssueDateTime >= today && c.IssueDateTime < tomorrow )
-                        .Select( c => c.Code )
-                        .ToList();
+                    var service = new AttendanceCodeService( rockContext );
+
+                    DateTime today = RockDateTime.Today;
+                    if ( _todaysCodes == null || !_today.HasValue || !_today.Value.Equals( today ) )
+                    {
+                        _today = today;
+                        DateTime tomorrow = today.AddDays( 1 );
+                        _todaysCodes = service.Queryable().AsNoTracking()
+                            .Where( c => c.IssueDateTime >= today && c.IssueDateTime < tomorrow )
+                            .Select( c => c.Code )
+                            .ToList();
+                    }
+
+                    // Find a good unique code for today
+                    string code = GenerateRandomCode( codeLength );
+                    while ( noGood.Any( s => s == code ) || _todaysCodes.Any( c => c == code ) )
+                    {
+                        code = GenerateRandomCode( codeLength );
+                    }
+                    _todaysCodes.Add( code );
+
+                    var attendanceCode = new AttendanceCode();
+                    attendanceCode.IssueDateTime = RockDateTime.Now;
+                    attendanceCode.Code = code;
+                    service.Add( attendanceCode );
+                    rockContext.SaveChanges();
+
+                    return attendanceCode;
                 }
-
-                // Find a good unique code for today
-                string code = GenerateRandomCode( codeLength );
-                while ( noGood.Any( s => s == code ) || _todaysCodes.Any( c => c == code ) )
-                {
-                    code = GenerateRandomCode( codeLength );
-                }
-                _todaysCodes.Add( code );
-
-                var attendanceCode = new AttendanceCode();
-                attendanceCode.IssueDateTime = RockDateTime.Now;
-                attendanceCode.Code = code;
-                service.Add( attendanceCode );
-                rockContext.SaveChanges();
-
-                return attendanceCode;
             }
         }
 
