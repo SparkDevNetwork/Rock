@@ -48,6 +48,7 @@
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockControlWrapper ID="rcwRequirements" runat="server" Label="Requirements">
+                                    <Rock:NotificationBox ID="nbRequirementsErrors" runat="server" Dismissable="true" NotificationBoxType="Warning" />
                                     <Rock:RockCheckBoxList ID="cblManualRequirements" RepeatDirection="Vertical" runat="server" Label="" />
                                     <div class="labels">
                                         <asp:Literal ID="lRequirementsLabels" runat="server" />

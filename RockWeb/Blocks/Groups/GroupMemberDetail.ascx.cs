@@ -468,6 +468,19 @@ namespace RockWeb.Blocks.Groups
                         meets ? "success" : "danger" );
                 }
             }
+
+            var requirementsWithErrors = requirementsResults.Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.Error ).ToList();
+            if ( requirementsWithErrors.Any() )
+            {
+                nbRequirementsErrors.Visible = true;
+                nbRequirementsErrors.Text = string.Format(
+                    "An error occurred in one or more of the requirement calculations: <br /> {0}",
+                    requirementsWithErrors.AsDelimited( "<br />" ) );
+            }
+            else
+            {
+                nbRequirementsErrors.Visible = false;
+            }
         }
 
         /// <summary>
