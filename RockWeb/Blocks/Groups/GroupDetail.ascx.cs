@@ -930,7 +930,7 @@ namespace RockWeb.Blocks.Groups
                 foreach ( var role in group.GroupType.Roles )
                 {
                     var groupMemberService = new GroupMemberService( rockContext );
-                    int curCount = groupMemberService.Queryable().Where( m => m.GroupRoleId == role.Id && m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
+                    int curCount = groupMemberService.Queryable().Where( m => m.GroupId == group.Id && m.GroupRoleId == role.Id && m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
 
                     if ( role.MinCount.HasValue && role.MinCount.Value > curCount )
                     {
