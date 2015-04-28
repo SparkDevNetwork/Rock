@@ -27,60 +27,24 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for Group that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for GroupMemberRequirement that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class GroupEntity
+    public partial class GroupMemberRequirementEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public bool? AddUserAccountsDuringSync { get; set; }
+        public int GroupMemberId { get; set; }
 
         /// <summary />
-        public bool? AllowGuests { get; set; }
+        public int GroupRequirementId { get; set; }
 
         /// <summary />
-        public int? CampusId { get; set; }
+        public DateTime? LastRequirementCheckDateTime { get; set; }
 
         /// <summary />
-        public string Description { get; set; }
-
-        /// <summary />
-        public int? ExitSystemEmailId { get; set; }
-
-        /// <summary />
-        public int GroupTypeId { get; set; }
-
-        /// <summary />
-        public bool IsActive { get; set; }
-
-        /// <summary />
-        public bool IsSecurityRole { get; set; }
-
-        /// <summary />
-        public bool IsSystem { get; set; }
-
-        /// <summary />
-        public bool? MustMeetRequirementsToAddMember { get; set; }
-
-        /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
-        public int Order { get; set; }
-
-        /// <summary />
-        public int? ParentGroupId { get; set; }
-
-        /// <summary />
-        public int? ScheduleId { get; set; }
-
-        /// <summary />
-        public int? SyncDataViewId { get; set; }
-
-        /// <summary />
-        public int? WelcomeSystemEmailId { get; set; }
+        public DateTime? RequirementMetDateTime { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -91,40 +55,10 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for Group that includes all the fields that are available for GETs. Use this for GETs (use GroupEntity for POST/PUTs)
+    /// Client model for GroupMemberRequirement that includes all the fields that are available for GETs. Use this for GETs (use GroupMemberRequirementEntity for POST/PUTs)
     /// </summary>
-    public partial class Group : GroupEntity
+    public partial class GroupMemberRequirement : GroupMemberRequirementEntity
     {
-        /// <summary />
-        public Campus Campus { get; set; }
-
-        /// <summary />
-        public SystemEmail ExitSystemEmail { get; set; }
-
-        /// <summary />
-        public ICollection<GroupLocation> GroupLocations { get; set; }
-
-        /// <summary />
-        public ICollection<GroupRequirement> GroupRequirements { get; set; }
-
-        /// <summary />
-        public ICollection<Group> Groups { get; set; }
-
-        /// <summary />
-        public GroupType GroupType { get; set; }
-
-        /// <summary />
-        public ICollection<GroupMember> Members { get; set; }
-
-        /// <summary />
-        public Schedule Schedule { get; set; }
-
-        /// <summary />
-        public DataView SyncDataView { get; set; }
-
-        /// <summary />
-        public SystemEmail WelcomeSystemEmail { get; set; }
-
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 

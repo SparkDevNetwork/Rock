@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// DataView Service class
+    /// GroupRequirement Service class
     /// </summary>
-    public partial class DataViewService : Service<DataView>
+    public partial class GroupRequirementService : Service<GroupRequirement>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataViewService"/> class
+        /// Initializes a new instance of the <see cref="GroupRequirementService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public DataViewService(RockContext context) : base(context)
+        public GroupRequirementService(RockContext context) : base(context)
         {
         }
 
@@ -48,33 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( DataView item, out string errorMessage )
+        public bool CanDelete( GroupRequirement item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Group>( Context ).Queryable().Any( a => a.SyncDataViewId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, Group.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<GroupRequirementType>( Context ).Queryable().Any( a => a.DataViewId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, GroupRequirementType.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<Metric>( Context ).Queryable().Any( a => a.DataViewId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, Metric.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<Report>( Context ).Queryable().Any( a => a.DataViewId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, Report.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -82,43 +58,39 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class DataViewExtensionMethods
+    public static partial class GroupRequirementExtensionMethods
     {
         /// <summary>
-        /// Clones this DataView object to a new DataView object
+        /// Clones this GroupRequirement object to a new GroupRequirement object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static DataView Clone( this DataView source, bool deepCopy )
+        public static GroupRequirement Clone( this GroupRequirement source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as DataView;
+                return source.Clone() as GroupRequirement;
             }
             else
             {
-                var target = new DataView();
+                var target = new GroupRequirement();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another DataView object to this DataView object
+        /// Copies the properties from another GroupRequirement object to this GroupRequirement object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this DataView target, DataView source )
+        public static void CopyPropertiesFrom( this GroupRequirement target, GroupRequirement source )
         {
             target.Id = source.Id;
-            target.CategoryId = source.CategoryId;
-            target.DataViewFilterId = source.DataViewFilterId;
-            target.Description = source.Description;
-            target.EntityTypeId = source.EntityTypeId;
-            target.IsSystem = source.IsSystem;
-            target.Name = source.Name;
-            target.TransformEntityTypeId = source.TransformEntityTypeId;
+            target.GroupId = source.GroupId;
+            target.GroupRequirementTypeId = source.GroupRequirementTypeId;
+            target.GroupRoleId = source.GroupRoleId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

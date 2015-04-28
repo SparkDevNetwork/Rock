@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -112,6 +112,7 @@ namespace RockWeb.Blocks.Groups
                 var rockContext = new RockContext();
 
                 GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+                GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
                 GroupMember groupMember;
 
                 int groupMemberId = int.Parse( hfGroupMemberId.Value );
@@ -141,6 +142,37 @@ namespace RockWeb.Blocks.Groups
                 groupMember.GroupRoleId = role.Id;
                 groupMember.GroupMemberStatus = rblStatus.SelectedValueAsEnum<GroupMemberStatus>();
 
+                if ( pnlRequirements.Visible )
+                {
+                    foreach ( var checkboxItem in cblManualRequirements.Items.OfType<ListItem>() )
+                    {
+                        int groupRequirementId = checkboxItem.Value.AsInteger();
+                        var groupMemberRequirement = groupMember.GroupMemberRequirements.FirstOrDefault( a => a.GroupRequirementId == groupRequirementId );
+                        bool metRequirement = checkboxItem.Selected;
+                        if ( metRequirement )
+                        {
+                            if ( groupMemberRequirement == null )
+                            {
+                                groupMemberRequirement = new GroupMemberRequirement();
+                                groupMemberRequirement.GroupRequirementId = groupRequirementId;
+                                groupMember.GroupMemberRequirements.Add( groupMemberRequirement );
+                                groupMemberRequirement.RequirementMetDateTime = RockDateTime.Now;
+                            }
+
+                            groupMemberRequirement.LastRequirementCheckDateTime = RockDateTime.Now;
+                        }
+                        else
+                        {
+                            if ( groupMemberRequirement != null )
+                            {
+                                // doesn't meets the requirement
+                                groupMemberRequirement.RequirementMetDateTime = null;
+                                groupMemberRequirement.LastRequirementCheckDateTime = RockDateTime.Now;
+                            }
+                        }
+                    }
+                }
+
                 groupMember.LoadAttributes();
 
                 Rock.Attribute.Helper.GetEditValues( phAttributes, groupMember );
@@ -150,6 +182,8 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
+                // if the groupMember IsValue is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
+                // So, make sure a message is displayed in the validation summary
                 cvGroupMember.IsValid = groupMember.IsValid;
 
                 if ( !cvGroupMember.IsValid )
@@ -158,7 +192,7 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
-                // using WrapTransaction because there are two Saves
+                // using WrapTransaction because there are three Saves
                 rockContext.WrapTransaction( () =>
                 {
                     if ( groupMember.Id.Equals( 0 ) )
@@ -166,8 +200,16 @@ namespace RockWeb.Blocks.Groups
                         groupMemberService.Add( groupMember );
                     }
 
+                    foreach ( var deletedRequirement in groupMember.GroupMemberRequirements.Where( a => a.RequirementMetDateTime == null ) )
+                    {
+                        // remove any requirements that they no longer meet (manual ones that were un-checked)
+                        groupMemberRequirementService.Delete( deletedRequirement );
+                    }
+
                     rockContext.SaveChanges();
                     groupMember.SaveAttributeValues( rockContext );
+
+                    groupMember.CalculateRequirements( rockContext, true );
                 } );
 
                 Group group = new GroupService( rockContext ).Get( groupMember.GroupId );
@@ -242,7 +284,7 @@ namespace RockWeb.Blocks.Groups
                 }
 
             });", true );
-            
+
             var rockContext = new RockContext();
             GroupMember groupMember = null;
 
@@ -341,6 +383,104 @@ namespace RockWeb.Blocks.Groups
                 phAttributesReadOnly.Visible = false;
                 phAttributes.Visible = true;
             }
+
+            var groupHasRequirements = group.GroupRequirements.Any();
+            pnlRequirements.Visible = groupHasRequirements;
+            btnReCheckRequirements.Visible = groupHasRequirements;
+
+            ShowGroupRequirementsStatuses();
+        }
+
+        /// <summary>
+        /// Shows the group requirements statuses.
+        /// </summary>
+        private void ShowGroupRequirementsStatuses()
+        {
+            var rockContext = new RockContext();
+            int groupMemberId = hfGroupMemberId.Value.AsInteger();
+            var groupId = hfGroupId.Value.AsInteger();
+            GroupMember groupMember = null;
+
+            if ( !groupMemberId.Equals( 0 ) )
+            {
+                groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
+            }
+            else
+            {
+                // only create a new one if parent was specified
+                groupMember = new GroupMember { Id = 0 };
+                groupMember.GroupId = groupId;
+                groupMember.Group = new GroupService( rockContext ).Get( groupMember.GroupId );
+                groupMember.GroupRoleId = groupMember.Group.GroupType.DefaultGroupRoleId ?? 0;
+                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+            }
+
+            cblManualRequirements.Items.Clear();
+            lRequirementsLabels.Text = string.Empty;
+
+            IEnumerable<GroupRequirementStatus> requirementsResults;
+
+            if ( groupMember.IsNewOrChangedGroupMember( rockContext ) )
+            {
+                requirementsResults = groupMember.Group.PersonMeetsGroupRequirements( ppGroupMemberPerson.PersonId ?? 0, ddlGroupRole.SelectedValue.AsIntegerOrNull() );
+            }
+            else
+            {
+                requirementsResults = groupMember.GetGroupRequirementsStatuses().ToList();
+            }
+
+            // only show the requirements that apply to the GroupRole (or all Roles)
+            foreach ( var requirementResult in requirementsResults.Where( a => a.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable ) )
+            {
+                if ( requirementResult.GroupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual )
+                {
+                    var checkboxItem = new ListItem( requirementResult.GroupRequirement.GroupRequirementType.CheckboxLabel, requirementResult.GroupRequirement.Id.ToString() );
+                    if ( string.IsNullOrEmpty( checkboxItem.Text ) )
+                    {
+                        checkboxItem.Text = requirementResult.GroupRequirement.GroupRequirementType.Name;
+                    }
+
+                    checkboxItem.Selected = requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets;
+                    cblManualRequirements.Items.Add( checkboxItem );
+                }
+                else
+                {
+                    bool meets = requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets;
+                    string labelText;
+                    if ( meets )
+                    {
+                        labelText = requirementResult.GroupRequirement.GroupRequirementType.PositiveLabel;
+                    }
+                    else
+                    {
+                        labelText = requirementResult.GroupRequirement.GroupRequirementType.NegativeLabel;
+                    }
+
+                    if ( string.IsNullOrEmpty( labelText ) )
+                    {
+                        labelText = requirementResult.GroupRequirement.GroupRequirementType.Name;
+                    }
+
+                    lRequirementsLabels.Text += string.Format(
+                        @"<span class='label label-{1}'>{0}</span>
+                        ",
+                        labelText,
+                        meets ? "success" : "danger" );
+                }
+            }
+
+            var requirementsWithErrors = requirementsResults.Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.Error ).ToList();
+            if ( requirementsWithErrors.Any() )
+            {
+                nbRequirementsErrors.Visible = true;
+                nbRequirementsErrors.Text = string.Format(
+                    "An error occurred in one or more of the requirement calculations: <br /> {0}",
+                    requirementsWithErrors.AsDelimited( "<br />" ) );
+            }
+            else
+            {
+                nbRequirementsErrors.Visible = false;
+            }
         }
 
         /// <summary>
@@ -366,6 +506,52 @@ namespace RockWeb.Blocks.Groups
             }
 
             rblStatus.BindToEnum<GroupMemberStatus>();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnReCheckRequirements control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnReCheckRequirements_Click( object sender, EventArgs e )
+        {
+            CalculateRequirements();
+        }
+
+        /// <summary>
+        /// Calculates (or re-calculates) the requirements, then updates the results on the UI
+        /// </summary>
+        private void CalculateRequirements()
+        {
+            var rockContext = new RockContext();
+            var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
+
+            if ( groupMember != null && !groupMember.IsNewOrChangedGroupMember( rockContext ) )
+            {
+                groupMember.CalculateRequirements( rockContext, true );
+            }
+
+            ShowGroupRequirementsStatuses();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlGroupRole control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlGroupRole_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            CalculateRequirements();
+        }
+
+        /// <summary>
+        /// Handles the SelectPerson event of the ppGroupMemberPerson control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ppGroupMemberPerson_SelectPerson( object sender, EventArgs e )
+        {
+            CalculateRequirements();
         }
 
         #endregion

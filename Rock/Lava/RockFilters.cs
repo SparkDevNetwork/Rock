@@ -663,6 +663,18 @@ namespace Rock.Lava
 
         #endregion
 
+        #region Number Filters
+            public static string Format( object input, string format )
+            {
+                if ( input == null )
+                    return null;
+                else if ( string.IsNullOrWhiteSpace( format ) )
+                    return input.ToString();
+
+                return string.Format( "{0:" + format + "}", input );
+            }
+        #endregion
+
         #region Attribute Filters
 
         /// <summary>
@@ -696,9 +708,15 @@ namespace Rock.Lava
                 {
                     // Get the value
                     string theValue = globalAttributeCache.GetValue( attributeKey );
-
-                    // Global attributes may reference other global attributes, so try to resolve this value again
-                    rawValue = theValue.ResolveMergeFields( new Dictionary<string, object>() );
+                    if ( theValue.HasMergeFields() )
+                    {
+                        // Global attributes may reference other global attributes, so try to resolve this value again
+                        rawValue = theValue.ResolveMergeFields( new Dictionary<string, object>() );
+                    }
+                    else
+                    {
+                        rawValue = theValue;
+                    }
                 }
             }
 

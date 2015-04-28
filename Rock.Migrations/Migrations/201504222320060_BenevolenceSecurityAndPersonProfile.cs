@@ -35,6 +35,21 @@ namespace Rock.Migrations
             RockMigrationHelper.AddPage( "BF04BB7E-BE3A-4A38-A37C-386B55496303", "F66758C6-3E3D-4598-AF4C-B317047B5987", "Benevolence", "", "15FA4176-1C8E-409D-8B47-85ADA35DE5D2", "" ); // Site:Rock RMS
             RockMigrationHelper.AddPage( "15FA4176-1C8E-409D-8B47-85ADA35DE5D2", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Benevolence Request Detail", "", "648CA58C-EB12-4479-9994-F064070E3A32", "" ); // Site:Rock RMS
 
+            // reorder pages under person profile
+            Sql( @"
+                  UPDATE [Page]
+                    SET [Order] = 4
+                    WHERE [Guid] = '15FA4176-1C8E-409D-8B47-85ADA35DE5D2'
+
+                  UPDATE [Page]
+                    SET [Order] = 5
+                    WHERE [Guid] = '0E56F56E-FB32-4827-A69A-B90D43CB47F5'
+
+                  UPDATE [Page]
+                    SET [Order] = 6
+                    WHERE [Guid] = 'BC8E5377-0F6C-457A-9CF0-0F0A0AB2A418'
+            " );
+
             RockMigrationHelper.UpdateBlockType( "Transaction Yearly Summary Lava", "Presents a summary of financial transactions broke out by year and account using lava", "~/Blocks/Finance/TransactionYearlySummaryLava.ascx", "Finance", "535307C8-77D1-44F8-AD4D-1577572B6D26" );
 
             // Add Block to Page: Benevolence, Site: Rock RMS (Person Profile)
