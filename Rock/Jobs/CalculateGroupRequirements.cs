@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.SqlServer;
 using System.Linq;
 using Quartz;
 using Rock.Data;
@@ -52,22 +53,49 @@ namespace Rock.Jobs
             var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
 
-            var groupRequirementQry = groupRequirementService.Queryable().Where( a => a.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual ).AsNoTracking();
+            // we only need to consider group requirements that are based on a DataView or SQL
+            // and we only need to look at the ones that can expire
+            var groupRequirementQry = groupRequirementService.Queryable()
+                .Where( a => a.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual )
+                .Where( a => a.GroupRequirementType.CanExpire == true && a.GroupRequirementType.ExpireInDays.HasValue )
+                .AsNoTracking();
 
             var calculationExceptions = new List<Exception>();
 
-            foreach (var groupRequirement in groupRequirementQry.ToList())
+            foreach ( var groupRequirement in groupRequirementQry.ToList() )
             {
                 try
                 {
                     var groupMemberQry = groupMemberService.Queryable().Where( a => a.GroupId == groupRequirement.GroupId ).AsNoTracking();
-                    var results = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, groupMemberQry.Select(a => a.Person), groupRequirement.GroupRoleId );
-                    foreach (var result in results)
+                    var personQry = groupMemberQry.Select( a => a.Person );
+
+                    // narrow it down to persons that a group member requirement that has expired
+                    var currentDateTime = RockDateTime.Now;
+                    var expireDaysCount = groupRequirement.GroupRequirementType.ExpireInDays.Value;
+                    var groupMemberRequirementQry = groupMemberRequirementService.Queryable().Where( a => SqlFunctions.DateDiff( "day", a.LastRequirementCheckDateTime, currentDateTime ) > expireDaysCount );
+                    personQry = personQry.Where( a => groupMemberRequirementQry.Any( r => r.GroupMember.PersonId == a.Id ) );
+
+                    var results = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, personQry, groupRequirement.GroupRoleId );
+                    foreach ( var result in results )
                     {
-                        // TODO....
+                        var groupMemberRequirement = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.PersonId == result.PersonId && a.GroupRequirementId == result.GroupRequirement.Id ).FirstOrDefault();
+                        if ( groupMemberRequirement != null )
+                        {
+                            groupMemberRequirement.LastRequirementCheckDateTime = currentDateTime;
+                            if ( result.MeetsGroupRequirement == MeetsGroupRequirement.Meets )
+                            {
+                                // they meet the requirement so update the Requirement Met Date/Time
+                                groupMemberRequirement.RequirementMetDateTime = currentDateTime;
+                            }
+                            else
+                            {
+                                // they don't meet the requirement so set the Requirement Met Date/Time to null
+                                groupMemberRequirement.RequirementMetDateTime = null;
+                            }
+                        }
                     }
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
                 {
                     calculationExceptions.Add( new Exception( string.Format( "Exception when calculating group requirement: ", groupRequirement ), ex ) );
                 }
