@@ -264,6 +264,7 @@
     <Compile Include="Jobs\GetScheduledPayments.cs" />
     <Compile Include="Jobs\GroupSync.cs" />
     <Compile Include="Jobs\SendAttendanceReminders.cs" />
+    <Compile Include="Jobs\SendBirthdayEmail.cs" />
     <Compile Include="Lava\ILiquidizable.cs" />
     <Compile Include="Lava\RockFilters.cs" />
     <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
