@@ -185,7 +185,7 @@ namespace RockWeb.Blocks.Finance
                 ddlResultType.AutoPostBack = false;
                 ddlResultType.Required = true;
                 ddlResultType.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) ), true );
-                ddlResultType.SelectedValue = resultInfo.ResultTypeValueId.ToString();
+                ddlResultType.SetValue( resultInfo.ResultTypeValueId );
                 dtbResultSummary.Text = resultInfo.ResultSummary;
                 dtbAmount.Text = resultInfo.Amount.ToString();
                 hfInfoGuid.Value = e.RowKeyValue.ToString();
@@ -303,9 +303,9 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 benevolenceRequest.RequestedByPersonAliasId = ppPerson.PersonAliasId;
-                benevolenceRequest.CaseWorkerPersonAliasId = ddlCaseWorker.SelectedItem.Value.AsIntegerOrNull();
-                benevolenceRequest.RequestStatusValueId = ddlRequestStatus.SelectedItem.Value.AsIntegerOrNull();
-                benevolenceRequest.ConnectionStatusValueId = ddlConnectionStatus.SelectedItem.Value.AsIntegerOrNull();
+                benevolenceRequest.CaseWorkerPersonAliasId = ddlCaseWorker.SelectedValue.AsIntegerOrNull();
+                benevolenceRequest.RequestStatusValueId = ddlRequestStatus.SelectedValue.AsIntegerOrNull();
+                benevolenceRequest.ConnectionStatusValueId = ddlConnectionStatus.SelectedValue.AsIntegerOrNull();
 
                 if ( dpRequestDate.SelectedDate.HasValue )
                 {
@@ -397,7 +397,7 @@ namespace RockWeb.Blocks.Finance
                     dtbLastName.Text = person.LastName;
                     dtbLastName.Enabled = false;
 
-                    ddlConnectionStatus.SelectedValue = person.ConnectionStatusValueId.ToString();
+                    ddlConnectionStatus.SetValue( person.ConnectionStatusValueId );
                     ddlConnectionStatus.Enabled = false;
 
                     var homePhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
@@ -526,7 +526,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( benevolenceRequest.RequestStatusValueId != null )
             {
-                ddlRequestStatus.SelectedValue = benevolenceRequest.RequestStatusValueId.ToString();
+                ddlRequestStatus.SetValue( benevolenceRequest.RequestStatusValueId );
 
                 if ( benevolenceRequest.RequestStatusValue.Value == "Approved" )
                 {
@@ -543,7 +543,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( benevolenceRequest.ConnectionStatusValueId != null )
             {
-                ddlConnectionStatus.SelectedValue = benevolenceRequest.ConnectionStatusValueId.ToString();
+                ddlConnectionStatus.SetValue( benevolenceRequest.ConnectionStatusValueId );
             }
             
             string caseWorkerPersonAliasValue = benevolenceRequest.CaseWorkerPersonAliasId.ToString();
@@ -556,7 +556,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            ddlCaseWorker.SelectedValue = caseWorkerPersonAliasValue;
+            ddlCaseWorker.SetValue( caseWorkerPersonAliasValue );
 
             BindGridFromViewState();
         }
