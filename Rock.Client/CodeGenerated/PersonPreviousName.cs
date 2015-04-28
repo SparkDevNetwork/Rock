@@ -27,33 +27,18 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for GroupMember that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for PersonPreviousName that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class GroupMemberEntity
+    public partial class PersonPreviousNameEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public DateTime? DateTimeAdded { get; set; }
+        public string LastName { get; set; }
 
         /// <summary />
-        public int GroupId { get; set; }
-
-        /// <summary />
-        public int /* GroupMemberStatus*/ GroupMemberStatus { get; set; }
-
-        /// <summary />
-        public int GroupRoleId { get; set; }
-
-        /// <summary />
-        public int? GuestCount { get; set; }
-
-        /// <summary />
-        public bool IsSystem { get; set; }
-
-        /// <summary />
-        public int PersonId { get; set; }
+        public int PersonAliasId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -64,19 +49,10 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for GroupMember that includes all the fields that are available for GETs. Use this for GETs (use GroupMemberEntity for POST/PUTs)
+    /// Client model for PersonPreviousName that includes all the fields that are available for GETs. Use this for GETs (use PersonPreviousNameEntity for POST/PUTs)
     /// </summary>
-    public partial class GroupMember : GroupMemberEntity
+    public partial class PersonPreviousName : PersonPreviousNameEntity
     {
-        /// <summary />
-        public ICollection<GroupMemberRequirement> GroupMemberRequirements { get; set; }
-
-        /// <summary />
-        public GroupTypeRole GroupRole { get; set; }
-
-        /// <summary />
-        public Person Person { get; set; }
-
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 

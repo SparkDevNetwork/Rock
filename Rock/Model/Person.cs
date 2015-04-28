@@ -866,7 +866,7 @@ namespace Rock.Model
         /// Gets the Person's age.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the person's age.  If the birthdate and age is not available then returns null.
+        /// An <see cref="System.Int32"/> representing the person's age. Returns null if the birthdate or birthyear is not available.
         /// </value>
         [DataMember]
         [NotMapped]
@@ -1737,6 +1737,17 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets any previous last names for this person sorted alphabetically by LastName
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IOrderedQueryable<PersonPreviousName> GetPreviousNames( this Person person, RockContext rockContext = null )
+        {
+            return new PersonService( rockContext ?? new RockContext() ).GetPreviousNames( person != null ? person.Id : 0 );
+        }
+
+        /// <summary>
         /// Gets the <see cref="Rock.Model.Person" /> entity of the provided Person's spouse.
         /// </summary>
         /// <param name="person">The <see cref="Rock.Model.Person" /> entity of the Person to retrieve the spouse of.</param>
@@ -1748,8 +1759,6 @@ namespace Rock.Model
         {
             return new PersonService( rockContext ?? new RockContext() ).GetSpouse( person );
         }
-
-
 
         /// <summary>
         /// limits the PersonQry to people that have an Age that is between MinAge and MaxAge (inclusive)
@@ -1763,16 +1772,17 @@ namespace Rock.Model
         {
             var currentDate = RockDateTime.Today;
             var qryWithAge = personQry.Select(
-                      p => new { 
+                      p => new
+                      {
                           Person = p,
-                          Age = (p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
+                          Age = ( p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
                             ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1
-                            : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ))
-            }); 
+                            : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) )
+                      } );
 
-            if (minAge.HasValue)
+            if ( minAge.HasValue )
             {
-                qryWithAge = qryWithAge.Where(a => a.Age >= minAge);
+                qryWithAge = qryWithAge.Where( a => a.Age >= minAge );
             }
 
             if ( maxAge.HasValue )
@@ -1780,7 +1790,7 @@ namespace Rock.Model
                 qryWithAge = qryWithAge.Where( a => a.Age <= maxAge );
             }
 
-            if (!includePeopleWitNoAge)
+            if ( !includePeopleWitNoAge )
             {
                 qryWithAge = qryWithAge.Where( a => a.Age.HasValue );
             }

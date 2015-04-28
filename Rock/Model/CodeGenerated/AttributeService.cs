@@ -88,6 +88,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Attribute target, Attribute source )
         {
             target.Id = source.Id;
+            target.AllowSearch = source.AllowSearch;
             target.DefaultValue = source.DefaultValue;
             target.Description = source.Description;
             target.EntityTypeId = source.EntityTypeId;

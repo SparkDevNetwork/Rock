@@ -581,6 +581,17 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets any previous last names for this person sorted alphabetically by LastName
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public IOrderedQueryable<PersonPreviousName> GetPreviousNames( int personId )
+        {
+            return new PersonPreviousNameService( (RockContext)this.Context ).Queryable()
+                .Where( m => m.PersonAlias.PersonId == personId ).OrderBy( a => a.LastName );
+        }
+
+        /// <summary>
         /// Gets the first group location.
         /// </summary>
         /// <param name="personId">The person identifier.</param>

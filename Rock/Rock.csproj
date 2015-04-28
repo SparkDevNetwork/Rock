@@ -292,6 +292,7 @@
     <Compile Include="Model\CodeGenerated\GroupScheduleExclusionService.cs" />
     <Compile Include="Model\CodeGenerated\MergeTemplateService.cs" />
     <Compile Include="Model\CodeGenerated\PersonDuplicateService.cs" />
+    <Compile Include="Model\CodeGenerated\PersonPreviousNameService.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
     <Compile Include="Model\ContentChannel.cs">
       <SubType>Code</SubType>
@@ -315,6 +316,7 @@
     <Compile Include="Model\MergeTemplate.cs" />
     <Compile Include="Model\PersonBadgeService.partial.cs" />
     <Compile Include="Model\PersonDuplicate.cs" />
+    <Compile Include="Model\PersonPreviousName.cs" />
     <Compile Include="Model\PluginMigration.cs" />
     <Compile Include="Model\RestActionService.partial.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
