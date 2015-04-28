@@ -3,7 +3,7 @@
 
 <%--
     ******************************************************************************************************************************
-    * NOTE: The Security/EditMyAccount.ascx block has very similiar functionality.  If updating this block, make sure to check
+    * NOTE: The Security/AccountEdit.ascx block has very similiar functionality.  If updating this block, make sure to check
     * that block also.  It may need the same updates.
     ******************************************************************************************************************************
 --%>

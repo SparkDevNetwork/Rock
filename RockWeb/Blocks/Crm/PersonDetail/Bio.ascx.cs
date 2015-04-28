@@ -20,8 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -39,9 +38,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Person biographic/demographic information and picture (Person detail page)." )]
 
-    [PersonBadgesField("Badges", "The label badges to display in this block.", false, "", "", 0)]
-    [WorkflowTypeField("Workflow Actions", "The workflows to make available as actions.", true, false, "", "", 1)]
-    [CodeEditorField("Additional Custom Actions", @"
+    [PersonBadgesField( "Badges", "The label badges to display in this block.", false, "", "", 0 )]
+    [WorkflowTypeField( "Workflow Actions", "The workflows to make available as actions.", true, false, "", "", 1 )]
+    [CodeEditorField( "Additional Custom Actions", @"
 Additional custom actions (will be displayed after the list of workflow actions). Any instance of '{0}' will be replaced with the current person's id.
 Because the contents of this setting will be rendered inside a &lt;ul&gt; element, it is recommended to use an 
 &lt;li&gt; element for each available action.  Example:
@@ -50,7 +49,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 </pre>
 ", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 2, "Actions" )]
     [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 3 )]
-    [BooleanField("Display Country Code", "When enabled prepends the country code to all phone numbers.")]
+    [BooleanField( "Display Country Code", "When enabled prepends the country code to all phone numbers." )]
     public partial class Bio : PersonBlock
     {
         #region Base Control Methods
@@ -104,12 +103,15 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                 lbEditPerson.Visible = IsUserAuthorized( Rock.Security.Authorization.EDIT );
             }
-
         }
 
-        protected override void OnLoad(EventArgs e)
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
         {
- 	        base.OnLoad(e);
+            base.OnLoad( e );
 
             if ( !Page.IsPostBack )
             {
@@ -121,10 +123,10 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     }
                     else
                     {
-                        lName.Text = String.Format( 
-                            "{0} {2} <span class='full-name'>{1}</span>", 
-                            Person.NickName.FormatAsHtmlTitle(), 
-                            string.IsNullOrWhiteSpace(Person.FirstName) ? string.Empty : string.Format("({0})", Person.FirstName), 
+                        lName.Text = string.Format(
+                            "{0} {2} <span class='full-name'>{1}</span>",
+                            Person.NickName.FormatAsHtmlTitle(),
+                            string.IsNullOrWhiteSpace( Person.FirstName ) ? string.Empty : string.Format( "({0})", Person.FirstName ),
                             Person.LastName );
                     }
 
@@ -132,7 +134,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     string imgTag = Rock.Model.Person.GetPhotoImageTag( Person.PhotoId, Person.Age, Person.Gender, 200, 200 );
                     if ( Person.PhotoId.HasValue )
                     {
-                        lImage.Text = string.Format("<a href='{0}'>{1}</a>", Person.PhotoUrl, imgTag);
+                        lImage.Text = string.Format( "<a href='{0}'>{1}</a>", Person.PhotoUrl, imgTag );
                     }
                     else
                     {
@@ -173,8 +175,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
                     {
-                        lGraduation.Text = string.Format( "<small>({0} {1})</small>",
-                            Person.HasGraduated.Value  ? "Graduated " : "Graduates ",
+                        lGraduation.Text = string.Format(
+                            "<small>({0} {1})</small>",
+                            Person.HasGraduated.Value ? "Graduated " : "Graduates ",
                             Person.GraduationYear.Value );
 
                         string grade = Person.GradeFormatted;
@@ -186,7 +189,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     lMaritalStatus.Text = Person.MaritalStatusValueId.DefinedValue();
                     if ( Person.AnniversaryDate.HasValue )
+                    {
                         lAnniversary.Text = string.Format( "{0} yrs <small>({1})</small>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToMonthDayString() );
+                    }
 
                     if ( Person.PhoneNumbers != null )
                     {
@@ -216,8 +221,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                                     if ( workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                                     {
                                         string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, Person.Id );
-                                        sbActions.AppendFormat( "<li><a href='{0}'><i class='{1}'></i> {2}</a></li>",
-                                            ResolveRockUrl( url ), workflowType.IconCssClass, workflowType.Name );
+                                        sbActions.AppendFormat(
+                                            "<li><a href='{0}'><i class='{1}'></i> {2}</a></li>",
+                                            ResolveRockUrl( url ),
+                                            workflowType.IconCssClass,
+                                            workflowType.Name );
                                         sbActions.AppendLine();
                                     }
                                 }
@@ -237,12 +245,12 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             actions = string.Format( actions, Person.Id );
                         }
 
-                        sbActions.Append(actions);
+                        sbActions.Append( actions );
                     }
 
                     lActions.Text = sbActions.ToString();
                     ulActions.Visible = !string.IsNullOrWhiteSpace( lActions.Text );
-                  
+
                     // Every person should have an alias record with same id.  If it's missing, create it
                     if ( !Person.Aliases.Any( a => a.AliasPersonId == Person.Id ) )
                     {
@@ -267,6 +275,10 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnPreRender( EventArgs e )
         {
             base.OnPreRender( e );
@@ -276,6 +288,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
         #region Events
 
+        /// <summary>
+        /// Handles the Click event of the lbEditPerson control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEditPerson_Click( object sender, EventArgs e )
         {
             if ( Person != null )
@@ -323,6 +340,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             return formattedNumber;
         }
 
+        /// <summary>
+        /// Sets the following.
+        /// </summary>
         private void SetFollowing()
         {
             var personAliasEntityType = EntityTypeCache.Read( "Rock.Model.PersonAlias" );
@@ -352,7 +372,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     }
                 }
 
-                string script = string.Format( @"
+                string script = string.Format(
+@"
         $('.following-status').click(function () {{
             var $followingDiv = $(this);
             if ($followingDiv.hasClass('following')) {{
@@ -377,13 +398,16 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     }}
                 }});
             }}
-        }});
-    ", personAliasEntityType.Id, Person.PrimaryAliasId, CurrentPersonId.Value, CurrentPersonAlias.Id );
+        }});",
+                personAliasEntityType.Id,
+                Person.PrimaryAliasId,
+                CurrentPersonId.Value,
+                CurrentPersonAlias.Id );
+
                 ScriptManager.RegisterStartupScript( lImage, lImage.GetType(), "following", script, true );
             }
         }
 
         #endregion
-
-}
+    }
 }
