@@ -55,6 +55,9 @@ namespace Rock.Migrations
                 .Index(t => t.ForeignId);
             
             AddColumn("dbo.GroupMember", "DateTimeAdded", c => c.DateTime());
+
+            Sql( @"UPDATE [GroupMember] SET [DateTimeAdded] = [CreatedDateTime] where [DateTimeAdded] is null" );
+
             AddColumn("dbo.Attribute", "AllowSearch", c => c.Boolean(nullable: false));
         }
         
