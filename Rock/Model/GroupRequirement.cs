@@ -177,17 +177,34 @@ namespace Rock.Model
             else if ( this.GroupRequirementType.RequirementCheckType == RequirementCheckType.Sql )
             {
                 string formattedSql = this.GroupRequirementType.SqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( this.Group ) );
-                var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null );
-                if ( tableResult.Columns.Count > 0 )
+                try
                 {
-                    var personIds = tableResult.Rows.OfType<System.Data.DataRow>().Select( r => Convert.ToInt32( r[0] ) );
+                    var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null );
+                    if ( tableResult.Columns.Count > 0 )
+                    {
+                        var personIds = tableResult.Rows.OfType<System.Data.DataRow>().Select( r => Convert.ToInt32( r[0] ) );
 
+                        var result = personQry.Select( a => a.Id ).ToList().Select( a => new PersonGroupRequirementStatus
+                            {
+                                PersonId = a,
+                                GroupRequirement = this,
+                                MeetsGroupRequirement = personIds.Contains( a ) ? MeetsGroupRequirement.Meets : MeetsGroupRequirement.NotMet
+                            } );
+
+                        return result;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Exception occurred (probably due to bad SQL)
+                    ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
+                    
                     var result = personQry.Select( a => a.Id ).ToList().Select( a => new PersonGroupRequirementStatus
-                        {
-                            PersonId = a,
-                            GroupRequirement = this,
-                            MeetsGroupRequirement = personIds.Contains( a ) ? MeetsGroupRequirement.Meets : MeetsGroupRequirement.NotMet
-                        } );
+                    {
+                        PersonId = a,
+                        GroupRequirement = this,
+                        MeetsGroupRequirement = MeetsGroupRequirement.Error
+                    } );
 
                     return result;
                 }
@@ -252,7 +269,10 @@ namespace Rock.Model
         NotApplicable,
 
         // Person must be added to Group first, then requirement must be manually checked
-        ManualCheckRequired
+        ManualCheckRequired,
+
+        // The Requirement calculation resulted in an exception
+        Error
     }
 
     #endregion
