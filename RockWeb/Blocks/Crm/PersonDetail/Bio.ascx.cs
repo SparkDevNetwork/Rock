@@ -121,7 +121,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     }
                     else
                     {
-                        lName.Text = String.Format( "{0} {2} <span class='full-name'>({1})</span>", Person.NickName.FormatAsHtmlTitle(), Person.FirstName, Person.LastName );
+                        lName.Text = String.Format( 
+                            "{0} {2} <span class='full-name'>{1}</span>", 
+                            Person.NickName.FormatAsHtmlTitle(), 
+                            string.IsNullOrWhiteSpace(Person.FirstName) ? string.Empty : string.Format("({0})", Person.FirstName), 
+                            Person.LastName );
                     }
 
                     // Setup Image
