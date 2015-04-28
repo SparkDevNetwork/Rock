@@ -177,6 +177,10 @@ namespace Rock.Model
             if ( state == System.Data.Entity.EntityState.Added )
             {
                 action = "Added to group.";
+                if ( !this.DateTimeAdded.HasValue )
+                {
+                    this.DateTimeAdded = RockDateTime.Now;
+                }
             }
             else if ( state == System.Data.Entity.EntityState.Deleted )
             {

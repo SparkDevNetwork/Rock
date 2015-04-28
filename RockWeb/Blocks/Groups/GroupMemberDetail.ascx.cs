@@ -302,6 +302,7 @@ namespace RockWeb.Blocks.Groups
                     groupMember.Group = new GroupService( rockContext ).Get( groupMember.GroupId );
                     groupMember.GroupRoleId = groupMember.Group.GroupType.DefaultGroupRoleId ?? 0;
                     groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                    groupMember.DateTimeAdded = RockDateTime.Now;
                 }
             }
 
@@ -340,6 +341,17 @@ namespace RockWeb.Blocks.Groups
                 lReadOnlyTitle.Text = groupMember.Person.FullName.FormatAsHtmlTitle();
             }
 
+            if ( groupMember.DateTimeAdded.HasValue )
+            {
+                hfDateAdded.Text = string.Format( "Added: {0}", groupMember.DateTimeAdded.Value.ToShortDateString() );
+                hfDateAdded.Visible = true;
+            }
+            else
+            {
+                hfDateAdded.Text = string.Empty;
+                hfDateAdded.Visible = false;
+            }
+
             // user has to have EDIT Auth to the Block OR the group
             nbEditModeMessage.Text = string.Empty;
             if ( !IsUserAuthorized( Authorization.EDIT ) && !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
@@ -360,6 +372,12 @@ namespace RockWeb.Blocks.Groups
 
             ppGroupMemberPerson.SetValue( groupMember.Person );
             ppGroupMemberPerson.Enabled = !readOnly;
+
+            if (groupMember.Id != 0)
+            {
+                // once a group member record is saved, don't let them change the person
+                ppGroupMemberPerson.Enabled = false;
+            }
 
             ddlGroupRole.SetValue( groupMember.GroupRoleId );
             ddlGroupRole.Enabled = !readOnly;
