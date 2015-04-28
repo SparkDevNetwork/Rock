@@ -15,12 +15,16 @@
 @import "../../../Styles/_modal.less";
 @import "../../../Styles/_helpers.less";
 
+@import "_quadon";
+.quadon-extrabold();
+
 //
 // Variables
 // --------------------------------------------------
 
 // Font Variables
 @font-family-base:     'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+@headings-font-family: 'Quadon', 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 @font-weight-light:     300;
 @font-weight-bold:      700;
 @font-weight-semibold:  600;
@@ -189,6 +193,7 @@
 }
 
 .welcome .checkin-start a {
+  font-family: "Quadon";
   padding-left: 0;
   background: @btn-default-bg;
   color: #fff;
@@ -196,6 +201,7 @@
   overflow: hidden;
   position: relative;
   padding-left: 120px;
+  padding-right: 30px;
   &:before {
     .fa-icon();
     content: '\f046';

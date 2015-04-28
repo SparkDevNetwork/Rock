@@ -2789,7 +2789,7 @@ h6,
 .h4,
 .h5,
 .h6 {
-  font-family: inherit;
+  font-family: 'Quadon', 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-weight: 500;
   line-height: 1.1;
   color: inherit;
@@ -8895,6 +8895,13 @@ Copyright (c) 2012 Dan Eden*/
   margin-left: 60px !important;
 }
 @font-face {
+  font-family: 'Quadon';
+  src: url('../Assets/Fonts/2E09FE_1_0.eot');
+  src: url('../Assets/Fonts/2E09FE_1_0.eot?#iefix') format('embedded-opentype'), url('../Assets/Fonts/2E09FE_1_0.woff2') format('woff2'), url('../Assets/Fonts/2E09FE_1_0.woff') format('woff'), url('../Assets/Fonts/2E09FE_1_0.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
   font-family: 'OpenSans';
   src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
   src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'), url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'), url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'), url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
@@ -8962,6 +8969,7 @@ Copyright (c) 2012 Dan Eden*/
   margin: 5%;
 }
 .welcome .checkin-start a {
+  font-family: "Quadon";
   padding-left: 0;
   background: #331000;
   color: #fff;
@@ -8969,6 +8977,7 @@ Copyright (c) 2012 Dan Eden*/
   overflow: hidden;
   position: relative;
   padding-left: 120px;
+  padding-right: 30px;
 }
 .welcome .checkin-start a:before {
   display: inline-block;
