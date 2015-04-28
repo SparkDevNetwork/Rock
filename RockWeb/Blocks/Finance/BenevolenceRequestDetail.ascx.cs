@@ -498,7 +498,6 @@ namespace RockWeb.Blocks.Finance
             if ( benevolenceRequest.RequestedByPersonAlias != null )
             {
                 ppPerson.SetValue( benevolenceRequest.RequestedByPersonAlias.Person );
-                ppPerson_SelectPerson( null, null );
             }
             else
             {
@@ -559,6 +558,9 @@ namespace RockWeb.Blocks.Finance
             ddlCaseWorker.SetValue( caseWorkerPersonAliasValue );
 
             BindGridFromViewState();
+
+            // call the OnSelectPerson of the person picker which will update the UI based on the selected person
+            ppPerson_SelectPerson( null, null );
         }
 
         /// <summary>
