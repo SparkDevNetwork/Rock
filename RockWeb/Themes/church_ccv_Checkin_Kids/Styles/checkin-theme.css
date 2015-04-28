@@ -8929,6 +8929,11 @@ Copyright (c) 2012 Dan Eden*/
   font-weight: 700;
   font-style: normal;
 }
+h1,
+h2,
+h3 {
+  letter-spacing: 0;
+}
 .checkin-count h3,
 .checkin-count li {
   color: #4c4c4b;
@@ -8994,4 +8999,18 @@ Copyright (c) 2012 Dan Eden*/
   left: 0;
   bottom: 0;
   padding: 22.5px 25px 22.5px 30px;
+}
+.scroller {
+  padding-right: 40px;
+}
+.iScrollVerticalScrollbar,
+.iScrollLoneScrollbar {
+  width: 30px;
+  min-height: 100px;
+}
+.iScrollIndicator {
+  border: none;
+  background-color: #fff;
+  opacity: .5;
+  min-height: 100px;
 }
