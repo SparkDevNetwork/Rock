@@ -8672,3 +8672,17 @@ Copyright (c) 2012 Dan Eden*/
   background-color: #1e1e1e;
   border-top-color: #444444;
 }
+.scroller {
+  padding-right: 40px;
+}
+.iScrollVerticalScrollbar,
+.iScrollLoneScrollbar {
+  width: 30px;
+  min-height: 100px;
+}
+.iScrollIndicator {
+  border: none;
+  background-color: #fff;
+  opacity: .5;
+  min-height: 100px;
+}
