@@ -39,7 +39,6 @@ namespace Rock.Model
     [DataContract]
     public partial class Group : Model<Group>, IOrdered
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -140,8 +139,8 @@ namespace Rock.Model
             get { return _isActive; }
             set { _isActive = value; }
         }
+
         private bool _isActive = true;
-        
 
         /// <summary>
         /// Gets or sets the display order of the group in the group list and group hierarchy. The lower the number the higher the 
@@ -153,7 +152,6 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
-
 
         /// <summary>
         /// Gets or sets whether group allows members to specify additional "guests" that will be part of the group (i.e. attend event)
@@ -203,6 +201,15 @@ namespace Rock.Model
         [HideFromReporting]
         [DataMember]
         public bool? AddUserAccountsDuringSync { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether a group member can only be added if all the GroupRequirements have been met
+        /// </summary>
+        /// <value>
+        /// The must meet requirements to add member.
+        /// </value>
+        [DataMember]
+        public bool? MustMeetRequirementsToAddMember { get; set; }
 
         #endregion
 
@@ -282,6 +289,7 @@ namespace Rock.Model
             get { return _groups ?? ( _groups = new Collection<Group>() ); }
             set { _groups = value; }
         }
+
         private ICollection<Group> _groups;
 
         /// <summary>
@@ -296,6 +304,7 @@ namespace Rock.Model
             get { return _members ?? ( _members = new Collection<GroupMember>() ); }
             set { _members = value; }
         }
+
         private ICollection<GroupMember> _members;
 
         /// <summary>
@@ -310,7 +319,23 @@ namespace Rock.Model
             get { return _groupLocations ?? ( _groupLocations = new Collection<GroupLocation>() ); }
             set { _groupLocations = value; }
         }
+
         private ICollection<GroupLocation> _groupLocations;
+
+        /// <summary>
+        /// Gets or sets the group requirements.
+        /// </summary>
+        /// <value>
+        /// The group requirements.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<GroupRequirement> GroupRequirements
+        {
+            get { return _groupsRequirements ?? ( _groupsRequirements = new Collection<GroupRequirement>() ); }
+            set { _groupsRequirements = value; }
+        }
+
+        private ICollection<GroupRequirement> _groupsRequirements;
 
         /// <summary>
         /// Gets the securable object that security permissions should be inherited from.  If block is located on a page
@@ -387,6 +412,7 @@ namespace Rock.Model
                                 {
                                     return true;
                                 }
+
                                 if ( action == Authorization.EDIT && role.CanEdit )
                                 {
                                     return true;
@@ -401,6 +427,24 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns a list of the Group Requirements for this Group along with the status ordered by GroupRequirement Name
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="groupRole">The group role.</param>
+        /// <returns></returns>
+        public IEnumerable<PersonGroupRequirementStatus> PersonMeetsGroupRequirements( int personId, int? groupRoleId )
+        {
+            var result = new List<PersonGroupRequirementStatus>();
+            foreach ( var groupRequirement in this.GroupRequirements.OrderBy(a => a.GroupRequirementType.Name ))
+            {
+                var meetsRequirement = groupRequirement.PersonMeetsGroupRequirement( personId, groupRoleId );
+                result.Add( new PersonGroupRequirementStatus { PersonId = personId, GroupRequirement = groupRequirement, MeetsGroupRequirement = meetsRequirement } );
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> containing the Name of the Group that represents this instance.
         /// </summary>
         /// <returns>
@@ -412,7 +456,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -459,5 +502,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }
