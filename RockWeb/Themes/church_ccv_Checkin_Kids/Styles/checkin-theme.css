@@ -4561,8 +4561,8 @@ fieldset[disabled] .btn {
 }
 .btn-default {
   color: #ffffff;
-  background-color: #331000;
-  border-color: #331000;
+  background-color: #111111;
+  border-color: #111111;
 }
 .btn-default:hover,
 .btn-default:focus,
@@ -4593,11 +4593,11 @@ fieldset[disabled] .btn-default:active,
 .btn-default.disabled.active,
 .btn-default[disabled].active,
 fieldset[disabled] .btn-default.active {
-  background-color: #331000;
-  border-color: #331000;
+  background-color: #111111;
+  border-color: #111111;
 }
 .btn-default .badge {
-  color: #331000;
+  color: #111111;
   background-color: #ffffff;
 }
 .btn-primary {
@@ -8090,9 +8090,9 @@ body {
 }
 .btn-checkbox {
   padding: 24px;
-  background-color: #331000;
+  background-color: #111111;
   color: #ffffff;
-  border-color: #331000;
+  border-color: #111111;
   font-size: 20px;
 }
 .btn-checkbox.active {
@@ -8632,20 +8632,20 @@ Copyright (c) 2012 Dan Eden*/
   border: 1px solid #e6e6e6;
 }
 .accent-light-color {
-  background-color: #331000;
+  background-color: #111111;
   color: #ffffff;
 }
 .accent-light-color-bordered {
-  background-color: #331000;
+  background-color: #111111;
   color: #ffffff;
   border: 1px solid #000000;
 }
 .accent-semibold-color {
-  background-color: #331000;
+  background-color: #111111;
   color: #ffffff;
 }
 .accent-semibold-color-bordered {
-  background-color: #331000;
+  background-color: #111111;
   color: #ffffff;
   border: 1px solid #000000;
 }
@@ -8971,7 +8971,7 @@ Copyright (c) 2012 Dan Eden*/
 .welcome .checkin-start a {
   font-family: "Quadon";
   padding-left: 0;
-  background: #331000;
+  background: #111111;
   color: #fff;
   border: none;
   overflow: hidden;
