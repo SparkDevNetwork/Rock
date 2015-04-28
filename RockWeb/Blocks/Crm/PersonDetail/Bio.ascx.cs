@@ -128,6 +128,15 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             Person.NickName.FormatAsHtmlTitle(),
                             string.IsNullOrWhiteSpace( Person.FirstName ) ? string.Empty : string.Format( "({0})", Person.FirstName ),
                             Person.LastName );
+
+                        using ( var rockContext = new RockContext() )
+                        {
+                            var previousNames = Person.GetPreviousNames( rockContext ).Select( a => a.LastName );
+                            if ( previousNames.Any() )
+                            {
+                                lName.Text += string.Format( Environment.NewLine + "<span class='previous-names'>(Previous Names: {0})</span>", previousNames.ToList().AsDelimited( ", " ) );
+                            }
+                        }
                     }
 
                     // Setup Image
