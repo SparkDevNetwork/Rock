@@ -1,0 +1,216 @@
+/*
+
+   Rock Park Check-in Theme
+   Crafted by: Spark Development Network
+
+ */
+
+//
+// Imports
+// --------------------------------------------------
+
+@import "../../../Styles/FontAwesome/font-awesome.less";
+@import "../../../Styles/Bootstrap/bootstrap.less";
+@import "../../../Styles/_checkin-core.less";
+@import "../../../Styles/_modal.less";
+@import "../../../Styles/_helpers.less";
+
+@import "_quadon";
+.quadon-extrabold();
+
+//
+// Variables
+// --------------------------------------------------
+
+// Font Variables
+@font-family-base:     'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+@headings-font-family: 'Quadon', 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+@font-weight-light:     300;
+@font-weight-bold:      700;
+@font-weight-semibold:  600;
+
+@kids-orange: #ff5000;
+
+@bg-color:      @kids-orange;
+@text-color:    #fff;
+
+@modal-body-bg: @bg-color;
+@modal-body-text-color: @text-color;
+@modal-header-bg: @bg-color;
+@modal-header-text-color: @text-color;
+@modal-footer-bg: @bg-color;
+@modal-footer-text-color: @text-color;
+
+@header-text-color:     #fff;
+@header-font-weight:    @font-weight-bold;
+
+@subheader-text-color:      #bde2ef;
+@subheader-font-weight:     @font-weight-light;
+
+// Button Styles
+@btn-default-bg: #111;
+@btn-default-color:     #fff;
+@btn-default-border:   @btn-default-bg;
+@checkin-button-text-weight:    @font-weight-bold;
+@checkin-button-alttext-weight: @font-weight-light;
+
+@btn-primary-color:    @kids-orange;
+@btn-primary-border:   darken(@btn-primary-bg, 10%);
+@btn-primary-bg:    #fff;
+
+@btn-disabled-color: @btn-primary-border;
+@btn-disabled-bg: darken(@btn-primary-bg, 20%);
+
+// scroll bar
+@scrollbar-bg: #000;
+@scrollbar-border: #adaeaf;
+
+// colors
+@accent-color: @btn-primary-bg;
+@accent-text-color: @btn-primary-color;
+
+@accent-light-color: @btn-default-bg;
+@accent-light-text-color: @btn-default-color;
+
+@accent-semibold-color: @btn-default-bg;
+@accent-semibold-text-color: @btn-default-color;
+
+@accent-bold-color: @btn-primary-bg;
+@accent-bold-text-color: @btn-primary-color;
+
+// Fonts
+// -------------------------
+
+// regular (weight 'normal' aka 400)
+@font-face {
+  font-family: 'OpenSans';
+  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
+  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+     url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
+     url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
+     url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+  font-weight: 400;
+  font-style: normal;
+}
+
+// light (weight 300)
+@font-face {
+  font-family: 'OpenSans';
+  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot');
+  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
+     url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff') format('woff'),
+     url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.ttf') format('truetype'),
+     url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
+  font-weight: 300;
+  font-style: normal;
+}
+
+// semi-bold (weight 600)
+@font-face {
+  font-family: 'OpenSans';
+  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot');
+  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
+     url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff') format('woff'),
+     url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.ttf') format('truetype'),
+     url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
+  font-weight: 600;
+  font-style: normal;
+}
+
+// bold (weight 700)
+@font-face {
+  font-family: 'OpenSans';
+  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot');
+  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+     url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff'),
+     url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.ttf') format('truetype'),
+     url('s../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
+  font-weight: 700;
+  font-style: normal;
+}
+
+
+//
+// Mix-ins
+// --------------------------------------------------
+.checkinBackground () {
+  background-color: @bg-color;
+}
+
+.checkinBackgroundRetina()
+{
+}
+
+
+
+
+//
+// Custom Overrides
+// --------------------------------------------------
+
+@border-radius-base: .5em;
+@input-border-radius: @border-radius-large;
+
+.checkin-count h3,
+.checkin-count li {
+  color: #4c4c4b;
+}
+
+.bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: url('../Assets/Images/5.jpg') center center no-repeat;
+  background-size: cover;
+  opacity: 0;
+  z-index: -1;
+  .transition(opacity 3s);
+
+  &.in {
+    opacity: 1;
+  }
+
+  &:before {
+    content: ' ';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(70, 70, 70, 0.4);
+  }
+}
+
+.logo {
+  background: url('../Assets/Images/logo.svg') bottom no-repeat;
+  background-size: contain;
+  height: 183px;
+  width: 240px;
+  position: absolute;
+  bottom: 0;
+  margin: 5%;
+}
+
+.welcome .checkin-start a {
+  font-family: "Quadon";
+  padding-left: 0;
+  background: @btn-default-bg;
+  color: #fff;
+  border: none;
+  overflow: hidden;
+  position: relative;
+  padding-left: 120px;
+  padding-right: 30px;
+  &:before {
+    .fa-icon();
+    content: '\f046';
+    background: @kids-orange;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    padding: 22.5px 25px 22.5px 30px;
+  }
+}
