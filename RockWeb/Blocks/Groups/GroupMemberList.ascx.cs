@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
@@ -521,7 +522,7 @@ namespace RockWeb.Blocks.Groups
                     var rockContext = new RockContext();
 
                     GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-                    var qry = groupMemberService.Queryable( "Person,GroupRole", true )
+                    var qry = groupMemberService.Queryable( "Person,GroupRole", true ).AsNoTracking()
                         .Where( m => m.GroupId == _group.Id );
 
                     // Filter by First Name
