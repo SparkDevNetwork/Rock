@@ -17,8 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Spatial;
 using System.Linq;
-
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -82,6 +82,116 @@ namespace Rock.Model
         {
             return Queryable().Where( t => ( t.ParentGroupId == parentGroupId || ( parentGroupId == null && t.ParentGroupId == null ) ) && t.Name == name );
         }
+
+        #region Geospatial Queries
+
+        /// <summary>
+        /// Gets the family groups that are geofenced by any of the selected group's locations
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Group> GetGeofencedFamilies( int groupId )
+        {
+            // Get the geofences for the group
+            var groupGeofences = this.Queryable().AsNoTracking()
+                .Where( g => g.Id == groupId )
+                .SelectMany( g => g.GroupLocations )
+                .Where( g => g.Location.GeoFence != null )
+                .Select( g => g.Location.GeoFence )
+                .ToList();
+
+            return GetGeofencedFamilies( groupGeofences );
+        }
+
+        /// <summary>
+        /// Gets the family groups that are geofenced by any of the selected geofences
+        /// </summary>
+        /// <param name="geofences">The geofences.</param>
+        /// <returns></returns>
+        public IQueryable<Group> GetGeofencedFamilies( List<DbGeography> geofences )
+        {
+            var rockContext = (RockContext)this.Context;
+            var groupLocationService = new GroupLocationService( rockContext );
+
+            Guid familyTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+
+            return groupLocationService.GetMappedLocationsByGeofences( geofences )
+                .Where( l =>
+                    l.Group != null &&
+                    l.Group.GroupType != null &&
+                    l.Group.GroupType.Guid.Equals( familyTypeGuid ) )
+                .Select( l => l.Group );
+        }
+
+        /// <summary>
+        /// Gets the groups of a particular type that geofence the selected person's mapped location(s)
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Group> GetGeofencedGroups( int personId, int groupTypeId )
+        {
+            var rockContext = (RockContext)this.Context;
+            var personService = new PersonService( rockContext );
+            var personGeopoints = personService.GetGeopoints( personId );
+            return GetGeofencedGroups( personGeopoints, groupTypeId );
+        }
+
+        /// <summary>
+        /// Gets the groups of a particular type that geofence the selected person's mapped location(s)
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Group> GetGeofencedGroups( int personId, Guid groupTypeGuid )
+        {
+            var rockContext = (RockContext)this.Context;
+            var personService = new PersonService( rockContext );
+            var personGeopoints = personService.GetGeopoints( personId );
+            return GetGeofencedGroups( personGeopoints, groupTypeGuid );
+        }
+        
+        /// <summary>
+        /// Gets the groups of a selected type that have a geofence location that surrounds any of the
+        /// selected points
+        /// </summary>
+        /// <param name="points">The points.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Group> GetGeofencedGroups( IQueryable<DbGeography> points, int groupTypeId )
+        {
+            // Get the groups that have a location that intersects with any of the family's locations
+            return this.Queryable()
+                .Where( g =>
+                    g.GroupTypeId.Equals( groupTypeId ) &&
+                    g.IsActive &&
+                    g.GroupLocations.Any( l =>
+                        l.Location.GeoFence != null &&
+                        points.Any( p => p.Intersects( l.Location.GeoFence ) )
+                    ) );
+        }
+
+        /// <summary>
+        /// Gets the groups of a selected type that have a geofence location that surrounds any of the
+        /// selected points
+        /// </summary>
+        /// <param name="points">The points.</param>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Group> GetGeofencedGroups( IQueryable<DbGeography> points, Guid groupTypeGuid )
+        {
+            // Get the groups that have a location that intersects with any of the family's locations
+            return this.Queryable()
+                .Where( g =>
+                    g.GroupType.Guid.Equals( groupTypeGuid ) &&
+                    g.IsActive &&
+                    g.GroupLocations.Any( l =>
+                        l.Location.GeoFence != null &&
+                        points.Any( p => p.Intersects( l.Location.GeoFence ) )
+                    ) );
+        }
+
+        #endregion
 
         /// <summary>
         /// Gets the navigation children.
@@ -491,6 +601,51 @@ namespace Rock.Model
             }
 
             return base.Delete( item );
+        }
+
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class GroupServiceExtensions
+    {
+        /// <summary>
+        /// Given an IQueryable of Groups, returns just the heads of households for those groups
+        /// </summary>
+        /// <param name="groups">The groups.</param>
+        /// <returns></returns>
+        public static IQueryable<Person> HeadOfHouseholds( this IQueryable<Group> groups )
+        {
+            return groups
+                .SelectMany( f => f.Members )
+                .GroupBy( m =>
+                    m.GroupId,
+                    ( key, g ) => g
+                        .OrderBy( m => m.GroupRole.Order )
+                        .ThenBy( m => m.Person.Gender )
+                        .ThenBy( m => m.Person.BirthYear )
+                        .ThenBy( m => m.Person.BirthMonth )
+                        .ThenBy( m => m.Person.BirthDay )
+                        .FirstOrDefault() )
+                .Select( m => m.Person );
+        }
+
+        /// <summary>
+        /// Given an IQueryable of members (i.e. family members), returns the head of household for those members
+        /// </summary>
+        /// <param name="groups">The groups.</param>
+        /// <returns></returns>
+        public static Person HeadOfHousehold( this IQueryable<GroupMember> members )
+        {
+            return members
+                .OrderBy( m => m.GroupRole.Order )
+                .ThenBy( m => m.Person.Gender )
+                .ThenBy( m => m.Person.BirthYear )
+                .ThenBy( m => m.Person.BirthMonth )
+                .ThenBy( m => m.Person.BirthDay )
+                .Select( m => m.Person )
+                .FirstOrDefault();
         }
     }
 }
