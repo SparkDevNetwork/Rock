@@ -16,6 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Data.Entity.Spatial;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 using Rock;
@@ -746,6 +748,32 @@ namespace Rock.Model
         }
 
         #endregion
+
+        /// <summary>
+        /// Gets all of the IsMappedLocation points for a given user. Although each family can only have one 
+        /// IsMapped point, the person may belong to more than one family
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public IQueryable<DbGeography> GetGeopoints ( int personId )
+        {
+            var rockContext = (RockContext)this.Context;
+            var groupMemberService = new GroupMemberService( rockContext );
+
+            Guid familyTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+
+            // get the geopoints for the family locations for the selected person
+            return groupMemberService
+                .Queryable().AsNoTracking()
+                .Where( m =>
+                    m.PersonId == personId &&
+                    m.Group.GroupType.Guid.Equals( familyTypeGuid ) )
+                .SelectMany( m => m.Group.GroupLocations )
+                .Where( l =>
+                    l.IsMappedLocation &&
+                    l.Location.GeoPoint != null )
+                .Select( l => l.Location.GeoPoint );
+        }
 
         /// <summary>
         /// Adds a person alias, known relationship group, implied relationship group, and optionally a family group for
