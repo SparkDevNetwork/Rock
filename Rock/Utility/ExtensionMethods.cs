@@ -2060,7 +2060,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Binds to enum.
+        /// Binds to enum using the enum's integer value as the listitem value
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="listControl">The list control.</param>
@@ -2086,7 +2086,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Binds to the values of a definedType.
+        /// Binds to the values of a definedType using the definedValue's Id as the listitem value
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="definedType">Type of the defined.</param>
