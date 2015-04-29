@@ -11,7 +11,12 @@
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <asp:Literal ID="lGroupIconHtml" runat="server" />
-                    <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
+                    <asp:Literal ID="lReadOnlyTitle" runat="server" />
+                </h1>
+
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hfDateAdded" runat="server" LabelType="Default" />
+                </div>
             </div>
 
             <div class="panel-body">

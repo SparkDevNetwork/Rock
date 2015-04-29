@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public bool AllowSearch { get; set; }
+
+        /// <summary />
         public string DefaultValue { get; set; }
 
         /// <summary />

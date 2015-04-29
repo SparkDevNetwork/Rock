@@ -214,9 +214,11 @@ namespace RockWeb.Blocks.Security
                                     phoneNumber.IsUnlisted = cbUnlisted.Checked;
                                     phoneNumberTypeIds.Add( phoneNumberTypeId );
 
-                                    History.EvaluateChange( changes,
+                                    History.EvaluateChange(
+                                        changes,
                                         string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumberTypeId ) ),
-                                        oldPhoneNumber, phoneNumber.NumberFormattedWithCountryCode );
+                                        oldPhoneNumber,
+                                        phoneNumber.NumberFormattedWithCountryCode );
                                 }
                             }
                         }
@@ -228,9 +230,11 @@ namespace RockWeb.Blocks.Security
                         .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
                         .ToList() )
                     {
-                        History.EvaluateChange( changes,
+                        History.EvaluateChange(
+                            changes,
                             string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumber.NumberTypeValueId ) ),
-                            phoneNumber.ToString(), string.Empty );
+                            phoneNumber.ToString(),
+                            string.Empty );
 
                         person.PhoneNumbers.Remove( phoneNumber );
                         phoneNumberService.Delete( phoneNumber );
@@ -245,8 +249,12 @@ namespace RockWeb.Blocks.Security
                         {
                             if ( changes.Any() )
                             {
-                                HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                    person.Id, changes );
+                                HistoryService.SaveChanges(
+                                    rockContext,
+                                    typeof( Person ),
+                                    Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                                    person.Id,
+                                    changes );
                             }
 
                             if ( orphanedPhotoId.HasValue )
@@ -263,7 +271,6 @@ namespace RockWeb.Blocks.Security
                         }
 
                         NavigateToParentPage();
-
                     }
                 }
             } );
@@ -315,11 +322,11 @@ namespace RockWeb.Blocks.Security
                             phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
                             phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;
                         }
-                    	else
-                    	{
-                        	// Update number format, just in case it wasn't saved correctly
-                        	phoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number );
-                    	}
+                        else
+                        {
+                            // Update number format, just in case it wasn't saved correctly
+                            phoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number );
+                        }
 
                         phoneNumbers.Add( phoneNumber );
                     }
