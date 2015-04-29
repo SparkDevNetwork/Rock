@@ -67,5 +67,19 @@ namespace Rock.Data
             // NOTE: ufnCrm_GetFamilyTitle is a Table Valued Function, but it only returns one ROW
             return result.OfType<string>().FirstOrDefault();
         }
+
+        /// <summary>
+        /// when used in a Linq Query, calls database function ufnGroup_GetGeofencedGroupNames
+        /// Example: qry.Select( a => RockUdfHelper.ufnGroup_GetGeofencedGroupNames(a.PersonId, groupTypeId))
+        /// </summary>
+        /// <param name="PersonId">The person identifier.</param>
+        /// <param name="GroupTypeId">The group type identifier </param>
+        /// <returns></returns>
+        [DbFunction( "CodeFirstDatabaseSchema", "ufnGroup_GetGeofencedGroupNames" )]
+        public static string ufnGroup_GetGeofencedGroupNames( int? PersonId, int groupTypeId )
+        {
+            // this in-memory implementation will not be invoked when working on LINQ to Entities
+            return null;
+        }
     }
 }

@@ -104,6 +104,24 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the family groups that are geofenced by any of the selected group's locations
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Group> GetGeofencedFamilies( Guid groupGuid )
+        {
+            // Get the geofences for the group
+            var groupGeofences = this.Queryable().AsNoTracking()
+                .Where( g => g.Guid.Equals( groupGuid ) )
+                .SelectMany( g => g.GroupLocations )
+                .Where( g => g.Location.GeoFence != null )
+                .Select( g => g.Location.GeoFence )
+                .ToList();
+
+            return GetGeofencedFamilies( groupGeofences );
+        }
+
+        /// <summary>
         /// Gets the family groups that are geofenced by any of the selected geofences
         /// </summary>
         /// <param name="geofences">The geofences.</param>
