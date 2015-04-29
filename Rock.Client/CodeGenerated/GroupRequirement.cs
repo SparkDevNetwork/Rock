@@ -57,6 +57,9 @@ namespace Rock.Client
     public partial class GroupRequirement : GroupRequirementEntity
     {
         /// <summary />
+        public GroupRequirementType GroupRequirementType { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

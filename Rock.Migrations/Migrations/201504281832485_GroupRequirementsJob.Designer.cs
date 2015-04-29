@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.0-30225")]
-    public sealed partial class GroupRequirements : IMigrationMetadata
+    public sealed partial class GroupRequirementsJob : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(GroupRequirements));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(GroupRequirementsJob));
         
         string IMigrationMetadata.Id
         {
-            get { return "201504141618180_GroupRequirements"; }
+            get { return "201504281832485_GroupRequirementsJob"; }
         }
         
         string IMigrationMetadata.Source

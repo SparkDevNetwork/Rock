@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -96,6 +97,15 @@ namespace Rock.Model
         [DataMember]
         public int? GuestCount { get; set; }
 
+        /// <summary>
+        /// Gets or sets the date/time that the person was added to the group 
+        /// </summary>
+        /// <value>
+        /// The date added.
+        /// </value>
+        [DataMember]
+        public DateTime? DateTimeAdded { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -167,6 +177,10 @@ namespace Rock.Model
             if ( state == System.Data.Entity.EntityState.Added )
             {
                 action = "Added to group.";
+                if ( !this.DateTimeAdded.HasValue )
+                {
+                    this.DateTimeAdded = RockDateTime.Now;
+                }
             }
             else if ( state == System.Data.Entity.EntityState.Deleted )
             {
@@ -304,20 +318,20 @@ namespace Rock.Model
             }
 
             // if the GroupMember is getting Added (or if Person or Role is different), and if this Group has requirements that must be met before the person is added, check those
-            if ( this.IsNewOrChangedGroupMember(rockContext) )
+            if ( this.IsNewOrChangedGroupMember( rockContext ) )
             {
                 var group = this.Group ?? new GroupService( rockContext ).Get( this.GroupId );
                 if ( group.MustMeetRequirementsToAddMember ?? false )
                 {
                     var requirementStatuses = group.PersonMeetsGroupRequirements( this.PersonId, this.GroupRoleId );
 
-                    if (requirementStatuses.Any(a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet ))
+                    if ( requirementStatuses.Any( a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet ) )
                     {
                         // deny if any of the non-manual requirements are not met
                         errorMessage = "This person does not meet the following requirements for this group: "
-                            + requirementStatuses.Where(a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet )
-                            .Select(a => string.Format("{0}", a.GroupRequirement.GroupRequirementType))
-                            .ToList().AsDelimited(", ");
+                            + requirementStatuses.Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet )
+                            .Select( a => string.Format( "{0}", a.GroupRequirement.GroupRequirementType ) )
+                            .ToList().AsDelimited( ", " );
 
                         return false;
                     }
@@ -334,7 +348,7 @@ namespace Rock.Model
         /// <returns></returns>
         public bool IsNewOrChangedGroupMember( RockContext rockContext )
         {
-            if (this.Id == 0)
+            if ( this.Id == 0 )
             {
                 // new group member
                 return true;
@@ -345,7 +359,7 @@ namespace Rock.Model
                 var databaseGroupMemberRecord = groupMemberService.Get( this.Id );
 
                 // existing groupmember record, but person or role was changed
-                return ( (this.PersonId != databaseGroupMemberRecord.PersonId) || (this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId) );
+                return ( ( this.PersonId != databaseGroupMemberRecord.PersonId ) || ( this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId ) );
             }
         }
 

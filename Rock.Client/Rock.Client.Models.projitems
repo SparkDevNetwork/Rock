@@ -61,6 +61,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Group.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupLocation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMember.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMemberRequirement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupRequirement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupRequirementType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupScheduleExclusion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupTypeLocationType.cs" />
@@ -85,6 +88,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonAlias.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonBadge.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonDuplicate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonPreviousName.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonViewed.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PhoneNumber.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PluginMigration.cs" />

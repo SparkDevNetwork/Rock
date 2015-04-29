@@ -21,11 +21,11 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
-
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -866,7 +866,7 @@ namespace Rock.Model
         /// Gets the Person's age.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the person's age.  If the birthdate and age is not available then returns null.
+        /// An <see cref="System.Int32"/> representing the person's age. Returns null if the birthdate or birthyear is not available.
         /// </value>
         [DataMember]
         [NotMapped]
@@ -1737,6 +1737,17 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets any previous last names for this person sorted alphabetically by LastName
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IOrderedQueryable<PersonPreviousName> GetPreviousNames( this Person person, RockContext rockContext = null )
+        {
+            return new PersonService( rockContext ?? new RockContext() ).GetPreviousNames( person != null ? person.Id : 0 );
+        }
+
+        /// <summary>
         /// Gets the <see cref="Rock.Model.Person" /> entity of the provided Person's spouse.
         /// </summary>
         /// <param name="person">The <see cref="Rock.Model.Person" /> entity of the Person to retrieve the spouse of.</param>
@@ -1747,6 +1758,44 @@ namespace Rock.Model
         public static Person GetSpouse( this Person person, RockContext rockContext = null )
         {
             return new PersonService( rockContext ?? new RockContext() ).GetSpouse( person );
+        }
+
+        /// <summary>
+        /// limits the PersonQry to people that have an Age that is between MinAge and MaxAge (inclusive)
+        /// </summary>
+        /// <param name="personQry">The person qry.</param>
+        /// <param name="minAge">The minimum age.</param>
+        /// <param name="maxAge">The maximum age.</param>
+        /// <param name="includePeopleWitNoAge">if set to <c>true</c> [include people wit no age].</param>
+        /// <returns></returns>
+        public static IQueryable<Person> WhereAgeRange( this IQueryable<Person> personQry, int? minAge, int? maxAge, bool includePeopleWitNoAge = true )
+        {
+            var currentDate = RockDateTime.Today;
+            var qryWithAge = personQry.Select(
+                      p => new
+                      {
+                          Person = p,
+                          Age = ( p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
+                            ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1
+                            : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) )
+                      } );
+
+            if ( minAge.HasValue )
+            {
+                qryWithAge = qryWithAge.Where( a => a.Age >= minAge );
+            }
+
+            if ( maxAge.HasValue )
+            {
+                qryWithAge = qryWithAge.Where( a => a.Age <= maxAge );
+            }
+
+            if ( !includePeopleWitNoAge )
+            {
+                qryWithAge = qryWithAge.Where( a => a.Age.HasValue );
+            }
+
+            return qryWithAge.Select( a => a.Person );
         }
     }
 
