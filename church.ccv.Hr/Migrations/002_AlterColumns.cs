@@ -12,14 +12,14 @@ namespace church.ccv.Hr.Migrations
     {
         public override void Up()
         {
-            Sql(@"
+            Sql( @"
 alter table [_com_ccvonline_Hr_TimeCardDay] drop column [TotalWorkedDuration]
 alter table [_com_ccvonline_Hr_TimeCardDay] add [TotalWorkedDuration]
 as
 (
 case when (EndDateTime is null)
 then 
- case when (LunchEndDateTime is null)
+ case when (LunchStartDateTime is null)
  then 
     -- No EndTime and no LunchStart entered yet    
     null
