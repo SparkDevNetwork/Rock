@@ -882,6 +882,7 @@ namespace Rock.Data
             ContextHelper.AddConfigurations( modelBuilder );
 
             modelBuilder.Conventions.Add( new GetAddressStoreFunctionInjectionConvention() );
+            modelBuilder.Conventions.Add( new GetGeofencedGroupNamesStoreFunctionInjectionConvention() );
         }
 
         ///// <summary>
