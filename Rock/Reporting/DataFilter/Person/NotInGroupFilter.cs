@@ -70,6 +70,11 @@ function() {
      result = result + ', with role(s): ' + roleCommaList;
   }
 
+  var groupMemberStatus = $('.js-group-member-status option:selected', $content).text();
+  if (groupMemberStatus) {
+     result = result + ', with member status:' + groupMemberStatus;
+  }
+
   return result;
 }
 ";
@@ -94,12 +99,34 @@ function() {
 
                 var groupTypeRoles = new GroupTypeRoleService( rockContext ).Queryable().Where( a => groupTypeRoleGuidList.Contains( a.Guid ) ).ToList();
 
+                bool includeChildGroups = false;
+                if ( selectionValues.Length >= 3 )
+                {
+                    includeChildGroups = selectionValues[2].AsBooleanOrNull() ?? false;
+                }
+
+                GroupMemberStatus? groupMemberStatus = GroupMemberStatus.Active;
+                if ( selectionValues.Length >= 4 )
+                {
+                    groupMemberStatus = selectionValues[3].ConvertToEnumOrNull<GroupMemberStatus>();
+                }
+
                 if ( group != null )
                 {
                     result = string.Format( "Not in group: {0}", group.Name );
+                    if ( includeChildGroups )
+                    {
+                        result += " or child groups";
+                    }
+
                     if ( groupTypeRoles.Count() > 0 )
                     {
                         result += string.Format( ", with role(s): {0}", groupTypeRoles.Select( a => a.Name ).ToList().AsDelimited( "," ) );
+                    }
+
+                    if ( groupMemberStatus.HasValue )
+                    {
+                        result += string.Format( ", with member status of: {0}", groupMemberStatus.ConvertToString() );
                     }
                 }
             }
