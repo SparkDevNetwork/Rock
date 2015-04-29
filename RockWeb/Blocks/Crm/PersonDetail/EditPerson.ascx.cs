@@ -573,6 +573,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void grdPreviousNames_AddClick( object sender, EventArgs e )
         {
+            tbPreviousLastName.Text = string.Empty;
             mdPreviousName.Show();
         }
 
