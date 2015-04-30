@@ -225,8 +225,17 @@ namespace RockWeb.Blocks.Checkin
                 ddlGroups.Visible = false;
             }
 
-            ddlSchedules.DataSource = attendanceQuery.Where( a => a.Schedule != null ).OrderBy( a => a.Schedule.Name ).Select( a => a.Schedule.Name ).Distinct().ToList();
+            ddlSchedules.DataSource = attendanceQuery
+                .Where( a =>
+                    a.Schedule != null &&
+                    a.Schedule.Name != null &&
+                    a.Schedule.Name != "" )
+                .OrderBy( a => a.Schedule.Name )
+                .Select( a => a.Schedule.Name )
+                .Distinct()
+                .ToList();
             ddlSchedules.DataBind();
+
             ddlSchedules.Items.Insert( 0, Rock.Constants.All.ListItem );
             ddlSchedules.Visible = attendanceQuery.Where( a => a.Schedule != null ).Select( a => a.Schedule.Name ).Distinct().ToList().Any();
             ddlSchedules.SetValue( rFilter.GetUserPreference( "Schedule" ) );
