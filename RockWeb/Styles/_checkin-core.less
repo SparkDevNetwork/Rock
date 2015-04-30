@@ -3,15 +3,21 @@
 /*
   Used to style the check-in screens
 
-  1. Bootstrap Overrides
-  2. Global Styles
-  3. Components
-  4. Specific Page Styles
-  5. Scroll container
+  1. Check-in specific variables
+  2. Bootstrap Overrides
+  3. Global Styles
+  4. Components
+  5. Specific Page Styles
+  6. Scroll container
 
 */
 
-// 1. Bootstrap Overrides
+// 1. Check-in specific variables
+// -------------------------
+@checkin-scrollbar-bg: fade(@text-color, 50%);
+
+
+// 2. Bootstrap Overrides
 // -------------------------
 
 h1, h2, h3 {
@@ -43,7 +49,7 @@ h1 {
   padding-bottom: 14px;
 }
 
-// 2. Global Styles
+// 3. Global Styles
 // -------------------------
 
 // turn off configuration items
@@ -79,7 +85,7 @@ body {
 }
 
 
-// 3. Components
+// 4. Components
 // -------------------------
 
 // checkin header items
@@ -249,7 +255,7 @@ body {
   }
 }
 
-// 4. Specific Page Styles
+// 5. Specific Page Styles
 // -------------------------
 
 // search page
@@ -299,7 +305,7 @@ input.checkin-phone-entry
 }
 
 // --------------------------------------
-// 5. Scroll Container
+// 6. Scroll Container
 // --------------------------------------
 
 .checkin-scroll-panel {
@@ -312,7 +318,7 @@ input.checkin-phone-entry
 }
 
 .scroller {
-  padding-right: 24px;
+  padding-right: 40px;
   position: absolute;
   z-index: 1;
   -webkit-tap-highlight-color: rgba(0,0,0,0);
@@ -337,7 +343,6 @@ input.checkin-phone-entry
 .iScrollIndicator {
   box-sizing: border-box;
   position: absolute;
-  border: 1px solid @scrollbar-border;
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
   border-bottom-right-radius: 3px;
@@ -346,17 +351,16 @@ input.checkin-phone-entry
   transition: 0ms cubic-bezier(0.1, 0.57, 0.1, 1);
   -webkit-transition: 0ms cubic-bezier(0.1, 0.57, 0.1, 1);
   display: block;
-  height: 8px;
+  min-height: 100px;
   transform: translate(0px, 0px) translateZ(0px);
-  background-color: @scrollbar-bg;
-  opacity: .3;
+  background-color: @checkin-scrollbar-bg;
 }
 
 .iScrollVerticalScrollbar,
 .iScrollLoneScrollbar {
   position: absolute;
   z-index: 1;
-  width: 7px;
+  width: 30px;
   bottom: 2px;
   top: 2px;
   right: 1px;
