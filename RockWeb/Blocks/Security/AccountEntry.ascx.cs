@@ -44,6 +44,8 @@ namespace RockWeb.Blocks.Security
     [TextField( "Sent Login Caption", "", false, "Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password.", "Captions", 3 )]
     [TextField( "Confirm Caption", "", false, "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "Captions", 4 )]
     [TextField( "Success Caption", "", false, "{0}, Your account has been created", "Captions", 5 )]
+    [TextField( "Valid Username Caption", "A user-friendly description of a valid username.", false, "It must only contain letters, numbers, +, -, _, or @. It must also be at least three characters and less than 129.", "Captions", 6 )]
+    [TextField( "Valid Username Regular Expression", "A regular expression used to validate good, valid usernames.", false, "^[A-Za-z0-9+.@_-]{3,128}$", "Captions", 7 )]
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", true, "", "Pages", 6 )]
     [LinkedPage( "Login Page", "Page to navigate to when user elects to login (if blank will use 'Login' page route)", true, "", "Pages", 7 )]
     [SystemEmailField( "Forgot Username", "Forgot Username Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_FORGOT_USERNAME, "Email Templates", 8, "ForgotUsernameTemplate" )]
