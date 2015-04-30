@@ -243,6 +243,24 @@ $('.filter-item-select').click(function (event) {
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether filter type can be configured
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is filter type configurable; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsFilterTypeConfigurable
+        {
+            get
+            {
+                return ViewState["IsFilterTypeConfigurable"] as bool? ?? true;
+            }
+            set
+            {
+                ViewState["IsFilterTypeConfigurable"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="FilterField" /> is expanded.
         /// </summary>
         /// <value>
@@ -395,7 +413,12 @@ $('.filter-item-select').click(function (event) {
                 hfExpanded.Value = "True";
             }
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget filter-item" );
+            if ( this.IsFilterTypeConfigurable )
+            {
+                // don't style this as a panel if the filter type can't be configured
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget filter-item" );
+            }
+
             writer.RenderBeginTag( "article" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
@@ -403,6 +426,13 @@ $('.filter-item-select').click(function (event) {
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Onclick, clientFormatString );
             }
+
+            if ( !this.IsFilterTypeConfigurable )
+            {
+                // hide the header if the filter type can't be configured
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
+
             writer.RenderBeginTag( "header" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-expanded" );
@@ -447,6 +477,7 @@ $('.filter-item-select').click(function (event) {
             writer.RenderEndTag();
             writer.RenderEndTag();
             writer.Write( " " );
+            lbDelete.Visible = ( this.DeleteClick != null );
             lbDelete.RenderControl( writer );
             writer.RenderEndTag();
 
