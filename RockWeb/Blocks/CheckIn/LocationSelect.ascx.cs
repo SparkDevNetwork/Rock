@@ -92,7 +92,10 @@ namespace RockWeb.Blocks.CheckIn
                     }
                     else
                     {
-                        rSelection.DataSource = availLocations;
+                        rSelection.DataSource = availLocations
+                            .OrderBy( l => l.Location.Name )
+                            .ToList();
+
                         rSelection.DataBind();
                     }
                 }
