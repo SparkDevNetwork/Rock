@@ -38,7 +38,6 @@ namespace Rock.Reporting.DataFilter
     /// </summary>
     public abstract class EntityFieldFilter : DataFilterComponent
     {
-
         /// <summary>
         /// Renders the entity fields controls.
         /// </summary>
@@ -57,12 +56,27 @@ namespace Rock.Reporting.DataFilter
             writer.AddAttribute( "class", "row js-filter-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( "class", "col-md-3" );
+            bool entityFieldPickerIsHidden = ddlEntityField.Style[HtmlTextWriterStyle.Display] == "none";
+
+            if ( !entityFieldPickerIsHidden )
+            {
+                writer.AddAttribute( "class", "col-md-3" );
+            }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             ddlEntityField.AddCssClass( "entity-property-selection" );
             ddlEntityField.RenderControl( writer );
             writer.RenderEndTag();
-            writer.AddAttribute( "class", "col-md-9" );
+
+            if ( !entityFieldPickerIsHidden )
+            {
+                writer.AddAttribute( "class", "col-md-9" );
+            }
+            else
+            {
+                writer.AddAttribute( "class", "col-md-12" );
+            }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // generate result for "none"

@@ -115,6 +115,24 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide panel header].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide panel header]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HidePanelHeader
+        {
+            get
+            {
+                return ViewState["HidePanelHeader"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["HidePanelHeader"] = value;
+            }
+        }
 
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
@@ -177,6 +195,11 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( "section" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
+            if ( HidePanelHeader )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
+
             writer.RenderBeginTag( "header" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toggle pull-left" );
