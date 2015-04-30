@@ -354,15 +354,16 @@ namespace RockWeb.Blocks.Finance
 
                 //Currency Summary
                 gCurrencyTypes.DataSource = batch.Transactions
-                    .Select(t=> new
+                    .Select( t => new
                     {
-                        CurrencyTypeValue=t.CurrencyTypeValue,
+                        CurrencyId = t.CurrencyTypeValue != null ? t.CurrencyTypeValue.Id : 0,
+                        CurrencyName = t.CurrencyTypeValue != null ? t.CurrencyTypeValue.Value : "None",
                         TotalAmount = t.TotalAmount
-                    }) 
+                    } )
                     .GroupBy( c => new
                     {
-                        CurrencyId = c.CurrencyTypeValue.Id,
-                        CurrencyName = c.CurrencyTypeValue.Value
+                        c.CurrencyId,
+                        c.CurrencyName
                     } )
                     .Select( s => new
                     {
