@@ -6,13 +6,14 @@
         var availabilityMessageRow = $('#availabilityMessageRow');
         var usernameUnavailable = $('#availabilityMessage');
         var usernameTextbox = $('#<%= tbUserName.ClientID %>');
-        var usernameRegExp = new RegExp("<%= GetAttributeValue( "ValidUsernameRegularExpression" ) %>");
-        var usernameValidCaption = "<%= GetAttributeValue( "ValidUsernameCaption" ) %>";
+        var usernameRegExp = new RegExp("<%= Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "core.ValidUsernameRegularExpression" ) %>");
+        var usernameValidCaption = "<%= Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "core.ValidUsernameCaption" ) %>";
 
         availabilityMessageRow.hide();
 
         usernameTextbox.blur(function () {
             if ($(this).val() && $.trim($(this).val()) != '') {
+
                 if (!usernameRegExp.test($(this).val())) {
                     usernameUnavailable.html('Username is not valid. ' + usernameValidCaption);
                     usernameUnavailable.addClass('alert-warning');
@@ -42,6 +43,7 @@
                         }
                     });
                 }
+
             } else {
                 usernameUnavailable.html('Username is required!');
                 usernameUnavailable.addClass('alert-warning');
