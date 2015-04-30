@@ -6,33 +6,42 @@
         var availabilityMessageRow = $('#availabilityMessageRow');
         var usernameUnavailable = $('#availabilityMessage');
         var usernameTextbox = $('#<%= tbUserName.ClientID %>');
+        var usernameRegExp = new RegExp("<%= GetAttributeValue( "ValidUsernameRegularExpression" ) %>");
+        var usernameValidCaption = "<%= GetAttributeValue( "ValidUsernameCaption" ) %>";
 
         availabilityMessageRow.hide();
 
         usernameTextbox.blur(function () {
             if ($(this).val() && $.trim($(this).val()) != '') {
-                $.ajax({
-                    type: 'GET',
-                    contentType: 'application/json',
-                    dataType: 'json',
-                    url: Rock.settings.get('baseUrl') + 'api/userlogins/available/' + escape($(this).val()),
-                    success: function (getData, status, xhr) {
+                if (!usernameRegExp.test($(this).val())) {
+                    usernameUnavailable.html('Username is not valid. ' + usernameValidCaption);
+                    usernameUnavailable.addClass('alert-warning');
+                    usernameUnavailable.removeClass('alert-success');
+                }
+                else {
+                    $.ajax({
+                        type: 'GET',
+                        contentType: 'application/json',
+                        dataType: 'json',
+                        url: Rock.settings.get('baseUrl') + 'api/userlogins/available/' + escape($(this).val()),
+                        success: function (getData, status, xhr) {
 
-                        if (getData) {
-                            usernameUnavailable.html('This Username is available.');
-                            usernameUnavailable.addClass('alert-success');
-                            usernameUnavailable.removeClass('alert-warning');
-                        } else {
-                            availabilityMessageRow.show();
-                            usernameUnavailable.html('This Username is already taken!');
-                            usernameUnavailable.addClass('alert-warning');
-                            usernameUnavailable.removeClass('alert-success');
+                            if (getData) {
+                                usernameUnavailable.html('That username is available.');
+                                usernameUnavailable.addClass('alert-success');
+                                usernameUnavailable.removeClass('alert-warning');
+                            } else {
+                                availabilityMessageRow.show();
+                                usernameUnavailable.html('That username is already taken!');
+                                usernameUnavailable.addClass('alert-warning');
+                                usernameUnavailable.removeClass('alert-success');
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            alert(status + ' [' + error + ']: ' + xhr.responseText);
                         }
-                    },
-                    error: function (xhr, status, error) {
-                        alert(status + ' [' + error + ']: ' + xhr.responseText);
-                    }
-                });
+                    });
+                }
             } else {
                 usernameUnavailable.html('Username is required!');
                 usernameUnavailable.addClass('alert-warning');
