@@ -39,6 +39,14 @@ namespace Rock.Reporting.DataFilter
     [ExportMetadata( "ComponentName", "Property Filter" )]
     public class PropertyFilter : EntityFieldFilter
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PropertyFilter"/> class.
+        /// </summary>
+        public PropertyFilter()
+        {
+            IsEntityFieldConfigurable = true;
+        }
+        
         #region Properties
 
         /// <summary>
@@ -167,6 +175,14 @@ namespace Rock.Reporting.DataFilter
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is entity field configurable.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is entity field configurable; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsEntityFieldConfigurable { get; set; }
+
+        /// <summary>
         /// Renders the controls.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
@@ -178,6 +194,7 @@ namespace Rock.Reporting.DataFilter
             if ( controls.Length > 0 )
             {
                 DropDownList ddlEntityField = controls[0] as DropDownList;
+                ddlEntityField.Enabled = IsEntityFieldConfigurable;
                 var entityFields = EntityHelper.GetEntityFields( entityType );
                 RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlEntityField, controls.ToList(), filterControl.ID );
             }

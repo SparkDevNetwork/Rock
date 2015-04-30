@@ -174,6 +174,25 @@ namespace Rock.Reporting.DataFilter
         }
 
         /// <summary>
+        /// Gets the name of the selected field.
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public string GetSelectedFieldName( string selection )
+        {
+            if ( !string.IsNullOrWhiteSpace( selection ) )
+            {
+                var values = JsonConvert.DeserializeObject<List<string>>( selection );
+                if (values.Count > 0)
+                {
+                    return values[0];
+                }
+            }
+            
+            return null;
+        }
+
+        /// <summary>
         /// Builds an expression for an attribute field
         /// </summary>
         /// <param name="serviceInstance">The service instance.</param>

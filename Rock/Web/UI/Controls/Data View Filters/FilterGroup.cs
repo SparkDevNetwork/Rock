@@ -194,8 +194,10 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn-group btn-group-sm pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+            btnAddGroup.Visible = ( AddGroupClick != null );
             btnAddGroup.RenderControl( writer );
 
+            btnAddFilter.Visible = ( AddFilterClick != null );
             btnAddFilter.RenderControl( writer );
 
             if ( IsDeleteEnabled )
