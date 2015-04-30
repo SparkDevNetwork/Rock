@@ -16,6 +16,7 @@
             </div>
 
             <h4>Results</h4>
+            <Rock:NotificationBox ID="nbReportErrors" runat="server" NotificationBoxType="Info" />
             <div class="grid">
                 <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
             </div>
