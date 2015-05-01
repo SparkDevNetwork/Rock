@@ -1017,13 +1017,13 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Gets the groups of selected type that person is within the geofence of
+        /// Gets the groups of selected type that geofence the selected person
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <returns></returns>
-        public static List<Rock.Model.Group> GeofencedGroups( DotLiquid.Context context, object input, string groupTypeId )
+        public static List<Rock.Model.Group> GeofencingGroups( DotLiquid.Context context, object input, string groupTypeId )
         {
             var person = GetPerson( input );
             int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
@@ -1031,7 +1031,7 @@ namespace Rock.Lava
             if ( person != null && numericalGroupTypeId.HasValue )
             {
                 return new GroupService( GetRockContext( context ) )
-                    .GetGeofencedGroups( person.Id, numericalGroupTypeId.Value )
+                    .GetGeofencingGroups( person.Id, numericalGroupTypeId.Value )
                     .ToList();
             }
 
@@ -1039,14 +1039,14 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Gets the groups of selected type that person is within the geofence of
+        /// Gets the groups of selected type that geofence the selected person 
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <param name="groupTypeRoleId">The group type role identifier.</param>
         /// <returns></returns>
-        public static List<Rock.Model.Person> GeofencedGroupMembers( DotLiquid.Context context, object input, string groupTypeId, string groupTypeRoleId )
+        public static List<Rock.Model.Person> GeofencingGroupMembers( DotLiquid.Context context, object input, string groupTypeId, string groupTypeRoleId )
         {
             var person = GetPerson( input );
             int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
@@ -1055,7 +1055,7 @@ namespace Rock.Lava
             if ( person != null && numericalGroupTypeId.HasValue && numericalGroupTypeRoleId.HasValue )
             {
                 return new GroupService( GetRockContext( context ) )
-                    .GetGeofencedGroups( person.Id, numericalGroupTypeId.Value )
+                    .GetGeofencingGroups( person.Id, numericalGroupTypeId.Value )
                     .SelectMany( g => g.Members.Where( m => m.GroupRole.Id == numericalGroupTypeRoleId ) )
                     .Select( m => m.Person )
                     .ToList();

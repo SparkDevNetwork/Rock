@@ -95,13 +95,13 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/PersonBadges/GeofencedGroups/{personId}/{groupTypeGuid}" )]
-        public List<GroupAndLeaderInfo> GetGeofencedGroups( int personId, Guid groupTypeGuid )
+        [System.Web.Http.Route( "api/PersonBadges/GeofencingGroups/{personId}/{groupTypeGuid}" )]
+        public List<GroupAndLeaderInfo> GetGeofencingGroups( int personId, Guid groupTypeGuid )
         {
             var rockContext = (Rock.Data.RockContext)Service.Context;
             var groupMemberService = new GroupMemberService( rockContext );
 
-            var groups = new GroupService( rockContext ).GetGeofencedGroups( personId, groupTypeGuid ).AsNoTracking();
+            var groups = new GroupService( rockContext ).GetGeofencingGroups( personId, groupTypeGuid ).AsNoTracking();
 
             var result = new List<GroupAndLeaderInfo>();
             foreach ( var group in groups.OrderBy( g => g.Name ) )
