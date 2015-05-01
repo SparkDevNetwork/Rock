@@ -824,7 +824,7 @@ namespace Rock.Lava
         #region Person Filters
 
         /// <summary>
-        /// Addresses the specified context.
+        /// Gets an address for a person object
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
@@ -833,10 +833,10 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string Address( DotLiquid.Context context, object input, string addressType, string qualifier = "" )
         {
-            if ( input != null && input is Person )
+            var person = GetPerson( input );
+
+            if ( person != null )
             {
-                var person = (Person)input;
-               
                 Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
 
                 Location location = null;
@@ -971,7 +971,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Addresses the specified context.
+        /// Gets the groups of selected type that person is a member of
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
@@ -979,37 +979,95 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Rock.Model.Group> Groups( DotLiquid.Context context, object input, string groupTypeId )
         {
-            if ( input != null )
+            var person = GetPerson( input );
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+
+            if ( person != null && numericalGroupTypeId.HasValue )
             {
-                var person = input as Person;
-                if ( person == null )
-                {
-                    var checkinPerson = input as CheckIn.CheckInPerson;
-                    if ( checkinPerson != null )
-                    {
-                        person = checkinPerson.Person;
-                    }
-                }
-                                
-                int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
-                if ( person != null && numericalGroupTypeId.HasValue )
-                {
-                    return new GroupMemberService( GetRockContext( context ) )
-                        .Queryable().AsNoTracking()
-                        .Where( m =>
-                            m.PersonId == person.Id &&
-                            m.Group.GroupTypeId == numericalGroupTypeId.Value &&
-                            m.GroupMemberStatus == GroupMemberStatus.Active &&
-                            m.Group.IsActive )
-                        .Select( m =>
-                            m.Group )
-                        .ToList();
-                }
+                return new GroupMemberService( GetRockContext( context ) )
+                    .Queryable().AsNoTracking()
+                    .Where( m =>
+                        m.PersonId == person.Id &&
+                        m.Group.GroupTypeId == numericalGroupTypeId.Value &&
+                        m.GroupMemberStatus == GroupMemberStatus.Active &&
+                        m.Group.IsActive )
+                    .Select( m =>
+                        m.Group )
+                    .ToList();
             }
 
             return new List<Model.Group>();
         }
 
+        /// <summary>
+        /// Gets the groups of selected type that person is within the geofence of
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public static List<Rock.Model.Group> GeofencedGroups( DotLiquid.Context context, object input, string groupTypeId )
+        {
+            var person = GetPerson( input );
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+
+            if ( person != null && numericalGroupTypeId.HasValue )
+            {
+                return new GroupService( GetRockContext( context ) )
+                    .GetGeofencedGroups( person.Id, numericalGroupTypeId.Value )
+                    .ToList();
+            }
+
+            return new List<Model.Group>();
+        }
+
+        /// <summary>
+        /// Gets the groups of selected type that person is within the geofence of
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="groupTypeRoleId">The group type role identifier.</param>
+        /// <returns></returns>
+        public static List<Rock.Model.Person> GeofencedGroupMembers( DotLiquid.Context context, object input, string groupTypeId, string groupTypeRoleId )
+        {
+            var person = GetPerson( input );
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+            int? numericalGroupTypeRoleId = groupTypeRoleId.AsIntegerOrNull();
+
+            if ( person != null && numericalGroupTypeId.HasValue && numericalGroupTypeRoleId.HasValue )
+            {
+                return new GroupService( GetRockContext( context ) )
+                    .GetGeofencedGroups( person.Id, numericalGroupTypeId.Value )
+                    .SelectMany( g => g.Members.Where( m => m.GroupRole.Id == numericalGroupTypeRoleId ) )
+                    .Select( m => m.Person )
+                    .ToList();
+            }
+
+            return new List<Model.Person>();
+        }
+
+        /// <summary>
+        /// Returnes the nearest group of a specific type.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public static Rock.Model.Group NearestGroup( DotLiquid.Context context, object input, string groupTypeId )
+        {
+            var person = GetPerson( input );
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+
+            if ( person != null && numericalGroupTypeId.HasValue )
+            {
+                return new GroupService( GetRockContext( context ) )
+                    .GetNearestGroup( person.Id, numericalGroupTypeId.Value );
+            }
+
+            return null;
+        }
+        
         /// <summary>
         /// Gets the rock context.
         /// </summary>
@@ -1027,6 +1085,24 @@ namespace Rock.Lava
                 context.Registers.Add( "rock_context", rockContext );
                 return rockContext;
             }
+        }
+
+        private static Person GetPerson( object input )
+        {
+            if ( input != null )
+            {
+                var person = input as Person;
+                if ( person != null )
+                {
+                    return person;
+                }
+                var checkinPerson = input as CheckIn.CheckInPerson;
+                if ( checkinPerson != null )
+                {
+                    return checkinPerson.Person;
+                }
+            }
+            return null;
         }
 
         #endregion
