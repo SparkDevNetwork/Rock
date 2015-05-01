@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.Caching;
@@ -312,7 +313,8 @@ namespace Rock.Web.Cache
                     .GetByParentPageId( this.Id, "PageRoutes,PageContexts" )
                     .ToList();
 
-                pageIds = pageModels.Select( p => p.Id ).ToList();
+                pageIds = new ConcurrentBag<int>();
+                pageModels.Select( p => p.Id ).ToList().ForEach( p => pageIds.Add( p ) );
 
                 foreach ( Page page in pageModels )
                 {
@@ -323,7 +325,7 @@ namespace Rock.Web.Cache
 
             return pages;
         }
-        private List<int> pageIds = null;
+        private ConcurrentBag<int> pageIds = null;
 
         /// <summary>
         /// Gets a List of all the <see cref="BlockCache"/> objects configured for the page and the page's layout.
@@ -356,7 +358,8 @@ namespace Rock.Web.Cache
                             .GetByLayout( this.LayoutId )
                             .ToList();
 
-                        blockIds = layoutBlockModels.Select( b => b.Id ).ToList();
+                        blockIds = new ConcurrentBag<int>();
+                        layoutBlockModels.Select( b => b.Id ).ToList().ForEach( b => blockIds.Add( b ) );
 
                         foreach ( var block in layoutBlockModels )
                         {
@@ -369,9 +372,10 @@ namespace Rock.Web.Cache
                             .GetByPage( this.Id )
                             .ToList();
 
-                        blockIds.AddRange( pageBlockModels
-                            .Where( b => !blockIds.Contains( b.Id ))
-                            .Select( b => b.Id ) );
+                        pageBlockModels
+                            .Where( b => !blockIds.Contains( b.Id ) )
+                            .Select( b => b.Id )
+                            .ToList().ForEach( b => blockIds.Add( b ) );
 
                         foreach ( var block in pageBlockModels )
                         {
@@ -384,7 +388,7 @@ namespace Rock.Web.Cache
                 return blocks;
             }
         }
-        private List<int> blockIds = null;
+        private ConcurrentBag<int> blockIds = null;
 
         /// <summary>
         /// Gets or sets the page contexts that have been defined for the page
