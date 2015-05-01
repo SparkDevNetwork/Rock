@@ -227,7 +227,7 @@ namespace RockWeb.Blocks.Cms
                     site.PageNotFoundPageId ?? -1
                 };
 
-                var qry = pageService.Queryable()
+                var qry = pageService.Queryable("Layout")
                     .Where( t => 
                         t.Layout.SiteId == siteId ||
                         sitePages.Contains( t.Id ) );
