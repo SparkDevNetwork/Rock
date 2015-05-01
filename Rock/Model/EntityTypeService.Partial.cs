@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -251,6 +252,12 @@ namespace Rock.Model
                 }
 
                 rockContext.SaveChanges();
+
+                // make sure the EntityTypeCache is synced up with any changes that were made
+                foreach (var entityTypeModel in entityTypeService.Queryable())
+                {
+                    EntityTypeCache.Read( entityTypeModel );
+                }
             }
         }
     }
