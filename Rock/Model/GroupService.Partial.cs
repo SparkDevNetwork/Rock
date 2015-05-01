@@ -209,6 +209,41 @@ namespace Rock.Model
                     ) );
         }
 
+        /// <summary>
+        /// Gets the nearest group.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public Group GetNearestGroup( int personId, int groupTypeId )
+        {
+            var rockContext = (RockContext)this.Context;
+            var personService = new PersonService( rockContext );
+            var personGeopoint = personService.GetGeopoints( personId ).FirstOrDefault();
+            if ( personGeopoint != null )
+            {
+                var groupLocation = this.Queryable()
+                    .Where( g =>
+                        g.GroupTypeId.Equals( groupTypeId ) )
+                    .SelectMany( g =>
+                        g.GroupLocations
+                            .Where( gl =>
+                                gl.Location != null &&
+                                gl.Location.GeoPoint != null
+                            )
+                    )
+                    .OrderBy( gl => gl.Location.GeoPoint.Distance( personGeopoint ) )
+                    .FirstOrDefault();
+
+                if ( groupLocation != null )
+                {
+                    return groupLocation.Group;
+                }
+            }
+
+            return null;
+        }
+
         #endregion
 
         /// <summary>

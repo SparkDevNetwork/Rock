@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HotFixMigrations\002_FixAttendanceEmail.cs" />
     <Compile Include="Migrations\201504091807354_MergeTemplates.cs" />
     <Compile Include="Migrations\201504091807354_MergeTemplates.Designer.cs">
       <DependentUpon>201504091807354_MergeTemplates.cs</DependentUpon>

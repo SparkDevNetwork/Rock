@@ -984,27 +984,27 @@ namespace Rock.Attribute
                 {
                     if ( exclude == null || !exclude.Contains( attribute.Name ) )
                     {
-                        HtmlGenericControl dt = new HtmlGenericControl( "dt" );
-                        dt.InnerText = attribute.Name;
-                        dl.Controls.Add( dt );
-
-                        HtmlGenericControl dd = new HtmlGenericControl( "dd" );
-
+                        // Get the Attribute Value formatted for display.
                         string value = attribute.DefaultValue;
-                        if (item.AttributeValues.ContainsKey(attribute.Key) && item.AttributeValues[attribute.Key] != null )
+                        if ( item.AttributeValues.ContainsKey( attribute.Key ) && item.AttributeValues[attribute.Key] != null )
                         {
                             value = item.AttributeValues[attribute.Key].Value;
                         }
 
                         string controlHtml = attribute.FieldType.Field.FormatValueAsHtml( parentControl, value, attribute.QualifierValues );
-                        
-                        if ( string.IsNullOrWhiteSpace( controlHtml ) )
-                        {
-                            controlHtml = None.TextHtml;
-                        }
 
-                        dd.InnerHtml = controlHtml;
-                        dl.Controls.Add( dd );
+                        // If the Attribute Value has some content, display it.
+                        if (!string.IsNullOrWhiteSpace(controlHtml))
+                        {
+                            HtmlGenericControl dt = new HtmlGenericControl("dt");
+                            dt.InnerText = attribute.Name;
+                            dl.Controls.Add(dt);
+
+                            HtmlGenericControl dd = new HtmlGenericControl("dd");
+
+                            dd.InnerHtml = controlHtml;
+                            dl.Controls.Add(dd);
+                        }
                     }
                 }
             }

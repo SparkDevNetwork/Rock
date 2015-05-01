@@ -317,7 +317,7 @@ namespace RockWeb.Blocks.Communication
                 if ( item.Value.IsActive )
                 {
                     var entityType = item.Value.EntityType;
-                    mediums.Add( entityType.Id, entityType.FriendlyName );
+                    mediums.Add( entityType.Id, item.Metadata.ComponentName );
                     if ( !MediumEntityTypeId.HasValue )
                     {
                         MediumEntityTypeId = entityType.Id;

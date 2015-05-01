@@ -18,6 +18,7 @@
         click.timepicker': $.proxy(this.showWidget, this)
     4) added 'if (hour.length == 4) ..' and 'if (hour.length == 3) { ..' to let keyboard input of stuff like 445p and 1030a to work
     5) changed how zindex is calculated in place()
+    6) added support for 24 hour keyboard entry while in 'Meridian Mode'.  It'll convert to a meredian time (for example: 1930 to 7:30PM)
 */
 (function($, window, document, undefined) {
   'use strict';
@@ -831,8 +832,11 @@
         if (this.showMeridian) {
           if (hour < 1) {
             hour = 1;
-          } else if (hour > 12) {
+          } else if (hour >= 24){
             hour = 12;
+          } else if (hour > 12) {
+            hour = hour - 12;
+            meridian = 'PM';
           }
         } else {
           if (hour >= 24) {
