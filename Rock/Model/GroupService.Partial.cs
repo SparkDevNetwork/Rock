@@ -147,12 +147,12 @@ namespace Rock.Model
         /// <param name="personId">The person identifier.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <returns></returns>
-        public IQueryable<Group> GetGeofencedGroups( int personId, int groupTypeId )
+        public IQueryable<Group> GetGeofencingGroups( int personId, int groupTypeId )
         {
             var rockContext = (RockContext)this.Context;
             var personService = new PersonService( rockContext );
             var personGeopoints = personService.GetGeopoints( personId );
-            return GetGeofencedGroups( personGeopoints, groupTypeId );
+            return GetGeofencingGroups( personGeopoints, groupTypeId );
         }
 
         /// <summary>
@@ -161,12 +161,12 @@ namespace Rock.Model
         /// <param name="personId">The person identifier.</param>
         /// <param name="groupTypeGuid">The group type unique identifier.</param>
         /// <returns></returns>
-        public IQueryable<Group> GetGeofencedGroups( int personId, Guid groupTypeGuid )
+        public IQueryable<Group> GetGeofencingGroups( int personId, Guid groupTypeGuid )
         {
             var rockContext = (RockContext)this.Context;
             var personService = new PersonService( rockContext );
             var personGeopoints = personService.GetGeopoints( personId );
-            return GetGeofencedGroups( personGeopoints, groupTypeGuid );
+            return GetGeofencingGroups( personGeopoints, groupTypeGuid );
         }
         
         /// <summary>
@@ -176,7 +176,7 @@ namespace Rock.Model
         /// <param name="points">The points.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <returns></returns>
-        public IQueryable<Group> GetGeofencedGroups( IQueryable<DbGeography> points, int groupTypeId )
+        public IQueryable<Group> GetGeofencingGroups( IQueryable<DbGeography> points, int groupTypeId )
         {
             // Get the groups that have a location that intersects with any of the family's locations
             return this.Queryable()
@@ -196,7 +196,7 @@ namespace Rock.Model
         /// <param name="points">The points.</param>
         /// <param name="groupTypeGuid">The group type unique identifier.</param>
         /// <returns></returns>
-        public IQueryable<Group> GetGeofencedGroups( IQueryable<DbGeography> points, Guid groupTypeGuid )
+        public IQueryable<Group> GetGeofencingGroups( IQueryable<DbGeography> points, Guid groupTypeGuid )
         {
             // Get the groups that have a location that intersects with any of the family's locations
             return this.Queryable()

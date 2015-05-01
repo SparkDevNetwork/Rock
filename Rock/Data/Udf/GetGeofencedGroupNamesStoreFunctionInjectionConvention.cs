@@ -23,7 +23,7 @@ namespace Rock.Data
     /// <summary>
     /// pattern from https://github.com/divega/UdfCodeFirstSample
     /// </summary>
-    public class GetGeofencedGroupNamesStoreFunctionInjectionConvention : IStoreModelConvention<EdmModel>
+    public class GetGeofencingGroupNamesStoreFunctionInjectionConvention : IStoreModelConvention<EdmModel>
     {
         /// <summary>
         /// Applies the specified item.
@@ -48,7 +48,7 @@ namespace Rock.Data
                 ParameterMode.ReturnValue );
 
             var function = item.CreateAndAddFunction(
-                "ufnGroup_GetGeofencedGroupNames",
+                "ufnGroup_GetGeofencingGroupNames",
                 new[] { personIdParameter, groupTypeIdParameter },
                 new[] { returnValue } );
         }
