@@ -292,7 +292,14 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gList_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "BenevolenceRequestId", e.RowKeyId );
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "BenevolenceRequestId", e.RowKeyId.ToString() );
+            if ( TargetPerson != null )
+            {
+                qryParams.Add( "PersonId", TargetPerson.Id.ToString() );
+            }
+
+            NavigateToLinkedPage( "DetailPage", qryParams );
         }
 
         /// <summary>
