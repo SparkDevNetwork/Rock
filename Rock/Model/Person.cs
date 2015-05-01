@@ -1064,11 +1064,13 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the impersonation parameter.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual string ImpersonationParameter
         {
             get
             {
-                return "rckipid=" + HttpUtility.UrlEncode( this.EncryptedKey );
+                var encryptedKey = this.EncryptedKey;
+                return "rckipid=" + HttpUtility.UrlEncode( encryptedKey );
             }
         }
 
