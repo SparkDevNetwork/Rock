@@ -434,6 +434,23 @@ namespace Rock.Lava
                 : inputAsString;
         }
 
+        /// <summary>
+        /// Decodes an HTML string.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string HtmlDecode( string input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+            else
+            {
+                return HttpUtility.HtmlDecode( input );
+            }
+        }
+
         #endregion
 
         #region DateTime Filters
