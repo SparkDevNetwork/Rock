@@ -22,7 +22,7 @@
                             <Columns>
                                 <Rock:RockBoundField DataField="InternalName" HeaderText="Name" SortExpression="InternalName" />
                                 <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
-                                <Rock:RockBoundField DataField="Layout" HeaderText="Layout" SortExpression="Layout" />
+                                <Rock:RockBoundField DataField="Layout.Name" HeaderText="Layout" SortExpression="Layout.Name" />
                                 <Rock:DeleteField OnClick="gPages_Delete"/>
                             </Columns>
                         </Rock:Grid>

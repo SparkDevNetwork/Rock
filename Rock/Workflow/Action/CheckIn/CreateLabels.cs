@@ -142,7 +142,7 @@ namespace Rock.Workflow.Action.CheckIn
         private void GetGroupTypeLabels( GroupType groupType, List<CheckInLabel> labels, Dictionary<string, object> mergeObjects )
         {
             //groupType.LoadAttributes();
-            foreach ( var attribute in groupType.Attributes )
+            foreach ( var attribute in groupType.Attributes.OrderBy( a => a.Value.Order ) )
             {
                 if ( attribute.Value.FieldType.Guid == SystemGuid.FieldType.BINARY_FILE.AsGuid() &&
                     attribute.Value.QualifierValues.ContainsKey( "binaryFileType" ) &&

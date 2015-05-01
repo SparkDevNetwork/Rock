@@ -43,7 +43,7 @@ namespace Rock.Security.ExternalAuthentication
 
     [TextField( "App ID", "The Facebook App ID" )]
     [TextField( "App Secret", "The Facebook App Secret" )]
-    [BooleanField( "Sync Friends", "Should the person's Facebook friends whe are also in Rock be added as a known relationship?", true )]
+    [BooleanField( "Sync Friends", "Should the person's Facebook friends who are also in Rock be added as a known relationship?", true )]
     public class Facebook : AuthenticationComponent
     {
         /// <summary>
