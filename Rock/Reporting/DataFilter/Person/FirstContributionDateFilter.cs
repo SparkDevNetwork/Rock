@@ -228,17 +228,30 @@ function() {
                 return null;
             }
 
-            DateTime startDate = selectionValues[0].AsDateTime() ?? DateTime.MinValue;
-            DateTime endDate = selectionValues[1].AsDateTime() ?? DateTime.MaxValue;
+            DateTime? startDate = selectionValues[0].AsDateTime();
+            DateTime? endDate = selectionValues[1].AsDateTime();
             var accountGuids = selectionValues[2].Split( ',' ).Select( a => a.AsGuid() ).ToList();
             var accountIdList = new FinancialAccountService( (RockContext)serviceInstance.Context ).GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
 
-            bool limitToAccounts = accountIdList.Any();
             int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
-            var firstContributionDateQry = new FinancialTransactionService( rockContext ).Queryable()
-                .Where( xx => xx.TransactionTypeValueId == transactionTypeContributionId )
-                .Where( xx => !limitToAccounts || xx.TransactionDetails.Any( a => accountIdList.Contains( a.AccountId ) ) )
+            var financialTransactionsQry = new FinancialTransactionService( rockContext ).Queryable()
+                .Where( xx => xx.TransactionTypeValueId == transactionTypeContributionId );
+
+            if ( accountIdList.Any() )
+            {
+                if (accountIdList.Count == 1)
+                {
+                    int accountId = accountIdList.First();
+                    financialTransactionsQry = financialTransactionsQry.Where( xx => xx.TransactionDetails.Any( a => a.AccountId == accountId ) );
+                }
+                else
+                {
+                    financialTransactionsQry = financialTransactionsQry.Where( xx => xx.TransactionDetails.Any( a => accountIdList.Contains( a.AccountId ) ) );
+                }
+            }
+
+            var firstContributionDateQry = financialTransactionsQry
                 .GroupBy( xx => xx.AuthorizedPersonAlias.PersonId )
                 .Select( ss => new
                 {
@@ -246,7 +259,15 @@ function() {
                     FirstTransactionDateTime = ss.OrderBy( a => a.TransactionDateTime ).Select( s => s.TransactionDateTime ).FirstOrDefault()
                 } );
 
-            firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionDateTime >= startDate && xx.FirstTransactionDateTime < endDate );
+            if ( startDate.HasValue )
+            {
+                firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionDateTime >= startDate.Value );
+            }
+
+            if ( endDate.HasValue )
+            {
+                firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionDateTime < endDate );
+            }
 
             var innerQry = firstContributionDateQry.Select( xx => xx.PersonId ).AsQueryable();
 

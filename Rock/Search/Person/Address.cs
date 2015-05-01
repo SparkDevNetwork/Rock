@@ -55,21 +55,20 @@ namespace Rock.Search.Person
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                Guid groupTypefamilyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-                Guid homeAddressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
-                var homeAddressTypeValueId = Rock.Web.Cache.DefinedValueCache.Read( homeAddressTypeGuid, rockContext ).Id;
+            var rockContext = new RockContext();
 
-                var service = new GroupMemberService( rockContext );
-                return service.Queryable()
-                    .Where( m => m.Group.GroupType.Guid == groupTypefamilyGuid )
-                    .SelectMany( g => g.Group.GroupLocations )
-                    .Where( gl => gl.GroupLocationTypeValueId == homeAddressTypeValueId &&
-                        gl.Location.Street1.Contains( searchterm ) )
-                    .Select( gl => gl.Location.Street1 )
-                    .Distinct();
-            }
+            Guid groupTypefamilyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            Guid homeAddressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
+            var homeAddressTypeValueId = Rock.Web.Cache.DefinedValueCache.Read( homeAddressTypeGuid, rockContext ).Id;
+
+            var service = new GroupMemberService( rockContext );
+            return service.Queryable()
+                .Where( m => m.Group.GroupType.Guid == groupTypefamilyGuid )
+                .SelectMany( g => g.Group.GroupLocations )
+                .Where( gl => gl.GroupLocationTypeValueId == homeAddressTypeValueId &&
+                    gl.Location.Street1.Contains( searchterm ) )
+                .Select( gl => gl.Location.Street1 )
+                .Distinct();
         }
     }
 }
