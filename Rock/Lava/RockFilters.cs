@@ -335,6 +335,30 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Replace the last occurence of a string with another - this is a Rock version on this filter which takes any object
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <param name="replacement"></param>
+        /// <returns></returns>
+        public static string ReplaceLast( object input, string search, string replacement = "" )
+        {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+
+            string inputAsString = input.ToString();
+
+            if ( string.IsNullOrEmpty( inputAsString ) || string.IsNullOrEmpty( search ) )
+                return inputAsString;
+
+            int place = inputAsString.LastIndexOf( search );
+            string result = inputAsString.Remove( place, search.Length ).Insert( place, replacement );
+            return result;
+        }
+
+        /// <summary>
         /// Remove a substring - this is a Rock version on this filter which takes any object
         /// </summary>
         /// <param name="input"></param>
