@@ -4939,6 +4939,11 @@ fieldset[disabled] .btn-authenication.active {
   content: "\f09a";
   margin-right: 12px;
 }
+.btn-authenication.google:before {
+  font-family: 'FontAwesome';
+  content: "\f1a0";
+  margin-right: 12px;
+}
 .btn-minimal {
   text-decoration: none;
   color: #698aac;
