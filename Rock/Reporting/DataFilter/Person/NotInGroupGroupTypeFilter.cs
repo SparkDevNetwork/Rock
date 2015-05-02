@@ -96,7 +96,7 @@ function() {
 
                 var groupTypeRoles = new GroupTypeRoleService( new RockContext() ).Queryable().Where( a => groupTypeRoleGuidList.Contains( a.Guid ) ).ToList();
 
-                GroupMemberStatus? groupMemberStatus = GroupMemberStatus.Active;
+                GroupMemberStatus? groupMemberStatus = null;
                 if ( selectionValues.Length >= 3 )
                 {
                     groupMemberStatus = selectionValues[2].ConvertToEnumOrNull<GroupMemberStatus>();
