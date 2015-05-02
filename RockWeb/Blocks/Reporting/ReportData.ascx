@@ -33,7 +33,8 @@
                         <Columns>
                             <Rock:SelectField HeaderText="Show as a Filter" DataSelectedField="ShowAsFilter" ShowSelectAll="false" />
                             <Rock:SelectField HeaderText="Configurable" DataSelectedField="IsConfigurable" ShowSelectAll="false"/>
-                            <asp:BoundField DataField="Name" HeaderText="Name" />
+                            <asp:BoundField DataField="Title" HeaderText="Title" />
+                            <asp:BoundField DataField="Summary" HeaderText="Summary" />
                         </Columns>
                     </Rock:Grid>
                 </Content>
