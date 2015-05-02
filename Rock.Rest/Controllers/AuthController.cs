@@ -86,7 +86,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [HttpPost]
         [System.Web.Http.Route("api/Auth/GoogleLogin")]
-        public void FacebookLogin( [FromBody]Rock.Security.ExternalAuthentication.Google.GoogleUser googleUser )
+        public void GoogleLogin( [FromBody]Rock.Security.ExternalAuthentication.Google.GoogleUser googleUser )
         {
             string userName = Rock.Security.ExternalAuthentication.Google.GetGoogleUser(googleUser);
             if ( !string.IsNullOrWhiteSpace(userName) )
