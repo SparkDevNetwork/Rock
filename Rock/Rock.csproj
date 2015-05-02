@@ -344,6 +344,7 @@
     <Compile Include="Security\Authentication\Facebook.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Security\Authentication\Google.cs" />
     <Compile Include="Security\BackgroundCheckComponent.cs" />
     <Compile Include="Security\BackgroundCheckContainer.cs" />
     <Compile Include="Security\BackgroundCheck\ProtectMyMinistry.cs" />
