@@ -821,6 +821,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         if ( !familyMember.ExistingFamilyMember )
                         {
                             var groupMember = new GroupMember();
+                            groupMember.GroupMemberStatus = GroupMemberStatus.Active;
 
                             if ( familyMember.Id == -1 )
                             {
