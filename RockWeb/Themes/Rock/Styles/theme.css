@@ -3202,7 +3202,8 @@ table.attribute-grid tr th:nth-child(3) {
   text-align: center;
   margin-top: 0;
 }
-.personprofilebar-bio .name .full-name {
+.personprofilebar-bio .name .full-name,
+.personprofilebar-bio .name .previous-names {
   font-size: 18px;
   display: none;
 }
@@ -3695,7 +3696,8 @@ span.field-value {
   .personprofilebar-bio .name {
     text-align: left;
   }
-  .personprofilebar-bio .name .full-name {
+  .personprofilebar-bio .name .full-name,
+  .personprofilebar-bio .name .previous-names {
     display: inline;
   }
   .personprofilebar-bio .labels {

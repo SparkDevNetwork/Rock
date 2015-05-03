@@ -416,7 +416,9 @@ namespace RockWeb.Blocks.CheckIn
                 }
             }
 
-            return groupTypes.Select( g => g.Value ).ToList();
+            return groupTypes.Select( g => g.Value )
+                .OrderBy( g => g.Order )
+                .ToList();
         }
 
 

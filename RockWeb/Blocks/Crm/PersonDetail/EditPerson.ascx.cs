@@ -15,18 +15,19 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Newtonsoft.Json;
 
 using Rock;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Data;
 
 /*******************************************************************************************************************************
  * NOTE: The Security/AccountEdit.ascx block has very similiar functionality.  If updating this block, make sure to check
@@ -81,6 +82,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             btnSave.Visible = IsUserAuthorized( Rock.Security.Authorization.EDIT );
 
             ScriptManager.RegisterStartupScript( rContactInfo, rContactInfo.GetType(), "sms-number-" + BlockId.ToString(), smsScript, true );
+
+            grdPreviousNames.Actions.ShowAdd = true;
+            grdPreviousNames.Actions.AddClick += grdPreviousNames_AddClick;
         }
 
         /// <summary>
@@ -96,6 +100,57 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 ShowDetails();
             }
         }
+
+        #region View State related stuff
+
+        /// <summary>
+        /// Gets or sets the state of the person previous names.
+        /// </summary>
+        /// <value>
+        /// The state of the person previous names.
+        /// </value>
+        private List<PersonPreviousName> PersonPreviousNamesState { get; set; }
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            string json = ViewState["PersonPreviousNamesState"] as string;
+
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                PersonPreviousNamesState = new List<PersonPreviousName>();
+            }
+            else
+            {
+                PersonPreviousNamesState = PersonPreviousName.FromJsonAsList( json ) ?? new List<PersonPreviousName>();
+            }
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            var jsonSetting = new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+            };
+
+            ViewState["PersonPreviousNamesState"] = JsonConvert.SerializeObject( PersonPreviousNamesState, Formatting.None, jsonSetting );
+
+            return base.SaveViewState();
+        }
+
+        #endregion
 
         /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlRecordStatus control.
@@ -337,6 +392,32 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     History.EvaluateChange( changes, "Inactive Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( newRecordStatusReasonId ) );
                     person.RecordStatusReasonValueId = newRecordStatusReasonId;
 
+                    // Save any Removed/Added Previous Names
+                    var personPreviousNameService = new PersonPreviousNameService( rockContext );
+                    var databasePreviousNames = personPreviousNameService.Queryable().Where( a => a.PersonAlias.PersonId == person.Id ).ToList();
+                    foreach ( var deletedPreviousName in databasePreviousNames.Where( a => !PersonPreviousNamesState.Any( p => p.Guid == a.Guid ) ) )
+                    {
+                        personPreviousNameService.Delete( deletedPreviousName );
+
+                        History.EvaluateChange(
+                            changes,
+                            "Previous Name",
+                            deletedPreviousName.ToString(),
+                            string.Empty );
+                    }
+
+                    foreach ( var addedPreviousName in PersonPreviousNamesState.Where( a => !databasePreviousNames.Any( d => d.Guid == a.Guid ) ) )
+                    {
+                        addedPreviousName.PersonAliasId = person.PrimaryAliasId.Value;
+                        personPreviousNameService.Add( addedPreviousName );
+
+                        History.EvaluateChange(
+                            changes,
+                            "Previous Name",
+                            string.Empty,
+                            addedPreviousName.ToString() );
+                    }
+
                     if ( person.IsValid )
                     {
                         if ( rockContext.SaveChanges() > 0 )
@@ -469,6 +550,55 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             ddlGivingGroup.SetValue( Person.GivingGroupId );
+
+            this.PersonPreviousNamesState = Person.GetPreviousNames().ToList();
+
+            BindPersonPreviousNamesGrid();
+        }
+
+        /// <summary>
+        /// Binds the person previous names grid.
+        /// </summary>
+        private void BindPersonPreviousNamesGrid()
+        {
+            grdPreviousNames.DataKeyNames = new string[] { "Guid" };
+            grdPreviousNames.DataSource = this.PersonPreviousNamesState;
+            grdPreviousNames.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the AddClick event of the grdPreviousNames control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void grdPreviousNames_AddClick( object sender, EventArgs e )
+        {
+            tbPreviousLastName.Text = string.Empty;
+            mdPreviousName.Show();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the grdPreviousNames control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void grdPreviousNames_Delete( object sender, RowEventArgs e )
+        {
+            this.PersonPreviousNamesState.RemoveEntity( (Guid)e.RowKeyValue );
+            BindPersonPreviousNamesGrid();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdPreviousName control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdPreviousName_SaveClick( object sender, EventArgs e )
+        {
+            this.PersonPreviousNamesState.Add( new PersonPreviousName { LastName = tbPreviousLastName.Text, Guid = Guid.NewGuid() } );
+            BindPersonPreviousNamesGrid();
+
+            mdPreviousName.Hide();
         }
     }
 }

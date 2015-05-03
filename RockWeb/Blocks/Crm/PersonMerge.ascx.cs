@@ -251,7 +251,9 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
-            bool reconfirmRequired = ( MergeData.People.Select( p => p.Email ).Distinct().Count() > 1 && MergeData.People.Where( p => p.HasLogins ).Any() ); GetValuesSelection();
+            bool reconfirmRequired = ( MergeData.People.Select( p => p.Email ).Distinct().Count() > 1 && MergeData.People.Where( p => p.HasLogins ).Any() ); 
+
+            GetValuesSelection();
 
             int? primaryPersonId = null;
 
@@ -405,11 +407,17 @@ namespace RockWeb.Blocks.Crm
                             phoneNumberService.Delete( phoneNumber );
                         }
 
+                        // If there was more than one email address and user has logins, then set any of the local 
+                        // logins ( database & AD ) to require a reconfirmation
                         if ( reconfirmRequired )
                         {
                             foreach ( var login in userLoginService.GetByPersonId( p.Id ) )
                             {
-                                login.IsConfirmed = false;
+                                var component = Rock.Security.AuthenticationContainer.GetComponent( login.EntityType.Name );
+                                if ( !component.RequiresRemoteAuthentication )
+                                {
+                                    login.IsConfirmed = false;
+                                }
                             }
                         }
 

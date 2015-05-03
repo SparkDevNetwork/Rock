@@ -466,6 +466,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             foreach ( NewFamilyMembersRow row in nfmMembers.FamilyMemberRows )
             {
                 var groupMember = new GroupMember();
+                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
                 groupMember.Person = new Person();
                 groupMember.Person.Guid = row.PersonGuid.Value;
                 groupMember.Person.RecordTypeValueId = recordTypePersonId;

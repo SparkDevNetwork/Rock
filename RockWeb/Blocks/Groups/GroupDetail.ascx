@@ -136,7 +136,7 @@
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpGroupRequirements" runat="server" Title="Group Requirements">
-                            <Rock:RockCheckBox ID="cbMembersMustMeetRequirementsOnAdd" runat="server" Text="Members Must Meet Requirements On Add" Help="If this is enabled, a person can only become a group member if all the requirements are met. If this is left as disabled, requirements won't be checked when adding. Note: only DataView and SQL type requirements need to be met since manual ones can't be checked until after the person is added." />
+                            <Rock:RockCheckBox ID="cbMembersMustMeetRequirementsOnAdd" runat="server" Text="Members must meet all requirements before adding" Help="If this is enabled, a person can only become a group member if all the requirements are met. If this is left as disabled, requirements won't be checked when adding. Note: only DataView and SQL type requirements need to be met since manual ones can't be checked until after the person is added." />
                             <div class="grid">
                                 <Rock:Grid ID="gGroupRequirements" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group Requirement" ShowConfirmDeleteDialog="false">
                                     <Columns>

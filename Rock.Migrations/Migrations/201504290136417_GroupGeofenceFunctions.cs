@@ -33,7 +33,7 @@ namespace Rock.Migrations
 /*
 <doc>
 	<summary>
- 		This function returns the name(s) of groups that person is geofenced by
+ 		This function returns the name(s) of the groups of selected type that geofence a person 
 	</summary>
 
 	<returns>
@@ -45,12 +45,12 @@ namespace Rock.Migrations
 		addresses that have the is mapped location
 	</remarks>
 	<code>
-		SELECT [dbo].[ufnCrm_GetAddress](2, 24)
+		SELECT [dbo].[ufnGroup_GetGeofencingGroupNames](2, 24)
 	</code>
 </doc>
 */
 
-CREATE FUNCTION [dbo].[ufnGroup_GetGeofencedGroupNames](
+CREATE FUNCTION [dbo].[ufnGroup_GetGeofencingGroupNames](
 	@PersonId int, 
 	@GroupTypeId int) 
 
@@ -94,8 +94,8 @@ END
 /*
 <doc>
 	<summary>
- 		This function returns all the groups of a selected type that have a geofence boundary
-		that surrounds the geopoint of the given location
+ 		This function returns all the groups of a selected type that geofence the 
+        geopoint of the given location
 	</summary>
 
 	<returns>
@@ -104,11 +104,11 @@ END
     <param name='@LocationId' datatype='int'>The location id to use for the geopoint </param>
 	<param name='@GroupTypeId' datatype='int'>The Group type to use for finding groups</param>
 	<code>
-		SELECT * FROM [dbo].[ufnGroup_GeofencedGroups](14, 24)
+		SELECT * FROM [dbo].[ufnGroup_GeofencingGroups](14, 24)
 	</code>
 </doc>
 */
-CREATE FUNCTION [dbo].[ufnGroup_GeofencedGroups] (
+CREATE FUNCTION [dbo].[ufnGroup_GeofencingGroups] (
      @LocationId INT
     ,@GroupTypeId INT
     )
@@ -132,10 +132,10 @@ RETURN
         public override void Down()
         {
             Sql( @"
-    DROP FUNCTION [dbo].[ufnGroup_GeofencedGroups]
+    DROP FUNCTION [dbo].[ufnGroup_GeofencingGroups]
 " );
             Sql( @"
-    DROP FUNCTION [dbo].[ufnGroup_GetGeofencedGroupNames]
+    DROP FUNCTION [dbo].[ufnGroup_GetGeofencingGroupNames]
 " );
 
         }

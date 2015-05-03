@@ -196,35 +196,34 @@ namespace Rock.Reporting.DataFilter
             // Therefore, if the specified comparison works by excluding certain values we must invert our filter logic:
             // first we find the Attribute Values that match those values and then we exclude the associated Entities from the result set.
             var comparisonType = ComparisonType.EqualTo;
+            ComparisonType evaluatedComparisonType = comparisonType;
 
-            if (values.Count >= 2)
+            if ( values.Count >= 2 )
             {
                 string comparisonValue = values[0];
-                if (comparisonValue != "0")
+                if ( comparisonValue != "0" )
                 {
                     comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
                 }
+
+                switch ( comparisonType )
+                {
+                    case ComparisonType.DoesNotContain:
+                        evaluatedComparisonType = ComparisonType.Contains;
+                        break;
+                    case ComparisonType.IsBlank:
+                        evaluatedComparisonType = ComparisonType.IsNotBlank;
+                        break;
+                    case ComparisonType.NotEqualTo:
+                        evaluatedComparisonType = ComparisonType.EqualTo;
+                        break;
+                    default:
+                        evaluatedComparisonType = comparisonType;
+                        break;
+                }
+
+                values[0] = evaluatedComparisonType.ToString();
             }
-
-            ComparisonType evaluatedComparisonType;
-
-            switch (comparisonType)
-            {
-                case ComparisonType.DoesNotContain:
-                    evaluatedComparisonType = ComparisonType.Contains;
-                    break;
-                case ComparisonType.IsBlank:
-                    evaluatedComparisonType = ComparisonType.IsNotBlank;
-                    break;
-                case ComparisonType.NotEqualTo:
-                    evaluatedComparisonType = ComparisonType.EqualTo;
-                    break;
-                default:
-                    evaluatedComparisonType = comparisonType;
-                    break;
-            }
-
-            values[0] = evaluatedComparisonType.ToString();
 
             var filterExpression = entityField.FieldType.Field.AttributeFilterExpression( entityField.FieldConfig, values, attributeValueParameterExpression );
 
