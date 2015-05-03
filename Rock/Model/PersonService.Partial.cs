@@ -337,6 +337,8 @@ namespace Rock.Model
                 singleName = fullName.Trim();
             }
 
+            var previousNamesQry = new PersonPreviousNameService( this.Context as RockContext ).Queryable();
+
             if ( !string.IsNullOrWhiteSpace( singleName ) )
             {
                 if ( allowFirstNameOnly )
@@ -345,13 +347,17 @@ namespace Rock.Model
                         .Where( p =>
                             p.LastName.StartsWith( singleName ) ||
                             p.FirstName.StartsWith( singleName ) ||
-                            p.NickName.StartsWith( singleName ) );
+                            p.NickName.StartsWith( singleName ) ||
+                            previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName))
+                            );
                 }
                 else
                 {
                     return Queryable( includeDeceased, includeBusinesses )
                         .Where( p =>
-                            p.LastName.StartsWith( singleName ) );
+                            p.LastName.StartsWith( singleName ) ||
+                            previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName))
+                            );
                 }
             }
             else
@@ -362,7 +368,7 @@ namespace Rock.Model
                     .Where( p =>
                         ( includeBusinesses &&  p.RecordTypeValueId.HasValue && p.RecordTypeValueId.Value == recordTypeBusinessId && p.LastName.StartsWith(fullName) )
                         ||
-                        (p.LastName.StartsWith( lastName ) &&
+                        ( (p.LastName.StartsWith( lastName ) || previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName ) )) &&
                         ( p.FirstName.StartsWith( firstName ) ||
                         p.NickName.StartsWith( firstName ) )) );
             }

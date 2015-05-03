@@ -108,7 +108,11 @@ namespace RockWeb.Blocks.CheckIn
 ", lbSelect.ClientID, hfTimes.ClientID );
                         Page.ClientScript.RegisterClientScriptBlock( this.GetType(), "SelectTime", script );
 
-                        rSelection.DataSource = availSchedules.OrderBy( s => s.StartTime );
+                        rSelection.DataSource = availSchedules
+                            .OrderBy( s => s.StartTime.Value.TimeOfDay )
+                            .ThenBy( s => s.Schedule.Name )
+                            .ToList();
+
                         rSelection.DataBind();
                     }
                 }

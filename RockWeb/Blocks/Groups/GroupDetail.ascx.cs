@@ -1281,9 +1281,12 @@ namespace RockWeb.Blocks.Groups
             group.LoadAttributes();
             var attributes = group.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
 
-            // display attribute values
+            // Display Attribute Values that have the "Display as Grid Column" flag enabled.
             var attributeCategories = Helper.GetAttributeCategories( attributes );
-            Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes, null, false );
+
+            var excludedAttributes = attributes.Where(x => !x.IsGridColumn).Select(x => x.Name).ToList();
+
+            Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes, excludedAttributes, false );
 
             var pageParams = new Dictionary<string, string>();
             pageParams.Add("GroupId", group.Id.ToString());
