@@ -407,11 +407,10 @@ namespace RockWeb.Blocks.Reporting
                 {
                     reportField.DataSelectComponentEntityTypeId = fieldSelection.AsIntegerOrNull();
 
-                    string dataSelectComponentTypeName = EntityTypeCache.Read( reportField.DataSelectComponentEntityTypeId ?? 0, rockContext ).GetEntityType().FullName;
-                    DataSelectComponent dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
                     string placeHolderId = string.Format( "{0}_phDataSelectControls", panelWidget.ID );
-                    var placeHolder = phReportFields.ControlsOfTypeRecursive<PlaceHolder>().Where( a => a.ID == placeHolderId ).FirstOrDefault();
+                    var placeHolder = phReportFields.ControlsOfTypeRecursive<PlaceHolder>().FirstOrDefault( a => a.ID == placeHolderId );
 
+                    var dataSelectComponent = this.GetDataSelectComponent( rockContext, reportField.DataSelectComponentEntityTypeId ?? 0 );
                     if ( dataSelectComponent != null )
                     {
                         reportField.Selection = dataSelectComponent.GetSelection( placeHolder.Controls.OfType<Control>().ToArray() );
@@ -749,8 +748,7 @@ namespace RockWeb.Blocks.Reporting
                 {
                     if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )
                     {
-                        string dataSelectComponentTypeName = EntityTypeCache.Read( reportField.DataSelectComponentEntityTypeId ?? 0, rockContext ).GetEntityType().FullName;
-                        var dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
+                        var dataSelectComponent = GetDataSelectComponent(rockContext, reportField.DataSelectComponentEntityTypeId.GetValueOrDefault(0));
                         if ( dataSelectComponent != null )
                         {
                             if ( !dataSelectComponent.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
@@ -774,6 +772,26 @@ namespace RockWeb.Blocks.Reporting
             }
 
             return isAuthorized;
+        }
+
+        /// <summary>
+        /// Creates a DataSelectComponent instance from a unique identifier.
+        /// </summary>
+        /// <param name="rockContext"></param>
+        /// <param name="dataSelectComponentId"></param>
+        /// <returns>A DataSelectComponent or null if the component cannot be created.</returns>
+        private DataSelectComponent GetDataSelectComponent(RockContext rockContext, int dataSelectComponentId)
+        {
+            // Get the Type for the Data Select Component used in this column.
+            // If the column refers to a Type that does not exist, ignore and continue.
+            var componentType = EntityTypeCache.Read( dataSelectComponentId, rockContext ).GetEntityType();
+
+            if (componentType == null)
+                return null;
+
+            string dataSelectComponentTypeName = componentType.FullName;
+
+            return DataSelectContainer.GetComponent(dataSelectComponentTypeName);
         }
 
         /// <summary>
@@ -1191,12 +1209,10 @@ namespace RockWeb.Blocks.Reporting
 
             if ( reportFieldType == ReportFieldType.DataSelectComponent )
             {
-                string dataSelectComponentTypeName = EntityTypeCache.Read( fieldSelection.AsInteger() ).GetEntityType().FullName;
-                DataSelectComponent dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
-
+                var dataSelectComponent = GetDataSelectComponent( rockContext, fieldSelection.AsInteger() );
                 if ( dataSelectComponent != null )
                 {
-                    var dataSelectControls = dataSelectComponent.CreateChildControls( phDataSelectControls );
+                    dataSelectComponent.CreateChildControls( phDataSelectControls );
                 }
             }
         }
@@ -1289,8 +1305,8 @@ namespace RockWeb.Blocks.Reporting
                     break;
 
                 case ReportFieldType.DataSelectComponent:
-                    string dataSelectComponentTypeName = EntityTypeCache.Read( fieldSelection.AsInteger(), rockContext ).GetEntityType().FullName;
-                    dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
+                    dataSelectComponent = this.GetDataSelectComponent(rockContext, fieldSelection.AsInteger());
+
                     if ( dataSelectComponent != null )
                     {
                         defaultColumnHeaderText = dataSelectComponent.ColumnHeaderText;
@@ -1300,6 +1316,17 @@ namespace RockWeb.Blocks.Reporting
                     break;
             }
 
+            // Show the common field properties.
+            string fieldTitle = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? defaultColumnHeaderText : reportField.ColumnHeaderText;
+            panelWidget.Title = fieldTitle;
+
+            RockCheckBox showInGridCheckBox = panelWidget.ControlsOfTypeRecursive<RockCheckBox>().FirstOrDefault( a => a.ID == panelWidget.ID + "_showInGridCheckBox" );
+            showInGridCheckBox.Checked = reportField.ShowInGrid;
+
+            RockTextBox columnHeaderTextTextBox = panelWidget.ControlsOfTypeRecursive<RockTextBox>().FirstOrDefault( a => a.ID == panelWidget.ID + "_columnHeaderTextTextBox" );
+            columnHeaderTextTextBox.Text = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? defaultColumnHeaderText : reportField.ColumnHeaderText;
+
+            // Show settings that are specific to the field type.
             if ( !fieldDefined )
             {
                 // return if we can't determine field
@@ -1319,15 +1346,6 @@ namespace RockWeb.Blocks.Reporting
             {
                 ddlFields.SelectedValue = string.Format( "{0}|{1}", reportField.ReportFieldType, dataSelectComponent.TypeId );
             }
-
-            string fieldTitle = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? defaultColumnHeaderText : reportField.ColumnHeaderText;
-            panelWidget.Title = fieldTitle;
-
-            RockCheckBox showInGridCheckBox = panelWidget.ControlsOfTypeRecursive<RockCheckBox>().FirstOrDefault( a => a.ID == panelWidget.ID + "_showInGridCheckBox" );
-            showInGridCheckBox.Checked = reportField.ShowInGrid;
-
-            RockTextBox columnHeaderTextTextBox = panelWidget.ControlsOfTypeRecursive<RockTextBox>().FirstOrDefault( a => a.ID == panelWidget.ID + "_columnHeaderTextTextBox" );
-            columnHeaderTextTextBox.Text = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? defaultColumnHeaderText : reportField.ColumnHeaderText;
 
             if ( dataSelectComponent != null )
             {
