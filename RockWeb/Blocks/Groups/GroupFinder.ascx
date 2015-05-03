@@ -7,7 +7,7 @@
 
         <%-- View Panel --%>
         <asp:Panel ID="pnlView" runat="server">
-
+            <asp:Literal ID="lTitle" runat="server" />
             <asp:Panel ID="pnlSearch" runat="server" >
 
                 <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
