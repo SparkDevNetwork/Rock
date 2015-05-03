@@ -1,11 +1,4 @@
-/Rock.Rest.dll
-/Rock.Rest.dll.config
-/Rock.Rest.pdb
-/Rock.dll
-/Rock.pdb
-/DotLiquid.dll
-/DotLiquid.pdb
-/Humanizer.dll
-/Humanizer.pdb
-/Humanizer.xml
-*.OpenXml.dll
+*.pdb
+*.dll
+*.xml
+*.dll.config
