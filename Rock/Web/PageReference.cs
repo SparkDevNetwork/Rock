@@ -263,7 +263,7 @@ namespace Rock.Web
                     string delimitor = "?";
                     foreach ( KeyValuePair<string, string> parm in parms )
                     {
-                        url += delimitor + parm.Key + "=" + HttpUtility.UrlEncode( parm.Value );
+                        url += delimitor + HttpUtility.UrlEncode(parm.Key) + "=" + HttpUtility.UrlEncode( parm.Value );
                         delimitor = "&";
                     }
                 }
