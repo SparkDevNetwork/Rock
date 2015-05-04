@@ -33,7 +33,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people that are associated with the selected campus." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Campus Filter" )]
-    public class CampusFilter : DataFilterComponent
+    public class CampusFilter : DataFilterComponent, IUpdateSelectionFromPageParameters
     {
         #region Properties
 
@@ -193,6 +193,44 @@ function() {
                     campusPicker.SelectedCampusId = null;
                 }
             }
+        }
+
+        /// <summary>
+        /// Updates the selection from page parameters.
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <param name="rockBlock">The rock block.</param>
+        /// <returns></returns>
+        public string UpdateSelectionFromPageParameters( string selection, Rock.Web.UI.RockBlock rockBlock )
+        {
+            if ( !string.IsNullOrWhiteSpace( selection ) )
+            {
+                string[] selectionValues = selection.Split( '|' );
+                if ( selectionValues.Length >= 1 )
+                {
+                    var campusId = rockBlock.PageParameter( "CampusId" ).AsIntegerOrNull();
+                    if ( campusId == null )
+                    {
+                        var campusEntity = rockBlock.ContextEntity<Campus>();
+                        if ( campusEntity != null )
+                        {
+                            campusId = campusEntity.Id;
+                        }
+                    }
+
+                    if ( campusId.HasValue )
+                    {
+                        var selectedCampus = CampusCache.Read( campusId.Value );
+                        if ( selectedCampus != null )
+                        {
+                            selectionValues[0] = selectedCampus.Guid.ToString();
+                            return selectionValues.ToList().AsDelimited( "|" );
+                        }
+                    }
+                }
+            }
+
+            return selection;
         }
 
         /// <summary>
