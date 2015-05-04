@@ -126,7 +126,7 @@ namespace Rock.Reporting.DataFilter
                 var entityField = entityFields.FirstOrDefault( p => p.Name == entityFieldName );
                 if ( entityField != null )
                 {
-                    result = entityField.FormattedFilterDescription( FixDelimination( values.Skip( 1 ).ToList() ));
+                    result = entityField.FormattedFilterDescription( FixDelimination( values.Skip( 1 ).ToList() ) );
                 }
             }
 
@@ -142,13 +142,13 @@ namespace Rock.Reporting.DataFilter
             var controls = new List<Control>();
 
             // Create the field selection dropdown
-            var ddlProperty = new RockDropDownList();
-            ddlProperty.ID = string.Format( "{0}_ddlProperty", filterControl.ID );
-            filterControl.Controls.Add( ddlProperty );
-            controls.Add( ddlProperty );
+            ddlEntityField = new RockDropDownList();
+            ddlEntityField.ID = string.Format( "{0}_ddlProperty", filterControl.ID );
+            filterControl.Controls.Add( ddlEntityField );
+            controls.Add( ddlEntityField );
 
             // add Empty option first
-            ddlProperty.Items.Add(new ListItem());
+            ddlEntityField.Items.Add( new ListItem() );
 
             foreach ( var entityField in EntityHelper.GetEntityFields( entityType ) )
             {
@@ -157,7 +157,7 @@ namespace Rock.Reporting.DataFilter
                 if ( control != null )
                 {
                     // Add the field to the dropdown of availailable fields
-                    ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
+                    ddlEntityField.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
                     filterControl.Controls.Add( control );
                     controls.Add( control );
                 }
@@ -165,6 +165,8 @@ namespace Rock.Reporting.DataFilter
 
             return controls.ToArray();
         }
+
+        private DropDownList ddlEntityField = null;
 
         /// <summary>
         /// Renders the controls.
@@ -177,9 +179,23 @@ namespace Rock.Reporting.DataFilter
         {
             if ( controls.Length > 0 )
             {
-                DropDownList ddlEntityField = controls[0] as DropDownList;
+                ddlEntityField = controls[0] as DropDownList;
                 var entityFields = EntityHelper.GetEntityFields( entityType );
                 RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlEntityField, controls.ToList(), filterControl.ID );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide entity field picker].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [hide entity field picker]; otherwise, <c>false</c>.
+        /// </value>
+        public void HideEntityFieldPicker()
+        {
+            if ( ddlEntityField != null )
+            {
+                ddlEntityField.Style[HtmlTextWriterStyle.Display] = "none";
             }
         }
 
