@@ -8,34 +8,12 @@
                 <h1 class="panel-title"><i class="fa fa-check-square-o"></i>Attendance Analysis</h1>
             </div>
             <div class="panel-body">
-
-                <Rock:LineChart ID="lcAttendance" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="300" />
-                <div class="row margin-t-sm">
-                    <div class="col-md-12">
-                        <div class="pull-right">
-                            <asp:LinkButton ID="lShowGrid" runat="server" CssClass="btn btn-default btn-xs margin-b-sm" Text="Show Data <i class='fa fa-chevron-down'></i>" ToolTip="Show Data" OnClick="lShowGrid_Click" />
-                        </div>
-                    </div>
-                </div>
-                <asp:Panel ID="pnlGrid" runat="server" Visible="false">
-
-                    <div class="grid">
-                        <Rock:Grid ID="gAttendance" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesId" RowItemText="Attendance Summary">
-                            <Columns>
-                                <Rock:DateField DataField="DateTime" HeaderText="Date" SortExpression="DateTimeStamp" />
-                                <Rock:RockBoundField DataField="SeriesId" HeaderText="Series" SortExpression="SeriesId" />
-                                <Rock:RockBoundField DataField="YValue" HeaderText="Count" SortExpression="YValue" />
-                            </Columns>
-                        </Rock:Grid>
-                    </div>
-                </asp:Panel>
-
-                <div class="actions margin-b-md">
-                    <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary" Text="Apply" ToolTip="Update the chart" OnClick="btnApply_Click" />
-                </div>
-
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <div class="actions margin-b-md">
+                            <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary" Text="Apply" ToolTip="Update the chart" OnClick="btnApply_Click" />
+                        </div>
+
                         <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" />
 
                         <Rock:RockControlWrapper ID="rcwGraphBy" runat="server" Label="Graph By">
@@ -66,8 +44,7 @@
                         </Rock:RockControlWrapper>
 
                         <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campuses" />
-                    </div>
-                    <div class="col-md-6">
+
 
                         <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="true" />
                         <h4>Group</h4>
@@ -79,8 +56,36 @@
                             </asp:Repeater>
 
                         </ul>
+
+                    </div>
+                    <div class="col-md-8">
+                        <Rock:LineChart ID="lcAttendance" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="300" />
+                        <div class="row margin-t-sm">
+                            <div class="col-md-12">
+                                <div class="pull-right">
+                                    <asp:LinkButton ID="lShowGrid" runat="server" CssClass="btn btn-default btn-xs margin-b-sm" Text="Show Data <i class='fa fa-chevron-down'></i>" ToolTip="Show Data" OnClick="lShowGrid_Click" />
+                                </div>
+                            </div>
+                        </div>
+                        <asp:Panel ID="pnlGrid" runat="server" Visible="false">
+
+                            <div class="grid">
+                                <Rock:Grid ID="gAttendance" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesId" RowItemText="Attendance Summary">
+                                    <Columns>
+                                        <Rock:DateField DataField="DateTime" HeaderText="Date" SortExpression="DateTimeStamp" />
+                                        <Rock:RockBoundField DataField="SeriesId" HeaderText="Series" SortExpression="SeriesId" />
+                                        <Rock:RockBoundField DataField="YValue" HeaderText="Count" SortExpression="YValue" />
+                                    </Columns>
+                                </Rock:Grid>
+                            </div>
+                        </asp:Panel>
                     </div>
                 </div>
+
+
+
+
+
 
             </div>
         </div>
