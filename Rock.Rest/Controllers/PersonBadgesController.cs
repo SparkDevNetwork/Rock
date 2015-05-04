@@ -95,40 +95,16 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/PersonBadges/GeofencedGroups/{personId}/{groupTypeGuid}" )]
-        public List<GroupAndLeaderInfo> GetGeofencedGroups( int personId, Guid groupTypeGuid )
+        [System.Web.Http.Route( "api/PersonBadges/GeofencingGroups/{personId}/{groupTypeGuid}" )]
+        public List<GroupAndLeaderInfo> GetGeofencingGroups( int personId, Guid groupTypeGuid )
         {
             var rockContext = (Rock.Data.RockContext)Service.Context;
             var groupMemberService = new GroupMemberService( rockContext );
-            var groupService = new GroupService( rockContext );
 
-            Guid familyTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+            var groups = new GroupService( rockContext ).GetGeofencingGroups( personId, groupTypeGuid ).AsNoTracking();
 
-            // get the geopoints for the family locations for the selected person
-            var familyGeoPoints = groupMemberService
-                .Queryable().AsNoTracking()
-                .Where( m => 
-                    m.PersonId == personId &&
-                    m.Group.GroupType.Guid.Equals( familyTypeGuid ) )
-                .SelectMany( m => m.Group.GroupLocations )
-                .Where( l => 
-                    l.IsMappedLocation &&
-                    l.Location.GeoPoint != null ) 
-                .Select( l => l.Location.GeoPoint )
-                .ToList();
-
-            // Get the groups that have a location that intersects with any of the family's locations
             var result = new List<GroupAndLeaderInfo>();
-            foreach( var group in groupService
-                .Queryable().AsNoTracking()
-                .Where( g =>
-                    g.GroupType.Guid.Equals( groupTypeGuid ) &&
-                    g.IsActive &&
-                    g.GroupLocations.Any( l =>
-                        l.Location.GeoFence != null &&
-                        familyGeoPoints.Any( p => p.Intersects( l.Location.GeoFence ) )
-                    ) )
-                .OrderBy( g => g.Name ) )
+            foreach ( var group in groups.OrderBy( g => g.Name ) )
             {
                 var info = new GroupAndLeaderInfo();
                 info.GroupName = group.Name;

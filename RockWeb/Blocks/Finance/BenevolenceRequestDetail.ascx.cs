@@ -185,7 +185,7 @@ namespace RockWeb.Blocks.Finance
                 ddlResultType.AutoPostBack = false;
                 ddlResultType.Required = true;
                 ddlResultType.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) ), true );
-                ddlResultType.SelectedValue = resultInfo.ResultTypeValueId.ToString();
+                ddlResultType.SetValue( resultInfo.ResultTypeValueId );
                 dtbResultSummary.Text = resultInfo.ResultSummary;
                 dtbAmount.Text = resultInfo.Amount.ToString();
                 hfInfoGuid.Value = e.RowKeyValue.ToString();
@@ -303,9 +303,9 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 benevolenceRequest.RequestedByPersonAliasId = ppPerson.PersonAliasId;
-                benevolenceRequest.CaseWorkerPersonAliasId = ddlCaseWorker.SelectedItem.Value.AsIntegerOrNull();
-                benevolenceRequest.RequestStatusValueId = ddlRequestStatus.SelectedItem.Value.AsIntegerOrNull();
-                benevolenceRequest.ConnectionStatusValueId = ddlConnectionStatus.SelectedItem.Value.AsIntegerOrNull();
+                benevolenceRequest.CaseWorkerPersonAliasId = ddlCaseWorker.SelectedValue.AsIntegerOrNull();
+                benevolenceRequest.RequestStatusValueId = ddlRequestStatus.SelectedValue.AsIntegerOrNull();
+                benevolenceRequest.ConnectionStatusValueId = ddlConnectionStatus.SelectedValue.AsIntegerOrNull();
 
                 if ( dpRequestDate.SelectedDate.HasValue )
                 {
@@ -316,29 +316,34 @@ namespace RockWeb.Blocks.Finance
                 benevolenceRequest.CellPhoneNumber = pnbCellPhone.Number;
                 benevolenceRequest.WorkPhoneNumber = pnbWorkPhone.Number;
 
-                List<BenevolenceResultInfo> resultList = BenevolenceResultsState;
-                BenevolenceResult benevolenceResult = null;
+                List<BenevolenceResultInfo> resultListUI = BenevolenceResultsState;
+                var resultListDB = benevolenceRequest.BenevolenceResults.ToList();
 
-                foreach ( BenevolenceResult result in benevolenceRequest.BenevolenceResults.ToList() )
+                // remove any Benevolence Results that were removed in the UI
+                foreach ( BenevolenceResult resultDB in resultListDB )
                 {
-                    if ( resultList.FirstOrDefault( r => r.ResultId == result.Id ) == null )
+                    if ( !resultListUI.Any( r => r.ResultId == resultDB.Id ) )
                     {
-                        benevolenceRequest.BenevolenceResults.Remove( result );
-                        benevolenceResultService.Delete( result );
+                        benevolenceRequest.BenevolenceResults.Remove( resultDB );
+                        benevolenceResultService.Delete( resultDB );
                     }
                 }
 
-                foreach ( BenevolenceResultInfo benevolenceResultInfo in resultList )
+                // add any Benevolence Results that were added in the UI
+                foreach ( BenevolenceResultInfo resultUI in resultListUI )
                 {
-                    if ( benevolenceResultInfo.ResultId == null )
+                    var resultDB = resultListDB.FirstOrDefault( r => r.Guid == resultUI.TempGuid );
+                    if ( resultDB == null )
                     {
-                        benevolenceResult = new BenevolenceResult();
-                        benevolenceResult.Amount = benevolenceResultInfo.Amount;
-                        benevolenceResult.ResultSummary = benevolenceResultInfo.ResultSummary;
-                        benevolenceResult.ResultTypeValueId = benevolenceResultInfo.ResultTypeValueId;
-                        benevolenceResult.BenevolenceRequestId = benevolenceRequest.Id;
-                        benevolenceRequest.BenevolenceResults.Add( benevolenceResult );
+                        resultDB = new BenevolenceResult();
+                        resultDB.BenevolenceRequestId = benevolenceRequest.Id;
+                        resultDB.Guid = resultUI.TempGuid;
+                        benevolenceRequest.BenevolenceResults.Add( resultDB );
                     }
+
+                    resultDB.Amount = resultUI.Amount;
+                    resultDB.ResultSummary = resultUI.ResultSummary;
+                    resultDB.ResultTypeValueId = resultUI.ResultTypeValueId;
                 }
 
                 if ( benevolenceRequest.IsValid )
@@ -391,13 +396,24 @@ namespace RockWeb.Blocks.Finance
                 Person person = new PersonService( new RockContext() ).Get( ppPerson.PersonId.Value );
                 if ( person != null )
                 {
-                    dtbFirstName.Text = person.FirstName;
-                    dtbFirstName.Enabled = false;
+                    // Make sure that the FirstName box gets either FirstName or NickName of person. 
+                    if (!string.IsNullOrWhiteSpace(person.FirstName))
+                    {
+                        dtbFirstName.Text = person.FirstName;
+                    }
+                    else if ( !string.IsNullOrWhiteSpace( person.NickName ) )
+                    {
+                        dtbFirstName.Text = person.NickName;
+                    }
+
+                    //If both FirstName and NickName are blank, let them edit it manually
+                    dtbFirstName.Enabled = string.IsNullOrWhiteSpace(dtbFirstName.Text);
 
                     dtbLastName.Text = person.LastName;
-                    dtbLastName.Enabled = false;
+                    //If both LastName is blank, let them edit it manually
+                    dtbLastName.Enabled = string.IsNullOrWhiteSpace( dtbLastName.Text ); ;
 
-                    ddlConnectionStatus.SelectedValue = person.ConnectionStatusValueId.ToString();
+                    ddlConnectionStatus.SetValue( person.ConnectionStatusValueId );
                     ddlConnectionStatus.Enabled = false;
 
                     var homePhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
@@ -498,7 +514,6 @@ namespace RockWeb.Blocks.Finance
             if ( benevolenceRequest.RequestedByPersonAlias != null )
             {
                 ppPerson.SetValue( benevolenceRequest.RequestedByPersonAlias.Person );
-                ppPerson_SelectPerson( null, null );
             }
             else
             {
@@ -526,7 +541,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( benevolenceRequest.RequestStatusValueId != null )
             {
-                ddlRequestStatus.SelectedValue = benevolenceRequest.RequestStatusValueId.ToString();
+                ddlRequestStatus.SetValue( benevolenceRequest.RequestStatusValueId );
 
                 if ( benevolenceRequest.RequestStatusValue.Value == "Approved" )
                 {
@@ -543,22 +558,25 @@ namespace RockWeb.Blocks.Finance
 
             if ( benevolenceRequest.ConnectionStatusValueId != null )
             {
-                ddlConnectionStatus.SelectedValue = benevolenceRequest.ConnectionStatusValueId.ToString();
+                ddlConnectionStatus.SetValue( benevolenceRequest.ConnectionStatusValueId );
             }
-            
+
             string caseWorkerPersonAliasValue = benevolenceRequest.CaseWorkerPersonAliasId.ToString();
-            if (!string.IsNullOrWhiteSpace(caseWorkerPersonAliasValue))
+            if ( !string.IsNullOrWhiteSpace( caseWorkerPersonAliasValue ) )
             {
-                if (!ddlCaseWorker.Items.OfType<ListItem>().Any(a => a.Value == caseWorkerPersonAliasValue))
+                if ( !ddlCaseWorker.Items.OfType<ListItem>().Any( a => a.Value == caseWorkerPersonAliasValue ) )
                 {
                     // if the current case worker is no longer part of the Case Worker Role, add them to the list
                     ddlCaseWorker.Items.Add( new ListItem( benevolenceRequest.CaseWorkerPersonAlias.Person.FullName, caseWorkerPersonAliasValue ) );
                 }
             }
 
-            ddlCaseWorker.SelectedValue = caseWorkerPersonAliasValue;
+            ddlCaseWorker.SetValue( caseWorkerPersonAliasValue );
 
             BindGridFromViewState();
+
+            // call the OnSelectPerson of the person picker which will update the UI based on the selected person
+            ppPerson_SelectPerson( null, null );
         }
 
         /// <summary>

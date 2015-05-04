@@ -182,6 +182,17 @@ namespace Rock.Model
         [DataMember]
         public string IconCssClass { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether this Attribute should be used in 'search by attribute value' UIs. 
+        /// For example, if you had a UI where you would allow the user to find people based on a list of attributes
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow search]; otherwise, <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public bool AllowSearch { get; set; }
+
         #endregion
 
         #region Virtual Properties

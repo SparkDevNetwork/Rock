@@ -525,6 +525,9 @@ namespace RockWeb.Blocks.Groups
                 }
                 var group = qry.FirstOrDefault();
 
+                // order group members by name
+                group.Members = group.Members.OrderBy( m => m.Person.LastName ).ThenBy( m => m.Person.FirstName ).ToList();
+
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Group", group );
 

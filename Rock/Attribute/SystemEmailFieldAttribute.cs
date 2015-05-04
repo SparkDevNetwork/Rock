@@ -22,7 +22,7 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to select a system email
+    /// Field Attribute to select a system email. Stored as SystemEmail.Guid
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class SystemEmailFieldAttribute : FieldAttribute

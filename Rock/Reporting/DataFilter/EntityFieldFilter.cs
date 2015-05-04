@@ -183,8 +183,6 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public Expression GetAttributeExpression( IService serviceInstance, ParameterExpression parameterExpression, EntityField entityField, List<string> values )
         {
-            ComparisonType comparisonType = ComparisonType.EqualTo;
-
             var service = new AttributeValueService( (RockContext)serviceInstance.Context );
             var attributeValues = service.Queryable().Where( v =>
                 v.Attribute.Guid == entityField.AttributeGuid &&
@@ -192,7 +190,43 @@ namespace Rock.Reporting.DataFilter
                 v.Value != string.Empty );
 
             ParameterExpression attributeValueParameterExpression = Expression.Parameter( typeof( AttributeValue ), "v" );
+
+            // Determine the appropriate comparison type to use for this Expression.
+            // Attribute Value records only exist for Entities that have a value specified for the Attribute.
+            // Therefore, if the specified comparison works by excluding certain values we must invert our filter logic:
+            // first we find the Attribute Values that match those values and then we exclude the associated Entities from the result set.
+            var comparisonType = ComparisonType.EqualTo;
+            ComparisonType evaluatedComparisonType = comparisonType;
+
+            if ( values.Count >= 2 )
+            {
+                string comparisonValue = values[0];
+                if ( comparisonValue != "0" )
+                {
+                    comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                }
+
+                switch ( comparisonType )
+                {
+                    case ComparisonType.DoesNotContain:
+                        evaluatedComparisonType = ComparisonType.Contains;
+                        break;
+                    case ComparisonType.IsBlank:
+                        evaluatedComparisonType = ComparisonType.IsNotBlank;
+                        break;
+                    case ComparisonType.NotEqualTo:
+                        evaluatedComparisonType = ComparisonType.EqualTo;
+                        break;
+                    default:
+                        evaluatedComparisonType = comparisonType;
+                        break;
+                }
+
+                values[0] = evaluatedComparisonType.ToString();
+            }
+
             var filterExpression = entityField.FieldType.Field.AttributeFilterExpression( entityField.FieldConfig, values, attributeValueParameterExpression );
+
             if ( filterExpression != null )
             {
                 attributeValues = attributeValues.Where( attributeValueParameterExpression, filterExpression, null );
@@ -200,24 +234,19 @@ namespace Rock.Reporting.DataFilter
 
             IQueryable<int> ids = attributeValues.Select( v => v.EntityId.Value );
 
-            if ( ids != null )
-            {
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Id" );
-                ConstantExpression idsExpression = Expression.Constant( ids.AsQueryable(), typeof( IQueryable<int> ) );
-                Expression expression = Expression.Call( typeof( Queryable ), "Contains", new Type[] { typeof( int ) }, idsExpression, propertyExpression );
-                if ( comparisonType == ComparisonType.NotEqualTo ||
-                    comparisonType == ComparisonType.DoesNotContain ||
-                    comparisonType == ComparisonType.IsBlank )
-                {
-                    return Expression.Not( expression );
-                }
-                else
-                {
-                    return expression;
-                }
-            }
+            MemberExpression propertyExpression = Expression.Property( parameterExpression, "Id" );
+            ConstantExpression idsExpression = Expression.Constant( ids.AsQueryable(), typeof( IQueryable<int> ) );
+            Expression expression = Expression.Call( typeof( Queryable ), "Contains", new Type[] { typeof( int ) }, idsExpression, propertyExpression );
 
-            return null;
+            // If we have used an inverted comparison type for the evaluation, invert the Expression so that it excludes the matching Entities.
+            if ( comparisonType != evaluatedComparisonType)
+            {
+                return Expression.Not( expression );
+            }
+            else
+            {
+                return expression;
+            }
         }
 
         /// <summary>

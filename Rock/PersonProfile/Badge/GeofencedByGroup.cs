@@ -51,7 +51,7 @@ namespace Rock.PersonProfile.Badge
             if ( groupTypeGuid.HasValue &&  !String.IsNullOrEmpty( badgeColor ) )
             {
                 writer.Write( String.Format( 
-                    "<span class='label badge-geofenced-group badge-id-{0}' style='background-color:{1};display:none' ></span>", 
+                    "<span class='label badge-geofencing-group badge-id-{0}' style='background-color:{1};display:none' ></span>", 
                     badge.Id, badgeColor.EscapeQuotes() ) );
 
                 writer.Write( String.Format( @"
@@ -60,10 +60,10 @@ Sys.Application.add_load(function () {{
                                                 
     $.ajax({{
             type: 'GET',
-            url: Rock.settings.get('baseUrl') + 'api/PersonBadges/GeofencedGroups/{0}/{1}' ,
+            url: Rock.settings.get('baseUrl') + 'api/PersonBadges/GeofencingGroups/{0}/{1}' ,
             statusCode: {{
                 200: function (data, status, xhr) {{
-                    var $badge = $('.badge-geofenced-group.badge-id-{2}');
+                    var $badge = $('.badge-geofencing-group.badge-id-{2}');
                     var badgeHtml = '';
 
                     $.each(data, function() {{

@@ -85,7 +85,11 @@ namespace RockWeb.Blocks.Groups
 {% endif %}
 
 {% if LinkedPages.RegisterPage != '' %}
-    <a class='btn btn-xs btn-action' href='{{ LinkedPages.RegisterPage }}?GroupId={{ Group.Id }}'>Register</a>
+    {% if LinkedPages.RegisterPage contains '?' %}
+        <a class='btn btn-xs btn-action' href='{{ LinkedPages.RegisterPage }}&GroupId={{ Group.Id }}'>Register</a>
+    {% else %}
+        <a class='btn btn-xs btn-action' href='{{ LinkedPages.RegisterPage }}?GroupId={{ Group.Id }}'>Register</a>
+    {% endif %}
 {% endif %}
 ", "CustomSetting" )]
     [BooleanField( "Map Info Debug", "", false, "CustomSetting" )]
@@ -106,6 +110,11 @@ namespace RockWeb.Blocks.Groups
 
     public partial class GroupFinder : RockBlockCustomSettings
     {
+
+        #region Private Variables
+        private Guid _targetPersonGuid = Guid.Empty;
+        Dictionary<string, string> _urlParms = new Dictionary<string, string>();
+        #endregion
 
         #region Properties
 
@@ -188,11 +197,26 @@ namespace RockWeb.Blocks.Groups
 
             nbNotice.Visible = false;
 
+            if ( Request["PersonGuid"] != null )
+            {
+                Guid.TryParse( Request["PersonGuid"].ToString(), out _targetPersonGuid );
+                _urlParms.Add( "PersonGuid", _targetPersonGuid.ToString() );
+            }
+
             if ( !Page.IsPostBack )
             {
                 BindAttributes();
                 BuildDynamicControls();
-                ShowView();
+
+                if ( _targetPersonGuid != Guid.Empty )
+                {
+                    ShowViewForPerson( _targetPersonGuid );
+                }
+                else
+                {
+                    ShowView();
+                }
+                
             }
         }
 
@@ -334,7 +358,8 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         void registerColumn_Click( object sender, RowEventArgs e )
         {
-            if ( !NavigateToLinkedPage( "RegisterPage", "GroupId", e.RowKeyId ) )
+            _urlParms.Add( "GroupId", e.RowKeyId.ToString() );
+            if ( !NavigateToLinkedPage( "RegisterPage", _urlParms ) )
             {
                 ShowResults();
             }
@@ -458,17 +483,50 @@ namespace RockWeb.Blocks.Groups
             cblGridAttributes.Visible = cblAttributes.Items.Count > 0;
         }
 
+        private void ShowViewForPerson(Guid targetPersonGuid)
+        {
+            // check for a specific person in the query string
+            Person targetPerson = null;
+            Location targetPersonLocation = null;
+
+            targetPerson = new PersonService( new RockContext() ).Queryable().Where( p => p.Guid == targetPersonGuid ).FirstOrDefault();
+            targetPersonLocation = targetPerson.GetHomeLocation();
+
+            if ( targetPerson != null )
+            {
+                lTitle.Text = String.Format( "<h1>Groups for {0}</h1>", targetPerson.FullName );
+                acAddress.SetValues( targetPersonLocation );
+                acAddress.Visible = false;
+                btnSearch.Visible = false;
+                btnClear.Visible = false;
+
+                if ( targetPersonLocation.GeoPoint != null )
+                {
+                    lTitle.Text += String.Format( "<p>Search based on: {0}</p>", targetPersonLocation.ToString() );
+
+                    ShowResults();
+                }
+                else
+                {
+                    lTitle.Text += String.Format( "<p>The position of the address on file ({0}) could not be determined.</p>", targetPersonLocation.ToString() );
+                }
+            }
+            
+        }
+
+
         /// <summary>
         /// Shows the view.
         /// </summary>
         private void ShowView()
-        {
+        {            
             // If the groups should be limited by geofence, or the distance should be displayed,
             // then we need to capture the person's address
             Guid? fenceTypeGuid = GetAttributeValue( "GeofencedGroupType" ).AsGuidOrNull();
             if ( fenceTypeGuid.HasValue || GetAttributeValue( "ShowProximity" ).AsBoolean() )
             {
                 acAddress.Visible = true;
+               
                 if ( CurrentPerson != null )
                 {
                     acAddress.SetValues( CurrentPerson.GetHomeLocation() );
@@ -608,6 +666,12 @@ namespace RockWeb.Blocks.Groups
             }
 
             var registerPage = new PageReference( GetAttributeValue( "RegisterPage" ) );
+
+            if ( _targetPersonGuid != Guid.Empty )
+            {
+                registerPage.Parameters = _urlParms;
+            }
+
             if ( registerPage.PageId > 0 )
             {
                 var registerColumn = new EditField();
@@ -862,7 +926,17 @@ namespace RockWeb.Blocks.Groups
 
                             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
                             linkedPages.Add( "GroupDetailPage", LinkedPageUrl( "GroupDetailPage", null ) );
-                            linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", null ) );
+
+                            if ( _targetPersonGuid != Guid.Empty )
+                            {
+                                linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", _urlParms) );
+                            }
+                            else
+                            {
+                                linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", null ) );
+                            }
+                            
+                            
                             mergeFields.Add( "LinkedPages", linkedPages );
 
                             // add collection of allowed security actions

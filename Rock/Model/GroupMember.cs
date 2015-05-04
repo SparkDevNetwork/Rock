@@ -14,6 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -43,7 +46,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Group"/> that this GroupMember is associated with. This property is required.
         /// </summary>
@@ -53,7 +56,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int GroupId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> that is represented by the GroupMember. This property is required.
         /// </summary>
@@ -63,7 +66,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int PersonId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Id of the GroupMember's <see cref="GroupRole"/> in the <see cref="Rock.Model.Group"/>. This property is required.
         /// </summary>
@@ -94,6 +97,15 @@ namespace Rock.Model
         [DataMember]
         public int? GuestCount { get; set; }
 
+        /// <summary>
+        /// Gets or sets the date/time that the person was added to the group 
+        /// </summary>
+        /// <value>
+        /// The date added.
+        /// </value>
+        [DataMember]
+        public DateTime? DateTimeAdded { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -106,7 +118,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Model.Person Person { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Group"/> that the GroupMember belongs to.
         /// </summary>
@@ -114,7 +126,7 @@ namespace Rock.Model
         /// A <see cref="Rock.Model.Group"/> representing the Group that the GroupMember is a part of.
         /// </value>
         public virtual Group Group { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the the GroupMember's role in the <see cref="Rock.Model.Group"/>.
         /// </summary>
@@ -123,6 +135,21 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual GroupTypeRole GroupRole { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member requirements.
+        /// </summary>
+        /// <value>
+        /// The group member requirements.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<GroupMemberRequirement> GroupMemberRequirements
+        {
+            get { return _groupMemberRequirements ?? ( _groupMemberRequirements = new Collection<GroupMemberRequirement>() ); }
+            set { _groupMemberRequirements = value; }
+        }
+
+        private ICollection<GroupMemberRequirement> _groupMemberRequirements;
 
         #endregion
 
@@ -147,16 +174,20 @@ namespace Rock.Model
         public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
         {
             string action = string.Empty;
-            if ( state == System.Data.Entity.EntityState.Added)
+            if ( state == System.Data.Entity.EntityState.Added )
             {
                 action = "Added to group.";
+                if ( !this.DateTimeAdded.HasValue )
+                {
+                    this.DateTimeAdded = RockDateTime.Now;
+                }
             }
-            else if ( state == System.Data.Entity.EntityState.Deleted)
+            else if ( state == System.Data.Entity.EntityState.Deleted )
             {
                 action = "Removed from group.";
             }
 
-            if (!string.IsNullOrWhiteSpace(action))
+            if ( !string.IsNullOrWhiteSpace( action ) )
             {
                 var rockContext = (RockContext)dbContext;
 
@@ -166,7 +197,7 @@ namespace Rock.Model
                     group = new GroupService( rockContext ).Get( this.GroupId );
                 }
 
-                if (group != null)
+                if ( group != null )
                 {
                     var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
                     var groupEntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
@@ -228,7 +259,7 @@ namespace Rock.Model
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
             var groupRole = this.GroupRole ?? new GroupTypeRoleService( rockContext ).Get( this.GroupRoleId );
 
-            // check to see if the person is alread a member of the gorup/role
+            // check to see if the person is already a member of the group/role
             var existingGroupMembership = groupMemberService.GetByGroupIdAndPersonId( this.GroupId, this.PersonId );
             if ( existingGroupMembership.Any( a => a.GroupRoleId == this.GroupRoleId && a.Id != this.Id ) )
             {
@@ -286,7 +317,117 @@ namespace Rock.Model
                 return false;
             }
 
+            // if the GroupMember is getting Added (or if Person or Role is different), and if this Group has requirements that must be met before the person is added, check those
+            if ( this.IsNewOrChangedGroupMember( rockContext ) )
+            {
+                var group = this.Group ?? new GroupService( rockContext ).Get( this.GroupId );
+                if ( group.MustMeetRequirementsToAddMember ?? false )
+                {
+                    var requirementStatuses = group.PersonMeetsGroupRequirements( this.PersonId, this.GroupRoleId );
+
+                    if ( requirementStatuses.Any( a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet ) )
+                    {
+                        // deny if any of the non-manual requirements are not met
+                        errorMessage = "This person does not meet the following requirements for this group: "
+                            + requirementStatuses.Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet )
+                            .Select( a => string.Format( "{0}", a.GroupRequirement.GroupRequirementType ) )
+                            .ToList().AsDelimited( ", " );
+
+                        return false;
+                    }
+                }
+            }
+
             return true;
+        }
+
+        /// <summary>
+        /// Determines whether this is a new group member (just added) or if either Person or Role is different than what is stored in the database
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public bool IsNewOrChangedGroupMember( RockContext rockContext )
+        {
+            if ( this.Id == 0 )
+            {
+                // new group member
+                return true;
+            }
+            else
+            {
+                var groupMemberService = new GroupMemberService( rockContext );
+                var databaseGroupMemberRecord = groupMemberService.Get( this.Id );
+
+                // existing groupmember record, but person or role was changed
+                return ( ( this.PersonId != databaseGroupMemberRecord.PersonId ) || ( this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId ) );
+            }
+        }
+
+        /// <summary>
+        /// Returns the current values of the group requirements statuses for this GroupMember from the last time they were calculated ordered by GroupRequirementType.Name
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<GroupRequirementStatus> GetGroupRequirementsStatuses()
+        {
+            var metRequirements = this.GroupMemberRequirements.Select( a => new { GroupRequirementId = a.GroupRequirement.Id, MeetsGroupRequirement = MeetsGroupRequirement.Meets } );
+
+            // get all the group requirements that apply the group member's role
+            var allGroupRequirements = this.Group.GroupRequirements.Where( a => !a.GroupRoleId.HasValue || a.GroupRoleId == this.GroupRoleId ).OrderBy( a => a.GroupRequirementType.Name );
+
+            var result = from groupRequirement in allGroupRequirements
+                         join metRequirement in metRequirements on groupRequirement.Id equals metRequirement.GroupRequirementId into j
+                         from metRequirement in j.DefaultIfEmpty()
+                         select new GroupRequirementStatus
+                         {
+                             GroupRequirement = groupRequirement,
+                             MeetsGroupRequirement = metRequirement != null ? metRequirement.MeetsGroupRequirement : MeetsGroupRequirement.NotMet
+                         };
+
+            return result;
+        }
+
+        /// <summary>
+        /// Calculates and Updates the GroupMemberRequirements for the GroupMember, then saves the changes to the database
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="saveChanges">if set to <c>true</c> [save changes].</param>
+        public void CalculateRequirements( RockContext rockContext, bool saveChanges = true )
+        {
+            // recalculate and store in the database if the groupmember isn't new or changed
+            var groupMemberRequirementsService = new GroupMemberRequirementService( rockContext );
+            var group = this.Group ?? new GroupService( rockContext ).Queryable( "GroupRequirements" ).FirstOrDefault( a => a.Id == this.GroupId );
+            if ( !group.GroupRequirements.Any() )
+            {
+                // group doesn't have requirements so no need to calculate
+                return;
+            }
+
+            var updatedRequirements = group.PersonMeetsGroupRequirements( this.PersonId, this.GroupRoleId );
+            foreach ( var calculatedRequirement in this.GroupMemberRequirements.Where( a => a.GroupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual ).ToList() )
+            {
+                this.GroupMemberRequirements.Remove( calculatedRequirement );
+                groupMemberRequirementsService.Delete( calculatedRequirement );
+            }
+
+            foreach ( var updatedRequirement in updatedRequirements )
+            {
+                var existingRequirement = this.GroupMemberRequirements.FirstOrDefault( a => a.GroupRequirementId == updatedRequirement.GroupRequirement.Id );
+                if ( existingRequirement == null && updatedRequirement.MeetsGroupRequirement == MeetsGroupRequirement.Meets )
+                {
+                    this.GroupMemberRequirements.Add(
+                        new GroupMemberRequirement
+                        {
+                            GroupRequirementId = updatedRequirement.GroupRequirement.Id,
+                            LastRequirementCheckDateTime = RockDateTime.Now,
+                            RequirementMetDateTime = RockDateTime.Now
+                        } );
+                }
+            }
+
+            if ( saveChanges )
+            {
+                rockContext.SaveChanges();
+            }
         }
 
         /// <summary>
@@ -298,15 +439,13 @@ namespace Rock.Model
         /// </returns>
         public bool IsEqualTo( GroupMember other )
         {
-            return ( 
-                this.GroupId == other.GroupId && 
-                this.PersonId == other.PersonId && 
-                this.GroupRoleId == other.GroupRoleId 
-           );
+            return
+                this.GroupId == other.GroupId &&
+                this.PersonId == other.PersonId &&
+                this.GroupRoleId == other.GroupRoleId;
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -321,9 +460,9 @@ namespace Rock.Model
         /// </summary>
         public GroupMemberConfiguration()
         {
-            this.HasRequired( p => p.Person ).WithMany( p => p.Members ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
-            this.HasRequired( p => p.Group ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupId ).WillCascadeOnDelete(true);
-            this.HasRequired( p => p.GroupRole ).WithMany().HasForeignKey( p => p.GroupRoleId ).WillCascadeOnDelete(false);
+            this.HasRequired( p => p.Person ).WithMany( p => p.Members ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.Group ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.GroupRole ).WithMany().HasForeignKey( p => p.GroupRoleId ).WillCascadeOnDelete( false );
         }
     }
 
@@ -345,11 +484,11 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.GroupMember"/> is an active member of the <see cref="Rock.Model.Group"/>.
         /// </summary>
         Active = 1,
-        
+
         /// <summary>
         /// The <see cref="Rock.Model.GroupMember">GroupMember's</see> membership in the <see cref="Rock.Model.Group"/> is pending.
         /// </summary>
-        Pending = 2 
+        Pending = 2
     }
 
     #endregion

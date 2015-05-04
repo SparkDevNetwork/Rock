@@ -16,6 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Data.Entity.Spatial;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 using Rock;
@@ -335,6 +337,8 @@ namespace Rock.Model
                 singleName = fullName.Trim();
             }
 
+            var previousNamesQry = new PersonPreviousNameService( this.Context as RockContext ).Queryable();
+
             if ( !string.IsNullOrWhiteSpace( singleName ) )
             {
                 if ( allowFirstNameOnly )
@@ -343,13 +347,17 @@ namespace Rock.Model
                         .Where( p =>
                             p.LastName.StartsWith( singleName ) ||
                             p.FirstName.StartsWith( singleName ) ||
-                            p.NickName.StartsWith( singleName ) );
+                            p.NickName.StartsWith( singleName ) ||
+                            previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName))
+                            );
                 }
                 else
                 {
                     return Queryable( includeDeceased, includeBusinesses )
                         .Where( p =>
-                            p.LastName.StartsWith( singleName ) );
+                            p.LastName.StartsWith( singleName ) ||
+                            previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName))
+                            );
                 }
             }
             else
@@ -360,7 +368,7 @@ namespace Rock.Model
                     .Where( p =>
                         ( includeBusinesses &&  p.RecordTypeValueId.HasValue && p.RecordTypeValueId.Value == recordTypeBusinessId && p.LastName.StartsWith(fullName) )
                         ||
-                        (p.LastName.StartsWith( lastName ) &&
+                        ( (p.LastName.StartsWith( lastName ) || previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName ) )) &&
                         ( p.FirstName.StartsWith( firstName ) ||
                         p.NickName.StartsWith( firstName ) )) );
             }
@@ -581,6 +589,17 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets any previous last names for this person sorted alphabetically by LastName
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public IOrderedQueryable<PersonPreviousName> GetPreviousNames( int personId )
+        {
+            return new PersonPreviousNameService( (RockContext)this.Context ).Queryable()
+                .Where( m => m.PersonAlias.PersonId == personId ).OrderBy( a => a.LastName );
+        }
+
+        /// <summary>
         /// Gets the first group location.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
@@ -735,6 +754,32 @@ namespace Rock.Model
         }
 
         #endregion
+
+        /// <summary>
+        /// Gets all of the IsMappedLocation points for a given user. Although each family can only have one 
+        /// IsMapped point, the person may belong to more than one family
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public IQueryable<DbGeography> GetGeopoints ( int personId )
+        {
+            var rockContext = (RockContext)this.Context;
+            var groupMemberService = new GroupMemberService( rockContext );
+
+            Guid familyTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+
+            // get the geopoints for the family locations for the selected person
+            return groupMemberService
+                .Queryable().AsNoTracking()
+                .Where( m =>
+                    m.PersonId == personId &&
+                    m.Group.GroupType.Guid.Equals( familyTypeGuid ) )
+                .SelectMany( m => m.Group.GroupLocations )
+                .Where( l =>
+                    l.IsMappedLocation &&
+                    l.Location.GeoPoint != null )
+                .Select( l => l.Location.GeoPoint );
+        }
 
         /// <summary>
         /// Adds a person alias, known relationship group, implied relationship group, and optionally a family group for

@@ -81,6 +81,7 @@ namespace RockWeb.Blocks.Groups
         private List<GroupLocation> GroupLocationsState { get; set; }
         private List<InheritedAttribute> GroupMemberAttributesInheritedState { get; set; }
         private List<Attribute> GroupMemberAttributesState { get; set; }
+        private List<GroupRequirement> GroupRequirementsState { get; set; }
         private bool AllowMultipleLocations { get; set; }
 
         #endregion
@@ -95,6 +96,8 @@ namespace RockWeb.Blocks.Groups
         {
             base.LoadViewState( savedState );
 
+            
+            // NOTE: These things are converted to JSON prior to going into ViewState, so the json variable could be null or the string "null"!
             string json = ViewState["GroupLocationsState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
@@ -125,6 +128,30 @@ namespace RockWeb.Blocks.Groups
                 GroupMemberAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
             }
 
+            json = ViewState["GroupRequirementsState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                GroupRequirementsState = new List<GroupRequirement>();
+            }
+            else
+            {
+                GroupRequirementsState = JsonConvert.DeserializeObject<List<GroupRequirement>>( json ) ?? new List<GroupRequirement>();
+            }
+
+            // get the GroupRole for each GroupRequirement from the database it case it isn't serialized, and we'll need it
+            var groupRoleIds = GroupRequirementsState.Where( a => a.GroupRoleId.HasValue && a.GroupRole == null ).Select( a => a.GroupRoleId.Value ).Distinct().ToList();
+            if (groupRoleIds.Any())
+            {
+                var groupRoles = new GroupTypeRoleService( new RockContext() ).GetByIds( groupRoleIds );
+                GroupRequirementsState.ForEach( a =>
+                {
+                    if (a.GroupRoleId.HasValue)
+                    {
+                        a.GroupRole = groupRoles.FirstOrDefault( b => b.Id == a.GroupRoleId );
+                    }
+                } );
+            }
+
             AllowMultipleLocations = ViewState["AllowMultipleLocations"] as bool? ?? false;
         }
 
@@ -151,6 +178,12 @@ namespace RockWeb.Blocks.Groups
             gGroupMemberAttributes.GridRebind += gGroupMemberAttributes_GridRebind;
             gGroupMemberAttributes.GridReorder += gGroupMemberAttributes_GridReorder;
 
+            gGroupRequirements.DataKeyNames = new string[] { "Guid" };
+            gGroupRequirements.Actions.ShowAdd = true;
+            gGroupRequirements.Actions.AddClick += gGroupRequirements_Add;
+            gGroupRequirements.EmptyDataText = Server.HtmlEncode( None.Text );
+            gGroupRequirements.GridRebind += gGroupRequirements_GridRebind;
+
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Group.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Group ) ).Id;
 
@@ -158,7 +191,7 @@ namespace RockWeb.Blocks.Groups
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlGroupList );
+            this.AddConfigurationUpdateTrigger( upnlGroupDetail );
         }
 
         /// <summary>
@@ -216,6 +249,7 @@ namespace RockWeb.Blocks.Groups
             ViewState["GroupLocationsState"] = JsonConvert.SerializeObject( GroupLocationsState, Formatting.None, jsonSetting );
             ViewState["GroupMemberAttributesInheritedState"] = JsonConvert.SerializeObject( GroupMemberAttributesInheritedState, Formatting.None, jsonSetting );
             ViewState["GroupMemberAttributesState"] = JsonConvert.SerializeObject( GroupMemberAttributesState, Formatting.None, jsonSetting );
+            ViewState["GroupRequirementsState"] = JsonConvert.SerializeObject( GroupRequirementsState, Formatting.None, jsonSetting );
             ViewState["AllowMultipleLocations"] = AllowMultipleLocations;
 
             return base.SaveViewState();
@@ -356,6 +390,7 @@ namespace RockWeb.Blocks.Groups
 
             GroupService groupService = new GroupService( rockContext );
             GroupLocationService groupLocationService = new GroupLocationService( rockContext );
+            GroupRequirementService groupRequirementService = new GroupRequirementService( rockContext );
             ScheduleService scheduleService = new ScheduleService( rockContext );
             AttributeService attributeService = new AttributeService( rockContext );
             AttributeQualifierService attributeQualifierService = new AttributeQualifierService( rockContext );
@@ -380,14 +415,37 @@ namespace RockWeb.Blocks.Groups
                 group = groupService.Queryable( "Schedule,GroupLocations.Schedules" ).Where( g => g.Id == groupId ).FirstOrDefault();
                 wasSecurityRole = group.IsSecurityRole;
 
+                // remove any locations that removed in the UI
                 var selectedLocations = GroupLocationsState.Select( l => l.Guid );
                 foreach ( var groupLocation in group.GroupLocations.Where( l => !selectedLocations.Contains( l.Guid ) ).ToList() )
                 {
                     group.GroupLocations.Remove( groupLocation );
                     groupLocationService.Delete( groupLocation );
                 }
+
+                // remove any group requirements that removed in the UI
+                var selectedGroupRequirements = GroupRequirementsState.Select( a => a.Guid );
+                foreach ( var groupRequirement in group.GroupRequirements.Where( a => !selectedGroupRequirements.Contains( a.Guid ) ).ToList() )
+                {
+                    group.GroupRequirements.Remove( groupRequirement );
+                    groupRequirementService.Delete( groupRequirement );
+                }
             }
 
+            // add/update any group requirements that were added or changed in the UI (we already removed the ones that were removed above)
+            foreach ( var groupRequirementState in GroupRequirementsState)
+            {
+                GroupRequirement groupRequirement = group.GroupRequirements.Where( a => a.Guid == groupRequirementState.Guid ).FirstOrDefault();
+                if (groupRequirement == null)
+                {
+                    groupRequirement = new GroupRequirement();
+                    group.GroupRequirements.Add( groupRequirement );
+                }
+
+                groupRequirement.CopyPropertiesFrom( groupRequirementState );
+            }
+
+            // add/update any group locations that were added or changed in the UI (we already removed the ones that were removed above)
             foreach ( var groupLocationState in GroupLocationsState )
             {
                 GroupLocation groupLocation = group.GroupLocations.Where( l => l.Guid == groupLocationState.Guid ).FirstOrDefault();
@@ -428,6 +486,7 @@ namespace RockWeb.Blocks.Groups
             group.ParentGroupId = gpParentGroup.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( gpParentGroup.SelectedValue );
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
+            group.MustMeetRequirementsToAddMember = cbMembersMustMeetRequirementsOnAdd.Checked;
 
             // save sync settings
             if ( wpGroupSync.Visible )
@@ -792,7 +851,7 @@ namespace RockWeb.Blocks.Groups
             bool viewAllowed = false;
             bool editAllowed = IsUserAuthorized( Authorization.EDIT );
             
-            RockContext rockContext = null;
+            RockContext rockContext = new RockContext();
 
             if ( !groupId.Equals( 0 ) )
             {
@@ -806,8 +865,6 @@ namespace RockWeb.Blocks.Groups
 
                 if ( parentGroupId.HasValue )
                 {
-                    rockContext = rockContext ?? new RockContext();
-
                     // Set the new group's parent group (so security checks work)
                     var parentGroup = new GroupService( rockContext ).Get(parentGroupId.Value);
                     if ( parentGroup != null )
@@ -872,13 +929,8 @@ namespace RockWeb.Blocks.Groups
             {
                 foreach ( var role in group.GroupType.Roles )
                 {
-                    int curCount = 0;
-                    if ( group.Members != null )
-                    {
-                        curCount = group.Members
-                            .Where( m => m.GroupRoleId == role.Id && m.GroupMemberStatus == GroupMemberStatus.Active )
-                            .Count();
-                    }
+                    var groupMemberService = new GroupMemberService( rockContext );
+                    int curCount = groupMemberService.Queryable().Where( m => m.GroupId == group.Id && m.GroupRoleId == role.Id && m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
 
                     if ( role.MinCount.HasValue && role.MinCount.Value > curCount )
                     {
@@ -953,8 +1005,9 @@ namespace RockWeb.Blocks.Groups
 
             gpParentGroup.SetValue( group.ParentGroup ?? groupService.Get( group.ParentGroupId ?? 0 ) );
 
-            // hide sync panel if no admin access
+            // hide sync and requirements panel if no admin access
             wpGroupSync.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            wpGroupRequirements.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
 
             // load system emails
             if ( wpGroupSync.Visible )
@@ -1028,7 +1081,7 @@ namespace RockWeb.Blocks.Groups
 
             ddlCampus.SetValue( group.CampusId );
 
-            //GroupLocationsState = groupLocations;
+            GroupRequirementsState = group.GroupRequirements.ToList();
             GroupLocationsState = group.GroupLocations.ToList();
 
             var groupTypeCache = GroupTypeCache.Read( group.GroupTypeId );
@@ -1053,6 +1106,10 @@ namespace RockWeb.Blocks.Groups
             BindGroupMemberAttributesGrid();
 
             BindInheritedAttributes( group.GroupTypeId, attributeService );
+
+            cbMembersMustMeetRequirementsOnAdd.Checked = group.MustMeetRequirementsToAddMember ?? false;
+
+            BindGroupRequirementsGrid();
         }
 
         /// <summary>
@@ -1224,9 +1281,12 @@ namespace RockWeb.Blocks.Groups
             group.LoadAttributes();
             var attributes = group.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
 
-            // display attribute values
+            // Display Attribute Values that have the "Display as Grid Column" flag enabled.
             var attributeCategories = Helper.GetAttributeCategories( attributes );
-            Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes, null, false );
+
+            var excludedAttributes = attributes.Where(x => !x.IsGridColumn).Select(x => x.Name).ToList();
+
+            Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes, excludedAttributes, false );
 
             var pageParams = new Dictionary<string, string>();
             pageParams.Add("GroupId", group.Id.ToString());
@@ -1405,6 +1465,9 @@ namespace RockWeb.Blocks.Groups
                 case "GROUPMEMBERATTRIBUTES":
                     dlgGroupMemberAttribute.Show();
                     break;
+                case "GROUPREQUIREMENTS":
+                    mdGroupRequirement.Show();
+                    break;
             }
         }
 
@@ -1420,6 +1483,9 @@ namespace RockWeb.Blocks.Groups
                     break;
                 case "GROUPMEMBERATTRIBUTES":
                     dlgGroupMemberAttribute.Hide();
+                    break;
+                case "GROUPREQUIREMENTS":
+                    mdGroupRequirement.Hide();
                     break;
             }
 
@@ -1826,6 +1892,143 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
+        #region GroupRequirements Grid and Picker
+
+        /// <summary>
+        /// Handles the Add event of the gGroupRequirements control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gGroupRequirements_Add( object sender, EventArgs e )
+        {
+            gGroupRequirements_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gGroupRequirements control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gGroupRequirements_Edit( object sender, RowEventArgs e )
+        {
+            Guid groupRequirementGuid = (Guid)e.RowKeyValue;
+            gGroupRequirements_ShowEdit( groupRequirementGuid );
+        }
+
+        /// <summary>
+        /// Shows the modal dialog to add/edit a Group Requirement
+        /// </summary>
+        /// <param name="groupRequirementGuid">The group requirement unique identifier.</param>
+        protected void gGroupRequirements_ShowEdit( Guid groupRequirementGuid )
+        {
+            var rockContext = new RockContext();
+
+            var groupRequirementTypeService = new GroupRequirementTypeService( rockContext );
+            var list = groupRequirementTypeService.Queryable().OrderBy( a => a.Name ).ToList();
+            ddlGroupRequirementType.Items.Clear();
+            ddlGroupRequirementType.Items.Add( new ListItem() );
+            foreach (var item in list)
+            {
+                ddlGroupRequirementType.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+            }
+
+            var selectedGroupRequirement = this.GroupRequirementsState.FirstOrDefault( a => a.Guid == groupRequirementGuid );
+            grpGroupRequirementGroupRole.GroupTypeId = ddlGroupType.SelectedValue.AsIntegerOrNull();
+            if (selectedGroupRequirement != null)
+            {
+                ddlGroupRequirementType.SelectedValue = selectedGroupRequirement.GroupRequirementTypeId.ToString();
+                grpGroupRequirementGroupRole.GroupRoleId = selectedGroupRequirement.GroupRoleId;
+            }
+            else
+            {
+                ddlGroupRequirementType.SelectedIndex = 0;
+                grpGroupRequirementGroupRole.GroupRoleId = null;
+            }
+            
+            nbDuplicateGroupRequirement.Visible = false;
+
+            ShowDialog( "GroupRequirements", true );
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdGroupRequirement control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdGroupRequirement_SaveClick( object sender, EventArgs e )
+        {
+            RockContext rockContext = new RockContext();
+            Guid groupRequirementGuid = hfGroupRequirementGuid.Value.AsGuid();
+
+            var groupRequirement = this.GroupRequirementsState.FirstOrDefault( a => a.Guid == groupRequirementGuid );
+            if (groupRequirement == null)
+            {
+                groupRequirement = new GroupRequirement();
+                groupRequirement.Guid = Guid.NewGuid();
+                this.GroupRequirementsState.Add( groupRequirement );
+            }
+
+            groupRequirement.GroupRequirementTypeId = ddlGroupRequirementType.SelectedValue.AsInteger();
+            groupRequirement.GroupRequirementType = new GroupRequirementTypeService( rockContext ).Get( groupRequirement.GroupRequirementTypeId );
+            groupRequirement.GroupRoleId = grpGroupRequirementGroupRole.GroupRoleId;
+            if ( groupRequirement.GroupRoleId.HasValue )
+            {
+                groupRequirement.GroupRole = new GroupTypeRoleService( rockContext ).Get( groupRequirement.GroupRoleId.Value );
+            }
+            else
+            {
+                groupRequirement.GroupRole = null;
+            }
+
+            // make sure we aren't adding a duplicate group requirement (same group requirement type and role)
+            var duplicateGroupRequirement = this.GroupRequirementsState.Any( a => 
+                a.GroupRequirementTypeId == groupRequirement.GroupRequirementTypeId 
+                && a.GroupRoleId == groupRequirement.GroupRoleId 
+                && a.Guid != groupRequirement.Guid );
+
+            if (duplicateGroupRequirement)
+            {
+                nbDuplicateGroupRequirement.Text = string.Format(
+                    "This group already has a group requirement of {0} {1}",
+                    groupRequirement.GroupRequirementType.Name,
+                    groupRequirement.GroupRoleId.HasValue ? "for group role " + groupRequirement.GroupRole.Name : string.Empty );
+                nbDuplicateGroupRequirement.Visible = true;
+                this.GroupRequirementsState.Remove( groupRequirement );
+                return;
+            }
+            else 
+            {
+                nbDuplicateGroupRequirement.Visible = false;
+                BindGroupRequirementsGrid();
+                HideDialog();
+            }
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gGroupRequirements control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gGroupRequirements_Delete( object sender, RowEventArgs e )
+        {
+            Guid rowGuid = (Guid)e.RowKeyValue;
+            GroupRequirementsState.RemoveEntity( rowGuid );
+
+            BindGroupRequirementsGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gGroupRequirements control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gGroupRequirements_GridRebind( object sender, EventArgs e )
+        {
+            BindGroupRequirementsGrid();
+        }
+
+        #endregion
+
         #region GroupMemberAttributes Grid and Picker
 
         /// <summary>
@@ -1976,6 +2179,16 @@ namespace RockWeb.Blocks.Groups
             gGroupMemberAttributes.DataBind();
         }
 
+        /// <summary>
+        /// Binds the group requirements grid.
+        /// </summary>
+        private void BindGroupRequirementsGrid()
+        {
+            gGroupRequirements.AddCssClass( "group-requirements-grid" );
+            gGroupRequirements.DataSource = GroupRequirementsState.OrderBy( a => a.GroupRequirementType.Name ).ToList();
+            gGroupRequirements.DataBind();
+        }
+
         private void SetScheduleDisplay()
         {
             dowWeekly.Visible = false;
@@ -2013,5 +2226,6 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
-    }
+        
+}
 }
