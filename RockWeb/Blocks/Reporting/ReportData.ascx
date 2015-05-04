@@ -28,8 +28,9 @@
         <asp:Panel ID="pnlConfigure" runat="server" Visible="false">
             <Rock:ModalDialog ID="mdConfigure" runat="server" ValidationGroup="vgConfigure" OnSaveClick="mdConfigure_SaveClick">
                 <Content>
-                    <Rock:RockDropDownList ID="ddlReport" runat="server" Label="Report" Required="true" ValidationGroup="vgConfigure" OnSelectedIndexChanged="ddlReport_SelectedIndexChanged"  AutoPostBack="true" />
-                    <Rock:Grid ID="grdDataFilters" runat="server" DisplayType="Light" DataKeyNames="Guid">
+                    <Rock:RockDropDownList ID="ddlReport" runat="server" Label="Report" Help="Select the report to present to the user. Then set which of the report's dataview's filters to show." Required="true" ValidationGroup="vgConfigure" OnSelectedIndexChanged="ddlReport_SelectedIndexChanged"  AutoPostBack="true" />
+                    <Rock:HelpBlock ID="hbDataFilters" runat="server" Text="Select which filters that will be visible to the user.  If Configurable is selected for a visible filter, the user will be able to change the filter, otherwise, the filter will presented as checkbox where user can choose to use the filter or not." />
+                    <Rock:Grid ID="grdDataFilters" runat="server" DisplayType="Light" DataKeyNames="Guid" >
                         <Columns>
                             <Rock:SelectField HeaderText="Show as a Filter" DataSelectedField="ShowAsFilter" ShowSelectAll="false" />
                             <Rock:SelectField HeaderText="Configurable" DataSelectedField="IsConfigurable" ShowSelectAll="false"/>
