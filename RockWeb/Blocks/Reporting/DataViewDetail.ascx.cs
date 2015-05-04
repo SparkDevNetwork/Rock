@@ -713,6 +713,11 @@ $(document).ready(function() {
         {
             FilterGroup groupControl = sender as FilterGroup;
             FilterGroup childGroupControl = new FilterGroup();
+            
+            childGroupControl.AddFilterClick += groupControl_AddFilterClick;
+            childGroupControl.AddGroupClick += groupControl_AddGroupClick;
+            childGroupControl.DeleteGroupClick += groupControl_DeleteGroupClick;
+
             childGroupControl.DataViewFilterGuid = Guid.NewGuid();
             groupControl.Controls.Add( childGroupControl );
             childGroupControl.ID = string.Format( "fg_{0}", childGroupControl.DataViewFilterGuid.ToString( "N" ) );
