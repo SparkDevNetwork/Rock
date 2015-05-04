@@ -337,9 +337,9 @@ namespace Rock.Lava
         /// <summary>
         /// Replace the last occurence of a string with another - this is a Rock version on this filter which takes any object
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="string"></param>
-        /// <param name="replacement"></param>
+        /// <param name="input">The input.</param>
+        /// <param name="search">The search.</param>
+        /// <param name="replacement">The replacement.</param>
         /// <returns></returns>
         public static string ReplaceLast( object input, string search, string replacement = "" )
         {
@@ -705,15 +705,23 @@ namespace Rock.Lava
         #endregion
 
         #region Number Filters
-            public static string Format( object input, string format )
-            {
-                if ( input == null )
-                    return null;
-                else if ( string.IsNullOrWhiteSpace( format ) )
-                    return input.ToString();
 
-                return string.Format( "{0:" + format + "}", input );
-            }
+        /// <summary>
+        /// Formats the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="format">The format.</param>
+        /// <returns></returns>
+        public static string Format( object input, string format )
+        {
+            if ( input == null )
+                return null;
+            else if ( string.IsNullOrWhiteSpace( format ) )
+                return input.ToString();
+
+            return string.Format( "{0:" + format + "}", input );
+        }
+
         #endregion
 
         #region Attribute Filters
