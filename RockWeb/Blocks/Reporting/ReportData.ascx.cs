@@ -18,9 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -185,7 +185,6 @@ namespace RockWeb.Blocks.Reporting
                     phFilters.Controls.Clear();
                     if ( report.DataView.DataViewFilter != null && report.EntityTypeId.HasValue )
                     {
-
                         CreateFilterControl(
                             phFilters,
                             report.DataView.DataViewFilter,
@@ -222,7 +221,6 @@ namespace RockWeb.Blocks.Reporting
             var filteredEntityTypeName = EntityTypeCache.Read( reportEntityType ).Name;
             if ( filter.ExpressionType == FilterExpressionType.Filter )
             {
-
                 var filterControl = new FilterField();
                 filterControl.Visible = selectedDataFieldGuids.Contains( filter.Guid );
                 parentControl.Controls.Add( filterControl );
@@ -423,10 +421,33 @@ namespace RockWeb.Blocks.Reporting
             }
         }
 
+        /// <summary>
+        /// private class just for this block used to show the configuration of which fields are shown and configurable
+        /// </summary>
         private class FilterInfo
         {
+            /// <summary>
+            /// Gets or sets the unique identifier.
+            /// </summary>
+            /// <value>
+            /// The unique identifier.
+            /// </value>
             public Guid Guid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the title.
+            /// </summary>
+            /// <value>
+            /// The title.
+            /// </value>
             public string Title { get; set; }
+
+            /// <summary>
+            /// Gets or sets the summary.
+            /// </summary>
+            /// <value>
+            /// The summary.
+            /// </value>
             public string Summary { get; set; }
         }
 
@@ -470,7 +491,7 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else
                     {
-                        filterInfo.Title = component.GetTitle( reportEntityType.GetType() ); ;
+                        filterInfo.Title = component.GetTitle( reportEntityType.GetType() );
                     }
 
                     filterInfo.Summary = component.FormatSelection( reportEntityTypeModel, filter.Selection );
