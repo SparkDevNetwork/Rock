@@ -35,7 +35,7 @@ namespace Rock.Reporting.DataSelect.Person
     /// </summary>
     [Description( "Show the group(s) of a specific group type where one or more of the person's family's map locations are withing the group's geofence." )]
     [Export( typeof( DataSelectComponent ) )]
-    [ExportMetadata( "ComponentName", "Select Geofenced group of specific group type" )]
+    [ExportMetadata( "ComponentName", "Select Geofencing group of specific group type" )]
     public class InGroupGeofenceGroupTypeSelect : DataSelectComponent
     {
         #region Properties
@@ -65,7 +65,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Geofenced Group";
+                return "Geofencing Group";
             }
         }
 
@@ -90,7 +90,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Geofenced Group";
+                return "Geofencing Group";
             }
         }
 
@@ -108,7 +108,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Geofenced Group";
+            return "Geofencing Group";
         }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace Rock.Reporting.DataSelect.Person
             int groupTypeId = ( groupType != null ) ? groupType.Id : 0;
 
             var qry = new PersonService( context ).Queryable()
-                .Select( p => RockUdfHelper.ufnGroup_GetGeofencedGroupNames( p.Id, groupTypeId ) );
+                .Select( p => RockUdfHelper.ufnGroup_GetGeofencingGroupNames( p.Id, groupTypeId ) );
 
             return SelectExpressionExtractor.Extract<Rock.Model.Person>( qry, entityIdProperty, "p" );
         }
@@ -134,7 +134,6 @@ namespace Rock.Reporting.DataSelect.Person
         /// </summary>
         private GroupTypePicker groupTypePicker = null;
 
-        /// <summary>
         /// <summary>
         /// Creates the child controls.
         /// </summary>
