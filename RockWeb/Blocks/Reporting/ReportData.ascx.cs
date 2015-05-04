@@ -287,7 +287,7 @@ namespace RockWeb.Blocks.Reporting
                         {
                             filterControl.Selection = ( component as Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters ).UpdateSelectionFromPageParameters( filter.Selection, this );
                         }
-                        
+
                         // a configurable data filter
                         filterControl.Label = component.GetTitle( reportEntityTypeModel );
                     }
@@ -407,16 +407,28 @@ namespace RockWeb.Blocks.Reporting
 
                     var filters = new List<FilterInfo>();
                     GetFilterListRecursive( filters, report.DataView.DataViewFilter, report.EntityType );
-                    grdDataFilters.DataSource = filters.Select( a => new
+                    if ( filters.Count( a => a.IsGroupFilter ) > 1 )
                     {
-                        a.Guid,
-                        a.Title,
-                        a.Summary,
-                        ShowAsFilter = selectAll || selectedDataFieldGuids.Contains( a.Guid ),
-                        IsConfigurable = selectAll || configurableDataFieldGuids.Contains( a.Guid )
-                    } );
+                        nbMultipleFilterGroupsWarning.Visible = true;
+                        grdDataFilters.Visible = false;
+                        mdConfigure.ServerSaveLink.Disabled = true;
+                    }
+                    else
+                    {
+                        nbMultipleFilterGroupsWarning.Visible = false;
+                        grdDataFilters.Visible = true;
+                        mdConfigure.ServerSaveLink.Disabled = false;
+                        grdDataFilters.DataSource = filters.Where( a => a.IsGroupFilter == false ).Select( a => new
+                        {
+                            a.Guid,
+                            a.Title,
+                            a.Summary,
+                            ShowAsFilter = selectAll || selectedDataFieldGuids.Contains( a.Guid ),
+                            IsConfigurable = selectAll || configurableDataFieldGuids.Contains( a.Guid )
+                        } );
 
-                    grdDataFilters.DataBind();
+                        grdDataFilters.DataBind();
+                    }
                 }
             }
         }
@@ -449,6 +461,14 @@ namespace RockWeb.Blocks.Reporting
             /// The summary.
             /// </value>
             public string Summary { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is group filter.
+            /// </summary>
+            /// <value>
+            /// <c>true</c> if this instance is group filter; otherwise, <c>false</c>.
+            /// </value>
+            public bool IsGroupFilter { get; set; }
         }
 
         /// <summary>
@@ -465,39 +485,47 @@ namespace RockWeb.Blocks.Reporting
             var reportEntityTypeCache = EntityTypeCache.Read( reportEntityType );
             var reportEntityTypeModel = reportEntityTypeCache.GetEntityType();
 
-            if ( entityType != null )
+            if ( filter.ExpressionType == FilterExpressionType.Filter )
             {
-                var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
-                if ( component != null )
+                if ( entityType != null )
                 {
-                    var filterInfo = new FilterInfo { Guid = filter.Guid };
-                    if ( component is Rock.Reporting.DataFilter.EntityFieldFilter )
+                    var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
+                    if ( component != null )
                     {
-                        var entityFieldFilter = component as Rock.Reporting.DataFilter.EntityFieldFilter;
-                        var fieldName = entityFieldFilter.GetSelectedFieldName( filter.Selection );
-                        if ( !string.IsNullOrWhiteSpace( fieldName ) )
+                        var filterInfo = new FilterInfo { Guid = filter.Guid, IsGroupFilter = false };
+                        if ( component is Rock.Reporting.DataFilter.EntityFieldFilter )
                         {
-                            var entityFields = EntityHelper.GetEntityFields( reportEntityTypeModel );
-                            var entityField = entityFields.Where( a => a.Name == fieldName ).FirstOrDefault();
-                            if ( entityField != null )
+                            var entityFieldFilter = component as Rock.Reporting.DataFilter.EntityFieldFilter;
+                            var fieldName = entityFieldFilter.GetSelectedFieldName( filter.Selection );
+                            if ( !string.IsNullOrWhiteSpace( fieldName ) )
                             {
-                                filterInfo.Title = entityField.Title;
-                            }
-                            else
-                            {
-                                filterInfo.Title = fieldName;
+                                var entityFields = EntityHelper.GetEntityFields( reportEntityTypeModel );
+                                var entityField = entityFields.Where( a => a.Name == fieldName ).FirstOrDefault();
+                                if ( entityField != null )
+                                {
+                                    filterInfo.Title = entityField.Title;
+                                }
+                                else
+                                {
+                                    filterInfo.Title = fieldName;
+                                }
                             }
                         }
-                    }
-                    else
-                    {
-                        filterInfo.Title = component.GetTitle( reportEntityType.GetType() );
-                    }
+                        else
+                        {
+                            filterInfo.Title = component.GetTitle( reportEntityType.GetType() );
+                        }
 
-                    filterInfo.Summary = component.FormatSelection( reportEntityTypeModel, filter.Selection );
-                    filterList.Add( filterInfo );
+                        filterInfo.Summary = component.FormatSelection( reportEntityTypeModel, filter.Selection );
+                        filterList.Add( filterInfo );
+                    }
                 }
             }
+            else
+            {
+                filterList.Add( new FilterInfo { Guid = filter.Guid, IsGroupFilter = true } );
+            }
+
 
             foreach ( var childFilter in filter.ChildFilters )
             {
