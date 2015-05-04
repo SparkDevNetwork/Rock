@@ -230,8 +230,8 @@ namespace Rock.Model
         /// <summary>
         /// Check if the Person meets the group requirement for the role
         /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="groupRole">The group role.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
         public MeetsGroupRequirement PersonMeetsGroupRequirement( int personId, int? groupRoleId )
         {
@@ -259,19 +259,29 @@ namespace Rock.Model
     /// </summary>
     public enum MeetsGroupRequirement
     {
-        // Meets requirements
+        /// <summary>
+        ///  Meets requirements
+        /// </summary>
         Meets,
 
-        // Doesn't meet requirements
+        /// <summary>
+        /// Doesn't meet requirements
+        /// </summary>
         NotMet,
 
-        // The Requirement doesn't apply for the GroupRole we are checking against
+        /// <summary>
+        /// The Requirement doesn't apply for the GroupRole we are checking against
+        /// </summary>
         NotApplicable,
 
-        // Person must be added to Group first, then requirement must be manually checked
+        /// <summary>
+        /// Person must be added to Group first, then requirement must be manually checked
+        /// </summary>
         ManualCheckRequired,
 
-        // The Requirement calculation resulted in an exception
+        /// <summary>
+        /// The Requirement calculation resulted in an exception
+        /// </summary>
         Error
     }
 

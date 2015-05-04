@@ -105,7 +105,7 @@ function() {
                     includeChildGroups = selectionValues[2].AsBooleanOrNull() ?? false;
                 }
 
-                GroupMemberStatus? groupMemberStatus = GroupMemberStatus.Active;
+                GroupMemberStatus? groupMemberStatus = null;
                 if ( selectionValues.Length >= 4 )
                 {
                     groupMemberStatus = selectionValues[3].ConvertToEnumOrNull<GroupMemberStatus>();
