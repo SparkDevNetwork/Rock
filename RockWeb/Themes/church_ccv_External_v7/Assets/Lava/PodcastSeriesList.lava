@@ -1,0 +1,134 @@
+<header class="fleximg margin-b-lg">
+  <img src="http://ccv.church/Arena/cachedblob.aspx?guid={{ rows.first.MessageImageBlobId3 }}" alt="{{ rows.first.SeriesTitle }}"></a>
+</header>
+
+<div class="container">
+{% for r in rows %}
+
+    {% if forloop.first %}
+      {% comment %}New Series{% endcomment %}
+      {% assign currentSeries = r.SeriesTitle  %}
+      <div class="row">
+        <div class="col-sm-4">
+          <div class="panel panel-series js-series">
+            <a href="#"><img src="http://ccv.church/Arena/cachedblob.aspx?guid={{ r.MessageImageBlobId1 }}&amp;width=720&amp;height=720" alt="{{ r.SeriesTitle }}"></a>
+            <div class="panel-footer"><h3 class="panel-title">{{ r.SeriesTitle }}</h3></div>
+          </div>
+          <div class="popover-content-holder hide">
+            <span class="description">
+              {{ r.MessageDescription | Truncate: 280, '...'}}
+            </span>
+            <hr class="margin-v-md">
+            <div class="message-list list-2col-wrapper">
+              <ol class="list-flush margin-b-sm">
+                <li>
+                  <a href="default.aspx?page=17529&amp;item={{ r.MessageId }}">{{ r.MessageTitle }}</a>
+                </li>
+    {% endif %}
+
+    {% if r.SeriesTitle != currentSeries %}
+      {% comment %}New Series{% endcomment %}
+      {% assign currentSeries = r.SeriesTitle  %}
+              </ol>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="panel panel-series js-series">
+            <a href="#"><img src="http://ccv.church/Arena/cachedblob.aspx?guid={{ r.MessageImageBlobId1 }}&amp;width=720&amp;height=720" alt="Detox"></a>
+            <div class="panel-footer"><h3 class="panel-title">{{ r.SeriesTitle }}</h3></div>
+          </div>
+          <div class="popover-content-holder hide">
+            <span class="description">
+              {{ r.MessageDescription | Truncate: 280, '...'}}
+            </span>
+            <hr class="margin-v-md">
+            <div class="message-list list-2col-wrapper">
+              <ol class="list-flush margin-b-sm">
+                <li>
+                  <a href="default.aspx?page=17529&amp;item={{ r.MessageId }}">{{ r.MessageTitle }}</a>
+                </li>
+    {% elsif r.SeriesTitle == currentSeries %}
+      {% comment %}Same Series{% endcomment %}
+                <li>
+                  <a href="default.aspx?page=17529&amp;item={{ r.MessageId }}">{{ r.MessageTitle }}</a>
+                </li>
+    {% endif %}
+
+    {% if forloop.last %}
+              </ol>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    {% endif %}
+
+  {% endfor %}
+
+  {% comment %}<div class="row">
+    <div class="col-sm-4">
+      <div class="panel panel-series js-series">
+        <a href="#"><img src="http://ccv.church/Arena/cachedblob.aspx?guid=68fa6da9-8f01-4431-83a7-9ae94ccaca14&amp;width=720&amp;height=720" alt="Detox"></a>
+        <div class="panel-footer"><h3 class="panel-title">Detox <small>4/12/15-5/12/15</small></h3></div>
+      </div>
+      <div class="popover-content-holder hide">
+        <span class="description">
+          {{"Not a day goes by without a story in our world of our food, water, or air being contaminated with poisons. But what about us? It’s hard to argue that the moral pollution all around is increasing by the day. Without even realizing it, our souls are exposed to second-hand toxins all around us. How do you keep your soul clean in an increasingly contaminated world so you can become everything God intends you to be? Come learn how to detox four things that can absolutely pollute your world." | Truncate: 280, '...'}}
+        </span>
+        <hr class="margin-v-md">
+        <div class="message-list list-2col-wrapper">
+          <ol class="list-flush margin-b-sm">
+            <li>
+              <a id="ctl04_ctl08_lvTopics_ctrl0_rptrItems_ctl00_hlItem" href="default.aspx?page=17529&amp;item=503">Doubt</a>
+            </li>
+            <li>
+              <a id="ctl04_ctl08_lvTopics_ctrl0_rptrItems_ctl01_hlItem" href="default.aspx?page=17529&amp;item=504">Comparison</a>
+            </li>
+            <li>
+              <a id="ctl04_ctl08_lvTopics_ctrl0_rptrItems_ctl02_hlItem" href="default.aspx?page=17529&amp;item=505">Hidden Sins</a>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+  </div>{% endcomment %}
+</div>
+
+<script>
+  // Keep popover open when hovering on popover, not trigger
+  // Modified from http://jsfiddle.net/WojtekKruszewski/Zf3m7/22/
+  // Requires a hide delay on the popover
+  var originalLeave = $.fn.popover.Constructor.prototype.leave;
+  $.fn.popover.Constructor.prototype.leave = function(obj){
+    var self = obj instanceof this.constructor ?
+      obj : $(obj.currentTarget)[this.type](this.getDelegateOptions()).data('bs.' + this.type)
+    var container, timeout;
+
+    originalLeave.call(this, obj);
+
+    if(obj.currentTarget) {
+      container = self.$tip
+      timeout = self.timeout;
+      container.one('mouseenter', function(){
+        clearTimeout(timeout);
+        container.one('mouseleave', function(){
+          $.fn.popover.Constructor.prototype.leave.call(self, self);
+        });
+      })
+    }
+  };
+
+  $('.js-series').popover({
+    html: true,
+    content: function(){
+      return $(this).siblings('.popover-content-holder').html()
+    },
+    trigger: 'hover',
+    placement: 'auto right',
+    container: 'body',
+    viewport: { 'selector': 'body', 'padding': 0 },
+    delay: { 'hide': 300 }
+  })
+</script>

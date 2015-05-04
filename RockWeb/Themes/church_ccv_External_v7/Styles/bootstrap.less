@@ -78,3 +78,40 @@
     color: @gray;
   }
 }
+
+// Used on the watch page
+.panel-series {
+  .panel-variant(@panel-default-border; @panel-default-text; @panel-default-heading-bg; @panel-default-border);
+  overflow: hidden; // to give image rounded corners
+  img {
+    .img-full;
+    .img-thumbnail;
+    border: none;
+  }
+  > .panel-footer {
+    // border: 1px solid @panel-default-border;
+    border-top: none;
+    background-color: #fff;
+  }
+}
+.list-2col-wrapper {
+  -moz-column-count: 2;
+  -webkit-column-count: 2;
+  column-count: 2;
+  > li {
+    -webkit-column-break-inside: avoid;
+              page-break-inside: avoid;
+                   break-inside: avoid;
+  }
+  > li:only-child {
+    position: absolute;
+    bottom: 0;
+  }
+}
+.img-full {
+  width: 100%;
+  height: auto;
+}
+.list-flush {
+  padding-left: @line-height-computed;
+}
