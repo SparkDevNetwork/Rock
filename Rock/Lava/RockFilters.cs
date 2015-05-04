@@ -1049,6 +1049,26 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Gets the groups of selected type that person is a member of which they have attended at least once
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public static List<Rock.Model.Group> GroupsAttended( DotLiquid.Context context, object input, string groupTypeId )
+        {
+            var person = GetPerson( input );
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+
+            if ( person != null && numericalGroupTypeId.HasValue )
+            {
+                return new AttendanceService( GetRockContext( context ) ).Queryable().AsNoTracking().Where(a => a.Group.GroupTypeId == numericalGroupTypeId && a.PersonAlias.PersonId == person.Id).Select(a => a.Group).Distinct().ToList();
+            }
+
+            return new List<Model.Group>();
+        }
+
+        /// <summary>
         /// Gets the groups of selected type that geofence the selected person
         /// </summary>
         /// <param name="context">The context.</param>
