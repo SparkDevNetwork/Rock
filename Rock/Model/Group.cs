@@ -429,8 +429,8 @@ namespace Rock.Model
         /// <summary>
         /// Returns a list of the Group Requirements for this Group along with the status ordered by GroupRequirement Name
         /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="groupRole">The group role.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
         public IEnumerable<PersonGroupRequirementStatus> PersonMeetsGroupRequirements( int personId, int? groupRoleId )
         {

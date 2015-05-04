@@ -29,6 +29,9 @@ using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
+    /// <summary>
+    /// Sends a birthday email
+    /// </summary>
     [SystemEmailField( "Birthday Email", required: true )]
     [IntegerRangeField( "Age Range",
         @"The age range to include. For example, if you specify a range of 4-18, people will get the email on their 4th birthday and up till their 18th birthday. 
