@@ -337,9 +337,9 @@ namespace Rock.Lava
         /// <summary>
         /// Replace the last occurence of a string with another - this is a Rock version on this filter which takes any object
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="string"></param>
-        /// <param name="replacement"></param>
+        /// <param name="input">The input.</param>
+        /// <param name="search">The search.</param>
+        /// <param name="replacement">The replacement.</param>
         /// <returns></returns>
         public static string ReplaceLast( object input, string search, string replacement = "" )
         {
@@ -705,15 +705,23 @@ namespace Rock.Lava
         #endregion
 
         #region Number Filters
-            public static string Format( object input, string format )
-            {
-                if ( input == null )
-                    return null;
-                else if ( string.IsNullOrWhiteSpace( format ) )
-                    return input.ToString();
 
-                return string.Format( "{0:" + format + "}", input );
-            }
+        /// <summary>
+        /// Formats the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="format">The format.</param>
+        /// <returns></returns>
+        public static string Format( object input, string format )
+        {
+            if ( input == null )
+                return null;
+            else if ( string.IsNullOrWhiteSpace( format ) )
+                return input.ToString();
+
+            return string.Format( "{0:" + format + "}", input );
+        }
+
         #endregion
 
         #region Attribute Filters
@@ -1018,23 +1026,51 @@ namespace Rock.Lava
         /// <param name="input">The input.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <returns></returns>
-        public static List<Rock.Model.Group> Groups( DotLiquid.Context context, object input, string groupTypeId )
+        public static List<Rock.Model.GroupMember> Groups( DotLiquid.Context context, object input, string groupTypeId, string status = "Active" )
+        {
+            var person = GetPerson( input );
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+
+            
+
+            if ( person != null && numericalGroupTypeId.HasValue )
+            {
+                var groupQuery =  new GroupMemberService( GetRockContext( context ) )
+                    .Queryable("Group").AsNoTracking()
+                    .Where( m =>
+                        m.PersonId == person.Id &&
+                        m.Group.GroupTypeId == numericalGroupTypeId.Value &&
+                        m.Group.IsActive );
+                
+                if ( status != "All" )
+                {
+                    GroupMemberStatus queryStatus = GroupMemberStatus.Active;
+                    queryStatus = (GroupMemberStatus)Enum.Parse( typeof( GroupMemberStatus ), status, true );
+
+                    groupQuery = groupQuery.Where( m => m.GroupMemberStatus == queryStatus );
+                }
+
+                return groupQuery.ToList();
+            }
+
+            return new List<Model.GroupMember>();
+        }
+
+        /// <summary>
+        /// Gets the groups of selected type that person is a member of which they have attended at least once
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public static List<Rock.Model.Group> GroupsAttended( DotLiquid.Context context, object input, string groupTypeId )
         {
             var person = GetPerson( input );
             int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
 
             if ( person != null && numericalGroupTypeId.HasValue )
             {
-                return new GroupMemberService( GetRockContext( context ) )
-                    .Queryable().AsNoTracking()
-                    .Where( m =>
-                        m.PersonId == person.Id &&
-                        m.Group.GroupTypeId == numericalGroupTypeId.Value &&
-                        m.GroupMemberStatus == GroupMemberStatus.Active &&
-                        m.Group.IsActive )
-                    .Select( m =>
-                        m.Group )
-                    .ToList();
+                return new AttendanceService( GetRockContext( context ) ).Queryable().AsNoTracking().Where(a => a.Group.GroupTypeId == numericalGroupTypeId && a.PersonAlias.PersonId == person.Id).Select(a => a.Group).Distinct().ToList();
             }
 
             return new List<Model.Group>();

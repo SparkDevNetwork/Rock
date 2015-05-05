@@ -52,7 +52,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the 'IsMappedLocation' locations that are within and of the selected geofences
         /// </summary>
-        /// <param name="geofence">The geofence.</param>
+        /// <param name="geofences">The geofences.</param>
         /// <returns></returns>
         public IQueryable<GroupLocation> GetMappedLocationsByGeofences( List<DbGeography> geofences )
         {

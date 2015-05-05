@@ -106,7 +106,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the family groups that are geofenced by any of the selected group's locations
         /// </summary>
-        /// <param name="groupId">The group identifier.</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
         /// <returns></returns>
         public IQueryable<Group> GetGeofencedFamilies( Guid groupGuid )
         {
@@ -687,7 +687,7 @@ namespace Rock.Model
         /// <summary>
         /// Given an IQueryable of members (i.e. family members), returns the head of household for those members
         /// </summary>
-        /// <param name="groups">The groups.</param>
+        /// <param name="members">The members.</param>
         /// <returns></returns>
         public static Person HeadOfHousehold( this IQueryable<GroupMember> members )
         {

@@ -70,10 +70,10 @@ namespace Rock.Data
 
         /// <summary>
         /// when used in a Linq Query, calls database function ufnGroup_GetGeofencingGroupNames
-        /// Example: qry.Select( a => RockUdfHelper.ufnGroup_GetGeofencingGroupNames(a.PersonId, groupTypeId))
+        /// Example: qry.Select( a =&gt; RockUdfHelper.ufnGroup_GetGeofencingGroupNames(a.PersonId, groupTypeId))
         /// </summary>
         /// <param name="PersonId">The person identifier.</param>
-        /// <param name="GroupTypeId">The group type identifier </param>
+        /// <param name="groupTypeId">The group type identifier.</param>
         /// <returns></returns>
         [DbFunction( "CodeFirstDatabaseSchema", "ufnGroup_GetGeofencingGroupNames" )]
         public static string ufnGroup_GetGeofencingGroupNames( int? PersonId, int groupTypeId )

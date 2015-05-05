@@ -135,7 +135,6 @@ namespace Rock.Reporting.DataSelect.Person
         private GroupTypePicker groupTypePicker = null;
 
         /// <summary>
-        /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <param name="parentControl"></param>

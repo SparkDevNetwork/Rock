@@ -125,6 +125,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Group"/> representing the Group that the GroupMember is a part of.
         /// </value>
+        [LavaInclude]
         public virtual Group Group { get; set; }
 
         /// <summary>

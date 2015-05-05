@@ -3366,7 +3366,8 @@ table.attribute-grid tr th:nth-child(3) {
   font-size: 45px;
 }
 .badge-icon.badge-disabled {
-  opacity: 0.3;
+  opacity: 0.2;
+  color: #939393;
 }
 .badge-attendance ul.badge-attendance-chart {
   display: table;
