@@ -409,7 +409,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     if ( cellPhoneNumber != null )
                     {
                         contactInfoRow.CellPhoneNumber = cellPhoneNumber.NumberFormatted;
-                        contactInfoRow.CellPhoneCountryCode = cellPhoneNumber.CountryCode;
+                        contactInfoRow.CellPhoneCountryCode = cellPhoneNumber.CountryCode;                     
                     }
                 }
 
@@ -541,6 +541,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         cellPhoneNumber.NumberTypeValueId = _cellPhone.Id;
                         cellPhoneNumber.Number = cellNumber;
                         cellPhoneNumber.CountryCode = PhoneNumber.CleanNumber( contactInfoRow.CellPhoneCountryCode );
+                        cellPhoneNumber.IsMessagingEnabled = contactInfoRow.IsMessagingEnabled;
                         groupMember.Person.PhoneNumbers.Add( cellPhoneNumber );
                     }
 

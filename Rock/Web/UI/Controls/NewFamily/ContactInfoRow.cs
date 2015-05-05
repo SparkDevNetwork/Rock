@@ -39,6 +39,7 @@ namespace Rock.Web.UI.Controls
         /// 
         private PhoneNumberBox _pnbHomePhone;
         private PhoneNumberBox _pnbCellPhone;
+        private RockCheckBox _cbIsMessagingEnabled;
         private EmailBox _ebEmail;
 
         /// <summary>
@@ -176,6 +177,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the Is Messaging Enabled bool.
+        /// </summary>
+        /// <value>
+        /// True/False.
+        /// </value>
+        public bool IsMessagingEnabled
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbIsMessagingEnabled.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbIsMessagingEnabled.Checked = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the validation group.
         /// </summary>
         /// <value>
@@ -193,6 +214,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 _pnbHomePhone.ValidationGroup = value;
                 _pnbCellPhone.ValidationGroup = value;
+                _cbIsMessagingEnabled.ValidationGroup = value;
                 _ebEmail.ValidationGroup = value;
             }
         }
@@ -205,6 +227,7 @@ namespace Rock.Web.UI.Controls
         {
             _pnbHomePhone = new PhoneNumberBox();
             _pnbCellPhone = new PhoneNumberBox();
+            _cbIsMessagingEnabled = new RockCheckBox();
             _ebEmail = new EmailBox();
         }
 
@@ -243,11 +266,14 @@ namespace Rock.Web.UI.Controls
 
             _pnbHomePhone.ID = "_pnbHomePhone";
             _pnbCellPhone.ID = "_pnbCellPhone";
+            _cbIsMessagingEnabled.ID = "_cbIsMessagingEnabled";
             _ebEmail.ID = "_ebEmail";
+            
 
             Controls.Add( _pnbHomePhone );
             Controls.Add( _pnbCellPhone );
-            Controls.Add( _ebEmail );
+            Controls.Add(_cbIsMessagingEnabled);
+            Controls.Add(_ebEmail);
 
             _pnbHomePhone.Placeholder = "Home Phone";
             _pnbHomePhone.Required = false;
@@ -255,6 +281,8 @@ namespace Rock.Web.UI.Controls
             _pnbCellPhone.Placeholder = "Cell Phone";
             _pnbCellPhone.Required = false;
 
+            _cbIsMessagingEnabled.Checked = true;
+           
             _ebEmail.Placeholder = "Email";
             _ebEmail.Required = false;
         }
@@ -285,6 +313,13 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "form-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _pnbCellPhone.RenderControl( writer );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+
+                writer.RenderBeginTag(HtmlTextWriterTag.Td);
+                writer.AddAttribute("class", "text-center");
+                writer.RenderBeginTag(HtmlTextWriterTag.Div);
+                _cbIsMessagingEnabled.RenderControl(writer);
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 
