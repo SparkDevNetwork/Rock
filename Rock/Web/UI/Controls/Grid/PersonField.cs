@@ -24,8 +24,9 @@ namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// Grid Bound Field for showing a Person as a link to the person profile page
+    /// NOTE: Specify the full "Person" entity as the DataField
     /// </summary>
-    [ToolboxData("<{0}:PersonField runat=server></{0}:PersonField>")]
+    [ToolboxData( "<{0}:PersonField runat=server></{0}:PersonField>" )]
     public class PersonField : RockBoundField
     {
 
@@ -48,15 +49,15 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                if (_resolvedUrlFormatString == null)
+                if ( _resolvedUrlFormatString == null )
                 {
                     _resolvedUrlFormatString = UrlFormatString;
-                    if (string.IsNullOrWhiteSpace(_resolvedUrlFormatString))
+                    if ( string.IsNullOrWhiteSpace( _resolvedUrlFormatString ) )
                     {
                         _resolvedUrlFormatString = "~/Person/{0}";
                     }
 
-                    _resolvedUrlFormatString = ((RockPage)this.Control.Page).ResolveRockUrl(_resolvedUrlFormatString);
+                    _resolvedUrlFormatString = ( (RockPage)this.Control.Page ).ResolveRockUrl( _resolvedUrlFormatString );
                 }
 
                 return _resolvedUrlFormatString;
@@ -71,16 +72,16 @@ namespace Rock.Web.UI.Controls
         /// <returns>
         /// The field value converted to the format specified by <see cref="P:System.Web.UI.WebControls.BoundField.DataFormatString" />.
         /// </returns>
-        protected override string FormatDataValue(object dataValue, bool encode)
+        protected override string FormatDataValue( object dataValue, bool encode )
         {
             var person = dataValue as Person;
-            if (person != null)
+            if ( person != null )
             {
                 string url = string.Format( ResolvedUrlFormatString, person.Id );
                 return string.Format( "<a href='{0}'>{1}</a>", url, person.FullName );
             }
 
-            return base.FormatDataValue(dataValue, encode);
+            return base.FormatDataValue( dataValue, encode );
         }
     }
 }
