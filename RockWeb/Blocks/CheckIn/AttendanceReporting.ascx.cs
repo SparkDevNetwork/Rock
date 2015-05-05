@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Web.UI;
@@ -64,7 +65,7 @@ namespace RockWeb.Blocks.CheckIn
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            gAttendance.GridRebind += gAttendance_GridRebind;
+            gChartAttendance.GridRebind += gChartAttendance_GridRebind;
 
             _rockContext = new RockContext();
 
@@ -77,9 +78,9 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gAttendance_GridRebind( object sender, EventArgs e )
+        protected void gChartAttendance_GridRebind( object sender, EventArgs e )
         {
-            BindGrid();
+            BindChartAttendanceGrid();
         }
 
         /// <summary>
@@ -261,7 +262,7 @@ function(item) {
 
             if ( pnlGrid.Visible )
             {
-                BindGrid();
+                BindChartAttendanceGrid();
             }
         }
 
@@ -381,21 +382,21 @@ function(item) {
                 pnlGrid.Visible = true;
                 lShowGrid.Text = "Hide Data <i class='fa fa-chevron-up'></i>";
                 lShowGrid.ToolTip = "Hide Data";
-                BindGrid();
+                BindChartAttendanceGrid();
             }
         }
 
         /// <summary>
-        /// Binds the grid.
+        /// Binds the chart attendance grid.
         /// </summary>
-        private void BindGrid()
+        private void BindChartAttendanceGrid()
         {
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
 
             string groupIds = GetSelectedGroupIds().AsDelimited( "," );
             string campusIds = cpCampuses.SelectedCampusIds.AsDelimited( "," );
 
-            SortProperty sortProperty = gAttendance.SortProperty;
+            SortProperty sortProperty = gChartAttendance.SortProperty;
 
             var chartData = new AttendanceService( _rockContext ).GetChartData(
                 hfGroupBy.Value.ConvertToEnumOrNull<AttendanceGroupBy>() ?? AttendanceGroupBy.Week,
@@ -407,14 +408,58 @@ function(item) {
 
             if ( sortProperty != null )
             {
-                gAttendance.DataSource = chartData.AsQueryable().Sort( sortProperty ).ToList();
+                gChartAttendance.DataSource = chartData.AsQueryable().Sort( sortProperty ).ToList();
             }
             else
             {
-                gAttendance.DataSource = chartData.OrderBy( a => a.DateTimeStamp ).ToList();
+                gChartAttendance.DataSource = chartData.OrderBy( a => a.DateTimeStamp ).ToList();
             }
 
-            gAttendance.DataBind();
+            gChartAttendance.DataBind();
+        }
+
+        /// <summary>
+        /// Binds the attendees grid.
+        /// </summary>
+        private void BindAttendeesGrid()
+        {
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
+
+            string groupIds = GetSelectedGroupIds().AsDelimited( "," );
+            string campusIds = cpCampuses.SelectedCampusIds.AsDelimited( "," );
+            
+            var rockContext = new RockContext();
+            var qry = new AttendanceService( rockContext ).Queryable();
+
+            qry = qry.AsNoTracking().Where( a => a.DidAttend.HasValue && a.DidAttend.Value );
+
+            if ( dateRange.Start.HasValue )
+            {
+                qry = qry.Where( a => a.StartDateTime >= dateRange.Start.Value );
+            }
+
+            if ( dateRange.End.HasValue )
+            {
+                qry = qry.Where( a => a.StartDateTime < dateRange.End.Value );
+            }
+
+            if ( !string.IsNullOrWhiteSpace( groupIds ) )
+            {
+                var groupIdList = groupIds.Split( ',' ).AsIntegerList();
+                qry = qry.Where( a => a.GroupId.HasValue && groupIdList.Contains( a.GroupId.Value ) );
+            }
+
+            if ( !string.IsNullOrWhiteSpace( campusIds ) )
+            {
+                var campusIdList = campusIds.Split( ',' ).AsIntegerList();
+                qry = qry.Where( a => a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) );
+            }
+
+            var qryByPerson = qry.GroupBy( a => a.PersonAlias.Person );
+
+
+
+
         }
 
         /// <summary>
@@ -499,7 +544,7 @@ function(item) {
         private void AddGroupControls( Group group, RockCheckBoxList checkBoxList, GroupService service )
         {
             // Only show groups that actually have a schedule
-            if ( group != null  )
+            if ( group != null )
             {
                 if ( group.ScheduleId.HasValue || group.GroupLocations.Any( l => l.Schedules.Any() ) )
                 {
@@ -530,5 +575,37 @@ function(item) {
         }
 
         #endregion
-    }
+
+        /// <summary>
+        /// Handles the Click event of the btnShowByAttendees control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnShowByAttendees_Click( object sender, EventArgs e )
+        {
+            pnlShowByChart.Visible = false;
+            pnlShowByAttendees.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnShowByChart control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnShowByChart_Click( object sender, EventArgs e )
+        {
+            pnlShowByChart.Visible = true;
+            pnlShowByAttendees.Visible = false;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnView control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnView_Click( object sender, EventArgs e )
+        {
+            BindAttendeesGrid();
+        }
+}
 }
