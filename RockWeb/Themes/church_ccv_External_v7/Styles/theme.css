@@ -5709,6 +5709,29 @@ html[xmlns] .slides {
   background-size: cover;
   background-position: center center;
 }
+.bigblock-flexbg-md {
+  min-height: 215px;
+}
+@media (min-width: 768px) {
+  .bigblock-flexbg-md {
+    min-height: 320px;
+  }
+}
+@media (min-width: 992px) {
+  .bigblock-flexbg-md {
+    min-height: 400px;
+  }
+}
+@media (min-width: 1200px) {
+  .bigblock-flexbg-md {
+    min-height: 460px;
+  }
+}
+@media (min-width: 1560px) {
+  .bigblock-flexbg-md {
+    min-height: 520px;
+  }
+}
 .brandlist {
   list-style: none;
   padding-left: 1em;

@@ -8,15 +8,15 @@
 @brand-primary:           #7a1315;
 @accent-bold-color:       @brand-primary;
 
-// @grid-gutter-width: 40px;
 
+// Add xl breakpoint
+// this is currently just a breakpoint and does not have
+// supporting grid elements
 
-// // @container-tablet:             ((720px + @grid-gutter-width));
-// @container-desktop:            ((960px + @grid-gutter-width));
-// @container-large-desktop:      ((1220px + @grid-gutter-width));
+@xl: ~"(min-width: @{screen-xl-min})";
 
+@screen-xl:                  1560px;
+@screen-xl-min:              @screen-xl;
+@screen-xl-desktop:          @screen-xl-min;
 
-// // @screen-xs:                  480px;
-// // @screen-sm:                  768px;
-// @screen-md:                  1020px;
-// @screen-lg:                  1280px;
+@screen-lg-max:              (@screen-xl-min - 1);

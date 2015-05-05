@@ -80,32 +80,21 @@
 }
 
 // Used on the watch page
-.panel-series {
-  .panel-variant(@panel-default-border; @panel-default-text; @panel-default-heading-bg; @panel-default-border);
-  overflow: hidden; // to give image rounded corners
-  img {
-    .img-full;
-    .img-thumbnail;
-    border: none;
-  }
-  > .panel-footer {
-    // border: 1px solid @panel-default-border;
-    border-top: none;
-    background-color: #fff;
-  }
-}
 .list-2col-wrapper {
   -moz-column-count: 2;
   -webkit-column-count: 2;
   column-count: 2;
-  > li {
+  > ol > li,
+  > ul > li {
     -webkit-column-break-inside: avoid;
               page-break-inside: avoid;
                    break-inside: avoid;
   }
-  > li:only-child {
-    position: absolute;
-    bottom: 0;
+  > ol > li:only-child,
+  > ul > li:only-child {
+    -webkit-column-span: all;
+            column-span: all;
+    margin-left: @line-height-computed;
   }
 }
 .img-full {
@@ -114,4 +103,10 @@
 }
 .list-flush {
   padding-left: @line-height-computed;
+}
+.popover-close {
+  &.left { margin-left: @grid-gutter-width; }
+  &.right { margin-left: -@grid-gutter-width; }
+  &.top { margin-top: @grid-gutter-width; }
+  &.bottom { margin-top: -@grid-gutter-width; }
 }

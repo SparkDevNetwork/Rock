@@ -1,6 +1,7 @@
-<header class="fleximg margin-b-lg">
-  <img src="http://ccv.church/Arena/cachedblob.aspx?guid={{ rows.first.MessageImageBlobId3 }}" alt="{{ rows.first.SeriesTitle }}"></a>
-</header>
+{% if rows.first.CurrentPage == 1 %}
+  <header class="bigblock bigblock-flexbg bigblock-flexbg-md" style="background-image: url('http://ccv.church/Arena/cachedblob.aspx?guid={{ rows.first.MessageImageBlobId3 }}');">
+  </header>
+{% endif %}
 
 <div class="container">
 {% for r in rows %}
@@ -9,10 +10,12 @@
       {% comment %}New Series{% endcomment %}
       {% assign currentSeries = r.SeriesTitle  %}
       <div class="row">
-        <div class="col-sm-4">
-          <div class="panel panel-series js-series">
-            <a href="#"><img src="http://ccv.church/Arena/cachedblob.aspx?guid={{ r.MessageImageBlobId1 }}&amp;width=720&amp;height=720" alt="{{ r.SeriesTitle }}"></a>
-            <div class="panel-footer"><h3 class="panel-title">{{ r.SeriesTitle }}</h3></div>
+        <div class="col-sm-6 col-md-4">
+          <div class="thumbnail padding-b-none js-series">
+            <a href="#"><img class="img-full" src="http://ccv.church/Arena/cachedblob.aspx?guid={{ r.MessageImageBlobId1 }}&amp;width=720&amp;height=720" alt="{{ r.SeriesTitle }}"></a>
+            <div class="caption">
+              <h3 class="panel-title">{{ r.SeriesTitle }}</h3>
+            </div>
           </div>
           <div class="popover-content-holder hide">
             <span class="description">
@@ -20,8 +23,8 @@
             </span>
             <hr class="margin-v-md">
             <div class="message-list list-2col-wrapper">
-              <ol class="list-flush margin-b-sm">
-                <li>
+              <ol class="list-flush margin-b-none">
+                <li class="margin-b-sm">
                   <a href="default.aspx?page=17529&amp;item={{ r.MessageId }}">{{ r.MessageTitle }}</a>
                 </li>
     {% endif %}
@@ -33,10 +36,12 @@
             </div>
           </div>
         </div>
-        <div class="col-sm-4">
-          <div class="panel panel-series js-series">
-            <a href="#"><img src="http://ccv.church/Arena/cachedblob.aspx?guid={{ r.MessageImageBlobId1 }}&amp;width=720&amp;height=720" alt="Detox"></a>
-            <div class="panel-footer"><h3 class="panel-title">{{ r.SeriesTitle }}</h3></div>
+        <div class="col-sm-6 col-md-4">
+          <div class="thumbnail padding-b-none js-series">
+            <a href="#"><img class="img-full" src="http://ccv.church/Arena/cachedblob.aspx?guid={{ r.MessageImageBlobId1 }}&amp;width=720&amp;height=720" alt="{{ r.SeriesTitle }}"></a>
+            <div class="caption">
+              <h3 class="panel-title">{{ r.SeriesTitle }}</h3>
+            </div>
           </div>
           <div class="popover-content-holder hide">
             <span class="description">
@@ -44,13 +49,13 @@
             </span>
             <hr class="margin-v-md">
             <div class="message-list list-2col-wrapper">
-              <ol class="list-flush margin-b-sm">
-                <li>
+              <ol class="list-flush margin-b-none">
+                <li class="margin-b-sm">
                   <a href="default.aspx?page=17529&amp;item={{ r.MessageId }}">{{ r.MessageTitle }}</a>
                 </li>
     {% elsif r.SeriesTitle == currentSeries %}
       {% comment %}Same Series{% endcomment %}
-                <li>
+                <li class="margin-b-sm">
                   <a href="default.aspx?page=17529&amp;item={{ r.MessageId }}">{{ r.MessageTitle }}</a>
                 </li>
     {% endif %}
@@ -66,34 +71,40 @@
 
   {% endfor %}
 
-  {% comment %}<div class="row">
-    <div class="col-sm-4">
-      <div class="panel panel-series js-series">
-        <a href="#"><img src="http://ccv.church/Arena/cachedblob.aspx?guid=68fa6da9-8f01-4431-83a7-9ae94ccaca14&amp;width=720&amp;height=720" alt="Detox"></a>
-        <div class="panel-footer"><h3 class="panel-title">Detox <small>4/12/15-5/12/15</small></h3></div>
-      </div>
-      <div class="popover-content-holder hide">
-        <span class="description">
-          {{"Not a day goes by without a story in our world of our food, water, or air being contaminated with poisons. But what about us? It’s hard to argue that the moral pollution all around is increasing by the day. Without even realizing it, our souls are exposed to second-hand toxins all around us. How do you keep your soul clean in an increasingly contaminated world so you can become everything God intends you to be? Come learn how to detox four things that can absolutely pollute your world." | Truncate: 280, '...'}}
-        </span>
-        <hr class="margin-v-md">
-        <div class="message-list list-2col-wrapper">
-          <ol class="list-flush margin-b-sm">
-            <li>
-              <a id="ctl04_ctl08_lvTopics_ctrl0_rptrItems_ctl00_hlItem" href="default.aspx?page=17529&amp;item=503">Doubt</a>
-            </li>
-            <li>
-              <a id="ctl04_ctl08_lvTopics_ctrl0_rptrItems_ctl01_hlItem" href="default.aspx?page=17529&amp;item=504">Comparison</a>
-            </li>
-            <li>
-              <a id="ctl04_ctl08_lvTopics_ctrl0_rptrItems_ctl02_hlItem" href="default.aspx?page=17529&amp;item=505">Hidden Sins</a>
-            </li>
-          </ol>
-        </div>
-      </div>
-    </div>
 
-  </div>{% endcomment %}
+  <nav class="text-center">
+    <ul class="pagination pagination-lg">
+
+      {% if rows.first.CurrentPage == 1  %}
+        <li class="disabled">
+          <span>
+            <span aria-hidden="true">&laquo;</span>
+          </span>
+        </li>
+      {% else %}
+        <li><a href="?PageNum={{ rows.first.CurrentPage | Minus: 1 }}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+      {% endif %}
+
+      {% if rows.first.CurrentPage > 2 %}
+        <li><a href="?PageNum={{ rows.first.CurrentPage | Minus: 2 }}">{{ rows.first.CurrentPage | Minus: 2 }}</a></li>
+      {% endif %}
+      {% if rows.first.CurrentPage > 1 %}
+        <li><a href="?PageNum={{ rows.first.CurrentPage | Minus: 1 }}">{{ rows.first.CurrentPage | Minus: 1 }}</a></li>
+      {% endif %}
+
+      <li class="active">
+        <span>{{ rows.first.CurrentPage }} <span class="sr-only">(current)</span></span>
+      </li>
+
+      <li><a href="?PageNum={{ rows.first.CurrentPage | Plus: 1 }}">{{ rows.first.CurrentPage | Plus: 1 }}</a></li>
+      <li><a href="?PageNum={{ rows.first.CurrentPage | Plus: 2 }}">{{ rows.first.CurrentPage | Plus: 2 }}</a></li>
+
+      <li><a href="?PageNum={{ rows.first.CurrentPage | Plus: 1 }}" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>
+
+    </ul>
+  </nav>
+
+
 </div>
 
 <script>
@@ -129,6 +140,7 @@
     placement: 'auto right',
     container: 'body',
     viewport: { 'selector': 'body', 'padding': 0 },
-    delay: { 'hide': 300 }
+    delay: 300,
+    template: '<div class="popover popover-close" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
   })
 </script>
