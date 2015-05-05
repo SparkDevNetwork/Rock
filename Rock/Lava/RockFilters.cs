@@ -1026,26 +1026,34 @@ namespace Rock.Lava
         /// <param name="input">The input.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <returns></returns>
-        public static List<Rock.Model.Group> Groups( DotLiquid.Context context, object input, string groupTypeId )
+        public static List<Rock.Model.GroupMember> Groups( DotLiquid.Context context, object input, string groupTypeId, string status = "Active" )
         {
             var person = GetPerson( input );
             int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
 
+            
+
             if ( person != null && numericalGroupTypeId.HasValue )
             {
-                return new GroupMemberService( GetRockContext( context ) )
-                    .Queryable().AsNoTracking()
+                var groupQuery =  new GroupMemberService( GetRockContext( context ) )
+                    .Queryable("Group").AsNoTracking()
                     .Where( m =>
                         m.PersonId == person.Id &&
                         m.Group.GroupTypeId == numericalGroupTypeId.Value &&
-                        m.GroupMemberStatus == GroupMemberStatus.Active &&
-                        m.Group.IsActive )
-                    .Select( m =>
-                        m.Group )
-                    .ToList();
+                        m.Group.IsActive );
+                
+                if ( status != "All" )
+                {
+                    GroupMemberStatus queryStatus = GroupMemberStatus.Active;
+                    queryStatus = (GroupMemberStatus)Enum.Parse( typeof( GroupMemberStatus ), status, true );
+
+                    groupQuery = groupQuery.Where( m => m.GroupMemberStatus == queryStatus );
+                }
+
+                return groupQuery.ToList();
             }
 
-            return new List<Model.Group>();
+            return new List<Model.GroupMember>();
         }
 
         /// <summary>
