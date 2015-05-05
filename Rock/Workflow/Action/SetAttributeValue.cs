@@ -65,7 +65,12 @@ namespace Rock.Workflow.Action
                     }
                     else
                     {
-                        value = action.GetWorklowAttributeValue( guid );
+                        var attributeValue = action.GetWorklowAttributeValue( guid );
+
+                        if ( attributeValue != null )
+                        {
+                            value = attributeValue;
+                        }
                     }
 
                     if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId )
