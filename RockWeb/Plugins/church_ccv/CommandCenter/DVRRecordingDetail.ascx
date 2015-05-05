@@ -133,7 +133,7 @@
 			    url: recordingurl + '/manifest.f4m?DVR&wowzadvrplayliststart=' + clipStartEndUrl,
 			    urlResolvers: ['f4m'],
 			    provider: 'httpstreaming',
-			    baseUrl: 'http://ccvwowza:1935/commandcenter/',
+			    baseUrl: 'http://ccvwowza-out.ccvonline.com:1935/commandcenter/',
 			    autoPlay: true
 			}
 		});
