@@ -18,18 +18,17 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -42,7 +41,7 @@ namespace RockWeb.Blocks.CheckIn
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked" )]
-    [GroupTypeField( "Check-in Type", key: "GroupTypeTemplate", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
+    [GroupTypeField( "Check-in Type", required: false, key: "GroupTypeTemplate", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
     public partial class AttendanceReporting : RockBlock
     {
         #region Fields
@@ -68,9 +67,6 @@ namespace RockWeb.Blocks.CheckIn
             gChartAttendance.GridRebind += gChartAttendance_GridRebind;
 
             _rockContext = new RockContext();
-
-            // GroupTypesUI dynamically creates controls, so we need to rebuild it on every OnInit()
-            BuildGroupTypesUI();
         }
 
         /// <summary>
@@ -90,6 +86,9 @@ namespace RockWeb.Blocks.CheckIn
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            // GroupTypesUI dynamically creates controls, so we need to rebuild it on every OnLoad()
+            BuildGroupTypesUI();
 
             var chartStyleDefinedValueGuid = this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull();
 
@@ -134,6 +133,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            BuildGroupTypesUI();
             LoadChart();
         }
 
@@ -147,24 +147,66 @@ namespace RockWeb.Blocks.CheckIn
         public void LoadDropDowns()
         {
             cpCampuses.Campuses = CampusCache.All();
+
+            var groupTypeTemplateGuid = this.GetAttributeValue( "GroupTypeTemplate" ).AsGuidOrNull();
+            if ( !groupTypeTemplateGuid.HasValue )
+            {
+                // show the CheckinType(GroupTypeTemplate) control if there isn't a block setting for it
+                ddlCheckinType.Visible = true;
+                var groupTypeService = new GroupTypeService( _rockContext );
+                Guid groupTypePurposeGuid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
+                ddlCheckinType.GroupTypes = groupTypeService.Queryable()
+                        .Where( a => a.GroupTypePurposeValue.Guid == groupTypePurposeGuid )
+                        .OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            }
+            else
+            {
+                // hide the CheckinType(GroupTypeTemplate) control if there is a block setting for it
+                ddlCheckinType.Visible = false;
+            }
         }
 
         /// <summary>
-        /// Builds the group types UI.
+        /// Builds the group types UI
         /// </summary>
         private void BuildGroupTypesUI()
         {
-            var groupTypeService = new GroupTypeService( _rockContext );
-            var groupTypeTemplateGuid = this.GetAttributeValue( "GroupTypeTemplate" ).AsGuidOrNull();
+            var groupType = this.GetSelectedTemplateGroupType();
 
-            nbGroupTypeWarning.Visible = !groupTypeTemplateGuid.HasValue;
-            if ( groupTypeTemplateGuid.HasValue )
+            if ( groupType != null )
             {
-                var groupType = groupTypeService.Get( groupTypeTemplateGuid.Value );
-                var groupTypes = groupTypeService.GetChildGroupTypes( groupType.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Name );
+                nbGroupTypeWarning.Visible = false;
+                var groupTypes = new GroupTypeService( _rockContext ).GetChildGroupTypes( groupType.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Name );
                 rptGroupTypes.DataSource = groupTypes.ToList();
                 rptGroupTypes.DataBind();
             }
+            else
+            {
+                nbGroupTypeWarning.Text = "Please select a check-in type.";
+                nbGroupTypeWarning.Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the selected template group (Check-In Type)
+        /// </summary>
+        /// <returns></returns>
+        private GroupTypeCache GetSelectedTemplateGroupType()
+        {
+            var groupTypeTemplateGuid = this.GetAttributeValue( "GroupTypeTemplate" ).AsGuidOrNull();
+            if ( !groupTypeTemplateGuid.HasValue )
+            {
+                if ( ddlCheckinType.SelectedGroupTypeId.HasValue )
+                {
+                    var groupType = GroupTypeCache.Read( ddlCheckinType.SelectedGroupTypeId.Value );
+                    if ( groupType != null )
+                    {
+                        groupTypeTemplateGuid = groupType.Guid;
+                    }
+                }
+            }
+
+            return groupTypeTemplateGuid.HasValue ? GroupTypeCache.Read( groupTypeTemplateGuid.Value ) : null;
         }
 
         /// <summary>
@@ -252,7 +294,17 @@ function(item) {
                 dataSourceParams.AddOrReplace( "campusIds", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
             }
 
-            dataSourceParams.AddOrReplace( "groupIds", GetSelectedGroupIds().AsDelimited( "," ) );
+            var selectedGroupIds = GetSelectedGroupIds();
+
+            if ( selectedGroupIds.Any() )
+            {
+                dataSourceParams.AddOrReplace( "groupIds", selectedGroupIds.AsDelimited( "," ) );
+            }
+            else
+            {
+                // set the value to 0 to indicate that no groups where selected (and so that Rest Endpoint doesn't 404)
+                dataSourceParams.AddOrReplace( "groupIds", 0 );
+            }
 
             SaveSettingsToUserPreferences();
 
@@ -273,6 +325,8 @@ function(item) {
         {
             string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
 
+            this.SetUserPreference( keyPrefix + "TemplateGroupTypeId", ddlCheckinType.SelectedGroupTypeId.ToString() );
+
             this.SetUserPreference( keyPrefix + "SlidingDateRange", drpSlidingDateRange.DelimitedValues );
             this.SetUserPreference( keyPrefix + "GroupBy", hfGroupBy.Value );
             this.SetUserPreference( keyPrefix + "GraphBy", hfGraphBy.Value );
@@ -281,6 +335,26 @@ function(item) {
             var selectedGroupIds = GetSelectedGroupIds();
 
             this.SetUserPreference( keyPrefix + "GroupIds", selectedGroupIds.AsDelimited( "," ) );
+
+            this.SetUserPreference( keyPrefix + "ShowBy", hfShowBy.Value );
+
+            AttendeesFilterBy attendeesFilterBy;
+            if ( radByVisit.Checked )
+            {
+                attendeesFilterBy = AttendeesFilterBy.ByVisit;
+            }
+            else if ( radByPattern.Checked )
+            {
+                attendeesFilterBy = AttendeesFilterBy.Pattern;
+            }
+            else
+            {
+                attendeesFilterBy = AttendeesFilterBy.All;
+            }
+
+            this.SetUserPreference( keyPrefix + "AttendeesFilterByType", attendeesFilterBy.ConvertToInt().ToString() );
+            this.SetUserPreference( keyPrefix + "AttendeesFilterByVisit", ddlNthVisit.SelectedValue );
+            this.SetUserPreference( keyPrefix + "AttendeesFilterByPattern", string.Format( "{0}|{1}|{2}|{3}", tbPatternXTimes.Text, cbPatternAndMissed.Checked, tbPatternMissedXTimes.Text, drpPatternDateRange.DelimitedValues ) );
         }
 
         /// <summary>
@@ -305,6 +379,9 @@ function(item) {
         private void LoadSettingsFromUserPreferences()
         {
             string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
+
+            ddlCheckinType.SelectedGroupTypeId = this.GetUserPreference( keyPrefix + "TemplateGroupTypeId" ).AsIntegerOrNull();
+            BuildGroupTypesUI();
 
             string slidingDateRangeSettings = this.GetUserPreference( keyPrefix + "SlidingDateRange" );
             if ( string.IsNullOrWhiteSpace( slidingDateRangeSettings ) )
@@ -345,6 +422,38 @@ function(item) {
                 {
                     item.Selected = selectAll || groupIdList.Contains( item.Value );
                 }
+            }
+
+            ShowBy showBy = this.GetUserPreference( keyPrefix + "ShowBy" ).ConvertToEnumOrNull<ShowBy>() ?? ShowBy.Chart;
+            DisplayShowBy( showBy );
+
+            AttendeesFilterBy attendeesFilterBy = this.GetUserPreference( keyPrefix + "AttendeesFilterByType" ).ConvertToEnumOrNull<AttendeesFilterBy>() ?? AttendeesFilterBy.All;
+
+            switch ( attendeesFilterBy )
+            {
+                case AttendeesFilterBy.All:
+                    radAllAttendees.Checked = true;
+                    break;
+                case AttendeesFilterBy.ByVisit:
+                    radByVisit.Checked = true;
+                    break;
+                case AttendeesFilterBy.Pattern:
+                    radByPattern.Checked = true;
+                    break;
+                default:
+                    radAllAttendees.Checked = true;
+                    break;
+            }
+
+            ddlNthVisit.SelectedValue = this.GetUserPreference( keyPrefix + "AttendeesFilterByVisit" );
+            string attendeesFilterByPattern = this.GetUserPreference( keyPrefix + "AttendeesFilterByPattern" );
+            string[] attendeesFilterByPatternValues = attendeesFilterByPattern.Split( '|' );
+            if ( attendeesFilterByPatternValues.Length == 4 )
+            {
+                tbPatternXTimes.Text = attendeesFilterByPatternValues[0];
+                cbPatternAndMissed.Checked = attendeesFilterByPatternValues[1].AsBooleanOrNull() ?? false;
+                tbPatternMissedXTimes.Text = attendeesFilterByPatternValues[2];
+                drpPatternDateRange.DelimitedValues = attendeesFilterByPatternValues[3];
             }
         }
 
@@ -419,6 +528,36 @@ function(item) {
         }
 
         /// <summary>
+        ///  private class just for this block so that we can cache ScheduleInfo when we populate the attendees grid
+        /// </summary>
+        private class ScheduleInfo
+        {
+            /// <summary>
+            /// Gets or sets the friendly schedule text.
+            /// </summary>
+            /// <value>
+            /// The friendly schedule text.
+            /// </value>
+            public string FriendlyScheduleText { get; set; }
+
+            /// <summary>
+            /// Gets or sets the occurrence count.
+            /// </summary>
+            /// <value>
+            /// The occurrence count.
+            /// </value>
+            public int OccurrenceCount { get; set; }
+        }
+
+        /// <summary>
+        /// Gets or sets the _schedule possible attendance count cache.
+        /// </summary>
+        /// <value>
+        /// The _schedule possible attendance count cache.
+        /// </value>
+        private Dictionary<int, ScheduleInfo> _schedulePossibleAttendanceCountCache { get; set; }
+
+        /// <summary>
         /// Binds the attendees grid.
         /// </summary>
         private void BindAttendeesGrid()
@@ -427,11 +566,22 @@ function(item) {
 
             string groupIds = GetSelectedGroupIds().AsDelimited( "," );
             string campusIds = cpCampuses.SelectedCampusIds.AsDelimited( "," );
-            
+
             var rockContext = new RockContext();
             var qry = new AttendanceService( rockContext ).Queryable();
 
             qry = qry.AsNoTracking().Where( a => a.DidAttend.HasValue && a.DidAttend.Value );
+            var groupType = this.GetSelectedTemplateGroupType();
+            var qryVisits = qry;
+            if ( groupType != null )
+            {
+                var childGroupTypeIds = new GroupTypeService( rockContext ).GetChildGroupTypes( groupType.Guid ).Select( a => a.Id );
+                qryVisits = qry.Where( a => childGroupTypeIds.Any( b => b == a.Group.GroupTypeId ) );
+            }
+            else
+            {
+                return;
+            }
 
             if ( dateRange.Start.HasValue )
             {
@@ -455,11 +605,99 @@ function(item) {
                 qry = qry.Where( a => a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) );
             }
 
-            var qryByPerson = qry.GroupBy( a => a.PersonAlias.Person );
+            var qryByPerson = qry.GroupBy( a => a.PersonAlias.Person ).Select( a => new
+            {
+                Person = a.Key,
+                Attendances = a
+            } );
 
+            var qryResult = qryByPerson.Select( a => new
+            {
+                a.Person,
+                FirstVisits = qryVisits.Where( b => b.PersonAlias.PersonId == a.Person.Id ).OrderBy( x => x.StartDateTime ).Select( s => s.StartDateTime ).Take( 2 ),
+                LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
+                HomeAddress = RockUdfHelper.ufnCrm_GetAddress( a.Person.Id, "Home", "Full" ),
+                PhoneNumbers = a.Person.PhoneNumbers,
+                AttendanceCount = a.Attendances.Count()
+            } );
 
+            SortProperty sortProperty = gAttendeesAttendance.SortProperty;
 
+            if ( sortProperty != null )
+            {
+                qryResult = qryResult.Sort( sortProperty );
+            }
+            else
+            {
+                qryResult = qryResult.OrderBy( a => a.Person.LastName ).ThenBy( a => a.Person.NickName );
+            }
 
+            _schedulePossibleAttendanceCountCache = new ScheduleService( rockContext ).Queryable()
+                .ToList()
+                .Select( a => new
+                {
+                    a.Id,
+                    a.FriendlyScheduleText,
+                    ICalEvent = a.GetCalenderEvent()
+                } )
+                .Select( a => new
+                {
+                    a.Id,
+                    a.FriendlyScheduleText,
+                    Count = a.ICalEvent != null ? ScheduleICalHelper.GetOccurrences( a.ICalEvent, dateRange.Start ?? DateTime.MinValue, dateRange.End ?? DateTime.MaxValue ).Count() : 0,
+                } ).ToDictionary( k => k.Id, v => new ScheduleInfo { FriendlyScheduleText = v.FriendlyScheduleText, OccurrenceCount = v.Count } );
+
+            gAttendeesAttendance.DataSource = qryResult.ToList();
+            gAttendeesAttendance.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gAttendeesAttendance control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gAttendeesAttendance_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            var dataItem = e.Row.DataItem;
+            if ( dataItem != null )
+            {
+                Literal lFirstVisitDate = e.Row.FindControl( "lFirstVisitDate" ) as Literal;
+                Literal lSecondVisitDate = e.Row.FindControl( "lSecondVisitDate" ) as Literal;
+                Literal lServiceTime = e.Row.FindControl( "lServiceTime" ) as Literal;
+                Literal lAttendancePercent = e.Row.FindControl( "lAttendancePercent" ) as Literal;
+
+                var firstVisits = dataItem.GetPropertyValue( "FirstVisits" ) as IEnumerable<DateTime>;
+                var lastVisit = dataItem.GetPropertyValue( "LastVisit" ) as Attendance;
+                if ( firstVisits != null )
+                {
+                    var firstVisit = firstVisits.FirstOrDefault();
+                    var secondVisit = firstVisits.Skip( 1 ).FirstOrDefault();
+                    if ( firstVisit != null )
+                    {
+                        lFirstVisitDate.Text = firstVisit.ToShortDateString();
+                    }
+
+                    if ( secondVisit != null )
+                    {
+                        lSecondVisitDate.Text = secondVisit.ToShortDateString();
+                    }
+                }
+
+                if ( lastVisit != null && lastVisit.ScheduleId.HasValue )
+                {
+                    var scheduleInfo = _schedulePossibleAttendanceCountCache[lastVisit.ScheduleId.Value];
+                    if ( scheduleInfo != null )
+                    {
+                        lServiceTime.Text = scheduleInfo.FriendlyScheduleText;
+
+                        var attendanceCount = dataItem.GetPropertyValue( "AttendanceCount" ) as int?;
+                        if ( attendanceCount.HasValue && scheduleInfo.OccurrenceCount > 0 )
+                        {
+                            lAttendancePercent.Text = string.Format( "{0:P}", (decimal)attendanceCount.Value / scheduleInfo.OccurrenceCount );
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -541,6 +779,12 @@ function(item) {
             }
         }
 
+        /// <summary>
+        /// Adds the group controls.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="checkBoxList">The check box list.</param>
+        /// <param name="service">The service.</param>
         private void AddGroupControls( Group group, RockCheckBoxList checkBoxList, GroupService service )
         {
             // Only show groups that actually have a schedule
@@ -577,14 +821,61 @@ function(item) {
         #endregion
 
         /// <summary>
+        /// 
+        /// </summary>
+        private enum ShowBy
+        {
+            /// <summary>
+            /// The chart
+            /// </summary>
+            Chart = 0,
+
+            /// <summary>
+            /// The attendees
+            /// </summary>
+            Attendees = 1
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private enum AttendeesFilterBy
+        {
+            /// <summary>
+            /// All Attendees
+            /// </summary>
+            All = 0,
+
+            /// <summary>
+            /// By nth visit
+            /// </summary>
+            ByVisit = 1,
+
+            /// <summary>
+            /// By pattern
+            /// </summary>
+            Pattern = 2
+        }
+
+        /// <summary>
+        /// Displays the show by.
+        /// </summary>
+        /// <param name="showBy">The show by.</param>
+        private void DisplayShowBy( ShowBy showBy )
+        {
+            hfShowBy.Value = showBy.ConvertToInt().ToString();
+            pnlShowByChart.Visible = showBy == ShowBy.Chart;
+            pnlShowByAttendees.Visible = showBy == ShowBy.Attendees;
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnShowByAttendees control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnShowByAttendees_Click( object sender, EventArgs e )
         {
-            pnlShowByChart.Visible = false;
-            pnlShowByAttendees.Visible = true;
+            DisplayShowBy( ShowBy.Attendees );
         }
 
         /// <summary>
@@ -594,8 +885,7 @@ function(item) {
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnShowByChart_Click( object sender, EventArgs e )
         {
-            pnlShowByChart.Visible = true;
-            pnlShowByAttendees.Visible = false;
+            DisplayShowBy( ShowBy.Chart );
         }
 
         /// <summary>
@@ -607,5 +897,15 @@ function(item) {
         {
             BindAttendeesGrid();
         }
-}
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlCheckinType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlCheckinType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            BuildGroupTypesUI();
+        }
+    }
 }

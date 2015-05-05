@@ -45,8 +45,9 @@
 
                         <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campuses" />
 
-
                         <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="true" />
+                        <Rock:GroupTypePicker ID="ddlCheckinType" runat="server" Label="Check-in Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" />
+
                         <h4>Group</h4>
                         <ul class="rocktree">
 
@@ -120,7 +121,7 @@
                                         </p>
                                         <p>
                                             <Rock:RockRadioButton ID="radByVisit" runat="server" GroupName="grpFilterBy" Text="By Visit" CssClass="js-attendees-by-visit" />
-                                            <div class="js-attendees-by-visit-options padding-l-lg form-inline">
+                                            <asp:Panel ID="pnlByVisitOptions" runat="server" CssClass="js-attendees-by-visit-options padding-l-lg form-inline">
                                                 <Rock:RockDropDownList ID="ddlNthVisit" CssClass="input-width-md" runat="server">
                                                     <asp:ListItem />
                                                     <asp:ListItem Text="1st" Value="1" />
@@ -130,15 +131,15 @@
                                                     <asp:ListItem Text="5th" Value="5" />
                                                 </Rock:RockDropDownList>
                                                 <span>visit</span>
-                                            </div>
+                                            </asp:Panel>
                                         </p>
                                         <p>
                                             <Rock:RockRadioButton ID="radByPattern" runat="server" GroupName="grpFilterBy" Text="Pattern" CssClass="js-attendees-by-pattern" />
 
-                                            <div class="js-attendees-by-pattern-options padding-l-lg">
+                                            <asp:Panel ID="pnlByPatternOptions" runat="server" CssClass="js-attendees-by-pattern-options padding-l-lg">
                                                 <div class="form-inline">
                                                     <span>Attended at least </span>
-                                                    <Rock:NumberBox ID="tbPatternXTimes" runat="server" CssClass="input-width-xs" /><span> times </span>
+                                                    <Rock:NumberBox ID="tbPatternXTimes" runat="server" CssClass="input-width-xs" /><span> times for the selected date range </span>
                                                 </div>
                                                 <div class="padding-l-lg">
                                                     <div class="form-inline">
@@ -147,9 +148,10 @@
                                                         <Rock:DateRangePicker ID="drpPatternDateRange" runat="server" />
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </asp:Panel>
                                         </p>
                                     </Rock:RockControlWrapper>
+
                                     <div class="actions margin-b-md">
                                         <asp:LinkButton ID="btnView" runat="server" CssClass="btn btn-primary" Text="Apply" ToolTip="Update the Attendees grid" OnClick="btnView_Click" />
                                     </div>
@@ -157,11 +159,36 @@
                                 </div>
                             </div>
 
-                            <Rock:Grid ID="gAttendeesAttendance" runat="server" AllowSorting="true" RowItemText="Attendee">
+                            <Rock:Grid ID="gAttendeesAttendance" runat="server" AllowSorting="true" RowItemText="Attendee" OnRowDataBound="gAttendeesAttendance_RowDataBound">
                                 <Columns>
-                                    <Rock:PersonField DataField="PersonAlias.PersonId" HeaderText="Name" SortExpression="PersonAlias.Person.NickName, PersonAlias.Person.LastName" />
-                                    <Rock:RockBoundField DataField="SeriesId" HeaderText="Series" SortExpression="SeriesId" />
-                                    <Rock:RockBoundField DataField="YValue" HeaderText="Count" SortExpression="YValue" />
+                                    <Rock:PersonField DataField="Person" HeaderText="Name" SortExpression="PersonAlias.Person.NickName, PersonAlias.Person.LastName" />
+                                    <Rock:RockTemplateField HeaderText="First Visit ">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lFirstVisitDate" runat="server" />
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockTemplateField HeaderText="Second Visit ">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lSecondVisitDate" runat="server" />
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:DateField DataField="LastVisit.StartDateTime" HeaderText="Last Visit" SortExpression="LastVisit.StartDateTime" />
+                                    <Rock:CampusField DataField="LastVisit.CampusId" HeaderText="Campus" />
+                                    <Rock:RockTemplateField HeaderText="Service Time">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lServiceTime" runat="server" />
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockBoundField DataField="LastVisit.Group.Name" HeaderText="Check-in Area" SortExpression="LastVisit.Group.Name" />
+                                    <Rock:RockBoundField DataField="HomeAddress" HeaderText="Home Address" />
+                                    <Rock:PhoneNumbersField HeaderText="Phone Numbers" DataField="PhoneNumbers" ItemStyle-Wrap="false" DisplayCountryCode="false" />
+
+                                    <Rock:RockBoundField DataField="AttendanceCount" HeaderText="Count" SortExpression="AttendanceCount" />
+                                    <Rock:RockTemplateField HeaderText="Attendance %">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lAttendancePercent" runat="server" />
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
                                 </Columns>
                             </Rock:Grid>
 
@@ -176,6 +203,20 @@
                 $activeBtn.addClass('active');
                 $activeBtn.siblings('.btn').removeClass('active');
                 $activeBtn.closest('.btn-group').siblings('.js-hidden-selected').val($activeBtn.data('val'));
+            }
+
+            function showFilterByOptions() {
+                if ($('.js-attendees-all').is(':checked')) {
+                    $('.js-attendees-by-visit-options').hide();
+                    $('.js-attendees-by-pattern-options').hide();
+                } else if ($('.js-attendees-by-visit').is(':checked')) {
+                    $('.js-attendees-by-visit-options').show();
+                    $('.js-attendees-by-pattern-options').hide();
+                } else if ($('.js-attendees-by-pattern').is(':checked')) {
+                    $('.js-attendees-by-visit-options').hide();
+                    $('.js-attendees-by-pattern-options').show();
+                }
+
             }
 
             Sys.Application.add_load(function () {
@@ -207,19 +248,12 @@
 
                 setActiveButtonGroupButton($('.js-view-by').find("[data-val='" + $('.js-view-by .js-hidden-selected').val() + "']"));
 
-
                 // Attendees Filter
-                $('.js-attendees-all').on('click', function (e) {
-
+                $('.js-attendees-all, .js-attendees-by-visit, .js-attendees-by-pattern').on('click', function (e) {
+                    showFilterByOptions();
                 });
 
-                $('.js-attendees-by-visit').on('click', function (e) {
-
-                });
-
-                $('.js-attendees-by-pattern').on('click', function (e) {
-
-                });
+                showFilterByOptions();
             });
         </script>
     </ContentTemplate>
