@@ -6,9 +6,17 @@
         <Rock:NotificationBox ID="nbNotice" runat="server" Visible="false"/>
 
         <%-- View Panel --%>
-        <asp:Panel ID="pnlView" runat="server">
-            <asp:Literal ID="lTitle" runat="server" />
-            <asp:Panel ID="pnlSearch" runat="server" >
+        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
+            <div class="panel-heading clearfix">
+                <h1 class="panel-title pull-left">
+                    <i class="fa fa-map-marker"></i> Group Finder
+                </h1>
+            </div>
+            
+            <div class="panel-body">
+                <asp:Literal ID="lTitle" runat="server" />
+
+                <asp:Panel ID="pnlSearch" runat="server" >
 
                 <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
@@ -22,7 +30,7 @@
 
             </asp:Panel>
 
-            <asp:Panel ID="pnlResults" runat="server" Visible="false" >
+                <asp:Panel ID="pnlResults" runat="server" Visible="false" >
 
                 <asp:Literal ID="lMapStyling" runat="server" />
 
@@ -54,7 +62,7 @@
                 </asp:Panel>
 
             </asp:Panel>
-
+            </div>
         </asp:Panel>
 
         <%-- Edit Panel --%>

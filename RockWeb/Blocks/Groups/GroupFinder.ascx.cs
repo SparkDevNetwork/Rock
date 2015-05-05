@@ -494,7 +494,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( targetPerson != null )
             {
-                lTitle.Text = String.Format( "<h1>Groups for {0}</h1>", targetPerson.FullName );
+                lTitle.Text = String.Format( "<h1 class='margin-t-none'>Groups for {0}</h1>", targetPerson.FullName );
                 acAddress.SetValues( targetPersonLocation );
                 acAddress.Visible = false;
                 btnSearch.Visible = false;
