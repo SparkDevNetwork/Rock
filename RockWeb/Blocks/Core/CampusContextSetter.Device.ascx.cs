@@ -38,7 +38,21 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Campus Context Setter - Device" )]
     [Category( "Core" )]
     [Description( "Block that can be used to set the campus context for the site based on the location of the device." )]
-    [CodeEditorField( "Display Lava", "The Lava template to use when displaying the current campus.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, true, "Campus: {{Campus.Name}}" )]
+    [CodeEditorField( "Display Lava", "The Lava template to use when displaying the current campus.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, true, @"{% if Device %}
+
+    {% if Campus %}
+        Campus: {{Campus.Name}}
+    {% else %}
+        Could not determine the campus from the device {{ Device.Name }}.
+    {% endif %}
+    
+{% else %}
+    <div class='alert alert-danger'>
+        Unable to determine the device. Please check the device settings.
+        <br/>
+        IP Address: {{ ClientIp }}
+    </div>
+{% endif %}" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.DEVICE_TYPE, "Device Type", "Optional filter to limit to specific device types.", false )]
     [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.")]
     [CustomRadioListField("Context Scope", "The scope of context to set", "Site,Page", true, "Site")]
