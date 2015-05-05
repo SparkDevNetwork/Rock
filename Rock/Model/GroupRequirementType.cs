@@ -179,8 +179,19 @@ namespace Rock.Model
     /// </summary>
     public enum RequirementCheckType
     {
+        /// <summary>
+        /// SQL
+        /// </summary>
         Sql = 0,
+
+        /// <summary>
+        /// A dataview
+        /// </summary>
         Dataview = 1,
+
+        /// <summary>
+        /// Manual
+        /// </summary>
         Manual = 2
     }
 
