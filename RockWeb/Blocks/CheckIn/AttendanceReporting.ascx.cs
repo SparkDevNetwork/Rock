@@ -18,10 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -65,8 +65,19 @@ namespace RockWeb.Blocks.CheckIn
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             gChartAttendance.GridRebind += gChartAttendance_GridRebind;
+            gAttendeesAttendance.GridRebind += gAttendeesAttendance_GridRebind;
 
             _rockContext = new RockContext();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gAttendeesAttendance control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gAttendeesAttendance_GridRebind( object sender, EventArgs e )
+        {
+            BindAttendeesGrid();
         }
 
         /// <summary>
@@ -98,7 +109,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 LoadDropDowns();
                 LoadSettingsFromUserPreferences();
-                LoadChart();
+                LoadChartAndGrids();
             }
         }
 
@@ -134,7 +145,7 @@ namespace RockWeb.Blocks.CheckIn
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             BuildGroupTypesUI();
-            LoadChart();
+            LoadChartAndGrids();
         }
 
         #endregion
@@ -210,9 +221,9 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
-        /// Loads the chart.
+        /// Loads the chart and any visible grids
         /// </summary>
-        public void LoadChart()
+        public void LoadChartAndGrids()
         {
             lcAttendance.ShowTooltip = true;
             if ( this.DetailPageGuid.HasValue )
@@ -312,9 +323,14 @@ function(item) {
 
             lcAttendance.DataSourceUrl = this.ResolveUrl( dataSourceUrl );
 
-            if ( pnlGrid.Visible )
+            if ( pnlChartAttendanceGrid.Visible )
             {
                 BindChartAttendanceGrid();
+            }
+
+            if (pnlShowByAttendees.Visible)
+            {
+                BindAttendeesGrid();
             }
         }
 
@@ -478,19 +494,19 @@ function(item) {
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lShowGrid_Click( object sender, EventArgs e )
+        protected void lShowChartAttendanceGrid_Click( object sender, EventArgs e )
         {
-            if ( pnlGrid.Visible )
+            if ( pnlChartAttendanceGrid.Visible )
             {
-                pnlGrid.Visible = false;
-                lShowGrid.Text = "Show Data <i class='fa fa-chevron-down'></i>";
-                lShowGrid.ToolTip = "Show Data";
+                pnlChartAttendanceGrid.Visible = false;
+                lShowChartAttendanceGrid.Text = "Show Data <i class='fa fa-chevron-down'></i>";
+                lShowChartAttendanceGrid.ToolTip = "Show Data";
             }
             else
             {
-                pnlGrid.Visible = true;
-                lShowGrid.Text = "Hide Data <i class='fa fa-chevron-up'></i>";
-                lShowGrid.ToolTip = "Hide Data";
+                pnlChartAttendanceGrid.Visible = true;
+                lShowChartAttendanceGrid.Text = "Hide Data <i class='fa fa-chevron-up'></i>";
+                lShowChartAttendanceGrid.ToolTip = "Hide Data";
                 BindChartAttendanceGrid();
             }
         }
@@ -617,7 +633,13 @@ function(item) {
                 FirstVisits = qryVisits.Where( b => b.PersonAlias.PersonId == a.Person.Id ).OrderBy( x => x.StartDateTime ).Select( s => s.StartDateTime ).Take( 2 ),
                 LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
                 PhoneNumbers = a.Person.PhoneNumbers,
-                AttendanceCount = a.Attendances.Count()
+                // only count it as one if they attended multiple times on the same day
+                AttendanceCount = a.Attendances.Select( b => new
+                {
+                    Year = SqlFunctions.DatePart( "year", b.StartDateTime ),
+                    Month = SqlFunctions.DatePart( "month", b.StartDateTime ),
+                    Day = SqlFunctions.DatePart( "day", b.StartDateTime )
+                } ).GroupBy( c => c ).Count()
             } );
 
             SortProperty sortProperty = gAttendeesAttendance.SortProperty;
@@ -684,10 +706,10 @@ function(item) {
                     }
                 }
 
-                if (person != null)
+                if ( person != null )
                 {
                     var address = person.GetHomeLocation();
-                    if (address != null)
+                    if ( address != null )
                     {
                         lHomeAddress.Text = address.FormattedHtmlAddress;
                     }
@@ -825,7 +847,7 @@ function(item) {
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnApply_Click( object sender, EventArgs e )
         {
-            LoadChart();
+            LoadChartAndGrids();
         }
 
         #endregion
@@ -886,6 +908,7 @@ function(item) {
         protected void btnShowByAttendees_Click( object sender, EventArgs e )
         {
             DisplayShowBy( ShowBy.Attendees );
+            BindAttendeesGrid();
         }
 
         /// <summary>
@@ -896,6 +919,7 @@ function(item) {
         protected void btnShowByChart_Click( object sender, EventArgs e )
         {
             DisplayShowBy( ShowBy.Chart );
+            BindChartAttendanceGrid();
         }
 
         /// <summary>

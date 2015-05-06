@@ -81,11 +81,11 @@
                             <div class="row margin-t-sm">
                                 <div class="col-md-12">
                                     <div class="pull-right">
-                                        <asp:LinkButton ID="lShowGrid" runat="server" CssClass="btn btn-default btn-xs margin-b-sm" Text="Show Data <i class='fa fa-chevron-down'></i>" ToolTip="Show Data" OnClick="lShowGrid_Click" />
+                                        <asp:LinkButton ID="lShowChartAttendanceGrid" runat="server" CssClass="btn btn-default btn-xs margin-b-sm" Text="Show Data <i class='fa fa-chevron-down'></i>" ToolTip="Show Data" OnClick="lShowChartAttendanceGrid_Click" />
                                     </div>
                                 </div>
                             </div>
-                            <asp:Panel ID="pnlGrid" runat="server" Visible="false">
+                            <asp:Panel ID="pnlChartAttendanceGrid" runat="server" Visible="false">
 
                                 <div class="grid">
                                     <Rock:Grid ID="gChartAttendance" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesId" RowItemText="Attendance Summary">
