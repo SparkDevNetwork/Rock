@@ -108,6 +108,10 @@
     <Compile Include="Migrations\201504290136417_GroupGeofenceFunctions.Designer.cs">
       <DependentUpon>201504290136417_GroupGeofenceFunctions.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201505052324260_KioskPages.cs" />
+    <Compile Include="Migrations\201505052324260_KioskPages.Designer.cs">
+      <DependentUpon>201505052324260_KioskPages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.cs" />
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.Designer.cs">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
@@ -1598,6 +1602,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201504290136417_GroupGeofenceFunctions.resx">
       <DependentUpon>201504290136417_GroupGeofenceFunctions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201505052324260_KioskPages.resx">
+      <DependentUpon>201505052324260_KioskPages.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
