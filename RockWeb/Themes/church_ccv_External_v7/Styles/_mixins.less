@@ -1,0 +1,12 @@
+
+
+//
+// MIXINS
+// --------------------------------------------------
+
+//          18px                                   1.3
+.din(@size: @headings-font-size-base, @lineheight: @heading-base-line-height) {
+  font-family: @headings-font-family;
+  font-size: @size;
+  line-height: floor((@size * @lineheight));
+}

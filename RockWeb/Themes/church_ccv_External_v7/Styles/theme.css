@@ -1,3 +1,4 @@
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
 /*
    Rock's Core CSS
 
@@ -766,7 +767,7 @@ Copyright (c) 2012 Dan Eden*/
 }
 .picker .picker-label {
   padding: 6px 12px;
-  font-size: 18px;
+  font-size: 14px;
   color: #555555;
   background-color: #eeeeee;
   border: 1px solid #cccccc;
@@ -2132,8 +2133,8 @@ a.aspNetDisabled {
   padding-top: 0;
 }
 .form-group {
-  font-size: 18px;
-  line-height: 1.3;
+  font-size: 14px;
+  line-height: 1.42857143;
 }
 .form-group .checkbox:last-child {
   margin-bottom: 30px;
@@ -2846,7 +2847,7 @@ tr.row-highlight td {
 }
 .panel-note-light article .note-author,
 .panel-note-light article .note-created {
-  font-size: 17px;
+  font-size: 13px;
   opacity: 0.7;
 }
 .panel-noteentry {
@@ -4433,7 +4434,7 @@ iframe.email-body {
   min-height: 24px !important;
   font-weight: 600 !important;
   font-size: 24px !important;
-  font-family: "DINWebCondensed", sans-serif !important;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
 }
 .cke_dialog_close_button {
   background-image: none !important;
@@ -4446,7 +4447,7 @@ iframe.email-body {
   color: #3a3a3a !important;
   font-weight: 700 !important;
   font-size: 20px !important;
-  font-family: "DINWebCondensed", sans-serif !important;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
   margin-top: 8px;
 }
 .cke_dialog_close_button .cke_label:after {
@@ -4476,8 +4477,8 @@ a.cke_dialog_ui_button:active {
   border-radius: 4px;
   text-shadow: none !important;
   padding: 6px 2px !important;
-  font-family: "DINWebCondensed", sans-serif !important;
-  font-size: 18px !important;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  font-size: 14px !important;
 }
 a.cke_dialog_ui_button span {
   text-shadow: none !important;
@@ -4614,7 +4615,7 @@ a.help {
 .popover-content header {
   margin: -9px -14px 8px -14px;
   padding: 8px 14px;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: normal;
   line-height: 18px;
   background-color: #f7f7f7;
@@ -5128,13 +5129,23 @@ h6,
 .h6 {
   text-transform: uppercase;
 }
+.btn {
+  font-family: "DINWebCondensed", sans-serif;
+  font-size: 16px;
+  line-height: 20px;
+}
+.din {
+  font-family: "DINWebCondensed", sans-serif;
+  font-size: 18px;
+  line-height: 23px;
+}
 .underline {
   border-bottom: 1px solid #eeeeee;
   padding-bottom: .25em;
 }
 .text-large {
-  line-height: 1.3;
-  font-size: 23px;
+  line-height: 1.42857143;
+  font-size: 18px;
   margin-bottom: 1em;
 }
 @media print {
@@ -5153,6 +5164,9 @@ h6,
 }
 .masthead {
   margin-bottom: 30px;
+  font-family: "DINWebCondensed", sans-serif;
+  font-size: 18px;
+  line-height: 23px;
 }
 .masthead-upper {
   background-color: #1d1d1d;
@@ -5430,7 +5444,9 @@ h6,
 .footernav {
   text-transform: uppercase;
   letter-spacing: .75px;
-  font-size: .91em;
+  font-family: "DINWebCondensed", sans-serif;
+  font-size: 18px;
+  line-height: 23px;
   margin-top: 44.1px;
 }
 @media (min-width: 768px) {
@@ -5507,6 +5523,9 @@ h6,
   transition: opacity 0.3s;
 }
 .slide-control {
+  font-family: "DINWebCondensed", sans-serif;
+  font-size: 18px;
+  line-height: 23px;
   color: #fff;
   background: #777777;
   overflow: auto;
@@ -5739,8 +5758,8 @@ html[xmlns] .slides {
 .brandlist-item {
   font-size: 23px;
   line-height: 1.1;
-  margin-top: 11.5px;
-  margin-bottom: 11.5px;
+  margin-top: 10px;
+  margin-bottom: 10px;
   text-transform: uppercase;
   font-weight: 800;
   position: relative;
@@ -5803,11 +5822,11 @@ html[xmlns] .slides {
   top: 0;
   right: 0;
   left: 0;
-  bottom: 138px;
+  bottom: 120px;
 }
 @media (min-width: 992px) {
   .campusmodal-holder {
-    bottom: 69px;
+    bottom: 60px;
   }
 }
 .campusmodal-footer {
@@ -5817,12 +5836,12 @@ html[xmlns] .slides {
   left: 0;
   background: #222222;
   color: #fff;
-  height: 138px;
-  padding: 11.5px;
+  height: 120px;
+  padding: 10px;
 }
 @media (min-width: 992px) {
   .campusmodal-footer {
-    height: 69px;
+    height: 60px;
     padding: 0;
   }
 }
@@ -5834,8 +5853,8 @@ html[xmlns] .slides {
   .campusmodal-footertext {
     float: left;
     margin: 0;
-    line-height: 23px;
-    padding: 23px;
+    line-height: 20px;
+    padding: 20px;
   }
   .campusmodal-footertitle {
     background: #7a1315;
@@ -5845,7 +5864,7 @@ html[xmlns] .slides {
   }
 }
 .card {
-  margin-bottom: 23px;
+  margin-bottom: 20px;
   border: 1px solid #dddddd;
   -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);

@@ -16,6 +16,7 @@
 @ccv-font-path: "../Assets/Fonts/DIN/";
 
 @import "_variables";
+@import "_mixins";
 @import "_helpers";
 
 @import "modules/_gridlist";
@@ -64,6 +65,7 @@ header {
   overflow: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  .din();
   @media @sm {
     height: 100vh;
     width: 320px;
