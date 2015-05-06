@@ -2980,7 +2980,7 @@ tr.row-highlight td {
 .workflow-action .criteria-exists {
   background-color: #f0ad4e;
   color: #ffffff;
-  border: 1px solid #eea236;
+  border: 1px solid #f0ad4e;
 }
 .workflow-action .conditional-run-criteria {
   margin-top: -15px;
@@ -4503,7 +4503,7 @@ a.cke_dialog_ui_button_ok:focus,
 a.cke_dialog_ui_button_ok:active {
   background: #7a1315 !important;
   color: #ffffff !important;
-  border: 1px solid #38090a !important;
+  border: 1px solid #4e0c0d !important;
 }
 @media (min-width: 480px) {
   .ck-folders,
@@ -5722,7 +5722,7 @@ html[xmlns] .slides {
   color: #fff;
 }
 .bigblock-graydarker .page-header {
-  border-bottom: 1px solid #333333;
+  border-color: #333333;
 }
 .bigblock-flexbg {
   background-size: cover;
