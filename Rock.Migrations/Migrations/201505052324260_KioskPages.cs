@@ -29,7 +29,9 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-
+            // add the geographic area group location type
+            RockMigrationHelper.AddDefinedValue( "2E68D37C-FB7B-4AA5-9E09-3785D52156CB", "Geographic Area", "Used to defined a geofenced area.", "44990C3F-C45B-EDA3-4B65-A238A581A26F", true );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "44990C3F-C45B-EDA3-4B65-A238A581A26F", "85ED6E0F-9087-4F0F-993B-4BD5FCA9DCB9", "True" );
             
             // define kiosk device
             Sql(@"
@@ -531,7 +533,30 @@ namespace Rock.Migrations
             // Attrib Value for Block:Idle Redirect, Attribute:New Location Page: Update Info, Site: Self-Service Kiosk (Preview)
             RockMigrationHelper.AddBlockAttributeValue("591A4FB7-25A0-4FF6-8CB7-7C24BC0754D6","2254B67B-9CB1-47DE-A63D-D0B56051ECD4",@"/kiosk");
 
-            // add kiosk route
+            // fix rss lava
+            RockMigrationHelper.AddDefinedValueAttributeValue( "D6149581-9EFC-40D8-BD38-E92C0717BEDA", "1E13E409-B568-45D0-B4B6-556C87D61232", @"{% assign timezone = 'Now' | Date:'zzz' | Replace:':','' -%}
+<?xml version=""1.0"" encoding=""utf-8""?>
+<rss version=""2.0"" xmlns:atom=""http://www.w3.org/2005/Atom"">
+
+<channel>
+    <title>{{ Channel.Name | Escape }}</title>
+    <link>{{ Channel.ChannelUrl }}</link>
+    <description>{{ Channel.Description | Escape }}</description>
+    <language>en-us</language>
+    <ttl>{{ Channel.TimeToLive }}</ttl>
+    <lastBuildDate>{{ 'Now' | Date:'ddd, dd MMM yyyy HH:mm:00' }} {{ timezone }}</lastBuildDate>
+{% for item in Items -%}
+    <item>
+        <title>{{ item.Title | Escape }}</title>
+        <guid>{{ Channel.ItemUrl }}?Item={{ item.Id }}</guid>
+        <link>{{ Channel.ItemUrl }}?Item={{ item.Id }}</link>
+        <pubDate>{{ item.StartDateTime | Date:'ddd, dd MMM yyyy HH:mm:00' }} {{ timezone }}</pubDate>
+        <description>{{ item.Content | Escape }}</description>
+    </item>
+{% endfor -%}
+
+</channel>
+</rss>" );
 
         }
         
@@ -540,6 +565,10 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            // add the geographic area group location type
+            RockMigrationHelper.DeleteDefinedValue( "44990C3F-C45B-EDA3-4B65-A238A581A26F" );
+
+            
             // delete kiosk
             Sql("DELETE FROM [Device] WHERE [Guid] = '8638F176-DF1E-659B-4E76-CE4227D95081'");
 
@@ -663,12 +692,18 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteBlock("BF096DA2-1670-4956-916A-09047209CD83");
             RockMigrationHelper.DeleteBlockType("C7C069DB-9EEE-4245-9DF2-34E3A1FF4CCB"); // Report Data
             RockMigrationHelper.DeleteBlockType("42CF3822-A70C-4E07-9394-21607EED7018"); // Group Member Add From URL
+
+            Sql( @"UPDATE [SITE] SET [DefaultPageId] = null WHERE [Guid] = '05E96F7B-B75E-4987-825A-B6F51F8D9CAA'" );
+
             RockMigrationHelper.DeletePage("086B6891-00C8-43F7-BB53-D42B8AA30504"); //  Page: Update Info, Layout: Full Width, Site: Self-Service Kiosk (Preview)
             RockMigrationHelper.DeletePage("FEFA6623-395F-4B43-AF76-465FE13CFBA1"); //  Page: Give, Layout: Full Width, Site: Self-Service Kiosk (Preview)
             RockMigrationHelper.DeletePage("85E7D913-3025-4202-9F7A-D7C93A268570"); //  Page: Prayer Requests, Layout: Full Width, Site: Self-Service Kiosk (Preview)
             RockMigrationHelper.DeletePage("AB045324-60A4-4972-8936-7B319FF5D2CE"); //  Page: Self-Service Kiosk (Preview) Home Page, Layout: Right Sidebar, Site: Self-Service Kiosk (Preview)
-            RockMigrationHelper.DeleteLayout("9F7CAB6E-33C9-460E-A644-E96F7CC56F9F"); //  Layout: Right Sidebar, Site: Self-Service Kiosk (Preview)
-            RockMigrationHelper.DeleteLayout("8153F8AD-4116-49FD-84B8-CFF6703D7A19"); //  Layout: Full Width, Site: Self-Service Kiosk (Preview)
+
+            RockMigrationHelper.DeleteLayout( "9F7CAB6E-33C9-460E-A644-E96F7CC56F9F" ); //  Layout: Right Sidebar, Site: Self-Service Kiosk (Preview)
+            RockMigrationHelper.DeleteLayout( "8153F8AD-4116-49FD-84B8-CFF6703D7A19" ); //  Layout: Full Width, Site: Self-Service Kiosk (Preview)
+
+            Sql( @"DELETE FROM [Site] WHERE [Guid] = '05E96F7B-B75E-4987-825A-B6F51F8D9CAA'" );
         }
     }
 }
