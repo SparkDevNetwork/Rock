@@ -144,7 +144,8 @@
                                                 <div class="padding-l-lg">
                                                     <div class="form-inline">
                                                         <Rock:RockCheckBox ID="cbPatternAndMissed" runat="server" />and missed at least                                                           
-                                                                    <Rock:NumberBox ID="tbPatternMissedXTimes" runat="server" CssClass="input-width-xs" />&nbsp;times between
+                                                                    <Rock:NumberBox ID="tbPatternMissedXTimes" runat="server" CssClass="input-width-xs" />&nbsp;weeks between
+                                                        <Rock:NotificationBox ID="nbMissedDateRangeRequired" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" />
                                                         <Rock:DateRangePicker ID="drpPatternDateRange" runat="server" />
                                                     </div>
                                                 </div>
@@ -153,7 +154,7 @@
                                     </Rock:RockControlWrapper>
 
                                     <div class="actions margin-b-md">
-                                        <asp:LinkButton ID="btnView" runat="server" CssClass="btn btn-primary" Text="Apply" ToolTip="Update the Attendees grid" OnClick="btnView_Click" />
+                                        <asp:LinkButton ID="btnApplyAttendeesFilter" runat="server" CssClass="btn btn-primary" Text="Apply" ToolTip="Update the Attendees grid" OnClick="btnApplyAttendeesFilter_Click" />
                                     </div>
 
                                 </div>
