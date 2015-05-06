@@ -79,6 +79,26 @@ namespace Rock.Rest.Controllers
             }
         }
 
+        /// <summary>
+        /// Use this to Login a user and return an AuthCookie which can be used in subsequent REST calls
+        /// </summary>
+        /// <param name="loginParameters">The login parameters.</param>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [HttpPost]
+        [System.Web.Http.Route("api/Auth/GoogleLogin")]
+        public void GoogleLogin( [FromBody]Rock.Security.ExternalAuthentication.Google.GoogleUser googleUser )
+        {
+            string userName = Rock.Security.ExternalAuthentication.Google.GetGoogleUser(googleUser);
+            if ( !string.IsNullOrWhiteSpace(userName) )
+            {
+                Rock.Security.Authorization.SetAuthCookie(userName, false, false);
+            }
+            else
+            {
+                throw new HttpResponseException(HttpStatusCode.Unauthorized);
+            }
+        }
+
     }
 
 }
