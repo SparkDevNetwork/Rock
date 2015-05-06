@@ -180,7 +180,11 @@
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockBoundField DataField="LastVisit.Group.Name" HeaderText="Check-in Area" SortExpression="LastVisit.Group.Name" />
-                                    <Rock:RockBoundField DataField="HomeAddress" HeaderText="Home Address" />
+                                    <Rock:RockTemplateField HeaderText="Home Address" ItemStyle-Wrap="false">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lHomeAddress" runat="server" />
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
                                     <Rock:PhoneNumbersField HeaderText="Phone Numbers" DataField="PhoneNumbers" ItemStyle-Wrap="false" DisplayCountryCode="false" />
 
                                     <Rock:RockBoundField DataField="AttendanceCount" HeaderText="Count" SortExpression="AttendanceCount" />

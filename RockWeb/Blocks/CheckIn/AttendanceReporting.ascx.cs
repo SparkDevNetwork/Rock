@@ -616,7 +616,6 @@ function(item) {
                 a.Person,
                 FirstVisits = qryVisits.Where( b => b.PersonAlias.PersonId == a.Person.Id ).OrderBy( x => x.StartDateTime ).Select( s => s.StartDateTime ).Take( 2 ),
                 LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
-                HomeAddress = RockUdfHelper.ufnCrm_GetAddress( a.Person.Id, "Home", "Full" ),
                 PhoneNumbers = a.Person.PhoneNumbers,
                 AttendanceCount = a.Attendances.Count()
             } );
@@ -664,10 +663,12 @@ function(item) {
                 Literal lFirstVisitDate = e.Row.FindControl( "lFirstVisitDate" ) as Literal;
                 Literal lSecondVisitDate = e.Row.FindControl( "lSecondVisitDate" ) as Literal;
                 Literal lServiceTime = e.Row.FindControl( "lServiceTime" ) as Literal;
+                Literal lHomeAddress = e.Row.FindControl( "lHomeAddress" ) as Literal;
                 Literal lAttendancePercent = e.Row.FindControl( "lAttendancePercent" ) as Literal;
 
                 var firstVisits = dataItem.GetPropertyValue( "FirstVisits" ) as IEnumerable<DateTime>;
                 var lastVisit = dataItem.GetPropertyValue( "LastVisit" ) as Attendance;
+                var person = dataItem.GetPropertyValue( "Person" ) as Person;
                 if ( firstVisits != null )
                 {
                     var firstVisit = firstVisits.FirstOrDefault();
@@ -680,6 +681,15 @@ function(item) {
                     if ( secondVisit != null )
                     {
                         lSecondVisitDate.Text = secondVisit.ToShortDateString();
+                    }
+                }
+
+                if (person != null)
+                {
+                    var address = person.GetHomeLocation();
+                    if (address != null)
+                    {
+                        lHomeAddress.Text = address.FormattedHtmlAddress;
                     }
                 }
 
