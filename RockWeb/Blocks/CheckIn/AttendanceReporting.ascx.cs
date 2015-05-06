@@ -328,7 +328,7 @@ function(item) {
                 BindChartAttendanceGrid();
             }
 
-            if (pnlShowByAttendees.Visible)
+            if ( pnlShowByAttendees.Visible )
             {
                 BindAttendeesGrid();
             }
@@ -544,7 +544,7 @@ function(item) {
         }
 
         /// <summary>
-        ///  private class just for this block so that we can cache ScheduleInfo when we populate the attendees grid
+        /// private class just for this block so that we can cache ScheduleInfo when we populate the attendees grid
         /// </summary>
         private class ScheduleInfo
         {
@@ -557,7 +557,7 @@ function(item) {
             public string FriendlyScheduleText { get; set; }
 
             /// <summary>
-            /// Gets or sets the occurrence count.
+            /// Gets or sets the occurrence count for the selected date range (the main date range)
             /// </summary>
             /// <value>
             /// The occurrence count.
@@ -599,16 +599,6 @@ function(item) {
                 return;
             }
 
-            if ( dateRange.Start.HasValue )
-            {
-                qry = qry.Where( a => a.StartDateTime >= dateRange.Start.Value );
-            }
-
-            if ( dateRange.End.HasValue )
-            {
-                qry = qry.Where( a => a.StartDateTime < dateRange.End.Value );
-            }
-
             if ( !string.IsNullOrWhiteSpace( groupIds ) )
             {
                 var groupIdList = groupIds.Split( ',' ).AsIntegerList();
@@ -621,18 +611,66 @@ function(item) {
                 qry = qry.Where( a => a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) );
             }
 
+            // have the "Missed" query be the same as the qry before the Main date range is applied since it'll have a different date range
+            var qryMissed = qry;
+
+            if ( dateRange.Start.HasValue )
+            {
+                qry = qry.Where( a => a.StartDateTime >= dateRange.Start.Value );
+            }
+
+            if ( dateRange.End.HasValue )
+            {
+                qry = qry.Where( a => a.StartDateTime < dateRange.End.Value );
+            }
+
             var qryByPerson = qry.GroupBy( a => a.PersonAlias.Person ).Select( a => new
             {
                 Person = a.Key,
                 Attendances = a
             } );
 
+            // we want to get the first 2 visits at a minimum so we can show the date in the grid
+            int nthVisitsTake = 2;
+            int? byNthVisit = null;
+
+            if ( radByVisit.Checked )
+            {
+                // If we are filtering by nth visit, we might want to get up to first 5
+                byNthVisit = ddlNthVisit.SelectedValue.AsIntegerOrNull();
+                if ( byNthVisit.HasValue && byNthVisit > 2 )
+                {
+                    nthVisitsTake = byNthVisit.Value;
+                }
+            }
+
+            int? attendedMinCount = null;
+            int? attendedMissedCount = null;
+            DateRange attendedMissedDateRange = new DateRange();
+            if ( radByPattern.Checked )
+            {
+                attendedMinCount = tbPatternXTimes.Text.AsIntegerOrNull();
+                if ( cbPatternAndMissed.Checked )
+                {
+                    attendedMissedCount = tbPatternMissedXTimes.Text.AsIntegerOrNull();
+                    attendedMissedDateRange = new DateRange( drpPatternDateRange.LowerValue, drpPatternDateRange.UpperValue );
+                    if ( !attendedMissedDateRange.Start.HasValue || !attendedMissedDateRange.End.HasValue )
+                    {
+                        nbMissedDateRangeRequired.Visible = true;
+                        return;
+                    }
+                }
+            }
+
+            nbMissedDateRangeRequired.Visible = false;
+
             var qryResult = qryByPerson.Select( a => new
             {
                 a.Person,
-                FirstVisits = qryVisits.Where( b => b.PersonAlias.PersonId == a.Person.Id ).OrderBy( x => x.StartDateTime ).Select( s => s.StartDateTime ).Take( 2 ),
+                FirstVisits = qryVisits.Where( b => b.PersonAlias.PersonId == a.Person.Id ).Select( s => new { s.Id, s.StartDateTime } ).OrderBy( x => x.StartDateTime ).Take( nthVisitsTake ),
                 LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
                 PhoneNumbers = a.Person.PhoneNumbers,
+                
                 // only count it as one if they attended multiple times on the same day
                 AttendanceCount = a.Attendances.Select( b => new
                 {
@@ -641,6 +679,36 @@ function(item) {
                     Day = SqlFunctions.DatePart( "day", b.StartDateTime )
                 } ).GroupBy( c => c ).Count()
             } );
+
+            if ( byNthVisit.HasValue )
+            {
+                // only return attendees where their lastvisit was their nth Visit
+                int skipCount = byNthVisit.Value - 1;
+                qryResult = qryResult.Where( a => a.LastVisit.Id == a.FirstVisits.OrderBy( x => x.StartDateTime ).Skip( skipCount ).Select( b => b.Id ).FirstOrDefault() );
+            }
+
+            if ( attendedMinCount.HasValue )
+            {
+                qryResult = qryResult.Where( a => a.AttendanceCount >= attendedMinCount );
+            }
+
+            double? attendedMissedPossible = null;
+            if ( attendedMissedCount.HasValue )
+            {
+                if ( attendedMissedDateRange.Start.HasValue && attendedMissedDateRange.End.HasValue )
+                {
+                    attendedMissedPossible = Math.Ceiling( ( attendedMissedDateRange.End.Value - attendedMissedDateRange.Start.Value ).TotalDays / 7 );
+                    qryMissed = qryMissed.Where( a => a.StartDateTime >= attendedMissedDateRange.Start.Value && a.StartDateTime < attendedMissedDateRange.End.Value );
+                    var qryMissedByPerson = qryMissed.GroupBy( a => a.PersonAlias.Person ).Select( a => new
+                    {
+                        Person = a.Key,
+                        AttendanceCount = a.Count()
+                    } ).Where( x => ( attendedMissedPossible - x.AttendanceCount ) >= attendedMissedCount );
+
+                    // filter to only people that missed at least X weeks between specified missed date range
+                    qryResult = qryResult.Where( a => qryMissedByPerson.Any( b => b.Person.Id == a.Person.Id ) );
+                }
+            }
 
             SortProperty sortProperty = gAttendeesAttendance.SortProperty;
 
@@ -651,6 +719,15 @@ function(item) {
             else
             {
                 qryResult = qryResult.OrderBy( a => a.Person.LastName ).ThenBy( a => a.Person.NickName );
+            }
+
+            //// pre-load the schedules so we can quickly do the OnRowDataBound calculations
+            // don't count future occurrences
+            var occurrenceDateEnd = dateRange.End;
+            var currentDateTime = RockDateTime.Now;
+            if ( !dateRange.End.HasValue || dateRange.End > currentDateTime )
+            {
+                dateRange.End = currentDateTime;
             }
 
             _schedulePossibleAttendanceCountCache = new ScheduleService( rockContext ).Queryable()
@@ -665,7 +742,7 @@ function(item) {
                 {
                     a.Id,
                     a.FriendlyScheduleText,
-                    Count = a.ICalEvent != null ? ScheduleICalHelper.GetOccurrences( a.ICalEvent, dateRange.Start ?? DateTime.MinValue, dateRange.End ?? DateTime.MaxValue ).Count() : 0,
+                    Count = a.ICalEvent != null ? ScheduleICalHelper.GetOccurrences( a.ICalEvent, dateRange.Start ?? DateTime.MinValue, dateRange.End ?? DateTime.MaxValue ).Count() : 0
                 } ).ToDictionary( k => k.Id, v => new ScheduleInfo { FriendlyScheduleText = v.FriendlyScheduleText, OccurrenceCount = v.Count } );
 
             gAttendeesAttendance.DataSource = qryResult.ToList();
@@ -688,7 +765,7 @@ function(item) {
                 Literal lHomeAddress = e.Row.FindControl( "lHomeAddress" ) as Literal;
                 Literal lAttendancePercent = e.Row.FindControl( "lAttendancePercent" ) as Literal;
 
-                var firstVisits = dataItem.GetPropertyValue( "FirstVisits" ) as IEnumerable<DateTime>;
+                var firstVisits = dataItem.GetPropertyValue( "FirstVisits" ) as IEnumerable<object>;
                 var lastVisit = dataItem.GetPropertyValue( "LastVisit" ) as Attendance;
                 var person = dataItem.GetPropertyValue( "Person" ) as Person;
                 if ( firstVisits != null )
@@ -697,12 +774,12 @@ function(item) {
                     var secondVisit = firstVisits.Skip( 1 ).FirstOrDefault();
                     if ( firstVisit != null )
                     {
-                        lFirstVisitDate.Text = firstVisit.ToShortDateString();
+                        lFirstVisitDate.Text = ( (DateTime)firstVisit.GetPropertyValue( "StartDateTime" ) ).ToShortDateString();
                     }
 
                     if ( secondVisit != null )
                     {
-                        lSecondVisitDate.Text = secondVisit.ToShortDateString();
+                        lSecondVisitDate.Text = ( (DateTime)secondVisit.GetPropertyValue( "StartDateTime" ) ).ToShortDateString();
                     }
                 }
 
@@ -923,16 +1000,6 @@ function(item) {
         }
 
         /// <summary>
-        /// Handles the Click event of the btnView control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnView_Click( object sender, EventArgs e )
-        {
-            BindAttendeesGrid();
-        }
-
-        /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlCheckinType control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -940,6 +1007,17 @@ function(item) {
         protected void ddlCheckinType_SelectedIndexChanged( object sender, EventArgs e )
         {
             BuildGroupTypesUI();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnApplyAttendeesFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnApplyAttendeesFilter_Click( object sender, EventArgs e )
+        {
+            // both Attendess Filter Apply button just do the same thing as the main apply button
+            btnApply_Click( sender, e );
         }
     }
 }
