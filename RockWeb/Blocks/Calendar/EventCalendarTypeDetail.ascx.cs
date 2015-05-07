@@ -230,6 +230,7 @@ namespace RockWeb.Blocks.Calendar
                 eventCalendar = eventCalendarService.Get( eventCalendarId );
             }
 
+
             eventCalendar.Name = tbName.Text;
             eventCalendar.Description = tbDescription.Text;
             eventCalendar.IconCssClass = tbIconCssClass.Text;
@@ -247,7 +248,7 @@ namespace RockWeb.Blocks.Calendar
 
                 /* Save Attributes */
                 string qualifierValue = eventCalendar.Id.ToString();
-                SaveAttributes( new EventCalendar().TypeId, "Id", qualifierValue, EventCalendarAttributesState, rockContext );
+                SaveAttributes( new EventCalendarItem().TypeId, "EventCalendarTypeId", qualifierValue, EventCalendarAttributesState, rockContext );
 
                 // Reload to save default role
                 eventCalendar = eventCalendarService.Get( eventCalendar.Id );
@@ -384,9 +385,9 @@ namespace RockWeb.Blocks.Calendar
             string qualifierValue = eventCalendar.Id.ToString();
 
             EventCalendarAttributesState = new ViewStateList<Attribute>();
-            EventCalendarAttributesState.AddAll( attributeService.GetByEntityTypeId( new EventCalendar().TypeId ).AsQueryable()
+            EventCalendarAttributesState.AddAll( attributeService.GetByEntityTypeId( new EventCalendarItem().TypeId ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn.Equals( "EventCalendarTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -464,7 +465,7 @@ namespace RockWeb.Blocks.Calendar
         {
             switch ( hfActiveDialog.Value )
             {
-                case "GROUPTYPEATTRIBUTES":
+                case "EVENTCALENDARATTRIBUTES":
                     dlgEventCalendarAttribute.Show();
                     break;
 
@@ -478,7 +479,7 @@ namespace RockWeb.Blocks.Calendar
         {
             switch ( hfActiveDialog.Value )
             {
-                case "GROUPTYPEATTRIBUTES":
+                case "EVENTCALENDARATTRIBUTES":
                     dlgEventCalendarAttribute.Hide();
                     break;
             }
@@ -596,12 +597,12 @@ namespace RockWeb.Blocks.Calendar
             {
                 attribute = new Attribute();
                 attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
-                edtEventCalendarAttributes.ActionTitle = ActionTitle.Add( "attribute for groups of group type " + tbName.Text );
+                edtEventCalendarAttributes.ActionTitle = ActionTitle.Add( "attribute for Events of Calendar type " + tbName.Text );
             }
             else
             {
                 attribute = EventCalendarAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
-                edtEventCalendarAttributes.ActionTitle = ActionTitle.Edit( "attribute for groups of group type " + tbName.Text );
+                edtEventCalendarAttributes.ActionTitle = ActionTitle.Edit( "attribute for Events of Calendar type " + tbName.Text );
             }
 
             var reservedKeyNames = new List<string>();
