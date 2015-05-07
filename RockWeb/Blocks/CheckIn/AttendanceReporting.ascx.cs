@@ -591,12 +591,12 @@ function(item) {
             var rockContext = new RockContext();
             var qry = new AttendanceService( rockContext ).Queryable();
 
-            qry = qry.AsNoTracking().Where( a => a.DidAttend.HasValue && a.DidAttend.Value );
+            qry = qry.Where( a => a.DidAttend.HasValue && a.DidAttend.Value );
             var groupType = this.GetSelectedTemplateGroupType();
             var qryVisits = qry;
             if ( groupType != null )
             {
-                var childGroupTypeIds = new GroupTypeService( rockContext ).GetChildGroupTypes( groupType.Guid ).Select( a => a.Id );
+                var childGroupTypeIds = new GroupTypeService( rockContext ).GetChildGroupTypes( groupType.Id ).Select( a => a.Id );
                 qryVisits = qry.Where( a => childGroupTypeIds.Any( b => b == a.Group.GroupTypeId ) );
             }
             else
@@ -751,37 +751,55 @@ function(item) {
                 } ).ToDictionary( k => k.Id, v => new ScheduleInfo { FriendlyScheduleText = v.FriendlyScheduleText, OccurrenceCount = v.Count } );
 
             var includeParents = hfViewBy.Value.ConvertToEnumOrNull<ViewBy>().GetValueOrDefault( ViewBy.Attendees ) == ViewBy.ParentsOfAttendees;
-            var parentsField = gAttendeesAttendance.Columns.OfType<RockTemplateField>().FirstOrDefault( a => a.HeaderText == "Parents" );
-            if ( parentsField != null )
+            var parentField = gAttendeesAttendance.Columns.OfType<PersonField>().FirstOrDefault( a => a.HeaderText == "Parent" );
+            if ( parentField != null )
             {
-                parentsField.Visible = includeParents;
+                parentField.Visible = includeParents;
             }
 
             if ( includeParents )
             {
                 var groupTypeFamily = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-                int adultRoleId = groupTypeFamily.Roles.First(a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()).Id;
-                int childRoleId = groupTypeFamily.Roles.First(a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid()).Id;
+                int adultRoleId = groupTypeFamily.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+                int childRoleId = groupTypeFamily.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
                 int groupTypeFamilyId = groupTypeFamily.Id;
                 var qryFamilyGroups = new GroupService( rockContext ).Queryable().Where( m => m.GroupTypeId == groupTypeFamilyId );
 
-                var qryWithParents = qryResult.Select( a => new
+                // narrow it down to only attendees that are children
+                qryResult = qryResult.Where( a => qryFamilyGroups.Any( g => g.Members.Any( m => ( m.GroupRoleId == childRoleId ) && ( m.PersonId == a.Person.Id ) ) ) );
+
+                var qryResultWithParent = qryResult.Select( a => new
                 {
-                    a.Person,
-                    Parents = qryFamilyGroups.Where( g => g.Members.Any( m => m.PersonId == a.Person.Id && m.GroupRoleId == childRoleId ) )
-                      .SelectMany( aa => aa.Members ).Where( bb => bb.GroupRoleId == adultRoleId ).Select( s => s.Person ),
-                    a.FirstVisits,
-                    a.LastVisit,
-                    a.PhoneNumbers,
-                    a.AttendanceCount
+                    ParentWithAttendance = qryFamilyGroups.Where( g => g.Members.Any( m => m.PersonId == a.Person.Id && m.GroupRoleId == childRoleId ) )
+                      .SelectMany( aa => aa.Members ).Where( bb => bb.GroupRoleId == adultRoleId )
+                      .Select( s =>
+                          new
+                          {
+                              Parent = s.Person,
+                              Attendance = a
+                          } )
+                } )
+                .SelectMany( x => x.ParentWithAttendance )
+                .Select( s => new
+                {
+                    s.Parent,
+                    s.Attendance.Person,
+                    s.Attendance.FirstVisits,
+                    s.Attendance.LastVisit,
+                    s.Attendance.PhoneNumbers,
+                    s.Attendance.AttendanceCount
                 } );
 
-                gAttendeesAttendance.DataSource = qryWithParents.ToList();
+                rockContext.Database.Log = s => System.Diagnostics.Debug.WriteLine( s );
+
+                gAttendeesAttendance.DataSource = qryResultWithParent.AsNoTracking().ToList();
+                rockContext.Database.Log = null;
+
                 gAttendeesAttendance.DataBind();
             }
             else
             {
-                gAttendeesAttendance.DataSource = qryResult.ToList();
+                gAttendeesAttendance.DataSource = qryResult.AsNoTracking().ToList();
                 gAttendeesAttendance.DataBind();
             }
         }
