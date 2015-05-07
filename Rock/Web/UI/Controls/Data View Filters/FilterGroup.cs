@@ -243,7 +243,10 @@ namespace Rock.Web.UI.Controls
             {
                 if ( control is FilterGroup || control is FilterField )
                 {
-                    control.RenderControl( writer );
+                    if ( control.Visible )
+                    {
+                        control.RenderControl( writer );
+                    }
                 }
             }
 
