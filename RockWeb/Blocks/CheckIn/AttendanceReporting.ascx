@@ -162,12 +162,8 @@
 
                             <Rock:Grid ID="gAttendeesAttendance" runat="server" AllowSorting="true" RowItemText="Attendee" OnRowDataBound="gAttendeesAttendance_RowDataBound">
                                 <Columns>
+                                    <Rock:PersonField DataField="Parent" HeaderText="Parent" />
                                     <Rock:PersonField DataField="Person" HeaderText="Name" SortExpression="PersonAlias.Person.NickName, PersonAlias.Person.LastName" />
-                                    <Rock:RockTemplateField HeaderText="Parents">
-                                        <ItemTemplate>
-                                            <asp:Literal ID="lParentsNames" runat="server" />
-                                        </ItemTemplate>
-                                    </Rock:RockTemplateField>
                                     <Rock:RockTemplateField HeaderText="First Visit ">
                                         <ItemTemplate>
                                             <asp:Literal ID="lFirstVisitDate" runat="server" />
