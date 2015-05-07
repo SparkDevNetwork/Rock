@@ -31,7 +31,7 @@ namespace Rock.Data
     {
         /// <summary>
         /// when used in a Linq Query, calls database function ufnCrm_GetAddress 
-        /// Example: qry.Select( a => RockUdfHelper.ufnCrm_GetAddress(a.PersonId, "Home", "Full"))
+        /// Example: qry.Select( a =&gt; RockUdfHelper.ufnCrm_GetAddress(a.PersonId, "Home", "Full"))
         /// </summary>
         /// <param name="PersonId">The person identifier.</param>
         /// <param name="AddressType">Type of the address.  Can either be text "Home", "Work", "Previous", or the Id of the GroupLocationTypeValue </param>
