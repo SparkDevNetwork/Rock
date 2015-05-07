@@ -354,6 +354,8 @@ function(item) {
 
             this.SetUserPreference( keyPrefix + "ShowBy", hfShowBy.Value );
 
+            this.SetUserPreference( keyPrefix + "ViewBy", hfViewBy.Value );
+
             AttendeesFilterBy attendeesFilterBy;
             if ( radByVisit.Checked )
             {
@@ -442,6 +444,9 @@ function(item) {
 
             ShowBy showBy = this.GetUserPreference( keyPrefix + "ShowBy" ).ConvertToEnumOrNull<ShowBy>() ?? ShowBy.Chart;
             DisplayShowBy( showBy );
+
+            ViewBy viewBy = this.GetUserPreference( keyPrefix + "ViewBy" ).ConvertToEnumOrNull<ViewBy>() ?? ViewBy.Attendees;
+            hfViewBy.Value = viewBy.ConvertToInt().ToString();
 
             AttendeesFilterBy attendeesFilterBy = this.GetUserPreference( keyPrefix + "AttendeesFilterByType" ).ConvertToEnumOrNull<AttendeesFilterBy>() ?? AttendeesFilterBy.All;
 
@@ -670,7 +675,7 @@ function(item) {
                 FirstVisits = qryVisits.Where( b => b.PersonAlias.PersonId == a.Person.Id ).Select( s => new { s.Id, s.StartDateTime } ).OrderBy( x => x.StartDateTime ).Take( nthVisitsTake ),
                 LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
                 PhoneNumbers = a.Person.PhoneNumbers,
-                
+
                 // only count it as one if they attended multiple times on the same day
                 AttendanceCount = a.Attendances.Select( b => new
                 {
@@ -745,8 +750,40 @@ function(item) {
                     Count = a.ICalEvent != null ? ScheduleICalHelper.GetOccurrences( a.ICalEvent, dateRange.Start ?? DateTime.MinValue, dateRange.End ?? DateTime.MaxValue ).Count() : 0
                 } ).ToDictionary( k => k.Id, v => new ScheduleInfo { FriendlyScheduleText = v.FriendlyScheduleText, OccurrenceCount = v.Count } );
 
-            gAttendeesAttendance.DataSource = qryResult.ToList();
-            gAttendeesAttendance.DataBind();
+            var includeParents = hfViewBy.Value.ConvertToEnumOrNull<ViewBy>().GetValueOrDefault( ViewBy.Attendees ) == ViewBy.ParentsOfAttendees;
+            var parentsField = gAttendeesAttendance.Columns.OfType<RockTemplateField>().FirstOrDefault( a => a.HeaderText == "Parents" );
+            if ( parentsField != null )
+            {
+                parentsField.Visible = includeParents;
+            }
+
+            if ( includeParents )
+            {
+                var groupTypeFamily = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                int adultRoleId = groupTypeFamily.Roles.First(a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()).Id;
+                int childRoleId = groupTypeFamily.Roles.First(a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid()).Id;
+                int groupTypeFamilyId = groupTypeFamily.Id;
+                var qryFamilyGroups = new GroupService( rockContext ).Queryable().Where( m => m.GroupTypeId == groupTypeFamilyId );
+
+                var qryWithParents = qryResult.Select( a => new
+                {
+                    a.Person,
+                    Parents = qryFamilyGroups.Where( g => g.Members.Any( m => m.PersonId == a.Person.Id && m.GroupRoleId == childRoleId ) )
+                      .SelectMany( aa => aa.Members ).Where( bb => bb.GroupRoleId == adultRoleId ).Select( s => s.Person ),
+                    a.FirstVisits,
+                    a.LastVisit,
+                    a.PhoneNumbers,
+                    a.AttendanceCount
+                } );
+
+                gAttendeesAttendance.DataSource = qryWithParents.ToList();
+                gAttendeesAttendance.DataBind();
+            }
+            else
+            {
+                gAttendeesAttendance.DataSource = qryResult.ToList();
+                gAttendeesAttendance.DataBind();
+            }
         }
 
         /// <summary>
@@ -759,15 +796,25 @@ function(item) {
             var dataItem = e.Row.DataItem;
             if ( dataItem != null )
             {
+                Literal lParentsNames = e.Row.FindControl( "lParentsNames" ) as Literal;
                 Literal lFirstVisitDate = e.Row.FindControl( "lFirstVisitDate" ) as Literal;
                 Literal lSecondVisitDate = e.Row.FindControl( "lSecondVisitDate" ) as Literal;
                 Literal lServiceTime = e.Row.FindControl( "lServiceTime" ) as Literal;
                 Literal lHomeAddress = e.Row.FindControl( "lHomeAddress" ) as Literal;
                 Literal lAttendancePercent = e.Row.FindControl( "lAttendancePercent" ) as Literal;
 
+                var person = dataItem.GetPropertyValue( "Person" ) as Person;
+                var parents = dataItem.GetPropertyValue( "Parents" ) as IEnumerable<Person>;
+                if ( parents != null && lParentsNames != null && parents.Any() )
+                {
+                    foreach ( var parent in parents )
+                    {
+                        lParentsNames.Text = parents.Select( a => a.ToString() ).ToList().AsDelimited( " , ", " & " );
+                    }
+                }
+
                 var firstVisits = dataItem.GetPropertyValue( "FirstVisits" ) as IEnumerable<object>;
                 var lastVisit = dataItem.GetPropertyValue( "LastVisit" ) as Attendance;
-                var person = dataItem.GetPropertyValue( "Person" ) as Person;
                 if ( firstVisits != null )
                 {
                     var firstVisit = firstVisits.FirstOrDefault();
@@ -943,6 +990,22 @@ function(item) {
             /// The attendees
             /// </summary>
             Attendees = 1
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private enum ViewBy
+        {
+            /// <summary>
+            /// The attendee
+            /// </summary>
+            Attendees = 0,
+
+            /// <summary>
+            /// The parent of the attendee
+            /// </summary>
+            ParentsOfAttendees = 1
         }
 
         /// <summary>
