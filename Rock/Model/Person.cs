@@ -1768,9 +1768,9 @@ namespace Rock.Model
         /// <param name="personQry">The person qry.</param>
         /// <param name="minAge">The minimum age.</param>
         /// <param name="maxAge">The maximum age.</param>
-        /// <param name="includePeopleWitNoAge">if set to <c>true</c> [include people wit no age].</param>
+        /// <param name="includePeopleWithNoAge">if set to <c>true</c> [include people with no age].</param>
         /// <returns></returns>
-        public static IQueryable<Person> WhereAgeRange( this IQueryable<Person> personQry, int? minAge, int? maxAge, bool includePeopleWitNoAge = true )
+        public static IQueryable<Person> WhereAgeRange( this IQueryable<Person> personQry, int? minAge, int? maxAge, bool includePeopleWithNoAge = true )
         {
             var currentDate = RockDateTime.Today;
             var qryWithAge = personQry.Select(
@@ -1782,19 +1782,29 @@ namespace Rock.Model
                             : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) )
                       } );
 
-            if ( minAge.HasValue )
+            if ( includePeopleWithNoAge )
             {
-                qryWithAge = qryWithAge.Where( a => a.Age >= minAge );
-            }
+                if ( minAge.HasValue )
+                {
+                    qryWithAge = qryWithAge.Where( a => !a.Age.HasValue || a.Age >= minAge  );
+                }
 
-            if ( maxAge.HasValue )
-            {
-                qryWithAge = qryWithAge.Where( a => a.Age <= maxAge );
+                if ( maxAge.HasValue )
+                {
+                    qryWithAge = qryWithAge.Where( a => !a.Age.HasValue || a.Age <= maxAge );
+                }
             }
-
-            if ( !includePeopleWitNoAge )
+            else
             {
-                qryWithAge = qryWithAge.Where( a => a.Age.HasValue );
+                if ( minAge.HasValue )
+                {
+                    qryWithAge = qryWithAge.Where( a => a.Age.HasValue && a.Age >= minAge );
+                }
+
+                if ( maxAge.HasValue )
+                {
+                    qryWithAge = qryWithAge.Where( a => a.Age.HasValue && a.Age <= maxAge );
+                }
             }
 
             return qryWithAge.Select( a => a.Person );
