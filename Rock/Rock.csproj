@@ -332,6 +332,7 @@
     <Compile Include="Reporting\DataFilter\FinancialPledge\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\FinancialTransactionDetail\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\FinancialTransaction\TotalAmountFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Group\GroupBranchFilter.cs" />
     <Compile Include="Reporting\DataFilter\IUpdateSelectionFromPageParameters.cs" />
     <Compile Include="Reporting\DataFilter\Person\CampusFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FirstContributionDateFilter.cs" />
@@ -339,6 +340,7 @@
     <Compile Include="Reporting\DataFilter\Person\NotInGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\NotInGroupFilter.cs" />
     <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Group\MemberCountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\InGroupGeofenceGroupTypeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\TotalGivingAmountSelect.cs" />
@@ -346,6 +348,7 @@
     <Compile Include="Security\Authentication\Facebook.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Security\Authentication\Google.cs" />
     <Compile Include="Security\BackgroundCheckComponent.cs" />
     <Compile Include="Security\BackgroundCheckContainer.cs" />
     <Compile Include="Security\BackgroundCheck\ProtectMyMinistry.cs" />
