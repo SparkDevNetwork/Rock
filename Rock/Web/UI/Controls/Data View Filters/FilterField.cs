@@ -490,23 +490,6 @@ $('.filter-item-select').click(function (event) {
                 }
             }
 
-            if ( ShowCheckbox )
-            {
-                cbIncludeFilter.Text = this.Label;
-                cbIncludeFilter.RenderControl( writer );
-            }
-            else
-            {
-                if ( !string.IsNullOrWhiteSpace( this.Label ) )
-                {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-                    writer.AddAttribute( HtmlTextWriterAttribute.For, this.ClientID );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
-                    writer.Write( Label );
-                    writer.RenderEndTag();  // label
-                }
-            }
-
             if ( component == null )
             {
                 hfExpanded.Value = "True";
@@ -567,7 +550,6 @@ $('.filter-item-select').click(function (event) {
 
             writer.RenderEndTag();
 
-
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -585,19 +567,33 @@ $('.filter-item-select').click(function (event) {
             writer.RenderEndTag();
 
             writer.AddAttribute( "class", "panel-body" );
-            if ( !Expanded || HideFilterCriteria )
+            if ( !Expanded )
             {
                 writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             }
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            if ( component != null )
+
+            if ( ShowCheckbox )
+            {
+                cbIncludeFilter.Text = this.Label;
+                cbIncludeFilter.RenderControl( writer );
+            }
+            else if ( !string.IsNullOrWhiteSpace( this.Label ) )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
+                writer.AddAttribute( HtmlTextWriterAttribute.For, this.ClientID );
+                writer.RenderBeginTag( HtmlTextWriterTag.Label );
+                writer.Write( Label );
+                writer.RenderEndTag();  // label
+            }
+
+            if ( component != null && !HideFilterCriteria )
             {
                 component.RenderControls( FilteredEntityType, this, writer, filterControls );
             }
             writer.RenderEndTag();
 
             writer.RenderEndTag();
-
         }
 
         void ddlFilterType_SelectedIndexChanged( object sender, EventArgs e )

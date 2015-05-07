@@ -28,13 +28,13 @@
         <asp:Panel ID="pnlConfigure" runat="server" Visible="false">
             <Rock:ModalDialog ID="mdConfigure" runat="server" ValidationGroup="vgConfigure" OnSaveClick="mdConfigure_SaveClick">
                 <Content>
-                    <Rock:RockDropDownList ID="ddlReport" runat="server" Label="Report" Help="Select the report to present to the user. Then set which of the report's dataview's filters to show." Required="true" ValidationGroup="vgConfigure" OnSelectedIndexChanged="ddlReport_SelectedIndexChanged"  AutoPostBack="true" />
-                    <Rock:NotificationBox ID="nbMultipleFilterGroupsWarning" runat="server" NotificationBoxType="Warning" Text="This report has multiple filter groups. This block currently only supports non-grouped filters" Dismissable="true" />
+                    <Rock:RockDropDownList ID="ddlReport" runat="server" Label="Report" Help="Select the report to present to the user. Then set which of the report's dataview's filters to show." Required="false" ValidationGroup="vgConfigure" OnSelectedIndexChanged="ddlReport_SelectedIndexChanged" AutoPostBack="true" />
+                    <Rock:NotificationBox ID="nbMultipleFilterGroupsWarning" runat="server" NotificationBoxType="Warning" Text="This report has multiple filter groups. This block currently only supports non-grouped filters" Dismissable="true" Visible="false" />
                     <Rock:HelpBlock ID="hbDataFilters" runat="server" Text="Select which filters that will be visible to the user.  If Configurable is selected for a visible filter, the user will be able to change the filter, otherwise, the filter will presented as checkbox where user can choose to use the filter or not." />
-                    <Rock:Grid ID="grdDataFilters" runat="server" DisplayType="Light" DataKeyNames="Guid" >
+                    <Rock:Grid ID="grdDataFilters" runat="server" DisplayType="Light" DataKeyNames="Guid">
                         <Columns>
-                            <Rock:SelectField HeaderText="Show as a Filter" DataSelectedField="ShowAsFilter" ShowSelectAll="false" />
-                            <Rock:SelectField HeaderText="Configurable" DataSelectedField="IsConfigurable" ShowSelectAll="false"/>
+                            <Rock:SelectField HeaderText="Show as a Filter" DataSelectedField="ShowAsFilter" ShowSelectAll="false" ItemStyle-CssClass="js-select-show-filter" />
+                            <Rock:SelectField HeaderText="Configurable" DataSelectedField="IsConfigurable" ShowSelectAll="false" ItemStyle-CssClass="js-select-configure-filter" />
                             <asp:BoundField DataField="Title" HeaderText="Title" />
                             <asp:BoundField DataField="Summary" HeaderText="Summary" />
                         </Columns>
@@ -42,6 +42,29 @@
                 </Content>
             </Rock:ModalDialog>
         </asp:Panel>
+
+        <script>
+            var updateConfigureCheckbox = function (t) {
+                var $cbConfigurable = $(t).closest('tr').find('.js-select-configure-filter input');
+                if ($(t).is(':checked')) {
+                    $cbConfigurable.removeAttr('disabled');
+                }
+                else {
+                    $cbConfigurable.removeAttr('checked');
+                    $cbConfigurable.attr('disabled', 'disabled');
+                }
+            }
+
+            Sys.Application.add_load(function () {
+                $('.js-select-show-filter input').each(function (i, cb) {
+                    updateConfigureCheckbox(cb)
+                });
+
+                $('.js-select-show-filter input').on('click', function () {
+                    updateConfigureCheckbox(this)
+                });
+            })
+        </script>
 
 
     </ContentTemplate>

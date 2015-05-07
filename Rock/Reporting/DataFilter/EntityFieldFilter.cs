@@ -58,25 +58,24 @@ namespace Rock.Reporting.DataFilter
 
             bool entityFieldPickerIsHidden = ddlEntityField.Style[HtmlTextWriterStyle.Display] == "none";
 
+            writer.AddAttribute( "class", "col-md-3" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            
             if ( !entityFieldPickerIsHidden )
             {
-                writer.AddAttribute( "class", "col-md-3" );
+                ddlEntityField.AddCssClass( "entity-property-selection" );
+                ddlEntityField.RenderControl( writer );
             }
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            ddlEntityField.AddCssClass( "entity-property-selection" );
-            ddlEntityField.RenderControl( writer );
+            else if ( ddlEntityField.SelectedItem != null )
+            {
+                writer.AddAttribute( "class", "data-view-filter-label" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( ddlEntityField.SelectedItem.Text );
+                writer.RenderEndTag();
+            }
             writer.RenderEndTag();
 
-            if ( !entityFieldPickerIsHidden )
-            {
-                writer.AddAttribute( "class", "col-md-9" );
-            }
-            else
-            {
-                writer.AddAttribute( "class", "col-md-12" );
-            }
-
+            writer.AddAttribute( "class", "col-md-9" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // generate result for "none"
@@ -101,6 +100,13 @@ namespace Rock.Reporting.DataFilter
                 {
                     if ( entityField.Name != selectedEntityField )
                     {
+                        if ( entityFieldPickerIsHidden )
+                        {
+                            // if the field can't be changed, we don't need the render the controls for the other entity fields
+                            fieldIndex++;
+                            continue;
+                        }
+                        
                         if ( control is HtmlControl )
                         {
                             ( (HtmlControl)control ).Style["display"] = "none";
@@ -217,7 +223,7 @@ namespace Rock.Reporting.DataFilter
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
                 var values = JsonConvert.DeserializeObject<List<string>>( selection );
-                
+
                 // selection list  is either "FieldName, Comparision, Value(s)" or "FieldName, Value(s)"
                 if ( values.Count == 3 )
                 {
