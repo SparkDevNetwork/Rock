@@ -14,19 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
-using Rock.Data;
-
-namespace Rock.Model
+namespace Rock.Reporting.DataFilter
 {
     /// <summary>
-    /// The data access/service class for <see cref="Rock.Model.BenevolenceResult"/> entity objects. 
+    /// A DataFilter that implements a function that can update the selection from rockblock page parameters or context
     /// </summary>
-    public partial class BenevolenceResultService
+    public interface IUpdateSelectionFromPageParameters
     {
-
+        string UpdateSelectionFromPageParameters( string selection, Rock.Web.UI.RockBlock rockBlock );
     }
 }

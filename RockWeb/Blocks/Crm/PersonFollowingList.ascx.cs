@@ -61,6 +61,7 @@ namespace RockWeb.Blocks.Crm
             gFollowings.IsDeleteEnabled = true;
             gFollowings.GridRebind += gFollowings_GridRebind;
             gFollowings.RowSelected += gFollowings_Selected;
+            gFollowings.RowDataBound += new GridViewRowEventHandler( gFollowings_RowDataBound );
         }
 
         /// <summary>
@@ -80,6 +81,20 @@ namespace RockWeb.Blocks.Crm
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gFollowings control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gFollowings_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.Header )
+            {
+                e.Row.Cells[4].Text = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Value;
+                e.Row.Cells[5].Text = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) ).Value;
+            }
+        }
 
         /// <summary>
         /// Handles the Selected event of the gFollowings control.

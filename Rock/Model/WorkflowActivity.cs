@@ -97,6 +97,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the date and time that this WorkflowActivity was last processed.
         /// </value>
         [DataMember]
+        [NotAudited]
         public DateTime? LastProcessedDateTime { get; set; }
 
         /// <summary>

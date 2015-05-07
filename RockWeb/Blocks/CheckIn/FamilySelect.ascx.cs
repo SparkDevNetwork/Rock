@@ -67,7 +67,11 @@ namespace RockWeb.Blocks.CheckIn
                     }
                     else
                     {
-                        rSelection.DataSource = CurrentCheckInState.CheckIn.Families;
+                        rSelection.DataSource = CurrentCheckInState.CheckIn.Families
+                            .OrderBy( f => f.Caption )
+                            .ThenBy( f => f.SubCaption )
+                            .ToList();
+
                         rSelection.DataBind();
                     }
                 }

@@ -21,9 +21,9 @@ using Rock;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Control for selecting a defined value
+    /// Control for selecting a defined value where the DataField is the DefinedValue.Id
     /// </summary>
-    [ToolboxData("<{0}:DefinedValueField runat=server></{0}:DefinedValueField>")]
+    [ToolboxData( "<{0}:DefinedValueField runat=server></{0}:DefinedValueField>" )]
     public class DefinedValueField : RockBoundField
     {
         /// <summary>
@@ -34,14 +34,14 @@ namespace Rock.Web.UI.Controls
         /// <returns>
         /// The field value converted to the format specified by <see cref="P:System.Web.UI.WebControls.BoundField.DataFormatString" />.
         /// </returns>
-        protected override string FormatDataValue(object dataValue, bool encode)
+        protected override string FormatDataValue( object dataValue, bool encode )
         {
-            if (dataValue is int)
+            if ( dataValue is int )
             {
-                dataValue = Rock.Web.Cache.DefinedValueCache.Read((int)dataValue).Value;
+                dataValue = Rock.Web.Cache.DefinedValueCache.Read( (int)dataValue ).Value;
             }
 
-            return base.FormatDataValue(dataValue, encode);
+            return base.FormatDataValue( dataValue, encode );
         }
     }
 }

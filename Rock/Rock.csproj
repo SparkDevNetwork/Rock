@@ -225,6 +225,7 @@
     <Compile Include="Data\IncludeForReportingAttribute.cs" />
     <Compile Include="Data\MigrationHelper.cs" />
     <Compile Include="Data\NotEmptyGuidAttribute.cs" />
+    <Compile Include="Data\Udf\GetGeofencedGroupNamesStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
@@ -259,10 +260,12 @@
     <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
     <Compile Include="Field\Types\WorkflowTypeFieldType.cs" />
     <Compile Include="Financial\TestGateway.cs" />
+    <Compile Include="Jobs\CalculateGroupRequirements.cs" />
     <Compile Include="Jobs\CalculateMetrics.cs" />
     <Compile Include="Jobs\GetScheduledPayments.cs" />
     <Compile Include="Jobs\GroupSync.cs" />
     <Compile Include="Jobs\SendAttendanceReminders.cs" />
+    <Compile Include="Jobs\SendBirthdayEmail.cs" />
     <Compile Include="Lava\ILiquidizable.cs" />
     <Compile Include="Lava\RockFilters.cs" />
     <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
@@ -272,11 +275,9 @@
     <Compile Include="Model\BenevolenceRequest.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\BenevolenceRequestService.Partial.cs" />
     <Compile Include="Model\BenevolenceResult.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\BenevolenceResultService.Partial.cs" />
     <Compile Include="Model\CalendarItemAudience.cs" />
     <Compile Include="Model\CalendarItemSchedule.cs" />
     <Compile Include="Model\CampusService.partial.cs" />
@@ -294,9 +295,13 @@
     <Compile Include="Model\CodeGenerated\EventItemCampusService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialGatewayService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupMemberRequirementService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupRequirementService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupRequirementTypeService.cs" />
     <Compile Include="Model\CodeGenerated\GroupScheduleExclusionService.cs" />
     <Compile Include="Model\CodeGenerated\MergeTemplateService.cs" />
     <Compile Include="Model\CodeGenerated\PersonDuplicateService.cs" />
+    <Compile Include="Model\CodeGenerated\PersonPreviousNameService.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
     <Compile Include="Model\ContentChannel.cs">
       <SubType>Code</SubType>
@@ -317,10 +322,14 @@
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Model\EntitySet.cs" />
     <Compile Include="Model\EntitySetItem.cs" />
+    <Compile Include="Model\GroupMemberRequirement.cs" />
+    <Compile Include="Model\GroupRequirement.cs" />
+    <Compile Include="Model\GroupRequirementType.cs" />
     <Compile Include="Model\GroupScheduleExclusion.cs" />
     <Compile Include="Model\MergeTemplate.cs" />
     <Compile Include="Model\PersonBadgeService.partial.cs" />
     <Compile Include="Model\PersonDuplicate.cs" />
+    <Compile Include="Model\PersonPreviousName.cs" />
     <Compile Include="Model\PluginMigration.cs" />
     <Compile Include="Model\RestActionService.partial.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
@@ -335,16 +344,23 @@
     <Compile Include="Reporting\DataFilter\FinancialPledge\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\FinancialTransactionDetail\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\FinancialTransaction\TotalAmountFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Group\GroupBranchFilter.cs" />
+    <Compile Include="Reporting\DataFilter\IUpdateSelectionFromPageParameters.cs" />
     <Compile Include="Reporting\DataFilter\Person\CampusFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FirstContributionDateFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\InGroupGeofenceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\NotInGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\NotInGroupFilter.cs" />
     <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Group\MemberCountSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\InGroupGeofenceGroupTypeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\TotalGivingAmountSelect.cs" />
+    <Compile Include="Reporting\ReportingHelper.cs" />
     <Compile Include="Security\Authentication\Facebook.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Security\Authentication\Google.cs" />
     <Compile Include="Security\BackgroundCheckComponent.cs" />
     <Compile Include="Security\BackgroundCheckContainer.cs" />
     <Compile Include="Security\BackgroundCheck\ProtectMyMinistry.cs" />
@@ -383,6 +399,8 @@
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
     <Compile Include="Web\UI\Controls\Grid\CurrencyField.cs" />
     <Compile Include="Web\UI\Controls\Grid\CallbackField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\CampusField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\PhoneNumbersField.cs" />
     <Compile Include="Web\UI\Controls\IDisplayRequiredIndicator.cs" />
     <Compile Include="Web\UI\Controls\Pickers\FinancialGatewayPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupAndRolePicker.cs" />

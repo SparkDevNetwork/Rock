@@ -516,7 +516,7 @@ namespace RockWeb.Blocks.Groups
                 bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
 
                 var qry = groupService
-                    .Queryable( "GroupLocations,Members,Members.Person,GroupType" )
+                    .Queryable( "GroupLocations,Members,Members.Person,Members.Person.PhoneNumbers,GroupType" )
                     .Where( g => g.Id == _groupId );
 
                 if ( !enableDebug )
@@ -524,6 +524,9 @@ namespace RockWeb.Blocks.Groups
                     qry = qry.AsNoTracking();
                 }
                 var group = qry.FirstOrDefault();
+
+                // order group members by name
+                group.Members = group.Members.OrderBy( m => m.Person.LastName ).ThenBy( m => m.Person.FirstName ).ToList();
 
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Group", group );

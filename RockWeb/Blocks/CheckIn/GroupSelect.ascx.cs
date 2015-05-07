@@ -85,7 +85,10 @@ namespace RockWeb.Blocks.CheckIn
                     }
                     else
                     {
-                        rSelection.DataSource = availGroups;
+                        rSelection.DataSource = availGroups
+                            .OrderBy( g => g.Group.Order )
+                            .ToList();
+
                         rSelection.DataBind();
                     }
                 }

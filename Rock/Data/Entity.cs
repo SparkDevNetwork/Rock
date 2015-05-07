@@ -454,13 +454,23 @@ namespace Rock.Data
         #region Static Methods
 
         /// <summary>
-        /// Returns an instance of the  entity based on a JSON represented of the entity object.
+        /// Returns an instance of the  entity based on a JSON representation of the entity object.
         /// </summary>
         /// <param name="json">A <see cref="System.String"/> containing a JSON formatted representation of the object.</param>
         /// <returns>An instance of the entity object based on the provided JSON string.</returns>
         public static T FromJson( string json )
         {
             return JsonConvert.DeserializeObject( json, typeof( T ) ) as T;
+        }
+
+        /// <summary>
+        /// Returns a list instance of the entity based on a JSON representation of a list of the entity object.
+        /// </summary>
+        /// <param name="json">A <see cref="System.String"/> containing a JSON formatted representation of a list of the object.</param>
+        /// <returns>A list of the entity object based on the provided JSON string.</returns>
+        public static List<T> FromJsonAsList( string json )
+        {
+            return JsonConvert.DeserializeObject<List<T>>( json ); ;
         }
 
         #endregion

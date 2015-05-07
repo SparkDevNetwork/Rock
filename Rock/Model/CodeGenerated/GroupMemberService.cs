@@ -88,6 +88,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this GroupMember target, GroupMember source )
         {
             target.Id = source.Id;
+            target.DateTimeAdded = source.DateTimeAdded;
             target.GroupId = source.GroupId;
             target.GroupMemberStatus = source.GroupMemberStatus;
             target.GroupRoleId = source.GroupRoleId;

@@ -21,11 +21,11 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
-
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -402,6 +402,7 @@ namespace Rock.Model
         /// The primary alias.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual PersonAlias PrimaryAlias
         {
             get
@@ -865,7 +866,7 @@ namespace Rock.Model
         /// Gets the Person's age.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the person's age.  If the birthdate and age is not available then returns null.
+        /// An <see cref="System.Int32"/> representing the person's age. Returns null if the birthdate or birthyear is not available.
         /// </value>
         [DataMember]
         [NotMapped]
@@ -1083,11 +1084,13 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the impersonation parameter.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual string ImpersonationParameter
         {
             get
             {
-                return "rckipid=" + HttpUtility.UrlEncode( this.EncryptedKey );
+                var encryptedKey = this.EncryptedKey;
+                return "rckipid=" + HttpUtility.UrlEncode( encryptedKey );
             }
         }
 
@@ -1722,14 +1725,28 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a queryable collection of <see cref="Rock.Model.Person"/> entities containing the Person's family.
+        /// Gets a queryable collection of <see cref="Rock.Model.Person" /> entities containing the Person's family.
         /// </summary>
-        /// <param name="person">The <see cref="Rock.Model.Person"/> to retrieve family members for.</param>
-        /// <param name="includeSelf">A <see cref="System.Boolean"/> value that is <c>true</c> if the provided person should be returned in the results, otherwise <c>false</c>.</param>
-        /// <returns>Returns a queryable collection of <see cref="Rock.Model.Person"/> entities representing the provided Person's family.</returns>
-        public static IQueryable<GroupMember> GetFamilyMembers( this Person person, bool includeSelf = false )
+        /// <param name="person">The <see cref="Rock.Model.Person" /> to retrieve family members for.</param>
+        /// <param name="includeSelf">A <see cref="System.Boolean" /> value that is <c>true</c> if the provided person should be returned in the results, otherwise <c>false</c>.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// Returns a queryable collection of <see cref="Rock.Model.Person" /> entities representing the provided Person's family.
+        /// </returns>
+        public static IQueryable<GroupMember> GetFamilyMembers( this Person person, bool includeSelf = false, RockContext rockContext = null )
         {
-            return new PersonService( new RockContext() ).GetFamilyMembers( person != null ? person.Id : 0, includeSelf );
+            return new PersonService( rockContext ?? new RockContext() ).GetFamilyMembers( person != null ? person.Id : 0, includeSelf );
+        }
+
+        /// <summary>
+        /// Gets any previous last names for this person sorted alphabetically by LastName
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IOrderedQueryable<PersonPreviousName> GetPreviousNames( this Person person, RockContext rockContext = null )
+        {
+            return new PersonService( rockContext ?? new RockContext() ).GetPreviousNames( person != null ? person.Id : 0 );
         }
 
         /// <summary>
@@ -1743,6 +1760,54 @@ namespace Rock.Model
         public static Person GetSpouse( this Person person, RockContext rockContext = null )
         {
             return new PersonService( rockContext ?? new RockContext() ).GetSpouse( person );
+        }
+
+        /// <summary>
+        /// limits the PersonQry to people that have an Age that is between MinAge and MaxAge (inclusive)
+        /// </summary>
+        /// <param name="personQry">The person qry.</param>
+        /// <param name="minAge">The minimum age.</param>
+        /// <param name="maxAge">The maximum age.</param>
+        /// <param name="includePeopleWithNoAge">if set to <c>true</c> [include people with no age].</param>
+        /// <returns></returns>
+        public static IQueryable<Person> WhereAgeRange( this IQueryable<Person> personQry, int? minAge, int? maxAge, bool includePeopleWithNoAge = true )
+        {
+            var currentDate = RockDateTime.Today;
+            var qryWithAge = personQry.Select(
+                      p => new
+                      {
+                          Person = p,
+                          Age = ( p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
+                            ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1
+                            : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) )
+                      } );
+
+            if ( includePeopleWithNoAge )
+            {
+                if ( minAge.HasValue )
+                {
+                    qryWithAge = qryWithAge.Where( a => !a.Age.HasValue || a.Age >= minAge  );
+                }
+
+                if ( maxAge.HasValue )
+                {
+                    qryWithAge = qryWithAge.Where( a => !a.Age.HasValue || a.Age <= maxAge );
+                }
+            }
+            else
+            {
+                if ( minAge.HasValue )
+                {
+                    qryWithAge = qryWithAge.Where( a => a.Age.HasValue && a.Age >= minAge );
+                }
+
+                if ( maxAge.HasValue )
+                {
+                    qryWithAge = qryWithAge.Where( a => a.Age.HasValue && a.Age <= maxAge );
+                }
+            }
+
+            return qryWithAge.Select( a => a.Person );
         }
     }
 

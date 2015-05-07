@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Data.Entity.Spatial;
 using System.Linq;
 
 namespace Rock.Model
@@ -48,5 +49,20 @@ namespace Rock.Model
 
         }
 
+        /// <summary>
+        /// Gets the 'IsMappedLocation' locations that are within and of the selected geofences
+        /// </summary>
+        /// <param name="geofences">The geofences.</param>
+        /// <returns></returns>
+        public IQueryable<GroupLocation> GetMappedLocationsByGeofences( List<DbGeography> geofences )
+        {
+            return Queryable()
+                .Where( l =>
+                    l.IsMappedLocation &&
+                    l.Location != null &&
+                    l.Location.GeoPoint != null &&
+                    geofences.Any( f => l.Location.GeoPoint.Intersects( f ) )
+                );
+        }
     }
 }

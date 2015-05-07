@@ -17,9 +17,9 @@
                             <Rock:RockBoundField DataField="NickName" HeaderText="First Name" SortExpression="NickName" />
                             <Rock:DateField DataField="BirthDate" HeaderText="Birthdate" SortExpression="BirthDate" ColumnPriority="Desktop" />
                             <Rock:RockBoundField DataField="Email" HeaderText="Email" SortExpression="Email" ColumnPriority="DesktopLarge" />
-                            <Rock:RockBoundField DataField="HomePhone" HeaderText="Home Phone" SortExpression="HomePhone" ColumnPriority="DesktopLarge" />
-                            <Rock:RockBoundField DataField="CellPhone" HeaderText="Cell Phone" SortExpression="CellPhone" ColumnPriority="DesktopLarge" />
-                            <Rock:RockBoundField DataField="SpouseName" HeaderText="Spouse's Name" SortExpression="SpouseName" ColumnPriority="Desktop" />
+                            <Rock:RockBoundField DataField="HomePhone" HeaderText="Home Phone" ColumnPriority="DesktopLarge" />
+                            <Rock:RockBoundField DataField="CellPhone" HeaderText="Cell Phone" ColumnPriority="DesktopLarge" />
+                            <Rock:RockBoundField DataField="SpouseName" HeaderText="Spouse's Name" ColumnPriority="Desktop" />
                             <Rock:DeleteField OnClick="gFollowings_Delete" />
                         </Columns>
                     </Rock:Grid>

@@ -73,7 +73,13 @@ namespace RockWeb.Blocks.CheckIn
                     }
                     else
                     {
-                        rSelection.DataSource = family.People;
+                        rSelection.DataSource = family.People
+                            .OrderByDescending( p => p.FamilyMember )
+                            .ThenBy( p => p.Person.BirthYear )
+                            .ThenBy( p => p.Person.BirthMonth )
+                            .ThenBy( p => p.Person.BirthDay )
+                            .ToList();
+
                         rSelection.DataBind();
                     }
 

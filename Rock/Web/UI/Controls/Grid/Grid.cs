@@ -1235,7 +1235,7 @@ namespace Rock.Web.UI.Controls
             ExcelPackage excel = new ExcelPackage( ms );
 
             // if the grid has a caption customize on it
-            if ( this.Caption != null && this.Caption != string.Empty )
+            if ( !string.IsNullOrEmpty(this.Caption) )
             {
                 excel.Workbook.Properties.Title = this.Caption;
                 workSheetName = this.Caption;
@@ -1305,19 +1305,30 @@ namespace Rock.Web.UI.Controls
                 IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
                 IList<PropertyInfo> props = new List<PropertyInfo>();
 
-                var gridDataFields = this.Columns.OfType<BoundField>();
+                var gridDataFields = this.Columns.OfType<BoundField>().ToList();
 
-                // figure out which properties we can get data from and put those in the grid
+                // Inspect the collection of Fields that appear in the Grid and add the corresponding data item properties to the set of fields to be exported.
+                // The fields are exported in the same order as they appear in the Grid.
+                var orderedProps = new SortedDictionary<int, PropertyInfo>();
+
                 foreach ( PropertyInfo prop in allprops )
                 {
-                    if ( !gridDataFields.Any( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) ) && prop.GetGetMethod().IsVirtual )
-                    {
-                        // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
+                    // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
+                    if ( prop.GetGetMethod().IsVirtual )
                         continue;
-                    }
 
-                    props.Add( prop );
+                    // Find a matching field in the Grid and add it to the list of exported properties.
+                    var gridField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
+
+                    if ( gridField == null )
+                        continue;
+
+                    int fieldIndex = gridDataFields.IndexOf( gridField );
+
+                    orderedProps.Add( fieldIndex, prop );
                 }
+
+                props = orderedProps.Values.ToList();
 
                 // print column headings
                 foreach ( PropertyInfo prop in props )
@@ -1358,52 +1369,12 @@ namespace Rock.Web.UI.Controls
                         columnCounter++;
 
                         object propValue = prop.GetValue( item, null );
-                        string value = "";
-                        if ( propValue != null )
-                        {
-                            var definedValueAttribute = prop.GetCustomAttributes( typeof( Rock.Data.DefinedValueAttribute ), true ).FirstOrDefault();
-                            if ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) )
-                            {
-                                int definedValueId = 0;
 
-                                if ( prop.PropertyType == typeof( int? ) )
-                                {
-                                    definedValueId = (int?)propValue ?? 0;
-                                }
-                                else if ( prop.PropertyType == typeof( int ) )
-                                {
-                                    definedValueId = (int)propValue;
-                                }
+                        var definedValueAttribute = prop.GetCustomAttributes( typeof( DefinedValueAttribute ), true ).FirstOrDefault();
 
-                                if ( definedValueId > 0 )
-                                {
-                                    var definedValue = DefinedValueCache.Read( definedValueId );
-                                    value = definedValue != null ? definedValue.Value : definedValueId.ToString();
-                                }
-                            }
+                        bool isDefinedValue = ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) );
 
-                            else if ( propValue is IEnumerable<object> )
-                            {
-                                value = ( propValue as IEnumerable<object> ).ToList().AsDelimited( "," );
-                            }
-                            else if ( propValue is DateTime? && propValue != null )
-                            {
-                                DateTime dateTimeValue = ( propValue as DateTime? ).Value;
-                                var columnAttribute = prop.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.ColumnAttribute>( true );
-                                if ( ( columnAttribute != null && columnAttribute.Name == "Date" ) || prop.Name.EndsWith( "Date" ) )
-                                {
-                                    value = dateTimeValue.ToShortDateString();
-                                }
-                                else
-                                {
-                                    value = dateTimeValue.ToString();
-                                }
-                            }
-                            else
-                            {
-                                value = propValue.ToString();
-                            }
-                        }
+                        string value = this.GetExportValue( prop, propValue, isDefinedValue );
 
                         worksheet.Cells[rowCounter, columnCounter].Value = value.ConvertBrToCrLf();
 
@@ -1472,7 +1443,7 @@ namespace Rock.Web.UI.Controls
 
                     rowCounter++;
                     dataIndex++;
-                }
+                }            
             }
 
             // format header range
@@ -1535,6 +1506,102 @@ namespace Rock.Web.UI.Controls
             this.Page.Response.BinaryWrite( byteArray );
             this.Page.Response.Flush();
             this.Page.Response.End();
+        }
+
+        /// <summary>
+        /// Formats a raw value from the Grid DataSource so that it is suitable for export to an Excel Worksheet.
+        /// </summary>
+        /// <param name="prop"></param>
+        /// <param name="propValue"></param>
+        /// <param name="isDefinedValueField"></param>
+        /// <returns></returns>
+        private string GetExportValue(PropertyInfo prop, object propValue, bool isDefinedValueField)
+        {            
+            // Get the formatted value string for export.
+            string value = string.Empty;
+
+            if ( propValue != null )
+            {
+                if ( isDefinedValueField )
+                {
+                    if ( prop.PropertyType == typeof( int? ) || prop.PropertyType == typeof( int ) )
+                    {
+                        // Attempt to parse the value as a single Defined Value Id.
+                        int definedValueId;
+
+                        if ( prop.PropertyType == typeof(int) )
+                        {
+                            definedValueId = (int)propValue;
+                        }
+                        else
+                        {
+                            definedValueId = (int?)propValue ?? 0;
+                        }
+
+                        if ( definedValueId > 0 )
+                        {
+                            var definedValue = DefinedValueCache.Read( definedValueId );
+                            value = definedValue != null ? definedValue.Value : definedValueId.ToString();
+                        }
+                    }
+                    else if ( prop.PropertyType == typeof( string ) )
+                    {
+                        // Attempt to parse the value as a list of Defined Value Guids.
+                        // If a value is not a Guid or cannot be matched to a Defined Value, the raw value will be shown.
+                        var guids = propValue.ToString().Split( ',' );
+                        var definedValues = new List<string>();
+
+                        foreach ( var guidString in guids )
+                        {
+                            Guid definedValueGuid;
+
+                            bool isGuid = Guid.TryParse( guidString, out definedValueGuid );
+                            bool addRaw = true;
+
+                            if ( isGuid )
+                            {
+                                var definedValue = DefinedValueCache.Read( definedValueGuid );
+
+                                if ( definedValue != null )
+                                {
+                                    definedValues.Add( definedValue.Value );
+                                    addRaw = false;
+                                }
+                            }
+
+                            if ( addRaw )
+                            {
+                                definedValues.Add(guidString);
+                            }
+                        }
+
+                        value = definedValues.AsDelimited( ", " );
+                    }
+                }
+                else if ( propValue is IEnumerable<object> )
+                {
+                    value = ( propValue as IEnumerable<object> ).ToList().AsDelimited( ", " );
+                }
+                else if ( propValue is DateTime? )
+                {
+                    DateTime dateTimeValue = ( propValue as DateTime? ).Value;
+                    var columnAttribute = prop.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.ColumnAttribute>( true );
+                    if (( columnAttribute != null && columnAttribute.Name == "Date" ) || prop.Name.EndsWith( "Date" ))
+                    {
+                        value = dateTimeValue.ToShortDateString();
+                    }
+                    else
+                    {
+                        value = dateTimeValue.ToString();
+                    }
+                }
+                else
+                {
+                    value = propValue.ToString();
+                }
+            }
+
+            return value;
         }
 
         /// <summary>

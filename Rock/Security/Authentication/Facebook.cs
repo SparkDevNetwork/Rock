@@ -43,7 +43,7 @@ namespace Rock.Security.ExternalAuthentication
 
     [TextField( "App ID", "The Facebook App ID" )]
     [TextField( "App Secret", "The Facebook App Secret" )]
-    [BooleanField( "Sync Friends", "Should the person's Facebook friends whe are also in Rock be added as a known relationship?", true )]
+    [BooleanField( "Sync Friends", "Should the person's Facebook friends who are also in Rock be added as a known relationship?", true )]
     public class Facebook : AuthenticationComponent
     {
         /// <summary>
@@ -349,14 +349,14 @@ namespace Rock.Security.ExternalAuthentication
                     Person person = null;
 
                     // If person had an email, get the first person with the same name and email address.
-                    if ( string.IsNullOrWhiteSpace( email ) )
+                    if ( !string.IsNullOrWhiteSpace( email ) )
                     {
                         var personService = new PersonService( rockContext );
-                        person = personService.Queryable( "Aliases" )
-                            .FirstOrDefault( u =>
-                                u.LastName == lastName &&
-                                u.FirstName == firstName &&
-                                u.Email == email );
+                        var people = personService.GetByMatch( firstName, lastName, email );
+                        if ( people.Count() == 1)
+                        {
+                            person = people.First();
+                        }
                     }
 
                     var personRecordTypeId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;

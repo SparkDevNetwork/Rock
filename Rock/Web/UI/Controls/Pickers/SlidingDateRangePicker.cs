@@ -229,13 +229,7 @@ namespace Rock.Web.UI.Controls
         protected void ddl_SelectedIndexChanged( object sender, EventArgs e )
         {
             EnsureChildControls();
-
-            // "-1" = All, "0" = Last, "1" = Current, "2" = Date Range
-            _nbNumber.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "0" ) ? string.Empty : "none";
-            _ddlTimeUnitTypeSingular.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "1" ) ? string.Empty : "none";
-            _ddlTimeUnitTypePlural.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "0" ) ? string.Empty : "none";
-            _drpDateRange.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "2" ) ? string.Empty : "none";
-
+            
             if ( SelectedDateRangeChanged != null )
             {
                 SelectedDateRangeChanged( this, e );
@@ -347,6 +341,12 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            // "-1" = All, "0" = Last, "1" = Current, "2" = Date Range
+            _nbNumber.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "0" ) ? string.Empty : "none";
+            _ddlTimeUnitTypeSingular.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "1" ) ? string.Empty : "none";
+            _ddlTimeUnitTypePlural.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "0" ) ? string.Empty : "none";
+            _drpDateRange.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "2" ) ? string.Empty : "none";
+            
             bool needsAutoPostBack = SelectedDateRangeChanged != null;
             _ddlLastCurrent.AutoPostBack = needsAutoPostBack;
             _ddlTimeUnitTypeSingular.AutoPostBack = needsAutoPostBack;

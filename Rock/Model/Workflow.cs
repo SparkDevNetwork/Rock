@@ -84,6 +84,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this instance is processing; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
+        [NotAudited]
         public bool IsProcessing { get; set; }
 
         /// <summary>
@@ -102,6 +103,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> that represents when the Workflow was last processed.
         /// </value>
         [DataMember]
+        [NotAudited]
         public DateTime? LastProcessedDateTime { get; set; }
 
         /// <summary>
