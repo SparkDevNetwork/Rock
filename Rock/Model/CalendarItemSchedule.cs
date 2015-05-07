@@ -41,7 +41,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        public int EventItemId { get; set; }
+        public int EventItemCampusId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Schedule"/> that this CalendarItemSchedule is associated with. This property is required.
@@ -72,7 +72,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.EventItem"/> that this CalendarItemSchedule is a member of.
         /// </value>
         [DataMember]
-        public virtual EventItem EventItem { get; set; }
+        public virtual EventItemCampus EventItemCampus { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Schedule"/> that this CalendarItemSchedule is a member of.
@@ -99,7 +99,7 @@ namespace Rock.Model
         /// </summary>
         public CalendarItemScheduleConfiguration()
         {
-            this.HasRequired( p => p.EventItem ).WithMany( p => p.CalendarItemSchedules ).HasForeignKey( p => p.EventItemId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.EventItemCampus ).WithMany( p => p.CalendarItemSchedules ).HasForeignKey( p => p.EventItemCampusId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
         }
     }

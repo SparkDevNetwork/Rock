@@ -58,7 +58,7 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<CalendarItemSchedule>( Context ).Queryable().Any( a => a.EventItemId == item.Id ) )
+            if ( new Service<CalendarItemSchedule>( Context ).Queryable().Any( a => a.EventItemCampusId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EventItem.FriendlyTypeName, CalendarItemSchedule.FriendlyTypeName );
                 return false;

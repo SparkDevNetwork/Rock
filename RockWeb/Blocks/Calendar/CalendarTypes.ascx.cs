@@ -131,6 +131,10 @@ namespace RockWeb.Blocks.Calendar
         }
         #endregion
 
+        protected void lbAddCalendarType_Click( object sender, EventArgs e )
+        {
+            NavigateToLinkedPage( "DetailPage", "CalendarTypeId", 0 );
+        }
     }
 
 }

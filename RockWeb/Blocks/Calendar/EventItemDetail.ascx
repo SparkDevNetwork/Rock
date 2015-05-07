@@ -51,7 +51,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6">
+                            <%--<div class="col-md-6">
                                 <div class="grid">
                                     <Rock:Grid ID="gSchedules" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Schedule">
                                         <Columns>
@@ -60,7 +60,7 @@
                                         </Columns>
                                     </Rock:Grid>
                                 </div>
-                            </div>
+                            </div>--%>
                             <div class="col-md-6">
                                 <div class="grid">
                                     <Rock:Grid ID="gAudiences" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Audience">
@@ -170,7 +170,7 @@
                 <Rock:RockDropDownList ID="ddlAudience" runat="server" Label="Select Audience" ValidationGroup="Audience" />
             </Content>
         </Rock:ModalDialog>
-        <Rock:ModalDialog ID="dlgSchedules" runat="server" ScrollbarEnabled="false" ValidationGroup="Schedule" SaveButtonText="Add" OnSaveClick="btnAddSchedule_Click" Title="Select Schedule">
+        <%--<Rock:ModalDialog ID="dlgSchedules" runat="server" ScrollbarEnabled="false" ValidationGroup="Schedule" SaveButtonText="Add" OnSaveClick="btnAddSchedule_Click" Title="Select Schedule">
             <Content>
                 <asp:HiddenField ID="hfAddScheduleGuid" runat="server" />
                 <div class="row">
@@ -182,6 +182,6 @@
                     </div>
                 </div>
             </Content>
-        </Rock:ModalDialog>
+        </Rock:ModalDialog>--%>
     </ContentTemplate>
 </asp:UpdatePanel>

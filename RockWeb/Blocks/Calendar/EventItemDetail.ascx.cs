@@ -113,10 +113,10 @@ namespace RockWeb.Blocks.Calendar
             gEventItemCampuses.Actions.AddClick += gEventItemCampuses_Add;
             gEventItemCampuses.GridRebind += gEventItemCampuses_GridRebind;
 
-            gSchedules.DataKeyNames = new string[] { "Guid" };
-            gSchedules.Actions.ShowAdd = true;
-            gSchedules.Actions.AddClick += gSchedules_Add;
-            gSchedules.GridRebind += gSchedules_GridRebind;
+            //gSchedules.DataKeyNames = new string[] { "Guid" };
+            //gSchedules.Actions.ShowAdd = true;
+            //gSchedules.Actions.AddClick += gSchedules_Add;
+            //gSchedules.GridRebind += gSchedules_GridRebind;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -247,7 +247,7 @@ namespace RockWeb.Blocks.Calendar
             }
             else
             {
-                eventItem = eventItemService.Queryable( "EventItem.CalendarItemSchedules, EventItem.CalendarItemAudience, EventItem.EventItemCampus" ).Where( ei => ei.Id == eventItemId ).FirstOrDefault();
+                eventItem = eventItemService.Queryable( "CalendarItemSchedules, CalendarItemAudiences, EventItemCampuses" ).Where( ei => ei.Id == eventItemId ).FirstOrDefault();
             }
 
             eventItem.Name = tbName.Text;
@@ -255,11 +255,17 @@ namespace RockWeb.Blocks.Calendar
             eventItem.IsActive = cbIsActive.Checked;
 
             //Save schedules
-            //Save detail url
-            //Save audiences
-            //save photo - e.BinaryFileId.Value
-            //save campuses
-            //save calendars
+            eventItem.DetailsUrl = tbDetailUrl.Text;
+            foreach ( CalendarItemAudience audience in CalendarItemAudiencesState )
+            {
+                eventItem.CalendarItemAudiences.Add( audience );
+            }
+            eventItem.PhotoId = imgupPhoto.BinaryFileId.Value;
+            foreach ( EventItemCampus campus in EventItemCampusesState )
+            {
+                eventItem.EventItemCampuses.Add( campus );
+            }
+            //Save calendars
 
             eventItem.LoadAttributes();
 
@@ -305,11 +311,7 @@ namespace RockWeb.Blocks.Calendar
                 rockContext.SaveChanges();
             } );
 
-            var qryParams = new Dictionary<string, string>();
-            qryParams["EventItemId"] = eventItem.Id.ToString();
-            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
-
-            NavigateToPage( RockPage.Guid, qryParams );
+            NavigateToParentPage();
         }
 
         /// <summary>
@@ -428,43 +430,43 @@ namespace RockWeb.Blocks.Calendar
         }
         #endregion
 
-        #region Schedule Events
-        protected void gSchedules_Delete( object sender, RowEventArgs e )
-        {
-            Guid rowGuid = (Guid)e.RowKeyValue;
-            CalendarItemSchedulesState.RemoveEntity( rowGuid );
+        //#region Schedule Events
+        //protected void gSchedules_Delete( object sender, RowEventArgs e )
+        //{
+        //    Guid rowGuid = (Guid)e.RowKeyValue;
+        //    CalendarItemSchedulesState.RemoveEntity( rowGuid );
 
-            BindSchedulesGrid();
-        }
-        protected void btnAddSchedule_Click( object sender, EventArgs e )
-        {
-            CalendarItemSchedule calendarItemSchedule = new CalendarItemSchedule();
-            calendarItemSchedule.Schedule = new Schedule();
-            calendarItemSchedule.Schedule.iCalendarContent = sbSchedule.iCalendarContent;
-            calendarItemSchedule.ScheduleName = tbSchedule.Text;
+        //    BindSchedulesGrid();
+        //}
+        //protected void btnAddSchedule_Click( object sender, EventArgs e )
+        //{
+        //    CalendarItemSchedule calendarItemSchedule = new CalendarItemSchedule();
+        //    calendarItemSchedule.Schedule = new Schedule();
+        //    calendarItemSchedule.Schedule.iCalendarContent = sbSchedule.iCalendarContent;
+        //    calendarItemSchedule.ScheduleName = tbSchedule.Text;
 
-            if ( CalendarItemSchedulesState.Any( a => a.Guid.Equals( calendarItemSchedule.Guid ) ) )
-            {
-                CalendarItemSchedulesState.RemoveEntity( calendarItemSchedule.Guid );
-            }
+        //    if ( CalendarItemSchedulesState.Any( a => a.Guid.Equals( calendarItemSchedule.Guid ) ) )
+        //    {
+        //        CalendarItemSchedulesState.RemoveEntity( calendarItemSchedule.Guid );
+        //    }
 
-            CalendarItemSchedulesState.Add( calendarItemSchedule );
+        //    CalendarItemSchedulesState.Add( calendarItemSchedule );
 
-            BindSchedulesGrid();
+        //    BindSchedulesGrid();
 
-            HideDialog();
-        }
-        private void gSchedules_GridRebind( object sender, EventArgs e )
-        {
-            BindSchedulesGrid();
-        }
-        private void gSchedules_Add( object sender, EventArgs e )
-        {
-            tbSchedule.Text = String.Empty;
-            sbSchedule.iCalendarContent = String.Empty;
-            ShowDialog( "Schedules", true );
-        }
-        #endregion
+        //    HideDialog();
+        //}
+        //private void gSchedules_GridRebind( object sender, EventArgs e )
+        //{
+        //    BindSchedulesGrid();
+        //}
+        //private void gSchedules_Add( object sender, EventArgs e )
+        //{
+        //    tbSchedule.Text = String.Empty;
+        //    sbSchedule.iCalendarContent = String.Empty;
+        //    ShowDialog( "Schedules", true );
+        //}
+        //#endregion
 
         #region Campus Events
         protected void dlgCampus_SaveClick( object sender, EventArgs e )
@@ -474,14 +476,14 @@ namespace RockWeb.Blocks.Calendar
                 EventItemCampus eventItemCampus = new EventItemCampus();
                 try
                 {
-                    eventItemCampus.CampusId = rblCampus.SelectedValueAsId();
+                    eventItemCampus.Campus = new CampusService( new RockContext() ).Get( rblCampus.SelectedValueAsId().Value );
                 }
                 catch
                 {
-
+                    eventItemCampus.CampusId = All.IdValue.AsInteger();
                 }
                 eventItemCampus.Location = tbLocation.Text;
-                eventItemCampus.ContactPersonAliasId = ppContact.PersonAliasId.Value;
+                eventItemCampus.ContactPersonAlias = new PersonAliasService( new RockContext() ).Get( ppContact.PersonAliasId.Value );
                 eventItemCampus.ContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), pnPhone.Number );
                 eventItemCampus.ContactEmail = tbEmail.Text;
                 eventItemCampus.RegistrationUrl = tbRegistration.Text;
@@ -508,10 +510,12 @@ namespace RockWeb.Blocks.Calendar
 
             BindCampusesGrid();
         }
+
         private void gEventItemCampuses_GridRebind( object sender, EventArgs e )
         {
             BindCampusesGrid();
         }
+
         private void gEventItemCampuses_Add( object sender, EventArgs e )
         {
             rblCampus.DataSource = CampusCache.All();
@@ -617,7 +621,7 @@ namespace RockWeb.Blocks.Calendar
             cbIsActive.Checked = eventItem.IsActive.Value;
             if ( CalendarItemSchedulesState == null )
             {
-                CalendarItemSchedulesState = eventItem.CalendarItemSchedules.ToList();
+                CalendarItemSchedulesState = null; // eventItem.EventItemCampuses.Select( c => c.CalendarItemSchedules ).ToList();
             }
             if ( EventItemCampusesState == null )
             {
@@ -635,7 +639,7 @@ namespace RockWeb.Blocks.Calendar
 
             LoadDropDowns();
             ShowItemAttributes();
-            BindSchedulesGrid();
+            // BindSchedulesGrid();
             BindAudiencesGrid();
             BindCampusesGrid();
             //ddlCampus.SetValue( eventItem.CampusId );
@@ -654,17 +658,17 @@ namespace RockWeb.Blocks.Calendar
             gAudiences.DataBind();
         }
 
-        private void BindSchedulesGrid()
-        {
-            SetScheduleListOrder( CalendarItemSchedulesState );
-            gSchedules.DataSource = CalendarItemSchedulesState.Select( s => new
-            {
-                s.Id,
-                s.Guid,
-                Schedule = s.ScheduleName
-            } ).ToList();
-            gSchedules.DataBind();
-        }
+        //private void BindSchedulesGrid()
+        //{
+        //    SetScheduleListOrder( CalendarItemSchedulesState );
+        //    gSchedules.DataSource = CalendarItemSchedulesState.Select( s => new
+        //    {
+        //        s.Id,
+        //        s.Guid,
+        //        Schedule = s.ScheduleName
+        //    } ).ToList();
+        //    gSchedules.DataBind();
+        //}
 
         private void BindCampusesGrid()
         {
@@ -675,7 +679,7 @@ namespace RockWeb.Blocks.Calendar
                 c.Guid,
                 Campus = ( c.Campus != null ) ? c.Campus.Name : "All Campuses",
                 Location = c.Location,
-                Contact = ( c.ContactPersonAlias != null ) ? c.ContactPersonAlias.Name : "Unknown",
+                Contact = ( c.ContactPersonAlias != null ) ? c.ContactPersonAlias.Person.FullName : "Unknown",
                 Phone = c.ContactPhone,
                 Email = c.ContactEmail,
                 Registration = !String.IsNullOrWhiteSpace( c.RegistrationUrl ) ? "<i class='fa fa-check'></i>" : ""
@@ -705,7 +709,7 @@ namespace RockWeb.Blocks.Calendar
             if ( eventItem == null )
             {
                 rockContext = rockContext ?? new RockContext();
-                eventItem = new EventItemService( rockContext ).Queryable( "EventItemType,EventItemLocations.Schedules" )
+                eventItem = new EventItemService( rockContext ).Queryable()
                     .Where( e => e.Id == eventItemId )
                     .FirstOrDefault();
                 RockPage.SaveSharedItem( key, eventItem );
@@ -747,7 +751,7 @@ namespace RockWeb.Blocks.Calendar
                     dlgAudiences.Show();
                     break;
                 case "SCHEDULES":
-                    dlgSchedules.Show();
+                    // dlgSchedules.Show();
                     break;
                 case "CAMPUSES":
                     dlgCampus.Show();
@@ -766,7 +770,7 @@ namespace RockWeb.Blocks.Calendar
                     dlgAudiences.Hide();
                     break;
                 case "SCHEDULES":
-                    dlgSchedules.Hide();
+                    // dlgSchedules.Hide();
                     break;
                 case "CAMPUSES":
                     dlgCampus.Hide();

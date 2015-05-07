@@ -130,19 +130,6 @@ namespace Rock.Model
         }
         private ICollection<CalendarItemAudience> _calendarItemAudiences;
 
-        /// <summary>
-        /// Gets or sets a collection of the <see cref="Rock.Model.CalendarItemSchedule">CalendarItemSchedules</see> that belong to this EventItem.
-        /// </summary>
-        /// <value>
-        /// A collection containing a collection of the <see cref="Rock.Model.CalendarItemSchedule">CalendarItemSchedules</see> that belong to this EventItem.
-        /// </value>
-        public virtual ICollection<CalendarItemSchedule> CalendarItemSchedules
-        {
-            get { return _calendarItemSchedules ?? ( _calendarItemSchedules = new Collection<CalendarItemSchedule>() ); }
-            set { _calendarItemSchedules = value; }
-        }
-        private ICollection<CalendarItemSchedule> _calendarItemSchedules;
-
         #endregion
 
     }

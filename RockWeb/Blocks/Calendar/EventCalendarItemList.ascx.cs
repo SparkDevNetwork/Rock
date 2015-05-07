@@ -325,7 +325,7 @@ namespace RockWeb.Blocks.Calendar
                 var rockContext = new RockContext();
 
                 EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
-                var qry = eventCalendarItemService.Queryable("EventItem, EventCalendar, EventItem.EventItemCampuses, EventItem.CalendarItemAudiences, EventItem.CalendarItemSchedules")
+                var qry = eventCalendarItemService.Queryable( "EventItem, EventCalendar, EventItem.EventItemCampuses, EventItem.CalendarItemAudiences" )
                     .Where( m => m.EventCalendarId == _eventCalendar.Id );
 
                 // Filter by Campus
@@ -343,25 +343,25 @@ namespace RockWeb.Blocks.Calendar
                 if ( drpDate.LowerValue.HasValue && drpDate.UpperValue.HasValue )
                 {
                     //qry = qry.Where( i => i.EventItem.CalendarItemSchedules.Any( s => s.Schedule.GetScheduledStartTimes( drpDate.LowerValue.Value, drpDate.UpperValue.Value ).Any() ) );
-                    qry = qry.Where( i => i.EventItem.CalendarItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > drpDate.LowerValue.Value && s.Schedule.EffectiveStartDate.Value < drpDate.UpperValue.Value ) );
+                   // qry = qry.Where( i => i.EventItem.CalendarItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > drpDate.LowerValue.Value && s.Schedule.EffectiveStartDate.Value < drpDate.UpperValue.Value ) );
                 }
                 else
                 {
                     if ( !drpDate.LowerValue.HasValue && !drpDate.UpperValue.HasValue )
                     {
                         //qry = qry.Where( i => i.EventItem.CalendarItemSchedules.Any( s => s.Schedule.GetScheduledStartTimes( DateTime.Now.AddMonths( -6 ), DateTime.Now.AddDays( 30 ) ).Any() ) );
-                        qry = qry.Where( i => i.EventItem.CalendarItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > minusSixMonths && s.Schedule.EffectiveStartDate.Value < plusOneMonth ) );
+                      //  qry = qry.Where( i => i.EventItem.CalendarItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > minusSixMonths && s.Schedule.EffectiveStartDate.Value < plusOneMonth ) );
 
                     }
                     if ( drpDate.LowerValue.HasValue )
                     {
                         // qry = qry.Where( i => i.EventItem.CalendarItemSchedules.Any( s => s.Schedule.GetScheduledStartTimes( drpDate.LowerValue.Value, DateTime.Now.AddDays( 30 ) ).Any() ) );
-                        qry = qry.Where( i => i.EventItem.CalendarItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > drpDate.LowerValue.Value && s.Schedule.EffectiveStartDate.Value < plusOneMonth ) );
+                       // qry = qry.Where( i => i.EventItem.CalendarItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > drpDate.LowerValue.Value && s.Schedule.EffectiveStartDate.Value < plusOneMonth ) );
                     }
                     if ( drpDate.UpperValue.HasValue )
                     {
                         //qry = qry.Where( i => i.EventItem.CalendarItemSchedules.Any( s => s.Schedule.GetScheduledStartTimes( DateTime.Now.AddDays( -30 ), drpDate.UpperValue.Value ).Any() ) );
-                        qry = qry.Where( i => i.EventItem.CalendarItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > minusOneMonth && s.Schedule.EffectiveStartDate.Value < drpDate.UpperValue.Value ) );
+                        //qry = qry.Where( i => i.EventItem.CalendarItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > minusOneMonth && s.Schedule.EffectiveStartDate.Value < drpDate.UpperValue.Value ) );
 
                     }
                 }
@@ -390,7 +390,7 @@ namespace RockWeb.Blocks.Calendar
                 }
                 else
                 {
-                    eventCalendarItems = qry.OrderBy( a => a.EventItem.CalendarItemSchedules.OrderByDescending( s => s.Schedule.EffectiveStartDate.Value ).FirstOrDefault().Schedule.EffectiveStartDate.Value ).ToList();
+                    eventCalendarItems = qry.ToList();  // qry.OrderBy( a => a.EventItem.CalendarItemSchedules.OrderByDescending( s => s.Schedule.EffectiveStartDate.Value ).FirstOrDefault().Schedule.EffectiveStartDate.Value ).ToList();
                 }
 
                 // Since we're not binding to actual group member list, but are using AttributeField columns,
@@ -407,7 +407,7 @@ namespace RockWeb.Blocks.Calendar
                     Campus = m.EventItem.EventItemCampuses.ToList().Select( c => c.Campus.Name ).ToList().AsDelimited( "/n" ),
                     Calendar = m.EventItem.EventCalendarItems.ToList().Select( i => i.EventCalendar.Name ).ToList().AsDelimited( "/n" ),
                     Audience = m.EventItem.CalendarItemAudiences.ToList().Select( i => i.DefinedValue.Value ).ToList().AsDelimited( "/n" ),
-                    Active = m.EventItem.IsActive
+                    Active = m.EventItem.IsActive.Value ? "<Rock:HighlightLabel ID='hlInactive' runat='server' LabelType='Success' Text='Active' />" : "<Rock:HighlightLabel ID='hlInactive' runat='server' LabelType='Danger' Text='Inactive' />"
                 } ).ToList();
 
                 gEventCalendarItems.DataBind();
