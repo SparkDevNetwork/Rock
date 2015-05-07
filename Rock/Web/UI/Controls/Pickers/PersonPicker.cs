@@ -261,7 +261,10 @@ namespace Rock.Web.UI.Controls
             {
                 if (PersonId.HasValue)
                 {
-                    return new PersonAliasService( new RockContext() ).GetPrimaryAliasId ( PersonId.Value );
+                    using ( var rockContext = new RockContext() )
+                    {
+                        return new PersonAliasService( rockContext ).GetPrimaryAliasId( PersonId.Value );
+                    }
                 }
 
                 return null;
