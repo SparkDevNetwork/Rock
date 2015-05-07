@@ -335,6 +335,30 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Replace the last occurence of a string with another - this is a Rock version on this filter which takes any object
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="search">The search.</param>
+        /// <param name="replacement">The replacement.</param>
+        /// <returns></returns>
+        public static string ReplaceLast( object input, string search, string replacement = "" )
+        {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+
+            string inputAsString = input.ToString();
+
+            if ( string.IsNullOrEmpty( inputAsString ) || string.IsNullOrEmpty( search ) )
+                return inputAsString;
+
+            int place = inputAsString.LastIndexOf( search );
+            string result = inputAsString.Remove( place, search.Length ).Insert( place, replacement );
+            return result;
+        }
+
+        /// <summary>
         /// Remove a substring - this is a Rock version on this filter which takes any object
         /// </summary>
         /// <param name="input"></param>
@@ -432,6 +456,23 @@ namespace Rock.Lava
             return string.IsNullOrWhiteSpace( inputAsString )
                 ? defaultString
                 : inputAsString;
+        }
+
+        /// <summary>
+        /// Decodes an HTML string.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string HtmlDecode( string input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+            else
+            {
+                return HttpUtility.HtmlDecode( input );
+            }
         }
 
         #endregion
@@ -663,6 +704,26 @@ namespace Rock.Lava
 
         #endregion
 
+        #region Number Filters
+
+        /// <summary>
+        /// Formats the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="format">The format.</param>
+        /// <returns></returns>
+        public static string Format( object input, string format )
+        {
+            if ( input == null )
+                return null;
+            else if ( string.IsNullOrWhiteSpace( format ) )
+                return input.ToString();
+
+            return string.Format( "{0:" + format + "}", input );
+        }
+
+        #endregion
+
         #region Attribute Filters
 
         /// <summary>
@@ -696,9 +757,15 @@ namespace Rock.Lava
                 {
                     // Get the value
                     string theValue = globalAttributeCache.GetValue( attributeKey );
-
-                    // Global attributes may reference other global attributes, so try to resolve this value again
-                    rawValue = theValue.ResolveMergeFields( new Dictionary<string, object>() );
+                    if ( theValue.HasMergeFields() )
+                    {
+                        // Global attributes may reference other global attributes, so try to resolve this value again
+                        rawValue = theValue.ResolveMergeFields( new Dictionary<string, object>() );
+                    }
+                    else
+                    {
+                        rawValue = theValue;
+                    }
                 }
             }
 
@@ -806,7 +873,7 @@ namespace Rock.Lava
         #region Person Filters
 
         /// <summary>
-        /// Addresses the specified context.
+        /// Gets an address for a person object
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
@@ -815,10 +882,10 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string Address( DotLiquid.Context context, object input, string addressType, string qualifier = "" )
         {
-            if ( input != null && input is Person )
+            var person = GetPerson( input );
+
+            if ( person != null )
             {
-                var person = (Person)input;
-               
                 Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
 
                 Location location = null;
@@ -953,37 +1020,131 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Addresses the specified context.
+        /// Gets the groups of selected type that person is a member of
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <returns></returns>
-        public static List<Rock.Model.Group> Groups( DotLiquid.Context context, object input, string groupTypeId )
+        public static List<Rock.Model.GroupMember> Groups( DotLiquid.Context context, object input, string groupTypeId, string status = "Active" )
         {
-            if ( input != null && input is Person )
-            {
-                var person = (Person)input;
+            var person = GetPerson( input );
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
 
-                int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
-                if ( numericalGroupTypeId.HasValue )
+            
+
+            if ( person != null && numericalGroupTypeId.HasValue )
+            {
+                var groupQuery =  new GroupMemberService( GetRockContext( context ) )
+                    .Queryable("Group").AsNoTracking()
+                    .Where( m =>
+                        m.PersonId == person.Id &&
+                        m.Group.GroupTypeId == numericalGroupTypeId.Value &&
+                        m.Group.IsActive );
+                
+                if ( status != "All" )
                 {
-                    return new GroupMemberService( GetRockContext( context ) )
-                        .Queryable().AsNoTracking()
-                        .Where( m =>
-                            m.PersonId == person.Id &&
-                            m.Group.GroupTypeId == numericalGroupTypeId.Value &&
-                            m.GroupMemberStatus == GroupMemberStatus.Active &&
-                            m.Group.IsActive )
-                        .Select( m =>
-                            m.Group )
-                        .ToList();
+                    GroupMemberStatus queryStatus = GroupMemberStatus.Active;
+                    queryStatus = (GroupMemberStatus)Enum.Parse( typeof( GroupMemberStatus ), status, true );
+
+                    groupQuery = groupQuery.Where( m => m.GroupMemberStatus == queryStatus );
                 }
+
+                return groupQuery.ToList();
+            }
+
+            return new List<Model.GroupMember>();
+        }
+
+        /// <summary>
+        /// Gets the groups of selected type that person is a member of which they have attended at least once
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public static List<Rock.Model.Group> GroupsAttended( DotLiquid.Context context, object input, string groupTypeId )
+        {
+            var person = GetPerson( input );
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+
+            if ( person != null && numericalGroupTypeId.HasValue )
+            {
+                return new AttendanceService( GetRockContext( context ) ).Queryable().AsNoTracking().Where(a => a.Group.GroupTypeId == numericalGroupTypeId && a.PersonAlias.PersonId == person.Id).Select(a => a.Group).Distinct().ToList();
             }
 
             return new List<Model.Group>();
         }
 
+        /// <summary>
+        /// Gets the groups of selected type that geofence the selected person
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public static List<Rock.Model.Group> GeofencingGroups( DotLiquid.Context context, object input, string groupTypeId )
+        {
+            var person = GetPerson( input );
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+
+            if ( person != null && numericalGroupTypeId.HasValue )
+            {
+                return new GroupService( GetRockContext( context ) )
+                    .GetGeofencingGroups( person.Id, numericalGroupTypeId.Value )
+                    .ToList();
+            }
+
+            return new List<Model.Group>();
+        }
+
+        /// <summary>
+        /// Gets the groups of selected type that geofence the selected person 
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="groupTypeRoleId">The group type role identifier.</param>
+        /// <returns></returns>
+        public static List<Rock.Model.Person> GeofencingGroupMembers( DotLiquid.Context context, object input, string groupTypeId, string groupTypeRoleId )
+        {
+            var person = GetPerson( input );
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+            int? numericalGroupTypeRoleId = groupTypeRoleId.AsIntegerOrNull();
+
+            if ( person != null && numericalGroupTypeId.HasValue && numericalGroupTypeRoleId.HasValue )
+            {
+                return new GroupService( GetRockContext( context ) )
+                    .GetGeofencingGroups( person.Id, numericalGroupTypeId.Value )
+                    .SelectMany( g => g.Members.Where( m => m.GroupRole.Id == numericalGroupTypeRoleId ) )
+                    .Select( m => m.Person )
+                    .ToList();
+            }
+
+            return new List<Model.Person>();
+        }
+
+        /// <summary>
+        /// Returnes the nearest group of a specific type.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public static Rock.Model.Group NearestGroup( DotLiquid.Context context, object input, string groupTypeId )
+        {
+            var person = GetPerson( input );
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+
+            if ( person != null && numericalGroupTypeId.HasValue )
+            {
+                return new GroupService( GetRockContext( context ) )
+                    .GetNearestGroup( person.Id, numericalGroupTypeId.Value );
+            }
+
+            return null;
+        }
+        
         /// <summary>
         /// Gets the rock context.
         /// </summary>
@@ -1001,6 +1162,24 @@ namespace Rock.Lava
                 context.Registers.Add( "rock_context", rockContext );
                 return rockContext;
             }
+        }
+
+        private static Person GetPerson( object input )
+        {
+            if ( input != null )
+            {
+                var person = input as Person;
+                if ( person != null )
+                {
+                    return person;
+                }
+                var checkinPerson = input as CheckIn.CheckInPerson;
+                if ( checkinPerson != null )
+                {
+                    return checkinPerson.Person;
+                }
+            }
+            return null;
         }
 
         #endregion

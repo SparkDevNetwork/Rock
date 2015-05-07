@@ -15,7 +15,12 @@ declare
   @accountId int,
   @transactionId int,
   @checkMicrEncrypted nvarchar(max),
-  @checkMicrHash nvarchar(128)
+  @checkMicrHash nvarchar(128),
+  @yearsBack int = 4
+
+declare
+  @daysBack int = @yearsBack * 366
+
 
 begin
 
@@ -26,7 +31,7 @@ begin transaction
  delete FinancialTransaction
 */
 
-set @transactionDateTime = DATEADD(DAY, -366, SYSDATETIME())
+set @transactionDateTime = DATEADD(DAY, -@daysBack, SYSDATETIME())
 
 while @transactionCounter < @maxTransactionCount
     begin
@@ -91,7 +96,7 @@ while @transactionCounter < @maxTransactionCount
                    ,NEWID())
 
         set @transactionCounter += 1;
-        set @transactionDateTime = DATEADD(ss, (86000*365/@maxTransactionCount), @transactionDateTime);
+        set @transactionDateTime = DATEADD(ss, (86000*@daysBack/@maxTransactionCount), @transactionDateTime);
     end
 
 commit transaction

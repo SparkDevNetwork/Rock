@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public DateTime? DateTimeAdded { get; set; }
+
+        /// <summary />
         public int GroupId { get; set; }
 
         /// <summary />
@@ -65,6 +68,9 @@ namespace Rock.Client
     /// </summary>
     public partial class GroupMember : GroupMemberEntity
     {
+        /// <summary />
+        public ICollection<GroupMemberRequirement> GroupMemberRequirements { get; set; }
+
         /// <summary />
         public GroupTypeRole GroupRole { get; set; }
 

@@ -274,6 +274,31 @@ namespace RockWeb.Blocks.Administration
                 var deletedRouteIds = new List<int>();
                 var addedRoutes = new List<string>();
 
+                if ( editorRoutes.Any() )
+                {
+                    // validate for any duplicate routes
+                    var duplicateRoutes = routeService.Queryable()
+                        .Where( r => editorRoutes.Contains( r.Route ) && r.PageId != _pageId )
+                        .Select( r => r.Route )
+                        .Distinct()
+                        .ToList();
+
+                    if ( duplicateRoutes.Any() )
+                    {
+                        // Duplicate routes
+                        nbPageRouteWarning.Title = "Duplicate Route(s)";
+                        nbPageRouteWarning.Text = string.Format( "<p>The page route <strong>{0}</strong>, already exists for another page. Please choose a different route name.</p>", duplicateRoutes.AsDelimited( "</strong> and <strong>" ) );
+                        nbPageRouteWarning.Dismissable = true;
+                        nbPageRouteWarning.Visible = true;
+                        CurrentTab = "Advanced Settings";
+
+                        rptProperties.DataSource = _tabs;
+                        rptProperties.DataBind();
+                        ShowSelectedPane();
+                        return;
+                    }
+                }
+
                 // validate if removed routes can be deleted
                 foreach ( var pageRoute in databasePageRoutes )
                 {

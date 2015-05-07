@@ -51,12 +51,6 @@ namespace Rock.Model
         public bool CanDelete( BenevolenceRequest item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<BenevolenceResult>( Context ).Queryable().Any( a => a.BenevolenceRequestId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", BenevolenceRequest.FriendlyTypeName, BenevolenceResult.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }

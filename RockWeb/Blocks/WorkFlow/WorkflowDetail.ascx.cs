@@ -417,7 +417,9 @@ namespace RockWeb.Blocks.WorkFlow
 
                 }
 
-                Workflow = service.Get( Workflow.Id );
+                Workflow = service
+                    .Queryable("WorkflowType,Activities.ActivityType,Activities.Actions.ActionType")
+                    .FirstOrDefault( w => w.Id == Workflow.Id );
 
                 var errorMessages = new List<string>();
                 service.Process( Workflow, out errorMessages );
@@ -477,7 +479,8 @@ namespace RockWeb.Blocks.WorkFlow
                         .FirstOrDefault();
                     if ( person != null )
                     {
-                        tdAssignedToPerson.Description = string.Format( "<a href='~/Person/{0}'>{1}</a>", person.Id, person.FullName );
+                        tdAssignedToPerson.Description = string.Format( "<a href='{0}{1}'>{2}</a>",
+                            ResolveRockUrl( "~/Person/" ), person.Id, person.FullName );
                     }
                 }
 
@@ -698,7 +701,8 @@ namespace RockWeb.Blocks.WorkFlow
                     if ( Workflow.InitiatorPersonAlias != null && Workflow.InitiatorPersonAlias.Person != null )
                     {
                         var person = Workflow.InitiatorPersonAlias.Person;
-                        tdInitiator.Description = string.Format( "<a href='{0}{1}'>{2}</a>", ResolveRockUrl("~/Person/"), person.Id, person.FullName );
+                        tdInitiator.Description = string.Format( "<a href='{0}{1}'>{2}</a>",
+                            ResolveRockUrl("~/Person/"), person.Id, person.FullName );
                     }
                     else
                     {

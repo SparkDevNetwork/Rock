@@ -12,6 +12,7 @@
             </div>
             <div class="panel-body">
 
+                <a href="#" class="btn btn-action btn-xs pull-right" onclick="$('.js-auth-roles').toggleClass('hidden')" >Show Auth</a>
                 <div id="pages" style="display:none">
                     <asp:Literal ID="lPages" runat="server" ViewStateMode="Disabled" ></asp:Literal>
                 </div>

@@ -97,6 +97,11 @@ function() {
      result = result + ', with role(s): ' + roleCommaList;
   }
 
+  var groupMemberStatus = $('.js-group-member-status option:selected', $content).text();
+  if (groupMemberStatus) {
+     result = result + ', with member status:' + groupMemberStatus;
+  }
+
   return result;
 }
 ";
@@ -127,6 +132,12 @@ function() {
                     includeChildGroups = selectionValues[2].AsBooleanOrNull() ?? false;
                 }
 
+                GroupMemberStatus? groupMemberStatus = null;
+                if ( selectionValues.Length >= 4 )
+                {
+                    groupMemberStatus = selectionValues[3].ConvertToEnumOrNull<GroupMemberStatus>();
+                }
+
                 if ( group != null )
                 {
                     result = string.Format( "In group: {0}", group.Name );
@@ -138,6 +149,11 @@ function() {
                     if ( groupTypeRoles.Count() > 0 )
                     {
                         result += string.Format( ", with role(s): {0}", groupTypeRoles.Select( a => string.Format( "{0} ({1})", a.Name, a.GroupType.Name ) ).ToList().AsDelimited( "," ) );
+                    }
+
+                    if (groupMemberStatus.HasValue)
+                    {
+                        result += string.Format( ", with member status: {0}", groupMemberStatus.ConvertToString() );
                     }
                 }
             }
@@ -185,7 +201,16 @@ function() {
             cblRole.Visible = false;
             filterControl.Controls.Add( cblRole );
 
-            return new Control[3] { gp, cbChildGroups, cblRole };
+            RockDropDownList ddlGroupMemberStatus = new RockDropDownList();
+            ddlGroupMemberStatus.CssClass = "js-group-member-status";
+            ddlGroupMemberStatus.ID = filterControl.ID + "_ddlGroupMemberStatus";
+            ddlGroupMemberStatus.Label = "with Group Member status";
+            ddlGroupMemberStatus.Help = "Select a specific group member status to only include group members with that status";
+            ddlGroupMemberStatus.BindToEnum<GroupMemberStatus>( true );
+            ddlGroupMemberStatus.SetValue( GroupMemberStatus.Active.ConvertToInt() );
+            filterControl.Controls.Add( ddlGroupMemberStatus );
+
+            return new Control[4] { gp, cbChildGroups, cblRole, ddlGroupMemberStatus };
         }
 
         /// <summary>
@@ -259,6 +284,8 @@ function() {
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 RockCheckBoxList cblRoles = controls[2] as RockCheckBoxList;
                 cblRoles.RenderControl( writer );
+                RockDropDownList ddlGroupMemberStatus = controls[3] as RockDropDownList;
+                ddlGroupMemberStatus.RenderControl( writer );
                 writer.RenderEndTag();
 
                 writer.RenderEndTag();
@@ -283,7 +310,8 @@ function() {
 
             var value2 = ( controls[2] as RockCheckBoxList ).SelectedValues.AsDelimited( "," );
             var value3 = ( controls[1] as CheckBox ).Checked.ToString();
-            return groupGuid.ToString() + "|" + value2 + "|" + value3;
+            var value4 = ( controls[3] as RockDropDownList ).SelectedValue;
+            return groupGuid.ToString() + "|" + value2 + "|" + value3 + "|" + value4;
         }
 
         /// <summary>
@@ -319,6 +347,16 @@ function() {
                 {
                     item.Selected = selectedRoleGuids.Contains( item.Value );
                 }
+
+                RockDropDownList ddlGroupMemberStatus = controls[3] as RockDropDownList;
+                if ( selectionValues.Length >= 4 )
+                {
+                    ddlGroupMemberStatus.SetValue( selectionValues[3] );
+                }
+                else
+                {
+                    ddlGroupMemberStatus.SetValue( string.Empty );
+                }
             }
         }
 
@@ -351,6 +389,12 @@ function() {
                     includeChildGroups = selectionValues[2].AsBooleanOrNull() ?? false;
                 }
 
+                GroupMemberStatus? groupMemberStatus = null;
+                if ( selectionValues.Length >= 4 )
+                {
+                    groupMemberStatus = selectionValues[3].ConvertToEnumOrNull<GroupMemberStatus>();
+                }
+
                 var groupMemberServiceQry = groupMemberService.Queryable();
 
                 if ( includeChildGroups )
@@ -361,6 +405,11 @@ function() {
                 else
                 {
                     groupMemberServiceQry = groupMemberServiceQry.Where( xx => xx.GroupId == groupId );
+                }
+
+                if ( groupMemberStatus.HasValue )
+                {
+                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => xx.GroupMemberStatus == groupMemberStatus.Value );
                 }
 
                 var groupRoleGuids = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( n => n.AsGuid() ).ToList();

@@ -113,7 +113,7 @@ namespace Rock.CheckIn
         {
             get
             {
-                var availableKeys = new List<string> { "LastCheckIn" };
+                var availableKeys = new List<string> { "StartTime", "LastCheckIn" };
                 if ( this.Schedule != null )
                 {
                     availableKeys.AddRange( this.Schedule.AvailableKeys );
@@ -137,6 +137,7 @@ namespace Rock.CheckIn
             {
                 switch ( key.ToStringSafe() )
                 {
+                    case "StartTime": return StartTime;
                     case "LastCheckIn": return LastCheckIn;
                     default: return Schedule[key];
                 }
@@ -150,7 +151,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public bool ContainsKey( object key )
         {
-            var additionalProperties = new List<string> { "LastCheckIn" };
+            var additionalProperties = new List<string> { "StartTime", "LastCheckIn" };
             if ( additionalProperties.Contains( key.ToStringSafe() ) )
             {
                 return true;

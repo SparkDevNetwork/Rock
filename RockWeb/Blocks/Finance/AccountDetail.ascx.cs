@@ -118,7 +118,7 @@ namespace RockWeb.Blocks.Finance
         {
             FinancialAccount account = null;
 
-            bool editAllowed = IsUserAuthorized( Authorization.EDIT );
+            bool editAllowed = UserCanEdit;
 
             if ( !accountId.Equals( 0 ) )
             {
@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Finance
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed || !IsUserAuthorized( Authorization.EDIT ) )
+            if ( !editAllowed || !editAllowed )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialAccount.FriendlyTypeName );

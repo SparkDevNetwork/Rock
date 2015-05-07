@@ -32,7 +32,7 @@ namespace Rock.PersonProfile.Badge
     /// </summary>
     [Description( "Displays the group(s) of a particular type that have a geo-fence location around one or more of the the person's map locations." )]
     [Export( typeof( BadgeComponent ) )]
-    [ExportMetadata( "ComponentName", "Geofenced Group" )]
+    [ExportMetadata( "ComponentName", "Geofenced By Group" )]
 
     [GroupTypeField( "Group Type", "The type of group to use.", true )]
     [TextField( "Badge Color", "The color of the badge (#ffffff).", true, "#0ab4dd" )]
@@ -51,7 +51,7 @@ namespace Rock.PersonProfile.Badge
             if ( groupTypeGuid.HasValue &&  !String.IsNullOrEmpty( badgeColor ) )
             {
                 writer.Write( String.Format( 
-                    "<span class='label badge-geofenced-group badge-id-{0}' style='background-color:{1};display:none' ></span>", 
+                    "<span class='label badge-geofencing-group badge-id-{0}' style='background-color:{1};display:none' ></span>", 
                     badge.Id, badgeColor.EscapeQuotes() ) );
 
                 writer.Write( String.Format( @"
@@ -60,18 +60,26 @@ Sys.Application.add_load(function () {{
                                                 
     $.ajax({{
             type: 'GET',
-            url: Rock.settings.get('baseUrl') + 'api/PersonBadges/GeofencedGroups/{0}/{1}' ,
+            url: Rock.settings.get('baseUrl') + 'api/PersonBadges/GeofencingGroups/{0}/{1}' ,
             statusCode: {{
-                200: function (result, status, xhr) {{
-                    var $badge = $('.badge-geofenced-group.badge-id-{2}');
+                200: function (data, status, xhr) {{
+                    var $badge = $('.badge-geofencing-group.badge-id-{2}');
                     var badgeHtml = '';
-                    if (result && result != '') {{
-                        badgeHtml = result;
-                        $badge.show();
+
+                    $.each(data, function() {{
+                        if ( badgeHtml != '' ) {{ 
+                            badgeHtml += ' | ';
+                        }}
+                        badgeHtml += '<span title=""' + this.LeaderNames + '"" data-toggle=""tooltip"">' + this.GroupName + '</span>';
+                    }});
+
+                    if (badgeHtml != '') {{
+                        $badge.show('fast');
                     }} else {{
                         $badge.hide();
                     }}
                     $badge.html(badgeHtml);
+                    $badge.find('span').tooltip();
                 }}
             }},
     }});

@@ -62,6 +62,9 @@ namespace Rock.Client
         public bool IsSystem { get; set; }
 
         /// <summary />
+        public bool? MustMeetRequirementsToAddMember { get; set; }
+
+        /// <summary />
         public string Name { get; set; }
 
         /// <summary />
@@ -100,6 +103,9 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<GroupLocation> GroupLocations { get; set; }
+
+        /// <summary />
+        public ICollection<GroupRequirement> GroupRequirements { get; set; }
 
         /// <summary />
         public ICollection<Group> Groups { get; set; }

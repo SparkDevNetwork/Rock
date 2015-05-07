@@ -95,43 +95,31 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/PersonBadges/GeofencedGroups/{personId}/{groupTypeGuid}" )]
-        public string GetGeofencedGroups( int personId, Guid groupTypeGuid )
+        [System.Web.Http.Route( "api/PersonBadges/GeofencingGroups/{personId}/{groupTypeGuid}" )]
+        public List<GroupAndLeaderInfo> GetGeofencingGroups( int personId, Guid groupTypeGuid )
         {
             var rockContext = (Rock.Data.RockContext)Service.Context;
             var groupMemberService = new GroupMemberService( rockContext );
-            var groupService = new GroupService( rockContext );
 
-            Guid familyTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+            var groups = new GroupService( rockContext ).GetGeofencingGroups( personId, groupTypeGuid ).AsNoTracking();
 
-            // get the geopoints for the family locations for the selected person
-            var familyGeoPoints = groupMemberService
-                .Queryable().AsNoTracking()
-                .Where( m => 
-                    m.PersonId == personId &&
-                    m.Group.GroupType.Guid.Equals( familyTypeGuid ) )
-                .SelectMany( m => m.Group.GroupLocations )
-                .Where( l => 
-                    l.IsMappedLocation &&
-                    l.Location.GeoPoint != null ) 
-                .Select( l => l.Location.GeoPoint )
-                .ToList();
+            var result = new List<GroupAndLeaderInfo>();
+            foreach ( var group in groups.OrderBy( g => g.Name ) )
+            {
+                var info = new GroupAndLeaderInfo();
+                info.GroupName = group.Name;
+                info.LeaderNames = groupMemberService
+                    .Queryable().AsNoTracking()
+                    .Where( m => 
+                        m.GroupId == group.Id &&
+                        m.GroupRole.IsLeader )
+                    .Select( m => m.Person.NickName + " " + m.Person.LastName )
+                    .ToList()
+                    .AsDelimited(", ");
+                result.Add(info);
+            }
 
-            // Get the groups that have a location that intersects with any of the family's locations
-            var groupNames = groupService
-                .Queryable().AsNoTracking()
-                .Where( g => 
-                    g.GroupType.Guid.Equals( groupTypeGuid ) &&
-                    g.IsActive &&
-                    g.GroupLocations.Any( l =>
-                        l.Location.GeoFence != null &&
-                        familyGeoPoints.Any( p => p.Intersects( l.Location.GeoFence ) )
-                    ))
-                .OrderBy( g => g.Name )
-                .Select( g => g.Name )
-                .ToList();
-
-            return groupNames.AsDelimited( " | ");
+            return result;
         }
 
         /// <summary>
@@ -312,6 +300,28 @@ namespace Rock.Rest.Controllers
             /// The group member role name.
             /// </value>
             public string RoleName { get; set; }
+        }
+
+        /// <summary>
+        /// Group and Leader name info
+        /// </summary>
+        public class GroupAndLeaderInfo
+        {
+            /// <summary>
+            /// Gets or sets the name of the group.
+            /// </summary>
+            /// <value>
+            /// The name of the group.
+            /// </value>
+            public string GroupName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the leader names.
+            /// </summary>
+            /// <value>
+            /// The leader names.
+            /// </value>
+            public string LeaderNames { get; set; }
         }
 
         /// <summary>

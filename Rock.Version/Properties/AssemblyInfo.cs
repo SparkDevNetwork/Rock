@@ -49,7 +49,7 @@ using System.Runtime.InteropServices;
 
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion( "0.0" )]
-[assembly: AssemblyFileVersion( "1.3.1.0" )]
+[assembly: AssemblyFileVersion( "1.3.3.0" )]
 
 // This number can change for each build (and should change) so that we can correctly
 // identify exactly which version someone is running.  This number should increment
@@ -63,6 +63,6 @@ using System.Runtime.InteropServices;
 // This is the "official" product name that will be shown to people. 
 // It's shown in the SystemInfo details and perhaps the RockUpdate page.
 // JICK - J(on) / (N)ick versioning system.
-[assembly: AssemblyInformationalVersion( "Rock McKinley 3.1" )]
+[assembly: AssemblyInformationalVersion( "Rock McKinley 3.3" )]
 //[assembly: AssemblyInformationalVersion( "Rock McKinley 0.7 (beta)" )]    // 1.0.10
-//[assembly: AssemblyInformationalVersion( "Rock McKinley 1.0" )]           // 1.3.1
+//[assembly: AssemblyInformationalVersion( "Rock McKinley 1.0" )]           // 1.3.3
