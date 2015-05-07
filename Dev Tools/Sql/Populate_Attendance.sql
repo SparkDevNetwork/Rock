@@ -115,9 +115,8 @@ begin
 
     --truncate table Attendance    
     insert into Attendance 
-        ( LocationId, ScheduleId, GroupId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, [Guid] ) 
-    select LocationId, ScheduleId, GroupId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, [Guid] from @attendanceTable order by StartDateTime
-
+        ( LocationId, ScheduleId, GroupId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, DidAttend, [Guid] ) 
+    select LocationId, ScheduleId, GroupId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, DidAttend, [Guid] from @attendanceTable order by StartDateTime
 end;
 
 
