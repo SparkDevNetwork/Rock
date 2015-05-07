@@ -218,15 +218,25 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
 
             if (_ppAssignedToPerson.SelectedValue.HasValue)
             {
-                activity.AssignedPersonAliasId = _ppAssignedToPerson.SelectedValue;
+                activity.AssignedPersonAliasId = _ppAssignedToPerson.PersonAliasId;
             } 
-            else if (_gpAssignedToGroup.SelectedValueAsInt().HasValue)
+            else
+            {
+                activity.AssignedPersonAliasId = null;
+            }
+
+            
+            if (_gpAssignedToGroup.SelectedValueAsInt().HasValue)
             {
                 activity.AssignedGroupId = _gpAssignedToGroup.SelectedValueAsInt();
             }
             else if (_ddlAssignedToRole.SelectedValueAsInt().HasValue)
             {
                 activity.AssignedGroupId = _ddlAssignedToRole.SelectedValueAsInt();
+            }
+            else
+            {
+                activity.AssignedGroupId = null;
             }
 
             Attribute.Helper.GetEditValues( _phAttributes, activity );
@@ -300,10 +310,12 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
                     if ( group.IsSecurityRole )
                     {
                         _ddlAssignedToRole.SetValue( group.Id );
+                        _gpAssignedToGroup.SetValue( null );
                         _lAssignedToRole.Text = group.Name;
                     }
                     else
                     {
+                        _ddlAssignedToRole.SelectedIndex = -1;
                         _gpAssignedToGroup.SetValue( group );
                         _lAssignedToGroup.Text = group.Name;
                     }
