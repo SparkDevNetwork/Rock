@@ -143,6 +143,7 @@ namespace Rock.Model
         /// <value>
         /// The initiator person alias.
         /// </value>
+        [DataMember]
         public virtual PersonAlias InitiatorPersonAlias { get; set; }
 
         /// <summary>
