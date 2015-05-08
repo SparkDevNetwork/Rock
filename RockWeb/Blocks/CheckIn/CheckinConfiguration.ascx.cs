@@ -39,6 +39,13 @@ namespace RockWeb.Blocks.CheckIn
     [Description( "Helps to configure the check-in workflow." )]
     public partial class CheckinConfiguration : RockBlock, IDetailBlock
     {
+        #region Properties
+
+        private List<Guid> ProcessedGroupTypeIds = new List<Guid>();
+        private List<Guid> ProcessedGroupIds = new List<Guid>();
+
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -288,6 +295,7 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             // Build out Parent GroupTypes controls (Child GroupTypes controls are built recursively)
+            ProcessedGroupTypeIds = new List<Guid>();
             foreach ( var groupType in groupTypeViewStateList )
             {
                 CreateGroupTypeEditorControls( groupType, phCheckinGroupTypes, rockContext );
@@ -303,6 +311,8 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="createExpanded">if set to <c>true</c> [create expanded].</param>
         private void CreateGroupTypeEditorControls( GroupType groupType, Control parentControl, RockContext rockContext, bool createExpanded = false )
         {
+            ProcessedGroupTypeIds.Add( groupType.Guid );
+
             CheckinGroupTypeEditor groupTypeEditor = new CheckinGroupTypeEditor();
             groupTypeEditor.ID = "GroupTypeEditor_" + groupType.Guid.ToString( "N" );
             groupTypeEditor.SetGroupType( groupType.Id, groupType.Guid, groupType.Name, groupType.InheritedGroupTypeId );
@@ -348,16 +358,22 @@ namespace RockWeb.Blocks.CheckIn
             // get the GroupType from the control just in case the InheritedFrom changed
             var childGroupGroupType = groupTypeEditor.GetCheckinGroupType( rockContext );
 
+            // Find the groups of this type, who's parent is null, or another group type ( "root" groups ).
+            var allGroupIds = groupType.Groups.Select( g => g.Id).ToList();
+            ProcessedGroupIds = new List<Guid>();
             foreach ( var childGroup in groupType.Groups
-                .Where( g => !g.ParentGroupId.HasValue )
-                .OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+                .Where( g => 
+                    !g.ParentGroupId.HasValue ||
+                    !allGroupIds.Contains( g.ParentGroupId.Value ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name ) )
             {
                 childGroup.GroupType = childGroupGroupType;
                 CreateGroupEditorControls( childGroup, groupTypeEditor, rockContext, false );
             }
 
             foreach ( var childGroupType in groupType.ChildGroupTypes
-                .Where( t => t.Guid != groupType.Guid )
+                .Where( t => !ProcessedGroupTypeIds.Contains( t.Guid ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name ) )
             {
@@ -435,6 +451,7 @@ namespace RockWeb.Blocks.CheckIn
             checkinArea.ParentGroupTypes = new List<GroupType>();
             checkinArea.ParentGroupTypes.Add( parentGroupType );
 
+            ProcessedGroupTypeIds = new List<Guid>();
             CreateGroupTypeEditorControls( checkinArea, phCheckinGroupTypes, rockContext, true );
         }
 
@@ -461,6 +478,7 @@ namespace RockWeb.Blocks.CheckIn
             checkinArea.ParentGroupTypes = new List<GroupType>();
             checkinArea.ParentGroupTypes.Add( parentEditor.GetCheckinGroupType( rockContext ) );
 
+            ProcessedGroupTypeIds = new List<Guid>();
             CreateGroupTypeEditorControls( checkinArea, parentEditor, rockContext, true );
         }
 
@@ -484,6 +502,7 @@ namespace RockWeb.Blocks.CheckIn
 
             var rockContext = new RockContext();
 
+            ProcessedGroupIds = new List<Guid>();
             CreateGroupEditorControls( checkinGroup, parentGroupTypeEditor, rockContext, true );
         }
 
@@ -496,6 +515,8 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="createExpanded">if set to <c>true</c> [create expanded].</param>
         private void CreateGroupEditorControls( Group group, Control parentControl, RockContext rockContext, bool createExpanded = false )
         {
+            ProcessedGroupIds.Add( group.Guid );
+
             CheckinGroupEditor groupEditor = new CheckinGroupEditor();
             groupEditor.ID = "GroupEditor_" + group.Guid.ToString( "N" );
             if ( createExpanded )
@@ -533,7 +554,9 @@ namespace RockWeb.Blocks.CheckIn
             groupEditor.DeleteLocationClick += groupEditor_DeleteLocationClick;
             groupEditor.DeleteGroupClick += groupEditor_DeleteGroupClick;
 
-            foreach ( var childGroup in group.Groups.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            foreach ( var childGroup in group.Groups
+                .Where( a => !ProcessedGroupIds.Contains( a.Guid ))
+                .OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
                 childGroup.GroupType = group.GroupType;
                 CreateGroupEditorControls( childGroup, groupEditor, rockContext, false );
@@ -561,6 +584,7 @@ namespace RockWeb.Blocks.CheckIn
 
             var rockContext = new RockContext();
 
+            ProcessedGroupIds = new List<Guid>();
             CreateGroupEditorControls( checkinGroup, parentGroupEditor, rockContext, true );
         }
 
