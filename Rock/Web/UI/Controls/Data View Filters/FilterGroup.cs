@@ -191,53 +191,53 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget" );
-            writer.RenderBeginTag( "section" );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
-            if ( HidePanelHeader )
+            if ( !HidePanelHeader )
             {
-                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget" );
+                writer.RenderBeginTag( "section" );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
+
+
+                writer.RenderBeginTag( "header" );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toggle pull-left" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( "Show if" );
+                writer.RenderEndTag();
+                toggleAllAny.CssClass = "pull-left";
+                toggleAllAny.RenderControl( writer );
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( "of these are true" );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn-group btn-group-sm pull-right" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                btnAddGroup.Visible = ( AddGroupClick != null );
+                btnAddGroup.RenderControl( writer );
+
+                btnAddFilter.Visible = ( AddFilterClick != null );
+                btnAddFilter.RenderControl( writer );
+
+                if ( IsDeleteEnabled )
+                {
+                    lbDelete.Visible = true;
+                    lbDelete.RenderControl( writer );
+                }
+                else
+                {
+                    lbDelete.Visible = false;
+                }
+
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
-
-            writer.RenderBeginTag( "header" );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toggle pull-left" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.RenderBeginTag( HtmlTextWriterTag.Span );
-            writer.Write( "Show if" );
-            writer.RenderEndTag();
-            toggleAllAny.CssClass = "pull-left";
-            toggleAllAny.RenderControl( writer );
-            writer.RenderBeginTag( HtmlTextWriterTag.Span );
-            writer.Write( "of these are true" );
-            writer.RenderEndTag();
-            writer.RenderEndTag();
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn-group btn-group-sm pull-right" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            btnAddGroup.Visible = ( AddGroupClick != null );
-            btnAddGroup.RenderControl( writer );
-
-            btnAddFilter.Visible = ( AddFilterClick != null );
-            btnAddFilter.RenderControl( writer );
-
-            if ( IsDeleteEnabled )
-            {
-                lbDelete.Visible = true;
-                lbDelete.RenderControl( writer );
-            }
-            else
-            {
-                lbDelete.Visible = false;
-            }
-
-            writer.RenderEndTag();
-            writer.RenderEndTag();
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             foreach ( Control control in this.Controls )
             {
@@ -250,9 +250,12 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            writer.RenderEndTag();
+            if ( !HidePanelHeader )
+            {
+                writer.RenderEndTag();
 
-            writer.RenderEndTag();
+                writer.RenderEndTag();
+            }
         }
 
         void btnAddGroup_ServerClick( object sender, EventArgs e )

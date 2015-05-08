@@ -497,81 +497,73 @@ $('.filter-item-select').click(function (event) {
 
             if ( !this.HideFilterTypePicker )
             {
-                // only style this as a panel if the filter type picker is shown
+                // only render this stuff if the filter type picker is shown
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget filter-item" );
-            }
 
-            writer.RenderBeginTag( "article" );
+                writer.RenderBeginTag( "article" );
 
-            if ( this.HideFilterTypePicker )
-            {
-                // hide the header if the filter type can't be configured
-                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
-            }
-            else
-            {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
                 if ( !string.IsNullOrEmpty( clientFormatString ) )
                 {
                     writer.AddAttribute( HtmlTextWriterAttribute.Onclick, clientFormatString );
                 }
+
+                writer.RenderBeginTag( "header" );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-expanded" );
+                hfExpanded.RenderControl( writer );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-description" );
+                if ( Expanded )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                }
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.Write( component != null ? component.FormatSelection( FilteredEntityType, Selection ) : "Select Filter" );
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-select" );
+                if ( !Expanded )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                }
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( "Filter Type " );
+                writer.RenderEndTag();
+
+                ddlFilterType.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-link btn-xs filter-view-state" );
+                writer.RenderBeginTag( HtmlTextWriterTag.A );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" );
+                writer.RenderBeginTag( HtmlTextWriterTag.I );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+                writer.Write( " " );
+                lbDelete.Visible = ( this.DeleteClick != null );
+                lbDelete.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();
+
+                writer.AddAttribute( "class", "panel-body" );
+                if ( !Expanded )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                }
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
-
-            writer.RenderBeginTag( "header" );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-expanded" );
-            hfExpanded.RenderControl( writer );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-description" );
-            if ( Expanded )
-            {
-                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
-            }
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.Write( component != null ? component.FormatSelection( FilteredEntityType, Selection ) : "Select Filter" );
-            writer.RenderEndTag();
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-select" );
-            if ( !Expanded )
-            {
-                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
-            }
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Span );
-            writer.Write( "Filter Type " );
-            writer.RenderEndTag();
-
-            ddlFilterType.RenderControl( writer );
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-link btn-xs filter-view-state" );
-            writer.RenderBeginTag( HtmlTextWriterTag.A );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" );
-            writer.RenderBeginTag( HtmlTextWriterTag.I );
-            writer.RenderEndTag();
-            writer.RenderEndTag();
-            writer.Write( " " );
-            lbDelete.Visible = ( this.DeleteClick != null );
-            lbDelete.RenderControl( writer );
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
-
-            writer.AddAttribute( "class", "panel-body" );
-            if ( !Expanded )
-            {
-                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
-            }
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( ShowCheckbox )
             {
@@ -591,9 +583,13 @@ $('.filter-item-select').click(function (event) {
             {
                 component.RenderControls( FilteredEntityType, this, writer, filterControls );
             }
-            writer.RenderEndTag();
 
-            writer.RenderEndTag();
+            if ( !HideFilterTypePicker )
+            {
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();
+            }
         }
 
         void ddlFilterType_SelectedIndexChanged( object sender, EventArgs e )
