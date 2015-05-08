@@ -36,6 +36,10 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Block to display a report with options to edit the filter" )]
 
+    [TextField( "ResultsIconCssClass", "Title for the results list.", false, "fa fa-list", "CustomSetting" )]
+    [TextField( "ResultsTitle", "Title for the results list.", false, "Results", "CustomSetting")]
+    [TextField( "FilterTitle", "Title for the results list.", false, "Filters", "CustomSetting" )]
+    [TextField( "FilterIconCssClass", "Title for the results list.", false, "fa fa-filter", "CustomSetting" )]
     [TextField( "Report", "The report to use for this block", false, "", "CustomSetting" )]
     [TextField( "SelectedDataFieldGuids", "The DataFilters to present to the user", false, "", "CustomSetting" )]
     [TextField( "ConfigurableDataFieldGuids", "Of the DataFilters that are presented to the user, which are configurable vs just a checkbox", false, "", "CustomSetting" )]
@@ -103,6 +107,20 @@ namespace RockWeb.Blocks.Reporting
 
             if (!this.IsPostBack)
             {
+                lResultsTitle.Text = GetAttributeValue( "ResultsTitle" );
+
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ResultsIconCssClass" ) ) )
+                {
+                    lResultsIconCssClass.Text = String.Format("<i class='{0}'></i>", GetAttributeValue( "ResultsIconCssClass" ));
+                }
+
+                lFilterTitle.Text = GetAttributeValue( "FilterTitle" );
+
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "FilterIconCssClass" ) ) )
+                {
+                    lFilterIconCssClass.Text = String.Format("<i class='{0}'></i>", GetAttributeValue( "FilterIconCssClass" ));
+                }
+                
                 BindReportGrid();
             }
         }
@@ -115,6 +133,10 @@ namespace RockWeb.Blocks.Reporting
             pnlConfigure.Visible = true;
             LoadDropDowns();
             ddlReport.SetValue( this.GetAttributeValue( "Report" ).AsGuidOrNull() );
+            txtResultsTitle.Text = this.GetAttributeValue( "ResultsTitle" );
+            txtResultsIconCssClass.Text = this.GetAttributeValue( "ResultsIconCssClass" );
+            txtFilterTitle.Text = this.GetAttributeValue( "FilterTitle" );
+            txtFilterIconCssClass.Text = this.GetAttributeValue( "FilterIconCssClass" );
             BindDataFiltersGrid( false );
             mdConfigure.Show();
         }
@@ -143,7 +165,11 @@ namespace RockWeb.Blocks.Reporting
 
             mdConfigure.Hide();
             pnlConfigure.Visible = false;
-            
+
+            this.SetAttributeValue( "ResultsTitle", txtResultsTitle.Text );
+            this.SetAttributeValue( "ResultsIconCssClass", txtResultsIconCssClass.Text );
+            this.SetAttributeValue( "FilterTitle", txtFilterTitle.Text );
+            this.SetAttributeValue( "FilterIconCssClass", txtFilterIconCssClass.Text );
             this.SetAttributeValue( "Report", ddlReport.SelectedValue.AsGuidOrNull().ToString() );
             SaveAttributeValues();
 

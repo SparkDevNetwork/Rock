@@ -7,20 +7,37 @@
 
         <%-- View Panel --%>
         <asp:Panel ID="pnlView" runat="server">
-            <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />
 
-            <asp:PlaceHolder ID="phFilters" runat="server" />
+            <div class="panel panel-block margin-t-md">
+                <div class="panel-heading clearfix">
+                    <h1 class="panel-title pull-left">
+                        <asp:Literal ID="lFilterIconCssClass" runat="server" /> <asp:Literal ID="lFilterTitle" runat="server" />
+                    </h1>
+                </div>
+                <div class="panel-body">
+                    <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />
 
-            <div class="actions">
-                <asp:LinkButton ID="btnRun" runat="server" AccessKey="m" Text="Run" CssClass="btn btn-primary" OnClick="btnRun_Click" />
+                    <asp:PlaceHolder ID="phFilters" runat="server" />
+
+                    <div class="actions">
+                        <asp:LinkButton ID="btnRun" runat="server" AccessKey="m" Text="Filter" CssClass="btn btn-primary btn-sm" OnClick="btnRun_Click" />
+                    </div>
+                </div>
             </div>
 
-            <h4>Results</h4>
-            <Rock:NotificationBox ID="nbReportErrors" runat="server" NotificationBoxType="Info" />
-            <div class="grid">
-                <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
+            <div class="panel panel-block margin-t-md">
+                <div class="panel-heading clearfix">
+                    <h1 class="panel-title pull-left">
+                        <asp:Literal ID="lResultsIconCssClass" runat="server" /> <asp:Literal ID="lResultsTitle" runat="server" />
+                    </h1>
+                </div>
+                <div class="panel-body">
+                    <Rock:NotificationBox ID="nbReportErrors" runat="server" NotificationBoxType="Info" />
+                    <div class="grid grid-panel">
+                        <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
+                    </div>
+                </div>
             </div>
-
 
         </asp:Panel>
 
@@ -28,6 +45,11 @@
         <asp:Panel ID="pnlConfigure" runat="server" Visible="false">
             <Rock:ModalDialog ID="mdConfigure" runat="server" ValidationGroup="vgConfigure" OnSaveClick="mdConfigure_SaveClick">
                 <Content>
+                    <Rock:RockTextBox ID="txtResultsTitle" runat="server" Label="Results Title" />
+                    <Rock:RockTextBox ID="txtResultsIconCssClass" runat="server" Label="Results Icon CSS Class" />
+                    <Rock:RockTextBox ID="txtFilterIconCssClass" runat="server" Label="Filter Icon CSS Class" />
+                    <Rock:RockTextBox ID="txtFilterTitle" runat="server" Label="Filter Title" />
+
                     <Rock:RockDropDownList ID="ddlReport" runat="server" Label="Report" Help="Select the report to present to the user. Then set which of the report's dataview's filters to show." Required="false" ValidationGroup="vgConfigure" OnSelectedIndexChanged="ddlReport_SelectedIndexChanged" AutoPostBack="true" />
                     <Rock:NotificationBox ID="nbMultipleFilterGroupsWarning" runat="server" NotificationBoxType="Warning" Text="This report has multiple filter groups. This block currently only supports non-grouped filters" Dismissable="true" Visible="false" />
                     <Rock:HelpBlock ID="hbDataFilters" runat="server" Text="Select which filters that will be visible to the user.  If Configurable is selected for a visible filter, the user will be able to change the filter, otherwise, the filter will presented as checkbox where user can choose to use the filter or not." />
