@@ -203,7 +203,7 @@ namespace Rock.Migrations
                     <div class=""badge badge-baptism"" data-original-title=""No baptism date entered for {{ Person.NickName }}."">
                         <i class=""badge-icon badge-disabled fa fa-tint""></i>
                     </div>
-                {% endif -%}', newid(), getdate(), getdate(), 1,1)
+                {% endif -%}', newid(), getdate(), getdate(), null,null)
 
                 -- Set third badge list badges
                     UPDATE [AttributeValue] SET
@@ -220,7 +220,7 @@ namespace Rock.Migrations
                 VALUES
 	                (0, @LiquidAttributeId, @@IDENTITY, 0, '{% if Person.ConnectionStatusValue.Name != empty -%}
                     <span class=""label label-success"">{{ Person.ConnectionStatusValue.Name }}</span> 
-                {% endif -%}', newid(), getdate(), getdate(), 1,1)
+                {% endif -%}', newid(), getdate(), getdate(), null,null)
 
                 -- add inactive badge
                 INSERT INTO [PersonBadge] ([Name],[Description],[EntityTypeId],[Order],[Guid])
@@ -232,7 +232,7 @@ namespace Rock.Migrations
 	                (0, @LiquidAttributeId, @@IDENTITY, 0, '{% if Person.RecordStatusValue.Name != empty and Person.RecordStatusValue.Name == ""Inactive"" -%}
                     <span class=""label label-danger"" title=""{{ Person.RecordStatusReasonValue.Name }}"" data-toggle=""tooltip"">{{ Person.RecordStatusValue.Name }}</span> 
                 {% endif -%}
-                ', newid(), getdate(), getdate(), 1,1)
+                ', newid(), getdate(), getdate(), null,null)
 
                 -- set bio badges
                     UPDATE [AttributeValue] SET
@@ -332,11 +332,11 @@ namespace Rock.Migrations
 
 	                INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Order], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId])
                 VALUES
-	                (0, @GroupTypeAttributeId, @ServingBadgeId, 0, '2C42B2D4-1C5F-4AD5-A9AD-08631B872AC4', newid(), getdate(), getdate(), 1,1)
+	                (0, @GroupTypeAttributeId, @ServingBadgeId, 0, '2C42B2D4-1C5F-4AD5-A9AD-08631B872AC4', newid(), getdate(), getdate(), null,null)
 
 	                INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Order], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId])
                 VALUES
-	                (0, @ColorAttributeId, @ServingBadgeId, 0, '#443b56', newid(), getdate(), getdate(), 1,1)
+	                (0, @ColorAttributeId, @ServingBadgeId, 0, '#443b56', newid(), getdate(), getdate(), null,null)
 
 	                -- Set third badge list badges
                     UPDATE [AttributeValue] SET
