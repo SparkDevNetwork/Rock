@@ -548,35 +548,7 @@ function(item) {
             gChartAttendance.DataBind();
         }
 
-        /// <summary>
-        /// private class just for this block so that we can cache ScheduleInfo when we populate the attendees grid
-        /// </summary>
-        private class ScheduleInfo
-        {
-            /// <summary>
-            /// Gets or sets the friendly schedule text.
-            /// </summary>
-            /// <value>
-            /// The friendly schedule text.
-            /// </value>
-            public string FriendlyScheduleText { get; set; }
-
-            /// <summary>
-            /// Gets or sets the occurrence count for the selected date range (the main date range)
-            /// </summary>
-            /// <value>
-            /// The occurrence count.
-            /// </value>
-            public int OccurrenceCount { get; set; }
-        }
-
-        /// <summary>
-        /// Gets or sets the _schedule possible attendance count cache.
-        /// </summary>
-        /// <value>
-        /// The _schedule possible attendance count cache.
-        /// </value>
-        private Dictionary<int, ScheduleInfo> _schedulePossibleAttendanceCountCache { get; set; }
+        private double? _attendencePossibleCount = null; 
 
         /// <summary>
         /// Binds the attendees grid.
@@ -584,6 +556,10 @@ function(item) {
         private void BindAttendeesGrid()
         {
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
+            if (dateRange.End == null || dateRange.End > RockDateTime.Now)
+            {
+                dateRange.End = RockDateTime.Now;
+            }
 
             string groupIds = GetSelectedGroupIds().AsDelimited( "," );
             string campusIds = cpCampuses.SelectedCampusIds.AsDelimited( "," );
@@ -628,6 +604,10 @@ function(item) {
             {
                 qry = qry.Where( a => a.StartDateTime < dateRange.End.Value );
             }
+
+            AttendanceGroupBy groupBy = hfGroupBy.Value.ConvertToEnum<AttendanceGroupBy>();
+
+            var qryAttendanceGroupedBy = qry.GetAttendanceGroupedBy( groupBy );
 
             var qryByPerson = qry.GroupBy( a => a.PersonAlias.Person ).Select( a => new
             {
@@ -676,14 +656,7 @@ function(item) {
                 FirstVisits = qryVisits.Where( b => b.PersonAlias.PersonId == a.Person.Id ).Select( s => new { s.Id, s.StartDateTime } ).OrderBy( x => x.StartDateTime ).Take( nthVisitsTake ),
                 LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
                 PhoneNumbers = a.Person.PhoneNumbers,
-
-                // only count it as one if they attended multiple times on the same day
-                AttendanceCount = a.Attendances.Select( b => new
-                {
-                    Year = SqlFunctions.DatePart( "year", b.StartDateTime ),
-                    Month = SqlFunctions.DatePart( "month", b.StartDateTime ),
-                    Day = SqlFunctions.DatePart( "day", b.StartDateTime )
-                } ).GroupBy( c => c ).Count()
+                AttendanceSummary = qryAttendanceGroupedBy.Select(b => b.Key)
             } );
 
             if ( byNthVisit.HasValue )
@@ -695,7 +668,7 @@ function(item) {
 
             if ( attendedMinCount.HasValue )
             {
-                qryResult = qryResult.Where( a => a.AttendanceCount >= attendedMinCount );
+                qryResult = qryResult.Where( a => a.AttendanceSummary.Count() >= attendedMinCount );
             }
 
             double? attendedMissedPossible = null;
@@ -716,6 +689,22 @@ function(item) {
                 }
             }
 
+            // approximate the attendance max occurrence count from the date range so that can calculate attendance %
+            // from http://stackoverflow.com/a/1925560/1755417
+            TimeSpan dateRangeSpan = dateRange.End.Value - dateRange.Start.Value;
+            if (groupBy == AttendanceGroupBy.Week)
+            {
+                _attendencePossibleCount = dateRangeSpan.TotalDays / 7;
+            }
+            else if (groupBy == AttendanceGroupBy.Month)
+            {
+                _attendencePossibleCount = dateRangeSpan.TotalDays / 30.436875;
+            }
+            else if ( groupBy == AttendanceGroupBy.Year )
+            {
+                _attendencePossibleCount = dateRangeSpan.TotalDays / 365.2425;
+            }
+
             SortProperty sortProperty = gAttendeesAttendance.SortProperty;
 
             if ( sortProperty != null )
@@ -727,29 +716,8 @@ function(item) {
                 qryResult = qryResult.OrderBy( a => a.Person.LastName ).ThenBy( a => a.Person.NickName );
             }
 
-            //// pre-load the schedules so we can quickly do the OnRowDataBound calculations
-            // don't count future occurrences
-            var occurrenceDateEnd = dateRange.End;
-            var currentDateTime = RockDateTime.Now;
-            if ( !dateRange.End.HasValue || dateRange.End > currentDateTime )
-            {
-                dateRange.End = currentDateTime;
-            }
-
-            _schedulePossibleAttendanceCountCache = new ScheduleService( rockContext ).Queryable()
-                .ToList()
-                .Select( a => new
-                {
-                    a.Id,
-                    a.FriendlyScheduleText,
-                    ICalEvent = a.GetCalenderEvent()
-                } )
-                .Select( a => new
-                {
-                    a.Id,
-                    a.FriendlyScheduleText,
-                    Count = a.ICalEvent != null ? ScheduleICalHelper.GetOccurrences( a.ICalEvent, dateRange.Start ?? DateTime.MinValue, dateRange.End ?? DateTime.MaxValue ).Count() : 0
-                } ).ToDictionary( k => k.Id, v => new ScheduleInfo { FriendlyScheduleText = v.FriendlyScheduleText, OccurrenceCount = v.Count } );
+            var attendancePercentField = gAttendeesAttendance.Columns.OfType<RockTemplateField>().First( a => a.HeaderText.EndsWith( "Attendance %" ) );
+            attendancePercentField.HeaderText = string.Format( "{0}ly Attendance %", groupBy.ConvertToString() );
 
             var includeParents = hfViewBy.Value.ConvertToEnumOrNull<ViewBy>().GetValueOrDefault( ViewBy.Attendees ) == ViewBy.ParentsOfAttendees;
             var parentField = gAttendeesAttendance.Columns.OfType<PersonField>().FirstOrDefault( a => a.HeaderText == "Parent" );
@@ -790,7 +758,7 @@ function(item) {
                     s.Attendance.FirstVisits,
                     s.Attendance.LastVisit,
                     s.Attendance.PhoneNumbers,
-                    s.Attendance.AttendanceCount
+                    s.Attendance.AttendanceSummary
                 } );
 
                 gAttendeesAttendance.PersonIdField = "ParentId";
@@ -827,6 +795,7 @@ function(item) {
                 Literal lSecondVisitDate = e.Row.FindControl( "lSecondVisitDate" ) as Literal;
                 Literal lServiceTime = e.Row.FindControl( "lServiceTime" ) as Literal;
                 Literal lHomeAddress = e.Row.FindControl( "lHomeAddress" ) as Literal;
+                Literal lAttendanceCount = e.Row.FindControl( "lAttendanceCount" ) as Literal;
                 Literal lAttendancePercent = e.Row.FindControl( "lAttendancePercent" ) as Literal;
 
                 var person = dataItem.GetPropertyValue( "Person" ) as Person;
@@ -865,20 +834,22 @@ function(item) {
                     }
                 }
 
-                if ( lastVisit != null && lastVisit.ScheduleId.HasValue )
-                {
-                    var scheduleInfo = _schedulePossibleAttendanceCountCache[lastVisit.ScheduleId.Value];
-                    if ( scheduleInfo != null )
-                    {
-                        lServiceTime.Text = scheduleInfo.FriendlyScheduleText;
+                var attendanceSummary = dataItem.GetPropertyValue( "AttendanceSummary" ) as IEnumerable<DateTime>;
+                int attendanceSummaryCount = attendanceSummary.Count();
+                lAttendanceCount.Text = attendanceSummaryCount.ToString();
 
-                        var attendanceCount = dataItem.GetPropertyValue( "AttendanceCount" ) as int?;
-                        if ( attendanceCount.HasValue && scheduleInfo.OccurrenceCount > 0 )
-                        {
-                            lAttendancePercent.Text = string.Format( "{0:P}", (decimal)attendanceCount.Value / scheduleInfo.OccurrenceCount );
-                        }
+                if (_attendencePossibleCount.HasValue && _attendencePossibleCount > 0)
+                {
+                    // round up the possible to the next whole number since the person could have already attended and the current week/month/year isn't over year
+                    var attendancePerPossibleCount = attendanceSummaryCount / Math.Ceiling(_attendencePossibleCount.Value);
+                    if (attendancePerPossibleCount > 1)
+                    {
+                        attendancePerPossibleCount = 1;
                     }
+
+                    lAttendancePercent.Text = string.Format( "{0:P}", attendancePerPossibleCount );
                 }
+
             }
         }
 
