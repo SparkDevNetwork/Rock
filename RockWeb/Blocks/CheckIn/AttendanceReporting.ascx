@@ -166,6 +166,7 @@
 
                             <Rock:Grid ID="gAttendeesAttendance" runat="server" AllowSorting="true" RowItemText="Attendee" OnRowDataBound="gAttendeesAttendance_RowDataBound">
                                 <Columns>
+                                    <Rock:SelectField />
                                     <Rock:PersonField DataField="Parent" HeaderText="Parent" />
                                     <Rock:PersonField DataField="Person" HeaderText="Name" SortExpression="PersonAlias.Person.NickName, PersonAlias.Person.LastName" />
                                     <Rock:RockTemplateField HeaderText="First Visit ">

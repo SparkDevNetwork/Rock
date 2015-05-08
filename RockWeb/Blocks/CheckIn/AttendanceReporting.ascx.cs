@@ -671,6 +671,7 @@ function(item) {
 
             var qryResult = qryByPerson.Select( a => new
             {
+                PersonId = a.Person.Id,
                 a.Person,
                 FirstVisits = qryVisits.Where( b => b.PersonAlias.PersonId == a.Person.Id ).Select( s => new { s.Id, s.StartDateTime } ).OrderBy( x => x.StartDateTime ).Take( nthVisitsTake ),
                 LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
@@ -782,6 +783,8 @@ function(item) {
                 .SelectMany( x => x.ParentWithAttendance )
                 .Select( s => new
                 {
+                    ParentId = s.Parent.Id,
+                    PersonId = s.Attendance.PersonId,
                     s.Parent,
                     s.Attendance.Person,
                     s.Attendance.FirstVisits,
@@ -789,6 +792,9 @@ function(item) {
                     s.Attendance.PhoneNumbers,
                     s.Attendance.AttendanceCount
                 } );
+
+                gAttendeesAttendance.PersonIdField = "ParentId";
+                gAttendeesAttendance.DataKeyNames = new string[] { "ParentId", "PersonId"  };
 
                 rockContext.Database.Log = s => System.Diagnostics.Debug.WriteLine( s );
 
@@ -799,6 +805,8 @@ function(item) {
             }
             else
             {
+                gAttendeesAttendance.PersonIdField = "PersonId";
+                gAttendeesAttendance.DataKeyNames = new string[] { "PersonId" };
                 gAttendeesAttendance.DataSource = qryResult.AsNoTracking().ToList();
                 gAttendeesAttendance.DataBind();
             }
