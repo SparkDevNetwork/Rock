@@ -68,7 +68,7 @@ namespace Rock.Reporting.DataFilter
             }
             else if ( ddlEntityField.SelectedItem != null )
             {
-                writer.AddAttribute( "class", "data-view-filter-label" );
+                writer.AddAttribute( "class", "data-view-filter-field-label" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
                 writer.Write( ddlEntityField.SelectedItem.Text );
                 writer.RenderEndTag();
