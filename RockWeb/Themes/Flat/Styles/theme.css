@@ -2684,6 +2684,11 @@ tr.row-highlight td {
 .filter-item div[class*='col'] {
   margin-bottom: 6px;
 }
+.data-view-filter-field-label {
+  font-weight: 700;
+  margin-top: 8px;
+  display: block;
+}
 @media (min-width: 992px) {
   .filter-item div[class*='col'] {
     margin-bottom: 0;
