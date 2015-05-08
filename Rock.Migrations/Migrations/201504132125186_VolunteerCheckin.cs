@@ -37,18 +37,26 @@ namespace Rock.Migrations
     DECLARE @VolunteerAreaGroupTypeId int = ( SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '92435F1D-E525-4FD2-BEC7-4956DC056A2B' )
     DECLARE @ServingGroupTypeId int = ( SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '2C42B2D4-1C5F-4AD5-A9AD-08631B872AC4' )
 
-    INSERT INTO [GroupTypeAssociation] ( [GroupTypeId], [ChildGroupTypeId] )
-	VALUES ( @VolunteerAreaGroupTypeId, @VolunteerAreaGroupTypeId )
+    IF @VolunteerAreaGroupTypeId IS NOT NULL 
+    BEGIN
 
-    INSERT INTO [GroupTypeAssociation] ( [GroupTypeId], [ChildGroupTypeId] )
-	VALUES ( @VolunteerAreaGroupTypeId, @ServingGroupTypeId )
+        INSERT INTO [GroupTypeAssociation] ( [GroupTypeId], [ChildGroupTypeId] )
+	    VALUES ( @VolunteerAreaGroupTypeId, @VolunteerAreaGroupTypeId )
 
-    -- Update the serving group type to inherit from new 'Check-in' group type
-    UPDATE [GroupType] SET 
-        [InheritedGroupTypeId] = @CheckInGroupTypeId,
-        [AllowMultipleLocations] = 1
-    WHERE [Id] = @ServingGroupTypeId
-    AND [InheritedGroupTypeId] IS NULL
+        IF @ServingGroupTypeId IS NOT NULL
+        BEGIN
+            INSERT INTO [GroupTypeAssociation] ( [GroupTypeId], [ChildGroupTypeId] )
+	        VALUES ( @VolunteerAreaGroupTypeId, @ServingGroupTypeId )
+
+            -- Update the serving group type to inherit from new 'Check-in' group type
+            UPDATE [GroupType] SET 
+                [InheritedGroupTypeId] = @CheckInGroupTypeId,
+                [AllowMultipleLocations] = 1
+            WHERE [Id] = @ServingGroupTypeId
+            AND [InheritedGroupTypeId] IS NULL
+        END
+    
+    END
 
     -- Add a default 'Member' role to any group type that does not have any roles
     INSERT INTO [GroupTypeRole] ( [IsSystem], [GroupTypeId], [Name], [Description], [Order], [IsLeader], [Guid], [CanView], [CanEdit] )
