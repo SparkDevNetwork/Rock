@@ -16,33 +16,6 @@
 
                         <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" />
 
-                        <Rock:RockControlWrapper ID="rcwGraphBy" runat="server" Label="Graph By">
-                            <div class="controls">
-                                <div class="js-graph-by">
-                                    <Rock:HiddenFieldWithClass ID="hfGraphBy" CssClass="js-hidden-selected" runat="server" />
-                                    <div class="btn-group">
-                                        <asp:HyperLink ID="btnGraphByTotal" runat="server" CssClass="btn btn-default active" Text="Total" data-val="0" />
-                                        <asp:HyperLink ID="btnGraphByGroup" runat="server" CssClass="btn btn-default" Text="Group" data-val="1" />
-                                        <asp:HyperLink ID="btnGraphByCampus" runat="server" CssClass="btn btn-default" Text="Campus" data-val="2" />
-                                        <asp:HyperLink ID="btnGraphByTime" runat="server" CssClass="btn btn-default" Text="Schedule" data-val="3" />
-                                    </div>
-                                </div>
-                            </div>
-                        </Rock:RockControlWrapper>
-
-                        <Rock:RockControlWrapper ID="rcwGroupBy" runat="server" Label="Group By">
-                            <div class="controls">
-                                <div class="js-group-by">
-                                    <Rock:HiddenFieldWithClass ID="hfGroupBy" CssClass="js-hidden-selected" runat="server" />
-                                    <div class="btn-group">
-                                        <asp:HyperLink ID="btnGroupByWeek" runat="server" CssClass="btn btn-default active" Text="Week" data-val="0" />
-                                        <asp:HyperLink ID="btnGroupByMonth" runat="server" CssClass="btn btn-default" Text="Month" data-val="1" />
-                                        <asp:HyperLink ID="btnGroupByYear" runat="server" CssClass="btn btn-default" Text="Year" data-val="2" />
-                                    </div>
-                                </div>
-                            </div>
-                        </Rock:RockControlWrapper>
-
                         <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campuses" />
 
                         <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="true" />
@@ -75,8 +48,39 @@
                             </div>
                         </div>
 
-
                         <asp:Panel ID="pnlShowByChart" runat="server">
+                            <div class="row">
+                                <div class="col-md-offset-6 col-md-3">
+                                    <Rock:RockControlWrapper ID="rcwGraphBy" runat="server" Label="Graph By">
+                                        <div class="controls">
+                                            <div class="js-graph-by">
+                                                <Rock:HiddenFieldWithClass ID="hfGraphBy" CssClass="js-hidden-selected" runat="server" />
+                                                <div class="btn-group">
+                                                    <asp:LinkButton ID="btnGraphByTotal" runat="server" CssClass="btn btn-xs btn-default active" Text="Total" data-val="0" OnClick="btnGraphBy_Click" />
+                                                    <asp:LinkButton ID="btnGraphByGroup" runat="server" CssClass="btn btn-xs btn-default" Text="Group" data-val="1" OnClick="btnGraphBy_Click" />
+                                                    <asp:LinkButton ID="btnGraphByCampus" runat="server" CssClass="btn btn-xs btn-default" Text="Campus" data-val="2" OnClick="btnGraphBy_Click" />
+                                                    <asp:LinkButton ID="btnGraphByTime" runat="server" CssClass="btn btn-xs btn-default" Text="Schedule" data-val="3" OnClick="btnGraphBy_Click" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Rock:RockControlWrapper>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <Rock:RockControlWrapper ID="rcwGroupBy" runat="server" Label="Group By">
+                                        <div class="controls">
+                                            <div class="js-group-by">
+                                                <Rock:HiddenFieldWithClass ID="hfGroupBy" CssClass="js-hidden-selected" runat="server" />
+                                                <div class="btn-group">
+                                                    <asp:LinkButton ID="btnGroupByWeek" runat="server" CssClass="btn btn-xs btn-default active" Text="Week" data-val="0" OnClick="btnGroupBy_Click" />
+                                                    <asp:LinkButton ID="btnGroupByMonth" runat="server" CssClass="btn btn-xs btn-default" Text="Month" data-val="1" OnClick="btnGroupBy_Click" />
+                                                    <asp:LinkButton ID="btnGroupByYear" runat="server" CssClass="btn btn-xs btn-default" Text="Year" data-val="2" OnClick="btnGroupBy_Click" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Rock:RockControlWrapper>
+                                </div>
+                            </div>
                             <Rock:LineChart ID="lcAttendance" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="300" />
                             <div class="row margin-t-sm">
                                 <div class="col-md-12">

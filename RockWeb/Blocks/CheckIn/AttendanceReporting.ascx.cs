@@ -1100,5 +1100,25 @@ function(item) {
             // both Attendess Filter Apply button just do the same thing as the main apply button
             btnApply_Click( sender, e );
         }
+
+        /// <summary>
+        /// Handles the Click events of the GraphBy buttons.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnGraphBy_Click( object sender, EventArgs e )
+        {
+            btnApply_Click( sender, e );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the GroupBy buttons
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnGroupBy_Click( object sender, EventArgs e )
+        {
+            btnApply_Click( sender, e );
+        }
     }
 }
