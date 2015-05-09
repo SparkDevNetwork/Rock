@@ -75,7 +75,7 @@ namespace Rock.Web.UI.Adapters
                 string uniqueGroupName = rb.GetType().GetProperty( "UniqueGroupName", BindingFlags.Instance | BindingFlags.NonPublic ).GetValue( rb, null ) as string;
                 writer.AddAttribute( HtmlTextWriterAttribute.Name, uniqueGroupName );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Value, rb.ClientID );
+                writer.AddAttribute( HtmlTextWriterAttribute.Value, rb.ID );
 
                 if ( !string.IsNullOrWhiteSpace( rb.CssClass ) )
                 {

@@ -231,8 +231,8 @@
                 return true;
             }
 
-            if (options.axis == 'x') {
-                // do nothing if the scrollbar is horizontal
+            if (options.axis == 'x' && event.type == 'ontouchmove') {
+                // do nothing if the scrollbar is horizontal and we are dragging on a touch device
                 return true;
             }
 

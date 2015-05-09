@@ -55,7 +55,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the selected groupType ids.
+        /// Gets or sets the selected groupType ids.
         /// </summary>
         /// <value>
         /// The selected groupType ids.

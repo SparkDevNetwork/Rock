@@ -18,9 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -107,7 +107,6 @@ namespace RockWeb.Blocks.Checkin
                     rFilter.Visible = false;
                     gHistory.Visible = false;
                 }
-
             }
         }
 
@@ -120,24 +119,9 @@ namespace RockWeb.Blocks.Checkin
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void gHistory_GridRebind( object sender, EventArgs e )
+        protected void gHistory_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
-        }
-
-        protected void gHistory_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
-            if ( e.Row.RowType == DataControlRowType.DataRow || e.Row.RowType == DataControlRowType.Header )
-            {
-                if ( _person != null )
-                {
-                    e.Row.Cells[2].Visible = false;
-                }
-                else if ( _group != null )
-                {
-                    e.Row.Cells[3].Visible = false;
-                }
-            }
         }
 
         /// <summary>
@@ -146,8 +130,9 @@ namespace RockWeb.Blocks.Checkin
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
+            var rockContext = new RockContext();
             switch ( e.Key )
             {
                 case "Date Range":
@@ -155,15 +140,42 @@ namespace RockWeb.Blocks.Checkin
                     break;
 
                 case "Person":
-                    e.Value = ddlPeople.SelectedValue;
+                    var person = new PersonService( rockContext ).Get( e.Value.AsIntegerOrNull() ?? 0 );
+                    if ( person != null )
+                    {
+                        e.Value = person.ToString();
+                    }
+                    else
+                    {
+                        e.Value = null;
+                    }
+
                     break;
 
                 case "Group":
-                    e.Value = ddlGroups.SelectedValue;
+                    var group = new GroupService( rockContext ).Get( e.Value.AsIntegerOrNull() ?? 0 );
+                    if ( group != null )
+                    {
+                        e.Value = group.ToString();
+                    }
+                    else
+                    {
+                        e.Value = null;
+                    }
+
                     break;
 
                 case "Schedule":
-                    e.Value = ddlSchedules.SelectedValue;
+                    var schedule = new ScheduleService( rockContext ).Get( e.Value.AsIntegerOrNull() ?? 0 );
+                    if ( schedule != null )
+                    {
+                        e.Value = schedule.Name;
+                    }
+                    else
+                    {
+                        e.Value = null;
+                    }
+
                     break;
             }
         }
@@ -174,12 +186,12 @@ namespace RockWeb.Blocks.Checkin
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             rFilter.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
-            rFilter.SaveUserPreference( "Person", ddlPeople.SelectedValue.ToLower() != "-1" ? ddlPeople.SelectedValue : string.Empty );
-            rFilter.SaveUserPreference( "Group", ddlGroups.SelectedValue.ToLower() != "-1" ? ddlGroups.SelectedValue : string.Empty );
-            rFilter.SaveUserPreference( "Schedule", ddlSchedules.SelectedValue.ToLower() != "-1" ? ddlSchedules.SelectedValue : string.Empty );
+            rFilter.SaveUserPreference( "Person", ppPerson.SelectedValue.ToString() );
+            rFilter.SaveUserPreference( "Group", ddlAttendanceGroup.SelectedValue );
+            rFilter.SaveUserPreference( "Schedule", spSchedule.SelectedValue );
             BindGrid();
         }
 
@@ -194,120 +206,113 @@ namespace RockWeb.Blocks.Checkin
         {
             drpDates.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
 
-            var attendanceService = new AttendanceService( new RockContext() );
-            var attendanceQuery = attendanceService.Queryable( "PersonAlias.Person" );
+            ppPerson.Visible = _person == null;
+            ddlAttendanceGroup.Visible = _group == null && _person != null;
+            ddlAttendanceGroup.Items.Clear();
+            ddlAttendanceGroup.Items.Add( new ListItem() );
+
             if ( _person != null )
             {
-                attendanceQuery = attendanceQuery.Where( a => a.PersonAlias.PersonId == _person.Id );
+                var rockContext = new RockContext();
+                var qryGroup = new GroupService( rockContext ).Queryable();
 
-                ddlGroups.DataSource = attendanceQuery.Select( a => a.Group ).Distinct().OrderBy( a => a.Name ).ToList();
-                ddlGroups.DataBind();
-                ddlGroups.Items.Insert( 0, Rock.Constants.All.ListItem );
-                ddlGroups.Visible = attendanceQuery.Select( a => a.Group ).Distinct().ToList().Any();
-                ddlGroups.SetValue( rFilter.GetUserPreference( "Group" ) );
+                var qryPersonAttendance = new AttendanceService( rockContext ).Queryable().Where( a => a.PersonAlias.PersonId == _person.Id );
 
-                ddlPeople.Visible = false;
+                // only list groups that this person has attended before
+                var groupList = qryGroup.Where( g => qryPersonAttendance.Any( a => a.GroupId == g.Id ) )
+                    .OrderBy( a => a.Name )
+                    .Select( a => new { a.Name, a.Id } ).ToList();
+
+                foreach ( var group in groupList )
+                {
+                    ddlAttendanceGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
+                }
+
+                ddlAttendanceGroup.SetValue( rFilter.GetUserPreference( "Group" ).AsIntegerOrNull() );
             }
 
-            if ( _group != null )
-            {
-                attendanceQuery = attendanceQuery.Where( a => a.GroupId == _group.Id );
-                var attendanceList = attendanceQuery.ToList();
-
-                ddlPeople.DataSource = attendanceList.Where( a => a.PersonAlias != null && a.PersonAlias.Person != null)
-                    .OrderBy( a => a.PersonAlias.Person.FullName ).Select( a => a.PersonAlias.Person.FullName ).Distinct();
-                ddlPeople.DataBind();
-                ddlPeople.Items.Insert( 0, Rock.Constants.All.ListItem );
-                ddlPeople.Visible = attendanceList.Where( a => a.PersonAlias != null && a.PersonAlias.Person != null )
-                    .Select( a => a.PersonAlias.Person.FullName ).Distinct().Any();
-                ddlPeople.SetValue( rFilter.GetUserPreference( "Person" ) );
-
-                ddlGroups.Visible = false;
-            }
-
-            ddlSchedules.DataSource = attendanceQuery
-                .Where( a =>
-                    a.Schedule != null &&
-                    a.Schedule.Name != null &&
-                    a.Schedule.Name != "" )
-                .OrderBy( a => a.Schedule.Name )
-                .Select( a => a.Schedule.Name )
-                .Distinct()
-                .ToList();
-            ddlSchedules.DataBind();
-
-            ddlSchedules.Items.Insert( 0, Rock.Constants.All.ListItem );
-            ddlSchedules.Visible = attendanceQuery.Where( a => a.Schedule != null ).Select( a => a.Schedule.Name ).Distinct().ToList().Any();
-            ddlSchedules.SetValue( rFilter.GetUserPreference( "Schedule" ) );
+            spSchedule.SetValue( rFilter.GetUserPreference( "Schedule" ).AsIntegerOrNull() );
         }
+
+        private List<GroupTypePath> _groupTypePaths;
 
         /// <summary>
         /// Binds the grid.
         /// </summary>
         protected void BindGrid()
         {
-            var attendanceService = new AttendanceService( new RockContext() );
-            var attendanceQuery = attendanceService.Queryable( "PersonAlias.Person" );
+            var rockContext = new RockContext();
+            var attendanceService = new AttendanceService( rockContext );
+            var qryAttendance = attendanceService.Queryable();
+            var personField = gHistory.Columns.OfType<PersonField>().FirstOrDefault();
+            if ( personField != null )
+            {
+                personField.Visible = _person == null;
+            }
+
+            var groupField = gHistory.Columns.OfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Group" );
+            if ( groupField != null )
+            {
+                groupField.Visible = _group == null;
+            }
+
             if ( _person != null )
             {
-                attendanceQuery = attendanceQuery.Where( a => a.PersonAlias.PersonId == _person.Id );
+                qryAttendance = qryAttendance.Where( a => a.PersonAlias.PersonId == _person.Id );
             }
             else if ( _group != null )
             {
-                attendanceQuery = attendanceQuery.Where( a => a.GroupId == _group.Id );
+                qryAttendance = qryAttendance.Where( a => a.GroupId == _group.Id );
             }
-
-            var attendanceList = attendanceQuery.ToList();
-            var qry = attendanceList.AsQueryable()
-                .Select( a => new
-                {
-                    Location = a.Location,
-                    Schedule = a.Schedule,
-                    FullName = a.PersonAlias.Person.FullName,
-                    Group = a.Group,
-                    StartDateTime = a.StartDateTime,
-                    EndDateTime = a.EndDateTime
-                } );
 
             // Filter by Date Range
             var drp = new DateRangePicker();
             drp.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
             if ( drp.LowerValue.HasValue )
             {
-                qry = qry.Where( t => t.StartDateTime >= drp.LowerValue.Value );
+                qryAttendance = qryAttendance.Where( t => t.StartDateTime >= drp.LowerValue.Value );
             }
+
             if ( drp.UpperValue.HasValue )
             {
                 DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
-                qry = qry.Where( t => t.EndDateTime < upperDate );
+                qryAttendance = qryAttendance.Where( t => t.EndDateTime < upperDate );
             }
 
             // Filter by Person
-            if ( ddlPeople.SelectedIndex > 0 )
+            int? personId = ppPerson.SelectedValue;
+            if ( personId.HasValue && ppPerson.Visible )
             {
-                if ( ddlPeople.SelectedValue.ToLower() != "all" )
-                {
-                    qry = qry.Where( h => h.FullName == ddlPeople.SelectedValue );
-                }
+                qryAttendance = qryAttendance.Where( a => a.PersonAlias.PersonId == personId.Value );
             }
 
             // Filter by Group
-            if ( ddlGroups.SelectedIndex > 0 )
+            int groupId = ddlAttendanceGroup.SelectedValue.AsInteger();
+            if ( groupId > 0 && ddlAttendanceGroup.Visible )
             {
-                if ( ddlGroups.SelectedValue.ToLower() != "all" )
-                {
-                    qry = qry.Where( h => h.Group.Name == ddlGroups.SelectedValue );
-                }
+                qryAttendance = qryAttendance.Where( a => a.GroupId == groupId );
             }
 
             // Filter by Schedule
-            if ( ddlSchedules.SelectedIndex > 0 )
+            int scheduleId = spSchedule.SelectedValue.AsInteger();
+            if ( scheduleId > 0 && spSchedule.Visible )
             {
-                if ( ddlSchedules.SelectedValue.ToLower() != "all" )
-                {
-                    qry = qry.Where( h => h.Schedule.Name == ddlSchedules.SelectedValue );
-                }
+                qryAttendance = qryAttendance.Where( h => h.ScheduleId == scheduleId );
             }
+
+            var qry = qryAttendance
+                .Select( a => new
+                {
+                    LocationName = a.Location.Name,
+                    CampusId = a.CampusId,
+                    CampusName = a.Campus.Name,
+                    ScheduleName = a.Schedule.Name,
+                    Person = a.PersonAlias.Person,
+                    GroupName = a.Group.Name,
+                    GroupTypeId = a.Group.GroupTypeId,
+                    StartDateTime = a.StartDateTime,
+                    EndDateTime = a.EndDateTime
+                } );
 
             SortProperty sortProperty = gHistory.SortProperty;
             if ( sortProperty != null )
@@ -319,11 +324,42 @@ namespace RockWeb.Blocks.Checkin
                 qry = qry.OrderByDescending( p => p.StartDateTime );
             }
 
+            _groupTypePaths = new GroupTypeService( rockContext ).GetAllCheckinGroupTypePaths().ToList();
+
             gHistory.EntityTypeId = EntityTypeCache.Read<Attendance>().Id;
             gHistory.DataSource = qry.ToList();
             gHistory.DataBind();
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gHistory control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gHistory_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            var dataItem = e.Row.DataItem;
+            if ( dataItem != null )
+            {
+                Literal lGroupName = e.Row.FindControl( "lGroupName" ) as Literal;
+                if ( lGroupName != null )
+                {
+                    int? groupTypeId = dataItem.GetPropertyValue( "GroupTypeId" ) as int?;
+                    string groupTypePath = null;
+                    if ( groupTypeId.HasValue )
+                    {
+                        var path = _groupTypePaths.FirstOrDefault( a => a.GroupTypeId == groupTypeId.Value );
+                        if ( path != null )
+                        {
+                            groupTypePath = path.Path;
+                        }
+                    }
+
+                    lGroupName.Text = string.Format( "{0}<br /><small>{1}</small>", dataItem.GetPropertyValue( "GroupName" ), groupTypePath );
+                }
+            }
+        }
+
         #endregion
-}
+    }
 }
