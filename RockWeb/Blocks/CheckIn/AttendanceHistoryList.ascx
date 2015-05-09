@@ -14,18 +14,24 @@
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="rFilter" runat="server">
                         <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" />
-                        <Rock:RockDropDownList ID="ddlPeople" runat="server" Label="Person" />
-                        <Rock:RockDropDownList ID="ddlGroups" runat="server" Label="Group" />
-                        <Rock:RockDropDownList ID="ddlSchedules" runat="server" Label="Schedule" />
+                        <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
+                        <Rock:RockDropDownList ID="ddlAttendanceGroup" runat="server" Label="Group" />
+                        <Rock:SchedulePicker ID="spSchedule" runat="server" Label="Schedule" />
                     </Rock:GridFilter>
-                    <Rock:Grid ID="gHistory" runat="server" DisplayType="Full" AllowSorting="true" EmptyDataText="No Attendance Found" OnRowDataBound="gHistory_RowDataBound">
+                    <Rock:Grid ID="gHistory" runat="server" DisplayType="Full" AllowSorting="true" EmptyDataText="No Attendance Found" OnRowDataBound="gHistory_RowDataBound" >
                         <Columns>
-                            <Rock:RockBoundField DataField="Location" HeaderText="Location" SortExpression="Location" />
-                            <Rock:RockBoundField DataField="Schedule" HeaderText="Schedule" SortExpression="Schedule" />
-                            <Rock:RockBoundField DataField="FullName" HeaderText="Person" SortExpression="FullName" />
-                            <Rock:RockBoundField DataField="Group" HeaderText="Group" SortExpression="Group" />
-                            <Rock:RockBoundField DataField="StartDateTime" HeaderText="Start Date Time" SortExpression="StartDateTime" />
-                            <Rock:RockBoundField DataField="EndDateTime" HeaderText="End Date Time" SortExpression="EndDateTime" />
+                            <Rock:RockBoundField DataField="LocationName" HeaderText="Location" SortExpression="LocationName" />
+                            <Rock:CampusField DataField="CampusId" HeaderText="Campus" SortExpression="CampusName" />
+                            <Rock:RockBoundField DataField="ScheduleName" HeaderText="Schedule" SortExpression="ScheduleName" />
+                            <Rock:PersonField DataField="Person" HeaderText="Person" SortExpression="Person.LastName, Person.NickName" />
+                            <Rock:RockTemplateField HeaderText="Group" SortExpression="GroupName" >
+                                <ItemTemplate>
+                                    <asp:Literal ID="lGroupName" runat="server" />
+                                        
+                                </ItemTemplate>
+                            </Rock:RockTemplateField>
+                            <Rock:DateTimeField DataField="StartDateTime" HeaderText="Start Date Time" SortExpression="StartDateTime" />
+                            <Rock:DateTimeField DataField="EndDateTime" HeaderText="End Date Time" SortExpression="EndDateTime" />
                         </Columns>
                     </Rock:Grid>
                 </div>
