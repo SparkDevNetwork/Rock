@@ -86,6 +86,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     BindFilter();
                     BindGrid();
+
+                    if ( Person != null )
+                    {
+                        if ( Person.CreatedDateTime.HasValue )
+                        {
+                            hlDateAdded.Text = String.Format( "Date Created: {0}", Person.CreatedDateTime.Value.ToShortDateString() );
+                        }
+                        else
+                        {
+                            hlDateAdded.Visible = false;
+                        }
+                    }
                 }
             }
         }

@@ -16,15 +16,17 @@
 //
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Control for selecting a defined value where the DataField is the DefinedValue.Id
+    /// Control for selecting a campus where DataField is the Campus.Id
+    /// Displays Campus.Name using CampusCache
     /// </summary>
-    [ToolboxData( "<{0}:DefinedValueField runat=server></{0}:DefinedValueField>" )]
-    public class DefinedValueField : RockBoundField
+    [ToolboxData( "<{0}:CampusField runat=server></{0}:CampusField>" )]
+    public class CampusField : RockBoundField
     {
         /// <summary>
         /// Formats the specified field value for a cell in the <see cref="T:System.Web.UI.WebControls.BoundField" /> object.
@@ -38,7 +40,11 @@ namespace Rock.Web.UI.Controls
         {
             if ( dataValue is int )
             {
-                dataValue = Rock.Web.Cache.DefinedValueCache.Read( (int)dataValue ).Value;
+                var campus = Rock.Web.Cache.CampusCache.Read( (int)dataValue );
+                if ( campus != null )
+                {
+                    dataValue = campus.Name;
+                }
             }
 
             return base.FormatDataValue( dataValue, encode );

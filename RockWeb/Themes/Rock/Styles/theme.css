@@ -2682,6 +2682,11 @@ tr.row-highlight td {
 .filter-item div[class*='col'] {
   margin-bottom: 6px;
 }
+.data-view-filter-field-label {
+  font-weight: 900;
+  margin-top: 8px;
+  display: block;
+}
 @media (min-width: 992px) {
   .filter-item div[class*='col'] {
     margin-bottom: 0;
@@ -4938,6 +4943,11 @@ fieldset[disabled] .btn-authenication.active {
   content: "\f09a";
   margin-right: 12px;
 }
+.btn-authenication.google:before {
+  font-family: 'FontAwesome';
+  content: "\f1a0";
+  margin-right: 12px;
+}
 .btn-minimal {
   text-decoration: none;
   color: #b7b7b7;
@@ -5552,6 +5562,10 @@ h4,
 }
 #content-wrapper #page-title .breadcrumb li + li:before {
   color: #a1998d;
+}
+#content-wrapper #page-title .pageoverview-description {
+  opacity: .7;
+  margin-top: 4px;
 }
 #content-wrapper #page-content {
   padding: 15px;

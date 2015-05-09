@@ -6,7 +6,7 @@ declare
     --@maxPersonId int = (select min(id), max(id) from (select top 1000 id  from Person order by Id) x),  /* limit to first 4000 persons in the database */ 
     @LocationId int,
     @ScheduleId int,
-    @PersonId int,
+    @PersonAliasId int,
     @GroupId int,
     @DeviceId int,
     @SearchTypeValueId int,
@@ -23,7 +23,7 @@ declare
     @attendanceGroupIds table ( id Int );
 
 declare
-    @personIds table ( id Int );
+    @personAliasIds table ( id Int );
 
 declare
     @attendanceCodeIds table ( id Int );
@@ -33,7 +33,7 @@ declare
    	    [LocationId] [int] NULL,
 	    [ScheduleId] [int] NULL,
 	    [GroupId] [int] NULL,
-	    [PersonId] [int] NULL,
+	    [PersonAliasId] [int] NULL,
 	    [DeviceId] [int] NULL,
 	    [SearchTypeValueId] [int] NULL,
 	    [AttendanceCodeId] [int] NULL,
@@ -54,7 +54,7 @@ declare
 begin
 
     insert into @attendanceGroupIds select Id from [Group] where GroupTypeId in (select Id from GroupType where TakesAttendance = 1);
-    insert into @personIds select top 50 Id from Person
+    insert into @personAliasIds select top 10000 Id from PersonAlias
     insert into @attendanceCodeIds select top 10 id from AttendanceCode
 
     set @StartDateTime = SYSDATETIME()
@@ -64,7 +64,7 @@ begin
 
         if (@attendanceCounter % 100 = 0) begin
             set @GroupId = (select top 1 Id from @attendanceGroupIds order by newid()) 
-            set @PersonId =  (select top 1 Id from @personIds order by newid())
+            set @PersonAliasId =  (select top 1 Id from @personAliasIds order by newid())
             set @DeviceId =  (select top 1 Id from Device where DeviceTypeValueId = 41 order by newid())
             set @LocationId = (select top 1 Id from Location where ParentLocationId = 3 order by newid())
         end
@@ -83,7 +83,7 @@ begin
                    ([LocationId]
                     ,[ScheduleId]
                     ,[GroupId]
-                    ,[PersonId]
+                    ,[PersonAliasId]
                     ,[DeviceId] 
                     --,[SearchTypeValueId]
                     ,[AttendanceCodeId]
@@ -97,7 +97,7 @@ begin
                    (@LocationId
                     ,@ScheduleId
                     ,@GroupId
-                    ,@PersonId
+                    ,@PersonAliasId
                     ,@DeviceId
                     --,@SearchTypeValueId
                     ,@AttendanceCodeId
@@ -113,9 +113,10 @@ begin
         
     end
 
-    truncate table Attendance    
-    insert into Attendance select * from @attendanceTable order by StartDateTime
-
+    --truncate table Attendance    
+    insert into Attendance 
+        ( LocationId, ScheduleId, GroupId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, DidAttend, [Guid] ) 
+    select LocationId, ScheduleId, GroupId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, DidAttend, [Guid] from @attendanceTable order by StartDateTime
 end;
 
 

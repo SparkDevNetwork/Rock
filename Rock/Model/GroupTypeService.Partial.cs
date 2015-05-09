@@ -128,6 +128,31 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets all checkin group type paths.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<GroupTypePath> GetAllCheckinGroupTypePaths()
+        {
+            List<GroupTypePath> result = new List<GroupTypePath>();
+
+            GroupTypeService groupTypeService = this;
+
+            var qry = groupTypeService.Queryable();
+
+            // limit to show only GroupTypes that have a group type purpose of Checkin Template
+            int groupTypePurposeCheckInTemplateId = Rock.Web.Cache.DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
+            qry = qry.Where( a => a.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId );
+
+            foreach ( var groupTypeId in qry.Select( a => a.Id ) )
+            {
+
+                result.AddRange( groupTypeService.GetAllAssociatedDescendentsPath( groupTypeId ) );
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see> that are descendants of a specified group type.
         /// WARNING: This will fail if their is a circular reference in the GroupTypeAssociation table.
         /// </summary>

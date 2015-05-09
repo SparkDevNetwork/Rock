@@ -368,7 +368,7 @@ namespace Rock.Model
                     .Where( p =>
                         ( includeBusinesses &&  p.RecordTypeValueId.HasValue && p.RecordTypeValueId.Value == recordTypeBusinessId && p.LastName.StartsWith(fullName) )
                         ||
-                        ( (p.LastName.StartsWith( lastName ) || previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName ) )) &&
+                        ( (p.LastName.StartsWith( lastName ) || previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( lastName ) )) &&
                         ( p.FirstName.StartsWith( firstName ) ||
                         p.NickName.StartsWith( firstName ) )) );
             }

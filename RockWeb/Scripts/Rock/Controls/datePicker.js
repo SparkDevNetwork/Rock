@@ -30,17 +30,15 @@
                     var $dateOffsetBox = $datePickerContainer.find('.js-current-date-offset');
                     var $dateOffsetlabel = $("label[for='" + $dateOffsetBox.attr('id') + "']")
                     if ($(this).is(':checked')) {
-                        $dateOffsetlabel.removeClass('aspNetDisabled');
-                        $dateOffsetBox.prop('disabled', false);
-                        $dateOffsetBox.removeClass('aspNetDisabled');
+                        $dateOffsetlabel.show();
+                        $dateOffsetBox.show();
                         $textBox.val('');
                         $textBox.prop('disabled', true);
                         $textBox.addClass('aspNetDisabled');
 
                     } else {
-                        $dateOffsetlabel.addClass('aspNetDisabled');
-                        $dateOffsetBox.prop('disabled', true);
-                        $dateOffsetBox.addClass('aspNetDisabled');
+                        $dateOffsetlabel.hide();
+                        $dateOffsetBox.hide();
                         $textBox.prop('disabled', false);
                         $textBox.removeClass('aspNetDisabled');
                     }
