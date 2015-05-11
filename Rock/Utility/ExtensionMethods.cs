@@ -273,21 +273,29 @@ namespace Rock
 
                 foreach ( var key in liquidObject.AvailableKeys )
                 {
-                    try
+                    // Ignore the person property of the person's primary alias (prevent unnecessary recursion) 
+                    if ( key == "Person" && parentElement.Contains( ".PrimaryAlias" ) )
                     {
-                        object propValue = liquidObject[key];
-                        if ( propValue != null )
-                        {
-                            result.Add( key, propValue.LiquidizeChildren( levelsDeep, rockContext, parentElement + "." + key ) );
-                        }
-                        else
-                        {
-                            result.AddOrIgnore( key, string.Empty );
-                        }
+                        result.AddOrIgnore( key, string.Empty );
                     }
-                    catch ( Exception ex )
+                    else
                     {
-                        result.AddOrIgnore( key, ex.ToString() );
+                        try
+                        {
+                            object propValue = liquidObject[key];
+                            if ( propValue != null )
+                            {
+                                result.Add( key, propValue.LiquidizeChildren( levelsDeep, rockContext, parentElement + "." + key ) );
+                            }
+                            else
+                            {
+                                result.AddOrIgnore( key, string.Empty );
+                            }
+                        }
+                        catch ( Exception ex )
+                        {
+                            result.AddOrIgnore( key, ex.ToString() );
+                        }
                     }
                 }
 

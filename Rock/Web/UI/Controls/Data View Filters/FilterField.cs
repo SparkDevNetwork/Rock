@@ -52,6 +52,11 @@ namespace Rock.Web.UI.Controls
         protected HiddenField hfExpanded;
 
         /// <summary>
+        /// The optional checkbox which can be used to disable/enable the filter for the current run of the report
+        /// </summary>
+        protected CheckBox cbIncludeFilter;
+
+        /// <summary>
         /// The filter controls
         /// </summary>
         protected Control[] filterControls;
@@ -243,6 +248,97 @@ $('.filter-item-select').click(function (event) {
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [hide filter type picker].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [hide filter type picker]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HideFilterTypePicker
+        {
+            get
+            {
+                return ViewState["HideFilterTypePicker"] as bool? ?? false;
+            }
+            set
+            {
+                ViewState["HideFilterTypePicker"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide filter criteria].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide filter criteria]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HideFilterCriteria
+        {
+            get
+            {
+                return ViewState["HideFilterCriteria"] as bool? ?? false;
+            }
+            set
+            {
+                ViewState["HideFilterCriteria"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show a checkbox that enables/disables the filter for the current run
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show checkbox]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowCheckbox
+        {
+            get
+            {
+                return ViewState["ShowCheckbox"] as bool? ?? false;
+            }
+            set
+            {
+                ViewState["ShowCheckbox"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets whether the Checkbox is checked or not (not factoring in if it is showing)
+        /// </summary>
+        /// <value>
+        /// The CheckBox checked.
+        /// </value>
+        public bool? CheckBoxChecked
+        {
+            get
+            {
+                if ( cbIncludeFilter != null )
+                {
+                    return cbIncludeFilter.Checked;
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the label.
+        /// </summary>
+        /// <value>
+        /// The label.
+        /// </value>
+        public string Label
+        {
+            get
+            {
+                return ViewState["Label"] as string;
+            }
+            set
+            {
+                ViewState["Label"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="FilterField" /> is expanded.
         /// </summary>
         /// <value>
@@ -370,6 +466,10 @@ $('.filter-item-select').click(function (event) {
             var iDelete = new HtmlGenericControl( "i" );
             lbDelete.Controls.Add( iDelete );
             iDelete.AddCssClass( "fa fa-times" );
+
+            cbIncludeFilter = new CheckBox();
+            Controls.Add( cbIncludeFilter );
+            cbIncludeFilter.ID = this.ID + "_cbIncludeFilter";
         }
 
         /// <summary>
@@ -395,77 +495,101 @@ $('.filter-item-select').click(function (event) {
                 hfExpanded.Value = "True";
             }
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget filter-item" );
-            writer.RenderBeginTag( "article" );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
-            if ( !string.IsNullOrEmpty( clientFormatString ) )
+            if ( !this.HideFilterTypePicker )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Onclick, clientFormatString );
+                // only render this stuff if the filter type picker is shown
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget filter-item" );
+
+                writer.RenderBeginTag( "article" );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
+                if ( !string.IsNullOrEmpty( clientFormatString ) )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Onclick, clientFormatString );
+                }
+
+                writer.RenderBeginTag( "header" );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-expanded" );
+                hfExpanded.RenderControl( writer );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-description" );
+                if ( Expanded )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                }
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.Write( component != null ? component.FormatSelection( FilteredEntityType, Selection ) : "Select Filter" );
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-select" );
+                if ( !Expanded )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                }
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( "Filter Type " );
+                writer.RenderEndTag();
+
+                ddlFilterType.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-link btn-xs filter-view-state" );
+                writer.RenderBeginTag( HtmlTextWriterTag.A );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" );
+                writer.RenderBeginTag( HtmlTextWriterTag.I );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+                writer.Write( " " );
+                lbDelete.Visible = ( this.DeleteClick != null );
+                lbDelete.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();
+
+                writer.AddAttribute( "class", "panel-body" );
+                if ( !Expanded )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                }
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
-            writer.RenderBeginTag( "header" );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-expanded" );
-            hfExpanded.RenderControl( writer );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-description" );
-            if ( Expanded )
+            if ( ShowCheckbox )
             {
-                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                cbIncludeFilter.Text = this.Label;
+                cbIncludeFilter.RenderControl( writer );
             }
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.Write( component != null ? component.FormatSelection( FilteredEntityType, Selection ) : "Select Filter" );
-            writer.RenderEndTag();
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-select" );
-            if ( !Expanded )
+            else if ( !string.IsNullOrWhiteSpace( this.Label ) )
             {
-                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
+                writer.AddAttribute( HtmlTextWriterAttribute.For, this.ClientID );
+                writer.RenderBeginTag( HtmlTextWriterTag.Label );
+                writer.Write( Label );
+                writer.RenderEndTag();  // label
             }
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.RenderBeginTag( HtmlTextWriterTag.Span );
-            writer.Write( "Filter Type " );
-            writer.RenderEndTag();
-
-            ddlFilterType.RenderControl( writer );
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
-
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-link btn-xs filter-view-state" );
-            writer.RenderBeginTag( HtmlTextWriterTag.A );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" );
-            writer.RenderBeginTag( HtmlTextWriterTag.I );
-            writer.RenderEndTag();
-            writer.RenderEndTag();
-            writer.Write( " " );
-            lbDelete.RenderControl( writer );
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
-
-            writer.AddAttribute( "class", "panel-body" );
-            if ( !Expanded )
-            {
-                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
-            }
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            if ( component != null )
+            if ( component != null && !HideFilterCriteria )
             {
                 component.RenderControls( FilteredEntityType, this, writer, filterControls );
             }
-            writer.RenderEndTag();
 
-            writer.RenderEndTag();
+            if ( !HideFilterTypePicker )
+            {
+                writer.RenderEndTag();
 
+                writer.RenderEndTag();
+            }
         }
 
         void ddlFilterType_SelectedIndexChanged( object sender, EventArgs e )

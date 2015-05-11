@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System.ComponentModel;
+using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -26,6 +28,15 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:HelpBlock runat=server></{0}:HelpBlock>" )]
     public class HelpBlock : Literal
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HelpBlock"/> class.
+        /// </summary>
+        public HelpBlock()
+        {
+            var style = new Style();
+            this.Style = style.GetStyleAttributes( this );
+        }
+        
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -49,6 +60,14 @@ $(document).ready(function() {
         }
 
         /// <summary>
+        /// Gets or sets the style.
+        /// </summary>
+        /// <value>
+        /// The style.
+        /// </value>
+        public CssStyleCollection Style { get; set; }
+
+        /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
@@ -59,6 +78,12 @@ $(document).ready(function() {
                 writer.AddAttribute( "class", "help" );
                 writer.AddAttribute( "href", "#" );
                 writer.AddAttribute( "tabindex", "-1" );
+
+                foreach (var key in this.Style.Keys.OfType<HtmlTextWriterStyle>())
+                {
+                    writer.AddStyleAttribute( key, this.Style[key] );
+                }
+
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
                 writer.AddAttribute("class", "fa fa-question-circle");
                 writer.RenderBeginTag( HtmlTextWriterTag.I );

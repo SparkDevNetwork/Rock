@@ -336,7 +336,8 @@ namespace Rock.Web.Cache
 
                 if ( blockIds != null )
                 {
-                    foreach ( int id in blockIds.Distinct() )
+                    var ids = new List<int>( blockIds );
+                    foreach ( int id in ids.Distinct() )
                     {
                         var block = BlockCache.Read( id );
                         if ( block != null )

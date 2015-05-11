@@ -41,7 +41,8 @@ public class SafeDirectoryCatalog : ComposablePartCatalog
         _catalog = new AggregateCatalog();
         string baseTypeAssemblyName = baseType.Assembly.GetName().Name;
 
-        var loadedAssembliesDictionary = AppDomain.CurrentDomain.GetAssemblies().Where( a => !a.IsDynamic && !a.GlobalAssemblyCache ).ToDictionary( k => new Uri( k.CodeBase ).LocalPath, v => v );
+        var loadedAssembliesDictionary = AppDomain.CurrentDomain.GetAssemblies().Where( a => !a.IsDynamic && !a.GlobalAssemblyCache && !string.IsNullOrWhiteSpace( a.Location ) )
+            .ToDictionary( k => new Uri( k.CodeBase ).LocalPath, v => v );
 
         foreach ( var file in files )
         {

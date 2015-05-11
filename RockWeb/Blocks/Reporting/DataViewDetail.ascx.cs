@@ -120,7 +120,7 @@ $(document).ready(function() {
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["DataViewFilter"] = GetFilterControl().ToJson();
+            ViewState["DataViewFilter"] = ReportingHelper.GetFilterFromControls( phFilters ).ToJson();
             ViewState["EntityTypeId"] = etpEntityType.SelectedEntityTypeId;
             return base.SaveViewState();
         }
@@ -142,22 +142,6 @@ $(document).ready(function() {
         }
 
         /// <summary>
-        /// Set the Guids on the datafilter and it's children to Guid.NewGuid
-        /// </summary>
-        /// <param name="dataViewFilter">The data view filter.</param>
-        private void SetNewDataFilterGuids( DataViewFilter dataViewFilter )
-        {
-            if ( dataViewFilter != null )
-            {
-                dataViewFilter.Guid = Guid.NewGuid();
-                foreach ( var childFilter in dataViewFilter.ChildFilters )
-                {
-                    SetNewDataFilterGuids( childFilter );
-                }
-            }
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -170,7 +154,7 @@ $(document).ready(function() {
             DataViewService service = new DataViewService( rockContext );
 
             int dataViewId = int.Parse( hfDataViewId.Value );
-            int? dataViewFilterId = null;
+            int? origDataViewFilterId = null;
 
             if ( dataViewId == 0 )
             {
@@ -180,7 +164,7 @@ $(document).ready(function() {
             else
             {
                 dataView = service.Get( dataViewId );
-                dataViewFilterId = dataView.DataViewFilterId;
+                origDataViewFilterId = dataView.DataViewFilterId;
             }
 
             dataView.Name = tbName.Text;
@@ -189,10 +173,8 @@ $(document).ready(function() {
             dataView.EntityTypeId = etpEntityType.SelectedEntityTypeId;
             dataView.CategoryId = cpCategory.SelectedValueAsInt();
 
-            dataView.DataViewFilter = GetFilterControl();
-
-            // update Guids since we are creating a new dataFilter and children and deleting the old one
-            SetNewDataFilterGuids( dataView.DataViewFilter );
+            var newDataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
+            
 
             if ( !Page.IsValid )
             {
@@ -211,15 +193,24 @@ $(document).ready(function() {
                 service.Add( dataView );
             }
 
-            // Delete old report filter
-            if ( dataViewFilterId.HasValue )
+            rockContext.WrapTransaction( () =>
             {
-                DataViewFilterService dataViewFilterService = new DataViewFilterService( rockContext );
-                DataViewFilter dataViewFilter = dataViewFilterService.Get( dataViewFilterId.Value );
-                DeleteDataViewFilter( dataViewFilter, dataViewFilterService );
-            }
+                
+                if ( origDataViewFilterId.HasValue )
+                {
+                    // delete old report filter so that we can add the new filter (but with original guids), then drop the old filter
+                    DataViewFilterService dataViewFilterService = new DataViewFilterService( rockContext );
+                    DataViewFilter origDataViewFilter = dataViewFilterService.Get( origDataViewFilterId.Value );
 
-            rockContext.SaveChanges();
+                    dataView.DataViewFilterId = null;
+                    rockContext.SaveChanges();
+                    
+                    DeleteDataViewFilter( origDataViewFilter, dataViewFilterService );
+                }
+                
+                dataView.DataViewFilter = newDataViewFilter;
+                rockContext.SaveChanges();
+            } );
 
             if ( adding )
             {
@@ -684,7 +675,7 @@ $(document).ready(function() {
             DataView dv = new DataView();
             dv.TransformEntityTypeId = ddlTransform.SelectedValueAsInt();
             dv.EntityTypeId = etpEntityType.SelectedEntityTypeId;
-            dv.DataViewFilter = GetFilterControl();
+            dv.DataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
             ShowPreview( dv );
         }
 
@@ -713,6 +704,11 @@ $(document).ready(function() {
         {
             FilterGroup groupControl = sender as FilterGroup;
             FilterGroup childGroupControl = new FilterGroup();
+            
+            childGroupControl.AddFilterClick += groupControl_AddFilterClick;
+            childGroupControl.AddGroupClick += groupControl_AddGroupClick;
+            childGroupControl.DeleteGroupClick += groupControl_DeleteGroupClick;
+
             childGroupControl.DataViewFilterGuid = Guid.NewGuid();
             groupControl.Controls.Add( childGroupControl );
             childGroupControl.ID = string.Format( "fg_{0}", childGroupControl.DataViewFilterGuid.ToString( "N" ) );
@@ -834,83 +830,7 @@ $(document).ready(function() {
             }
         }
 
-        /// <summary>
-        /// Gets the filter control.
-        /// </summary>
-        /// <returns></returns>
-        private DataViewFilter GetFilterControl()
-        {
-            if ( phFilters.Controls.Count > 0 )
-            {
-                return GetFilterControl( phFilters.Controls[0] );
-            }
 
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the filter control.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <returns></returns>
-        private DataViewFilter GetFilterControl( Control control )
-        {
-            FilterGroup groupControl = control as FilterGroup;
-            if ( groupControl != null )
-            {
-                return GetFilterGroupControl( groupControl );
-            }
-
-            FilterField filterControl = control as FilterField;
-            if ( filterControl != null )
-            {
-                return GetFilterFieldControl( filterControl );
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the filter group control.
-        /// </summary>
-        /// <param name="filterGroup">The filter group.</param>
-        /// <returns></returns>
-        private DataViewFilter GetFilterGroupControl( FilterGroup filterGroup )
-        {
-            DataViewFilter filter = new DataViewFilter();
-            filter.Guid = filterGroup.DataViewFilterGuid;
-            filter.ExpressionType = filterGroup.FilterType;
-            foreach ( Control control in filterGroup.Controls )
-            {
-                DataViewFilter childFilter = GetFilterControl( control );
-                if ( childFilter != null )
-                {
-                    filter.ChildFilters.Add( childFilter );
-                }
-            }
-
-            return filter;
-        }
-
-        /// <summary>
-        /// Gets the filter field control.
-        /// </summary>
-        /// <param name="filterField">The filter field.</param>
-        /// <returns></returns>
-        private DataViewFilter GetFilterFieldControl( FilterField filterField )
-        {
-            DataViewFilter filter = new DataViewFilter();
-            filter.Guid = filterField.DataViewFilterGuid;
-            filter.ExpressionType = FilterExpressionType.Filter;
-            filter.Expanded = filterField.Expanded;
-            if ( filterField.FilterEntityTypeName != null )
-            {
-                filter.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( filterField.FilterEntityTypeName ).Id;
-                filter.Selection = filterField.Selection;
-            }
-
-            return filter;
-        }
 
         /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlEntityType control.

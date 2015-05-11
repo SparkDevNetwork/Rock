@@ -115,6 +115,24 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide panel header].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide panel header]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HidePanelHeader
+        {
+            get
+            {
+                return ViewState["HidePanelHeader"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["HidePanelHeader"] = value;
+            }
+        }
 
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
@@ -173,58 +191,71 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget" );
-            writer.RenderBeginTag( "section" );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
-            writer.RenderBeginTag( "header" );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toggle pull-left" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.RenderBeginTag( HtmlTextWriterTag.Span );
-            writer.Write( "Show if" );
-            writer.RenderEndTag();
-            toggleAllAny.CssClass = "pull-left";
-            toggleAllAny.RenderControl( writer );
-            writer.RenderBeginTag( HtmlTextWriterTag.Span );
-            writer.Write( "of these are true" );
-            writer.RenderEndTag();
-            writer.RenderEndTag();
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn-group btn-group-sm pull-right" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            btnAddGroup.RenderControl( writer );
-
-            btnAddFilter.RenderControl( writer );
-
-            if ( IsDeleteEnabled )
+            if ( !HidePanelHeader )
             {
-                lbDelete.Visible = true;
-                lbDelete.RenderControl( writer );
-            }
-            else
-            {
-                lbDelete.Visible = false;
-            }
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget" );
+                writer.RenderBeginTag( "section" );
 
-            writer.RenderEndTag();
-            writer.RenderEndTag();
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.RenderBeginTag( "header" );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toggle pull-left" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( "Show if" );
+                writer.RenderEndTag();
+                toggleAllAny.CssClass = "pull-left";
+                toggleAllAny.RenderControl( writer );
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( "of these are true" );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn-group btn-group-sm pull-right" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                btnAddGroup.Visible = ( AddGroupClick != null );
+                btnAddGroup.RenderControl( writer );
+
+                btnAddFilter.Visible = ( AddFilterClick != null );
+                btnAddFilter.RenderControl( writer );
+
+                if ( IsDeleteEnabled )
+                {
+                    lbDelete.Visible = true;
+                    lbDelete.RenderControl( writer );
+                }
+                else
+                {
+                    lbDelete.Visible = false;
+                }
+
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
 
             foreach ( Control control in this.Controls )
             {
                 if ( control is FilterGroup || control is FilterField )
                 {
-                    control.RenderControl( writer );
+                    if ( control.Visible )
+                    {
+                        control.RenderControl( writer );
+                    }
                 }
             }
 
-            writer.RenderEndTag();
+            if ( !HidePanelHeader )
+            {
+                writer.RenderEndTag();
 
-            writer.RenderEndTag();
+                writer.RenderEndTag();
+            }
         }
 
         void btnAddGroup_ServerClick( object sender, EventArgs e )

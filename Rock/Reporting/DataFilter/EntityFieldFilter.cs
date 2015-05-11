@@ -36,9 +36,8 @@ namespace Rock.Reporting.DataFilter
     /// <summary>
     /// Abstract class that is used by DataFilters that let a user select a field/attribute of an entity
     /// </summary>
-    public abstract class EntityFieldFilter : DataFilterComponent
+    public abstract class EntityFieldFilter : DataFilterComponent, IUpdateSelectionFromPageParameters
     {
-
         /// <summary>
         /// Renders the entity fields controls.
         /// </summary>
@@ -49,19 +48,33 @@ namespace Rock.Reporting.DataFilter
         /// <param name="ddlEntityField">The DDL entity field.</param>
         /// <param name="propertyControls">The property controls.</param>
         /// <param name="propertyControlsPrefix">The property controls prefix.</param>
-        public void RenderEntityFieldsControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, List<EntityField> entityFields, 
-            DropDownList ddlEntityField, List<Control> propertyControls, string propertyControlsPrefix )        
+        public void RenderEntityFieldsControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, List<EntityField> entityFields,
+            DropDownList ddlEntityField, List<Control> propertyControls, string propertyControlsPrefix )
         {
             string selectedEntityField = ddlEntityField.SelectedValue;
 
             writer.AddAttribute( "class", "row js-filter-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+            bool entityFieldPickerIsHidden = ddlEntityField.Style[HtmlTextWriterStyle.Display] == "none";
+
             writer.AddAttribute( "class", "col-md-3" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            ddlEntityField.AddCssClass( "entity-property-selection" );
-            ddlEntityField.RenderControl( writer );
+            
+            if ( !entityFieldPickerIsHidden )
+            {
+                ddlEntityField.AddCssClass( "entity-property-selection" );
+                ddlEntityField.RenderControl( writer );
+            }
+            else if ( ddlEntityField.SelectedItem != null )
+            {
+                writer.AddAttribute( "class", "data-view-filter-field-label" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( ddlEntityField.SelectedItem.Text );
+                writer.RenderEndTag();
+            }
             writer.RenderEndTag();
+
             writer.AddAttribute( "class", "col-md-9" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -81,12 +94,19 @@ namespace Rock.Reporting.DataFilter
 
             foreach ( var entityField in entityFields )
             {
-                string controlId = string.Format("{0}_{1}", propertyControlsPrefix, entityField.Name );
+                string controlId = string.Format( "{0}_{1}", propertyControlsPrefix, entityField.Name );
                 var control = propertyControls.FirstOrDefault( c => c.ID == controlId );
                 if ( control != null )
                 {
                     if ( entityField.Name != selectedEntityField )
                     {
+                        if ( entityFieldPickerIsHidden )
+                        {
+                            // if the field can't be changed, we don't need the render the controls for the other entity fields
+                            fieldIndex++;
+                            continue;
+                        }
+                        
                         if ( control is HtmlControl )
                         {
                             ( (HtmlControl)control ).Style["display"] = "none";
@@ -174,6 +194,62 @@ namespace Rock.Reporting.DataFilter
         }
 
         /// <summary>
+        /// Gets the name of the selected field.
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public string GetSelectedFieldName( string selection )
+        {
+            if ( !string.IsNullOrWhiteSpace( selection ) )
+            {
+                var values = JsonConvert.DeserializeObject<List<string>>( selection );
+                if ( values.Count > 0 )
+                {
+                    return values[0];
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Updates the selection from page parameters.
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <param name="rockBlock">The rock block.</param>
+        /// <returns></returns>
+        public string UpdateSelectionFromPageParameters( string selection, Rock.Web.UI.RockBlock rockBlock )
+        {
+            if ( !string.IsNullOrWhiteSpace( selection ) )
+            {
+                var values = JsonConvert.DeserializeObject<List<string>>( selection );
+
+                // selection list  is either "FieldName, Comparision, Value(s)" or "FieldName, Value(s)"
+                if ( values.Count == 3 )
+                {
+                    var pageParamValue = rockBlock.PageParameter( values[0] );
+                    if ( !string.IsNullOrEmpty( pageParamValue ) )
+                    {
+                        values[2] = pageParamValue;
+                        return values.ToJson();
+                    }
+                }
+                else if ( values.Count == 2 )
+                {
+                    var pageParamValue = rockBlock.PageParameter( values[0] );
+                    if ( !string.IsNullOrEmpty( pageParamValue ) )
+                    {
+                        values[1] = pageParamValue;
+                        return values.ToJson();
+                    }
+                }
+
+            }
+
+            return selection;
+        }
+
+        /// <summary>
         /// Builds an expression for an attribute field
         /// </summary>
         /// <param name="serviceInstance">The service instance.</param>
@@ -239,7 +315,7 @@ namespace Rock.Reporting.DataFilter
             Expression expression = Expression.Call( typeof( Queryable ), "Contains", new Type[] { typeof( int ) }, idsExpression, propertyExpression );
 
             // If we have used an inverted comparison type for the evaluation, invert the Expression so that it excludes the matching Entities.
-            if ( comparisonType != evaluatedComparisonType)
+            if ( comparisonType != evaluatedComparisonType )
             {
                 return Expression.Not( expression );
             }

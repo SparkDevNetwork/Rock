@@ -2682,6 +2682,11 @@ tr.row-highlight td {
 .filter-item div[class*='col'] {
   margin-bottom: 6px;
 }
+.data-view-filter-field-label {
+  font-weight: 700;
+  margin-top: 8px;
+  display: block;
+}
 @media (min-width: 992px) {
   .filter-item div[class*='col'] {
     margin-bottom: 0;
@@ -3366,7 +3371,8 @@ table.attribute-grid tr th:nth-child(3) {
   font-size: 45px;
 }
 .badge-icon.badge-disabled {
-  opacity: 0.3;
+  opacity: 0.2;
+  color: #939393;
 }
 .badge-attendance ul.badge-attendance-chart {
   display: table;
@@ -4935,6 +4941,11 @@ fieldset[disabled] .btn-authenication.active {
 .btn-authenication.facebook:before {
   font-family: 'FontAwesome';
   content: "\f09a";
+  margin-right: 12px;
+}
+.btn-authenication.google:before {
+  font-family: 'FontAwesome';
+  content: "\f1a0";
   margin-right: 12px;
 }
 .btn-minimal {
