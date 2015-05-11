@@ -253,6 +253,9 @@ namespace Rock.Model
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public static class AttendanceQryExtensions
     {
         /// <summary>

@@ -548,7 +548,7 @@ function(item) {
             gChartAttendance.DataBind();
         }
 
-        private double? _attendencePossibleCount = null; 
+        private double? _attendencePossibleCount = null;
 
         /// <summary>
         /// Binds the attendees grid.
@@ -556,7 +556,7 @@ function(item) {
         private void BindAttendeesGrid()
         {
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
-            if (dateRange.End == null || dateRange.End > RockDateTime.Now)
+            if ( dateRange.End == null || dateRange.End > RockDateTime.Now )
             {
                 dateRange.End = RockDateTime.Now;
             }
@@ -605,7 +605,7 @@ function(item) {
                 qry = qry.Where( a => a.StartDateTime < dateRange.End.Value );
             }
 
-            AttendanceGroupBy groupBy = hfGroupBy.Value.ConvertToEnum<AttendanceGroupBy>();
+            AttendanceGroupBy groupBy = hfGroupBy.Value.ConvertToEnumOrNull<AttendanceGroupBy>() ?? AttendanceGroupBy.Week;
 
             var qryAttendanceGroupedBy = qry.GetAttendanceGroupedBy( groupBy );
 
@@ -656,7 +656,7 @@ function(item) {
                 FirstVisits = qryVisits.Where( b => b.PersonAlias.PersonId == a.Person.Id ).Select( s => new { s.Id, s.StartDateTime } ).OrderBy( x => x.StartDateTime ).Take( nthVisitsTake ),
                 LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
                 PhoneNumbers = a.Person.PhoneNumbers,
-                AttendanceSummary = qryAttendanceGroupedBy.Select(b => b.Key)
+                AttendanceSummary = qryAttendanceGroupedBy.Select( b => b.Key )
             } );
 
             if ( byNthVisit.HasValue )
@@ -692,11 +692,11 @@ function(item) {
             // approximate the attendance max occurrence count from the date range so that can calculate attendance %
             // from http://stackoverflow.com/a/1925560/1755417
             TimeSpan dateRangeSpan = dateRange.End.Value - dateRange.Start.Value;
-            if (groupBy == AttendanceGroupBy.Week)
+            if ( groupBy == AttendanceGroupBy.Week )
             {
                 _attendencePossibleCount = dateRangeSpan.TotalDays / 7;
             }
-            else if (groupBy == AttendanceGroupBy.Month)
+            else if ( groupBy == AttendanceGroupBy.Month )
             {
                 _attendencePossibleCount = dateRangeSpan.TotalDays / 30.436875;
             }
@@ -709,7 +709,21 @@ function(item) {
 
             if ( sortProperty != null )
             {
-                qryResult = qryResult.Sort( sortProperty );
+                if ( sortProperty.Property == "AttendanceSummary.Count" )
+                {
+                    if ( sortProperty.Direction == SortDirection.Descending )
+                    {
+                        qryResult = qryResult.OrderByDescending( a => a.AttendanceSummary.Count() );
+                    }
+                    else
+                    {
+                        qryResult = qryResult.OrderBy( a => a.AttendanceSummary.Count() );
+                    }
+                }
+                else
+                {
+                    qryResult = qryResult.Sort( sortProperty );
+                }
             }
             else
             {
@@ -762,7 +776,7 @@ function(item) {
                 } );
 
                 gAttendeesAttendance.PersonIdField = "ParentId";
-                gAttendeesAttendance.DataKeyNames = new string[] { "ParentId", "PersonId"  };
+                gAttendeesAttendance.DataKeyNames = new string[] { "ParentId", "PersonId" };
 
                 rockContext.Database.Log = s => System.Diagnostics.Debug.WriteLine( s );
 
@@ -838,11 +852,11 @@ function(item) {
                 int attendanceSummaryCount = attendanceSummary.Count();
                 lAttendanceCount.Text = attendanceSummaryCount.ToString();
 
-                if (_attendencePossibleCount.HasValue && _attendencePossibleCount > 0)
+                if ( _attendencePossibleCount.HasValue && _attendencePossibleCount > 0 )
                 {
                     // round up the possible to the next whole number since the person could have already attended and the current week/month/year isn't over year
-                    var attendancePerPossibleCount = attendanceSummaryCount / Math.Ceiling(_attendencePossibleCount.Value);
-                    if (attendancePerPossibleCount > 1)
+                    var attendancePerPossibleCount = attendanceSummaryCount / Math.Ceiling( _attendencePossibleCount.Value );
+                    if ( attendancePerPossibleCount > 1 )
                     {
                         attendancePerPossibleCount = 1;
                     }

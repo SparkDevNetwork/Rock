@@ -38,6 +38,7 @@ namespace Rock.Model
         /// <param name="state">A <see cref="System.String" /> representing the State to search by.</param>
         /// <param name="postalCode">A <see cref="System.String" /> representing the Zip/Postal code to search by</param>
         /// <param name="country">The country.</param>
+        /// <param name="verifyLocation">if set to <c>true</c> [verify location].</param>
         /// <returns>
         /// The first <see cref="Rock.Model.Location" /> where an address match is found, if no match is found a new <see cref="Rock.Model.Location" /> is created and returned.
         /// </returns>

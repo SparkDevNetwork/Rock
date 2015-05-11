@@ -28,6 +28,9 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:HelpBlock runat=server></{0}:HelpBlock>" )]
     public class HelpBlock : Literal
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HelpBlock"/> class.
+        /// </summary>
         public HelpBlock()
         {
             var style = new Style();
