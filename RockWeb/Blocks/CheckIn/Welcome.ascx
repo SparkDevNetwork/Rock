@@ -78,6 +78,8 @@
                 </div>
             </div>
 
+            <asp:Button ID="btnOverride" runat="server" CssClass="btn-checkin-override" OnClick="btnOverride_Click" />
+
         </asp:Panel>
 
 </ContentTemplate>
