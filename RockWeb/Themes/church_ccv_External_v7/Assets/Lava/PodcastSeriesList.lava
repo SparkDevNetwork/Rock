@@ -1,10 +1,10 @@
-{% if rows.first.CurrentPage == 1 %}
-  <header class="bigblock bigblock-flexbg bigblock-flexbg-md" style="background-image: url('http://ccv.church/Arena/cachedblob.aspx?guid={{ rows.first.MessageImageBlobId3 }}');">
+{% if table1.rows.first.CurrentPage == 1 %}
+  <header class="bigblock bigblock-flexbg bigblock-flexbg-md" style="background-image: url('http://ccv.church/Arena/cachedblob.aspx?guid={{ table1.rows.first.MessageImageBlobId3 }}');">
   </header>
 {% endif %}
 
 <div class="container">
-{% for r in rows %}
+{% for r in table1.rows %}
 
     {% if forloop.first %}
       {% comment %}New Series{% endcomment %}
@@ -71,35 +71,53 @@
 
   {% endfor %}
 
+  {% assign currentPage = table1.rows.first.CurrentPage %}
+  {% assign lastPage = table2.rows.first.Column1 %}
+
+  {% assign minusOne = table1.rows.first.CurrentPage | Minus: 1 %}
+  {% assign minusTwo = table1.rows.first.CurrentPage | Minus: 2 %}
+  {% assign plusOne  = table1.rows.first.CurrentPage | Plus: 1  %}
+  {% assign plusTwo  = table1.rows.first.CurrentPage | Plus: 2  %}
 
   <nav class="text-center">
     <ul class="pagination pagination-lg">
 
-      {% if rows.first.CurrentPage == 1  %}
+      {% if currentPage == 1  %}
         <li class="disabled">
           <span>
             <span aria-hidden="true">&laquo;</span>
           </span>
         </li>
       {% else %}
-        <li><a href="?PageNum={{ rows.first.CurrentPage | Minus: 1 }}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+        <li><a href="?PageNum={{ minusOne }}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
       {% endif %}
 
-      {% if rows.first.CurrentPage > 2 %}
-        <li><a href="?PageNum={{ rows.first.CurrentPage | Minus: 2 }}">{{ rows.first.CurrentPage | Minus: 2 }}</a></li>
+      {% if currentPage > 2 %}
+        <li><a href="?PageNum={{ minusTwo }}">{{ minusTwo }}</a></li>
       {% endif %}
-      {% if rows.first.CurrentPage > 1 %}
-        <li><a href="?PageNum={{ rows.first.CurrentPage | Minus: 1 }}">{{ rows.first.CurrentPage | Minus: 1 }}</a></li>
+      {% if currentPage > 1 %}
+        <li><a href="?PageNum={{ minusOne }}">{{ minusOne }}</a></li>
       {% endif %}
 
       <li class="active">
-        <span>{{ rows.first.CurrentPage }} <span class="sr-only">(current)</span></span>
+        <span>{{ currentPage }} <span class="sr-only">(current)</span></span>
       </li>
 
-      <li><a href="?PageNum={{ rows.first.CurrentPage | Plus: 1 }}">{{ rows.first.CurrentPage | Plus: 1 }}</a></li>
-      <li><a href="?PageNum={{ rows.first.CurrentPage | Plus: 2 }}">{{ rows.first.CurrentPage | Plus: 2 }}</a></li>
+      {% if currentPage == lastPage %}
+        <li class="disabled">
+          <span>
+            <span aria-hidden="true">&raquo;</span>
+          </span>
+        </li>
 
-      <li><a href="?PageNum={{ rows.first.CurrentPage | Plus: 1 }}" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>
+      {% elsif plusOne <= lastPage %}
+        <li><a href="?PageNum={{ plusOne }}">{{ plusOne }}</a></li>
+        {% if plusTwo <= lastPage %}
+        <li><a href="?PageNum={{ plusTwo }}">{{ plusTwo }}</a></li>
+        {% endif %}
+
+        <li><a href="?PageNum={{ plusOne }}" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>
+      {% endif %}
 
     </ul>
   </nav>
