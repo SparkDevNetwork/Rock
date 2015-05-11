@@ -170,7 +170,7 @@
                                     </Rock:RockControlWrapper>
 
                                     <div class="actions margin-b-md">
-                                        <asp:LinkButton ID="btnApplyAttendeesFilter" runat="server" CssClass="btn btn-primary" Text="Apply" ToolTip="Update the Attendees grid" OnClick="btnApplyAttendeesFilter_Click" />
+                                        <asp:LinkButton ID="btnApplyAttendeesFilter" runat="server" Visible="false" CssClass="btn btn-primary" Text="Apply" ToolTip="Update the Attendees grid" OnClick="btnApplyAttendeesFilter_Click" />
                                     </div>
 
                                 </div>
