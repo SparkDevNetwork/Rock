@@ -36,7 +36,7 @@
 @header-text-color:     #fff;
 @header-font-weight:    @font-weight-bold;
 
-@subheader-text-color:      #bde2ef;
+@subheader-text-color:      #777;
 @subheader-font-weight:     @font-weight-light;
 
 // Button Styles
@@ -114,20 +114,11 @@
 // --------------------------------------------------
 .checkinBackground () {
   background: @bg-color;
-  // background: @bg-color url('../Assets/Images/background.jpg') top right no-repeat fixed;
 }
 
 .checkinBackgroundRetina()
 {
-  // background-image: url('../Assets/Images/background@2x.jpg');
-  // background-size: 1348px 1024px; // should be 1/2 of the actual
-  // -webkit-background-size: cover;
-  // -moz-background-size: cover;
-  // -o-background-size: cover;
-  // background-size: cover;
 }
-
-
 
 
 //
@@ -155,11 +146,6 @@
   height: 100%;
   width: 100%;
   .opacity(.1);
-
-  // optionally make bird a different color
-  // path {
-  //   fill: @btn-primary-bg;
-  // }
 }
 
 .bootbox {
@@ -175,19 +161,6 @@
   }
 }
 
-.scroller {
-  padding-right: 40px;
-}
-
-.iScrollVerticalScrollbar,
-.iScrollLoneScrollbar {
-  width: 30px;
-  min-height: 100px;
-}
-
-.iScrollIndicator {
+.btn {
   border: none;
-  background-color: #fff;
-  opacity: .5;
-  min-height: 100px;
 }
