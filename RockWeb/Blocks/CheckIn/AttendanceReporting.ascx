@@ -8,10 +8,14 @@
                 <h1 class="panel-title"><i class="fa fa-check-square-o"></i>Attendance Analysis</h1>
             </div>
             <div class="panel-body">
-                <div class="row">
-                    <div class="col-md-4">
+                <div class="row row-eq-height-md">
+                    <div class="col-md-4 filter-options">
+
+                        <Rock:GroupTypePicker ID="ddlCheckinType" runat="server" Label="Check-in Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" />
+                        <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="false" />
+
                         <div class="actions margin-b-md">
-                            <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary" Text="Apply" ToolTip="Update the chart" OnClick="btnApply_Click" />
+                            
                         </div>
 
                         <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" />
@@ -31,9 +35,6 @@
 
                         <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campuses" />
 
-                        <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="true" />
-                        <Rock:GroupTypePicker ID="ddlCheckinType" runat="server" Label="Check-in Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" />
-
                         <h4>Group</h4>
                         <ul class="rocktree">
 
@@ -47,36 +48,49 @@
                     </div>
                     <div class="col-md-8">
 
-                        <div class="controls">
-                            <div class="js-show-by">
-                                <Rock:HiddenFieldWithClass ID="hfShowBy" CssClass="js-hidden-selected" runat="server" />
-                                <div class="btn-group">
-                                    <asp:LinkButton ID="btnShowByChart" runat="server" CssClass="btn btn-default active" data-val="0" OnClick="btnShowByChart_Click">
-                                            <i class="fa fa-line-chart"></i> Chart
-                                    </asp:LinkButton>
-                                    <asp:LinkButton ID="btnShowByAttendees" runat="server" CssClass="btn btn-default" data-val="1" OnClick="btnShowByAttendees_Click">
-                                            <i class="fa fa-users"></i> Attendees
-                                    </asp:LinkButton>
+                        <div class="row analysis-types">
+                            <div class="col-sm-8">
+                                <div class="controls">
+                                    <div class="js-show-by">
+                                        <Rock:HiddenFieldWithClass ID="hfShowBy" CssClass="js-hidden-selected" runat="server" />
+                                        <div class="btn-group">
+                                            <asp:LinkButton ID="btnShowByChart" runat="server" CssClass="btn btn-default active" data-val="0" OnClick="btnShowByChart_Click">
+                                                    <i class="fa fa-line-chart"></i> Chart
+                                            </asp:LinkButton>
+                                            <asp:LinkButton ID="btnShowByAttendees" runat="server" CssClass="btn btn-default" data-val="1" OnClick="btnShowByAttendees_Click">
+                                                    <i class="fa fa-users"></i> Attendees
+                                            </asp:LinkButton>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="actions text-right">
+                                    <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary" ToolTip="Update the chart" OnClick="btnApply_Click"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
                                 </div>
                             </div>
                         </div>
 
+                        
+
                         <asp:Panel ID="pnlShowByChart" runat="server">
-                            <div class="row">
-                                <div class="col-md-offset-9 col-md-3">
-                                    <Rock:RockControlWrapper ID="rcwGraphBy" runat="server" Label="Graph By">
-                                        <div class="controls">
-                                            <div class="js-graph-by">
-                                                <Rock:HiddenFieldWithClass ID="hfGraphBy" CssClass="js-hidden-selected" runat="server" />
-                                                <div class="btn-group">
-                                                    <asp:LinkButton ID="btnGraphByTotal" runat="server" CssClass="btn btn-xs btn-default active" Text="Total" data-val="0" OnClick="btnGraphBy_Click" />
-                                                    <asp:LinkButton ID="btnGraphByGroup" runat="server" CssClass="btn btn-xs btn-default" Text="Group" data-val="1" OnClick="btnGraphBy_Click" />
-                                                    <asp:LinkButton ID="btnGraphByCampus" runat="server" CssClass="btn btn-xs btn-default" Text="Campus" data-val="2" OnClick="btnGraphBy_Click" />
-                                                    <asp:LinkButton ID="btnGraphByTime" runat="server" CssClass="btn btn-xs btn-default" Text="Schedule" data-val="3" OnClick="btnGraphBy_Click" />
+                            <div class="clearfix">
+                                <div class="pull-right">
+                                
+                                        <Rock:RockControlWrapper ID="rcwGraphBy" runat="server" Label="Graph By">
+                                            <div class="controls">
+                                                <div class="js-graph-by">
+                                                    <Rock:HiddenFieldWithClass ID="hfGraphBy" CssClass="js-hidden-selected" runat="server" />
+                                                    <div class="btn-group">
+                                                        <asp:LinkButton ID="btnGraphByTotal" runat="server" CssClass="btn btn-xs btn-default active" Text="Total" data-val="0" OnClick="btnGraphBy_Click" />
+                                                        <asp:LinkButton ID="btnGraphByGroup" runat="server" CssClass="btn btn-xs btn-default" Text="Group" data-val="1" OnClick="btnGraphBy_Click" />
+                                                        <asp:LinkButton ID="btnGraphByCampus" runat="server" CssClass="btn btn-xs btn-default" Text="Campus" data-val="2" OnClick="btnGraphBy_Click" />
+                                                        <asp:LinkButton ID="btnGraphByTime" runat="server" CssClass="btn btn-xs btn-default" Text="Schedule" data-val="3" OnClick="btnGraphBy_Click" />
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </Rock:RockControlWrapper>
+                                        </Rock:RockControlWrapper>
+                                
                                 </div>
                             </div>
                             <Rock:LineChart ID="lcAttendance" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="300" />
@@ -104,7 +118,7 @@
                         <asp:Panel ID="pnlShowByAttendees" runat="server">
                             <div class="panel">
                                 <div class="grid-filter">
-                                    <div class="controls pull-right">
+                                    <div class="controls pull-right margin-t-sm">
                                         <div class="js-view-by">
                                             <Rock:HiddenFieldWithClass ID="hfViewBy" CssClass="js-hidden-selected" runat="server" />
                                             <div class="btn-group">
