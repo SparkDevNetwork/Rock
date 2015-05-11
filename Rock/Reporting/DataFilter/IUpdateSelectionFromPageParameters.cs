@@ -22,6 +22,12 @@ namespace Rock.Reporting.DataFilter
     /// </summary>
     public interface IUpdateSelectionFromPageParameters
     {
+        /// <summary>
+        /// Updates the selection from page parameters.
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <param name="rockBlock">The rock block.</param>
+        /// <returns></returns>
         string UpdateSelectionFromPageParameters( string selection, Rock.Web.UI.RockBlock rockBlock );
     }
 }
