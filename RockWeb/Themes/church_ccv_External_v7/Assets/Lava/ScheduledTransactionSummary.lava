@@ -1,39 +1,127 @@
-<div class="row margin-b-md">
+{% if ScheduledTransactions.size >= 1 %}
+  {% assign userSegment = 3 %}
+{% elsif CurrentPerson %}
+  {% assign userSegment = 2 %}
+{% else %}
+  {% assign userSegment = 1 %}
+{% endif %}
 
-  <div class="col-md-6">
-    <h1 class="condensed">Hello, {{CurrentPerson.NickName}}</h1>
+<h1>{{ userSegment }}</h1>
+
+{% if userSegment == 3 %}
+
+  <div class="bigblock">
+    <div class="container">
+      <div class="row margin-b-md">
+
+        <div class="col-md-6">
+          <h1 class="condensed">Hello, {{CurrentPerson.NickName}}</h1>
+        </div>
+
+        <div class="col-md-6">
+          {% if ScheduledTransactions.size == 1 %}
+            <p>
+              You currently have <span class='label label-default'>1</span> giving profile active.
+            </p>
+            <p>
+              {% if ScheduledTransactions[0].DaysTillNextPayment > 0 %}
+                Next gift is in {{ScheduledTransactions[0].DaysTillNextPayment}} days.
+              {% else %}
+                Next gift is scheduled for today.
+              {% endif %}
+
+              {% if ScheduledTransactions[0].LastPaymentDate != null %}
+                {% if ScheduledTransactions[0].DaysSinceLastPayment > 0 %}
+                  Last gift was {{ScheduledTransactions[0].DaysSinceLastPayment}} days ago.
+                {% else %}
+                  Last gift was today.
+                {% endif %}
+              {% endif %}
+            </p>
+          {% elsif ScheduledTransactions.size > 1 %}
+            You currently have <span class='label label-default'>{{ScheduledTransactions.size}}</span>
+            giving profiles active.
+          {% else %}
+            You currently have no active profiles.
+          {% endif %}
+          <div class="clearfix">
+            <a class="btn btn-default pull-left" href="{{LinkedPages.ManageScheduledTransactionsPage}}">Manage</a>
+            <a class="btn btn-default pull-right" href="{{LinkedPages.TransactionHistoryPage}}">View History</a>
+          </div>
+          <a class="btn btn-primary btn-block margin-t-md" href="{{LinkedPages.TransactionEntryPage}}">Give Now</a>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="col-md-6">
-    {% if ScheduledTransactions.size == 1 %}
-      <p>
-        You currently have <span class='label label-default'>1</span> giving profile active.
-      </p>
-      <p>
-        {% if ScheduledTransactions[0].DaysTillNextPayment > 0 %}
-          Next gift is in {{ScheduledTransactions[0].DaysTillNextPayment}} days.
-        {% else %}
-          Next gift is scheduled for today.
-        {% endif %}
+{% else %}
 
-        {% if ScheduledTransactions[0].LastPaymentDate != null %}
-          {% if ScheduledTransactions[0].DaysSinceLastPayment > 0 %}
-            Last gift was {{ScheduledTransactions[0].DaysSinceLastPayment}} days ago.
-          {% else %}
-            Last gift was today.
-          {% endif %}
-        {% endif %}
-      </p>
-    {% elsif ScheduledTransactions.size > 1 %}
-      You currently have <span class='label label-default'>{{ScheduledTransactions.size}}</span>
-      giving profiles active.
-    {% else %}
-      You currently have no active profiles.
-    {% endif %}
-    <div class="clearfix">
-      <a class="btn btn-default pull-left" href="{{LinkedPages.ManageScheduledTransactionsPage}}">Manage</a>
-      <a class="btn btn-default pull-right" href="{{LinkedPages.TransactionHistoryPage}}">View History</a>
+  <div class="bigblock bigblock-graylighter">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-8">
+          <div class="embed-responsive embed-responsive-16by9">
+            <iframe src="https://player.vimeo.com/video/94531312" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <a class="btn btn-primary btn-block btn-lg margin-t-md" href="{{LinkedPages.TransactionEntryPage}}">Give Now</a>
+          <a class="btn btn-default btn-block" href="{{LinkedPages.TransactionHistoryPage}}">View History</a>
+        </div>
+      </div>
     </div>
-    <a class="btn btn-primary btn-block margin-t-md" href="{{LinkedPages.TransactionEntryPage}}">Give Now</a>
+  </div>
+
+  <div class="bigblock">
+    <div class="container">
+      <h2>Why We Give</h2>
+      <div class="textcol textcol-sm-2">
+        <p>Money and church can be a touchy issue – but it doesn’t have to be. We don’t give because God needs our money, and we don’t give because the church needs our money. It’s much bigger than that. We give because God asked us to, and following through shows that we trust Him.</p>
+        <p>God knows that your loyalty is found where your money is (Matthew 6:19-21). And because God wants to be first in our lives, he asks us to trust Him with our money.</p>
+        <p>For Christians, tithing (a word meaning ‘tenth’) is the starting point. Tithing is giving the first 10% of our income back to the local church. If you call CCV your home, we encourage you to give generously, knowing that your money is being used to support the mission of Jesus Christ – both here in the Valley, and around the world.</p>
+        <p>If you'd like to read more about what the Bible says about money, we recommend these passages:</p>
+        <ul class="list-inline">
+          <li><a href="https://www.bible.com/bible/111/Matthew%206:19-21">Matthew 6:19-21</a>
+          </li>
+          <li><a href="https://www.bible.com/bible/111/Leviticus%2027:30">Leviticus 27:30</a>
+          </li>
+          <li><a href="https://www.bible.com/bible/111/1%20Chronicles%2029:11-12">1 Chronicles 29:11-12</a>
+          </li>
+          <li><a href="https://www.bible.com/bible/111/Psalm%2024:1">Psalm 24:1</a>
+          </li>
+          <li><a href="https://www.bible.com/bible/111/Proverbs%203:9-10">Proverbs 3:9-10</a>
+          </li>
+          <li><a href="https://www.bible.com/bible/111/Malachi%203:6-10">Malachi 3:6-10</a>
+          </li>
+          <li><a href="https://www.bible.com/bible/111/1%20Corinthians%2016:1-2">1 Corinthians 16:1-2</a>
+          </li>
+        </ul>
+        <em>If you have more questions, view our
+          <strong><a href="default.aspx?page=18547">Frequently Asked Questions.</a>
+          </strong>
+        </em>
+      </div>
+    </div>
+  </div>
+
+{% endif %}
+
+<div class="bigblock bigblock-red">
+  <div class="container">
+    <h2>Ways to Give</h2>
+    <div class="row">
+      <div class="col-sm-6 col-md-3 text-center">
+        <h4>Method</h4>
+      </div>
+      <div class="col-sm-6 col-md-3 text-center">
+        <h4>Method</h4>
+      </div>
+      <div class="col-sm-6 col-md-3 text-center">
+        <h4>Method</h4>
+      </div>
+      <div class="col-sm-6 col-md-3 text-center">
+        <h4>Method</h4>
+      </div>
+    </div>
   </div>
 </div>

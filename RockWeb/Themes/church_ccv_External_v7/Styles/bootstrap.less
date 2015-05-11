@@ -340,3 +340,11 @@ hr {
     margin-left: -2px;
   }
 }
+
+.button-size(@padding-vertical; @padding-horizontal; @font-size; @line-height; @border-radius) {
+  font-family: @headings-font-family;
+  padding: @padding-vertical @padding-horizontal;
+  font-size: @font-size+2px;
+  line-height: @line-height;
+  border-radius: @border-radius;
+}

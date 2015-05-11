@@ -5139,16 +5139,6 @@ h6,
 .h6 {
   text-transform: uppercase;
 }
-.btn {
-  font-family: "DINWebCondensed", sans-serif;
-  font-size: 16px;
-  line-height: 20px;
-}
-.din {
-  font-family: "DINWebCondensed", sans-serif;
-  font-size: 18px;
-  line-height: 23px;
-}
 .underline {
   border-bottom: 1px solid #eeeeee;
   padding-bottom: .25em;
@@ -5738,6 +5728,13 @@ html[xmlns] .slides {
 .bigblock-graydarker .page-header {
   border-color: #333333;
 }
+.bigblock-graylighter {
+  background-color: #eeeeee;
+}
+.bigblock-red {
+  background-color: #7a1315;
+  color: #fff;
+}
 .bigblock-flexbg {
   background-size: cover;
   background-position: center center;
@@ -6050,4 +6047,16 @@ html[xmlns] .slides {
 }
 .social-icon-md {
   font-size: 1.5em;
+}
+.textcol {
+  -webkit-column-gap: 30px;
+  -moz-column-gap: 30px;
+  column-gap: 30px;
+}
+@media (min-width: 768px) {
+  .textcol-sm-2 {
+    -webkit-column-count: 2;
+    -moz-column-count: 2;
+    column-count: 2;
+  }
 }
