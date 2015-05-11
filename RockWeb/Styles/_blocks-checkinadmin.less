@@ -2,7 +2,7 @@
     Used to manage styles for check-in administration.
 
     1. Group / Location
-    2. 
+    2. Attendance Analysis
 */
 
 
@@ -18,5 +18,33 @@
 
 
 
-// 2. 
+// 2. Attendance Analysis
 // -------------------------
+.attendance-reporting {
+    .panel-body {
+        padding-top: 0;
+        padding-bottom: 0;
+
+        & > .row > [class*="col-"]:first-child {
+            padding-top: 15px;
+            padding-bottom: 15px;
+
+        }
+
+        @media @md {
+            .row {
+                margin-left: -16px;
+            }
+        }
+    }
+
+    .filter-options {
+        background-color: @gray-lighter;
+    }
+
+    .analysis-types {
+        padding: 15px 0;
+        background-color: @gray-lighter;
+        margin-bottom: 24px;
+    }
+}
