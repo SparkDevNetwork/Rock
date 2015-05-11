@@ -38,142 +38,147 @@ namespace Rock.Migrations
                 UPDATE [DefinedValue] SET [Value] = 'Self-Service Kiosk' WHERE [Guid] = '64A1DBE5-10AD-42F1-A9BA-646A781D4112'
 
                 DECLARE @DeviceTypeValueId int = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = '64A1DBE5-10AD-42F1-A9BA-646A781D4112')
-                DECLARE @LocationId int = (SELECT TOP 1 [Id] FROM [Location] WHERE [Guid] = 'D5171D44-C801-4B7D-9335-D23FB4EA0E60')
-
-                
 
                 INSERT INTO [Device]
-	                ([Name], [Description], [DeviceTypeValueId], [LocationId], [IPAddress], [Guid], [PrintFrom], [PrintToOverride])
+	                ([Name], [Description], [DeviceTypeValueId], [IPAddress], [Guid], [PrintFrom], [PrintToOverride])
                 VALUES
-	                ('Self-Service Kiosk', 'Sample self-service/giving kiosk.', @DeviceTypeValueId, @LocationId, '::1', '8638F176-DF1E-659B-4E76-CE4227D95081', 0, 0)
-
+	                ('Self-Service Kiosk', 'Sample self-service/giving kiosk.', @DeviceTypeValueId, '::1', '8638F176-DF1E-659B-4E76-CE4227D95081', 0, 0)
                 DECLARE @DeviceId int = SCOPE_IDENTITY()
 
                 INSERT INTO [DeviceLocation]
 	                ([DeviceId], [LocationId])
-                VALUES
-	                (@DeviceId, @LocationId)");
+                SELECT @DeviceId, L.[Id]
+                FROM [Campus] C
+                INNER JOIN [Location] L ON L.[Id] = C.[LocationId]
+");
 
             // define anonymous giver	
             Sql(@"
-                DECLARE @FamilyGroupTypeId int = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E')
+    DECLARE @FamilyGroupTypeId int = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E')
+    IF @FamilyGroupTypeId IS NOT NULL
+    BEGIN
+        INSERT INTO [Group]
+	        ([IsSystem], [GroupTypeId], [CampusId], [Name], [IsSecurityRole], [IsActive], [Order], [Guid])
+        VALUES
+	        (0, @FamilyGroupTypeId, 1, 'Anonymous Family', 0, 1, 0, 'E846F6EE-93E9-E287-428D-95D139D23B35')
+        DECLARE @FamilyId int = SCOPE_IDENTITY()
 
-                INSERT INTO [Group]
-	                ([IsSystem], [GroupTypeId], [CampusId], [Name], [IsSecurityRole], [IsActive], [Order], [Guid])
+        DECLARE @RecordTypeValueId int = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = '36CF10D6-C695-413D-8E7C-4546EFEF385E')
+        DECLARE @RecordStatusValueId int = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = '618F906C-C33D-4FA3-8AEF-E58CB7B63F1E')
+        DECLARE @ConnectionStatusValueId int = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = '8EBC0CEB-474D-4C1B-A6BA-734C3A9AB061')
+        
+        IF @RecordTypeValueId IS NOT NULL AND @RecordStatusValueId IS NOT NULL AND @ConnectionStatusValueId IS NOT NULL
+        BEGIN
+            INSERT INTO [Person]
+	            ([IsSystem], [RecordTypeValueId], [RecordStatusValueId], [ConnectionStatusValueId], [FirstName], [NickName], [LastName], [Guid], [Gender])
+            VALUES
+	            (0, @RecordTypeValueId, @RecordStatusValueId,@ConnectionStatusValueId, 'Giver', 'Giver', 'Anonymous', '802235DC-3CA5-94B0-4326-AACE71180F48', 0)
+            DECLARE @PersonId int = SCOPE_IDENTITY()
+
+            DECLARE @PersonGuid uniqueidentifier = (SELECT TOP 1 [Guid] FROM [Person] WHERE [Id] = @PersonId)
+
+            INSERT INTO [PersonAlias]
+                ([PersonId], [AliasPersonId], [AliasPersonGuid] , [Guid])
                 VALUES
-	                (0, @FamilyGroupTypeId, 1, 'Anonymous Family', 0, 1, 0, 'E846F6EE-93E9-E287-428D-95D139D23B35')
+                (@PersonId, @PersonId, @PersonGuid, '377C6F44-7E16-CFB5-4B8E-033BA20A900F')
 
-                DECLARE @FamilyId int = SCOPE_IDENTITY()
-
-                DECLARE @RecordTypeValueId int = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = '36CF10D6-C695-413D-8E7C-4546EFEF385E')
-                DECLARE @RecordStatusValueId int = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = '618F906C-C33D-4FA3-8AEF-E58CB7B63F1E')
-                DECLARE @ConnectionStatusValueId int = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = '8EBC0CEB-474D-4C1B-A6BA-734C3A9AB061')
-
-                INSERT INTO [Person]
-	                ([IsSystem], [RecordTypeValueId], [RecordStatusValueId], [ConnectionStatusValueId], [FirstName], [NickName], [LastName], [Guid], [Gender])
-                VALUES
-	                (0, @RecordTypeValueId, @RecordStatusValueId,@ConnectionStatusValueId, 'Giver', 'Giver', 'Anonymous', '802235DC-3CA5-94B0-4326-AACE71180F48', 0)
-
-                DECLARE @PersonId int = SCOPE_IDENTITY()
-
-                DECLARE @PersonGuid uniqueidentifier = (SELECT TOP 1 [Guid] FROM [Person] WHERE [Id] = @PersonId)
-
-                INSERT INTO [PersonAlias]
-                    ([PersonId], [AliasPersonId], [AliasPersonGuid] , [Guid])
-                 VALUES
-                    (@PersonId, @PersonId, @PersonGuid, '377C6F44-7E16-CFB5-4B8E-033BA20A900F')
-
-                INSERT INTO [GroupMember]
-	                ([IsSystem], [GroupId], [PersonId], [GroupRoleId], [GroupMemberStatus], [Guid])
-                VALUES
-	                (0, @FamilyId, @PersonId, 3, 1, '6D6B4CBE-F17C-D9B8-49CC-B8D3AE782357')");
-	
+            INSERT INTO [GroupMember]
+	            ([IsSystem], [GroupId], [PersonId], [GroupRoleId], [GroupMemberStatus], [Guid])
+            VALUES
+	            (0, @FamilyId, @PersonId, 3, 1, '6D6B4CBE-F17C-D9B8-49CC-B8D3AE782357')
+        END
+    END
+");
 	
             // system emails for kiosk
-            Sql(@"
-                  DECLARE @CategoryId int = (SELECT TOP 1 [Id] FROM [Category] WHERE [Guid] = '673D13E6-0161-4AC2-B265-DF3783DE3B41')
-                  INSERT INTO [SystemEmail]
-	                ([IsSystem], [Title], [Subject], [Body], [Guid], [CategoryId])
-                  VALUES
-	                (0, 'Kiosk Giving Receipt', 'Giving Receipt from {{ GlobalAttribute.OrganizationName}}', '{{ GlobalAttribute.EmailHeader }}
+        Sql(@"
+        DECLARE @CategoryId int = (SELECT TOP 1 [Id] FROM [Category] WHERE [Guid] = '673D13E6-0161-4AC2-B265-DF3783DE3B41')
+        IF @CategoryId IS NOT NULL
+        BEGIN     
+            INSERT INTO [SystemEmail]
+	        ([IsSystem], [Title], [Subject], [Body], [Guid], [CategoryId])
+            VALUES
+	            (0, 'Kiosk Giving Receipt', 'Giving Receipt from {{ GlobalAttribute.OrganizationName}}', '{{ GlobalAttribute.EmailHeader }}
 
+            <p>
+                Thank you {{ FirstNames }} for your generous contribution. Below is the confirmation number and 
+                details for your gift.
+            </p>
+
+            <p><strong>Confirmation Number:</strong> {{ TransactionCode }}</p>
+
+            <table>
+            {% for amount in Amounts %}
+	            <tr>
+		            <td>{{ amount.AccountName }}</td>
+		            <td>{{ ''Global'' | Attribute:''CurrencySymbol'' }} {{ amount.Amount }}</td>
+	            </tr>
+            {% endfor %}
+                <tr>
+                    <td><strong>Total:</strong></td>
+                    <td><strong>{{ ''Global'' | Attribute:''CurrencySymbol'' }} {{ TotalAmount }}</strong></td>
+                </tr>
+            </table>
+
+
+            {{ GlobalAttribute.EmailFooter }}', '7DBF229E-7DEE-A684-4929-6C37312A0039', @CategoryId )
+
+                INSERT INTO [SystemEmail]
+	            ([IsSystem], [Title], [To], [Subject], [Body], [Guid], [CategoryId])
+                VALUES
+	            (0, 'Kiosk Info Update', 'alisha@rocksolidchurchdemo.com', 'Kiosk Info Update', '{{ GlobalAttribute.EmailHeader }}
+
+            <p>
+                Below is an update from the self-service kiosk.
+            </p>
+
+            {% if PersonId != '' %}
                 <p>
-                    Thank you {{ FirstNames }} for your generous contribution. Below is the confirmation number and 
-                    details for your gift.
+                    <a href=""{{ GlobalAttribute.InternalApplicationRoot }}/Person/{{ PersonId }}"">{{ FirstName }} {{ LastName }}''s Record</a>
                 </p>
+            {% endif %}
 
-                <p><strong>Confirmation Number:</strong> {{ TransactionCode }}</p>
+            <strong>First Name:</strong> {{ FirstName }} <br/>
+            <strong>Last Name:</strong> {{ LastName }} <br/>
 
-                <table>
-                {% for amount in Amounts %}
-	                <tr>
-		                <td>{{ amount.AccountName }}</td>
-		                <td>{{ ''Global'' | Attribute:''CurrencySymbol'' }} {{ amount.Amount }}</td>
-	                </tr>
-                {% endfor %}
-                    <tr>
-                        <td><strong>Total:</strong></td>
-                        <td><strong>{{ ''Global'' | Attribute:''CurrencySymbol'' }} {{ TotalAmount }}</strong></td>
-                    </tr>
-                </table>
+            {% if BirthDate != '''' %}
+                <p><strong>Birth Date:</strong> {{ BirthDate }} </p>
+            {% endif %}
 
+            {% if Email != '''' %}
+                <p><strong>Email:</strong> {{ Email }} </p>
+            {% endif %}
 
-                {{ GlobalAttribute.EmailFooter }}', '7DBF229E-7DEE-A684-4929-6C37312A0039', @CategoryId )
-
-                  INSERT INTO [SystemEmail]
-	                ([IsSystem], [Title], [To], [Subject], [Body], [Guid], [CategoryId])
-                  VALUES
-	                (0, 'Kiosk Info Update', 'alisha@rocksolidchurchdemo.com', 'Kiosk Info Update', '{{ GlobalAttribute.EmailHeader }}
-
+            {% if HomePhone != '''' or MobilePhone != '''' %}
                 <p>
-                    Below is an update from the self-service kiosk.
+                {% if HomePhone != '''' %}
+                    <strong>Home Phone:</strong> {{ HomePhone }} <br/>
+                {% endif %}
+                {% if MobilePhone != '''' %}
+                    <strong>Mobile Phone:</strong> {{ MobilePhone }} <br/>
+                {% endif %}
                 </p>
+            {% endif %}
 
-                {% if PersonId != '' %}
-                    <p>
-                        <a href=""{{ GlobalAttribute.InternalApplicationRoot }}/Person/{{ PersonId }}"">{{ FirstName }} {{ LastName }}''s Record</a>
-                    </p>
-                {% endif %}
+            {% if StreetAddress != '''' %}
+                <p>
+                    <strong>Address:</strong><br/> 
+                    {{ StreetAddress }} <br />
+                    {{ City }}, {{ State }} {{ PostalCode }} {{ County }}
+                </p>
+            {% endif %}
 
-                <strong>First Name:</strong> {{ FirstName }} <br/>
-                <strong>Last Name:</strong> {{ LastName }} <br/>
+            {% if OtherUpdates != '''' %}
+                <p>
+                    <strong>Other Updates:</strong> {{ OtherUpdates }}
+                </p>
+            {% endif %}
 
-                {% if BirthDate != '''' %}
-                    <p><strong>Birth Date:</strong> {{ BirthDate }} </p>
-                {% endif %}
+            <p>&nbsp;</p>
 
-                {% if Email != '''' %}
-                    <p><strong>Email:</strong> {{ Email }} </p>
-                {% endif %}
-
-                {% if HomePhone != '''' or MobilePhone != '''' %}
-                    <p>
-                    {% if HomePhone != '''' %}
-                        <strong>Home Phone:</strong> {{ HomePhone }} <br/>
-                    {% endif %}
-                    {% if MobilePhone != '''' %}
-                        <strong>Mobile Phone:</strong> {{ MobilePhone }} <br/>
-                    {% endif %}
-                    </p>
-                {% endif %}
-
-                {% if StreetAddress != '''' %}
-                    <p>
-                        <strong>Address:</strong><br/> 
-                        {{ StreetAddress }} <br />
-                        {{ City }}, {{ State }} {{ PostalCode }} {{ County }}
-                    </p>
-                {% endif %}
-
-                {% if OtherUpdates != '''' %}
-                    <p>
-                        <strong>Other Updates:</strong> {{ OtherUpdates }}
-                    </p>
-                {% endif %}
-
-                <p>&nbsp;</p>
-
-                {{ GlobalAttribute.EmailFooter }}', 'BC490DD4-ABBB-7DBA-4A9E-74F07F4B5881', @CategoryId )");
+            {{ GlobalAttribute.EmailFooter }}', 'BC490DD4-ABBB-7DBA-4A9E-74F07F4B5881', @CategoryId )
+        END
+");
 
             //
             // pages and block settings
