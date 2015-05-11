@@ -103,8 +103,28 @@ namespace Rock.Security.ExternalAuthentication
         ///</summary>
         public class accesstokenresponse
         {
+            /// <summary>
+            /// Gets or sets the access_token.
+            /// </summary>
+            /// <value>
+            /// The access_token.
+            /// </value>
             public string access_token { get; set; }
+
+            /// <summary>
+            /// Gets or sets the expires_in.
+            /// </summary>
+            /// <value>
+            /// The expires_in.
+            /// </value>
             public int expires_in { get; set; }
+
+            /// <summary>
+            /// Gets or sets the token_type.
+            /// </summary>
+            /// <value>
+            /// The token_type.
+            /// </value>
             public string token_type { get; set; }
         }
 
@@ -238,16 +258,92 @@ namespace Rock.Security.ExternalAuthentication
         /// </summary>
         public class GoogleUser
         {
+            /// <summary>
+            /// Gets or sets the family_name.
+            /// </summary>
+            /// <value>
+            /// The family_name.
+            /// </value>
             public string family_name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
             public string name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the picture.
+            /// </summary>
+            /// <value>
+            /// The picture.
+            /// </value>
             public string picture { get; set; }
+
+            /// <summary>
+            /// Gets or sets the locale.
+            /// </summary>
+            /// <value>
+            /// The locale.
+            /// </value>
             public string locale { get; set; }
+
+            /// <summary>
+            /// Gets or sets the gender.
+            /// </summary>
+            /// <value>
+            /// The gender.
+            /// </value>
             public string gender { get; set; }
+
+            /// <summary>
+            /// Gets or sets the email.
+            /// </summary>
+            /// <value>
+            /// The email.
+            /// </value>
             public string email { get; set; }
+
+            /// <summary>
+            /// Gets or sets the link.
+            /// </summary>
+            /// <value>
+            /// The link.
+            /// </value>
             public string link { get; set; }
+
+            /// <summary>
+            /// Gets or sets the given_name.
+            /// </summary>
+            /// <value>
+            /// The given_name.
+            /// </value>
             public string given_name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
             public string id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the hd.
+            /// </summary>
+            /// <value>
+            /// The hd.
+            /// </value>
             public string hd { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this <see cref="GoogleUser"/> is verified_email.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if verified_email; otherwise, <c>false</c>.
+            /// </value>
             public bool verified_email { get; set; }
         }
 
