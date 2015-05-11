@@ -2683,6 +2683,11 @@ tr.row-highlight td {
 .filter-item div[class*='col'] {
   margin-bottom: 6px;
 }
+.data-view-filter-field-label {
+  font-weight: 700;
+  margin-top: 8px;
+  display: block;
+}
 @media (min-width: 992px) {
   .filter-item div[class*='col'] {
     margin-bottom: 0;
@@ -4939,6 +4944,11 @@ fieldset[disabled] .btn-authenication.active {
   content: "\f09a";
   margin-right: 12px;
 }
+.btn-authenication.google:before {
+  font-family: 'FontAwesome';
+  content: "\f1a0";
+  margin-right: 12px;
+}
 .btn-minimal {
   text-decoration: none;
   color: #808080;
@@ -5394,6 +5404,10 @@ h6,
 .masthead-lower .loginstatus .dropdown,
 .masthead-lower .contextsetter .dropdown {
   text-align: left;
+}
+.masthead-lower .loginstatus .dropdown-menu,
+.masthead-lower .contextsetter .dropdown-menu {
+  font-size: 18px;
 }
 .masthead-lower .loginstatus li,
 .masthead-lower .contextsetter li {

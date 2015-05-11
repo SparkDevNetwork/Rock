@@ -316,7 +316,7 @@ hr {
   border-width: 2px;
 }
 
-// Add border to split button groups
+// Split button groups
 .btn-group > .btn-primary + .dropdown-toggle {
   border-left-color: darken(@btn-primary-bg, 5%)
 }
@@ -331,4 +331,12 @@ hr {
 }
 .btn-group > .btn-danger + .dropdown-toggle {
   border-left-color: darken(@btn-danger-bg, 5%)
+}
+.btn-group {
+  .btn + .btn,
+  .btn + .btn-group,
+  .btn-group + .btn,
+  .btn-group + .btn-group {
+    margin-left: -2px;
+  }
 }
