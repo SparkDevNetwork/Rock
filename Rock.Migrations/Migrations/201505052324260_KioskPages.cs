@@ -55,12 +55,14 @@ namespace Rock.Migrations
             // define anonymous giver	
             Sql(@"
     DECLARE @FamilyGroupTypeId int = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E')
-    IF @FamilyGroupTypeId IS NOT NULL
+    DECLARE @FirstCampusId = ( SELECT TOP 1 [Id] FROM [Campus] ORDER BY [Id] )
+    
+    IF @FamilyGroupTypeId IS NOT NULL AND @FirstCampusId IS NOT NULL
     BEGIN
         INSERT INTO [Group]
 	        ([IsSystem], [GroupTypeId], [CampusId], [Name], [IsSecurityRole], [IsActive], [Order], [Guid])
         VALUES
-	        (0, @FamilyGroupTypeId, 1, 'Anonymous Family', 0, 1, 0, 'E846F6EE-93E9-E287-428D-95D139D23B35')
+	        (0, @FamilyGroupTypeId, @FirstCampusId, 'Anonymous Family', 0, 1, 0, 'E846F6EE-93E9-E287-428D-95D139D23B35')
         DECLARE @FamilyId int = SCOPE_IDENTITY()
 
         DECLARE @RecordTypeValueId int = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = '36CF10D6-C695-413D-8E7C-4546EFEF385E')
