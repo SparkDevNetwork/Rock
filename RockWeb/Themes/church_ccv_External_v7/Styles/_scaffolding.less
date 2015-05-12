@@ -1,9 +1,12 @@
 
 
 //
-// GLOBAL STYLES
+// SCAFFOLDING
 // --------------------------------------------------
 
+
+// High Level
+// -------------------------
 
 html {
   box-sizing: border-box;
@@ -28,4 +31,27 @@ body {
 
 main {
   margin-bottom: @grid-gutter-width*2;
+}
+
+
+// Extensions
+// -------------------------
+
+.img-full {
+  width: 100%;
+  height: auto;
+}
+
+.link-plain {
+  color: inherit;
+  &:hover {
+    color: inherit;
+    text-decoration: inherit;
+  }
+}
+
+.container-sm {
+  max-width: 40em;
+  margin-left: auto;
+  margin-right: auto;
 }

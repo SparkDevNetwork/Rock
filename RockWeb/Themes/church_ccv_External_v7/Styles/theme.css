@@ -5121,6 +5121,22 @@ body {
 main {
   margin-bottom: 60px;
 }
+.img-full {
+  width: 100%;
+  height: auto;
+}
+.link-plain {
+  color: inherit;
+}
+.link-plain:hover {
+  color: inherit;
+  text-decoration: inherit;
+}
+.container-sm {
+  max-width: 40em;
+  margin-left: auto;
+  margin-right: auto;
+}
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -5148,6 +5164,35 @@ h6,
   font-size: 18px;
   margin-bottom: 1em;
 }
+.text-inverse {
+  color: #fff;
+}
+.text-faded {
+  color: rgba(51, 51, 51, 0.5);
+}
+.text-faded.text-inverse {
+  color: rgba(255, 255, 255, 0.5);
+}
+.list-2col-wrapper {
+  -moz-column-count: 2;
+  -webkit-column-count: 2;
+  column-count: 2;
+}
+.list-2col-wrapper > ol > li,
+.list-2col-wrapper > ul > li {
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.list-2col-wrapper > ol > li:only-child,
+.list-2col-wrapper > ul > li:only-child {
+  -webkit-column-span: all;
+  column-span: all;
+  margin-left: 20px;
+}
+.list-flush {
+  padding-left: 20px;
+}
 @media print {
   @page {
     margin: .5in;
@@ -5166,7 +5211,7 @@ h6,
   margin-bottom: 30px;
   font-family: "DINWebCondensed", sans-serif;
   font-size: 18px;
-  line-height: 23px;
+  line-height: 25px;
 }
 .masthead-upper {
   background-color: #1d1d1d;
@@ -5450,7 +5495,7 @@ h6,
   letter-spacing: .75px;
   font-family: "DINWebCondensed", sans-serif;
   font-size: 18px;
-  line-height: 23px;
+  line-height: 25px;
   margin-top: 44.1px;
 }
 @media (min-width: 768px) {
@@ -5529,7 +5574,7 @@ h6,
 .slide-control {
   font-family: "DINWebCondensed", sans-serif;
   font-size: 18px;
-  line-height: 23px;
+  line-height: 25px;
   color: #fff;
   background: #777777;
   overflow: auto;
@@ -5661,6 +5706,11 @@ html[xmlns] .slides {
     display: block!important;
   }
 }
+@media (min-width: 768px) {
+  .display-b-after-xs {
+    display: block!important;
+  }
+}
 .no-caps {
   text-transform: inherit;
 }
@@ -5721,6 +5771,13 @@ html[xmlns] .slides {
   padding-bottom: 30px;
   margin-bottom: 30px;
 }
+.bigblock-graylighter {
+  background-color: #eeeeee;
+}
+.bigblock-graydark {
+  background-color: #333333;
+  color: #fff;
+}
 .bigblock-graydarker {
   background-color: #222222;
   color: #fff;
@@ -5728,12 +5785,12 @@ html[xmlns] .slides {
 .bigblock-graydarker .page-header {
   border-color: #333333;
 }
-.bigblock-graylighter {
-  background-color: #eeeeee;
-}
 .bigblock-red {
   background-color: #7a1315;
   color: #fff;
+}
+.bigblock-stacking {
+  margin-bottom: 0;
 }
 .bigblock-flexbg {
   background-size: cover;

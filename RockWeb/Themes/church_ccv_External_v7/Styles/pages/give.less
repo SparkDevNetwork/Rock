@@ -1,0 +1,64 @@
+
+
+//
+// GIVE PAGE
+// --------------------------------------------------
+
+
+// Imports
+// -------------------------
+@import "../../../../Styles/Bootstrap/variables.less";
+@import "../../../../Styles/Bootstrap/mixins.less";
+@import "../../../../Styles/_rock-variables.less";
+
+@import "../_variables";
+@import "../_mixins";
+
+@xs: ~"(min-width: @{screen-xs-min})";
+@sm: ~"(min-width: @{screen-sm-min})";
+@md: ~"(min-width: @{screen-md-min})";
+@lg: ~"(min-width: @{screen-lg-min})";
+
+
+// Custom
+// -------------------------
+
+.give-title {
+  font-size: 3em;
+  letter-spacing: -.025em;
+  @media @sm { font-size: 4em; }
+  @media @md { font-size: 5em; }
+  @media @lg { font-size: 6em; }
+}
+
+.give-lead {
+  .din(2em, 1);
+  margin-bottom: 1em;
+  color: fade(#fff, 50%);
+
+  @media @sm {
+    font-size: 3em;
+    margin: 7% 0;
+  }
+  @media @md {
+    font-size: 4em;
+  }
+  @media @lg {
+    margin: 10% 0;
+  }
+
+  > span {
+    color: #fff;
+  }
+}
+
+.give-icons {
+  svg {
+    width: 60%;
+    max-width: 160px;
+    fill: #fff;
+  }
+  p {
+    // color: fade(#fff, 50%);
+  }
+}
