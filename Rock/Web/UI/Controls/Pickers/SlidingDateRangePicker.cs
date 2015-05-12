@@ -209,6 +209,9 @@ namespace Rock.Web.UI.Controls
             _ddlTimeUnitTypePlural.SelectedIndexChanged += ddl_SelectedIndexChanged;
 
             _drpDateRange = new DateRangePicker();
+            
+            // change the inputsClass on the DateRangePicker to "input-group" instead of "form-control-group";
+            _drpDateRange.InputsClass = "input-group";
             _drpDateRange.CssClass = "js-time-units-date-range";
             _drpDateRange.ID = "drpDateRange_" + this.ID;
 
