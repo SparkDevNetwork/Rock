@@ -307,19 +307,5 @@ namespace Rock.Model
 
             return qryAttendanceGroupedBy;
         }
-
-
-        /// <summary>
-        /// Gets the attendance grouped by a datetime that represents the Year (1st day of year), Week (Sunday as last day of week), or Month (1st day of month)
-        /// </summary>
-        /// <param name="qryAttendance">The qry attendance.</param>
-        /// <param name="groupBy">The group by.</param>
-        /// <returns></returns>
-        public static IQueryable<IGrouping<DateTime, Attendance>> GetAttendanceGroupedBy( this IQueryable<Attendance> qryAttendance, AttendanceGroupBy groupBy )
-        {
-            var qryAttendanceWithSummaryDateTime = qryAttendance.GetAttendanceWithSummaryDateTime( groupBy );
-            return qryAttendanceWithSummaryDateTime.GroupBy( a => a.SummaryDateTime, v => v.Attendance );
-        }
     }
-
 }
