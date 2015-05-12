@@ -55,7 +55,7 @@ namespace Rock.Migrations
             // define anonymous giver	
             Sql(@"
     DECLARE @FamilyGroupTypeId int = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E')
-    DECLARE @FirstCampusId = ( SELECT TOP 1 [Id] FROM [Campus] ORDER BY [Id] )
+    DECLARE @FirstCampusId int = ( SELECT TOP 1 [Id] FROM [Campus] ORDER BY [Id] )
     
     IF @FamilyGroupTypeId IS NOT NULL AND @FirstCampusId IS NOT NULL
     BEGIN
