@@ -1704,10 +1704,10 @@ namespace Rock.Model
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public static Location GetHomeLocation( this Person person )
+        public static Location GetHomeLocation( this Person person, RockContext rockContext = null )
         {
             Guid homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
-            foreach ( var family in person.GetFamilies() )
+            foreach ( var family in person.GetFamilies( rockContext ) )
             {
                 var loc = family.GroupLocations
                     .Where( l =>
@@ -1786,7 +1786,7 @@ namespace Rock.Model
             {
                 if ( minAge.HasValue )
                 {
-                    qryWithAge = qryWithAge.Where( a => !a.Age.HasValue || a.Age >= minAge  );
+                    qryWithAge = qryWithAge.Where( a => !a.Age.HasValue || a.Age >= minAge );
                 }
 
                 if ( maxAge.HasValue )
