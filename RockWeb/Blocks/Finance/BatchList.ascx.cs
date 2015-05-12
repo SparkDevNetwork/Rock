@@ -229,6 +229,27 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Handles the RowDataBound event of the gBatchList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gBatchList_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var batchRow = e.Row.DataItem as BatchRow;
+                var deleteField = gBatchList.Columns.OfType<DeleteField>().First();
+                var cell = ( e.Row.Cells[gBatchList.Columns.IndexOf( deleteField )] as DataControlFieldCell ).Controls[0];
+
+                // Hide delete button if the batch is closed.
+                if ( batchRow != null && batchRow.Status == BatchStatus.Closed && cell != null )
+                {
+                    cell.Visible = false;
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles the RowSelected event of the gBatchList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -601,5 +622,6 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
-    }
+
+}
 }

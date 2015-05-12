@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Web;
@@ -45,6 +46,8 @@ namespace Rock.Web.Cache
         #endregion
 
         #region Properties
+
+        private object _obj = new object();
 
         /// <summary>
         /// Gets or sets the internal name to use when administering this page
@@ -294,30 +297,23 @@ namespace Rock.Web.Cache
         {
             List<PageCache> pages = new List<PageCache>();
 
-            if ( pageIds != null )
-            {
-                foreach ( int id in pageIds.ToList() )
+            lock( _obj )
+            { 
+                if ( pageIds == null )
                 {
-                    var page = PageCache.Read( id, rockContext );
-                    if ( page != null )
-                    {
-                        pages.Add( page );
-                    }
+                    pageIds = new PageService( rockContext )
+                        .GetByParentPageId( this.Id )
+                        .Select( p => p.Id )
+                        .ToList();
                 }
             }
-            else
+
+            foreach ( int id in pageIds )
             {
-                PageService pageService = new PageService( rockContext );
-                var pageModels = pageService
-                    .GetByParentPageId( this.Id, "PageRoutes,PageContexts" )
-                    .ToList();
-
-                pageIds = pageModels.Select( p => p.Id ).ToList();
-
-                foreach ( Page page in pageModels )
+                var page = PageCache.Read( id, rockContext );
+                if ( page != null )
                 {
-                    page.LoadAttributes( rockContext );
-                    pages.Add( PageCache.Read( page ) );
+                    pages.Add( page );
                 }
             }
 
@@ -334,51 +330,35 @@ namespace Rock.Web.Cache
             {
                 var blocks = new List<BlockCache>();
 
-                if ( blockIds != null )
+                lock ( _obj )
                 {
-                    var ids = new List<int>( blockIds );
-                    foreach ( int id in ids.Distinct() )
+                    if ( blockIds == null )
                     {
-                        var block = BlockCache.Read( id );
-                        if ( block != null )
+                        using ( var rockContext = new RockContext() )
                         {
-                            blocks.Add( block );
+                            BlockService blockService = new BlockService( rockContext );
+
+                            // Load Layout Blocks
+                            var layoutBlockIds = blockService
+                                .GetByLayout( this.LayoutId )
+                                .Select( b => b.Id );
+
+                            // Load Page Blocks
+                            var pageBlockIds = blockService
+                                .GetByPage( this.Id )
+                                .Select( b => b.Id );
+
+                            blockIds = layoutBlockIds.Concat( pageBlockIds ).Distinct().ToList();
                         }
                     }
                 }
-                else
+
+                foreach ( int id in blockIds.Distinct() )
                 {
-                    using ( var rockContext = new RockContext() )
+                    var block = BlockCache.Read( id );
+                    if ( block != null )
                     {
-                        BlockService blockService = new BlockService( rockContext );
-
-                        // Load Layout Blocks
-                        var layoutBlockModels = blockService
-                            .GetByLayout( this.LayoutId )
-                            .ToList();
-
-                        blockIds = layoutBlockModels.Select( b => b.Id ).ToList();
-
-                        foreach ( var block in layoutBlockModels )
-                        {
-                            block.LoadAttributes( rockContext );
-                            blocks.Add( BlockCache.Read( block ) );
-                        }
-
-                        // Load Page Blocks
-                        var pageBlockModels = blockService
-                            .GetByPage( this.Id )
-                            .ToList();
-
-                        blockIds.AddRange( pageBlockModels
-                            .Where( b => !blockIds.Contains( b.Id ))
-                            .Select( b => b.Id ) );
-
-                        foreach ( var block in pageBlockModels )
-                        {
-                            block.LoadAttributes( rockContext );
-                            blocks.Add( BlockCache.Read( block ) );
-                        }
+                        blocks.Add( block );
                     }
                 }
 
@@ -811,40 +791,28 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static PageCache Read( int id, RockContext rockContext = null )
         {
-            string cacheKey = PageCache.CacheKey( id );
-
-            ObjectCache cache = RockMemoryCache.Default;
-            PageCache page = cache[cacheKey] as PageCache;
-
-            if ( page == null )
-            {
-                if ( rockContext != null )
-                {
-                    page = LoadById( id, rockContext );
-                }
-                else
-                {
-                    using ( var myRockContext = new RockContext() )
-                    {
-                        page = LoadById( id, myRockContext );
-                    }
-                }
-
-                if ( page != null )
-                {
-                    var cachePolicy = new CacheItemPolicy();
-                    cache.Set( cacheKey, page, cachePolicy );
-                    cache.Set( page.Guid.ToString(), page.Id, cachePolicy );
-                }
-            }
-
-            return page;
+            return GetOrAddExisting( PageCache.CacheKey( id ),
+                () => LoadById( id, rockContext ) );
         }
 
-        private static PageCache LoadById( int id, RockContext rockContext = null )
+        private static PageCache LoadById( int id, RockContext rockContext )
+        {
+            if ( rockContext != null )
+            {
+                return LoadById2( id, rockContext );
+            }
+
+            using ( var rockContext2 = new RockContext() )
+            {
+                return LoadById2( id, rockContext2 );
+            }
+        }
+
+        private static PageCache LoadById2( int id, RockContext rockContext = null )
         {
             var pageService = new PageService( rockContext );
-            var pageModel = pageService.Queryable( "PageContexts,PageRoutes" ).FirstOrDefault( a => a.Id == id );
+            var pageModel = pageService.Queryable( "PageContexts,PageRoutes" )
+                .FirstOrDefault( a => a.Id == id );
             if ( pageModel != null )
             {
                 pageModel.LoadAttributes( rockContext );
@@ -862,51 +830,33 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static PageCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = RockMemoryCache.Default;
-            object cacheObj = cache[guid.ToString()];
+            int id = GetOrAddExisting( guid.ToString(),
+                () => LoadByGuid( guid, rockContext ) );
 
-            PageCache page = null;
-            if ( cacheObj != null )
-            {
-                page = Read( (int)cacheObj, rockContext );
-            }
-
-            if ( page == null )
-            {
-                if ( rockContext != null )
-                {
-                    page = LoadByGuid( guid, rockContext );
-                }
-                else
-                {
-                    using ( var myRockContext = new RockContext() )
-                    {
-                        page = LoadByGuid( guid, myRockContext );
-                    }
-                }
-
-                if ( page != null )
-                {
-                    var cachePolicy = new CacheItemPolicy();
-                    cache.Set( PageCache.CacheKey( page.Id ), page, cachePolicy );
-                    cache.Set( page.Guid.ToString(), page.Id, cachePolicy );
-                }
-            }
-
-            return page;
+            return Read( id, rockContext );
         }
 
-        private static PageCache LoadByGuid( Guid guid, RockContext rockContext )
+        private static int LoadByGuid( Guid guid, RockContext rockContext )
         {
-            var pageService = new PageService( rockContext );
-            var pageModel = pageService.Get( guid );
-            if ( pageModel != null )
+            if ( rockContext != null )
             {
-                pageModel.LoadAttributes( rockContext );
-                return new PageCache( pageModel );
+                return LoadByGuid2( guid, rockContext );
             }
 
-            return null;
+            using ( var rockContext2 = new RockContext() )
+            {
+                return LoadByGuid2( guid, rockContext2 );
+            }
+        }
+
+        private static int LoadByGuid2( Guid guid, RockContext rockContext )
+        {
+            var pageService = new PageService( rockContext );
+            return pageService
+                .Queryable().AsNoTracking()
+                .Where( c => c.Guid.Equals( guid ) )
+                .Select( c => c.Id )
+                .FirstOrDefault();
         }
 
         /// <summary>
@@ -916,23 +866,17 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static PageCache Read( Page pageModel )
         {
-            string cacheKey = PageCache.CacheKey( pageModel.Id );
-            ObjectCache cache = RockMemoryCache.Default;
-            PageCache page = cache[cacheKey] as PageCache;
+            return GetOrAddExisting( PageCache.CacheKey( pageModel.Id ),
+                () => LoadByModel( pageModel ) );
+        }
 
-            if ( page != null )
+        private static PageCache LoadByModel( Page pageModel )
+        {
+            if ( pageModel != null )
             {
-                page.CopyFromModel( pageModel );
+                return new PageCache( pageModel );
             }
-            else
-            {
-                page = new PageCache( pageModel );
-                var cachePolicy = new CacheItemPolicy();
-                cache.Set( cacheKey, page, cachePolicy );
-                cache.Set( page.Guid.ToString(), page.Id, cachePolicy );
-            }
-
-            return page;
+            return null;
         }
 
         /// <summary>
@@ -941,8 +885,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            ObjectCache cache = RockMemoryCache.Default;
-            cache.Remove( PageCache.CacheKey( id ) );
+            FlushCache( PageCache.CacheKey( id ) );
         }
 
         /// <summary>
@@ -950,7 +893,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void FlushLayout( int layoutId )
         {
-            ObjectCache cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             foreach ( var item in cache )
             {
                 if ( item.Key.StartsWith( "Rock:Page:" ) )
@@ -969,7 +912,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void FlushLayoutBlocks( int layoutId )
         {
-            ObjectCache cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             foreach ( var item in cache )
             {
                 if ( item.Key.StartsWith( "Rock:Page:" ) )
