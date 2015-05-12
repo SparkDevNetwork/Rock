@@ -362,7 +362,7 @@ namespace Rock.Web.UI
         /// <param name="cacheItemPolicy">Optional <see cref="System.Runtime.Caching.CacheItemPolicy"/>, defaults to null</param>
         protected virtual void AddCacheItem( string key, object value, CacheItemPolicy cacheItemPolicy )
         {
-            ObjectCache cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             cache.Set( ItemCacheKey( key ), value, cacheItemPolicy );
         }
 
@@ -373,7 +373,7 @@ namespace Rock.Web.UI
         /// <returns>The cached <see cref="System.Object"/> if a key match is not found, a null object will be returned.</returns>
         protected virtual object GetCacheItem( string key = "" )
         {
-            ObjectCache cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             return cache[ItemCacheKey( key )];
         }
 
@@ -384,7 +384,7 @@ namespace Rock.Web.UI
         /// defaults to an empty string.</param>
         protected virtual void FlushCacheItem( string key = "" )
         {
-            ObjectCache cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             cache.Remove( ItemCacheKey( key ) );
         }
 
