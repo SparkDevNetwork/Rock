@@ -805,14 +805,35 @@ function(item) {
             try
             {
                 nbAttendeesError.Visible = false;
-                rockContext.Database.CommandTimeout = 180;
                 gAttendeesAttendance.DataSource = qryFinalResult.AsNoTracking().ToList();
                 gAttendeesAttendance.DataBind();
             }
-            catch ( Exception ex )
+            catch ( Exception exception )
             {
-                nbAttendeesError.Text = "An error occurred getting attendee data";
-                nbAttendeesError.Details = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                string errorMessage = null;
+                while ( exception != null )
+                {
+                    errorMessage = exception.Message;
+                    if ( exception is System.Data.SqlClient.SqlException )
+                    {
+                        // if there was a SQL Server Timeout, have the warning be a friendly message about that.
+                        if ( ( exception as System.Data.SqlClient.SqlException ).Number == -2 )
+                        {
+                            errorMessage = "The attendee report did not complete in a timely manner. Try again using a smaller date range and fewer campuses and groups.";
+                            break;
+                        }
+                        else
+                        {
+                            exception = exception.InnerException;
+                        }
+                    }
+                    else
+                    {
+                        exception = exception.InnerException;
+                    }
+                }
+
+                nbAttendeesError.Text = errorMessage;
                 nbAttendeesError.Visible = true;
             }
         }
