@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System;
-using System.Runtime.Caching;
+using System.Data.Entity;
+using System.Linq;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -164,36 +166,24 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static LayoutCache Read( int id, RockContext rockContext = null )
         {
-            string cacheKey = LayoutCache.CacheKey( id );
-            ObjectCache cache = RockMemoryCache.Default;
-            LayoutCache layout = cache[cacheKey] as LayoutCache;
-
-            if ( layout == null )
-            {
-                if ( rockContext != null )
-                {
-                    layout = LoadById( id, rockContext );
-                }
-                else
-                {
-                    using ( var myRockContext = new RockContext() )
-                    {
-                        layout = LoadById( id, myRockContext );
-                    }
-                }
-
-                if ( layout != null )
-                {
-                    var cachePolicy = new CacheItemPolicy();
-                    cache.Set( cacheKey, layout, cachePolicy );
-                    cache.Set( layout.Guid.ToString(), layout.Id, cachePolicy );
-                }
-            }
-
-            return layout;
+            return GetOrAddExisting( LayoutCache.CacheKey( id ),
+                () => LoadById( id, rockContext ) );
         }
 
         private static LayoutCache LoadById( int id, RockContext rockContext )
+        {
+            if ( rockContext != null )
+            {
+                return LoadById2( id, rockContext );
+            }
+
+            using ( var rockContext2 = new RockContext() )
+            {
+                return LoadById2( id, rockContext2 );
+            }
+        }
+
+        private static LayoutCache LoadById2( int id, RockContext rockContext )
         {
             var LayoutService = new LayoutService( rockContext );
             var LayoutModel = LayoutService.Get( id );
@@ -214,51 +204,33 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static LayoutCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = RockMemoryCache.Default;
-            object cacheObj = cache[guid.ToString()];
+            int id = GetOrAddExisting( guid.ToString(),
+                () => LoadByGuid( guid, rockContext ) );
 
-            LayoutCache layout = null;
-            if ( cacheObj != null )
-            {
-                layout = Read( (int)cacheObj, rockContext );
-            }
-
-            if ( layout == null )
-            {
-                if ( rockContext != null )
-                {
-                    layout = LoadByGuid( guid, rockContext );
-                }
-                else
-                {
-                    using ( var myRockContext = new RockContext() )
-                    {
-                        layout = LoadByGuid( guid, myRockContext );
-                    }
-                }
-
-                if ( layout != null )
-                {
-                    var cachePolicy = new CacheItemPolicy();
-                    cache.Set( LayoutCache.CacheKey( layout.Id ), layout, cachePolicy );
-                    cache.Set( layout.Guid.ToString(), layout.Id, cachePolicy );
-                }
-            }
-
-            return layout;
+            return Read( id, rockContext );
         }
 
-        private static LayoutCache LoadByGuid( Guid guid, RockContext rockContext = null )
+        private static int LoadByGuid( Guid guid, RockContext rockContext )
         {
-            var LayoutService = new LayoutService( rockContext );
-            var LayoutModel = LayoutService.Get( guid );
-            if ( LayoutModel != null )
+            if ( rockContext != null )
             {
-                LayoutModel.LoadAttributes( rockContext );
-                return new LayoutCache( LayoutModel );
+                return LoadByGuid2( guid, rockContext );
             }
 
-            return null;
+            using ( var rockContext2 = new RockContext() )
+            {
+                return LoadByGuid2( guid, rockContext2 );
+            }
+        }
+
+        private static int LoadByGuid2( Guid guid, RockContext rockContext = null )
+        {
+            var LayoutService = new LayoutService( rockContext );
+            return LayoutService
+                .Queryable().AsNoTracking()
+                .Where( c => c.Guid.Equals( guid ) )
+                .Select( c => c.Id )
+                .FirstOrDefault();
         }
 
         /// <summary>
@@ -268,24 +240,17 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static LayoutCache Read( Layout LayoutModel )
         {
-            string cacheKey = LayoutCache.CacheKey( LayoutModel.Id );
+            return GetOrAddExisting( LayoutCache.CacheKey( LayoutModel.Id ),
+                () => LoadByModel( LayoutModel ) );
+        }
 
-            ObjectCache cache = RockMemoryCache.Default;
-            LayoutCache Layout = cache[cacheKey] as LayoutCache;
-
-            if ( Layout != null )
+        private static LayoutCache LoadByModel( Layout LayoutModel )
+        {
+            if ( LayoutModel != null )
             {
-                Layout.CopyFromModel( LayoutModel );
+                return new LayoutCache( LayoutModel );
             }
-            else
-            {
-                Layout = new LayoutCache( LayoutModel );
-                var cachePolicy = new CacheItemPolicy();
-                cache.Set( cacheKey, Layout, cachePolicy );
-                cache.Set( Layout.Guid.ToString(), Layout.Id, cachePolicy );
-            }
-
-            return Layout;
+            return null;
         }
 
         /// <summary>
@@ -294,8 +259,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            ObjectCache cache = RockMemoryCache.Default;
-            cache.Remove( LayoutCache.CacheKey( id ) );
+            FlushCache( LayoutCache.CacheKey( id ) );
         }
 
         #endregion

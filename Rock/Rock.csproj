@@ -339,6 +339,7 @@
     <Compile Include="Utility\RockJsonTextWriter.cs" />
     <Compile Include="Utility\RockSemanticVersion.cs" />
     <Compile Include="Utility\SimpleModeJsonConverter.cs" />
+    <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
     <Compile Include="Web\UI\Controls\Grid\CurrencyField.cs" />
     <Compile Include="Web\UI\Controls\Grid\CallbackField.cs" />
@@ -695,7 +696,7 @@
     <Compile Include="Model\Category.cs" />
     <Compile Include="Services\NuGet\PackageService.cs" />
     <Compile Include="SystemGuid\BinaryFileType.cs" />
-    <Compile Include="Web\Cache\CachedModel.cs" />
+    <Compile Include="Web\Cache\CachedEntity.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxAdapter.cs" />
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
