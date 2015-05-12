@@ -1757,6 +1757,39 @@ namespace Rock
             return dateTime.ToString( mdp );
         }
 
+        /// <summary>
+        /// Returns the date of the start of the week for the specified date/time
+        /// For example, if Monday is considered the start of the week: "2015-05-13" would return "2015-05-11"
+        /// from http://stackoverflow.com/a/38064/1755417
+        /// </summary>
+        /// <param name="dt">The dt.</param>
+        /// <param name="startOfWeek">The start of week.</param>
+        /// <returns></returns>
+        public static DateTime StartOfWeek( this DateTime dt, DayOfWeek startOfWeek )
+        {
+            int diff = dt.DayOfWeek - startOfWeek;
+            if ( diff < 0 )
+            {
+                diff += 7;
+            }
+
+            return dt.AddDays( -1 * diff ).Date;
+        }
+
+        /// <summary>
+        /// Returns the date of the last day of the week for the specified date/time
+        /// For example, if Monday is considered the start of the week: "2015-05-13" would return "2015-05-17"
+        /// from http://stackoverflow.com/a/38064/1755417
+        /// </summary>
+        /// <param name="dt">The dt.</param>
+        /// <param name="startOfWeek">The start of week.</param>
+        /// <returns></returns>
+        public static DateTime EndOfWeek( this DateTime dt, DayOfWeek startOfWeek )
+        {
+            return dt.StartOfWeek( startOfWeek ).AddDays( 6 );
+        }
+
+
         #endregion DateTime Extensions
 
         #region TimeSpan Extensions

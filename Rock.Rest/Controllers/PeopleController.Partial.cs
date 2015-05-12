@@ -317,7 +317,18 @@ namespace Rock.Rest.Controllers
                     Person.GetPhotoUrl( person.PhotoId, person.Age, person.Gender, recordTypeValueGuid ) );
 
                 string personInfoHtml = string.Empty;
-                Guid homeLocationGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
+                Guid matchLocationGuid;
+                bool isBusiness;
+                if ( recordTypeValueGuid.HasValue && recordTypeValueGuid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
+                {
+                    isBusiness = true;
+                    matchLocationGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid();
+                }
+                else
+                {
+                    isBusiness = false;
+                    matchLocationGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
+                }
 
                 var familyGroupMember = groupMemberService.Queryable()
                     .Where( a => a.PersonId == person.Id )
@@ -325,14 +336,14 @@ namespace Rock.Rest.Controllers
                     .Select( s => new
                     {
                         s.GroupRoleId,
-                        GroupLocation = s.Group.GroupLocations.Where( a => a.GroupLocationTypeValue.Guid == homeLocationGuid ).Select( a => a.Location ).FirstOrDefault()
+                        GroupLocation = s.Group.GroupLocations.Where( a => a.GroupLocationTypeValue.Guid == matchLocationGuid ).Select( a => a.Location ).FirstOrDefault()
                     } ).FirstOrDefault();
 
                 int? personAge = person.Age;
 
                 if ( familyGroupMember != null )
                 {
-                    if ( recordTypeValueGuid.HasValue && recordTypeValueGuid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
+                    if ( isBusiness )
                     {
                         personInfoHtml += "Business";
                     }

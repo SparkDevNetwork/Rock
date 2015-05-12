@@ -96,14 +96,14 @@ namespace RockWeb.Blocks.Cms
         #region Internal Methods
         private void ClearCache()
         {
-            ObjectCache cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             SyndicationFeedHelper.ClearCachedFeed( GetAttributeValue( "RSSFeedUrl" ) );
             cache.Remove( TemplateCacheKey );
         }
 
         private Template GetTemplate()
         {
-            ObjectCache cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             Template template = null;
 
             if ( cache[TemplateCacheKey] != null )

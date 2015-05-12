@@ -15,11 +15,13 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Web;
-using Rock.Constants;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -34,11 +36,6 @@ namespace Rock.Web.Cache
     public class GlobalAttributesCache
     {
         #region Contants
-
-        /// <summary>
-        /// The locking object
-        /// </summary>
-        private static readonly object _obj = new object();
 
         /// <summary>
         /// This setting is the guid for the organization's location record.
@@ -70,13 +67,51 @@ namespace Rock.Web.Cache
 
         #region Properties
 
+        private object _obj = new object();
+
         /// <summary>
         /// Gets or sets the attributes.  Used to iterate all values when merging possible merge fields
         /// </summary>
         /// <value>
         /// The attributes.
         /// </value>
-        public List<AttributeCache> Attributes { get; set; }
+        public List<AttributeCache> Attributes 
+        {
+            get
+            {
+                var attributes = new List<AttributeCache>();
+
+                lock ( _obj )
+                {
+                    if ( attributeIds == null )
+                    {
+                        using ( var rockContext = new RockContext() )
+                        {
+                            attributeIds = new Model.AttributeService( rockContext )
+                                .Queryable().AsNoTracking()
+                                .Where( t => 
+                                    !t.EntityTypeId.HasValue && 
+                                    ( t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == string.Empty ) &&
+                                    ( t.EntityTypeQualifierValue == null || t.EntityTypeQualifierValue == string.Empty ) )
+                                .Select( t => t.Id )
+                                .ToList();
+                        }
+                    }
+                }
+
+                foreach ( int id in attributeIds )
+                {
+                    var attribute = AttributeCache.Read( id );
+                    if ( attribute != null )
+                    {
+                        attributes.Add( attribute );
+                    }
+                }
+
+                return attributes;
+            }
+        }
+        private List<int> attributeIds = null;
 
         /// <summary>
         /// Gets or sets the attribute values.
@@ -84,7 +119,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute values.
         /// </value>
-        public Dictionary<string, string> AttributeValues { get; set; }
+        public ConcurrentDictionary<string, string> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets or sets the attribute values formatted.
@@ -92,7 +127,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute values formatted.
         /// </value>
-        public Dictionary<string, string> AttributeValuesFormatted { get; set; }
+        public ConcurrentDictionary<string, string> AttributeValuesFormatted { get; set; }
 
         #endregion
 
@@ -106,37 +141,36 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public string GetValue( string key, RockContext rockContext = null )
         {
-            if ( AttributeValues.Keys.Contains( key ) )
+            string value = string.Empty;
+            if ( AttributeValues.TryGetValue( key, out value ) )
             {
-                return AttributeValues[key];
+                return value;
             }
-            else
+
+            var attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
+            if ( attributeCache != null )
             {
-                var attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
-                if ( attributeCache != null )
+                if ( rockContext != null )
                 {
-                    if ( rockContext != null )
+                    return GetValue( key, attributeCache, rockContext );
+                }
+                else
+                {
+                    using ( var myRockContext = new RockContext() )
                     {
-                        return GetValue( key, attributeCache, rockContext );
-                    }
-                    else
-                    {
-                        using ( var myRockContext = new RockContext() )
-                        {
-                            return GetValue( key, attributeCache, myRockContext );
-                        }
+                        return GetValue( key, attributeCache, myRockContext );
                     }
                 }
-
-                return string.Empty;
             }
-        }
+
+            return string.Empty;
+         }
 
         private string GetValue( string key, AttributeCache attributeCache, RockContext rockContext )
         {
             var attributeValue = new AttributeValueService( rockContext ).GetByAttributeIdAndEntityId( attributeCache.Id, null );
             string value = ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attributeCache.DefaultValue;
-            AttributeValues.Add( key, value );
+            AttributeValues.AddOrUpdate( key, value, ( k, v ) => value );
             return value;
         }
 
@@ -148,26 +182,25 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public string GetValueFormatted( string key, RockContext rockContext = null )
         {
-            if ( AttributeValuesFormatted.Keys.Contains( key ) )
+            string formattedValue = string.Empty;
+            if ( AttributeValuesFormatted.TryGetValue( key, out formattedValue ) )
             {
-                return AttributeValuesFormatted[key];
+                return formattedValue;
             }
-            else
+
+            string value = GetValue( key, rockContext );
+            if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                string value = GetValue( key, rockContext );
-                if ( !string.IsNullOrWhiteSpace( value ) )
+                var attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
+                if ( attributeCache != null )
                 {
-                    var attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
-                    if ( attributeCache != null )
-                    {
-                        value = attributeCache.FieldType.Field.FormatValue( null, value, attributeCache.QualifierValues, false );
-                    }
+                    value = attributeCache.FieldType.Field.FormatValue( null, value, attributeCache.QualifierValues, false );
                 }
-
-                AttributeValuesFormatted.Add( key, value );
-
-                return value;
             }
+
+            AttributeValuesFormatted.AddOrUpdate( key, value, (k, v) => value );
+
+            return value;
         }
 
         /// <summary>
@@ -193,6 +226,8 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         public void SetValue( string key, string value, bool saveValue, RockContext rockContext )
         {
+            AttributeCache attributeCache = null;
+
             if ( saveValue )
             {
                 // Save new value
@@ -214,9 +249,6 @@ namespace Rock.Web.Cache
                         attribute.Name = key.SplitCase();
                         attributeService.Add( attribute );
                         rockContext.SaveChanges();
-
-                        attribute = attributeService.Get( attribute.Id );
-                        Attributes.Add( AttributeCache.Read( attribute ) );
                     }
 
                     attributeValue = new AttributeValue();
@@ -229,24 +261,53 @@ namespace Rock.Web.Cache
                 rockContext.SaveChanges();
             }
 
-            AttributeValues.AddOrReplace( key, value );
+            lock(_obj)
+            {
+                attributeIds = null;
+            }
 
-            var attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
+            AttributeValues.AddOrUpdate( key, value, ( k, v ) => value );
+
+            attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
             if ( attributeCache != null )
             {
                 value = attributeCache.FieldType.Field.FormatValue( null, value, attributeCache.QualifierValues, false );
             }
+            AttributeValuesFormatted.AddOrUpdate( key, value, (k, v) => value);
 
-            AttributeValuesFormatted.AddOrReplace( key, value );
         }
 
         #endregion
 
         #region Static Methods
 
+        private static RockMemoryCache _cache = RockMemoryCache.Default;
+
         private static string CacheKey()
         {
             return "Rock:GlobalAttributes";
+        }
+
+        /// <summary>
+        /// Gets the existing or a new item from cache
+        /// </summary>
+        /// <typeparam name="TT">The type of the t.</typeparam>
+        /// <param name="key">The key.</param>
+        /// <param name="valueFactory">The value factory.</param>
+        /// <returns></returns>
+        public static GlobalAttributesCache GetOrAddExisting( string key, Func<GlobalAttributesCache> valueFactory )
+        {
+            var newValue = new Lazy<GlobalAttributesCache>( valueFactory );
+            var oldValue = _cache.AddOrGetExisting( key, newValue, new CacheItemPolicy() ) as Lazy<GlobalAttributesCache>;
+            try
+            {
+                return ( oldValue ?? newValue ).Value;
+            }
+            catch
+            {
+                _cache.Remove( key );
+                throw;
+            }
         }
 
         /// <summary>
@@ -269,51 +330,29 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static GlobalAttributesCache Read( RockContext rockContext )
         {
-            string cacheKey = GlobalAttributesCache.CacheKey();
+            return GetOrAddExisting( GlobalAttributesCache.CacheKey(),
+                () => Load( rockContext ) );
+        }
 
-            lock ( _obj )
+        private static GlobalAttributesCache Load( RockContext rockContext )
+        {
+            if ( rockContext != null )
             {
-                ObjectCache cache = RockMemoryCache.Default;
-                GlobalAttributesCache globalAttributes = cache[cacheKey] as GlobalAttributesCache;
-
-                if ( globalAttributes != null )
-                {
-                    return globalAttributes;
-                }
-                else
-                {
-                    globalAttributes = new GlobalAttributesCache();
-                    globalAttributes.Attributes = new List<AttributeCache>();
-                    globalAttributes.AttributeValues = new Dictionary<string, string>();
-                    globalAttributes.AttributeValuesFormatted = new Dictionary<string, string>();
-
-                    rockContext = rockContext ?? new RockContext();
-                    var attributeService = new Rock.Model.AttributeService( rockContext );
-                    var attributeValueService = new Rock.Model.AttributeValueService( rockContext );
-
-                    var attributes = attributeService.GetGlobalAttributes();
-                    var attributeValues = attributeValueService.Queryable()
-                        .Where( v =>
-                            ( !v.EntityId.HasValue || v.EntityId.Value == 0 ) &&
-                            attributes.Select( a => a.Id ).ToList().Contains( v.AttributeId ) )
-                        .ToList();
-
-                    foreach ( var attribute in attributes )
-                    {
-                        var attributeCache = AttributeCache.Read( attribute );
-                        globalAttributes.Attributes.Add( attributeCache );
-
-                        var attributeValue = attributeValues.FirstOrDefault( v => v.AttributeId == attribute.Id );
-                        string value = ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attributeCache.DefaultValue;
-                        globalAttributes.AttributeValues.Add( attributeCache.Key, value );
-                        globalAttributes.AttributeValuesFormatted.Add( attributeCache.Key, attributeCache.FieldType.Field.FormatValue( null, value, attributeCache.QualifierValues, false ) );
-                    }
-
-                    cache.Set( cacheKey, globalAttributes, new CacheItemPolicy() );
-
-                    return globalAttributes;
-                }
+                return Load2( rockContext );
             }
+
+            using ( var rockContext2 = new RockContext() )
+            {
+                return Load2( rockContext2 );
+            }
+        }
+
+        private static GlobalAttributesCache Load2( RockContext rockContext )
+        {
+            var globalAttributes = new GlobalAttributesCache();
+            globalAttributes.AttributeValues = new ConcurrentDictionary<string, string>();
+            globalAttributes.AttributeValuesFormatted = new ConcurrentDictionary<string, string>();
+            return globalAttributes;
         }
 
         /// <summary>
@@ -330,8 +369,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void Flush()
         {
-            ObjectCache cache = RockMemoryCache.Default;
-            cache.Remove( GlobalAttributesCache.CacheKey() );
+            _cache.Remove( GlobalAttributesCache.CacheKey() );
 
             if ( HttpContext.Current != null )
             {

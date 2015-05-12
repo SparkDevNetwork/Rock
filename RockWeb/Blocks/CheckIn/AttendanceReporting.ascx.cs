@@ -18,10 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -548,7 +548,7 @@ function(item) {
             gChartAttendance.DataBind();
         }
 
-        private double? _attendencePossibleCount = null; 
+        private double? _attendencePossibleCount = null;
 
         /// <summary>
         /// Binds the attendees grid.
@@ -556,7 +556,7 @@ function(item) {
         private void BindAttendeesGrid()
         {
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
-            if (dateRange.End == null || dateRange.End > RockDateTime.Now)
+            if ( dateRange.End == null || dateRange.End > RockDateTime.Now )
             {
                 dateRange.End = RockDateTime.Now;
             }
@@ -569,11 +569,11 @@ function(item) {
 
             qry = qry.Where( a => a.DidAttend.HasValue && a.DidAttend.Value );
             var groupType = this.GetSelectedTemplateGroupType();
-            var qryVisits = qry;
+            var qryAllVisits = qry;
             if ( groupType != null )
             {
                 var childGroupTypeIds = new GroupTypeService( rockContext ).GetChildGroupTypes( groupType.Id ).Select( a => a.Id );
-                qryVisits = qry.Where( a => childGroupTypeIds.Any( b => b == a.Group.GroupTypeId ) );
+                qryAllVisits = qry.Where( a => childGroupTypeIds.Any( b => b == a.Group.GroupTypeId ) );
             }
             else
             {
@@ -605,13 +605,13 @@ function(item) {
                 qry = qry.Where( a => a.StartDateTime < dateRange.End.Value );
             }
 
-            AttendanceGroupBy groupBy = hfGroupBy.Value.ConvertToEnum<AttendanceGroupBy>();
+            AttendanceGroupBy groupBy = hfGroupBy.Value.ConvertToEnumOrNull<AttendanceGroupBy>() ?? AttendanceGroupBy.Week;
 
-            var qryAttendanceGroupedBy = qry.GetAttendanceGroupedBy( groupBy );
+            var qryAttendanceWithSummaryDateTime = qry.GetAttendanceWithSummaryDateTime( groupBy );
 
-            var qryByPerson = qry.GroupBy( a => a.PersonAlias.Person ).Select( a => new
+            var qryByPerson = qry.GroupBy( a => a.PersonAlias.PersonId ).Select( a => new
             {
-                Person = a.Key,
+                PersonId = a.Key,
                 Attendances = a
             } );
 
@@ -649,15 +649,42 @@ function(item) {
 
             nbMissedDateRangeRequired.Visible = false;
 
-            var qryResult = qryByPerson.Select( a => new
+
+            // get either the first 2 visits or the first 5 visits (using a const take of 2 or 5 vs a variable to help the SQL optimizer)
+            var qryByPersonWithSummary = qryByPerson.Select( a => new
             {
-                PersonId = a.Person.Id,
-                a.Person,
-                FirstVisits = qryVisits.Where( b => b.PersonAlias.PersonId == a.Person.Id ).Select( s => new { s.Id, s.StartDateTime } ).OrderBy( x => x.StartDateTime ).Take( nthVisitsTake ),
+                PersonId = a.PersonId,
+                FirstVisits = qryAllVisits.Where( b => b.PersonAlias.PersonId == a.PersonId ).Select( s => new { s.Id, s.StartDateTime } ).OrderBy( x => x.StartDateTime ).Take( 2 ),
                 LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
-                PhoneNumbers = a.Person.PhoneNumbers,
-                AttendanceSummary = qryAttendanceGroupedBy.Select(b => b.Key)
+                AttendanceSummary = qryAttendanceWithSummaryDateTime.Where( x => x.Attendance.PersonAlias.PersonId == a.PersonId ).GroupBy( g => g.SummaryDateTime ).Select( s => s.Key )
             } );
+
+            if ( nthVisitsTake > 2 )
+            {
+                qryByPersonWithSummary = qryByPerson.Select( a => new
+                {
+                    PersonId = a.PersonId,
+                    FirstVisits = qryAllVisits.Where( b => b.PersonAlias.PersonId == a.PersonId ).Select( s => new { s.Id, s.StartDateTime } ).OrderBy( x => x.StartDateTime ).Take( 5 ),
+                    LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
+                    AttendanceSummary = qryAttendanceWithSummaryDateTime.Where( x => x.Attendance.PersonAlias.PersonId == a.PersonId ).GroupBy( g => g.SummaryDateTime ).Select( s => s.Key )
+                } );
+            }
+
+            var qryPerson = new PersonService( rockContext ).Queryable();
+
+            var qryResult = qryByPersonWithSummary.Join(
+                qryPerson,
+                a => a.PersonId,
+                p => p.Id,
+                ( a, p ) => new
+                    {
+                        a.PersonId,
+                        Person = p,
+                        a.FirstVisits,
+                        a.LastVisit,
+                        p.PhoneNumbers,
+                        a.AttendanceSummary
+                    } );
 
             if ( byNthVisit.HasValue )
             {
@@ -678,25 +705,25 @@ function(item) {
                 {
                     attendedMissedPossible = Math.Ceiling( ( attendedMissedDateRange.End.Value - attendedMissedDateRange.Start.Value ).TotalDays / 7 );
                     qryMissed = qryMissed.Where( a => a.StartDateTime >= attendedMissedDateRange.Start.Value && a.StartDateTime < attendedMissedDateRange.End.Value );
-                    var qryMissedByPerson = qryMissed.GroupBy( a => a.PersonAlias.Person ).Select( a => new
+                    var qryMissedByPerson = qryMissed.GroupBy( a => a.PersonAlias.PersonId ).Select( a => new
                     {
-                        Person = a.Key,
+                        PersonId = a.Key,
                         AttendanceCount = a.Count()
                     } ).Where( x => ( attendedMissedPossible - x.AttendanceCount ) >= attendedMissedCount );
 
                     // filter to only people that missed at least X weeks between specified missed date range
-                    qryResult = qryResult.Where( a => qryMissedByPerson.Any( b => b.Person.Id == a.Person.Id ) );
+                    qryResult = qryResult.Where( a => qryMissedByPerson.Any( b => b.PersonId == a.PersonId ) );
                 }
             }
 
             // approximate the attendance max occurrence count from the date range so that can calculate attendance %
             // from http://stackoverflow.com/a/1925560/1755417
             TimeSpan dateRangeSpan = dateRange.End.Value - dateRange.Start.Value;
-            if (groupBy == AttendanceGroupBy.Week)
+            if ( groupBy == AttendanceGroupBy.Week )
             {
                 _attendencePossibleCount = dateRangeSpan.TotalDays / 7;
             }
-            else if (groupBy == AttendanceGroupBy.Month)
+            else if ( groupBy == AttendanceGroupBy.Month )
             {
                 _attendencePossibleCount = dateRangeSpan.TotalDays / 30.436875;
             }
@@ -709,7 +736,21 @@ function(item) {
 
             if ( sortProperty != null )
             {
-                qryResult = qryResult.Sort( sortProperty );
+                if ( sortProperty.Property == "AttendanceSummary.Count" )
+                {
+                    if ( sortProperty.Direction == SortDirection.Descending )
+                    {
+                        qryResult = qryResult.OrderByDescending( a => a.AttendanceSummary.Count() );
+                    }
+                    else
+                    {
+                        qryResult = qryResult.OrderBy( a => a.AttendanceSummary.Count() );
+                    }
+                }
+                else
+                {
+                    qryResult = qryResult.Sort( sortProperty );
+                }
             }
             else
             {
@@ -726,6 +767,8 @@ function(item) {
                 parentField.Visible = includeParents;
             }
 
+            IQueryable<object> qryFinalResult;
+
             if ( includeParents )
             {
                 var groupTypeFamily = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
@@ -734,12 +777,8 @@ function(item) {
                 int groupTypeFamilyId = groupTypeFamily.Id;
                 var qryFamilyGroups = new GroupService( rockContext ).Queryable().Where( m => m.GroupTypeId == groupTypeFamilyId );
 
-                // narrow it down to only attendees that are children
-                qryResult = qryResult.Where( a => qryFamilyGroups.Any( g => g.Members.Any( m => ( m.GroupRoleId == childRoleId ) && ( m.PersonId == a.Person.Id ) ) ) );
-
-                var qryResultWithParent = qryResult.Select( a => new
-                {
-                    ParentWithAttendance = qryFamilyGroups.Where( g => g.Members.Any( m => m.PersonId == a.Person.Id && m.GroupRoleId == childRoleId ) )
+                var qryResultWithParent = qryResult.Select( a =>
+                    qryFamilyGroups.Where( g => g.Members.Any( m => m.PersonId == a.PersonId && m.GroupRoleId == childRoleId ) )
                       .SelectMany( aa => aa.Members ).Where( bb => bb.GroupRoleId == adultRoleId )
                       .Select( s =>
                           new
@@ -747,8 +786,8 @@ function(item) {
                               Parent = s.Person,
                               Attendance = a
                           } )
-                } )
-                .SelectMany( x => x.ParentWithAttendance )
+                 )
+                .SelectMany( x => x )
                 .Select( s => new
                 {
                     ParentId = s.Parent.Id,
@@ -762,21 +801,54 @@ function(item) {
                 } );
 
                 gAttendeesAttendance.PersonIdField = "ParentId";
-                gAttendeesAttendance.DataKeyNames = new string[] { "ParentId", "PersonId"  };
-
-                rockContext.Database.Log = s => System.Diagnostics.Debug.WriteLine( s );
-
-                gAttendeesAttendance.DataSource = qryResultWithParent.AsNoTracking().ToList();
-                rockContext.Database.Log = null;
-
-                gAttendeesAttendance.DataBind();
+                gAttendeesAttendance.DataKeyNames = new string[] { "ParentId", "PersonId" };
+                qryFinalResult = qryResultWithParent;
             }
             else
             {
                 gAttendeesAttendance.PersonIdField = "PersonId";
                 gAttendeesAttendance.DataKeyNames = new string[] { "PersonId" };
-                gAttendeesAttendance.DataSource = qryResult.AsNoTracking().ToList();
+                qryFinalResult = qryResult;
+            }
+
+            try
+            {
+                nbAttendeesError.Visible = false;
+
+                // increase the timeout from 30 to 90. The Query can be slow if SQL hasn't calculated the Query Plan for the query yet. 
+                // Most of the time consumption is figuring out the Query Plan, but after it figures it out, it caches it so that the next time it'll be much faster
+                rockContext.Database.CommandTimeout = 90;
+                gAttendeesAttendance.DataSource = qryFinalResult.AsNoTracking().ToList();
+
                 gAttendeesAttendance.DataBind();
+            }
+            catch ( Exception exception )
+            {
+                string errorMessage = null;
+                while ( exception != null )
+                {
+                    errorMessage = exception.Message;
+                    if ( exception is System.Data.SqlClient.SqlException )
+                    {
+                        // if there was a SQL Server Timeout, have the warning be a friendly message about that.
+                        if ( ( exception as System.Data.SqlClient.SqlException ).Number == -2 )
+                        {
+                            errorMessage = "The attendee report did not complete in a timely manner. Try again using a smaller date range and fewer campuses and groups.";
+                            break;
+                        }
+                        else
+                        {
+                            exception = exception.InnerException;
+                        }
+                    }
+                    else
+                    {
+                        exception = exception.InnerException;
+                    }
+                }
+
+                nbAttendeesError.Text = errorMessage;
+                nbAttendeesError.Visible = true;
             }
         }
 
@@ -827,7 +899,8 @@ function(item) {
 
                 if ( person != null )
                 {
-                    var address = person.GetHomeLocation();
+                    // Yep, get the address one-row-at-a-time. It usually ends up being faster than joining (especially when there could be 1000s of records, and we only show 50 at a time)
+                    var address = person.GetHomeLocation( _rockContext );
                     if ( address != null )
                     {
                         lHomeAddress.Text = address.FormattedHtmlAddress;
@@ -838,18 +911,17 @@ function(item) {
                 int attendanceSummaryCount = attendanceSummary.Count();
                 lAttendanceCount.Text = attendanceSummaryCount.ToString();
 
-                if (_attendencePossibleCount.HasValue && _attendencePossibleCount > 0)
+                if ( _attendencePossibleCount.HasValue && _attendencePossibleCount > 0 )
                 {
                     // round up the possible to the next whole number since the person could have already attended and the current week/month/year isn't over year
-                    var attendancePerPossibleCount = attendanceSummaryCount / Math.Ceiling(_attendencePossibleCount.Value);
-                    if (attendancePerPossibleCount > 1)
+                    var attendancePerPossibleCount = attendanceSummaryCount / Math.Ceiling( _attendencePossibleCount.Value );
+                    if ( attendancePerPossibleCount > 1 )
                     {
                         attendancePerPossibleCount = 1;
                     }
 
                     lAttendancePercent.Text = string.Format( "{0:P}", attendancePerPossibleCount );
                 }
-
             }
         }
 
