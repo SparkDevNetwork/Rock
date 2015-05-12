@@ -15,7 +15,8 @@
 // </copyright>
 //
 using System;
-using System.Runtime.Caching;
+using System.Data.Entity;
+using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
@@ -266,36 +267,24 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static BlockCache Read( int id, RockContext rockContext = null )
         {
-            string cacheKey = BlockCache.CacheKey( id );
-            ObjectCache cache = RockMemoryCache.Default;
-            BlockCache block = cache[cacheKey] as BlockCache;
-
-            if ( block == null )
-            {
-                if ( rockContext != null )
-                {
-                    block = LoadById( id, rockContext );
-                }
-                else
-                {
-                    using ( var myRockContext = new RockContext() )
-                    {
-                        block = LoadById( id, myRockContext );
-                    }
-                }
-
-                if ( block != null )
-                {
-                    var cachePolicy = new CacheItemPolicy();
-                    cache.Set( cacheKey, block, cachePolicy );
-                    cache.Set( block.Guid.ToString(), block.Id, cachePolicy );
-                }
-            }
-
-            return block;
+            return GetOrAddExisting( BlockCache.CacheKey( id ),
+                () => LoadById( id, rockContext ) );
         }
 
         private static BlockCache LoadById( int id, RockContext rockContext )
+        {
+            if ( rockContext != null )
+            {
+                return LoadById2( id, rockContext );
+            }
+
+            using ( var rockContext2 = new RockContext() )
+            {
+                return LoadById2( id, rockContext2 );
+            }
+        }
+
+        private static BlockCache LoadById2( int id, RockContext rockContext )
         {
             var blockService = new BlockService( rockContext );
             var blockModel = blockService.Get( id );
@@ -316,51 +305,33 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static BlockCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = RockMemoryCache.Default;
-            object cacheObj = cache[guid.ToString()];
+            int id = GetOrAddExisting( guid.ToString(),
+                () => LoadByGuid( guid, rockContext ) );
 
-            BlockCache block = null;
-            if ( cacheObj != null )
-            {
-                block = Read( (int)cacheObj, rockContext );
-            }
-
-            if ( block == null )
-            {
-                if ( rockContext != null )
-                {
-                    block = LoadByGuid( guid, rockContext );
-                }
-                else
-                {
-                    using ( var myRockContext = new RockContext() )
-                    {
-                        block = LoadByGuid( guid, myRockContext );
-                    }
-                }
-
-                if ( block != null )
-                {
-                    var cachePolicy = new CacheItemPolicy();
-                    cache.Set( BlockCache.CacheKey( block.Id ), block, cachePolicy );
-                    cache.Set( block.Guid.ToString(), block.Id, cachePolicy );
-                }
-            }
-
-            return block;
+            return Read( id, rockContext );
         }
 
-        private static BlockCache LoadByGuid( Guid guid, RockContext rockContext )
+        private static int LoadByGuid( Guid guid, RockContext rockContext )
         {
-            var blockService = new BlockService( rockContext );
-            var blockModel = blockService.Get( guid );
-            if ( blockModel != null )
+            if ( rockContext != null )
             {
-                blockModel.LoadAttributes( rockContext );
-                return new BlockCache( blockModel );
+                return LoadByGuid2( guid, rockContext );
             }
 
-            return null;
+            using ( var rockContext2 = new RockContext() )
+            {
+                return LoadByGuid2( guid, rockContext2 );
+            }
+        }
+        
+        private static int LoadByGuid2( Guid guid, RockContext rockContext )
+        {
+            var blockService = new BlockService( rockContext );
+            return blockService
+                .Queryable().AsNoTracking()
+                .Where( c => c.Guid.Equals( guid ) )
+                .Select( c => c.Id )
+                .FirstOrDefault();
         }
 
         /// <summary>
@@ -370,24 +341,19 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static BlockCache Read( Block blockModel )
         {
-            string cacheKey = BlockCache.CacheKey( blockModel.Id );
-            ObjectCache cache = RockMemoryCache.Default;
-            BlockCache block = cache[cacheKey] as BlockCache;
-
-            if ( block != null )
-            {
-                block.CopyFromModel( blockModel );
-            }
-            else
-            {
-                block = new BlockCache( blockModel );
-                var cachePolicy = new CacheItemPolicy();
-                cache.Set( cacheKey, block, cachePolicy );
-                cache.Set( block.Guid.ToString(), block.Id, cachePolicy );
-            }
-
-            return block;
+            return GetOrAddExisting( CampusCache.CacheKey( blockModel.Id ),
+                () => LoadByModel( blockModel ) );
         }
+
+        private static BlockCache LoadByModel( Block blockModel )
+        {
+            if ( blockModel != null )
+            {
+                return new BlockCache( blockModel );
+            }
+            return null;
+        }
+
 
         /// <summary>
         /// Removes block from cache
@@ -395,8 +361,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            ObjectCache cache = RockMemoryCache.Default;
-            cache.Remove( BlockCache.CacheKey( id ) );
+            FlushCache( BlockCache.CacheKey( id ) );
         }
 
         #endregion

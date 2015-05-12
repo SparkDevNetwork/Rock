@@ -813,16 +813,7 @@ namespace Rock.Web.UI
                                     }
 
                                     // If the blocktype's security actions have not yet been loaded, load them now
-                                    if ( !block.BlockType.CheckedSecurityActions )
-                                    {
-                                        Page.Trace.Warn( "\tAdding additional security actions for blcok" );
-                                        block.BlockType.SecurityActions = new ConcurrentDictionary<string, string>();
-                                        foreach ( var action in blockControl.GetSecurityActionAttributes() )
-                                        {
-                                            block.BlockType.SecurityActions.TryAdd( action.Key, action.Value );
-                                        }
-                                        block.BlockType.CheckedSecurityActions = true;
-                                    }
+                                    block.BlockType.SetSecurityActions( blockControl );
 
                                     // If the block's AttributeProperty values have not yet been verified verify them.
                                     // (This provides a mechanism for block developers to define the needed block

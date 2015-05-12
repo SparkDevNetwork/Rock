@@ -17,7 +17,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Runtime.Caching;
+using System.Data.Entity;
+using System.Linq;
 using System.Web;
 
 using Rock.Data;
@@ -32,6 +33,12 @@ namespace Rock.Web.Cache
     [Serializable]
     public class SiteCache : CachedModel<Site>
     {
+        #region Static Fields
+
+        private static ConcurrentDictionary<string, int> _siteDomains = new ConcurrentDictionary<string, int>();
+
+        #endregion
+
         #region Constructors
 
         private SiteCache()
@@ -385,6 +392,11 @@ namespace Rock.Web.Cache
                 this.FacebookAppSecret = site.FacebookAppSecret;
                 this.PageNotFoundPageId = site.PageNotFoundPageId;
                 this.PageNotFoundPageRouteId = site.PageNotFoundPageRouteId;
+
+                foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
+                {
+                    _siteDomains.AddOrUpdate( domain, site.Id, ( k, v) => site.Id );
+                }
             }
         }
 
@@ -477,36 +489,24 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static SiteCache Read( int id, RockContext rockContext = null )
         {
-            string cacheKey = SiteCache.CacheKey( id );
-            ObjectCache cache = RockMemoryCache.Default;
-            SiteCache site = cache[cacheKey] as SiteCache;
-
-            if ( site == null )
-            {
-                if ( rockContext != null )
-                {
-                    site = LoadById( id, rockContext );
-                }
-                else
-                {
-                    using ( var myRockContext = new RockContext() )
-                    {
-                        site = LoadById( id, myRockContext );
-                    }
-                }
-
-                if ( site != null )
-                {
-                    var cachePolicy = new CacheItemPolicy();
-                    cache.Set( cacheKey, site, cachePolicy );
-                    cache.Set( site.Guid.ToString(), site.Id, cachePolicy );
-                }
-            }
-
-            return site;
+            return GetOrAddExisting( SiteCache.CacheKey( id ),
+                () => LoadById( id, rockContext ) );
         }
 
         private static SiteCache LoadById( int id, RockContext rockContext )
+        {
+            if ( rockContext != null )
+            {
+                return LoadById2( id, rockContext );
+            }
+
+            using ( var rockContext2 = new RockContext() )
+            {
+                return LoadById2( id, rockContext2 );
+            }
+        }
+
+        private static SiteCache LoadById2( int id, RockContext rockContext )
         {
             var siteService = new SiteService( rockContext );
             var siteModel = siteService.Get( id );
@@ -527,51 +527,33 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static SiteCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = RockMemoryCache.Default;
-            object cacheObj = cache[guid.ToString()];
+            int id = GetOrAddExisting( guid.ToString(),
+                () => LoadByGuid( guid, rockContext ) );
 
-            SiteCache site = null;
-            if ( cacheObj != null )
-            {
-                site = Read( (int)cacheObj, rockContext );
-            }
-
-            if ( site == null )
-            {
-                if ( rockContext != null )
-                {
-                    site = LoadByGuid( guid, rockContext );
-                }
-                else
-                {
-                    using ( var myRockContext = new RockContext() )
-                    {
-                        site = LoadByGuid( guid, myRockContext );
-                    }
-                }
-
-                if ( site != null )
-                {
-                    var cachePolicy = new CacheItemPolicy();
-                    cache.Set( SiteCache.CacheKey( site.Id ), site, cachePolicy );
-                    cache.Set( site.Guid.ToString(), site.Id, cachePolicy );
-                }
-            }
-
-            return site;
+            return Read( id, rockContext );
         }
 
-        private static SiteCache LoadByGuid( Guid guid, RockContext rockContext = null )
+        private static int LoadByGuid( Guid guid, RockContext rockContext )
         {
-            var siteService = new SiteService( rockContext );
-            var siteModel = siteService.Get( guid );
-            if ( siteModel != null )
+            if ( rockContext != null )
             {
-                siteModel.LoadAttributes( rockContext );
-                return new SiteCache( siteModel );
+                return LoadByGuid2( guid, rockContext );
             }
 
-            return null;
+            using ( var rockContext2 = new RockContext() )
+            {
+                return LoadByGuid2( guid, rockContext2 );
+            }
+        }
+
+        private static int LoadByGuid2( Guid guid, RockContext rockContext = null )
+        {
+            var siteService = new SiteService( rockContext );
+            return siteService
+                .Queryable().AsNoTracking()
+                .Where( c => c.Guid.Equals( guid ) )
+                .Select( c => c.Id )
+                .FirstOrDefault();
         }
 
         /// <summary>
@@ -581,23 +563,17 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static SiteCache Read( Site siteModel )
         {
-            string cacheKey = SiteCache.CacheKey( siteModel.Id );
-            ObjectCache cache = RockMemoryCache.Default;
-            SiteCache site = cache[cacheKey] as SiteCache;
+            return GetOrAddExisting( SiteCache.CacheKey( siteModel.Id ),
+                () => LoadByModel( siteModel ) );
+        }
 
-            if ( site != null )
+        private static SiteCache LoadByModel( Site siteModel )
+        {
+            if ( siteModel != null )
             {
-                site.CopyFromModel( siteModel );
+                return new SiteCache( siteModel );
             }
-            else
-            {
-                site = new SiteCache( siteModel );
-                var cachePolicy = new CacheItemPolicy();
-                cache.Set( cacheKey, site, cachePolicy );
-                cache.Set( site.Guid.ToString(), site.Id, cachePolicy );
-            }
-
-            return site;
+            return null;
         }
 
         /// <summary>
@@ -606,8 +582,8 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            ObjectCache cache = RockMemoryCache.Default;
-            cache.Remove( SiteCache.CacheKey( id ) );
+            FlushCache( SiteCache.CacheKey( id ) );
+            _siteDomains = new ConcurrentDictionary<string, int>();
         }
 
         /// <summary>
@@ -617,45 +593,29 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static SiteCache GetSiteByDomain( string host )
         {
-            SiteCache site = null;
-
-            string cacheKey = "Rock:DomainSites";
-
-            ObjectCache cache = RockMemoryCache.Default;
-            var sites = cache[cacheKey] as ConcurrentDictionary<string, int>;
-            if ( sites == null )
+            int siteId = 0;
+            if ( _siteDomains.TryGetValue( host, out siteId ) )
             {
-                sites = new ConcurrentDictionary<string, int>();
-                var cachePolicy = new CacheItemPolicy();
-                cache.Set( cacheKey, sites, cachePolicy );
+                return Read( siteId );
             }
 
-            // look in cache
-            if ( sites.ContainsKey( host ) )
-            {
-                site = SiteCache.Read( sites[host] );
-            }
-            else
-            {
-                // get from database
-                using ( var rockContext = new RockContext() )
+            using ( var rockContext = new RockContext() )
+            { 
+                Rock.Model.SiteDomainService siteDomainService = new Rock.Model.SiteDomainService( rockContext );
+                Rock.Model.SiteDomain siteDomain = siteDomainService.GetByDomain( host );
+                if ( siteDomain == null )
                 {
-                    Rock.Model.SiteDomainService siteDomainService = new Rock.Model.SiteDomainService( rockContext );
-                    Rock.Model.SiteDomain siteDomain = siteDomainService.GetByDomain( host );
-                    if ( siteDomain == null )
-                    {
-                        siteDomain = siteDomainService.GetByDomainContained( host );
-                    }
+                    siteDomain = siteDomainService.GetByDomainContained( host );
+                }
 
-                    if ( siteDomain != null )
-                    {
-                        sites.AddOrUpdate( host, siteDomain.SiteId, ( k, v ) => siteDomain.SiteId );
-                        site = SiteCache.Read( siteDomain.SiteId );
-                    }
+                if ( siteDomain != null )
+                {
+                    _siteDomains.AddOrUpdate( host, siteDomain.SiteId, ( k, v ) => siteDomain.SiteId );
+                    return Read( siteDomain.SiteId );
                 }
             }
 
-            return site;
+            return null;
         }
 
         #endregion
