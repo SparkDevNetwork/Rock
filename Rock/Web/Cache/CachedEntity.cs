@@ -46,19 +46,13 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static TT GetOrAddExisting<TT>( string key, Func<TT> valueFactory )
         {
-            var cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
 
             var newValue = new Lazy<TT>( valueFactory );
 
-            var cacheItemPolicy = new CacheItemPolicy();
-            cacheItemPolicy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( 360.0 );
-            var oldValue = cache.AddOrGetExisting( key, newValue, cacheItemPolicy ) as Lazy<TT>;
+            var oldValue = cache.AddOrGetExisting( key, newValue, new CacheItemPolicy() ) as Lazy<TT>;
             try
             {
-                if ( oldValue == null )
-                {
-                    System.Diagnostics.Debug.WriteLine( "Loading CacheKey: " + key );
-                }
                 return ( oldValue ?? newValue ).Value;
             }
             catch
@@ -87,7 +81,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static int GetOrAddExisting( string key, Func<int> valueFactory )
         {
-            var cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
 
             var newValue = new Lazy<int>( valueFactory );
             var oldValue = cache.AddOrGetExisting( key, newValue, new CacheItemPolicy() ) as Lazy<int>;
@@ -110,7 +104,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static List<int> GetOrAddAll( string key, Func<List<int>> valueFactory )
         {
-            var cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
 
             var newValue = new Lazy<List<int>>( valueFactory );
             var oldValue = cache.AddOrGetExisting( key, newValue, new CacheItemPolicy() ) as Lazy<List<int>>;
@@ -133,7 +127,7 @@ namespace Rock.Web.Cache
         /// <param name="policy">The policy.</param>
         public static void SetCache( string key, object item, CacheItemPolicy policy )
         {
-            var cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             cache.Set( key, item, policy );
         }
 
@@ -144,7 +138,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static bool CacheContainsKey( string key )
         {
-            var cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             return cache.Contains( key );
         }
 
@@ -154,7 +148,7 @@ namespace Rock.Web.Cache
         /// <param name="key">The key.</param>
         public static void FlushCache( string key )
         {
-            var cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             cache.Remove( key );
         }
 
@@ -185,7 +179,7 @@ namespace Rock.Web.Cache
             this.Id = model.Id;
             this.Guid = model.Guid;
 
-            var cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             cache.Set( model.Guid.ToString(), new Lazy<int>( () => AsLazy( model.Id ) ), new CacheItemPolicy() );
         }
 

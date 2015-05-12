@@ -885,14 +885,16 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void FlushLayout( int layoutId )
         {
-            ObjectCache cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             foreach ( var item in cache )
+            {
                 if ( item.Key.StartsWith( "Rock:Page:" ) )
                 {
                     PageCache page = cache[item.Key] as PageCache;
                     if ( page != null && page.LayoutId == layoutId )
                         cache.Remove( item.Key );
                 }
+            }
         }
 
         /// <summary>
@@ -900,14 +902,16 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void FlushLayoutBlocks( int layoutId )
         {
-            ObjectCache cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             foreach ( var item in cache )
+            {
                 if ( item.Key.StartsWith( "Rock:Page:" ) )
                 {
                     PageCache page = cache[item.Key] as PageCache;
                     if ( page != null && page.LayoutId == layoutId )
                         page.FlushBlocks();
                 }
+            }
         }
 
         #endregion

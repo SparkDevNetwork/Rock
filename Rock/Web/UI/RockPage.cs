@@ -685,10 +685,6 @@ namespace Rock.Web.UI
                     // set viewstate on/off
                     this.EnableViewState = _pageCache.EnableViewState;
 
-                    // Cache object used for block output caching
-                    Page.Trace.Warn( "Getting memory cache" );
-                    ObjectCache cache = RockMemoryCache.Default;
-
                     Page.Trace.Warn( "Checking if user can administer" );
                     bool canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
 
@@ -760,16 +756,23 @@ namespace Rock.Web.UI
 
                             // Load the control and add to the control tree
                             Page.Trace.Warn( "\tLoading control" );
-                            Control control;
+                            Control control = null;
 
                             // Check to see if block is configured to use a "Cache Duration'
-                            string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", block.Id );
-                            if ( block.OutputCacheDuration > 0 && cache.Contains( blockCacheKey ) )
+                            if ( block.OutputCacheDuration > 0 )
                             {
-                                // If the current block exists in our custom output cache, add the cached output instead of adding the control
-                                control = new LiteralControl( cache[blockCacheKey] as string );
+                                // Cache object used for block output caching
+                                Page.Trace.Warn( "Getting memory cache" );
+                                RockMemoryCache cache = RockMemoryCache.Default;
+                                string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", block.Id );
+                                if ( cache.Contains( blockCacheKey ) )
+                                {
+                                    // If the current block exists in our custom output cache, add the cached output instead of adding the control
+                                    control = new LiteralControl( cache[blockCacheKey] as string );
+                                }
                             }
-                            else
+
+                            if ( control == null )
                             {
                                 try
                                 {
