@@ -649,13 +649,26 @@ function(item) {
 
             nbMissedDateRangeRequired.Visible = false;
 
+
+            // get either the first 2 visits or the first 5 visits (using a const take of 2 or 5 vs a variable to help the SQL optimizer)
             var qryByPersonWithSummary = qryByPerson.Select( a => new
             {
                 PersonId = a.PersonId,
-                FirstVisits = qryAllVisits.Where( b => b.PersonAlias.PersonId == a.PersonId ).Select( s => new { s.Id, s.StartDateTime } ).OrderBy( x => x.StartDateTime ).Take( nthVisitsTake ),
+                FirstVisits = qryAllVisits.Where( b => b.PersonAlias.PersonId == a.PersonId ).Select( s => new { s.Id, s.StartDateTime } ).OrderBy( x => x.StartDateTime ).Take( 2 ),
                 LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
                 AttendanceSummary = qryAttendanceWithSummaryDateTime.Where( x => x.Attendance.PersonAlias.PersonId == a.PersonId ).GroupBy( g => g.SummaryDateTime ).Select( s => s.Key )
             } );
+
+            if ( nthVisitsTake > 2 )
+            {
+                qryByPersonWithSummary = qryByPerson.Select( a => new
+                {
+                    PersonId = a.PersonId,
+                    FirstVisits = qryAllVisits.Where( b => b.PersonAlias.PersonId == a.PersonId ).Select( s => new { s.Id, s.StartDateTime } ).OrderBy( x => x.StartDateTime ).Take( 5 ),
+                    LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
+                    AttendanceSummary = qryAttendanceWithSummaryDateTime.Where( x => x.Attendance.PersonAlias.PersonId == a.PersonId ).GroupBy( g => g.SummaryDateTime ).Select( s => s.Key )
+                } );
+            }
 
             var qryPerson = new PersonService( rockContext ).Queryable();
 
@@ -764,12 +777,8 @@ function(item) {
                 int groupTypeFamilyId = groupTypeFamily.Id;
                 var qryFamilyGroups = new GroupService( rockContext ).Queryable().Where( m => m.GroupTypeId == groupTypeFamilyId );
 
-                // narrow it down to only attendees that are children
-                qryResult = qryResult.Where( a => qryFamilyGroups.Any( g => g.Members.Any( m => ( m.GroupRoleId == childRoleId ) && ( m.PersonId == a.PersonId ) ) ) );
-
-                var qryResultWithParent = qryResult.Select( a => new
-                {
-                    ParentWithAttendance = qryFamilyGroups.Where( g => g.Members.Any( m => m.PersonId == a.PersonId && m.GroupRoleId == childRoleId ) )
+                var qryResultWithParent = qryResult.Select( a =>
+                    qryFamilyGroups.Where( g => g.Members.Any( m => m.PersonId == a.PersonId && m.GroupRoleId == childRoleId ) )
                       .SelectMany( aa => aa.Members ).Where( bb => bb.GroupRoleId == adultRoleId )
                       .Select( s =>
                           new
@@ -777,8 +786,8 @@ function(item) {
                               Parent = s.Person,
                               Attendance = a
                           } )
-                } )
-                .SelectMany( x => x.ParentWithAttendance )
+                 )
+                .SelectMany( x => x )
                 .Select( s => new
                 {
                     ParentId = s.Parent.Id,
@@ -805,7 +814,12 @@ function(item) {
             try
             {
                 nbAttendeesError.Visible = false;
+
+                // increase the timeout from 30 to 90. The Query can be slow if SQL hasn't calculated the Query Plan for the query yet. 
+                // Most of the time consumption is figuring out the Query Plan, but after it figures it out, it caches it so that the next time it'll be much faster
+                rockContext.Database.CommandTimeout = 90;
                 gAttendeesAttendance.DataSource = qryFinalResult.AsNoTracking().ToList();
+
                 gAttendeesAttendance.DataBind();
             }
             catch ( Exception exception )
@@ -885,7 +899,8 @@ function(item) {
 
                 if ( person != null )
                 {
-                    var address = person.GetHomeLocation();
+                    // Yep, get the address one-row-at-a-time. It usually ends up being faster than joining (especially when there could be 1000s of records, and we only show 50 at a time)
+                    var address = person.GetHomeLocation( _rockContext );
                     if ( address != null )
                     {
                         lHomeAddress.Text = address.FormattedHtmlAddress;
