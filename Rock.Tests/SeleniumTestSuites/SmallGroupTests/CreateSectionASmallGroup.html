@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://localhost:6229/" />
+<title>Create Small Group</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">Create Small Group</td></tr>
+</thead><tbody>
+<!--Test to create a Group of type 'Small Group'-->
+<tr>
+	<td>setSpeed</td>
+	<td>500</td>
+	<td></td>
+</tr>
+<tr>
+	<td>storeEval</td>
+	<td>new Date().getTime()</td>
+	<td>x</td>
+</tr>
+<tr>
+	<td>open</td>
+	<td>/</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=i.fa.fa-book</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Group Viewer</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//div[@id='treeview-content']/ul/li[span[contains(text(), 'Section A')]]/span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button[@type='button']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=lbAddGroupChild]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=[id$=tbName]</td>
+	<td>Selenium Test Group ${x}</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=[id$=tbDescription]</td>
+	<td>Test group created with Selenium Test</td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=[id$=wpGeneral_ddlGroupType]</td>
+	<td>label=Small Group</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=option[value=&quot;25&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=[id$=wpGeneral_ddlCampus]</td>
+	<td>label=Main Campus</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=#ctl00_main_ctl33_ctl01_ctl06_wpMeetingDetails &gt; header.panel-heading.clearfix &gt; div.pull-left &gt; div.js-header-title</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=wpMeetingDetails_rblScheduleSelect_1]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=[id$=wpMeetingDetails_dowWeekly]</td>
+	<td>label=Sunday</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=span.add-on &gt; i.fa.fa-clock-o</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=td &gt; a &gt; i.fa.fa-chevron-up</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=td &gt; a &gt; i.fa.fa-chevron-up</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=td &gt; a &gt; i.fa.fa-chevron-up</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=td.meridian-column &gt; a &gt; i.fa.fa-chevron-up</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=#ctl00_main_ctl33_ctl01_ctl06_wpGroupAttributes &gt; header.panel-heading.clearfix &gt; div.pull-left &gt; div.js-header-title</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>//div/select[option[contains(text(), 'Women of the Bible')]]/</td>
+	<td>label=Women of the Bible</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=btnSave]</td>
+	<td></td>
+</tr>
+</tbody></table>
+</body>
+</html>
