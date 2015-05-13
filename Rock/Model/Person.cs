@@ -1703,6 +1703,7 @@ namespace Rock.Model
         /// Gets the home location.
         /// </summary>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static Location GetHomeLocation( this Person person, RockContext rockContext = null )
         {
