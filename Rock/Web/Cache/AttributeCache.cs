@@ -259,7 +259,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Copies from model.
         /// </summary>
-        /// <param name="attribute">The attribute.</param>
+        /// <param name="model">The model.</param>
         public override void CopyFromModel( Data.IEntity model )
         {
             if ( model is Rock.Model.Attribute )

@@ -268,7 +268,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Reads the specified defined value model.
         /// </summary>
-        /// <param name="RestActionModel">The defined value model.</param>
+        /// <param name="restActionModel">The rest action model.</param>
         /// <returns></returns>
         public static RestActionCache Read( RestAction restActionModel )
         {
