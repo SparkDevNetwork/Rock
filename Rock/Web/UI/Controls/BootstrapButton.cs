@@ -60,7 +60,9 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "data-loading-text", DataLoadingText );
             }
 
-            this.OnClientClick = "Rock.controls.bootstrapButton.showLoading(this);";
+            // disabling the line of code below as it causes the click event to not occur in IE in edge cases (fast clicks)
+            // see: Patrick's answer here: http://stackoverflow.com/questions/2155048/onclientclick-and-onclick-is-not-working-at-the-same-time
+            //this.OnClientClick = "Rock.controls.bootstrapButton.showLoading(this);";
             base.RenderControl( writer );
         }
     }
