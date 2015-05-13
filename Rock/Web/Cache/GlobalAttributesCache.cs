@@ -291,7 +291,6 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the existing or a new item from cache
         /// </summary>
-        /// <typeparam name="TT">The type of the t.</typeparam>
         /// <param name="key">The key.</param>
         /// <param name="valueFactory">The value factory.</param>
         /// <returns></returns>
