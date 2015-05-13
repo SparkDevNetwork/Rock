@@ -323,6 +323,8 @@ function(item) {
 
             lcAttendance.DataSourceUrl = this.ResolveUrl( dataSourceUrl );
 
+            hlblDateRange.Text = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues ).ToString( "d" );
+
             if ( pnlChartAttendanceGrid.Visible )
             {
                 BindChartAttendanceGrid();
@@ -549,6 +551,7 @@ function(item) {
         }
 
         private List<DateTime> _possibleAttendances = null;
+        private Dictionary<int, string> _scheduleNameLookup = null;
 
         /// <summary>
         /// Binds the attendees grid.
@@ -648,7 +651,6 @@ function(item) {
             }
 
             nbMissedDateRangeRequired.Visible = false;
-
 
             // get either the first 2 visits or the first 5 visits (using a const take of 2 or 5 vs a variable to help the SQL optimizer)
             var qryByPersonWithSummary = qryByPerson.Select( a => new
@@ -754,6 +756,11 @@ function(item) {
             // Calculate all the possible attendance summary dates
             UpdatePossibleAttendances( dateRange, groupBy );
 
+            // pre-load the schedule names since FriendlyScheduleText requires building the ICal object, etc
+            _scheduleNameLookup = new ScheduleService( rockContext ).Queryable()
+                .ToList()
+                .ToDictionary( k => k.Id, v => v.FriendlyScheduleText );
+
             IQueryable<object> qryFinalResult;
 
             if ( includeParents )
@@ -798,25 +805,8 @@ function(item) {
                 qryFinalResult = qryResult;
             }
 
-            var attendanceSummaryFields = gAttendeesAttendance.Columns.OfType<BoolFromArrayField<DateTime>>().Where( a => a.DataField == "AttendanceSummary" ).ToList();
-            attendanceSummaryFields.ForEach( a => a.DataField = "AttendanceSummary" );
-            var existingSummaryDates = attendanceSummaryFields.Select( a => a.ArrayKey ).ToList();
-            if ( existingSummaryDates.Any( a => !_possibleAttendances.Contains( a ) ) || _possibleAttendances.Any( a => !existingSummaryDates.Contains( a ) ) )
-            {
-                foreach ( var oldField in attendanceSummaryFields )
-                {
-                    gAttendeesAttendance.Columns.Remove( oldField );
-                }
-
-                foreach ( var summaryDate in _possibleAttendances )
-                {
-                    var boolFromArrayField = new BoolFromArrayField<DateTime>();
-                    boolFromArrayField.ArrayKey = summaryDate;
-                    boolFromArrayField.DataField = "AttendanceSummary";
-                    boolFromArrayField.HeaderText = summaryDate.ToShortDateString();
-                    gAttendeesAttendance.Columns.Add( boolFromArrayField );
-                }
-            }
+            // Create the dynamic attendance grid columns as needed
+            CreateDynamicAttendanceGridColumns();
 
             try
             {
@@ -863,6 +853,56 @@ function(item) {
         }
 
         /// <summary>
+        /// Creates the dynamic attendance grid columns.
+        /// </summary>
+        /// <param name="groupBy">The group by.</param>
+        private void CreateDynamicAttendanceGridColumns()
+        {
+            AttendanceGroupBy groupBy = hfGroupBy.Value.ConvertToEnumOrNull<AttendanceGroupBy>() ?? AttendanceGroupBy.Week;
+            
+            // Ensure the columns for the Attendance Checkmarks are there
+            var attendanceSummaryFields = gAttendeesAttendance.Columns.OfType<BoolFromArrayField<DateTime>>().Where( a => a.DataField == "AttendanceSummary" ).ToList();
+            var existingSummaryDates = attendanceSummaryFields.Select( a => a.ArrayKey ).ToList();
+
+            if ( existingSummaryDates.Any( a => !_possibleAttendances.Contains( a ) ) || _possibleAttendances.Any( a => !existingSummaryDates.Contains( a ) ) )
+            {
+                foreach ( var oldField in attendanceSummaryFields.Reverse<BoolFromArrayField<DateTime>>())
+                {
+                    // remove all these fields if they have changed
+                    gAttendeesAttendance.Columns.Remove( oldField );
+                }
+
+                // limit to 520 checkmark columns so that we don't blow up the server (just in case they select every week for the last 100 years or something). 
+                var maxColumns = 520; 
+                foreach ( var summaryDate in _possibleAttendances.Take(maxColumns) )
+                {
+                    var boolFromArrayField = new BoolFromArrayField<DateTime>();
+                    
+                    boolFromArrayField.ArrayKey = summaryDate;
+                    boolFromArrayField.DataField = "AttendanceSummary";
+                    switch ( groupBy )
+                    {
+                        case AttendanceGroupBy.Year:
+                            boolFromArrayField.HeaderText = summaryDate.ToString( "yyyy" );
+                            break;
+                        case AttendanceGroupBy.Month:
+                            boolFromArrayField.HeaderText = summaryDate.ToString( "MMM yyyy" );
+                            break;
+                        case AttendanceGroupBy.Week:
+                            boolFromArrayField.HeaderText = summaryDate.ToShortDateString();
+                            break;
+                        default:
+                            // shouldn't happen
+                            boolFromArrayField.HeaderText = summaryDate.ToString();
+                            break;
+                    }
+
+                    gAttendeesAttendance.Columns.Add( boolFromArrayField );
+                }
+            }
+        }
+
+        /// <summary>
         /// Updates the possible attendance summary dates
         /// </summary>
         /// <param name="dateRange">The date range.</param>
@@ -885,32 +925,35 @@ function(item) {
                 var weekEndDate = endOfFirstWeek;
                 while ( weekEndDate <= endOfLastWeek )
                 {
+                    // Weeks are summarized as the last day of the "Rock" week (Sunday)
                     _possibleAttendances.Add( weekEndDate );
                     weekEndDate = weekEndDate.AddDays( 7 );
                 }
-
             }
             else if ( attendanceGroupBy == AttendanceGroupBy.Month )
             {
                 var endOfFirstMonth = dateRange.Start.Value.AddDays( -( dateRange.Start.Value.Day - 1 ) ).AddMonths( 1 ).AddDays( -1 );
                 var endOfLastMonth = dateRange.End.Value.AddDays( -( dateRange.End.Value.Day - 1 ) ).AddMonths( 1 ).AddDays( -1 );
-                var monthEndDate = endOfFirstMonth;
-                while ( monthEndDate <= endOfLastMonth )
+
+                //// Months are summarized as the First Day of the month: For example, 5/1/2015 would include everything from 5/1/2015 - 5/31/2015 (inclusive)
+                var monthStartDate = new DateTime( endOfFirstMonth.Year, endOfFirstMonth.Month, 1 );
+                while ( monthStartDate <= endOfLastMonth )
                 {
-                    _possibleAttendances.Add( monthEndDate );
-                    // figure out the start of the next month, then substract to the get last day of month
-                    monthEndDate = monthEndDate.AddDays( 1 ).AddMonths( 1 ).AddDays( -1 );
+                    _possibleAttendances.Add( monthStartDate );
+                    monthStartDate = monthStartDate.AddMonths( 1 );
                 }
             }
             else if ( attendanceGroupBy == AttendanceGroupBy.Year )
             {
                 var endOfFirstYear = new DateTime( dateRange.Start.Value.Year, 1, 1 ).AddYears( 1 ).AddDays( -1 );
                 var endOfLastYear = new DateTime( dateRange.End.Value.Year, 1, 1 ).AddYears( 1 ).AddDays( -1 );
-                var yearEndDate = endOfFirstYear;
-                while ( yearEndDate <= endOfLastYear )
+
+                //// Years are summarized as the First Day of the year: For example, 1/1/2015 would include everything from 1/1/2015 - 12/31/2015 (inclusive)
+                var yearStartDate = new DateTime( endOfFirstYear.Year, 1, 1 );
+                while ( yearStartDate <= endOfLastYear )
                 {
-                    _possibleAttendances.Add( yearEndDate );
-                    yearEndDate = yearEndDate.AddYears( 1 );
+                    _possibleAttendances.Add( yearStartDate );
+                    yearStartDate = yearStartDate.AddYears( 1 );
                 }
             }
         }
@@ -928,8 +971,19 @@ function(item) {
                 Literal lFirstVisitDate = e.Row.FindControl( "lFirstVisitDate" ) as Literal;
                 if ( lFirstVisitDate == null )
                 {
-                    return;
+                    // Since we have dynamic columns, the templatefields might not get created due some viewstate thingy
+                    // so, if we lost the templatefield, force them to instantiate
+                    var templateFields = gAttendeesAttendance.Columns.OfType<TemplateField>();
+                    foreach ( var templateField in templateFields )
+                    {
+                        var cellIndex = gAttendeesAttendance.Columns.IndexOf( templateField );
+                        var cell = e.Row.Cells[cellIndex] as DataControlFieldCell;
+                        templateField.InitializeCell( cell, DataControlCellType.DataCell, e.Row.RowState, e.Row.RowIndex );
+                    }
+
+                    lFirstVisitDate = e.Row.FindControl( "lFirstVisitDate" ) as Literal;
                 }
+
                 Literal lSecondVisitDate = e.Row.FindControl( "lSecondVisitDate" ) as Literal;
                 Literal lServiceTime = e.Row.FindControl( "lServiceTime" ) as Literal;
                 Literal lHomeAddress = e.Row.FindControl( "lHomeAddress" ) as Literal;
@@ -938,7 +992,7 @@ function(item) {
                 var person = dataItem.GetPropertyValue( "Person" ) as Person;
 
                 var firstVisits = dataItem.GetPropertyValue( "FirstVisits" ) as IEnumerable<object>;
-                var lastVisit = dataItem.GetPropertyValue( "LastVisit" ) as Attendance;
+
                 if ( firstVisits != null )
                 {
                     var firstVisit = firstVisits.FirstOrDefault();
@@ -959,6 +1013,15 @@ function(item) {
                         {
                             lSecondVisitDate.Text = secondVisitDateTime.Value.ToShortDateString();
                         }
+                    }
+                }
+
+                var lastVisit = dataItem.GetPropertyValue( "LastVisit" ) as Attendance;
+                if ( lastVisit != null && lastVisit.ScheduleId.HasValue )
+                {
+                    if ( _scheduleNameLookup.ContainsKey( lastVisit.ScheduleId.Value ) )
+                    {
+                        lServiceTime.Text = _scheduleNameLookup[lastVisit.ScheduleId.Value];
                     }
                 }
 

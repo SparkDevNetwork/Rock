@@ -21,8 +21,9 @@ namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// Field where the Text can be set either at design time, or on RowDataBound by doing a (e.Row.FindControl( "ID" ) as Literal).Text =...
+    /// Make sure to set ID if you want to use the FindControl stuff
     /// </summary>
-    [ToolboxData( "<{0}:RockLiteralField runat=server></{0}:RockLiteralField>" )]
+    [ToolboxData( "<{0}:RockLiteralField runat=server ></{0}:RockLiteralField>" )]
     public class RockLiteralField : RockTemplateField
     {
         /// <summary>
