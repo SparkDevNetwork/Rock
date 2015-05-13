@@ -210,8 +210,8 @@ namespace Rock.Web.UI.Controls
 
             _drpDateRange = new DateRangePicker();
             
-            // change the inputsClass on the DateRangePicker to "input-group" instead of "form-control-group";
-            _drpDateRange.InputsClass = "input-group";
+            // change the inputsClass on the DateRangePicker to "" instead of "form-control-group";
+            _drpDateRange.InputsClass = "";
             _drpDateRange.CssClass = "js-time-units-date-range slidingdaterange-daterange";
             _drpDateRange.ID = "drpDateRange_" + this.ID;
 

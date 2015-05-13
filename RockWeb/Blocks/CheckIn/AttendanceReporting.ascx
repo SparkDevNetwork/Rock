@@ -13,7 +13,7 @@
             </div>
             <div class="panel-body">
                 <div class="row row-eq-height-md">
-                    <div class="col-md-4 filter-options">
+                    <div class="col-md-3 filter-options">
 
                         <Rock:GroupTypePicker ID="ddlCheckinType" runat="server" Label="Check-in Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" />
                         <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="false" />
@@ -50,7 +50,7 @@
                         </ul>
 
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-md-9">
 
                         <div class="row analysis-types">
                             <div class="col-sm-8">
@@ -126,10 +126,10 @@
                                         <div class="js-view-by">
                                             <Rock:HiddenFieldWithClass ID="hfViewBy" CssClass="js-hidden-selected" runat="server" />
                                             <div class="btn-group">
-                                                <asp:HyperLink ID="btnViewAttendees" runat="server" CssClass="btn btn-default active" data-val="0">
+                                                <asp:HyperLink ID="btnViewAttendees" runat="server" CssClass="btn btn-default btn-sm active" data-val="0">
                                                     Attendees
                                                 </asp:HyperLink>
-                                                <asp:HyperLink ID="btnViewParentsOfAttendees" runat="server" CssClass="btn btn-default" data-val="1">
+                                                <asp:HyperLink ID="btnViewParentsOfAttendees" runat="server" CssClass="btn btn-default btn-sm" data-val="1">
                                                     Parents of Attendees
                                                 </asp:HyperLink>
                                             </div>
