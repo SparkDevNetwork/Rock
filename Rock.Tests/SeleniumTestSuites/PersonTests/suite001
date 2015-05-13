@@ -8,7 +8,9 @@
 <body>
 <table id="suiteTable" cellpadding="1" cellspacing="1" border="1" class="selenium"><tbody>
 <tr><td><b>Test Suite</b></td></tr>
-<tr><td><a href="AddUser.html">Add User</a></td></tr>
+<tr><td><a href="Add Blargh McFlibbercutty.html">Add Blargh McFlibbercutty</a></td></tr>
+<tr><td><a href="Edit Blargh McFlibbercutty Visit Information Attributes.html">Edit Blargh McFlibbercutty Visit Information Attributes</a></td></tr>
+<tr><td><a href="Remove Blargh McFlibbercutty via SQL Command.html">Remove Blargh McFlibbercutty via SQL Command</a></td></tr>
 </tbody></table>
 </body>
 </html>
