@@ -17,7 +17,7 @@ containing a test suite and all the individual test cases.
 
 ## Notes for Test Builders
 
- * Don't create Selenium Core extensions and use them in your tests.
+ * Don't use any custom Selenium Core extensions in your tests.
 
  * Add a `setSpeed` command to set the speed of your test to about 500ms
 
@@ -56,7 +56,19 @@ are less fragile than the ones than the Selenium IDE chooses.  Consider replacin
 
  * Select a `<select>` under a `<div>` based on it having an option with a certain known value ("Women of the Bible"):
 
-    `//div/select[option[contains(text(), 'Women of the Bible')]]/`    
+    `//div/select[option[contains(text(), 'Women of the Bible')]]/`
+
+ * Select a date input where its label has a particular text:
+
+	`//label[contains(text(), 'Second Visit')]/following-sibling::div/input`
+
+ * Select a text input where its label has a particular text:
+
+	`//label[contains(text(), 'Previous Church')]/following-sibling::input`
+
+ * Select a `<select>` where its label has a particular text:
+
+	`//label[contains(text(), 'Source of Visit')]/following-sibling::select`
 
  * Selecting a complex `<select>` via CSS that has an unpredictable middle section of the id:
     

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://localhost:6229/" />
+<title>New Test</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">New Test</td></tr>
+</thead><tbody>
+<tr>
+	<td>setSpeed</td>
+	<td>500</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=div.logo</td>
+	<td></td>
+</tr>
+<tr>
+	<td>sendKeys</td>
+	<td>css=[id$=_searchField]</td>
+	<td>Blargh McFlibbercutty${KEY_ENTER}</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Extended Attributes</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=#ctl00_main_ctl103_ctl01_ctl06_lbEdit &gt; i.fa.fa-pencil</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//label[contains(text(), 'First Visit')]/following-sibling::div/input</td>
+	<td>5/1/2015</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//label[contains(text(), 'Previous Church')]/following-sibling::input</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//label[contains(text(), 'Second Visit')]/following-sibling::div/input</td>
+	<td>5/9/2015</td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>//label[contains(text(), 'Source of Visit')]/following-sibling::select</td>
+	<td>label=Friend/Family</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=_btnSave]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>sendKeys</td>
+	<td>css=[id$=_searchField]</td>
+	<td>Blargh McFlibbercutty${KEY_ENTER}</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Extended Attributes</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>5/1/2015</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>none</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>5/9/2015</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>Friend/Family</td>
+	<td></td>
+</tr>
+</tbody></table>
+</body>
+</html>
