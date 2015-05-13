@@ -177,7 +177,7 @@
                             </div>
 
                             <Rock:NotificationBox ID="nbAttendeesError" runat="server" NotificationBoxType="Danger" Dismissable="true" Visible="false" />
-                            <Rock:Grid ID="gAttendeesAttendance" runat="server" AllowSorting="true" RowItemText="Attendee" OnRowDataBound="gAttendeesAttendance_RowDataBound">
+                            <Rock:Grid ID="gAttendeesAttendance" runat="server" AllowSorting="true" RowItemText="Attendee" OnRowDataBound="gAttendeesAttendance_RowDataBound" ExportGridAsWYSIWYG="true">
                                 <Columns>
                                     <Rock:SelectField />
                                     <Rock:PersonField DataField="Parent" HeaderText="Parent" />
