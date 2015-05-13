@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://localhost:6229/" />
+<title>New Test</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">New Test</td></tr>
+</thead><tbody>
+<tr>
+	<td>setSpeed</td>
+	<td>500</td>
+	<td></td>
+</tr>
+<tr>
+	<td>open</td>
+	<td>/</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Data Views</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//div[@id='treeview-content']/ul/li[span[contains(text(), 'Foundational Views')]]/span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>id=ctl00_main_ctl24_ctl01_ctl08_lbAddItem</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=ctl00_main_ctl33_ctl01_ctl06_tbName</td>
+	<td>TEST No Picture</td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>id=ctl00_main_ctl33_ctl01_ctl06_etpEntityType</td>
+	<td>label=Person</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=option[value=&quot;15&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=div.filter-item-description</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=select[id^='ctl00_main_ctl33_ctl01_ctl06_fg_'][id$='_ddlFilter']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=select[id^='ctl00_main_ctl33_ctl01_ctl06_fg_'][id$='_ddlFilter']</td>
+	<td>label=Has Picture</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=option[title=&quot;Filter people on whether they have a picture or not&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=input[id^='ctl00_main_ctl33_ctl01_ctl06_fg_'][id$='_0_0']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>id=ctl00_main_ctl33_ctl01_ctl06_btnSave</td>
+	<td></td>
+</tr>
+<!-- we should not find the Admin Admin record-->
+<tr>
+	<td>assertTextNotPresent</td>
+	<td>admin@organization.com</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=ctl00_main_ctl33_ctl01_ctl06_btnDelete</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=button.btn.btn-primary</td>
+	<td></td>
+</tr>
+</tbody></table>
+</body>
+</html>

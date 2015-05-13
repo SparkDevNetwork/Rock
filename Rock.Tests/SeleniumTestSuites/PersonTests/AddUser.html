@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://localhost:6229/" />
+<title>New Test</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">New Test</td></tr>
+</thead><tbody>
+<tr>
+	<td>setSpeed</td>
+	<td>500</td>
+	<td></td>
+</tr>
+<tr>
+	<td>open</td>
+	<td>/page/12</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=New Family</td>
+	<td></td>
+</tr>
+<!--Need to use CSS selectors to find dynamically named controls-->
+<tr>
+	<td>select</td>
+	<td>css=[id$=ddlTitle]</td>
+	<td>label=Mr.</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=[id$=tbFirstName]</td>
+	<td>Dohn</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=[id$=tbLastName]</td>
+	<td>Joe</td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=[id$=ddlConnectionStatus]</td>
+	<td>label=Member</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=rblGender_0]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=[id$=dtBirthdate]</td>
+	<td>05/12/1970</td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=[id$=cpCampus]</td>
+	<td>label=Main Campus</td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=[id$=ddlMaritalStatus]</td>
+	<td>label=Single</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=[id$=Address_tbStreet1]</td>
+	<td>1123 South Main Street</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=[id$=acAddress_tbCity]</td>
+	<td>Gilbert</td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=[id$=acAddress_ddlState]</td>
+	<td>label=Arizona</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=[id$=acAddress_tbPostalCode]</td>
+	<td>85296</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=btnNext]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=[id$=HomePhone]</td>
+	<td>4805551212</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=[id$=CellPhone]</td>
+	<td>4805552121</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=[id$=ebEmail]</td>
+	<td>a.b@yahoo.com</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id*=btnNext]</td>
+	<td></td>
+</tr>
+</tbody></table>
+</body>
+</html>
