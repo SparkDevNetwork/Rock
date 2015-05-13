@@ -99,13 +99,13 @@ namespace RockWeb.Blocks.Cms
         private void ClearCache()
         {
             SyndicationFeedHelper.ClearCachedFeed( GetAttributeValue( "RSSFeedUrl" ) );
-            ObjectCache cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             cache.Remove( TemplateCacheKey );
         }
 
         private Template GetTemplate()
         {
-            ObjectCache cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             Template template = null;
 
             if ( cache[TemplateCacheKey] != null )

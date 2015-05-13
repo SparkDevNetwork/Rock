@@ -34,6 +34,7 @@ namespace RockWeb.Blocks.CheckIn
     [Description("Welcome screen for check-in.")]
     [LinkedPage( "Family Select Page" )]
     [IntegerField( "Refresh Interval", "How often (seconds) should page automatically query server for new Check-in data", false, 10 )]
+    [BooleanField("Enable Override", "Allows the override link to be placed on the page.", true)]
     public partial class Welcome : CheckInBlock
     {
         protected override void OnInit( EventArgs e )
@@ -76,12 +77,23 @@ namespace RockWeb.Blocks.CheckIn
                 CurrentCheckInState.CheckIn = new CheckInStatus();
                 SaveState();
                 RefreshView();
+
+                // enable override
+                btnOverride.Visible = GetAttributeValue( "EnableOverride" ).AsBoolean();
+
             }
         }
 
         protected void lbRefresh_Click( object sender, EventArgs e )
         {
             RefreshView();
+        }
+
+        protected void btnOverride_Click( object sender, EventArgs e )
+        {
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add( "Override", "True" );
+            NavigateToNextPage( queryParams );
         }
 
         protected void lbSearch_Click( object sender, EventArgs e )

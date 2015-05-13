@@ -8142,6 +8142,15 @@ body {
 .bootbox .modal-footer {
   border-top-color: #7a909c;
 }
+.btn-checkin-override {
+  position: absolute;
+  width: 110px;
+  height: 110px;
+  bottom: 0;
+  right: 0;
+  border: 0;
+  background-color: transparent;
+}
 .checkin-search-body {
   margin-right: auto !important;
   margin-left: auto !important;
@@ -8624,6 +8633,7 @@ Copyright (c) 2012 Dan Eden*/
   1. Variables - specific variables for sizing classes and media query helpers
   2. Colors - creates utility classes for each of the accent colors
   3. Spacing - provides utility classes for spacing based off of the themes gutter widths
+  4. Even Height Columns - provides classes for making columns even heights
 
 */
 .accent-color {
@@ -8897,6 +8907,20 @@ Copyright (c) 2012 Dan Eden*/
 }
 .margin-l-xl {
   margin-left: 60px !important;
+}
+.row-eq-height {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  overflow: hidden;
+}
+@media (min-width: 992px) {
+  .row-eq-height-md {
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    overflow: hidden;
+  }
 }
 @font-face {
   font-family: 'OpenSans';
