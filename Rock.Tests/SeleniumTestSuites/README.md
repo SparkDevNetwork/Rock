@@ -16,17 +16,48 @@ containing a test suite and all the individual test cases.
  
 
 ## Notes for Test Builders
+
+ * Don't create Selenium Core extensions and use them in your tests.
+
+ * Add a `setSpeed` command to set the speed of your test to about 500ms
+
+	<table>
+		<tr>
+			<td>Command</td><td>Target</td><td>Value</td>
+		</tr>
+		<tr>
+			<td>setSpeed</td><td>500</td><td></td>
+		</tr>
+	</table>
+
 When developing new tests, you may find these selectors
 are less fragile than the ones than the Selenium IDE chooses.  Consider replacing 
 
- * a input field via CSS endswith trick:
+ * If you need something like a random number, use the `storeEval` command like this:
+	
+	<table>
+		<tr>
+			<td>Command</td><td>Target</td><td>Value</td>
+		</tr>
+		<tr>
+			<td>storeEval</td><td>new Date().getTime()</td><td>x</td>
+		</tr>
+	</table>
 
-    css=input[id$='_tbUserName']
+	This will store a number (eg. 1431551879224) that can be used later with `${x}`
+
+ * a input field via CSS ends-with trick:
+
+    `css=input[id$='_tbUserName']`
     
  * Select something in the tree view by name "Foundational Views":
     
-	//div[@id='treeview-content']/ul/li[span[contains(text(), 'Foundational Views')]]/span
+	`//div[@id='treeview-content']/ul/li[span[contains(text(), 'Foundational Views')]]/span`
 
- * Selecting a complex `<SELECT>` via CSS that has an unpredictible middle section of the id:
+ * Select a `<select>` under a `<div>` based on it having an option with a certain known value ("Women of the Bible"):
+
+    `//div/select[option[contains(text(), 'Women of the Bible')]]/`    
+
+ * Selecting a complex `<select>` via CSS that has an unpredictable middle section of the id:
     
-	css=select[id^='ctl00_main_ctl33_ctl01_ctl06_fg'][id$='_BackgroundCheckDate_dtPicker']
+	`css=select[id^='ctl00_main_ctl33_ctl01_ctl06_fg'][id$='_BackgroundCheckDate_dtPicker']`
