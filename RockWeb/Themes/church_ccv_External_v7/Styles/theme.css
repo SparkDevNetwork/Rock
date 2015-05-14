@@ -5010,28 +5010,28 @@ fieldset[disabled] .btn-authenication.active {
 }
 .alert-success a {
   color: #3c763d;
-  border-bottom: 1px dotted #3c763d;
+  border-bottom: none;
 }
 .alert-success a.help {
   border-bottom: 0;
 }
 .alert-info a {
   color: #31708f;
-  border-bottom: 1px dotted #31708f;
+  border-bottom: none;
 }
 .alert-info a.help {
   border-bottom: 0;
 }
 .alert-warning a {
   color: #8a6d3b;
-  border-bottom: 1px dotted #8a6d3b;
+  border-bottom: none;
 }
 .alert-warning a.help {
   border-bottom: 0;
 }
 .alert-danger a {
   color: #a94442;
-  border-bottom: 1px dotted #a94442;
+  border-bottom: none;
 }
 .alert-danger a.help {
   border-bottom: 0;
