@@ -17,7 +17,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-
+using System.Web.UI.WebControls;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -46,7 +46,7 @@ namespace Rock.Web.UI.Controls
                 foreach ( var phoneNumber in phoneNumbers )
                 {
                     dataValue += "<li>";
-                    dataValue += FormatPhoneNumber( phoneNumber.IsUnlisted, phoneNumber.CountryCode, phoneNumber.Number, phoneNumber.NumberTypeValueId ?? 0 );
+                    dataValue += FormatPhoneNumber( phoneNumber.IsUnlisted, phoneNumber.CountryCode, phoneNumber.Number, phoneNumber.NumberTypeValueId ?? 0 , true);
                     dataValue += "</li>";
                 }
 
@@ -67,8 +67,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="countryCode">The country code.</param>
         /// <param name="number">The number.</param>
         /// <param name="phoneNumberTypeId">The phone number type identifier.</param>
+        /// <param name="formatAsHtml">if set to <c>true</c> [format as HTML].</param>
         /// <returns></returns>
-        protected string FormatPhoneNumber( bool unlisted, object countryCode, object number, int phoneNumberTypeId )
+        protected string FormatPhoneNumber( bool unlisted, object countryCode, object number, int phoneNumberTypeId, bool formatAsHtml )
         {
             string formattedNumber = "Unlisted";
             if ( !unlisted )
@@ -89,7 +90,15 @@ namespace Rock.Web.UI.Controls
             var phoneType = DefinedValueCache.Read( phoneNumberTypeId );
             if ( phoneType != null )
             {
-                return string.Format( "{0} <small>{1}</small>", formattedNumber, phoneType.Value );
+                if ( formatAsHtml )
+                {
+                    return string.Format( "{0} <small>{1}</small>", formattedNumber, phoneType.Value );
+                }
+                else
+                {
+                    return string.Format( "{0} [{1}]", formattedNumber, phoneType.Value );
+                }
+                
             }
 
             return formattedNumber;
@@ -102,5 +111,32 @@ namespace Rock.Web.UI.Controls
         ///   <c>true</c> if [display country code]; otherwise, <c>false</c>.
         /// </value>
         public bool DisplayCountryCode { get; set; }
+
+        /// <summary>
+        /// Gets the value that should be exported to Excel
+        /// </summary>
+        /// <param name="row"></param>
+        /// <returns></returns>
+        public override object GetExportValue( GridViewRow row )
+        {
+            var dataValue = base.GetExportValue( row );
+
+            var phoneNumbers = dataValue as IEnumerable<Rock.Model.PhoneNumber>;
+            if ( phoneNumbers != null && phoneNumbers.Any() )
+            {
+                dataValue = string.Empty;
+                foreach ( var phoneNumber in phoneNumbers )
+                {
+                    dataValue += FormatPhoneNumber( phoneNumber.IsUnlisted, phoneNumber.CountryCode, phoneNumber.Number, phoneNumber.NumberTypeValueId ?? 0, false );
+                    dataValue += ", ";
+                }
+            }
+            else
+            {
+                dataValue = string.Empty;
+            }
+
+            return dataValue;
+        }
     }
 }
