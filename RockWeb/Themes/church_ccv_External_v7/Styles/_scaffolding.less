@@ -1,0 +1,57 @@
+
+
+//
+// SCAFFOLDING
+// --------------------------------------------------
+
+
+// High Level
+// -------------------------
+
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body {
+  position: relative; // required by full menu overlay
+}
+
+img { .img-responsive(); }
+// Fix Google Map infowindow close mark being affected by img-responsive
+.gm-style img { max-width: none; }
+
+body {
+  max-width: 1920px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+main {
+  margin-bottom: @grid-gutter-width*2;
+}
+
+
+// Extensions
+// -------------------------
+
+.img-full {
+  width: 100%;
+  height: auto;
+}
+
+.link-plain {
+  color: inherit;
+  &:hover {
+    color: inherit;
+    text-decoration: inherit;
+  }
+}
+
+.container-sm {
+  max-width: 40em;
+  margin-left: auto;
+  margin-right: auto;
+}
