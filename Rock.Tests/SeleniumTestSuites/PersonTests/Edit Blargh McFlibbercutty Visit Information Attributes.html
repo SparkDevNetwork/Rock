@@ -22,7 +22,7 @@
 	<td></td>
 </tr>
 <tr>
-	<td>sendKeys</td>
+	<td>sendKeysAndWait</td>
 	<td>css=[id$=_searchField]</td>
 	<td>Blargh McFlibbercutty${KEY_ENTER}</td>
 </tr>
@@ -62,7 +62,7 @@
 	<td></td>
 </tr>
 <tr>
-	<td>sendKeys</td>
+	<td>sendKeysAndWait</td>
 	<td>css=[id$=_searchField]</td>
 	<td>Blargh McFlibbercutty${KEY_ENTER}</td>
 </tr>
@@ -72,24 +72,24 @@
 	<td></td>
 </tr>
 <tr>
-	<td>assertTextPresent</td>
+	<td>assertText</td>
+	<td>//label[contains(text(), 'First Visit')]/following-sibling::p</td>
 	<td>5/1/2015</td>
-	<td></td>
 </tr>
 <tr>
-	<td>assertTextPresent</td>
+	<td>assertText</td>
+	<td>//label[contains(text(), 'Previous Church')]/following-sibling::p</td>
 	<td>none</td>
-	<td></td>
 </tr>
 <tr>
-	<td>assertTextPresent</td>
+	<td>assertText</td>
+	<td>//label[contains(text(), 'Second Visit')]/following-sibling::p</td>
 	<td>5/9/2015</td>
-	<td></td>
 </tr>
 <tr>
-	<td>assertTextPresent</td>
+	<td>assertText</td>
+	<td>//label[contains(text(), 'Source of Visit')]/following-sibling::p</td>
 	<td>Friend/Family</td>
-	<td></td>
 </tr>
 </tbody></table>
 </body>
