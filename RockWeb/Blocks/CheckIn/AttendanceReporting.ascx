@@ -37,8 +37,11 @@
                             </div>
                         </Rock:RockControlWrapper>
 
+                        <Rock:NotificationBox ID="nbCampusesWarning" runat="server" NotificationBoxType="Warning" Text="Please select at least one campus." Visible="false"/>
                         <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campuses" />
 
+                        
+                        <Rock:NotificationBox ID="nbGroupsWarning" runat="server" NotificationBoxType="Warning" Text="Please select at least one group." Visible="false"/>
                         <h4>Group</h4>
                         <ul class="rocktree">
 
