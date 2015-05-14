@@ -67,7 +67,7 @@ namespace Rock.Workflow.Action
                         if ( person != null && !string.IsNullOrWhiteSpace( person.Email ) )
                         {
                             recipients.Add( new RecipientData( person.Email, CombinePersonMergeFields( person, workflowMergeFields ) ) );
-                            action.AddLogEntry( string.Format( "Form Notification sent to '{0}'", person.FullName ) );
+                            action.AddLogEntry( string.Format( "Form notification sent to '{0}'", person.FullName ) );
                         }
                     }
 
@@ -83,7 +83,7 @@ namespace Rock.Workflow.Action
                         foreach( var person in personList)
                         {
                             recipients.Add( new RecipientData( person.Email, CombinePersonMergeFields( person, workflowMergeFields ) ) );
-                            action.AddLogEntry( string.Format( "Form Notification sent to '{0}'", person.FullName ) );
+                            action.AddLogEntry( string.Format( "Form notification sent to '{0}'", person.FullName ) );
                         }
                     }
 
@@ -97,17 +97,17 @@ namespace Rock.Workflow.Action
                         }
                         else
                         {
-                            action.AddLogEntry( "Could not find the selected notifiction system email!", true );
+                            action.AddLogEntry( "Could not find the selected notification system email", true );
                         }
                     }
                     else
                     {
-                        action.AddLogEntry( "Could not send form notifiction due to no assigned person or group member not having email address!", true );
+                        action.AddLogEntry( "Could not send form notification due to no assigned person or group member not having email address", true );
                     }
                 }
                 else
                 {
-                    action.AddLogEntry( "Could not send form notifiction due to no assigned person or group!", true );
+                    action.AddLogEntry( "Could not send form notification due to no assigned person or group", true );
                 }
             }
 
