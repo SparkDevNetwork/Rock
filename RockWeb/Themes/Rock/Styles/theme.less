@@ -278,6 +278,29 @@ h4, .h4 {
   input.searchinput {
     color: @accent-bold-text-color;
   }
+
+  @media @md {
+    margin: 0;
+    height: @navbar-height;
+    border-radius: 0;
+    width: 290px;
+    background-color: darken(@header-bg, 5%);
+
+    input,
+    a.dropdown-toggle {
+      line-height: @navbar-height - 12px;
+    }
+
+    i {
+      margin-top: 0;
+      line-height: @navbar-height - 4px;
+      margin-left: 4px;
+    }
+
+    input.searchinput {
+      color: @header-text-color;
+    }
+  }
 }
 
 .loginstatus {
@@ -646,16 +669,6 @@ body#splash {
             background-color: @gray-light;
           }
         }
-      }
-    }
-
-    .smartsearch {
-      margin: 9px 8px 9px 0;
-      width: 290px;
-      background-color: darken(@header-bg, 3%);
-
-      input.searchinput {
-        color: @header-text-color;
       }
     }
   }

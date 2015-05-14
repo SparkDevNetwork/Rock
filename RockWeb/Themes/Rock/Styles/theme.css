@@ -5462,6 +5462,27 @@ h4,
 .smartsearch input.searchinput {
   color: #d3cec5;
 }
+@media (min-width: 992px) {
+  .smartsearch {
+    margin: 0;
+    height: 50px;
+    border-radius: 0;
+    width: 290px;
+    background-color: #b8ac98;
+  }
+  .smartsearch input,
+  .smartsearch a.dropdown-toggle {
+    line-height: 38px;
+  }
+  .smartsearch i {
+    margin-top: 0;
+    line-height: 46px;
+    margin-left: 4px;
+  }
+  .smartsearch input.searchinput {
+    color: #616161;
+  }
+}
 .loginstatus {
   margin-right: 2px;
 }
@@ -5718,14 +5739,6 @@ body#splash.error #content #logo {
   }
   #content-wrapper header .navbar-default .dropdown-menu li.divider {
     background-color: #f3f3f4;
-  }
-  #content-wrapper .smartsearch {
-    margin: 9px 8px 9px 0;
-    width: 290px;
-    background-color: #bcb19e;
-  }
-  #content-wrapper .smartsearch input.searchinput {
-    color: #616161;
   }
 }
 /*#endregion */
