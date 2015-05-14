@@ -321,6 +321,23 @@ function(item) {
 
             dataSourceUrl += "?" + dataSourceParams.Select( s => string.Format( "{0}={1}", s.Key, s.Value ) ).ToList().AsDelimited( "&" );
 
+            // if no Campuses or Groups are selected show a warning since no data will show up
+            nbCampusesWarning.Visible = false;
+            nbGroupsWarning.Visible = false;
+
+            if ( !selectedGroupIds.Any() )
+            {
+                nbGroupsWarning.Visible = true;
+                return;
+            }
+
+            if ( !cpCampuses.SelectedCampusIds.Any() )
+            {
+                nbCampusesWarning.Visible = true;
+                return;
+            }
+
+
             lcAttendance.DataSourceUrl = this.ResolveUrl( dataSourceUrl );
 
             hlblDateRange.Text = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues ).ToString( "d" );
