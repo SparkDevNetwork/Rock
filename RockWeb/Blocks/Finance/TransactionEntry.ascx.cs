@@ -1050,7 +1050,7 @@ namespace RockWeb.Blocks.Finance
                 if ( _ccGateway != null )
                 {
                     var ccCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
-                    if ( _achGateway.SupportsSavedAccount( ccCurrencyType ) )
+                    if ( _ccGateway.SupportsSavedAccount( ccCurrencyType ) )
                     {
                         rblSavedCC.DataSource = savedAccounts
                             .Where( a =>
