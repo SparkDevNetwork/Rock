@@ -72,6 +72,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the value that should be exported to Excel
+        /// </summary>
+        /// <param name="controlContainer">The control container.</param>
+        /// <returns></returns>
+        public virtual object GetExportValue( GridViewRow row )
+        {
+            return row.DataItem.GetPropertyValue( this.DataField );
+        }
+
+        /// <summary>
         /// Performs basic instance initialization for a data control field.
         /// </summary>
         /// <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>

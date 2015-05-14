@@ -188,31 +188,31 @@ namespace Rock.Web.UI.Controls
             this.Label = "Date Range";
 
             _ddlLastCurrent = new DropDownList();
-            _ddlLastCurrent.CssClass = "form-control input-width-md";
+            _ddlLastCurrent.CssClass = "form-control input-width-md slidingdaterange-select";
             _ddlLastCurrent.ID = "ddlLastCurrent_" + this.ID;
             _ddlLastCurrent.SelectedIndexChanged += ddl_SelectedIndexChanged;
 
             _nbNumber = new NumberBox();
-            _nbNumber.CssClass = "form-control input-width-sm js-number";
+            _nbNumber.CssClass = "form-control input-width-sm js-number slidingdaterange-number";
             _nbNumber.NumberType = ValidationDataType.Integer;
             _nbNumber.ID = "nbNumber_" + this.ID;
             _nbNumber.Text = "1";
 
             _ddlTimeUnitTypeSingular = new DropDownList();
-            _ddlTimeUnitTypeSingular.CssClass = "form-control input-width-md js-time-units-singular";
+            _ddlTimeUnitTypeSingular.CssClass = "form-control input-width-md js-time-units-singular slidingdaterange-timeunits-singular";
             _ddlTimeUnitTypeSingular.ID = "ddlTimeUnitTypeSingular_" + this.ID;
             _ddlTimeUnitTypeSingular.SelectedIndexChanged += ddl_SelectedIndexChanged;
 
             _ddlTimeUnitTypePlural = new DropDownList();
-            _ddlTimeUnitTypePlural.CssClass = "form-control input-width-md js-time-units-plural";
+            _ddlTimeUnitTypePlural.CssClass = "form-control input-width-md js-time-units-plural slidingdaterange-timeunits-plural";
             _ddlTimeUnitTypePlural.ID = "ddlTimeUnitTypePlural_" + this.ID;
             _ddlTimeUnitTypePlural.SelectedIndexChanged += ddl_SelectedIndexChanged;
 
             _drpDateRange = new DateRangePicker();
             
-            // change the inputsClass on the DateRangePicker to "input-group" instead of "form-control-group";
-            _drpDateRange.InputsClass = "input-group";
-            _drpDateRange.CssClass = "js-time-units-date-range";
+            // change the inputsClass on the DateRangePicker to "" instead of "form-control-group";
+            _drpDateRange.InputsClass = "";
+            _drpDateRange.CssClass = "js-time-units-date-range slidingdaterange-daterange";
             _drpDateRange.ID = "drpDateRange_" + this.ID;
 
             Controls.Add( _ddlLastCurrent );
@@ -334,7 +334,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                RockControlHelper.RenderControl( this, writer );
+                RockControlHelper.RenderControl( this, writer, "slidingdaterange" );
             }
         }
 

@@ -1032,12 +1032,10 @@ namespace Rock.Lava
             var person = GetPerson( input );
             int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
 
-            
-
             if ( person != null && numericalGroupTypeId.HasValue )
             {
                 var groupQuery =  new GroupMemberService( GetRockContext( context ) )
-                    .Queryable("Group").AsNoTracking()
+                    .Queryable("Group, GroupRole").AsNoTracking()
                     .Where( m =>
                         m.PersonId == person.Id &&
                         m.Group.GroupTypeId == numericalGroupTypeId.Value &&
