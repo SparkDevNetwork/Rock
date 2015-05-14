@@ -184,18 +184,18 @@
                             <Rock:Grid ID="gAttendeesAttendance" runat="server" AllowSorting="true" RowItemText="Attendee" OnRowDataBound="gAttendeesAttendance_RowDataBound" ExportGridAsWYSIWYG="true">
                                 <Columns>
                                     <Rock:SelectField />
-                                    <Rock:PersonField DataField="Parent" HeaderText="Parent" />
-                                    <Rock:PersonField DataField="Person" HeaderText="Name" SortExpression="PersonAlias.Person.NickName, PersonAlias.Person.LastName" />
-                                    <Rock:RockLiteralField HeaderText="First Visit" ID="lFirstVisitDate" />
+                                    <Rock:PersonField DataField="Parent" HeaderText="Parent" SortExpression="Parent.LastName, Parent.NickName"/>
+                                    <Rock:PersonField DataField="Person" HeaderText="Name" SortExpression="Person.LastName, Person.NickName" />
+                                    <Rock:RockLiteralField HeaderText="First Visit" ID="lFirstVisitDate" SortExpression="FirstVisit.StartDateTime"/>
                                     <Rock:RockLiteralField HeaderText="Second Visit" ID="lSecondVisitDate" />
                                     <Rock:DateField DataField="LastVisit.StartDateTime" HeaderText="Last Visit" SortExpression="LastVisit.StartDateTime" />
-                                    <Rock:CampusField DataField="LastVisit.CampusId" HeaderText="Campus" />
+                                    <Rock:CampusField DataField="LastVisit.CampusId" HeaderText="Campus" SortExpression="LastVisit.Campu.sName" />
                                     <Rock:RockLiteralField HeaderText="Service Time" ID="lServiceTime" />
                                     <Rock:RockBoundField DataField="LastVisit.Group.Name" HeaderText="Check-in Area" SortExpression="LastVisit.Group.Name" />
                                     <Rock:RockLiteralField HeaderText="Home Address" ID="lHomeAddress" ItemStyle-Wrap="false" />
                                     <Rock:PhoneNumbersField HeaderText="Phone Numbers" DataField="PhoneNumbers" ItemStyle-Wrap="false" DisplayCountryCode="false" />
                                     <Rock:RockLiteralField HeaderText="Count" ID="lAttendanceCount" SortExpression="AttendanceSummary.Count" />
-                                    <Rock:RockLiteralField HeaderText="Attendance %" ID="lAttendancePercent" />
+                                    <Rock:RockLiteralField HeaderText="Attendance %" ID="lAttendancePercent" SortExpression="AttendanceSummary.Count" />
                                 </Columns>
                             </Rock:Grid>
 

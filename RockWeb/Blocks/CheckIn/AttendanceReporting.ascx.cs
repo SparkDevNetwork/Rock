@@ -733,6 +733,17 @@ function(item) {
                         qryResult = qryResult.OrderBy( a => a.AttendanceSummary.Count() );
                     }
                 }
+                else if ( sortProperty.Property == "FirstVisit.StartDateTime" )
+                {
+                    if ( sortProperty.Direction == SortDirection.Descending )
+                    {
+                        qryResult = qryResult.OrderByDescending( a => a.FirstVisits.FirstOrDefault().StartDateTime );
+                    }
+                    else
+                    {
+                        qryResult = qryResult.OrderBy( a => a.FirstVisits.FirstOrDefault().StartDateTime );
+                    }
+                }
                 else
                 {
                     qryResult = qryResult.Sort( sortProperty );
@@ -859,25 +870,25 @@ function(item) {
         private void CreateDynamicAttendanceGridColumns()
         {
             AttendanceGroupBy groupBy = hfGroupBy.Value.ConvertToEnumOrNull<AttendanceGroupBy>() ?? AttendanceGroupBy.Week;
-            
+
             // Ensure the columns for the Attendance Checkmarks are there
             var attendanceSummaryFields = gAttendeesAttendance.Columns.OfType<BoolFromArrayField<DateTime>>().Where( a => a.DataField == "AttendanceSummary" ).ToList();
             var existingSummaryDates = attendanceSummaryFields.Select( a => a.ArrayKey ).ToList();
 
             if ( existingSummaryDates.Any( a => !_possibleAttendances.Contains( a ) ) || _possibleAttendances.Any( a => !existingSummaryDates.Contains( a ) ) )
             {
-                foreach ( var oldField in attendanceSummaryFields.Reverse<BoolFromArrayField<DateTime>>())
+                foreach ( var oldField in attendanceSummaryFields.Reverse<BoolFromArrayField<DateTime>>() )
                 {
                     // remove all these fields if they have changed
                     gAttendeesAttendance.Columns.Remove( oldField );
                 }
 
                 // limit to 520 checkmark columns so that we don't blow up the server (just in case they select every week for the last 100 years or something). 
-                var maxColumns = 520; 
-                foreach ( var summaryDate in _possibleAttendances.Take(maxColumns) )
+                var maxColumns = 520;
+                foreach ( var summaryDate in _possibleAttendances.Take( maxColumns ) )
                 {
                     var boolFromArrayField = new BoolFromArrayField<DateTime>();
-                    
+
                     boolFromArrayField.ArrayKey = summaryDate;
                     boolFromArrayField.DataField = "AttendanceSummary";
                     switch ( groupBy )
