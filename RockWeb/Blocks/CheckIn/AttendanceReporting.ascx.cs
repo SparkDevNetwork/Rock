@@ -340,7 +340,7 @@ function(item) {
 
             lcAttendance.DataSourceUrl = this.ResolveUrl( dataSourceUrl );
 
-            hlblDateRange.Text = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues ).ToString( "d" );
+            hlblDateRange.Text = dateRange.ToStringAutomatic();
 
             if ( pnlChartAttendanceGrid.Visible )
             {
