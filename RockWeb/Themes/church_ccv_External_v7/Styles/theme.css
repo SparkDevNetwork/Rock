@@ -5098,36 +5098,25 @@ h6.condensed {
 div.aspNetDisabled {
   opacity: 0.5;
 }
-/*
-  700
-  BOLD
-*/
 @font-face {
   font-family: 'DINWebCondensed';
-  src: url('../Assets/Fonts/DIN/DINWeb-CondBold.eot');
-  src: url('../Assets/Fonts/DIN/DINWeb-CondBold.eot') format('embedded-opentype'), url('../Assets/Fonts/DIN/DINWeb-CondBold.woff') format('woff'), url('../Assets/Fonts/DIN/DINWeb-CondBold.ttf') format('truetype');
+  src: url('../Assets/Fonts/din-light.eot');
+  src: url('../Assets/Fonts/din-light.eot?#iefix') format('embedded-opentype'), url('../Assets/Fonts/din-light.woff2') format('woff2'), url('../Assets/Fonts/din-light.woff') format('woff'), url('../Assets/Fonts/din-light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'DINWebCondensed';
+  src: url('../Assets/Fonts/din-regular.eot');
+  src: url('../Assets/Fonts/din-regular.eot?#iefix') format('embedded-opentype'), url('../Assets/Fonts/din-regular.woff2') format('woff2'), url('../Assets/Fonts/din-regular.woff') format('woff'), url('../Assets/Fonts/din-regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'DINWebCondensed';
+  src: url('../Assets/Fonts/din-bold.eot');
+  src: url('../Assets/Fonts/din-bold.eot?#iefix') format('embedded-opentype'), url('../Assets/Fonts/din-bold.woff2') format('woff2'), url('../Assets/Fonts/din-bold.woff') format('woff'), url('../Assets/Fonts/din-bold.ttf') format('truetype');
   font-weight: 700;
-  font-style: normal;
-}
-/*
-  NORMAL (400)
-*/
-@font-face {
-  font-family: 'DINWebCondensed';
-  src: url('../Assets/Fonts/DIN/DINWeb-Cond.eot');
-  src: url('../Assets/Fonts/DIN/DINWeb-Cond.eot') format('embedded-opentype'), url('../Assets/Fonts/DIN/DINWeb-Cond.woff') format('woff'), url('../Assets/Fonts/DIN/DINWeb-Cond.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
-/*
-  100
-  LIGHT
-*/
-@font-face {
-  font-family: 'DINWebCondensed';
-  src: url('../Assets/Fonts/DIN/DINWeb-CondLight.eot');
-  src: url('../Assets/Fonts/DIN/DINWeb-CondLight.eot') format('embedded-opentype'), url('../Assets/Fonts/DIN/DINWeb-CondLight.woff') format('woff'), url('../Assets/Fonts/DIN/DINWeb-CondLight.ttf') format('truetype');
-  font-weight: 100;
   font-style: normal;
 }
 html {
