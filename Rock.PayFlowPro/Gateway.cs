@@ -69,6 +69,17 @@ namespace Rock.PayFlowPro
         }
 
         /// <summary>
+        /// Returnes a boolean value indicating if 'Saved Account' functionality is supported for the given currency type.
+        /// </summary>
+        /// <param name="currencyType">Type of the currency.</param>
+        /// <returns></returns>
+        public override bool SupportsSavedAccount( DefinedValueCache currencyType )
+        {
+            // PayflowPro only supports saved account functionality for credit card transactions
+            return currencyType.Guid.Equals( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
+        }
+
+        /// <summary>
         /// Authorizes the specified payment info.
         /// </summary>
         /// <param name="financialGateway"></param>
