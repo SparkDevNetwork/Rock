@@ -23,6 +23,17 @@
 // Custom
 // -------------------------
 
+.give-header {
+  padding-top: 0;
+  padding-bottom: 0;
+  @media @sm {
+    padding: @grid-gutter-width 0;
+  }
+  @media @md {
+    padding: @grid-gutter-width*2 0 @grid-gutter-width;
+  }
+}
+
 .give-title {
   font-size: 3em;
   letter-spacing: -.025em;
