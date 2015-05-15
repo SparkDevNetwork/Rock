@@ -224,7 +224,7 @@ namespace Rock.Reporting
             {
                 var entityField = new EntityField( propName, FieldKind.Attribute, typeof( string ), attribute.Guid, fieldType );
                 entityField.Title = attribute.Name.SplitCase();
-                
+
                 foreach ( var config in attribute.QualifierValues )
                 {
                     entityField.FieldConfig.Add( config.Key, config.Value );
@@ -353,6 +353,28 @@ namespace Rock.Reporting
         ///   <c>true</c> if [is previewable]; otherwise, <c>false</c>.
         /// </value>
         public bool IsPreviewable { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityField"/> class.
+        /// </summary>
+        [Obsolete( "Use one of the other EntityField constructors instead" )]
+        public EntityField()
+        {
+            FieldConfig = new Dictionary<string, ConfigurationValue>();
+        }
+
+        // <summary>
+        /// Initializes a new instance of the <see cref="EntityField" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="fieldKind">Kind of the field.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        [Obsolete( "Use one of the other EntityField constructors instead" )]
+        public EntityField( string name, FieldKind fieldKind, Type propertyType, Guid? attributeGuid = null )
+            : this( name, fieldKind, propertyType, null, attributeGuid )
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityField" /> class.
