@@ -6,10 +6,12 @@ Required Variables
 {% assign currentPage      = "/page/216" %}
 {% assign loginPage        = "/page/207" %}
 {% assign faqPage          = "/page/212" %}
-{% assign annualReportPage = "/page/212" %}
+{% assign annualReportPage = "//ccv.church/annualreport" %}
 
 {% endcomment %}
 
+
+{{ "/Themes/church_ccv_External_v7/Styles/pages/give.css" | AddLinkTagToHead:'rel','stylesheet' }}
 
 {% assign currentPageEscaped = currentPage | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%252f' %}
 
@@ -58,10 +60,18 @@ Required Variables
               </span>
             </p>
           {% elsif ScheduledTransactions.size > 1 %}
-            You currently have <span class='label label-default'>{{ ScheduledTransactions.size }}</span>
-            giving profiles active.
+            <p class="clearfix">
+              <a class="btn btn-default btn-xs pull-right" href="{{ LinkedPages.ManageScheduledTransactionsPage }}">Manage</a>
+              You currently have <span class='label label-default'>{{ ScheduledTransactions.size }}</span> giving profiles active.
+            </p>
+            <p class="clearfix">
+              <a class="btn btn-default btn-xs pull-right" href="{{ LinkedPages.TransactionHistoryPage }}">View History</a>
+            </p>
           {% else %}
             You currently have no active profiles.
+            <p class="clearfix">
+              <a class="btn btn-default btn-xs pull-right" href="{{ LinkedPages.TransactionHistoryPage }}">View History</a>
+            </p>
           {% endif %}
           <a class="btn btn-primary btn-block margin-t-md" href="{{ LinkedPages.TransactionEntryPage }}">Give Now</a>
         </div>
