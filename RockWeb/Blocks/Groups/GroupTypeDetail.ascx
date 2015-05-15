@@ -251,6 +251,24 @@
                         </div>
                     </Rock:PanelWidget>
 
+                    <Rock:PanelWidget ID="wpMemberWorkflowTrigger" runat="server" Title="Group Member Workflow Triggers" >
+                        <Rock:NotificationBox ID="NotificationBox3" runat="server" NotificationBoxType="Info" 
+                            Text="The workflows that should be triggered when group member changes are made to members of groups of this group type." />
+                        <div class="grid">
+                            <Rock:Grid ID="Grid2" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group Attribute">
+                                <Columns>
+                                    <Rock:ReorderField />
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                                    <Rock:RockBoundField DataField="WorkflowTypeName" HeaderText="Workflow Type" />
+                                    <Rock:EnumField DataField="TriggerType" HeaderText="Trigger" />
+                                    <Rock:RockBoundField DataField="Qualifier" HeaderText="Qualifier" />
+                                    <Rock:EditField OnClick="gGroupAttributes_Edit" />
+                                    <Rock:DeleteField OnClick="gGroupAttributes_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                    </Rock:PanelWidget>
+
                     <Rock:PanelWidget ID="wpDisplay" runat="server" Title="Display Options">
                         <div class="row">
                             <div class="col-md-6">
@@ -356,6 +374,25 @@
                 <Rock:AttributeEditor ID="edtGroupMemberAttributes" runat="server" ShowActions="false" ValidationGroup="GroupMemberttributes" />
             </Content>
         </Rock:ModalDialog>
+
+        <Rock:ModalDialog ID="dlgMemberWorkflowTrigger" runat="server" OnSaveClick="dlgMemberWorkflowTrigger_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Trigger">
+            <Content>
+                <asp:HiddenField ID="hfTriggerGuid" runat="server" />
+                <asp:ValidationSummary ID="vsTrigger" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Trigger" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbTriggerName" runat="server" Label="Name" ValidationGroup="Trigger" />
+                        <Rock:RockDropDownList ID="ddlWorkflowType" runat="server" Label="Workflow" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Type" ValidationGroup="Trigger" />
+                        <Rock:RockDropDownList ID="ddlTriggerMemberStatus" runat="server" Label="With Member Status of" ValidationGroup="Trigger" />
+                        <Rock:RockDropDownList ID="ddlTriggerMemberRole" runat="server" Label="With Member Role of" ValidationGroup="Trigger" />
+                    </div>
+                </div>
+            </Content>
+        </Rock:ModalDialog>
+
 
     </ContentTemplate>
 </asp:UpdatePanel>
