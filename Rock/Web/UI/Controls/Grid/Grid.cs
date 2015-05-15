@@ -363,6 +363,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the person merge page route
+        /// </summary>
+        /// <value>
+        /// The merge page route.
+        /// </value>
+        [Obsolete("Use PersonMergePageRoute instead")]
+        public virtual string MergePageRoute
+        {
+            get
+            {
+                return PersonMergePageRoute;
+            }
+
+            set
+            {
+                PersonMergePageRoute = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the person merge page route.
         /// </summary>
         /// <value>
