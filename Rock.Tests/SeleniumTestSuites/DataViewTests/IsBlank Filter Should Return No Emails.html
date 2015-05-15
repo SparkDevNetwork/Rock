@@ -17,13 +17,8 @@
 </tr>
 <tr>
 	<td>storeEval</td>
-	<td>new Date().getTime()</td>
-	<td>x</td>
-</tr>
-<tr>
-	<td>open</td>
-	<td>/</td>
-	<td></td>
+	<td>var dt=new Date(); dt.getFullYear() + &quot;&quot; + (dt.getMonth() + 1)&nbsp;&nbsp;+ dt.getDate();</td>
+	<td>today</td>
 </tr>
 <tr>
 	<td>clickAndWait</td>
@@ -43,7 +38,7 @@
 <tr>
 	<td>type</td>
 	<td>css=[id$=_tbName]</td>
-	<td>TEST Greater Than Date ${x}</td>
+	<td>TEST IsBlank Filter ${today}</td>
 </tr>
 <tr>
 	<td>select</td>
@@ -57,38 +52,29 @@
 </tr>
 <tr>
 	<td>click</td>
-	<td>//header[@onclick=&quot;if ($(this).find('.filter-view-state').children('i').hasClass('fa-chevron-up')) { var $article = $(this).parents('article:first'); var $content = $article.children('div.panel-body'); $article.find('div.filter-item-description:first').html(PersonPropertySelection( $content )); }&quot;]</td>
+	<td>css=i.fa.fa-chevron-down</td>
 	<td></td>
 </tr>
 <tr>
 	<td>select</td>
 	<td>css=select[id^='ctl00_main_ctl33_ctl01_ctl06_fg_'][id$='_ddlProperty']</td>
-	<td>label=Background Check Date</td>
+	<td>label=Email</td>
 </tr>
 <tr>
 	<td>select</td>
-	<td>css=select[id^='ctl00_main_ctl33_ctl01_ctl06_fg_'][id$='_BackgroundCheckDate_ddlCompare']</td>
-	<td>label=Greater Than</td>
-</tr>
-<tr>
-	<td>type</td>
-	<td>css=input[id^='ctl00_main_ctl33_ctl01_ctl06_fg_'][id$='_BackgroundCheckDate_dtPicker']</td>
-	<td>1/1/2010</td>
+	<td>css=select[id^='ctl00_main_ctl33_ctl01_ctl06_fg_'][id$='_Email_ddlCompare']</td>
+	<td>label=Is Blank</td>
 </tr>
 <tr>
 	<td>clickAndWait</td>
 	<td>css=[id$=_btnSave]</td>
 	<td></td>
 </tr>
+<!--Look for the @ sign in the table and fail the test if it's present-->
 <tr>
-	<td>assertTextPresent</td>
-	<td>ted@rocksoliddemochurch.com</td>
-	<td></td>
-</tr>
-<tr>
-	<td>selectWindow</td>
-	<td>null</td>
-	<td></td>
+	<td>assertNotText</td>
+	<td>//td[contains(text(),'@')]</td>
+	<td>*@*</td>
 </tr>
 <tr>
 	<td>click</td>
@@ -96,7 +82,7 @@
 	<td></td>
 </tr>
 <tr>
-	<td>click</td>
+	<td>clickAndWait</td>
 	<td>css=button.btn.btn-primary</td>
 	<td></td>
 </tr>
