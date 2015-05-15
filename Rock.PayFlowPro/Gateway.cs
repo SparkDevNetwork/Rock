@@ -237,6 +237,7 @@ namespace Rock.PayFlowPro
                             var scheduledTransaction = new FinancialScheduledTransaction();
                             scheduledTransaction.TransactionCode = recurringResponse.TrxPNRef;
                             scheduledTransaction.GatewayScheduleId = recurringResponse.ProfileId;
+                            scheduledTransaction.FinancialGatewayId = financialGateway.Id;
 
                             GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
                             return scheduledTransaction;
