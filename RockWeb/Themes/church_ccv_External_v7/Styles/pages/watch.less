@@ -1,0 +1,60 @@
+
+
+//
+// WATCH PAGES
+// --------------------------------------------------
+
+
+// Imports
+// -------------------------
+@import "../../../../Styles/Bootstrap/variables.less";
+@import "../../../../Styles/Bootstrap/mixins.less";
+@import "../../../../Styles/_rock-variables.less";
+
+@import "../_variables";
+@import "../_mixins";
+
+@xs: ~"(min-width: @{screen-xs-min})";
+@sm: ~"(min-width: @{screen-sm-min})";
+@md: ~"(min-width: @{screen-md-min})";
+@lg: ~"(min-width: @{screen-lg-min})";
+
+
+// Custom
+// -------------------------
+
+.watch-msglist {
+  padding-left: 1.5em;
+  .din(1.45em);
+  font-weight: 700;
+  text-transform: uppercase;
+  @media @sm {
+    font-size: 1.75em;
+  }
+}
+
+.watch-currenttag {
+  .din(14px);
+  font-weight: bold;
+  text-transform: uppercase;
+  background: fade(#000, 50%);
+  color: #fff;
+  float: left;
+  padding: .75em 1em;
+  margin-top: -@grid-gutter-width;
+
+  @media @sm {
+    font-size: 18px;
+    padding: 1em;
+  }
+  @media @md {
+    font-size: 20px;
+  }
+}
+
+.watch-msgmeta {
+  @media @md {
+    margin-top: 12px;
+    margin-bottom: 0;
+  }
+}

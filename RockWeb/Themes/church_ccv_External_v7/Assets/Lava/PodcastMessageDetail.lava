@@ -1,0 +1,93 @@
+{% comment %}
+
+Required Variables
+==================
+
+{% assign seriesListPage = "/page/516" %}
+{% assign seriesDetailPage = "/page/546" %}
+{% assign messageDetailPage = "/page/547" %}
+{% assign fullServicePage = "/page/552" %}
+{% assign fullService = false %}
+
+
+Page Title Lava
+===============
+
+{{ table1.rows.first.Title }} - {{ table1.rows.first.SeriesTitle }}
+
+{{ table1.rows.first.Title }} - {{ table1.rows.first.SeriesTitle }} (Full Service)
+
+{% endcomment %}
+
+
+{% comment %}
+
+@todo add real link for series detail page
+@todo open graph meta tags
+
+{% endcomment %}
+
+
+{{ "/Themes/church_ccv_External_v7/Styles/pages/watch.css" | AddLinkTagToHead:'rel','stylesheet' }}
+
+<h1>{{ table1.rows.first.Title }}</h1>
+
+
+<ul class="breadcrumb">
+  <li><a href="/home">Home</a></li>
+  <li><a href="{{ seriesListPage }}">Watch</a></li>
+  <li><a href="{{ seriesDetailPage }}?SeriesId={{ table1.rows.first.SeriesId }}">{{ table1.rows.first.SeriesTitle }}</a></li>
+  <li class="active">{{ table1.rows.first.Title }}</li>
+</ul>
+
+<div class="embed-responsive embed-responsive-16by9 margin-b-md">
+  {% if fullService %}
+    <iframe src="{{ table1.rows.first.VideoFullService }}" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+  {% else %}
+    <iframe src="{{ table1.rows.first.VideoMessageOnly }}" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+  {% endif %}
+</div>
+<div class="row">
+  <div class="col-md-8">
+    <ul class="list-inline watch-msgmeta">
+      <li><strong>{{ table1.rows.first.MessageAuthor }}</strong></li>
+      <li><time datetime="{{ table1.rows.first.PublishDate | Date: 'MMM d, yyyy' }}" title="{{ table1.rows.first.PublishDate | Date: 'MMM d, yyyy' }}" data-toggle="tooltip" data-placement="right">{{ table1.rows.first.PublishDate | HumanizeDateTime }}</time></li>
+    </ul>
+  </div>
+  <div class="col-md-4">
+    <div class="btn-group btn-group-justified">
+      {% if fullService %}
+        <a class="btn btn-default" href="{{ messageDetailPage }}?MessageId={{ table1.rows.first.MessageId }}">Message Only</a>
+        <a class="btn btn-default active" href="{{ fullServicePage }}?MessageId={{ table1.rows.first.MessageId }}">Full Service</a>
+      {% else %}
+        <a class="btn btn-default active" href="{{ messageDetailPage }}?MessageId={{ table1.rows.first.MessageId }}">Message Only</a>
+        <a class="btn btn-default" href="{{ fullServicePage }}?MessageId={{ table1.rows.first.MessageId }}">Full Service</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<hr>
+<div class="row">
+  <div class="col-md-8">
+    <p>{{ table1.rows.first.Description }}</p>
+    <h3>Other Messages in this Series</h3>
+    <ol>
+      {% for row in table2.rows %}
+        {% assign publishesInDays = 'Now' | DateDiff: row.PublishDate, 'd' %}
+        {% if publishesInDays <= 0 %}
+          <li><a href="{{ messageDetailPage }}?MessageId={{ row.MessageId }}">{{ row.Title }}</a></li>
+        {% endif %}
+      {% endfor %}
+    </ol>
+  </div>
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-heading">Related Downloads</div>
+      <div class="list-group">
+        <a href="{{ table1.rows.first.VideoDownload }}" class="list-group-item"><i class="fa fa-fw fa-film"></i> Download Video</a>
+        <a href="{{ table1.rows.first.Audio }}" class="list-group-item"><i class="fa fa-fw fa-headphones"></i> Download Audio</a>
+        <a href="{{ table1.rows.first.SermonNotes }}" class="list-group-item"><i class="fa fa-fw fa-file-text-o"></i> Download Sermon Notes</a>
+      </div>
+    </div>
+  </div>
+</div>

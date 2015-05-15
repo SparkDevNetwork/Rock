@@ -7986,6 +7986,16 @@ button.close {
   text-transform: uppercase;
   font-weight: 700;
 }
+.btn-group-justified > .btn {
+  border-left-width: 1px;
+  border-right-width: 1px;
+}
+.btn-group-justified > .btn:first-child {
+  border-left-width: 2px;
+}
+.btn-group-justified > .btn:last-child {
+  border-right-width: 2px;
+}
 .panel.panel-block {
   border: 0;
   box-shadow: none;

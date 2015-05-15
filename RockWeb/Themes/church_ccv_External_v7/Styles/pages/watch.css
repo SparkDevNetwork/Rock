@@ -1,0 +1,42 @@
+.watch-msglist {
+  padding-left: 1.5em;
+  font-family: "DINWebCondensed", sans-serif;
+  font-size: 1.45em;
+  line-height: 2em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+@media (min-width: 768px) {
+  .watch-msglist {
+    font-size: 1.75em;
+  }
+}
+.watch-currenttag {
+  font-family: "DINWebCondensed", sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: bold;
+  text-transform: uppercase;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  float: left;
+  padding: .75em 1em;
+  margin-top: -30px;
+}
+@media (min-width: 768px) {
+  .watch-currenttag {
+    font-size: 18px;
+    padding: 1em;
+  }
+}
+@media (min-width: 992px) {
+  .watch-currenttag {
+    font-size: 20px;
+  }
+}
+@media (min-width: 992px) {
+  .watch-msgmeta {
+    margin-top: 12px;
+    margin-bottom: 0;
+  }
+}
