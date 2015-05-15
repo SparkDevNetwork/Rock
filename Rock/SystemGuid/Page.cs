@@ -1099,6 +1099,18 @@ namespace Rock.SystemGuid
         public const string PLEDGE_LIST = "1570D2AF-4FE2-4FC7-BED9-F20EBCBE9867";
 
         /// <summary>
+        /// Gets the Plugin Settings guid
+        /// </summary>
+        [Obsolete("Page was removed")]
+        public const string PLUGIN_SETTINGS = "1AFDA740-8119-45B8-AF4D-58856D469BE5";
+
+        /// <summary>
+        /// Gets the Plugin Manager guid
+        /// </summary>
+        [Obsolete( "Page was removed" )]
+        public const string PLUGIN_MANAGER = "B13FCF9A-FAE5-4E53-AF7C-32DF9CA5AAE3";
+
+        /// <summary>
         /// Gets the Power Tools page guid
         /// ParentPage: Rock Settings
         /// </summary>
