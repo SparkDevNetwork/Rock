@@ -188,7 +188,7 @@ namespace Rock.Web.UI.Controls
             this.Label = "Date Range";
 
             _ddlLastCurrent = new DropDownList();
-            _ddlLastCurrent.CssClass = "form-control input-width-md slidingdaterange-select";
+            _ddlLastCurrent.CssClass = "form-control input-width-md js-slidingdaterange-select slidingdaterange-select";
             _ddlLastCurrent.ID = "ddlLastCurrent_" + this.ID;
             _ddlLastCurrent.SelectedIndexChanged += ddl_SelectedIndexChanged;
 
@@ -350,17 +350,16 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            // "-1" = All, "0" = Last, "1" = Current, "2" = Date Range, "4" = Previous
-            _nbNumber.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "0" || _ddlLastCurrent.SelectedValue == "4" ) ? "block" : "none";
-            _ddlTimeUnitTypeSingular.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "1" ) ? "block" : "none";
-            _ddlTimeUnitTypePlural.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "0" || _ddlLastCurrent.SelectedValue == "4" ) ? "block" : "none";
-            _drpDateRange.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "2" ) ? "block" : "none";
-
             bool needsAutoPostBack = SelectedDateRangeChanged != null;
             _ddlLastCurrent.AutoPostBack = needsAutoPostBack;
             _ddlTimeUnitTypeSingular.AutoPostBack = needsAutoPostBack;
             _ddlTimeUnitTypePlural.AutoPostBack = needsAutoPostBack;
 
+            writer.AddAttribute( "class", "label label-info js-slidingdaterange-info slidingdaterange-info" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( "id", this.ClientID );
             writer.AddAttribute( "class", "form-control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -380,40 +379,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected virtual void RegisterJavaScript()
         {
-            string scriptFormat = @"
-                $('#{0}').on('change', function(a,b) {{
-                    if ($('#{0}').val() == '2') {{
-                        // date range ...
-                        $('#{0}').siblings('.js-number').hide();
-                        $('#{0}').siblings('.js-time-units-singular').hide();
-                        $('#{0}').siblings('.js-time-units-plural').hide();
-                        $('#{0}').siblings('.js-time-units-date-range').show();
-                    }}                    
-                    else if ($('#{0}').val() == '1') {{
-                        // current ...
-                        $('#{0}').siblings('.js-number').hide();
-                        $('#{0}').siblings('.js-time-units-singular').show();
-                        $('#{0}').siblings('.js-time-units-plural').hide();
-                        $('#{0}').siblings('.js-time-units-date-range').hide();
-                    }}
-                    else if (($('#{0}').val() == '0') || ($('#{0}').val() == '4')) {{
-                        // last or previous x ...
-                        $('#{0}').siblings('.js-number').show();    
-                        $('#{0}').siblings('.js-time-units-singular').hide();
-                        $('#{0}').siblings('.js-time-units-plural').show();
-                        $('#{0}').siblings('.js-time-units-date-range').hide();
-                    }}
-                    else {{
-                        // all    
-                        $('#{0}').siblings('.js-number').hide();
-                        $('#{0}').siblings('.js-time-units-singular').hide();
-                        $('#{0}').siblings('.js-time-units-plural').hide();
-                        $('#{0}').siblings('.js-time-units-date-range').hide();
-                    }}
-                }});
-";
-
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "sliding-date-range-script", string.Format( scriptFormat, _ddlLastCurrent.ClientID ), true );
+            var script = string.Format( @"Rock.controls.slidingDateRangePicker.initialize({{ id: '{0}' }});", this.ClientID );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "slidingdaterange_picker-" + this.ClientID, script, true );
         }
 
         /// <summary>
@@ -688,7 +655,7 @@ namespace Rock.Web.UI.Controls
                                 diff += 7;
                             }
 
-                            result.End = currentDateTime.AddDays( -1 * diff ).Date.AddDays( 7 * roundUpCount);
+                            result.End = currentDateTime.AddDays( -1 * diff ).Date.AddDays( 7 * roundUpCount );
                             result.Start = result.End.Value.AddDays( -addCount * 7 );
                             break;
 
