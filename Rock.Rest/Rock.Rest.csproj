@@ -138,6 +138,7 @@
     <Compile Include="Controllers\MetricValuesController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormAttributesController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormsController.cs" />
+    <Compile Include="Controllers\UtilityController.cs" />
     <Compile Include="Controllers\WorkflowsController.Partial.cs" />
     <Compile Include="Controllers\PersonBadgesController.cs" />
     <Compile Include="Controllers\AuthController.cs" />

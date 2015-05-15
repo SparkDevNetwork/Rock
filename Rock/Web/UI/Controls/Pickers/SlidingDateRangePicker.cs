@@ -575,7 +575,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Calculates the date range from delimited values.
+        /// Calculates the date range from delimited values in format SlidingDateRangeType|Number|TimeUnitType|StartDate|EndDate
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
