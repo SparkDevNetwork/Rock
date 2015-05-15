@@ -213,44 +213,6 @@ namespace Rock.Model
             /// </value>
             public Attendance Attendance { get; set; }
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public class AttendanceSummaryData : IChartData
-        {
-            /// <summary>
-            /// Gets the date time stamp.
-            /// </summary>
-            /// <value>
-            /// The date time stamp.
-            /// </value>
-            public long DateTimeStamp { get; set; }
-
-            /// <summary>
-            /// Gets or sets the date time.
-            /// </summary>
-            /// <value>
-            /// The date time.
-            /// </value>
-            public DateTime DateTime { get; set; }
-
-            /// <summary>
-            /// Gets the y value.
-            /// </summary>
-            /// <value>
-            /// The y value.
-            /// </value>
-            public decimal? YValue { get; set; }
-
-            /// <summary>
-            /// Gets the series identifier.
-            /// </summary>
-            /// <value>
-            /// The series identifier.
-            /// </value>
-            public string SeriesId { get; set; }
-        }
     }
 
     /// <summary>
@@ -307,5 +269,43 @@ namespace Rock.Model
 
             return qryAttendanceGroupedBy;
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class AttendanceSummaryData : IChartData
+    {
+        /// <summary>
+        /// Gets the date time stamp.
+        /// </summary>
+        /// <value>
+        /// The date time stamp.
+        /// </value>
+        public long DateTimeStamp { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date time.
+        /// </summary>
+        /// <value>
+        /// The date time.
+        /// </value>
+        public DateTime DateTime { get; set; }
+
+        /// <summary>
+        /// Gets the y value.
+        /// </summary>
+        /// <value>
+        /// The y value.
+        /// </value>
+        public decimal? YValue { get; set; }
+
+        /// <summary>
+        /// Gets the series identifier.
+        /// </summary>
+        /// <value>
+        /// The series identifier.
+        /// </value>
+        public string SeriesId { get; set; }
     }
 }
