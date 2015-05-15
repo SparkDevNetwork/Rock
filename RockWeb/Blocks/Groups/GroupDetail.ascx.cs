@@ -95,7 +95,6 @@ namespace RockWeb.Blocks.Groups
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
-
             
             // NOTE: These things are converted to JSON prior to going into ViewState, so the json variable could be null or the string "null"!
             string json = ViewState["GroupLocationsState"] as string;

@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -40,227 +40,78 @@ namespace RockWeb.Blocks.Groups
     [Description( "Displays the details of the given group type for editing." )]
     public partial class GroupTypes : RockBlock, IDetailBlock
     {
-        #region Child Grid Dictionarys
+        #region Properties
 
-        /// <summary>
-        /// Gets the child group types dictionary.
-        /// </summary>
-        /// <returns></returns>
-        private List<int> ChildGroupTypesList
-        {
-            get
-            {
-                List<int> childGroupTypesList = ViewState["ChildGroupTypesList"] as List<int>;
-                return childGroupTypesList;
-            }
-
-            set
-            {
-                ViewState["ChildGroupTypesList"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the state of the schedule exclusion.
-        /// </summary>
-        /// <value>
-        /// The state of the schedule exclusion.
-        /// </value>
-        private Dictionary<Guid, DateRange> ScheduleExclusionDictionary
-        {
-            get
-            {
-                return ViewState["ScheduleExclusionDictionary"] as Dictionary<Guid, DateRange> ?? new Dictionary<Guid, DateRange>();
-            }
-            set
-            {
-                ViewState["ScheduleExclusionDictionary"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the location types dictionary.
-        /// </summary>
-        /// <value>
-        /// The location types dictionary.
-        /// </value>
-        private Dictionary<int, string> LocationTypesDictionary
-        {
-            get
-            {
-                Dictionary<int, string> locationTypesDictionary = ViewState["LocationTypesDictionary"] as Dictionary<int, string>;
-                return locationTypesDictionary;
-            }
-
-            set
-            {
-                ViewState["LocationTypesDictionary"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the group type inherited attributes.
-        /// </summary>
-        /// <value>
-        /// The group type inherited attributes.
-        /// </value>
-        private List<InheritedAttribute> GroupTypeAttributesInheritedState
-        {
-            get
-            {
-                return ViewState["GroupTypeAttributesInheritedState"] as List<InheritedAttribute>;
-            }
-
-            set
-            {
-                ViewState["GroupTypeAttributesInheritedState"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the state of the group type attributes.
-        /// </summary>
-        /// <value>
-        /// The state of the group type attributes.
-        /// </value>
-        private ViewStateList<Attribute> GroupTypeAttributesState
-        {
-            get
-            {
-                return ViewState["GroupTypeAttributesState"] as ViewStateList<Attribute>;
-            }
-
-            set
-            {
-                ViewState["GroupTypeAttributesState"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the group inherited attributes.
-        /// </summary>
-        /// <value>
-        /// The group inherited attributes.
-        /// </value>
-        private List<InheritedAttribute> GroupAttributesInheritedState
-        {
-            get
-            {
-                return ViewState["GroupAttributesInheritedState"] as List<InheritedAttribute>;
-            }
-
-            set
-            {
-                ViewState["GroupAttributesInheritedState"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the state of the group attributes.
-        /// </summary>
-        /// <value>
-        /// The state of the group attributes.
-        /// </value>
-        private ViewStateList<Attribute> GroupAttributesState
-        {
-            get
-            {
-                return ViewState["GroupAttributesState"] as ViewStateList<Attribute>;
-            }
-
-            set
-            {
-                ViewState["GroupAttributesState"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the group member inherited attributes.
-        /// </summary>
-        /// <value>
-        /// The group member inherited attributes.
-        /// </value>
-        private List<InheritedAttribute> GroupMemberAttributesInheritedState
-        {
-            get
-            {
-                return ViewState["GroupMemberAttributesInheritedState"] as List<InheritedAttribute>;
-            }
-
-            set
-            {
-                ViewState["GroupMemberAttributesInheritedState"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the state of the group member attributes.
-        /// </summary>
-        /// <value>
-        /// The state of the group member attributes.
-        /// </value>
-        private ViewStateList<Attribute> GroupMemberAttributesState
-        {
-            get
-            {
-                return ViewState["GroupMemberAttributesState"] as ViewStateList<Attribute>;
-            }
-
-            set
-            {
-                ViewState["GroupMemberAttributesState"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the state of the group type roles.
-        /// </summary>
-        /// <value>
-        /// The state of the group type roles.
-        /// </value>
-        private ViewStateList<GroupTypeRole> GroupTypeRolesState
-        {
-            get
-            {
-                return ViewState["GroupTypeRolesState"] as ViewStateList<GroupTypeRole>;
-            }
-
-            set
-            {
-                ViewState["GroupTypeRolesState"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the default role unique identifier.
-        /// </summary>
-        /// <value>
-        /// The default role unique identifier.
-        /// </value>
-        protected Guid DefaultRoleGuid
-        {
-            get
-            {
-                object value = ViewState["DefaultRoleGuid"];
-                if ( value != null )
-                {
-                    return (Guid)value;
-                }
-                else
-                {
-                    return Guid.Empty;
-                }
-            }
-
-            set
-            {
-                ViewState["DefaultRoleGuid"] = value;
-            }
-        }
+        private List<int> ChildGroupTypesList { get; set; }
+        private Dictionary<Guid, DateRange> ScheduleExclusionDictionary { get; set; }
+        private Dictionary<int, string> LocationTypesDictionary { get; set; }
+        private List<InheritedAttribute> GroupTypeAttributesInheritedState { get; set; }
+        private List<InheritedAttribute> GroupAttributesInheritedState { get; set; }
+        private List<InheritedAttribute> GroupMemberAttributesInheritedState { get; set; }
+        private List<Attribute> GroupTypeAttributesState { get; set; }
+        private List<Attribute> GroupAttributesState { get; set; }
+        private List<Attribute> GroupMemberAttributesState { get; set; }
+        private List<GroupTypeRole> GroupTypeRolesState { get; set; }
+        protected Guid DefaultRoleGuid { get; set; }
 
         #endregion
 
         #region Control Methods
+
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            ChildGroupTypesList = ViewState["ChildGroupTypeList"] as List<int> ?? new List<int>();
+            ScheduleExclusionDictionary = ViewState["ScheduleExclusionDictionary"] as Dictionary<Guid, DateRange> ?? new Dictionary<Guid, DateRange>();
+            LocationTypesDictionary = ViewState["LocationTypesDictionary"] as Dictionary<int, string> ?? new Dictionary<int, string>();
+            GroupTypeAttributesInheritedState = ViewState["GroupTypeAttributesInheritedState"] as List<InheritedAttribute> ?? new List<InheritedAttribute>();
+            GroupAttributesInheritedState = ViewState["GroupAttributesInheritedState"] as List<InheritedAttribute> ?? new List<InheritedAttribute>();
+            GroupMemberAttributesInheritedState = ViewState["GroupMemberAttributesInheritedState"] as List<InheritedAttribute> ?? new List<InheritedAttribute>();
+
+            string json = ViewState["GroupTypeAttributesState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                GroupTypeAttributesState = new List<Attribute>();
+            }
+            else
+            {
+                GroupTypeAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+            }
+
+            json = ViewState["GroupAttributesState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                GroupAttributesState = new List<Attribute>();
+            }
+            else
+            {
+                GroupAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+            }
+
+            json = ViewState["GroupMemberAttributesState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                GroupMemberAttributesState = new List<Attribute>();
+            }
+            else
+            {
+                GroupMemberAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+            }
+
+            json = ViewState["GroupTypeRolesState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                GroupTypeRolesState = new List<GroupTypeRole>();
+            }
+            else
+            {
+                GroupTypeRolesState = JsonConvert.DeserializeObject<List<GroupTypeRole>>( json );
+            }
+
+            DefaultRoleGuid = ViewState["DefaultRoleGuid"] as Guid? ?? Guid.Empty;
+
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -361,26 +212,26 @@ namespace RockWeb.Blocks.Groups
         /// </returns>
         protected override object SaveViewState()
         {
-            // Persist any changes that might have been made to objects in list
-            if ( GroupTypeAttributesState != null )
-            {
-                GroupTypeAttributesState.SaveViewState();
-            }
 
-            if ( GroupAttributesState != null )
-            {
-                GroupAttributesState.SaveViewState();
-            }
+            ViewState["ChildGroupTypeList"] = ChildGroupTypesList;
+            ViewState["ScheduleExclusionDictionary"] = ScheduleExclusionDictionary;
+            ViewState["LocationTypesDictionary"] = LocationTypesDictionary;
+            ViewState["GroupTypeAttributesInheritedState"] = GroupTypeAttributesInheritedState;
+            ViewState["GroupAttributesInheritedState"] = GroupAttributesInheritedState;
+            ViewState["GroupMemberAttributesInheritedState"] = GroupMemberAttributesInheritedState;
 
-            if ( GroupMemberAttributesState != null )
+            var jsonSetting = new JsonSerializerSettings
             {
-                GroupMemberAttributesState.SaveViewState();
-            }
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+            };
 
-            if ( GroupTypeRolesState != null )
-            {
-                GroupTypeRolesState.SaveViewState();
-            }
+            ViewState["GroupTypeAttributesState"] = JsonConvert.SerializeObject( GroupTypeAttributesState, Formatting.None, jsonSetting );
+            ViewState["GroupAttributesState"] = JsonConvert.SerializeObject( GroupAttributesState, Formatting.None, jsonSetting );
+            ViewState["GroupMemberAttributesState"] = JsonConvert.SerializeObject( GroupMemberAttributesState, Formatting.None, jsonSetting );
+            ViewState["GroupTypeRolesState"] = JsonConvert.SerializeObject( GroupTypeRolesState, Formatting.None, jsonSetting );
+
+            ViewState["DefaultRoleGuid"] = GroupMemberAttributesInheritedState;
 
             return base.SaveViewState();
         }
@@ -796,47 +647,42 @@ namespace RockWeb.Blocks.Groups
             gtpInheritedGroupType.Enabled = !groupType.IsSystem;
             gtpInheritedGroupType.SelectedGroupTypeId = groupType.InheritedGroupTypeId;
 
-            var groupTypeRoles = new List<GroupTypeRole>();
+            var GroupTypeRolesState = new List<GroupTypeRole>();
             foreach ( var role in groupType.Roles )
             {
                 role.LoadAttributes();
-                groupTypeRoles.Add( role );
+                GroupTypeRolesState.Add( role );
             }
-            GroupTypeRolesState = new ViewStateList<GroupTypeRole>();
-            GroupTypeRolesState.AddAll( groupTypeRoles );
 
             BindGroupTypeRolesGrid();
 
             string qualifierValue = groupType.Id.ToString();
 
-            GroupTypeAttributesState = new ViewStateList<Attribute>();
-            GroupTypeAttributesState.AddAll( attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
+            GroupTypeAttributesState = attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
-                .ToList() );
+                .ToList();
             BindGroupTypeAttributesGrid();
 
-            GroupAttributesState = new ViewStateList<Attribute>();
-            GroupAttributesState.AddAll( attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
+            GroupAttributesState = attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
-                .ToList() );
+                .ToList();
             BindGroupAttributesGrid();
 
-            GroupMemberAttributesState = new ViewStateList<Attribute>();
-            GroupMemberAttributesState.AddAll( attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
+            GroupMemberAttributesState = attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
-                .ToList() );
+                .ToList();
             BindGroupMemberAttributesGrid();
 
             BindInheritedAttributes( groupType.InheritedGroupTypeId, groupTypeService, attributeService );
@@ -1088,7 +934,7 @@ namespace RockWeb.Blocks.Groups
         /// Sets the group type role list order.
         /// </summary>
         /// <param name="itemList">The item list.</param>
-        private void SetGroupTypeRoleListOrder( ViewStateList<GroupTypeRole> itemList )
+        private void SetGroupTypeRoleListOrder( List<GroupTypeRole> itemList )
         {
             int order = 0;
             itemList.OrderBy( a => a.Order ).ToList().ForEach( a => a.Order = order++ );
@@ -1100,7 +946,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="itemList">The item list.</param>
         /// <param name="oldIndex">The old index.</param>
         /// <param name="newIndex">The new index.</param>
-        private void ReorderGroupTypeRoleList( ViewStateList<GroupTypeRole> itemList, int oldIndex, int newIndex )
+        private void ReorderGroupTypeRoleList( List<GroupTypeRole> itemList, int oldIndex, int newIndex )
         {
             var movedItem = itemList.Where( a => a.Order == oldIndex ).FirstOrDefault();
             if ( movedItem != null )
@@ -1130,7 +976,7 @@ namespace RockWeb.Blocks.Groups
         /// Sets the attribute list order.
         /// </summary>
         /// <param name="itemList">The item list.</param>
-        private void SetAttributeListOrder( ViewStateList<Attribute> itemList )
+        private void SetAttributeListOrder( List<Attribute> itemList )
         {
             int order = 0;
             itemList.OrderBy( a => a.Order ).ToList().ForEach( a => a.Order = order++ );
@@ -1142,7 +988,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="itemList">The item list.</param>
         /// <param name="oldIndex">The old index.</param>
         /// <param name="newIndex">The new index.</param>
-        private void ReorderAttributeList( ViewStateList<Attribute> itemList, int oldIndex, int newIndex )
+        private void ReorderAttributeList( List<Attribute> itemList, int oldIndex, int newIndex )
         {
             var movedItem = itemList.Where( a => a.Order == oldIndex ).FirstOrDefault();
             if ( movedItem != null )
@@ -1178,7 +1024,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="attributeService">The attribute service.</param>
         /// <param name="qualifierService">The qualifier service.</param>
         /// <param name="categoryService">The category service.</param>
-        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, ViewStateList<Attribute> viewStateAttributes, RockContext rockContext )
+        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<Attribute> viewStateAttributes, RockContext rockContext )
         {
             // Get the existing attributes for this entity type and qualifier value
             var attributeService = new AttributeService( rockContext );
