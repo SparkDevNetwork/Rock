@@ -1,5 +1,4 @@
-﻿#region License
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
