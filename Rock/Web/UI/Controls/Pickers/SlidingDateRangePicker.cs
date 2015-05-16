@@ -15,12 +15,11 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.ComponentModel;
+using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Utility;
 
 namespace Rock.Web.UI.Controls
 {
@@ -355,6 +354,7 @@ namespace Rock.Web.UI.Controls
             _ddlTimeUnitTypeSingular.AutoPostBack = needsAutoPostBack;
             _ddlTimeUnitTypePlural.AutoPostBack = needsAutoPostBack;
 
+            writer.WriteLine();
             writer.AddAttribute( "class", "label label-info js-slidingdaterange-info slidingdaterange-info" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.RenderEndTag();
@@ -687,6 +687,62 @@ namespace Rock.Web.UI.Controls
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the help HTML that explains usage of the SlidingDateRange picker with examples
+        /// </summary>
+        /// <param name="currentDateTime">The current date time.</param>
+        /// <returns></returns>
+        public static string GetHelpHtml( DateTime currentDateTime )
+        {
+            SlidingDateRangePicker helperPicker = new SlidingDateRangePicker();
+            SlidingDateRangeType[] slidingDateRangeTypesForHelp = new SlidingDateRangeType[] { SlidingDateRangeType.Current, SlidingDateRangeType.Previous, SlidingDateRangeType.Last };
+
+            string helpHtml = @"
+    
+    <div class='slidingdaterange-help'>
+
+        <p>A date range can either be a specific date range, or a sliding date range based on the current date and time.</p>
+        <p>For a sliding date range, you can choose either <strong>current, previous, or last</strong> with a time period of <strong>hour, day, week, month, or year</strong>. Note that a week is Monday thru Sunday.</p>
+        <br />
+        <ul class=''>
+            <li><strong>Current</strong> - the time period that the current date/time is in</li>
+            <li><strong>Previous</strong> - the time period(s) prior to the current period (does not include the current time period). For example, to see the most recent weekend, select 'Previous 1 Week'</li>
+            <li><strong>Last</strong> - the last X time period(s), including the current period. For example, to see the current week and prior week, select 'Last 2 weeks'</li>
+        </ul>
+
+        <h3>Preview of the sliding date ranges</h3>";
+
+            foreach ( var slidingDateRangeType in slidingDateRangeTypesForHelp )
+            {
+                helperPicker.SlidingDateRangeMode = slidingDateRangeType;
+                helperPicker.NumberOfTimeUnits = 2;
+                StringBuilder sb = new StringBuilder();
+                sb.AppendFormat( @"<h4>{0}</h4>", slidingDateRangeType.ConvertToString() );
+                sb.AppendLine( "<ul>" );
+                foreach ( var timeUnitType in Enum.GetValues( typeof( TimeUnitType ) ).OfType<TimeUnitType>() )
+                {
+                    helperPicker.TimeUnit = timeUnitType;
+                    sb.AppendFormat( @"
+                    <li>
+                        <span class='slidingdaterange-help-key'>{0} {1}</span>
+                        <span class='slidingdaterange-help-value'> - {2}</span>
+                    </li>",
+                          slidingDateRangeType != SlidingDateRangeType.Current ? helperPicker.NumberOfTimeUnits.ToString() : string.Empty,
+                          helperPicker.TimeUnit.ConvertToString().PluralizeIf( slidingDateRangeType != SlidingDateRangeType.Current && helperPicker.NumberOfTimeUnits > 1 ),
+                          SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( helperPicker.DelimitedValues ).ToStringAutomatic() );
+                }
+                sb.AppendLine( "</ul>" );
+
+                helpHtml += sb.ToString();
+            }
+
+            helpHtml += @"
+    </div>
+";
+
+            return helpHtml;
         }
     }
 }
