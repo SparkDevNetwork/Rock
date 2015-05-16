@@ -8,16 +8,14 @@
                 <h1 class="panel-title"><i class="fa fa-check-square-o"></i>Attendance Analysis</h1>
 
                 <div class="panel-labels">
-                    <a href="#" onclick="$('.js-slidingdaterange-help').toggle()">
+                    <a href="#" onclick="$('.js-slidingdaterange-help').slideToggle()">
                         <i class='fa fa-question-circle'></i>
-                        Date Range Help
                     </a>
                 </div>
-
             </div>
 
             <div class="panel-info">
-                <div class="alert alert-info js-slidingdaterange-help" style="display: none">
+                <div class="alert alert-info js-slidingdaterange-help margin-v-none" style="display: none">
                     <asp:Literal ID="lSlidingDateRangeHelp" runat="server" />
                 </div>
             </div>
