@@ -210,8 +210,10 @@ namespace Rock.Reporting
         /// <param name="attribute">The attribute.</param>
         public static void AddEntityFieldForAttribute( List<EntityField> entityFields, AttributeCache attribute )
         {
+            // Ensure prop name only has Alpha, Numeric and underscore chars
+            string propName = attribute.Key.RemoveSpecialCharacters().Replace( ".", "" );
+
             // Ensure prop name is unique
-            string propName = attribute.Key;
             int i = 1;
             while ( entityFields.Any( p => p.Name.Equals( propName, StringComparison.CurrentCultureIgnoreCase ) ) )
             {
