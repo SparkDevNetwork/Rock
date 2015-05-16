@@ -1283,6 +1283,25 @@ namespace Rock.Lava
             return null;
         }
 
+        /// <summary>
+        /// adds a link tag to the head of the document
+        /// </summary>
+        /// <param name="input">The input to use for the href of the tag.</param>
+        /// <returns></returns>
+        public static string SetPageTitle( string input )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            if ( page != null )
+            {
+                page.BrowserTitle = input;
+                page.PageTitle = input;
+                page.Header.Title = input;
+            }
+
+            return null;
+        }
+
         #endregion
     }
 }
