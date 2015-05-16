@@ -529,7 +529,7 @@ namespace Rock
         #region String Extensions
 
         /// <summary>
-        /// Removed special characters from strings.
+        /// Removes special characters from the string so that only Alpha, Numeric, '.' and '_' remain;
         /// </summary>
         /// <param name="str">The identifier.</param>
         /// <returns></returns>
