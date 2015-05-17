@@ -501,6 +501,23 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Occurs when Person merge action is clicked.
         /// </summary>
+        [Obsolete("Use PersonMergeClick instead")]
+        public event EventHandler MergeClick
+        {
+            add
+            {
+                PersonMergeClick += value;
+            }
+
+            remove
+            {
+                PersonMergeClick -= value;
+            }
+        }
+               
+        /// <summary>
+        /// Occurs when Person merge action is clicked.
+        /// </summary>
         public event EventHandler PersonMergeClick;
 
         /// <summary>

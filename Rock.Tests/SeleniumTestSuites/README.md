@@ -31,8 +31,32 @@ containing a test suite and all the individual test cases.
 	</table>
 
 When developing new tests, you may find these selectors
-are less fragile than the ones than the Selenium IDE chooses.  Consider replacing 
+are less fragile than the ones than the Selenium IDE chooses.
 
+ * If you need to count empty cells, use the [${nbsp} trick](http://stackoverflow.com/questions/247135/using-xpath-to-search-text-containing).  This example counts the number of cells in column 5 that are empty (nbsp).
+ 
+	<table>
+		<tr>
+			<td>Command</td><td>Target</td><td>Value</td>
+		</tr>
+		<tr>
+			<td>storeXpathCount</td><td>//table[@id='ctl00_main_ctl33_ctl01_ctl06_gReport']/tbody/tr/td[position()=5 and text()='${nbsp}']</td><td>count</td>
+		</tr>
+	</table>
+	
+ * Then you can use `AssertEval` to check the stored value
+
+	<table>
+     <tr>
+    	<td>assertEval</td>
+    	<td>${count} == 0 ? true : false </td>
+    	<td>true</td>
+		 </tr>
+	</table>
+
+
+ * Use `Assert*` tests instead of `Verify*` so that your test stops at the failure.  Verify will continue processing your test which is typically not what you want.
+ 
  * If you need something like a random number, use the `storeEval` command like this:
 	
 	<table>

@@ -218,6 +218,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Group"/> that was attended.
         /// </value>
+        [LavaInclude]
         public virtual Group Group { get; set; }
 
         /// <summary>

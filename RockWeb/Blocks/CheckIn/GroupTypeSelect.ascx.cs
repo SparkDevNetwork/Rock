@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
 
@@ -30,6 +31,8 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName("Group Type Select")]
     [Category("Check-in")]
     [Description("Displays a list of group types the person is configured to checkin to.")]
+
+    [BooleanField( "Select All and Skip", "Select this option if end-user should never see screen to select group types, all group types will automatically be selected and all the groups in all types will be available.", false, "", 0, "SelectAll" )]
     public partial class GroupTypeSelect : CheckInBlock
     {
         protected override void OnInit( EventArgs e )
@@ -80,11 +83,27 @@ namespace RockWeb.Blocks.CheckIn
                     }
                     else
                     {
-                        rSelection.DataSource = availGroupTypes
-                            .OrderBy( g => g.GroupType.Order )
-                            .ToList();
+                        bool SelectAll = GetAttributeValue("SelectAll").AsBoolean(false);
+                        if ( SelectAll )
+                        {
+                            if ( UserBackedUp )
+                            {
+                                GoBack();
+                            }
+                            else
+                            {
+                                availGroupTypes.ForEach( t => t.Selected = true );
+                                ProcessSelection();
+                            }
+                        }
+                        else
+                        {
+                            rSelection.DataSource = availGroupTypes
+                                .OrderBy( g => g.GroupType.Order )
+                                .ToList();
 
-                        rSelection.DataBind();
+                            rSelection.DataBind();
+                        }
                     }
                 }
             }

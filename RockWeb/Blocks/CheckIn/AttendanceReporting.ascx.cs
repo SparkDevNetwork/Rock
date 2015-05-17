@@ -225,6 +225,8 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         public void LoadChartAndGrids()
         {
+            lSlidingDateRangeHelp.Text = SlidingDateRangePicker.GetHelpHtml( RockDateTime.Now );
+            
             lcAttendance.ShowTooltip = true;
             if ( this.DetailPageGuid.HasValue )
             {
@@ -339,8 +341,6 @@ function(item) {
 
 
             lcAttendance.DataSourceUrl = this.ResolveUrl( dataSourceUrl );
-
-            hlblDateRange.Text = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues ).ToString( "d" );
 
             if ( pnlChartAttendanceGrid.Visible )
             {

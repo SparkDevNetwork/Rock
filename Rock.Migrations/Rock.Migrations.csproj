@@ -124,6 +124,10 @@
     <Compile Include="Migrations\201505120621198_AttendanceDateTimeIndex.Designer.cs">
       <DependentUpon>201505120621198_AttendanceDateTimeIndex.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201505142322514_GroupMemberWorkflowTrigger.cs" />
+    <Compile Include="Migrations\201505142322514_GroupMemberWorkflowTrigger.Designer.cs">
+      <DependentUpon>201505142322514_GroupMemberWorkflowTrigger.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.cs" />
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.Designer.cs">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
@@ -1626,6 +1630,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201505120621198_AttendanceDateTimeIndex.resx">
       <DependentUpon>201505120621198_AttendanceDateTimeIndex.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201505142322514_GroupMemberWorkflowTrigger.resx">
+      <DependentUpon>201505142322514_GroupMemberWorkflowTrigger.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>

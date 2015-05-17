@@ -240,11 +240,18 @@ namespace Rock.Communication.Transport
                                 // Subject
                                 message.Subject = communication.Subject.ResolveMergeFields( mergeObjects, currentPerson );
 
+                                // convert any special microsoft word characters to normal chars so they don't look funny (for example "Hey â€œdouble-quotesâ€ from â€˜single quoteâ€™")
+                                message.Subject = message.Subject.ReplaceWordChars();
+                                
                                 // Add any additional headers that specific SMTP provider needs
                                 AddAdditionalHeaders( message, recipient );
 
                                 // Add text view first as last view is usually treated as the preferred view by email readers (gmail)
                                 string plainTextBody = Rock.Communication.Medium.Email.ProcessTextBody( communication, globalAttributes, mergeObjects, currentPerson );
+                                
+                                // convert any special microsoft word characters to normal chars so they don't look funny
+                                plainTextBody = plainTextBody.ReplaceWordChars();
+                                
                                 if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
                                 {
                                     AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Plain ) );
@@ -253,6 +260,10 @@ namespace Rock.Communication.Transport
 
                                 // Add Html view
                                 string htmlBody = Rock.Communication.Medium.Email.ProcessHtmlBody( communication, globalAttributes, mergeObjects, currentPerson );
+
+                                // convert any special microsoft word characters to normal chars so they don't look funny
+                                htmlBody = htmlBody.ReplaceWordChars();
+
                                 if ( !string.IsNullOrWhiteSpace( htmlBody ) )
                                 {
                                     AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Html ) );
