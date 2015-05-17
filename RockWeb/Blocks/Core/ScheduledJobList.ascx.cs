@@ -107,6 +107,12 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
 
+                // format inactive jobs
+                if ( ! e.Row.DataItem.GetPropertyValue( "IsActive" ).ToStringSafe().AsBoolean( resultIfNullOrEmpty: false ) )
+                {
+                    e.Row.AddCssClass( "inactive" );
+                }
+
                 // format last status
                 if ( e.Row.DataItem.GetPropertyValue( "LastStatus" ) != null )
                 {
