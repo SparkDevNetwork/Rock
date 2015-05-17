@@ -240,7 +240,7 @@ function() {
 
             if ( accountIdList.Any() )
             {
-                if (accountIdList.Count == 1)
+                if ( accountIdList.Count == 1 )
                 {
                     int accountId = accountIdList.First();
                     financialTransactionsQry = financialTransactionsQry.Where( xx => xx.TransactionDetails.Any( a => a.AccountId == accountId ) );
@@ -256,7 +256,7 @@ function() {
                 .Select( ss => new
                 {
                     PersonId = ss.Key,
-                    FirstTransactionDateTime = ss.OrderBy( a => a.TransactionDateTime ).Select( s => s.TransactionDateTime ).FirstOrDefault()
+                    FirstTransactionDateTime = ss.Min( a => a.TransactionDateTime )
                 } );
 
             if ( startDate.HasValue )
