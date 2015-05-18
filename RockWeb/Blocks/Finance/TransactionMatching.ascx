@@ -18,6 +18,10 @@
                 
                 <asp:LinkButton ID="btnFilter" runat="server" CssClass="btn btn-xs btn-default pull-right margin-l-sm" OnClick="btnFilter_Click"><i class="fa fa-gear" title="Filter Accounts"></i></asp:LinkButton>
                 
+                <Rock:RockControlWrapper ID="rcwAddNewBusiness" runat="server"  Visible="false">
+                    <a id="hlAddNewBusiness" class="btn btn-default btn-xs margin-r-sm pull-right" runat="server" href="#">Add Business</a>
+                </Rock:RockControlWrapper>
+                
                 <Rock:RockControlWrapper ID="rcwAddNewFamily" runat="server"  Visible="false">
                     <a id="hlAddNewFamily" class="btn btn-default btn-xs margin-r-sm pull-right" runat="server" href="#">Add Family</a>
                 </Rock:RockControlWrapper>

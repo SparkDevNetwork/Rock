@@ -74,7 +74,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Gets the value that should be exported to Excel
         /// </summary>
-        /// <param name="controlContainer">The control container.</param>
+        /// <param name="row">The row.</param>
         /// <returns></returns>
         public virtual object GetExportValue( GridViewRow row )
         {
