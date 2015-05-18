@@ -1,0 +1,6 @@
+﻿{% for item in Items %}
+{% if item.DetailImage_unformatted != '' %}
+<img src="/GetImage.ashx?Guid={{ item.DetailImage_unformatted }}" class="title-image img-responsive">
+  {% endif %}
+  <h1>{{ item.Title }}</h1>{{ item.Content }}
+  {% endfor -%}

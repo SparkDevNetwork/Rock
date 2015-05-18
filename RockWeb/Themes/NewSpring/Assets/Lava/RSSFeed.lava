@@ -1,0 +1,83 @@
+{% assign firstArticle = CurrentPage | Times:ResultsPerPage %}
+<h1>{{title}}</h1>
+{{description}}
+<div class="rss-articles">
+	
+	{% if item != null and item.size > 0 %}
+	
+		{% if ResultsPerPage == 0 %}
+			{% assign ResultsPerPage = item.size %}
+		{% endif %}
+		
+		{% assign base0PageCount = 0 %}
+		
+		{% if ResultsPerPage > 0 and ResultsPerPage < item.size %}
+			{% assign base0PageCount = item.size | DividedBy:ResultsPerPage %}
+			
+			{% assign remainder = item.size | Modulo:ResultsPerPage %}
+			{% if remainder == 0 %}
+				{% assign base0PageCount = base0PageCount | Minus:1 %}
+			{% endif %}
+		{% endif %}
+		
+		{% if firstArticle >= item.size %}
+			{% assign CurrentPage = base0PageCount %}
+			{% assign firstArticle = base0PageCount | Times:ResultsPerPage %}
+		{% endif %}
+	
+		{% for article in item limit:ResultsPerPage offset:firstArticle -%}
+			<div class="rss-article">
+				<h2>{{article.title}}</h2>
+
+				<div class="rss-article-byline">
+						{{article.pubDate}}
+				</div> 
+				<br />
+				<div class="rss-article-summary">
+					{{article.description}}
+				</div>
+				<p>
+					<a href="{{article.detailPageUrl}}" class="btn btn-default">View Article <i class="fa fa-angle-double-right"></i></a>
+				</p>
+			</div>
+		{% endfor -%}
+		
+		{% if base0PageCount > 0 %}
+			<ul class="pagination pagination-sm">
+				{% if CurrentPage == 0 %}
+					<li class="prev disabled"> 
+						<a class="aspNetDisabled" href="{{BaseUrl}}">«</a>
+					</li> 
+				{% else %}
+					<li class="prev">
+						<a href="{{BaseUrl}}?articlePage={{CurrentPage | Minus:1}}">«</a>
+					</li>
+				{% endif %}
+				
+				{% for i in (0..base0PageCount) %}
+					{% if i == CurrentPage %}
+						<li class="active">
+					{% else %}
+						<li>
+					{% endif %}
+						<a href="{{BaseUrl}}?articlePage={{i}}" class="active">{{i | Plus:1}}</a>
+					</li>
+				{% endfor %}
+				
+				
+				{% if  base0PageCount == CurrentPage %}
+					<li class="next disabled">
+						<a href="{{BaseUrl}}?articlePage={{CurrentPage}}" class="aspNetDisabled">»</a>
+					</li>
+				{% else %}
+					<li class="next">
+						<a href="{{BaseUrl}}?articlePage={{CurrentPage | Plus:1}}">»</a>
+					</li>
+				{% endif %}
+			</ul>
+		{% endif %}
+		
+	{% else -%}
+		No articles found.
+	{% endif -%}
+</div>
