@@ -750,6 +750,7 @@ Copyright (c) 2012 Dan Eden*/
     28. Key Value Pair Control - styling for key/value pair control
     29. Context Setters
     30. Paneled List Group - extends the bootstrap list group to behave in a panel
+    31. Sliding Date Range 
 */
 .picker {
   position: relative;
@@ -2096,6 +2097,11 @@ ul.list-group-panel .list-group-item {
 }
 ul.list-group-panel .list-group-item:first-child {
   border: 0;
+}
+.slidingdaterange-select,
+.slidingdaterange-number,
+.slidingdaterange-daterange .input-group {
+  margin-bottom: 6px;
 }
 /*
     Used to manage styles related to Rock's forms

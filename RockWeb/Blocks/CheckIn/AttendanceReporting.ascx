@@ -6,10 +6,23 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-check-square-o"></i>Attendance Analysis</h1>
+
+                <div class="panel-labels">
+                    <a href="#" onclick="$('.js-slidingdaterange-help').slideToggle()">
+                        <i class='fa fa-question-circle'></i>
+                    </a>
+                </div>
             </div>
+
+            <div class="panel-info">
+                <div class="alert alert-info js-slidingdaterange-help margin-v-none" style="display: none">
+                    <asp:Literal ID="lSlidingDateRangeHelp" runat="server" />
+                </div>
+            </div>
+
             <div class="panel-body">
                 <div class="row row-eq-height-md">
-                    <div class="col-md-4 filter-options">
+                    <div class="col-md-3 filter-options">
 
                         <Rock:GroupTypePicker ID="ddlCheckinType" runat="server" Label="Check-in Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" />
                         <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="false" />
@@ -33,8 +46,11 @@
                             </div>
                         </Rock:RockControlWrapper>
 
+                        <Rock:NotificationBox ID="nbCampusesWarning" runat="server" NotificationBoxType="Warning" Text="Please select at least one campus." Visible="false"/>
                         <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campuses" />
 
+                        
+                        <Rock:NotificationBox ID="nbGroupsWarning" runat="server" NotificationBoxType="Warning" Text="Please select at least one group." Visible="false"/>
                         <h4>Group</h4>
                         <ul class="rocktree">
 
@@ -46,7 +62,7 @@
                         </ul>
 
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-md-9">
 
                         <div class="row analysis-types">
                             <div class="col-sm-8">
@@ -122,10 +138,10 @@
                                         <div class="js-view-by">
                                             <Rock:HiddenFieldWithClass ID="hfViewBy" CssClass="js-hidden-selected" runat="server" />
                                             <div class="btn-group">
-                                                <asp:HyperLink ID="btnViewAttendees" runat="server" CssClass="btn btn-default active" data-val="0">
+                                                <asp:HyperLink ID="btnViewAttendees" runat="server" CssClass="btn btn-default btn-sm active" data-val="0">
                                                     Attendees
                                                 </asp:HyperLink>
-                                                <asp:HyperLink ID="btnViewParentsOfAttendees" runat="server" CssClass="btn btn-default" data-val="1">
+                                                <asp:HyperLink ID="btnViewParentsOfAttendees" runat="server" CssClass="btn btn-default btn-sm" data-val="1">
                                                     Parents of Attendees
                                                 </asp:HyperLink>
                                             </div>
@@ -177,47 +193,21 @@
                             </div>
 
                             <Rock:NotificationBox ID="nbAttendeesError" runat="server" NotificationBoxType="Danger" Dismissable="true" Visible="false" />
-                            <Rock:Grid ID="gAttendeesAttendance" runat="server" AllowSorting="true" RowItemText="Attendee" OnRowDataBound="gAttendeesAttendance_RowDataBound">
+                            <Rock:Grid ID="gAttendeesAttendance" runat="server" AllowSorting="true" RowItemText="Attendee" OnRowDataBound="gAttendeesAttendance_RowDataBound" ExportGridAsWYSIWYG="true">
                                 <Columns>
                                     <Rock:SelectField />
-                                    <Rock:PersonField DataField="Parent" HeaderText="Parent" />
-                                    <Rock:PersonField DataField="Person" HeaderText="Name" SortExpression="PersonAlias.Person.NickName, PersonAlias.Person.LastName" />
-                                    <Rock:RockTemplateField HeaderText="First Visit ">
-                                        <ItemTemplate>
-                                            <asp:Literal ID="lFirstVisitDate" runat="server" />
-                                        </ItemTemplate>
-                                    </Rock:RockTemplateField>
-                                    <Rock:RockTemplateField HeaderText="Second Visit ">
-                                        <ItemTemplate>
-                                            <asp:Literal ID="lSecondVisitDate" runat="server" />
-                                        </ItemTemplate>
-                                    </Rock:RockTemplateField>
+                                    <Rock:PersonField DataField="Parent" HeaderText="Parent" SortExpression="Parent.LastName, Parent.NickName"/>
+                                    <Rock:PersonField DataField="Person" HeaderText="Name" SortExpression="Person.LastName, Person.NickName" />
+                                    <Rock:RockLiteralField HeaderText="First Visit" ID="lFirstVisitDate" SortExpression="FirstVisit.StartDateTime"/>
+                                    <Rock:RockLiteralField HeaderText="Second Visit" ID="lSecondVisitDate" />
                                     <Rock:DateField DataField="LastVisit.StartDateTime" HeaderText="Last Visit" SortExpression="LastVisit.StartDateTime" />
-                                    <Rock:CampusField DataField="LastVisit.CampusId" HeaderText="Campus" />
-                                    <Rock:RockTemplateField HeaderText="Service Time">
-                                        <ItemTemplate>
-                                            <asp:Literal ID="lServiceTime" runat="server" />
-                                        </ItemTemplate>
-                                    </Rock:RockTemplateField>
+                                    <Rock:CampusField DataField="LastVisit.CampusId" HeaderText="Campus" SortExpression="LastVisit.Campu.sName" />
+                                    <Rock:RockLiteralField HeaderText="Service Time" ID="lServiceTime" />
                                     <Rock:RockBoundField DataField="LastVisit.Group.Name" HeaderText="Check-in Area" SortExpression="LastVisit.Group.Name" />
-                                    <Rock:RockTemplateField HeaderText="Home Address" ItemStyle-Wrap="false">
-                                        <ItemTemplate>
-                                            <asp:Literal ID="lHomeAddress" runat="server" />
-                                        </ItemTemplate>
-                                    </Rock:RockTemplateField>
+                                    <Rock:RockLiteralField HeaderText="Home Address" ID="lHomeAddress" ItemStyle-Wrap="false" />
                                     <Rock:PhoneNumbersField HeaderText="Phone Numbers" DataField="PhoneNumbers" ItemStyle-Wrap="false" DisplayCountryCode="false" />
-
-                                    <Rock:RockTemplateField HeaderText="Count" SortExpression="AttendanceSummary.Count" >
-                                        <ItemTemplate>
-                                            <asp:Literal ID="lAttendanceCount" runat="server" />
-                                        </ItemTemplate>
-                                    </Rock:RockTemplateField>
-
-                                    <Rock:RockTemplateField HeaderText="Attendance %" >
-                                        <ItemTemplate>
-                                            <asp:Literal ID="lAttendancePercent" runat="server" />
-                                        </ItemTemplate>
-                                    </Rock:RockTemplateField>
+                                    <Rock:RockLiteralField HeaderText="Count" ID="lAttendanceCount" SortExpression="AttendanceSummary.Count" />
+                                    <Rock:RockLiteralField HeaderText="Attendance %" ID="lAttendancePercent" SortExpression="AttendanceSummary.Count" />
                                 </Columns>
                             </Rock:Grid>
 

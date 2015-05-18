@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Finance
 
     [AccountsField( "Accounts", "Select the accounts that transaction amounts can be allocated to.  Leave blank to show all accounts" )]
     [LinkedPage( "Add Family Link", "Select the page where a new family can be added. If specified, a link will be shown which will open in a new window when clicked", DefaultValue = "6a11a13d-05ab-4982-a4c2-67a8b1950c74,af36e4c2-78c6-4737-a983-e7a78137ddc7" )]
+    [LinkedPage( "Add Business Link", "Select the page where a new business can be added. If specified, a link will be shown which will open in a new window when clicked" )]
     public partial class TransactionMatching : RockBlock, IDetailBlock
     {
 
@@ -149,13 +150,20 @@ namespace RockWeb.Blocks.Finance
         public void ShowDetail( int batchId )
         {
             string temp = this.GetAttributeValue( "AddFamilyLink" );
-            string url = this.LinkedPageUrl( "AddFamilyLink" );
+            string addFamilyUrl = this.LinkedPageUrl( "AddFamilyLink" );
+            string addBusinessUrl = this.LinkedPageUrl( "AddBusinessLink" );
 
-            rcwAddNewFamily.Visible = !string.IsNullOrWhiteSpace( url );
+            rcwAddNewFamily.Visible = !string.IsNullOrWhiteSpace( addFamilyUrl );
             if ( rcwAddNewFamily.Visible )
             {
                 // force the link to open a new scrollable,resizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
-                hlAddNewFamily.Attributes["onclick"] = string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", url );
+                hlAddNewFamily.Attributes["onclick"] = string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", addFamilyUrl );
+            }
+
+            rcwAddNewBusiness.Visible = !string.IsNullOrWhiteSpace( addBusinessUrl );
+            if ( rcwAddNewBusiness.Visible )
+            {
+                hlAddNewBusiness.Attributes["onclick"] = string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", addBusinessUrl );
             }
 
             hfBatchId.Value = batchId.ToString();
@@ -349,7 +357,7 @@ namespace RockWeb.Blocks.Finance
                         }
                     }
 
-                    bool requiresMicr = transactionToMatch.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+                    bool requiresMicr = transactionToMatch.CurrencyTypeValue != null && transactionToMatch.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
                     nbNoMicrWarning.Visible = requiresMicr && string.IsNullOrWhiteSpace( checkMicrHashed );
 
                     if ( ddlIndividual.Items.Count == 2 )
@@ -577,7 +585,7 @@ namespace RockWeb.Blocks.Finance
             // if the transaction is matched to somebody, attempt to save it.  Otherwise, if the transaction was previously matched, but user unmatched it, save it as an unmatched transaction
             if ( financialTransaction != null && authorizedPersonId.HasValue )
             {
-                bool requiresMicr = financialTransaction.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+                bool requiresMicr = financialTransaction.CurrencyTypeValue != null && financialTransaction.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
                 if ( requiresMicr && string.IsNullOrWhiteSpace( accountNumberSecured ) )
                 {
                     // should be showing already, but just in case

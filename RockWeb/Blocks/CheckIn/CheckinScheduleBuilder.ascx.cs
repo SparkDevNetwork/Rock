@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.CheckIn
     [Description( "Helps to build schedules to be used for checkin." )]
     public partial class CheckinScheduleBuilder : RockBlock
     {
+
         #region Control Methods
 
         /// <summary>
@@ -313,23 +314,25 @@ namespace RockWeb.Blocks.CheckIn
                 groupLocationQry = groupLocationQry.OrderBy( a => a.Group.Name ).ThenBy( a => a.Location.Name );
             }
 
-            var qryList = groupLocationQry.Select( a =>
+            var qryList = groupLocationQry
+                .Where( a => a.Location != null )
+                .Select( a =>
                 new
                 {
                     GroupLocationId = a.Id,
+                    a.Location,
                     GroupId = a.GroupId,
                     GroupName = a.Group.Name,
-                    LocationName = a.Location.Name,
                     ScheduleIdList = a.Schedules.Select( s => s.Id ),
-                    a.LocationId,
                     GroupTypeId = a.Group.GroupTypeId
                 } ).ToList();
 
+            var locationService = new LocationService( rockContext );
             int parentLocationId = pkrParentLocation.SelectedValueAsInt() ?? Rock.Constants.All.Id;
             if ( parentLocationId != Rock.Constants.All.Id )
             {
-                var descendantLocationIds = new LocationService( rockContext ).GetAllDescendents( parentLocationId ).Select( a => a.Id );
-                qryList = qryList.Where( a => descendantLocationIds.Contains( a.LocationId ) ).ToList();
+                var descendantLocationIds = locationService.GetAllDescendents( parentLocationId ).Select( a => a.Id );
+                qryList = qryList.Where( a => descendantLocationIds.Contains( a.Location.Id ) ).ToList();
             }
 
             // put stuff in a datatable so we can dynamically have columns for each Schedule
@@ -337,20 +340,40 @@ namespace RockWeb.Blocks.CheckIn
             dataTable.Columns.Add( "GroupLocationId" );
             dataTable.Columns.Add( "GroupId" );
             dataTable.Columns.Add( "GroupName" );
+            dataTable.Columns.Add( "GroupPath" );
             dataTable.Columns.Add( "LocationName" );
-            dataTable.Columns.Add( "Path" );
+            dataTable.Columns.Add( "LocationPath" );
             foreach ( var field in gGroupLocationSchedule.Columns.OfType<CheckBoxEditableField>() )
             {
                 dataTable.Columns.Add( field.DataField, typeof( bool ) );
             }
+
+            var locationPaths = new Dictionary<int, string>();
 
             foreach ( var row in qryList )
             {
                 DataRow dataRow = dataTable.NewRow();
                 dataRow["GroupLocationId"] = row.GroupLocationId;
                 dataRow["GroupName"] = groupService.GroupAncestorPathName( row.GroupId );
-                dataRow["LocationName"] = row.LocationName;
-                dataRow["Path"] = groupPaths.Where( gt => gt.GroupTypeId == row.GroupTypeId ).Select( gt => gt.Path ).FirstOrDefault();
+                dataRow["GroupPath"] = groupPaths.Where( gt => gt.GroupTypeId == row.GroupTypeId ).Select( gt => gt.Path ).FirstOrDefault();
+                dataRow["LocationName"] = row.Location.Name;
+
+                if ( row.Location.ParentLocationId.HasValue && !locationPaths.ContainsKey( row.Location.ParentLocationId.Value ) )
+                {
+                    var locationNames = new List<string>();
+                    var parentLocation = locationService.Get( row.Location.ParentLocationId.Value );
+                    while ( parentLocation != null )
+                    {
+                        locationNames.Add( parentLocation.Name );
+                        parentLocation = parentLocation.ParentLocation;
+                    }
+                    if ( locationNames.Any() )
+                    {
+                        locationNames.Reverse();
+                        dataRow["LocationPath"] = locationNames.AsDelimited( " > " );
+                    }
+                }
+
                 foreach ( var field in gGroupLocationSchedule.Columns.OfType<CheckBoxEditableField>() )
                 {
                     int scheduleId = int.Parse( field.DataField.Replace( "scheduleField_", string.Empty ) );

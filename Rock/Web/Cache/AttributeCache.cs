@@ -284,7 +284,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="attribute">The attribute.</param>
         /// <param name="qualifiers">The qualifiers.</param>
-        private void CopyFromModel( Rock.Model.Attribute attribute, Dictionary<string, string> qualifiers )
+        public void CopyFromModel( Rock.Model.Attribute attribute, Dictionary<string, string> qualifiers )
         {
             base.CopyFromModel( attribute );
 
