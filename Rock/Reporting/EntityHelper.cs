@@ -365,8 +365,8 @@ namespace Rock.Reporting
             FieldConfig = new Dictionary<string, ConfigurationValue>();
         }
 
-        // <summary>
-        /// Initializes a new instance of the <see cref="EntityField" /> class.
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityField"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="fieldKind">Kind of the field.</param>
