@@ -217,6 +217,7 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 nbNotAllowedToEdit.Visible = false;
+                nbInvalidParentGroup.Visible = false;
                 
                 ShowDialog();
             }
@@ -482,7 +483,10 @@ namespace RockWeb.Blocks.Groups
             group.Name = tbName.Text;
             group.Description = tbDescription.Text;
             group.CampusId = ddlCampus.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( ddlCampus.SelectedValue );
-            group.GroupTypeId = ddlGroupType.SelectedValue.AsInteger();
+            if ( ddlGroupType.Visible )
+            {
+                group.GroupTypeId = ddlGroupType.SelectedValue.AsInteger();
+            }
             group.ParentGroupId = gpParentGroup.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( gpParentGroup.SelectedValue );
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
@@ -578,6 +582,19 @@ namespace RockWeb.Blocks.Groups
                 group.ParentGroup = groupService.Get( group.ParentGroupId.Value );
             }
 
+            // Check to see if group type is allowed as a child of new parent group.
+            if ( group.ParentGroup != null )
+            {
+                var allowedGroupTypeIds = GetAllowedGroupTypes( group.ParentGroup, rockContext ).Select( t => t.Id ).ToList();
+                if ( !allowedGroupTypeIds.Contains(group.GroupTypeId) )
+                {
+                    var groupType = GroupTypeCache.Read( group.GroupTypeId );
+                    nbInvalidParentGroup.Text = string.Format( "The '{0}' group does not allow child groups with a '{1}' group type.", group.ParentGroup.Name, groupType != null ? groupType.Name : "" );
+                    nbInvalidParentGroup.Visible = true;
+                    return;
+                }
+            }
+            
             // Check to see if user is still allowed to edit with selected group type and parent group
             if ( !group.IsAuthorized( Authorization.EDIT, CurrentPerson ))
             {
