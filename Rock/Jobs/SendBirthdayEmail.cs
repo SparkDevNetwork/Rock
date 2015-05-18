@@ -81,7 +81,7 @@ namespace Rock.Jobs
             var activeStatusGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid();
             
             // only include alive people that have record status of Active
-            var personQry = personService.Queryable( false, false ).Where( a => a.RecordStatusValue.Guid == activeStatusGuid );
+            var personQry = personService.Queryable( false, false ).Where( a => a.RecordStatusValue.Guid == activeStatusGuid && a.IsDeceased == false );
             var ageRange = ( dataMap.GetString( "AgeRange" ) ?? string.Empty ).Split( ',' );
             if ( ageRange.Length == 2 )
             {
