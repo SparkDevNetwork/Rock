@@ -9,6 +9,11 @@
 <table id="suiteTable" cellpadding="1" cellspacing="1" border="1" class="selenium"><tbody>
 <tr><td><b>Test Suite</b></td></tr>
 <tr><td><a href="CreateSectionASmallGroup.html">Create SectionA Small Group</a></td></tr>
+<tr><td><a href="AddMembersToSmallGroup.html">Add Members to Small Group</a></td></tr>
+<tr><td><a href="EditSelectedTopicOfGroup.html">EditSelectedTopicOfGroup</a></td></tr>
+<tr><td><a href="EditLocationOfGroup.html">EditLocationOfGroup</a></td></tr>
+<tr><td><a href="EditDateTimeOfGroup.html">EditDateTimeOfGroup</a></td></tr>
+<tr><td><a href="DeleteSmallGroup.html">Delete Small Group</a></td></tr>
 </tbody></table>
 </body>
 </html>

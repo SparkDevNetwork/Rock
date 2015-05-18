@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://localhost/" />
+<title>New Test</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">New Test</td></tr>
+</thead><tbody>
+<!--This Test Case edits the location of the small group created in the first Test Case .-->
+<!--These tests assume you are logged in to Rock with an account that can perform these functions.-->
+<tr>
+	<td>storeEval</td>
+	<td>700</td>
+	<td>runSpeed</td>
+</tr>
+<tr>
+	<td>setSpeed</td>
+	<td>${runSpeed}</td>
+	<td></td>
+</tr>
+<tr>
+	<td>open</td>
+	<td>/</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//a[contains(text(),'Group Name')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=_searchField]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>sendKeysAndWait</td>
+	<td>css=[id$=_searchField]</td>
+	<td>selenium test${KEY_ENTER}</td>
+</tr>
+<!--Set Location to Main Campus Meeting Place-->
+<tr>
+	<td>click</td>
+	<td>css=[id$=_btnEdit]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//div[contains(text(),'Meeting Details')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=_lbAdd]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//a[contains(text(), 'Other Location')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//label[contains(text(), 'Location')]/input</td>
+	<td></td>
+</tr>
+<tr>
+	<td>pause</td>
+	<td>1000</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//div[@id='treeviewItems_locpGroupLocation_namedPicker']/ul/li/span[contains(text(), 'Main Campus')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=_dlgLocations_serverSaveLink]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=_btnSave]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=_btnEdit]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//div[contains(text(),'Meeting Details')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//td[contains(text(),'Main Campus')]</td>
+	<td>*</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//td[contains(text(),'Meeting Location')]</td>
+	<td>*</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[title='Delete']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button[contains(text(), 'OK')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=_btnSave]</td>
+	<td></td>
+</tr>
+<!--Set Location to Manually Entered Address-->
+<tr>
+	<td>click</td>
+	<td>css=[id$=_btnEdit]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//div[contains(text(),'Meeting Details')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=_lbAdd]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//a[contains(text(), 'Other Location')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//label[contains(text(), 'Address')]/input</td>
+	<td></td>
+</tr>
+<tr>
+	<td>setSpeed</td>
+	<td>0</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=[id$=_tbStreet1]</td>
+	<td>1234 S. Main St.</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=[id$=_tbStreet2]</td>
+	<td>Apt. 4321</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=[id$=_tbCity]</td>
+	<td>Mesa</td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=[id$=_ddlState]</td>
+	<td>label=CA</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=[id$=_tbPostalCode]</td>
+	<td>85213</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=_addressPicker_btnSelect]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>setSpeed</td>
+	<td>${runSpeed}</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=_dlgLocations_serverSaveLink]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=_btnSave]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=_btnEdit]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//div[contains(text(),'Meeting Details')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//td[contains(text(),'1234 S. Main St.')]</td>
+	<td>*</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//td[contains(text(),'Meeting Location')]</td>
+	<td>*</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[title='Delete']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button[contains(text(), 'OK')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=_btnSave]</td>
+	<td></td>
+</tr>
+<!--Set Location to a Member Location-->
+<tr>
+	<td>click</td>
+	<td>css=[id$=_btnEdit]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//div[contains(text(),'Meeting Details')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=_lbAdd]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//a[contains(text(), 'Member Location')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>pause</td>
+	<td>1000</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=[id$=dlgLocations_ddlMember]</td>
+	<td>label=Alisha Marble Home (3002 W Lupine Ave Phoenix, AZ 85029)</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=_dlgLocations_serverSaveLink]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=_btnSave]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=_btnEdit]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//div[contains(text(),'Meeting Details')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//td[contains(text(),'3002 W Lupine')]</td>
+	<td>*</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//td[contains(text(),'Meeting Location')]</td>
+	<td>*</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[title='Delete']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button[contains(text(), 'OK')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=_btnSave]</td>
+	<td></td>
+</tr>
+</tbody></table>
+</body>
+</html>
