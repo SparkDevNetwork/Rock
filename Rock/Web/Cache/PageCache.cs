@@ -739,10 +739,9 @@ namespace Rock.Web.Cache
                         }
                     }
 
-                    if ( childPages.Any() )
-                    {
-                        properties.Add( "Pages", childPages );
-                    }
+                    // Add the Pages property so that Lava users can check it via the "empty" check or size.
+                    properties.Add( "Pages", childPages );
+                    
                 }
 
                 return properties;
