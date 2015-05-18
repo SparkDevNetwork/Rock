@@ -82,7 +82,7 @@ namespace Rock.Jobs
             
             // only include alive people that have record status of Active
             var personQry = personService.Queryable( false, false ).Where( a => a.RecordStatusValue.Guid == activeStatusGuid && a.IsDeceased == false );
-            var ageRange = ( dataMap.GetString( "AgeRange" ) ?? string.Empty ).Split( ',' );
+            var ageRange = ( dataMap.GetString( "AgeRange" ) ?? string.Empty ).Split( ',' ); 
             if ( ageRange.Length == 2 )
             {
                 int? minimumAge = ageRange[0].AsIntegerOrNull();
