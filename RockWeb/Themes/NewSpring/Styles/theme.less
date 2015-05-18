@@ -1,0 +1,851 @@
+﻿// Inspired By
+// http://tattek.com/minimal/#
+// http://192.241.236.31/test4.smartadmin/#ajax/dashboard.html
+// http://webapplayers.com/inspinia_admin-v1.2/form_basic.html
+
+
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_print.less";
+
+/*#region
+// Fonts                       */
+// -------------------------
+
+// light (weight 400 = 'normal')
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff') format('woff'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.ttf') format('truetype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
+    font-weight: 300;
+    font-style: normal;
+}
+
+// regular (weight 500)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+    font-weight: 400;
+    font-style: normal;
+}
+
+// semi-bold (weight 700)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff') format('woff'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.ttf') format('truetype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
+    font-weight: 700;
+    font-style: normal;
+}
+
+// bold (weight 900)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.ttf') format('truetype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
+    font-weight: 900;
+    font-style: normal;
+}
+/*#endregion */
+
+/*
+    Rock Theme Styles
+
+    1.
+    2. HTML Overrides
+    3. Bootstrap Overides
+    4. Rock Overrides
+    5. Theme Styling
+    6. Utilities
+    7. Responsive Overrides
+    8. Side Navbar
+    9. Person Details
+    10. First Word Weight
+
+*/
+
+/*#region
+// 1.         */
+// -------------------------
+
+/*#endregion */
+
+
+/*#region
+// 2. HTML Overrides         */
+// -------------------------
+
+html {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+}
+
+main {
+    display: block;
+}
+
+body {
+    background-color: @accent-bold-color;
+}
+
+h1, h2, h3, h4 {
+    font-weight: @font-weight-light;
+    letter-spacing: -.5px;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+input[type=text],
+textarea,
+.form-control {
+  -webkit-transition: all 0.30s ease-in-out;
+  -moz-transition: all 0.30s ease-in-out;
+  -ms-transition: all 0.30s ease-in-out;
+  -o-transition: all 0.30s ease-in-out;
+}
+
+input[type=text]:focus,
+textarea:focus,
+.form-control:focus {
+  box-shadow: 0 0 5px rgba(238, 118, 36, .6);
+  border: 1px solid rgba(238, 118, 36, .6);
+}
+
+pre {
+    background-color: @accent-light-color;
+    border-color: darken(@accent-light-color, 15%);
+    color: @accent-light-text-color;
+}
+
+/*#endregion */
+
+
+/*#region
+// 3. Bootstrap Overrides    */
+// -------------------------
+
+h1 small, 
+h2 small, 
+h3 small, 
+h4 small, 
+h5 small, 
+h6 small, 
+.h1 small, 
+.h2 small, 
+.h3 small, 
+.h4 small, 
+.h5 small, 
+.h6 small, 
+h1 .small, 
+h2 .small, 
+h3 .small, 
+h4 .small, 
+h5 .small, 
+h6 .small, 
+.h1 .small, 
+.h2 .small, 
+.h3 .small, 
+.h4 .small, 
+.h5 .small, 
+.h6 .small {
+    font-weight: inherit;
+}
+
+h4, .h4 {
+    font-weight: 500;
+}
+
+
+// panel tweaks
+.panel {
+    border-radius: 0;
+    border-top-width: 0;
+    border-top-width: 3px;
+
+    .panel-heading {
+        padding: 6px 10px;
+        border-color: darken(@gray-lighter, 5%);
+        border-radius: 0;
+
+        .panel-title {
+            font-weight: @font-weight-light;
+            letter-spacing: -.5px;
+            font-size: 18px;
+            margin: 0 12px 4px 0;
+        }
+
+        h3 > i {
+            margin-right: 4px;
+        }
+    }
+
+    &.panel-primary {
+        .panel-heading {
+            background-color: @brand-primary;
+        }
+    }
+
+    &.panel-widget {
+        .panel-heading {
+            background-color: @gray-lighter;
+        }
+    }
+}
+
+.tag-letterlist a {
+    color: @brand-primary;
+}
+
+.nav.nav-pagelist {
+    background-color: @accent-blue-light;
+    border: 1px solid darken(@accent-blue-light, 10%);
+
+    .pill-help {
+        a {
+            color: @accent-blue;
+        }
+    }
+
+    .nav.nav-pills {
+
+        li a:hover {
+            background-color: lighten(@accent-blue, 30%);
+        }
+
+        li.active a {
+            background-color: @accent-blue;
+            color: #fff;
+            border-color: darken(@accent-blue, 5%);
+        }
+    }
+}
+
+.rock-modal-frame {
+    border: 1px solid @accent-bold-color;
+}
+
+.close {
+    opacity: 0.6;
+}
+
+/*#endregion */
+
+
+/*#region
+// 4. Rock Overrides         */
+// -------------------------
+
+.person-image {
+    border-radius: 4px;
+}
+
+// type ahead styles
+.tt-suggestion {
+
+  p {
+
+      &:hover {
+          background-color: @accent-blue-light;
+      }
+  }
+}
+
+.smartsearch {
+    margin: 12px 4%;
+    border: 0;
+    background-color: lighten(@accent-bold-color, 5%);
+    width: 92%;
+
+    input.searchinput {
+        color: @accent-bold-text-color;
+    }
+}
+
+.loginstatus {
+    margin-right: 2px;
+
+    .profile-photo {
+        height: 35px;
+        width: 35px;
+        float: left;
+        background-size: 100%;
+	    -webkit-border-radius: 17.5px;
+	    -moz-border-radius: 17.5px;
+        border-radius: 17.5px;
+        margin: -8px 4px 0 0;
+    }
+}
+
+.personprofilebar-bio .actions a.btn-action {
+    background-color: @accent-blue;
+    color: #fff;
+    border: 1px solid darken(@accent-blue, 5%);
+}
+
+.updateprogress-status {
+    left: 45%;
+    padding: 30px 20px;
+    border-radius: 120px;
+    box-shadow: 5px 5px 12px 3px rgba(0,0,0,0.1);
+
+    .spinner {
+        width: 80px;
+        height: 60px;
+
+        > div {
+            background-color: #fff;
+            width: 10px;
+        }
+    }
+}
+
+.list-as-blocks {
+
+    ul {
+
+        li {
+
+            a {
+                -webkit-transition: background-color 200ms linear;
+                -moz-transition: background-color 200ms linear;
+                -o-transition: background-color 200ms linear;
+                -ms-transition: background-color 200ms linear;
+                transition: background-color 200ms linear;
+
+                &:hover {
+                    background-color: lighten(@accent-blue, 2%);
+                    border-color: darken(@accent-blue, 5%);
+                    color: #fff;
+                }
+
+            }
+
+            &.active {
+                a {
+                    background-color: @accent-blue;
+                    border-color: darken(@accent-blue, 5%);
+                    color: #fff;
+                }
+            }
+        }
+    }
+}
+
+.table-hover tbody tr:hover td,
+.table-hover tbody tr:hover th {
+    background-color: #ecf2e2;
+}
+
+// personal notes styling
+.panel-note {
+    article.personal {
+        background-color: @accent-blue;
+        border-color: darken(@accent-blue, 5%);
+        color: #fff;
+    }
+}
+
+// duplicate person
+.grid-table tbody tr.duplicate-source td,
+.grid-table tbody tr.duplicate-source:hover td {
+   background-color: @accent-blue;
+   color: #fff;
+}
+
+.discchart {
+
+    li {
+        background-color: lighten(@brand-primary, 10%);
+        color: #fff;
+    }
+
+    .discbar {
+        &.discbar-primary {
+            background: @brand-primary;
+        }
+    }
+}
+
+/*#endregion */
+
+
+/*#region
+// 5. Theme Styling          */
+// -------------------------
+
+#page-wrapper {
+    width: 100%;
+    //overflow: hidden;
+}
+
+#content-wrapper {
+    background-color: @body-bg;
+    min-height: 1000px;
+    z-index: 30;
+    min-width: 320px;
+
+    header {
+        .navbar-default {
+            background-color: @accent-bold-color;
+            border-color: darken(@accent-bold-color, 5%);
+            color: @accent-bold-text-color;
+
+            .navbar-header {
+                padding: 8px 0 0 12px;
+                float: left;
+            }
+
+            .navbar-mobile-logo {
+                float: left;
+                width: 95px;
+                height: 34px;
+                margin: 8px 0 0 6px;
+
+                svg {
+                    height: 100%;
+                    width: 100%;
+
+                    .rock-logo {
+                        fill: #d3cec5;
+                    }
+                }
+            }
+
+            .navbar-zone-header {
+                width: 100%;
+            }
+
+            .navbar-nav > .open > a,
+            .navbar-nav > .open > a:hover,
+            .navbar-nav > .open > a:focus {
+                background-color: lighten(@accent-bold-color, 5%);
+            }
+
+            .navbar-nav > li > a {
+                color: @accent-bold-text-color;
+            }
+
+            .dropdown-menu {
+                li.divider {
+                    background-color: lighten(@accent-bold-color, 5%);
+                }
+            }
+
+        }
+    }
+
+    #page-title {
+        background-color: @accent-color;
+        color: @accent-text-color;
+        padding: 15px;
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: @font-weight-light;
+            letter-spacing: -.5px;
+
+            .page-icon {
+                display: inline;
+                color: lighten(@accent-text-color, 10%);
+            }
+
+        }
+
+        .breadcrumb {
+            background: none;
+            padding: 0;
+            margin: 0;
+
+            > .active {
+                color: lighten(@accent-text-color, 30%);
+            }
+
+            li + li:before {
+                color: lighten(@accent-text-color, 30%);
+            }
+        }
+    }
+
+    #page-content {
+        padding: 15px;
+    }
+
+    footer {
+        padding: 0 15px;
+    }
+}
+
+#content-wrapper, .navbar-static-side {
+    -webkit-transition-duration: 0.5s;
+    -moz-transition-duration: 0.5s;
+    -o-transition-duration: 0.5s;
+    transition-duration: 0.5s;
+}
+
+.not-found h2 {
+    font-size: 200px;
+    font-weight: @font-weight-bold;
+    letter-spacing: -5px;
+    line-height: 210px;
+
+    i {
+        color: #F03;
+        font-size: 210px;
+        position: relative;
+        top: -12px;
+    }
+}
+
+body#splash {
+    background-color: @accent-color;
+    border-top: 36px solid @accent-bold-color;
+
+    #content {
+        max-width: 400px;
+        margin: 24px auto 0;
+        padding: 15px;
+
+        #logo {
+            width: 100px;
+            height: 100px;
+            display: block;
+            margin: 0 auto;
+
+            svg {
+                width: 100%;
+                height: 100%;
+            }
+
+            .rock-logo {
+                fill: darken(@accent-color, 5%);
+            }
+        }
+    }
+
+
+    &.error #content {
+        margin: 12px auto 0;
+        max-width: 800px;
+
+        #logo {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+        }
+    }
+}
+
+.error-wrap .error-icon {
+    &.warning {
+        color: #dab751;
+    }
+}
+
+/*#endregion */
+
+
+/*#region
+// 6. Utilities              */
+// -------------------------
+
+.navbar-minimize {
+    background-color: @btn-primary-bg;
+    color: @btn-primary-color;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+}
+
+
+/*#endregion */
+
+
+/*#region
+// 7. Responsive Overrides  */
+// -------------------------
+
+// default styling should be for phones 767px or less
+
+// Small devices (tablets, 768px and up)
+@media (min-width: @screen-sm-min) {
+
+    body#splash {
+
+        #content {
+            margin: 36px auto 0;
+
+            #logo {
+                width: 150px;
+                height: 150px;
+                display: block;
+                margin: 0 auto 12px;
+            }
+        }
+    }
+
+}
+
+// Medium devices (desktops, 992px and up)
+@media (min-width: @screen-md-min) {
+
+    #content-wrapper {
+        header {
+            .navbar-default {
+                height: @navbar-height;
+                background-color: @header-bg;
+                border-color: darken(@header-bg, 5%);
+                color: @header-text-color;
+
+                .navbar-mobile-logo {
+                    display: none;
+                }
+
+                .navbar-zone-header {
+                    width: inherit;
+                }
+
+                & .navbar-nav > .open > a,
+                & .navbar-nav > .open > a:hover,
+                & .navbar-nav > .open > a:focus {
+                    background-color: darken(@accent-semibold-color, 5%);
+                }
+
+                & .navbar-nav > li > a {
+                    color: @accent-semibold-text-color;
+                }
+
+                .dropdown-menu {
+                    li.divider {
+                        background-color: @gray-light;
+                    }
+                }
+            }
+        }
+
+        .smartsearch {
+            margin: 9px 8px 9px 0;
+            width: 290px;
+            background-color: darken(@header-bg, 3%);
+
+            input.searchinput {
+                color: @header-text-color;
+            }
+        }
+    }
+
+}
+
+// Large devices (large desktops, 1200px and up)
+@media (min-width: @screen-lg-min) {
+
+}
+/*#endregion */
+
+
+/*#region
+// 8. Side Navbar             */
+// -------------------------
+
+
+// base styles
+.navbar-static-side {
+    background-color: @accent-bold-color;
+    color: @accent-bold-text-color;
+    display: none;
+    position: absolute;
+    width: 70px;
+
+    .navbar-header {
+        height: @navbar-height;
+        width: 100%;
+        background-color: darken(@accent-bold-color, 5%);
+
+        .logo {
+            background: url(../../../Assets/Images/rock-logo-sm.svg) no-repeat top left;
+            height: 35px;
+            width: 36px;
+            background-size: contain;
+            margin: 8px auto 0;
+        }
+    }
+
+    .navbar-side {
+        margin-top: 24px;
+        display: inline-block;
+        width: 100%;
+
+        & > li {
+            text-align: center;
+            margin-top: 0;
+
+            > i {
+                padding: 11px 0;
+                font-size: 24px;
+                color: @accent-bold-text-color;
+                display: block;
+
+                &:hover {
+                    background-color: lighten(@accent-bold-color, 5%);
+                }
+            }
+
+            &.open {
+                background-color: lighten(@accent-bold-color, 5%);
+            }
+
+            .nav-childpages {
+                top: 0;
+                left: 70px;
+                position: absolute;
+                z-index: 9999;
+                background-color: lighten(@accent-bold-color, 5%);
+                display: none;
+                font-size: 14px;
+                width: 220px;
+                text-align: left;
+                padding: 9px 12px;
+
+                li a {
+                    line-height: 1.1em;
+                    padding: 6px;
+                    color: @accent-bold-text-color;
+
+                    &:focus {
+                        background-color: lighten(@accent-bold-color, 5%);
+                    }
+
+                    &:hover {
+                        background-color: darken(@accent-bold-color, 5%);
+                    }
+                }
+
+                li.title {
+                    font-size: 18px;
+                    font-weight: @font-weight-light;
+                    color: #ee7624;
+                    margin-bottom: -8px;
+                }
+
+                li.header {
+                    margin-top: 14px;
+                    color: darken(@accent-bold-text-color, 20%);
+                    margin-left: 4px;
+                    font-weight: @font-weight-semibold;
+                    padding-bottom: 2px;
+                    border-bottom: 1px solid lighten(@accent-bold-color, 10%);
+                    font-weight: 400;
+                }
+
+                li.header:first-child {
+                    margin-top: 0;
+                }
+            }
+        }
+
+        > li.open {
+            .nav-childpages {
+                display: block;
+
+                li.header {
+                    padding-left: 0;
+                }
+            }
+        }
+    }
+
+}
+
+// expanded view
+@media (min-width: @screen-md-min) {
+
+    .navbar-static-side {
+        display: block;
+    }
+
+    #content-wrapper {
+        margin-left: 70px;
+    }
+}
+
+// minimized view
+body.navbar-side-open {
+    .navbar-static-side {
+        width: 70px;
+        display: block;
+    }
+
+    #content-wrapper {
+        margin-left: 70px;
+    }
+}
+
+body.navbar-side-close {
+    .navbar-static-side {
+        display: none;
+    }
+
+    #content-wrapper {
+        margin-left: 0;
+    }
+}
+/*#endregion */
+
+
+/*#region
+// 9. Person Details  */
+// -------------------------
+
+.personprofile {
+
+    .personprofilebar-badge,
+    .personprofilebar-family,
+    .pagetabs,
+    .person-content {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .personprofilebar-bio {
+        margin-top: 12px;
+    }
+
+    .pagetabs {
+        margin-bottom: 12px;
+    }
+}
+
+/*#endregion */
+
+/*#region
+// 10. First Word Weight  */
+// -------------------------
+.title {
+    font-weight: @font-weight-light;
+
+    .first-word {
+        font-weight: @font-weight-bold;
+    }
+}
+/*#endregion */
