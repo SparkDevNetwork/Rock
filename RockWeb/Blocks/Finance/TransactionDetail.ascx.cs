@@ -632,6 +632,36 @@ namespace RockWeb.Blocks.Finance
         #region Methods
 
         /// <summary>
+        /// Navigates to the next transaction in the list.
+        /// </summary>
+        private void ShowNextButton( int transactionId, int? batchId )
+        {
+            if ( batchId == null || ! batchId.HasValue || batchId == 0 )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+            var financialTransactionService = new FinancialTransactionService( rockContext );
+            var qryTransactionsToMatch = financialTransactionService.Queryable()
+                .Where( a => a.BatchId == batchId );
+
+            var nextFinancialTransaction = qryTransactionsToMatch.Where( a => a.Id > transactionId ).Take( 1 ).FirstOrDefault();
+
+            if ( nextFinancialTransaction != null )
+            {
+                var qryParam = new Dictionary<string, string>();
+                qryParam.Add( "batchId", hfBatchId.Value );
+                qryParam.Add( "transactionId", nextFinancialTransaction.Id.ToStringSafe() );
+                lbNext.NavigateUrl = new PageReference( CurrentPageReference.PageId, 0, qryParam ).BuildUrl();
+            }
+            else
+            {
+                lbNext.AddCssClass( "disabled" );
+            }
+        }
+
+        /// <summary>
         /// Gets the transaction.
         /// </summary>
         /// <param name="transactionId">The transaction identifier.</param>
@@ -715,6 +745,7 @@ namespace RockWeb.Blocks.Finance
 
             hfTransactionId.Value = txn.Id.ToString();
             hfBatchId.Value = batchId.HasValue ? batchId.Value.ToString() : string.Empty;
+            ShowNextButton( transactionId, batchId );
 
             bool readOnly = false;
 
