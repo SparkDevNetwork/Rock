@@ -47,6 +47,20 @@ namespace Rock.CheckIn
         public int? CampusId { get; set; }
 
         /// <summary>
+        /// Gets or sets the campu identifier.
+        /// </summary>
+        /// <value>
+        /// The campu identifier.
+        /// </value>
+        [DataMember]
+        [Obsolete( "Use CampusId property instead" )]
+        public int? CampuId
+        {
+            get { return CampusId; }
+            set { CampusId = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the current count.
         /// </summary>
         /// <value>
