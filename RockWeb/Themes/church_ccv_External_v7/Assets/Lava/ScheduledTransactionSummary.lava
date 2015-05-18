@@ -1,39 +1,204 @@
-<div class="row margin-b-md">
+{% comment %}
 
-    <div class="col-md-6">
-        <h1 class="condensed">Hello, {{CurrentPerson.NickName}}</h1>
-    </div>
+Required Variables
+==================
 
-    <div class="col-md-6">
-        {% if ScheduledTransactions.size == 1 %}
-            <p>
-                You currently have <span class='label label-default'>1</span> giving profile active.
-            </p>
-            <p>
-                {% if ScheduledTransactions[0].DaysTillNextPayment > 0 %}
-                    Next gift is in {{ScheduledTransactions[0].DaysTillNextPayment}} days.
-                {% else %}
-                    Next gift is scheduled for today.
-                {% endif %}
-                
-                {% if ScheduledTransactions[0].LastPaymentDate != null %}
-                    {% if ScheduledTransactions[0].DaysSinceLastPayment > 0 %}
-                        Last gift was {{ScheduledTransactions[0].DaysSinceLastPayment}} days ago.
-                    {% else %}
-                        Last gift was today.
-                    {% endif %}
-                {% endif %}
-            </p>
-        {% elsif ScheduledTransactions.size > 1 %}
-            You currently have <span class='label label-default'>{{ScheduledTransactions.size}}</span> 
-            giving profiles active.
-        {% else %}
-            You currently have no active profiles.
-        {% endif %}
-        <div class="clearfix">
-            <a class="btn btn-default pull-left" href="{{LinkedPages.ManageScheduledTransactionsPage}}">Manage</a> 
-            <a class="btn btn-default pull-right" href="{{LinkedPages.TransactionHistoryPage}}">View History</a>
+{% assign currentPage      = "/page/216" %}
+{% assign loginPage        = "/page/207" %}
+{% assign faqPage          = "/page/212" %}
+{% assign annualReportPage = "//ccv.church/annualreport" %}
+
+{% endcomment %}
+
+
+{{ "/Themes/church_ccv_External_v7/Styles/pages/give.css" | AddLinkTagToHead:'rel','stylesheet' }}
+
+{% assign currentPageEscaped = currentPage | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%252f' %}
+
+{% if ScheduledTransactions.size >= 1 %}
+  {% assign userSegment = 3 %}
+{% elsif CurrentPerson %}
+  {% assign userSegment = 2 %}
+{% else %}
+  {% assign userSegment = 1 %}
+{% endif %}
+
+
+{% if userSegment == 3 %}
+
+  <div class="bigblock give-header">
+    <div class="container">
+      <div class="row">
+
+        <div class="col-md-7 margin-b-lg">
+          <h1 class="margin-t-none give-title">Hello, {{ CurrentPerson.NickName }}</h1>
+          <p><a href="{{ loginPage }}?returnurl={{ currentPageEscaped }}&logout=true" class="text-muted">Switch User</a></p>
         </div>
-        <a class="btn btn-primary btn-block margin-t-md" href="{{LinkedPages.TransactionEntryPage}}">Give Now</a>
+
+        <div class="col-md-5">
+          {% if ScheduledTransactions.size == 1 %}
+            <p class="clearfix">
+              <a class="btn btn-default btn-xs pull-right" href="{{ LinkedPages.ManageScheduledTransactionsPage }}">Manage</a>
+              You currently have <span class='label label-default'>1</span> giving profile active.
+            </p>
+            <p class="clearfix">
+              <a class="btn btn-default btn-xs pull-right" href="{{ LinkedPages.TransactionHistoryPage }}">View History</a>
+              <span class="text-muted">
+                {% if ScheduledTransactions[0].DaysTillNextPayment > 0 %}
+                  Next gift is in {{ 'day' | ToQuantity: ScheduledTransactions[0].DaysTillNextPayment }}.
+                {% else %}
+                  Next gift is scheduled for today.
+                {% endif %}
+
+                {% if ScheduledTransactions[0].LastPaymentDate != null %}
+                  {% if ScheduledTransactions[0].DaysSinceLastPayment > 0 %}
+                    Last gift was {{ 'day' | ToQuantity: ScheduledTransactions[0].DaysSinceLastPayment }} ago.
+                  {% else %}
+                    Last gift was today.
+                  {% endif %}
+                {% endif %}
+              </span>
+            </p>
+          {% elsif ScheduledTransactions.size > 1 %}
+            <p class="clearfix">
+              <a class="btn btn-default btn-xs pull-right" href="{{ LinkedPages.ManageScheduledTransactionsPage }}">Manage</a>
+              You currently have <span class='label label-default'>{{ ScheduledTransactions.size }}</span> giving profiles active.
+            </p>
+            <p class="clearfix">
+              <a class="btn btn-default btn-xs pull-right" href="{{ LinkedPages.TransactionHistoryPage }}">View History</a>
+            </p>
+          {% else %}
+            You currently have no active profiles.
+            <p class="clearfix">
+              <a class="btn btn-default btn-xs pull-right" href="{{ LinkedPages.TransactionHistoryPage }}">View History</a>
+            </p>
+          {% endif %}
+          <a class="btn btn-primary btn-block margin-t-md" href="{{ LinkedPages.TransactionEntryPage }}">Give Now</a>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <div class="bigblock bigblock-stacking bigblock-graydark">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-7 col-lg-6">
+          <p class="give-lead">See how your gifts <span>made an impact</span> last year.</p>
+        </div>
+        <div class="col-sm-5 col-lg-offset-1">
+          <a href="{{ annualReportPage }}"><img src="https://s3.amazonaws.com/media.ccvonline.com/images/2015/annualreport/annual-report.jpg" alt="Annual Report" class="img-rounded"></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bigblock bigblock-stacking">
+    <div class="container text-center">
+      <strong>Have more questions?</strong> <a href="{{ faqPage }}">View our Frequently Asked Questions</a>
+    </div>
+  </div>
+
+{% else %}
+
+  <div class="bigblock bigblock-graylighter">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+          <div class="embed-responsive embed-responsive-16by9">
+            <iframe src="https://player.vimeo.com/video/94531312" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+          </div>
+          <div class="row margin-t-sm">
+            <div class="col-sm-6 margin-t-sm">
+              <a class="btn btn-primary btn-block" href="{{ LinkedPages.TransactionEntryPage }}">Give Now</a>
+            </div>
+            <div class="col-sm-6 margin-t-sm">
+              <a class="btn btn-default btn-block" href="{{ LinkedPages.TransactionHistoryPage }}">View History</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bigblock">
+    <div class="container">
+      <h2>Why We Give</h2>
+      <div class="textcol textcol-sm-2">
+        <p>Money and church can be a touchy issue – but it doesn’t have to be. We don’t give because God needs our money, and we don’t give because the church needs our money. It’s much bigger than that. We give because God asked us to, and following through shows that we trust Him.</p>
+        <p>God knows that your loyalty is found where your money is (Matthew 6:19-21). And because God wants to be first in our lives, he asks us to trust Him with our money.</p>
+        <p>For Christians, tithing (a word meaning ‘tenth’) is the starting point. Tithing is giving the first 10% of our income back to the local church. If you call CCV your home, we encourage you to give generously, knowing that your money is being used to support the mission of Jesus Christ – both here in the Valley, and around the world.</p>
+        <p>If you'd like to read more about what the Bible says about money, we recommend these passages:</p>
+        <ul class="list-inline">
+          <li><a href="https://www.bible.com/bible/111/Matthew%206:19-21">Matthew 6:19-21</a>
+          </li>
+          <li><a href="https://www.bible.com/bible/111/Leviticus%2027:30">Leviticus 27:30</a>
+          </li>
+          <li><a href="https://www.bible.com/bible/111/1%20Chronicles%2029:11-12">1 Chronicles 29:11-12</a>
+          </li>
+          <li><a href="https://www.bible.com/bible/111/Psalm%2024:1">Psalm 24:1</a>
+          </li>
+          <li><a href="https://www.bible.com/bible/111/Proverbs%203:9-10">Proverbs 3:9-10</a>
+          </li>
+          <li><a href="https://www.bible.com/bible/111/Malachi%203:6-10">Malachi 3:6-10</a>
+          </li>
+          <li><a href="https://www.bible.com/bible/111/1%20Corinthians%2016:1-2">1 Corinthians 16:1-2</a>
+          </li>
+        </ul>
+        <em>If you have more questions, view our
+          <strong><a href="{{ faqPage }}">Frequently Asked Questions.</a>
+          </strong>
+        </em>
+      </div>
+    </div>
+  </div>
+
+{% endif %}
+
+<div class="bigblock bigblock-red give-icons">
+  <div class="container">
+    <h2 class="margin-b-lg">Ways to Give</h2>
+    <div class="row">
+      <div class="col-xs-6 col-md-3 text-center margin-b-lg">
+        {% include '~~/Assets/Icons/mail.svg' %}
+        <h4>Offering Boxes</h4>
+        <p class="text-inverse text-faded">Located in the the auditorium</p>
+      </div>
+      <div class="col-xs-6 col-md-3 text-center margin-b-lg">
+        {% include '~~/Assets/Icons/computer.svg' %}
+        <h4>Online</h4>
+        <p>
+          <a href="{{ LinkedPages.TransactionEntryPage }}" class="btn btn-default btn-xs">Give Now</a>
+        </p>
+      </div>
+      <div class="clearfix visible-xs-block"></div>
+      <div class="col-xs-6 col-md-3 text-center margin-b-lg">
+        {% include '~~/Assets/Icons/smartphone.svg' %}
+        <h4>Mobile App</h4>
+        <p>
+          <a href="https://itunes.apple.com/us/app/christs-church-of-the-valley/id553137909?mt=8&ls=1" class="btn btn-default btn-xs margin-b-sm">App Store</a>
+          <a href="https://play.google.com/store/apps/details?id=com.ccvonline.CCVMobileApp" class="btn btn-default btn-xs margin-b-sm">Google Play</a>
+        </p>
+      </div>
+      <div class="col-xs-6 col-md-3 text-center margin-b-lg">
+        {% include '~~/Assets/Icons/kiosk.svg' %}
+        <h4>Kiosks</h4>
+        <p class="text-inverse text-faded">Located in the lobby</p>
+      </div>
+    </div>
+  </div>
 </div>
+
+{% if userSegment == 1 or userSegment == 2 %}
+  <div class="bigblock bigblock-graydark">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-7">
+          <p class="give-lead">Learn how your giving <span class="display-b-after-xs">makes an impact.</span></p>
+        </div>
+        <div class="col-sm-5">
+          <a href="{{ annualReportPage }}"><img src="https://s3.amazonaws.com/media.ccvonline.com/images/2015/annualreport/annual-report.jpg" alt="Annual Report" class="img-rounded"></a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}

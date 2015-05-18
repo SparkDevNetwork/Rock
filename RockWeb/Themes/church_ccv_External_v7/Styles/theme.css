@@ -2472,6 +2472,7 @@ td.grid-col-actions {
 }
 .grid-select-field {
   text-align: center;
+  min-width: 40px;
 }
 .grid-select-field .checkbox,
 .grid-select-field .radio {
@@ -3954,13 +3955,34 @@ iframe.email-body {
     Used to manage styles for check-in administration.
 
     1. Group / Location
-    2. 
+    2. Attendance Analysis
 */
 .panel.panel-widget.checkin-group {
   border-top-color: #afd074;
 }
 .panel.panel-widget.checkin-grouptype {
   border-top-color: #5593a4;
+}
+.attendance-reporting .panel-body {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.attendance-reporting .panel-body > .row > [class*="col-"]:first-child {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+@media (min-width: 992px) {
+  .attendance-reporting .panel-body .row {
+    margin-left: -16px;
+  }
+}
+.attendance-reporting .filter-options {
+  background-color: #eeeeee;
+}
+.attendance-reporting .analysis-types {
+  padding: 15px 0;
+  background-color: #eeeeee;
+  margin-bottom: 24px;
 }
 /*
     Used to manage styles for specific blocks.
@@ -4152,6 +4174,7 @@ iframe.email-body {
   1. Variables - specific variables for sizing classes and media query helpers
   2. Colors - creates utility classes for each of the accent colors
   3. Spacing - provides utility classes for spacing based off of the themes gutter widths
+  4. Even Height Columns - provides classes for making columns even heights
 
 */
 .accent-color {
@@ -4425,6 +4448,20 @@ iframe.email-body {
 }
 .margin-l-xl {
   margin-left: 60px !important;
+}
+.row-eq-height {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  overflow: hidden;
+}
+@media (min-width: 992px) {
+  .row-eq-height-md {
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    overflow: hidden;
+  }
 }
 .cke_dialog_contents {
   background-color: #ffffff !important;
@@ -4973,28 +5010,28 @@ fieldset[disabled] .btn-authenication.active {
 }
 .alert-success a {
   color: #3c763d;
-  border-bottom: 1px dotted #3c763d;
+  border-bottom: none;
 }
 .alert-success a.help {
   border-bottom: 0;
 }
 .alert-info a {
   color: #31708f;
-  border-bottom: 1px dotted #31708f;
+  border-bottom: none;
 }
 .alert-info a.help {
   border-bottom: 0;
 }
 .alert-warning a {
   color: #8a6d3b;
-  border-bottom: 1px dotted #8a6d3b;
+  border-bottom: none;
 }
 .alert-warning a.help {
   border-bottom: 0;
 }
 .alert-danger a {
   color: #a94442;
-  border-bottom: 1px dotted #a94442;
+  border-bottom: none;
 }
 .alert-danger a.help {
   border-bottom: 0;
@@ -5061,36 +5098,25 @@ h6.condensed {
 div.aspNetDisabled {
   opacity: 0.5;
 }
-/*
-  700
-  BOLD
-*/
 @font-face {
   font-family: 'DINWebCondensed';
-  src: url('../Assets/Fonts/DIN/DINWeb-CondBold.eot');
-  src: url('../Assets/Fonts/DIN/DINWeb-CondBold.eot') format('embedded-opentype'), url('../Assets/Fonts/DIN/DINWeb-CondBold.woff') format('woff'), url('../Assets/Fonts/DIN/DINWeb-CondBold.ttf') format('truetype');
+  src: url('../Assets/Fonts/din-light.eot');
+  src: url('../Assets/Fonts/din-light.eot?#iefix') format('embedded-opentype'), url('../Assets/Fonts/din-light.woff2') format('woff2'), url('../Assets/Fonts/din-light.woff') format('woff'), url('../Assets/Fonts/din-light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'DINWebCondensed';
+  src: url('../Assets/Fonts/din-regular.eot');
+  src: url('../Assets/Fonts/din-regular.eot?#iefix') format('embedded-opentype'), url('../Assets/Fonts/din-regular.woff2') format('woff2'), url('../Assets/Fonts/din-regular.woff') format('woff'), url('../Assets/Fonts/din-regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'DINWebCondensed';
+  src: url('../Assets/Fonts/din-bold.eot');
+  src: url('../Assets/Fonts/din-bold.eot?#iefix') format('embedded-opentype'), url('../Assets/Fonts/din-bold.woff2') format('woff2'), url('../Assets/Fonts/din-bold.woff') format('woff'), url('../Assets/Fonts/din-bold.ttf') format('truetype');
   font-weight: 700;
-  font-style: normal;
-}
-/*
-  NORMAL (400)
-*/
-@font-face {
-  font-family: 'DINWebCondensed';
-  src: url('../Assets/Fonts/DIN/DINWeb-Cond.eot');
-  src: url('../Assets/Fonts/DIN/DINWeb-Cond.eot') format('embedded-opentype'), url('../Assets/Fonts/DIN/DINWeb-Cond.woff') format('woff'), url('../Assets/Fonts/DIN/DINWeb-Cond.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
-/*
-  100
-  LIGHT
-*/
-@font-face {
-  font-family: 'DINWebCondensed';
-  src: url('../Assets/Fonts/DIN/DINWeb-CondLight.eot');
-  src: url('../Assets/Fonts/DIN/DINWeb-CondLight.eot') format('embedded-opentype'), url('../Assets/Fonts/DIN/DINWeb-CondLight.woff') format('woff'), url('../Assets/Fonts/DIN/DINWeb-CondLight.ttf') format('truetype');
-  font-weight: 100;
   font-style: normal;
 }
 html {
@@ -5121,6 +5147,22 @@ body {
 main {
   margin-bottom: 60px;
 }
+.img-full {
+  width: 100%;
+  height: auto;
+}
+.link-plain {
+  color: inherit;
+}
+.link-plain:hover {
+  color: inherit;
+  text-decoration: inherit;
+}
+.container-sm {
+  max-width: 40em;
+  margin-left: auto;
+  margin-right: auto;
+}
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -5139,16 +5181,6 @@ h6,
 .h6 {
   text-transform: uppercase;
 }
-.btn {
-  font-family: "DINWebCondensed", sans-serif;
-  font-size: 16px;
-  line-height: 20px;
-}
-.din {
-  font-family: "DINWebCondensed", sans-serif;
-  font-size: 18px;
-  line-height: 23px;
-}
 .underline {
   border-bottom: 1px solid #eeeeee;
   padding-bottom: .25em;
@@ -5157,6 +5189,35 @@ h6,
   line-height: 1.42857143;
   font-size: 18px;
   margin-bottom: 1em;
+}
+.text-inverse {
+  color: #fff;
+}
+.text-faded {
+  color: rgba(51, 51, 51, 0.5);
+}
+.text-faded.text-inverse {
+  color: rgba(255, 255, 255, 0.5);
+}
+.list-2col-wrapper {
+  -moz-column-count: 2;
+  -webkit-column-count: 2;
+  column-count: 2;
+}
+.list-2col-wrapper > ol > li,
+.list-2col-wrapper > ul > li {
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.list-2col-wrapper > ol > li:only-child,
+.list-2col-wrapper > ul > li:only-child {
+  -webkit-column-span: all;
+  column-span: all;
+  margin-left: 20px;
+}
+.list-flush {
+  padding-left: 20px;
 }
 @media print {
   @page {
@@ -5176,7 +5237,7 @@ h6,
   margin-bottom: 30px;
   font-family: "DINWebCondensed", sans-serif;
   font-size: 18px;
-  line-height: 23px;
+  line-height: 25px;
 }
 .masthead-upper {
   background-color: #1d1d1d;
@@ -5460,7 +5521,7 @@ h6,
   letter-spacing: .75px;
   font-family: "DINWebCondensed", sans-serif;
   font-size: 18px;
-  line-height: 23px;
+  line-height: 25px;
   margin-top: 44.1px;
 }
 @media (min-width: 768px) {
@@ -5539,7 +5600,7 @@ h6,
 .slide-control {
   font-family: "DINWebCondensed", sans-serif;
   font-size: 18px;
-  line-height: 23px;
+  line-height: 25px;
   color: #fff;
   background: #777777;
   overflow: auto;
@@ -5671,6 +5732,11 @@ html[xmlns] .slides {
     display: block!important;
   }
 }
+@media (min-width: 768px) {
+  .display-b-after-xs {
+    display: block!important;
+  }
+}
 .no-caps {
   text-transform: inherit;
 }
@@ -5731,12 +5797,26 @@ html[xmlns] .slides {
   padding-bottom: 30px;
   margin-bottom: 30px;
 }
+.bigblock-graylighter {
+  background-color: #eeeeee;
+}
+.bigblock-graydark {
+  background-color: #333333;
+  color: #fff;
+}
 .bigblock-graydarker {
   background-color: #222222;
   color: #fff;
 }
 .bigblock-graydarker .page-header {
   border-color: #333333;
+}
+.bigblock-red {
+  background-color: #7a1315;
+  color: #fff;
+}
+.bigblock-stacking {
+  margin-bottom: 0;
 }
 .bigblock-flexbg {
   background-size: cover;
@@ -6050,4 +6130,16 @@ html[xmlns] .slides {
 }
 .social-icon-md {
   font-size: 1.5em;
+}
+.textcol {
+  -webkit-column-gap: 30px;
+  -moz-column-gap: 30px;
+  column-gap: 30px;
+}
+@media (min-width: 768px) {
+  .textcol-sm-2 {
+    -webkit-column-count: 2;
+    -moz-column-count: 2;
+    column-count: 2;
+  }
 }

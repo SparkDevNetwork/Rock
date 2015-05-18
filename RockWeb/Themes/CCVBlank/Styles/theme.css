@@ -8295,7 +8295,7 @@ img.jcrop-preview {
   bottom: 0;
   width: 100%;
   height: 26px;
-  z-index: 1001;
+  z-index: 1049;
   position: fixed;
   right: 0;
   margin-right: 0;
@@ -10067,7 +10067,8 @@ ul.rocklist .rocklist-item.selected {
   opacity: 0.5;
 }
 .image-editor-fileinput {
-  display: none;
+  visibility: hidden;
+  height: 0;
 }
 .image-editor-group.imageupload-group {
   border: 0;
@@ -10516,6 +10517,7 @@ td.grid-col-actions {
 }
 .grid-select-field {
   text-align: center;
+  min-width: 40px;
 }
 .grid-select-field .checkbox,
 .grid-select-field .radio {
@@ -10727,6 +10729,11 @@ tr.row-highlight td {
 .filter-item div[class*='col'] {
   margin-bottom: 6px;
 }
+.data-view-filter-field-label {
+  font-weight: 700;
+  margin-top: 8px;
+  display: block;
+}
 @media (min-width: 992px) {
   .filter-item div[class*='col'] {
     margin-bottom: 0;
@@ -10911,6 +10918,10 @@ tr.row-highlight td {
 }
 .panel-noteentry > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #d5d5d5;
+}
+.panel-noteentry .createDate {
+  margin-top: 10px;
+  width: 50%;
 }
 .panel-noteentry .settings {
   margin-top: 4px;
@@ -11133,6 +11144,9 @@ table.inherited-attribute-grid tr td:nth-child(2),
 table.attribute-grid tr th:nth-child(3) {
   width: 550px;
 }
+.group-detail .panel-heading {
+  cursor: pointer;
+}
 /*
     Used to manage styles for specific blocks.
 
@@ -11256,7 +11270,8 @@ table.attribute-grid tr th:nth-child(3) {
   text-align: center;
   margin-top: 0;
 }
-.personprofilebar-bio .name .full-name {
+.personprofilebar-bio .name .full-name,
+.personprofilebar-bio .name .previous-names {
   font-size: 18px;
   display: none;
 }
@@ -11419,7 +11434,8 @@ table.attribute-grid tr th:nth-child(3) {
   font-size: 45px;
 }
 .badge-icon.badge-disabled {
-  opacity: 0.3;
+  opacity: 0.2;
+  color: #939393;
 }
 .badge-attendance ul.badge-attendance-chart {
   display: table;
@@ -11487,9 +11503,6 @@ table.attribute-grid tr th:nth-child(3) {
   -moz-animation: bar-grow 1s ease-in-out;
   -o-animation: bar-grow 1s ease-in-out;
   animation: bar-grow 1s ease-in-out;
-}
-.badge-ingroupoftype {
-  width: 45px;
 }
 .badge-attendingduration {
   position: relative;
@@ -11760,7 +11773,8 @@ span.field-value {
   .personprofilebar-bio .name {
     text-align: left;
   }
-  .personprofilebar-bio .name .full-name {
+  .personprofilebar-bio .name .full-name,
+  .personprofilebar-bio .name .previous-names {
     display: inline;
   }
   .personprofilebar-bio .labels {
@@ -12010,13 +12024,34 @@ iframe.email-body {
     Used to manage styles for check-in administration.
 
     1. Group / Location
-    2. 
+    2. Attendance Analysis
 */
 .panel.panel-widget.checkin-group {
   border-top-color: #afd074;
 }
 .panel.panel-widget.checkin-grouptype {
   border-top-color: #5593a4;
+}
+.attendance-reporting .panel-body {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.attendance-reporting .panel-body > .row > [class*="col-"]:first-child {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+@media (min-width: 992px) {
+  .attendance-reporting .panel-body .row {
+    margin-left: -16px;
+  }
+}
+.attendance-reporting .filter-options {
+  background-color: #eeeeee;
+}
+.attendance-reporting .analysis-types {
+  padding: 15px 0;
+  background-color: #eeeeee;
+  margin-bottom: 24px;
 }
 /*
     Used to manage styles for specific blocks.
@@ -12208,6 +12243,7 @@ iframe.email-body {
   1. Variables - specific variables for sizing classes and media query helpers
   2. Colors - creates utility classes for each of the accent colors
   3. Spacing - provides utility classes for spacing based off of the themes gutter widths
+  4. Even Height Columns - provides classes for making columns even heights
 
 */
 .accent-color {
@@ -12481,6 +12517,20 @@ iframe.email-body {
 }
 .margin-l-xl {
   margin-left: 60px !important;
+}
+.row-eq-height {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  overflow: hidden;
+}
+@media (min-width: 992px) {
+  .row-eq-height-md {
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    overflow: hidden;
+  }
 }
 .cke_dialog_contents {
   background-color: #ffffff !important;
@@ -13022,6 +13072,11 @@ fieldset[disabled] .btn-authenication.active {
 .btn-authenication.facebook:before {
   font-family: 'FontAwesome';
   content: "\f09a";
+  margin-right: 12px;
+}
+.btn-authenication.google:before {
+  font-family: 'FontAwesome';
+  content: "\f1a0";
   margin-right: 12px;
 }
 .btn-minimal {

@@ -2471,6 +2471,7 @@ td.grid-col-actions {
 }
 .grid-select-field {
   text-align: center;
+  min-width: 40px;
 }
 .grid-select-field .checkbox,
 .grid-select-field .radio {
@@ -3953,13 +3954,34 @@ iframe.email-body {
     Used to manage styles for check-in administration.
 
     1. Group / Location
-    2. 
+    2. Attendance Analysis
 */
 .panel.panel-widget.checkin-group {
   border-top-color: #afd074;
 }
 .panel.panel-widget.checkin-grouptype {
   border-top-color: #5593a4;
+}
+.attendance-reporting .panel-body {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.attendance-reporting .panel-body > .row > [class*="col-"]:first-child {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+@media (min-width: 992px) {
+  .attendance-reporting .panel-body .row {
+    margin-left: -16px;
+  }
+}
+.attendance-reporting .filter-options {
+  background-color: #eeeeee;
+}
+.attendance-reporting .analysis-types {
+  padding: 15px 0;
+  background-color: #eeeeee;
+  margin-bottom: 24px;
 }
 /*
     Used to manage styles for specific blocks.
@@ -4151,6 +4173,7 @@ iframe.email-body {
   1. Variables - specific variables for sizing classes and media query helpers
   2. Colors - creates utility classes for each of the accent colors
   3. Spacing - provides utility classes for spacing based off of the themes gutter widths
+  4. Even Height Columns - provides classes for making columns even heights
 
 */
 .accent-color {
@@ -4424,6 +4447,20 @@ iframe.email-body {
 }
 .margin-l-xl {
   margin-left: 60px !important;
+}
+.row-eq-height {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  overflow: hidden;
+}
+@media (min-width: 992px) {
+  .row-eq-height-md {
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    overflow: hidden;
+  }
 }
 .cke_dialog_contents {
   background-color: #ffffff !important;
@@ -4972,28 +5009,28 @@ fieldset[disabled] .btn-authenication.active {
 }
 .alert-success a {
   color: #3c763d;
-  border-bottom: 1px dotted #3c763d;
+  border-bottom: none;
 }
 .alert-success a.help {
   border-bottom: 0;
 }
 .alert-info a {
   color: #31708f;
-  border-bottom: 1px dotted #31708f;
+  border-bottom: none;
 }
 .alert-info a.help {
   border-bottom: 0;
 }
 .alert-warning a {
   color: #8a6d3b;
-  border-bottom: 1px dotted #8a6d3b;
+  border-bottom: none;
 }
 .alert-warning a.help {
   border-bottom: 0;
 }
 .alert-danger a {
   color: #a94442;
-  border-bottom: 1px dotted #a94442;
+  border-bottom: none;
 }
 .alert-danger a.help {
   border-bottom: 0;
@@ -5088,36 +5125,25 @@ div.aspNetDisabled {
     transform: rotate(359deg);
   }
 }
-/*
-  700
-  BOLD
-*/
 @font-face {
   font-family: 'DINWebCondensed';
-  src: url('../Assets/Fonts/DIN/DINWeb-CondBold.eot');
-  src: url('../Assets/Fonts/DIN/DINWeb-CondBold.eot') format('embedded-opentype'), url('../Assets/Fonts/DIN/DINWeb-CondBold.woff') format('woff'), url('../Assets/Fonts/DIN/DINWeb-CondBold.ttf') format('truetype');
+  src: url('../Assets/Fonts/din-light.eot');
+  src: url('../Assets/Fonts/din-light.eot?#iefix') format('embedded-opentype'), url('../Assets/Fonts/din-light.woff2') format('woff2'), url('../Assets/Fonts/din-light.woff') format('woff'), url('../Assets/Fonts/din-light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'DINWebCondensed';
+  src: url('../Assets/Fonts/din-regular.eot');
+  src: url('../Assets/Fonts/din-regular.eot?#iefix') format('embedded-opentype'), url('../Assets/Fonts/din-regular.woff2') format('woff2'), url('../Assets/Fonts/din-regular.woff') format('woff'), url('../Assets/Fonts/din-regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'DINWebCondensed';
+  src: url('../Assets/Fonts/din-bold.eot');
+  src: url('../Assets/Fonts/din-bold.eot?#iefix') format('embedded-opentype'), url('../Assets/Fonts/din-bold.woff2') format('woff2'), url('../Assets/Fonts/din-bold.woff') format('woff'), url('../Assets/Fonts/din-bold.ttf') format('truetype');
   font-weight: 700;
-  font-style: normal;
-}
-/*
-  NORMAL (400)
-*/
-@font-face {
-  font-family: 'DINWebCondensed';
-  src: url('../Assets/Fonts/DIN/DINWeb-Cond.eot');
-  src: url('../Assets/Fonts/DIN/DINWeb-Cond.eot') format('embedded-opentype'), url('../Assets/Fonts/DIN/DINWeb-Cond.woff') format('woff'), url('../Assets/Fonts/DIN/DINWeb-Cond.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
-/*
-  100
-  LIGHT
-*/
-@font-face {
-  font-family: 'DINWebCondensed';
-  src: url('../Assets/Fonts/DIN/DINWeb-CondLight.eot');
-  src: url('../Assets/Fonts/DIN/DINWeb-CondLight.eot') format('embedded-opentype'), url('../Assets/Fonts/DIN/DINWeb-CondLight.woff') format('woff'), url('../Assets/Fonts/DIN/DINWeb-CondLight.ttf') format('truetype');
-  font-weight: 100;
   font-style: normal;
 }
 .cursor {
@@ -5128,6 +5154,11 @@ div.aspNetDisabled {
 }
 @media (max-width: 767px) {
   .display-b-xs {
+    display: block!important;
+  }
+}
+@media (min-width: 768px) {
+  .display-b-after-xs {
     display: block!important;
   }
 }
@@ -5306,7 +5337,7 @@ header {
   -moz-osx-font-smoothing: grayscale;
   font-family: "DINWebCondensed", sans-serif;
   font-size: 18px;
-  line-height: 23px;
+  line-height: 25px;
 }
 @media (min-width: 768px) {
   header {

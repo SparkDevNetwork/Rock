@@ -212,6 +212,11 @@ namespace RockWeb.Blocks.Finance
                 string errorMessage = string.Empty;
                 if ( fstService.Cancel( currentTransaction, out errorMessage ) )
                 {
+                    try
+                    {
+                        fstService.GetStatus( currentTransaction, out errorMessage );
+                    }
+                    catch { }
                     rockContext.SaveChanges();
                     content.Text = String.Format( "<div class='alert alert-success'>Your recurring {0} has been deleted.</div>", GetAttributeValue( "TransactionLabel" ).ToLower() );
                 }

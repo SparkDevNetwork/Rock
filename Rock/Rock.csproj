@@ -288,6 +288,7 @@
     <Compile Include="Model\CodeGenerated\EntitySetService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialGatewayService.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberRequirementService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupMemberWorkflowTriggerService.cs" />
     <Compile Include="Model\CodeGenerated\GroupRequirementService.cs" />
     <Compile Include="Model\CodeGenerated\GroupRequirementTypeService.cs" />
     <Compile Include="Model\CodeGenerated\GroupScheduleExclusionService.cs" />
@@ -324,6 +325,7 @@
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
     <Compile Include="Model\WorkflowActivityTypeService.Partial.cs" />
     <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
+    <Compile Include="Model\GroupMemberWorkflowTrigger.cs" />
     <Compile Include="Net\RockRestClient.cs" />
     <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
@@ -386,6 +388,8 @@
     <Compile Include="Utility\SimpleModeJsonConverter.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
+    <Compile Include="Web\UI\Controls\Grid\BoolFromArrayField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\RockLiteralField.cs" />
     <Compile Include="Web\UI\Controls\Grid\CurrencyField.cs" />
     <Compile Include="Web\UI\Controls\Grid\CallbackField.cs" />
     <Compile Include="Web\UI\Controls\Grid\CampusField.cs" />

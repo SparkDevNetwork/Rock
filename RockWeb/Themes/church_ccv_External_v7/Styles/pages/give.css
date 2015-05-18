@@ -1,0 +1,64 @@
+.give-header {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+@media (min-width: 768px) {
+  .give-header {
+    padding: 30px 0;
+  }
+}
+@media (min-width: 992px) {
+  .give-header {
+    padding: 60px 0 30px;
+  }
+}
+.give-title {
+  font-size: 3em;
+  letter-spacing: -0.025em;
+}
+@media (min-width: 768px) {
+  .give-title {
+    font-size: 4em;
+  }
+}
+@media (min-width: 992px) {
+  .give-title {
+    font-size: 5em;
+  }
+}
+@media (min-width: 1200px) {
+  .give-title {
+    font-size: 6em;
+  }
+}
+.give-lead {
+  font-family: "DINWebCondensed", sans-serif;
+  font-size: 2em;
+  line-height: 1;
+  margin-bottom: 1em;
+  color: rgba(255, 255, 255, 0.5);
+}
+@media (min-width: 768px) {
+  .give-lead {
+    font-size: 3em;
+    margin: 7% 0;
+  }
+}
+@media (min-width: 992px) {
+  .give-lead {
+    font-size: 4em;
+  }
+}
+@media (min-width: 1200px) {
+  .give-lead {
+    margin: 10% 0;
+  }
+}
+.give-lead > span {
+  color: #fff;
+}
+.give-icons svg {
+  width: 60%;
+  max-width: 160px;
+  fill: #fff;
+}

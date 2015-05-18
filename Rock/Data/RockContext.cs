@@ -495,6 +495,14 @@ namespace Rock.Data
         public DbSet<GroupMember> GroupMembers { get; set; }
 
         /// <summary>
+        /// Gets or sets the group member workflow triggers.
+        /// </summary>
+        /// <value>
+        /// The group member workflow triggers.
+        /// </value>
+        public DbSet<GroupMemberWorkflowTrigger> GroupMemberWorkflowTriggers { get; set; }
+
+        /// <summary>
         /// Gets or sets the group schedule exclusions.
         /// </summary>
         /// <value>

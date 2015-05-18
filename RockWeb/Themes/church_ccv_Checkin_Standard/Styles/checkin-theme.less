@@ -14,8 +14,9 @@
 @import "../../../Styles/_modal.less";
 @import "../../../Styles/_helpers.less";
 
-@import "_din-1-4-7";
-@ccv-font-path: "../Assets/Fonts/DIN/";
+@import "_din";
+.din-regular();
+.din-black();
 
 //
 // Variables
@@ -179,4 +180,8 @@ h1, h2, h3, h4, h5, h6,
   position: absolute;
   top: 0;
   margin: 5% 5% 5% -40px;
+}
+
+.btn-checkbox i {
+  width: 92px; // fix width jittering when selecting a check-in time
 }

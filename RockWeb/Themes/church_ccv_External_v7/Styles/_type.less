@@ -1,8 +1,12 @@
 
 
 //
-// CUSTOM TYPE STYLES
+// TYPE
 // --------------------------------------------------
+
+
+// Bootstrap/default overrides
+// -------------------------
 
 body {
   -webkit-font-smoothing: antialiased;
@@ -14,13 +18,9 @@ h1, h2, h3, h4, h5, h6,
     text-transform: uppercase;
 }
 
-.btn {
-  .din(16px);
-}
 
-.din {
-  .din();
-}
+// Additions
+// -------------------------
 
 .underline {
   border-bottom: 1px solid @gray-lighter;
@@ -31,4 +31,41 @@ h1, h2, h3, h4, h5, h6,
   line-height: @line-height-base;
   font-size: @font-size-large;
   margin-bottom: 1em;
+}
+
+.text-inverse {
+  color: #fff;
+}
+
+.text-faded {
+  color: fade(@text-color, 50%);
+  &.text-inverse {
+    color: fade(#fff, 50%);
+  }
+}
+
+
+// Lists (used on the watch page)
+
+.list-2col-wrapper {
+  -moz-column-count: 2;
+  -webkit-column-count: 2;
+  column-count: 2;
+  > ol > li,
+  > ul > li {
+    -webkit-column-break-inside: avoid;
+              page-break-inside: avoid;
+                   break-inside: avoid;
+  }
+  > ol > li:only-child,
+  > ul > li:only-child {
+    -webkit-column-span: all;
+            column-span: all;
+    margin-left: @line-height-computed;
+  }
+}
+
+// used on watch page popovers
+.list-flush {
+  padding-left: @line-height-computed;
 }

@@ -8136,6 +8136,15 @@ body {
 .bootbox .modal-footer {
   border-top-color: #444444;
 }
+.btn-checkin-override {
+  position: absolute;
+  width: 110px;
+  height: 110px;
+  bottom: 0;
+  right: 0;
+  border: 0;
+  background-color: transparent;
+}
 .checkin-search-body {
   margin-right: auto !important;
   margin-left: auto !important;

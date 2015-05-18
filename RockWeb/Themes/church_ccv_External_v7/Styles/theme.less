@@ -1,4 +1,5 @@
 ﻿
+
 // Vendor Imports
 // -------------------------
 
@@ -8,16 +9,19 @@
 
 @import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
 
+
 // Custom Imports
 // -------------------------
 
-@import "_din-1-4-7";
-@ccv-font-path: "../Assets/Fonts/DIN/";
+@import "_din";
+.din-light();
+.din-regular();
+.din-bold();
 
 @import "_variables";
 @import "_mixins";
 
-@import "_global";
+@import "_scaffolding";
 @import "_type";
 @import "_print";
 
@@ -35,3 +39,4 @@
 @import "modules/_gridlist";
 @import "modules/_maps";
 @import "modules/_social";
+@import "modules/_textcol";
