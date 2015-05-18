@@ -38,13 +38,13 @@ namespace Rock.CheckIn
         public Location Location { get; set; }
 
         /// <summary>
-        /// Gets or sets the campu identifier.
+        /// Gets or sets the campus identifier.
         /// </summary>
         /// <value>
-        /// The campu identifier.
+        /// The campus identifier.
         /// </value>
         [DataMember]
-        public int? CampuId { get; set; }
+        public int? CampusId { get; set; }
 
         /// <summary>
         /// Gets or sets the current count.
