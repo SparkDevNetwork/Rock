@@ -35,7 +35,6 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Batch List" )]
     [Category( "Finance" )]
     [Description( "Lists all financial batches and provides filtering by campus, status, etc." )]
-
     [LinkedPage( "Detail Page", order: 0 )]
     [BooleanField( "Show Accounting Code", "Should the accounting code column be displayed.", false, "", 1 )]
     public partial class BatchList : Rock.Web.UI.RockBlock, IPostBackEventHandler
@@ -187,6 +186,7 @@ namespace RockWeb.Blocks.Finance
         protected void gfBatchFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             gfBatchFilter.SaveUserPreference( "Date Range", drpBatchDate.DelimitedValues );
+            gfBatchFilter.SaveUserPreference( "Row Limit", nbRowLimit.Text );
             gfBatchFilter.SaveUserPreference( "Title", tbTitle.Text );
             if ( tbAccountingCode.Visible )
             {
@@ -380,11 +380,13 @@ namespace RockWeb.Blocks.Finance
 
             ddlStatus.SetValue( statusFilter );
 
+            nbRowLimit.Text = gfBatchFilter.GetUserPreference( "Row Limit" );
+
             var campusi = CampusCache.All();
             campCampus.Campuses = campusi;
             campCampus.Visible = campusi.Any();
             campCampus.SetValue( gfBatchFilter.GetUserPreference( "Campus" ) );
-            
+
             drpBatchDate.DelimitedValues = gfBatchFilter.GetUserPreference( "Date Range" );
         }
 
@@ -408,9 +410,14 @@ namespace RockWeb.Blocks.Finance
                     UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue )
                 } );
 
-            var batchRowList = batchRowQry.ToList();
+            // Row Limit
+            int? rowLimit = gfBatchFilter.GetUserPreference( "Row Limit" ).AsIntegerOrNull();
+            if ( rowLimit.HasValue )
+            {
+                batchRowQry = batchRowQry.Take( rowLimit.Value );
+            }
 
-            gBatchList.DataSource = batchRowList;
+            gBatchList.DataSource = batchRowQry.ToList();
             gBatchList.EntityTypeId = EntityTypeCache.Read<Rock.Model.FinancialBatch>().Id;
             gBatchList.DataBind();
 
@@ -622,6 +629,5 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
-
-}
+    }
 }

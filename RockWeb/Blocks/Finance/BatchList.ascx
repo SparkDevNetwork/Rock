@@ -15,6 +15,8 @@
                         <Rock:ModalAlert ID="maWarningDialog" runat="server" />
                         <Rock:GridFilter ID="gfBatchFilter" runat="server">
                             <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
+                            <Rock:NumberBox ID="nbRowLimit" runat="server" CssClass="input-width-sm" NumberType="Integer" Required="false" Label="Resulting Row Limit" MinimumValue="0" MaxLength="9"
+                                Help="Limits the number of rows returned in the grid. Leave blank to show all rows." />
                             <Rock:DateRangePicker ID="drpBatchDate" runat="server" Label="Date Range" />
                             <Rock:CampusPicker ID="campCampus" runat="server" />
                             <Rock:RockTextBox ID="tbTitle" runat="server" Label="Title"></Rock:RockTextBox>
@@ -49,8 +51,8 @@
                     </div>
                 </div>
             </div>
-            
-            <div class="row">      
+
+            <div class="row">
                 <div class="col-md-4 col-md-offset-8 margin-t-md">
                     <asp:Panel ID="pnlSummary" runat="server" CssClass="panel panel-block">
                         <div class="panel-heading">
@@ -68,21 +70,14 @@
                             <div class='row'>
                                 <div class='col-xs-8'><b>Total: </div>
                                 <div class='col-xs-4 text-right'>
-                                    <asp:Literal ID="lGrandTotal" runat="server" /></b></div>
+                                    <asp:Literal ID="lGrandTotal" runat="server" /></b>
+                                </div>
                             </div>
                         </div>
                     </asp:Panel>
                 </div>
-            </div>  
+            </div>
             <Rock:NotificationBox ID="nbResult" runat="server" Visible="false" Dismissable="true"></Rock:NotificationBox>
-               
-
         </asp:Panel>
-
     </ContentTemplate>
 </asp:UpdatePanel>
-
-
-
-
-
