@@ -67,6 +67,8 @@ namespace RockWeb.Blocks.CheckIn
             gChartAttendance.GridRebind += gChartAttendance_GridRebind;
             gAttendeesAttendance.GridRebind += gAttendeesAttendance_GridRebind;
 
+            gAttendeesAttendance.EntityTypeId = EntityTypeCache.Read<Rock.Model.Person>().Id;
+
             _rockContext = new RockContext();
         }
 
