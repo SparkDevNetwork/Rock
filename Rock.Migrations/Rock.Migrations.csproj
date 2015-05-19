@@ -128,10 +128,6 @@
     <Compile Include="Migrations\201505142322514_GroupMemberWorkflowTrigger.Designer.cs">
       <DependentUpon>201505142322514_GroupMemberWorkflowTrigger.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201505182107069_GroupMemberTriggerOrder.cs" />
-    <Compile Include="Migrations\201505182107069_GroupMemberTriggerOrder.Designer.cs">
-      <DependentUpon>201505182107069_GroupMemberTriggerOrder.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.cs" />
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.Designer.cs">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
@@ -1637,9 +1633,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201505142322514_GroupMemberWorkflowTrigger.resx">
       <DependentUpon>201505142322514_GroupMemberWorkflowTrigger.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201505182107069_GroupMemberTriggerOrder.resx">
-      <DependentUpon>201505182107069_GroupMemberTriggerOrder.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
