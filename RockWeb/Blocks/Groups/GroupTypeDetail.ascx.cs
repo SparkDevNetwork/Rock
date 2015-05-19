@@ -217,6 +217,7 @@ namespace RockWeb.Blocks.Groups
                     DefaultRoleGuid = newDefaultRole;
                 }
 
+                nbInvalidWorkflowType.Visible = false;
                 ShowDialog();
             }
         }
@@ -304,6 +305,7 @@ namespace RockWeb.Blocks.Groups
             var rockContext = new RockContext();
             GroupTypeService groupTypeService = new GroupTypeService( rockContext );
             GroupTypeRoleService groupTypeRoleService = new GroupTypeRoleService( rockContext );
+            GroupMemberWorkflowTriggerService groupMemberWorkflowTriggerService = new GroupMemberWorkflowTriggerService( rockContext );
             AttributeService attributeService = new AttributeService( rockContext );
             AttributeQualifierService qualifierService = new AttributeQualifierService( rockContext );
             CategoryService categoryService = new CategoryService( rockContext );
@@ -320,12 +322,20 @@ namespace RockWeb.Blocks.Groups
             {
                 groupType = groupTypeService.Get( groupTypeId );
 
-                // selected roles
+                // remove any roles that were removed in the UI
                 var selectedRoleGuids = GroupTypeRolesState.Select( r => r.Guid );
                 foreach ( var role in groupType.Roles.Where( r => !selectedRoleGuids.Contains( r.Guid ) ).ToList() )
                 {
                     groupType.Roles.Remove( role );
                     groupTypeRoleService.Delete( role );
+                }
+
+                // Remove any triggers that were removed in the UI
+                var selectedTriggerGuids = MemberWorkflowTriggersState.Select( r => r.Guid );
+                foreach ( var trigger in groupType.GroupMemberWorkflowTriggers.Where( r => !selectedTriggerGuids.Contains( r.Guid ) ).ToList() )
+                {
+                    groupType.GroupMemberWorkflowTriggers.Remove( trigger );
+                    groupMemberWorkflowTriggerService.Delete( trigger );
                 }
             }
 
@@ -1254,7 +1264,6 @@ namespace RockWeb.Blocks.Groups
             if ( groupTypeRoleState != null )
             {
                 groupTypeRole.CopyPropertiesFrom( groupTypeRoleState );
-                GroupTypeRolesState.RemoveEntity( groupTypeRoleState.Guid );
             }
             else
             {
@@ -1291,6 +1300,7 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
+            GroupTypeRolesState.RemoveEntity( groupTypeRoleState.Guid );
             GroupTypeRolesState.Add( groupTypeRole );
 
             BindGroupTypeRolesGrid();
@@ -2075,7 +2085,7 @@ namespace RockWeb.Blocks.Groups
             GroupMemberWorkflowTrigger memberWorkflowTrigger = MemberWorkflowTriggersState.FirstOrDefault( a => a.Guid.Equals( memberWorkflowTriggersGuid ) );
             if ( memberWorkflowTrigger == null )
             {
-                memberWorkflowTrigger = new GroupMemberWorkflowTrigger();
+                memberWorkflowTrigger = new GroupMemberWorkflowTrigger { IsActive = true };
                 dlgMemberWorkflowTriggers.Title = "Add Trigger";
             }
             else
@@ -2211,22 +2221,21 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgMemberWorkflowTriggers_SaveClick( object sender, EventArgs e )
         {
-            var memberWorkflowTriggers = new GroupMemberWorkflowTrigger();
+            var memberWorkflowTrigger = new GroupMemberWorkflowTrigger();
 
-            var memberWorkflowTriggersState = MemberWorkflowTriggersState.FirstOrDefault( r => r.Guid.Equals( hfTriggerGuid.Value.AsGuid() ) );
-            if ( memberWorkflowTriggersState != null )
+            var existingMemberWorkflowTrigger = MemberWorkflowTriggersState.FirstOrDefault( r => r.Guid.Equals( hfTriggerGuid.Value.AsGuid() ) );
+            if ( existingMemberWorkflowTrigger != null )
             {
-                memberWorkflowTriggers.CopyPropertiesFrom( memberWorkflowTriggersState );
-                MemberWorkflowTriggersState.RemoveEntity( memberWorkflowTriggersState.Guid );
+                memberWorkflowTrigger.CopyPropertiesFrom( existingMemberWorkflowTrigger );
             }
             else
             {
-                memberWorkflowTriggers.Order = MemberWorkflowTriggersState.Any() ? MemberWorkflowTriggersState.Max( a => a.Order ) + 1 : 0;
-                memberWorkflowTriggers.GroupTypeId = hfGroupTypeId.ValueAsInt();
+                memberWorkflowTrigger.Order = MemberWorkflowTriggersState.Any() ? MemberWorkflowTriggersState.Max( a => a.Order ) + 1 : 0;
+                memberWorkflowTrigger.GroupTypeId = hfGroupTypeId.ValueAsInt();
             }
 
-            memberWorkflowTriggers.Name = tbTriggerName.Text;
-            memberWorkflowTriggers.IsActive = cbTriggerIsActive.Checked;
+            memberWorkflowTrigger.Name = tbTriggerName.Text;
+            memberWorkflowTrigger.IsActive = cbTriggerIsActive.Checked;
 
             var workflowTypeId = wtpWorkflowType.SelectedValueAsInt();
             if ( workflowTypeId.HasValue )
@@ -2234,33 +2243,39 @@ namespace RockWeb.Blocks.Groups
                 var workflowType = new WorkflowTypeService( new RockContext() ).Queryable().FirstOrDefault( a => a.Id == workflowTypeId.Value );
                 if ( workflowType != null )
                 {
-                    memberWorkflowTriggers.WorkflowType = workflowType;
-                    memberWorkflowTriggers.WorkflowTypeId = workflowType.Id;
+                    memberWorkflowTrigger.WorkflowType = workflowType;
+                    memberWorkflowTrigger.WorkflowTypeId = workflowType.Id;
                 }
                 else
                 {
-                    memberWorkflowTriggers.WorkflowType = null;
-                    memberWorkflowTriggers.WorkflowTypeId = 0;
+                    memberWorkflowTrigger.WorkflowType = null;
+                    memberWorkflowTrigger.WorkflowTypeId = 0;
                 }
             }
             else
             {
-                memberWorkflowTriggers.WorkflowTypeId = 0;
+                memberWorkflowTrigger.WorkflowTypeId = 0;
             }
 
-            memberWorkflowTriggers.TriggerType = ddlTriggerType.SelectedValueAsEnum<GroupMemberWorkflowTriggerType>();
+            if ( memberWorkflowTrigger.WorkflowTypeId == 0 )
+            {
+                nbInvalidWorkflowType.Visible = true;
+                return;
+            }
 
-            memberWorkflowTriggers.TypeQualifier = string.Format( "{0}|{1}",
-                ( ddlTriggerMemberStatus.SelectedValueAsInt() ?? 0 ).ToString(),
-                ddlTriggerMemberRole.SelectedValue );
+            memberWorkflowTrigger.TriggerType = ddlTriggerType.SelectedValueAsEnum<GroupMemberWorkflowTriggerType>();
+
+            memberWorkflowTrigger.TypeQualifier = string.Format( "{0}|{1}",
+                ddlTriggerMemberStatus.SelectedValue, ddlTriggerMemberRole.SelectedValue );
 
             // Controls will show warnings
-            if ( !memberWorkflowTriggers.IsValid )
+            if ( !memberWorkflowTrigger.IsValid )
             {
                 return;
             }
 
-            MemberWorkflowTriggersState.Add( memberWorkflowTriggers );
+            MemberWorkflowTriggersState.RemoveEntity( memberWorkflowTrigger.Guid );
+            MemberWorkflowTriggersState.Add( memberWorkflowTrigger );
 
             BindMemberWorkflowTriggersGrid();
             HideDialog();
@@ -2282,7 +2297,7 @@ namespace RockWeb.Blocks.Groups
             var typeQualifer = qualifier.ToString();
  
             var qualiferText = new List<string>();
-            var qualifierParts = ( typeQualifer ?? "").Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            var qualifierParts = ( typeQualifer ?? "").Split( new char[] { '|' } );
             if ( qualifierParts.Length > 0 && !string.IsNullOrWhiteSpace( qualifierParts[0] ) )
             {
                 var status = qualifierParts[0].ConvertToEnum<GroupMemberStatus>();
