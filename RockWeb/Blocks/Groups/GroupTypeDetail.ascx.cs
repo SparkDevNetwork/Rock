@@ -53,6 +53,7 @@ namespace RockWeb.Blocks.Groups
         private List<Attribute> GroupMemberAttributesState { get; set; }
         private List<GroupTypeRole> GroupTypeRolesState { get; set; }
         protected Guid DefaultRoleGuid { get; set; }
+        private List<GroupMemberWorkflowTrigger> MemberWorkflowTriggersState { get; set; }
 
         #endregion
 
@@ -111,6 +112,15 @@ namespace RockWeb.Blocks.Groups
 
             DefaultRoleGuid = ViewState["DefaultRoleGuid"] as Guid? ?? Guid.Empty;
 
+            json = ViewState["MemberWorkflowTriggersState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                MemberWorkflowTriggersState = new List<GroupMemberWorkflowTrigger>();
+            }
+            else
+            {
+                MemberWorkflowTriggersState = JsonConvert.DeserializeObject<List<GroupMemberWorkflowTrigger>>( json );
+            }
         }
 
         /// <summary>
@@ -178,6 +188,13 @@ namespace RockWeb.Blocks.Groups
             gGroupMemberAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
             gGroupMemberAttributes.GridRebind += gGroupMemberAttributes_GridRebind;
             gGroupMemberAttributes.GridReorder += gGroupMemberAttributes_GridReorder;
+
+            gMemberWorkflowTriggers.DataKeyNames = new string[] { "Guid" };
+            gMemberWorkflowTriggers.Actions.ShowAdd = true;
+            gMemberWorkflowTriggers.Actions.AddClick += gMemberWorkflowTriggers_Add;
+            gMemberWorkflowTriggers.EmptyDataText = Server.HtmlEncode( None.Text );
+            gMemberWorkflowTriggers.GridRebind += gMemberWorkflowTriggers_GridRebind;
+            gMemberWorkflowTriggers.GridReorder += gMemberWorkflowTriggers_GridReorder;
         }
 
         /// <summary>
@@ -232,6 +249,8 @@ namespace RockWeb.Blocks.Groups
             ViewState["GroupTypeRolesState"] = JsonConvert.SerializeObject( GroupTypeRolesState, Formatting.None, jsonSetting );
 
             ViewState["DefaultRoleGuid"] = GroupMemberAttributesInheritedState;
+
+            ViewState["MemberWorkflowTriggersState"] = JsonConvert.SerializeObject( MemberWorkflowTriggersState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -327,8 +346,25 @@ namespace RockWeb.Blocks.Groups
                 role.CopyPropertiesFrom( roleState );
             }
 
+            foreach ( var triggerState in MemberWorkflowTriggersState )
+            {
+                GroupMemberWorkflowTrigger trigger = groupType.GroupMemberWorkflowTriggers.Where( r => r.Guid == triggerState.Guid ).FirstOrDefault();
+                if ( trigger == null )
+                {
+                    trigger = new GroupMemberWorkflowTrigger();
+                    groupType.GroupMemberWorkflowTriggers.Add( trigger );
+                }
+                else
+                {
+                    triggerState.Id = trigger.Id;
+                    triggerState.Guid = trigger.Guid;
+                }
+
+                trigger.CopyPropertiesFrom( triggerState );
+            }
+
             ScheduleType allowedScheduleTypes = ScheduleType.None;
-            foreach( ListItem li in cblScheduleTypes.Items )
+            foreach ( ListItem li in cblScheduleTypes.Items )
             {
                 if ( li.Selected )
                 {
@@ -382,14 +418,14 @@ namespace RockWeb.Blocks.Groups
             }
 
             // Update exclusions
-            foreach( var keyVal in ScheduleExclusionDictionary )
+            foreach ( var keyVal in ScheduleExclusionDictionary )
             {
                 var scheduleExclusion = groupType.GroupScheduleExclusions
-                    .FirstOrDefault( s => s.Guid.Equals( keyVal.Key));
+                    .FirstOrDefault( s => s.Guid.Equals( keyVal.Key ) );
                 if ( scheduleExclusion == null )
                 {
                     scheduleExclusion = new GroupScheduleExclusion();
-                    groupType.GroupScheduleExclusions.Add( scheduleExclusion);
+                    groupType.GroupScheduleExclusions.Add( scheduleExclusion );
                 }
 
                 scheduleExclusion.StartDate = keyVal.Value.Start;
@@ -647,7 +683,7 @@ namespace RockWeb.Blocks.Groups
             gtpInheritedGroupType.Enabled = !groupType.IsSystem;
             gtpInheritedGroupType.SelectedGroupTypeId = groupType.InheritedGroupTypeId;
 
-            var GroupTypeRolesState = new List<GroupTypeRole>();
+            GroupTypeRolesState = new List<GroupTypeRole>();
             foreach ( var role in groupType.Roles )
             {
                 role.LoadAttributes();
@@ -686,6 +722,13 @@ namespace RockWeb.Blocks.Groups
             BindGroupMemberAttributesGrid();
 
             BindInheritedAttributes( groupType.InheritedGroupTypeId, groupTypeService, attributeService );
+
+            MemberWorkflowTriggersState = new List<GroupMemberWorkflowTrigger>();
+            foreach ( var trigger in groupType.GroupMemberWorkflowTriggers )
+            {
+                MemberWorkflowTriggersState.Add( trigger );
+            }
+            BindMemberWorkflowTriggersGrid();
         }
 
         /// <summary>
@@ -759,6 +802,7 @@ namespace RockWeb.Blocks.Groups
             {
                 ddlGroupTypePurpose.Items.Add( new ListItem( item.Value, item.Id.ToString() ) );
             }
+
         }
 
         /// <summary>
@@ -814,6 +858,9 @@ namespace RockWeb.Blocks.Groups
                 case "GROUPMEMBERATTRIBUTES":
                     dlgGroupMemberAttribute.Show();
                     break;
+                case "MEMBERWORKFLOWTRIGGERS":
+                    dlgMemberWorkflowTriggers.Show();
+                    break;
             }
         }
 
@@ -844,6 +891,9 @@ namespace RockWeb.Blocks.Groups
                     break;
                 case "GROUPMEMBERATTRIBUTES":
                     dlgGroupMemberAttribute.Hide();
+                    break;
+                case "MEMBERWORKFLOWTRIGGERS":
+                    dlgMemberWorkflowTriggers.Hide();
                     break;
             }
 
@@ -1015,6 +1065,48 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Sets the group type role list order.
+        /// </summary>
+        /// <param name="itemList">The item list.</param>
+        private void SetMemberWorkflowTriggerListOrder( List<GroupMemberWorkflowTrigger> itemList )
+        {
+            int order = 0;
+            itemList.OrderBy( a => a.Order ).ToList().ForEach( a => a.Order = order++ );
+        }
+
+        /// <summary>
+        /// Reorders the group type role list.
+        /// </summary>
+        /// <param name="itemList">The item list.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
+        private void ReorderMemberWorkflowTriggerList( List<GroupMemberWorkflowTrigger> itemList, int oldIndex, int newIndex )
+        {
+            var movedItem = itemList.Where( a => a.Order == oldIndex ).FirstOrDefault();
+            if ( movedItem != null )
+            {
+                if ( newIndex < oldIndex )
+                {
+                    // Moved up
+                    foreach ( var otherItem in itemList.Where( a => a.Order < oldIndex && a.Order >= newIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order + 1;
+                    }
+                }
+                else
+                {
+                    // Moved Down
+                    foreach ( var otherItem in itemList.Where( a => a.Order > oldIndex && a.Order <= newIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order - 1;
+                    }
+                }
+
+                movedItem.Order = newIndex;
+            }
+        }
+
+        /// <summary>
         /// Saves the attributes.
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
@@ -1078,7 +1170,7 @@ namespace RockWeb.Blocks.Groups
         protected void gGroupTypeRoles_ShowEdit( Guid groupTypeRoleGuid )
         {
             GroupTypeRole groupTypeRole = GroupTypeRolesState.FirstOrDefault( a => a.Guid.Equals( groupTypeRoleGuid ) );
-            if (groupTypeRole == null)
+            if ( groupTypeRole == null )
             {
                 groupTypeRole = new GroupTypeRole();
                 dlgGroupTypeRoles.Title = "Add Role";
@@ -1362,7 +1454,7 @@ namespace RockWeb.Blocks.Groups
         protected void gScheduleExclusions_Delete( object sender, RowEventArgs e )
         {
             Guid guid = e.RowKeyValue.ToString().AsGuid();
-            if ( ScheduleExclusionDictionary.Keys.Contains(guid))
+            if ( ScheduleExclusionDictionary.Keys.Contains( guid ) )
             {
                 ScheduleExclusionDictionary.Remove( guid );
             }
@@ -1396,14 +1488,14 @@ namespace RockWeb.Blocks.Groups
         protected void dlgScheduleExclusion_SaveClick( object sender, EventArgs e )
         {
             Guid guid = hfScheduleExclusion.Value.AsGuid();
-            if ( ScheduleExclusionDictionary.ContainsKey(guid))
+            if ( ScheduleExclusionDictionary.ContainsKey( guid ) )
             {
                 ScheduleExclusionDictionary[guid].Start = drpScheduleExclusion.LowerValue;
                 ScheduleExclusionDictionary[guid].End = drpScheduleExclusion.UpperValue;
             }
             else
             {
-                ScheduleExclusionDictionary.Add( guid, new DateRange(drpScheduleExclusion.LowerValue, drpScheduleExclusion.UpperValue));
+                ScheduleExclusionDictionary.Add( guid, new DateRange( drpScheduleExclusion.LowerValue, drpScheduleExclusion.UpperValue ) );
             }
             BindScheduleExclusionsGrid();
             HideDialog();
@@ -1939,6 +2031,292 @@ namespace RockWeb.Blocks.Groups
             SetAttributeListOrder( GroupMemberAttributesState );
             gGroupMemberAttributes.DataSource = GroupMemberAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             gGroupMemberAttributes.DataBind();
+        }
+
+        #endregion
+
+        #region Group Member Workflow Trigger Grid and Picker
+
+        /// <summary>
+        /// Handles the Add event of the gMemberWorkflowTriggers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gMemberWorkflowTriggers_Add( object sender, EventArgs e )
+        {
+            gMemberWorkflowTriggers_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gMemberWorkflowTriggers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gMemberWorkflowTriggers_Edit( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = (Guid)e.RowKeyValue;
+            gMemberWorkflowTriggers_ShowEdit( attributeGuid );
+        }
+
+        /// <summary>
+        /// Gs the group attributes_ show edit.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute GUID.</param>
+        protected void gMemberWorkflowTriggers_ShowEdit( Guid memberWorkflowTriggersGuid )
+        {
+            ddlTriggerType.BindToEnum<GroupMemberWorkflowTriggerType>( false );
+            ddlTriggerMemberStatus.BindToEnum<GroupMemberStatus>( false );
+            ddlTriggerMemberStatus.Items.Insert( 0, new ListItem(  "Any", "" ) );
+
+            ddlTriggerMemberRole.DataSource = GroupTypeRolesState;
+            ddlTriggerMemberRole.DataBind();
+            ddlTriggerMemberRole.Items.Insert( 0, new ListItem( "Any", "" ) );
+
+            GroupMemberWorkflowTrigger memberWorkflowTrigger = MemberWorkflowTriggersState.FirstOrDefault( a => a.Guid.Equals( memberWorkflowTriggersGuid ) );
+            if ( memberWorkflowTrigger == null )
+            {
+                memberWorkflowTrigger = new GroupMemberWorkflowTrigger();
+                dlgMemberWorkflowTriggers.Title = "Add Trigger";
+            }
+            else
+            {
+                dlgMemberWorkflowTriggers.Title = "Edit Trigger";
+            }
+
+            hfTriggerGuid.Value = memberWorkflowTrigger.Guid.ToString();
+            tbTriggerName.Text = memberWorkflowTrigger.Name;
+            cbTriggerIsActive.Checked = memberWorkflowTrigger.IsActive;
+
+            if ( memberWorkflowTrigger.WorkflowTypeId != 0 )
+            {
+                var workflowType = new WorkflowTypeService( new RockContext() ).Queryable().FirstOrDefault( a => a.Id == memberWorkflowTrigger.WorkflowTypeId );
+                wtpWorkflowType.SetValue( workflowType );
+            }
+            else
+            {
+                wtpWorkflowType.SetValue( null );
+            }
+
+            ddlTriggerType.SetValue( memberWorkflowTrigger.TriggerType.ConvertToInt() );
+
+            var qualifierParts = ( memberWorkflowTrigger.TypeQualifier ?? "").Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            if ( qualifierParts.Length > 0 )
+            {
+                ddlTriggerMemberStatus.SetValue( qualifierParts[0] );
+            }
+            else
+            {
+                ddlTriggerMemberStatus.SetValue( "" );
+            }
+
+            if ( qualifierParts.Length > 1 )
+            {
+                ddlTriggerMemberRole.SetValue( qualifierParts[1] );
+            }
+            else
+            {
+                ddlTriggerMemberRole.SetValue( "" );
+            }
+
+            ddlTriggerMemberRole.SetValue( memberWorkflowTrigger.TriggerType.ConvertToInt() );
+
+            ShowTriggerQualifierControls();
+            ShowDialog( "MemberWorkflowTriggers", true );
+        }
+
+        protected void ShowTriggerQualifierControls()
+        {
+            var triggerType = ddlTriggerType.SelectedValueAsEnum<GroupMemberWorkflowTriggerType>();
+            switch ( triggerType )
+            {
+                case GroupMemberWorkflowTriggerType.MemberAddedToGroup:
+                case GroupMemberWorkflowTriggerType.MemberRemovedFromGroup:
+                    {
+                        ddlTriggerMemberStatus.Label = "With Member Status of";
+                        ddlTriggerMemberStatus.Visible = true;
+
+                        ddlTriggerMemberRole.Label = "With Member Role of";
+                        ddlTriggerMemberRole.Visible = true;
+
+                        break;
+                    }
+                case GroupMemberWorkflowTriggerType.MemberAttendedGroup:
+                    {
+                        ddlTriggerMemberStatus.Visible = false;
+                        ddlTriggerMemberRole.Visible = false;
+                        break;
+                    }
+                case GroupMemberWorkflowTriggerType.MemberRoleChanged:
+                    {
+                        ddlTriggerMemberStatus.Visible = false;
+                        ddlTriggerMemberRole.Label = "To Role of";
+                        ddlTriggerMemberRole.Visible = true;
+
+                        break;
+                    }
+                case GroupMemberWorkflowTriggerType.MemberStatusChanged:
+                    {
+                        ddlTriggerMemberStatus.Label = "To Status of";
+                        ddlTriggerMemberStatus.Visible = true;
+                        ddlTriggerMemberRole.Visible = false;
+
+                        break;
+                    }
+            }
+        }
+        /// <summary>
+        /// Handles the GridReorder event of the gMemberWorkflowTriggers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gMemberWorkflowTriggers_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            ReorderMemberWorkflowTriggerList( MemberWorkflowTriggersState, e.OldIndex, e.NewIndex );
+            BindMemberWorkflowTriggersGrid();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gMemberWorkflowTriggers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void gMemberWorkflowTriggers_Delete( object sender, RowEventArgs e )
+        {
+            Guid rowGuid = (Guid)e.RowKeyValue;
+            MemberWorkflowTriggersState.RemoveEntity( rowGuid );
+
+            BindMemberWorkflowTriggersGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gMemberWorkflowTriggers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gMemberWorkflowTriggers_GridRebind( object sender, EventArgs e )
+        {
+            BindMemberWorkflowTriggersGrid();
+        }
+
+        protected void ddlTriggerType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ShowTriggerQualifierControls();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgGroupMemberAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgMemberWorkflowTriggers_SaveClick( object sender, EventArgs e )
+        {
+            var memberWorkflowTriggers = new GroupMemberWorkflowTrigger();
+
+            var memberWorkflowTriggersState = MemberWorkflowTriggersState.FirstOrDefault( r => r.Guid.Equals( hfTriggerGuid.Value.AsGuid() ) );
+            if ( memberWorkflowTriggersState != null )
+            {
+                memberWorkflowTriggers.CopyPropertiesFrom( memberWorkflowTriggersState );
+                MemberWorkflowTriggersState.RemoveEntity( memberWorkflowTriggersState.Guid );
+            }
+            else
+            {
+                memberWorkflowTriggers.Order = MemberWorkflowTriggersState.Any() ? MemberWorkflowTriggersState.Max( a => a.Order ) + 1 : 0;
+                memberWorkflowTriggers.GroupTypeId = hfGroupTypeId.ValueAsInt();
+            }
+
+            memberWorkflowTriggers.Name = tbTriggerName.Text;
+            memberWorkflowTriggers.IsActive = cbTriggerIsActive.Checked;
+
+            var workflowTypeId = wtpWorkflowType.SelectedValueAsInt();
+            if ( workflowTypeId.HasValue )
+            {
+                var workflowType = new WorkflowTypeService( new RockContext() ).Queryable().FirstOrDefault( a => a.Id == workflowTypeId.Value );
+                if ( workflowType != null )
+                {
+                    memberWorkflowTriggers.WorkflowType = workflowType;
+                    memberWorkflowTriggers.WorkflowTypeId = workflowType.Id;
+                }
+                else
+                {
+                    memberWorkflowTriggers.WorkflowType = null;
+                    memberWorkflowTriggers.WorkflowTypeId = 0;
+                }
+            }
+            else
+            {
+                memberWorkflowTriggers.WorkflowTypeId = 0;
+            }
+
+            memberWorkflowTriggers.TriggerType = ddlTriggerType.SelectedValueAsEnum<GroupMemberWorkflowTriggerType>();
+
+            memberWorkflowTriggers.TypeQualifier = string.Format( "{0}|{1}",
+                ( ddlTriggerMemberStatus.SelectedValueAsInt() ?? 0 ).ToString(),
+                ddlTriggerMemberRole.SelectedValue );
+
+            // Controls will show warnings
+            if ( !memberWorkflowTriggers.IsValid )
+            {
+                return;
+            }
+
+            MemberWorkflowTriggersState.Add( memberWorkflowTriggers );
+
+            BindMemberWorkflowTriggersGrid();
+            HideDialog();
+        }
+
+        /// <summary>
+        /// Binds the group type attributes grid.
+        /// </summary>
+        private void BindMemberWorkflowTriggersGrid()
+        {
+            SetMemberWorkflowTriggerListOrder( MemberWorkflowTriggersState );
+            gMemberWorkflowTriggers.DataSource = MemberWorkflowTriggersState.OrderBy( a => a.Order ).ToList();
+            gMemberWorkflowTriggers.DataBind();
+        }
+
+        protected string FormatTriggerType( object type, object qualifier )
+        {
+            var triggerType = type.ToString().ConvertToEnum<GroupMemberWorkflowTriggerType>();
+            var typeQualifer = qualifier.ToString();
+ 
+            var qualiferText = new List<string>();
+            var qualifierParts = ( typeQualifer ?? "").Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            if ( qualifierParts.Length > 0 && !string.IsNullOrWhiteSpace( qualifierParts[0] ) )
+            {
+                var status = qualifierParts[0].ConvertToEnum<GroupMemberStatus>();
+                if ( status != null )
+                {
+                    if ( triggerType == GroupMemberWorkflowTriggerType.MemberStatusChanged )
+                    {
+                        qualiferText.Add( string.Format( " to status of {0}", status.ConvertToString()));
+                    }
+                    else
+                    {
+                        qualiferText.Add( string.Format( " with status of {0}", status.ConvertToString()));
+                    }
+                }
+            }
+
+            if ( qualifierParts.Length > 1 && !string.IsNullOrWhiteSpace( qualifierParts[1] ) )
+            {
+                Guid roleGuid = qualifierParts[1].AsGuid();
+                var role = GroupTypeRolesState.FirstOrDefault( r => r.Guid.Equals( roleGuid));
+                if( role != null )
+                {
+                    if ( triggerType == GroupMemberWorkflowTriggerType.MemberStatusChanged )
+                    {
+                        qualiferText.Add( string.Format( " to role of {0}", role.Name));
+                    }
+                    else
+                    {
+                        qualiferText.Add( string.Format( " with role of {0}", role.Name));
+                    }
+                }
+            }
+
+            return triggerType.ConvertToString() + qualiferText.AsDelimited(" and ");
         }
 
         #endregion

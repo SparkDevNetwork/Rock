@@ -251,19 +251,23 @@
                         </div>
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="wpMemberWorkflowTrigger" runat="server" Title="Group Member Workflow Triggers" >
+                    <Rock:PanelWidget ID="wpMemberWorkflowTriggers" runat="server" Title="Group Member Workflow Triggers" >
                         <Rock:NotificationBox ID="NotificationBox3" runat="server" NotificationBoxType="Info" 
                             Text="The workflows that should be triggered when group member changes are made to members of groups of this group type." />
                         <div class="grid">
-                            <Rock:Grid ID="Grid2" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group Attribute">
+                            <Rock:Grid ID="gMemberWorkflowTriggers" runat="server" EnableResponsiveTable="false" AllowPaging="false" DisplayType="Light" RowItemText="Workflow Trigger">
                                 <Columns>
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" />
-                                    <Rock:RockBoundField DataField="WorkflowTypeName" HeaderText="Workflow Type" />
-                                    <Rock:EnumField DataField="TriggerType" HeaderText="Trigger" />
-                                    <Rock:RockBoundField DataField="Qualifier" HeaderText="Qualifier" />
-                                    <Rock:EditField OnClick="gGroupAttributes_Edit" />
-                                    <Rock:DeleteField OnClick="gGroupAttributes_Delete" />
+                                    <Rock:RockBoundField DataField="WorkflowType.Name" HeaderText="Workflow Type" />
+                                    <Rock:RockTemplateField HeaderText="Trigger Type">
+                                        <ItemTemplate>
+                                            <%# FormatTriggerType( Eval("TriggerType"), Eval("TypeQualifier") ) %>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:BoolField DataField="IsActive" HeaderText="Active" />
+                                    <Rock:EditField OnClick="gMemberWorkflowTriggers_Edit" />
+                                    <Rock:DeleteField OnClick="gMemberWorkflowTriggers_Delete" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
@@ -375,19 +379,26 @@
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgMemberWorkflowTrigger" runat="server" OnSaveClick="dlgMemberWorkflowTrigger_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Trigger">
+        <Rock:ModalDialog ID="dlgMemberWorkflowTriggers" runat="server" OnSaveClick="dlgMemberWorkflowTriggers_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Trigger">
             <Content>
                 <asp:HiddenField ID="hfTriggerGuid" runat="server" />
                 <asp:ValidationSummary ID="vsTrigger" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Trigger" />
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbTriggerName" runat="server" Label="Name" ValidationGroup="Trigger" />
-                        <Rock:RockDropDownList ID="ddlWorkflowType" runat="server" Label="Workflow" />
+                        <Rock:RockTextBox ID="tbTriggerName" runat="server" Label="Name" Required="true" ValidationGroup="Trigger" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Type" ValidationGroup="Trigger" />
+                        <Rock:RockCheckBox ID="cbTriggerIsActive" runat="server" Text="Active" ValidationGroup="Trigger"  />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Workflow Type" Required="true" ValidationGroup="Trigger" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Type" Required="true" ValidationGroup="Trigger" AutoPostBack="true" OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" />
                         <Rock:RockDropDownList ID="ddlTriggerMemberStatus" runat="server" Label="With Member Status of" ValidationGroup="Trigger" />
-                        <Rock:RockDropDownList ID="ddlTriggerMemberRole" runat="server" Label="With Member Role of" ValidationGroup="Trigger" />
+                        <Rock:RockDropDownList ID="ddlTriggerMemberRole" runat="server" Label="With Member Role of" ValidationGroup="Trigger" DataTextField="Name" DataValueField="Guid" />
                     </div>
                 </div>
             </Content>
