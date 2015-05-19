@@ -88,7 +88,7 @@
                             <Rock:RockControlWrapper ID="rcwAccountSplit" runat="server" Label="Account Split" Help="Enter the amount that should be allocated to each account. The total must match the amount shown on the transaction image">
                                 <asp:Repeater ID="rptAccounts" runat="server">
                                     <ItemTemplate>
-                                        <Rock:CurrencyBox ID="cbAccountAmount" runat="server" Label='<%#Eval( "Name" )%>' data-account-id='<%#Eval("Id")%>' CssClass="js-account-amount" onkeypress="javascript:handleAmountBoxKeyPress(event.keyCode)" />
+                                        <Rock:CurrencyBox ID="cbAccountAmount" runat="server" Label='<%#Eval( "Name" )%>' data-account-id='<%#Eval("Id")%>' CssClass="js-account-amount" onkeypress="javascript:handleAmountBoxKeyPress(event.keyCode)" onkeyup="javascript:handleAmountBoxKeyUp(event.keyCode)" />
                                     </ItemTemplate>
                                 </asp:Repeater>
                             </Rock:RockControlWrapper>
@@ -144,13 +144,17 @@
             // handle onkeypress for the account amount input boxes
             function handleAmountBoxKeyPress(keyCode)
             {
-                // if Enter was pressed when in one of the Amount boxes, click the Next button.  Otherwise, updateRemainingAccountAllocation()
+                // if Enter was pressed when in one of the Amount boxes, click the Next button.
                 if (keyCode == 13)
                 {
                     $('#<%=btnNext.ClientID%>')[0].click();
-                } else {
-                    updateRemainingAccountAllocation();
                 }
+            }
+
+            // handle onkeyup for the account amount input boxes
+            function handleAmountBoxKeyUp(keyCode)
+            {
+                updateRemainingAccountAllocation();
             }
         </script>
 
