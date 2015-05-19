@@ -36,8 +36,8 @@ namespace RockWeb.Blocks.Groups
     [Description( "Creates a navigation tree for groups of the configured group type(s)." )]
 
     [TextField( "Treeview Title", "Group Tree View", false, order: 1 )]
-    [GroupTypesField( "Group Types Include", "Select group types to show in this block.  Leave all unchecked to show all but the excluded group types.", false, key: "GroupTypes", order: 2 )]
-    [GroupTypesField( "Group Types Exclude", "Select group types to exclude from this block.", false, key: "GroupTypesExclude", order: 3 )]
+    [GroupTypesField( "Group Types Include", "Select any specific group types to show in this block. Leave all unchecked to show all group types where 'Show in Navigation' is enabled ( except for excluded group types )", false, key: "GroupTypes", order: 2 )]
+    [GroupTypesField( "Group Types Exclude", "Select group types to exclude from this block. Note that this setting is only effective if 'Group Types Include' has no specific group types selected.", false, key: "GroupTypesExclude", order: 3 )]
     [GroupField( "Root Group", "Select the root group to use as a starting point for the tree view.", false, order: 4 )]
     [BooleanField( "Limit to Security Role Groups", order: 5 )]
     [BooleanField( "Show Filter Option to include Inactive Groups", defaultValue: true, key: "ShowFilterOption", order: 6 )]
@@ -389,7 +389,11 @@ namespace RockWeb.Blocks.Groups
             var groupService = new GroupService( new RockContext() );
             var includedGroupTypeIds = hfGroupTypesInclude.Value.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
             var excludedGroupTypeIds = hfGroupTypesExclude.Value.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
-            var qry = groupService.GetNavigationChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), includedGroupTypeIds, excludedGroupTypeIds, !tglHideInactiveGroups.Checked );
+
+            // if specific group types are specified, show the groups regardless of ShowInNavigation
+            bool limitToShowInNavigation = !includedGroupTypeIds.Any();
+
+            var qry = groupService.GetChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), includedGroupTypeIds, excludedGroupTypeIds, !tglHideInactiveGroups.Checked, limitToShowInNavigation );
 
             foreach ( var group in qry.OrderBy( g => g.Name ) )
             {

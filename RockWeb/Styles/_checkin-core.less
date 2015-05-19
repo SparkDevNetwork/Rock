@@ -113,6 +113,7 @@ body {
   font-size: 20px;
   font-weight: @checkin-button-alttext-weight;
   margin-left: 20px;
+  white-space: normal;
 }
 
 // checkin body items
@@ -229,6 +230,10 @@ body {
     width: 80px;
     height: 80px;
   }
+
+   a:focus, a:active {
+       background-color: @btn-default-bg;
+   }
 
    a.digit {
     font-size: 48px;

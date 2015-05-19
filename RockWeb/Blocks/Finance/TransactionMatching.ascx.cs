@@ -325,6 +325,9 @@ namespace RockWeb.Blocks.Finance
 
                     ddlIndividual.Items.Clear();
                     ddlIndividual.Items.Add( new ListItem( null, null ) );
+                    // clear any previously shown badges
+                    ddlIndividual.Attributes.Remove( "disabled" );
+                    badgeIndividualCount.InnerText = "";
 
                     // if this transaction has a CheckMicrEncrypted, try to find matching person(s)
                     string checkMicrHashed = null;
@@ -383,6 +386,15 @@ namespace RockWeb.Blocks.Finance
                         }
 
                         ddlIndividual.SelectedValue = person.Id.ToString();
+                    }
+
+                    if ( ddlIndividual.Items.Count != 1 )
+                    {
+                        badgeIndividualCount.InnerText = ( ddlIndividual.Items.Count - 1 ).ToStringSafe();
+                    }
+                    else
+                    {
+                        ddlIndividual.Attributes["disabled"] = "disabled";
                     }
 
                     ddlIndividual_SelectedIndexChanged( null, null );
