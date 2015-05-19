@@ -7,9 +7,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <meta charset="utf-8">
     <title></title>
-    
-    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>" ></script>
-    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js", true )%>"></script>
+
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js") %>" ></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js")%>"></script>
 
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -19,7 +19,7 @@
 	<!-- Included CSS Files -->
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/checkin-theme.css", true) %>"/>
 
-    <script src="<%# ResolveRockUrl("~/Scripts/fastclick.js", true) %>" ></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/fastclick.js") %>" ></script>
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
@@ -33,9 +33,9 @@
 </head>
 <body>
     <form id="form1" runat="server">
-            
+
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
-            
+
     </form>
 
     <script>
@@ -49,6 +49,6 @@
         });
     </script>
 
-    
+
 </body>
 </html>

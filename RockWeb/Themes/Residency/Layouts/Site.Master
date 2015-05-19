@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 
 <script runat="server">
-    
+
     // keep code below to call base class init method
 
     /// <summary>
@@ -13,8 +13,8 @@
     protected override void OnInit( EventArgs e )
     {
         base.OnInit( e );
-    }    
-    
+    }
+
 </script>
 
 <html class="no-js">
@@ -23,9 +23,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <meta charset="utf-8">
     <title></title>
-    
-    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>" ></script>
-    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js", true) %>"></script>
+
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js") %>" ></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js") %>"></script>
 
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -45,7 +45,7 @@
     <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveUrl("~/Themes/Residency/Assets/Icons/Icon-114.png") %>">
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveUrl("~/Themes/Residency/Assets/Icons/Icon-72.png") %>">
     <link rel="apple-touch-icon-precomposed" href="<%# ResolveUrl("~/Themes/Residency/Assets/Icons/Icon.png") %>">
-    
+
 </head>
 <body>
 
@@ -53,7 +53,7 @@
 
         <!-- Page Header -->
         <header>
-        
+
             <!-- Brand Bar -->
             <nav class="navbar navbar-inverse navbar-static-top">
                 <div class="container">
@@ -62,24 +62,24 @@
                             <i class="fa fa-bars"></i>
                         </button>
                         <Rock:Zone Name="Header" runat="server" />
-			        </div>	
-                    <div class="navbar-collapse collapse">   
+			        </div>
+                    <div class="navbar-collapse collapse">
                         <!-- Main Navigation -->
                         <Rock:Zone Name="Login" runat="server" />
                         <Rock:Zone Name="Navigation" runat="server" />
-			        </div>	
+			        </div>
                 </div>
             </nav>
 
         </header>
-		
+
         <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
 
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
 
 	    <footer>
             <div class="container">
-		    
+
                 <hr />
 
                 <div class="row">
@@ -90,7 +90,7 @@
 
             </div>
 	    </footer>
-        
+
         <%-- controls for scriptmanager and update panel --%>
         <asp:ScriptManager ID="sManager" runat="server"/>
         <asp:UpdateProgress id="updateProgress" runat="server">
