@@ -37,9 +37,11 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Allows a user to get their forgotten username information emailed to them." )]
 
-    [TextField( "Heading Caption", "", false, "<div class='alert alert-info'>Enter your email address below and we'll send your account information to you right away.</div>", "Captions", 0 )]
-    [TextField( "Invalid Email Caption", "", false, "Sorry, we could not find an account for the email address you entered.", "Captions", 1 )]
-    [TextField("Success Caption", "", false, "Your user name has been sent with instructions on how to change your password if needed.", "Captions", 2)]
+    [CodeEditorField( "Heading Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "<div class='alert alert-info'>Enter your email address below and we'll send your account information to you right away.</div>", "Captions", 0 )]
+    [CodeEditorField( "Invalid Email Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "Sorry, we could not find an account for the email address you entered.", "Captions", 1 )]
+    [CodeEditorField( "Success Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "Your user name has been sent with instructions on how to change your password if needed.", "Captions", 2 )]
+
+    
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", true, "", "", 3 )]
     [SystemEmailField( "Forgot Username Email Template", "Email Template to send", false, Rock.SystemGuid.SystemEmail.SECURITY_FORGOT_USERNAME, "", 4, "EmailTemplate" )]
     public partial class ForgotUserName : Rock.Web.UI.RockBlock
