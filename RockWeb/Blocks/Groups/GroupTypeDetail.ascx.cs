@@ -2109,7 +2109,7 @@ namespace RockWeb.Blocks.Groups
 
             ddlTriggerType.SetValue( memberWorkflowTrigger.TriggerType.ConvertToInt() );
 
-            var qualifierParts = ( memberWorkflowTrigger.TypeQualifier ?? "").Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            var qualifierParts = ( memberWorkflowTrigger.TypeQualifier ?? "").Split( new char[] { '|' } );
             if ( qualifierParts.Length > 0 )
             {
                 ddlTriggerMemberStatus.SetValue( qualifierParts[0] );

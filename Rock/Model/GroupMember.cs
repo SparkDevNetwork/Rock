@@ -171,6 +171,19 @@ namespace Rock.Model
         /// Pres the save changes.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        {
+            var transaction = new Rock.Transactions.GroupMemberChangeTransaction( entry );
+            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+
+            base.PreSaveChanges( dbContext, entry );
+        }
+
+        /// <summary>
+        /// Pres the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
         /// <param name="state">The state.</param>
         public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
         {
