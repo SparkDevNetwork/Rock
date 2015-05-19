@@ -38,7 +38,6 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName( "Attendance Analysis" )]
     [Category( "Check-in" )]
     [Description( "Shows a graph of attendance statistics which can be configured for specific groups, date range, etc." )]
-
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked" )]
     [GroupTypeField( "Check-in Type", required: false, key: "GroupTypeTemplate", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
@@ -228,7 +227,7 @@ namespace RockWeb.Blocks.CheckIn
         public void LoadChartAndGrids()
         {
             lSlidingDateRangeHelp.Text = SlidingDateRangePicker.GetHelpHtml( RockDateTime.Now );
-            
+
             lcAttendance.ShowTooltip = true;
             if ( this.DetailPageGuid.HasValue )
             {
@@ -257,7 +256,7 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         lcAttendance.Options.xaxis.tickSize = new string[] { "7", "day" };
                         lcAttendance.TooltipFormatter = @"
-function(item) { 
+function(item) {
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
     var dateText = 'Weekend of <br />' + itemDate.toLocaleDateString();
     var seriesLabel = item.series.label;
@@ -268,11 +267,12 @@ function(item) {
                     }
 
                     break;
+
                 case AttendanceGroupBy.Month:
                     {
                         lcAttendance.Options.xaxis.tickSize = new string[] { "1", "month" };
                         lcAttendance.TooltipFormatter = @"
-function(item) { 
+function(item) {
     var month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
     var dateText = month_names[itemDate.getMonth()] + ' ' + itemDate.getFullYear();
@@ -284,11 +284,12 @@ function(item) {
                     }
 
                     break;
+
                 case AttendanceGroupBy.Year:
                     {
                         lcAttendance.Options.xaxis.tickSize = new string[] { "1", "year" };
                         lcAttendance.TooltipFormatter = @"
-function(item) { 
+function(item) {
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
     var dateText = itemDate.getFullYear();
     var seriesLabel = item.series.label;
@@ -340,7 +341,6 @@ function(item) {
                 nbCampusesWarning.Visible = true;
                 return;
             }
-
 
             lcAttendance.DataSourceUrl = this.ResolveUrl( dataSourceUrl );
 
@@ -476,12 +476,15 @@ function(item) {
                 case AttendeesFilterBy.All:
                     radAllAttendees.Checked = true;
                     break;
+
                 case AttendeesFilterBy.ByVisit:
                     radByVisit.Checked = true;
                     break;
+
                 case AttendeesFilterBy.Pattern:
                     radByPattern.Checked = true;
                     break;
+
                 default:
                     radAllAttendees.Checked = true;
                     break;
@@ -842,7 +845,7 @@ function(item) {
             {
                 nbAttendeesError.Visible = false;
 
-                // increase the timeout from 30 to 90. The Query can be slow if SQL hasn't calculated the Query Plan for the query yet. 
+                // increase the timeout from 30 to 90. The Query can be slow if SQL hasn't calculated the Query Plan for the query yet.
                 // Most of the time consumption is figuring out the Query Plan, but after it figures it out, it caches it so that the next time it'll be much faster
                 rockContext.Database.CommandTimeout = 90;
                 gAttendeesAttendance.DataSource = qryFinalResult.AsNoTracking().ToList();
@@ -902,7 +905,7 @@ function(item) {
                     gAttendeesAttendance.Columns.Remove( oldField );
                 }
 
-                // limit to 520 checkmark columns so that we don't blow up the server (just in case they select every week for the last 100 years or something). 
+                // limit to 520 checkmark columns so that we don't blow up the server (just in case they select every week for the last 100 years or something).
                 var maxColumns = 520;
                 foreach ( var summaryDate in _possibleAttendances.Take( maxColumns ) )
                 {
@@ -915,12 +918,15 @@ function(item) {
                         case AttendanceGroupBy.Year:
                             boolFromArrayField.HeaderText = summaryDate.ToString( "yyyy" );
                             break;
+
                         case AttendanceGroupBy.Month:
                             boolFromArrayField.HeaderText = summaryDate.ToString( "MMM yyyy" );
                             break;
+
                         case AttendanceGroupBy.Week:
                             boolFromArrayField.HeaderText = summaryDate.ToShortDateString();
                             break;
+
                         default:
                             // shouldn't happen
                             boolFromArrayField.HeaderText = summaryDate.ToString();
@@ -1155,7 +1161,7 @@ function(item) {
                     foreach ( var childGroupType in groupType.ChildGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
                     {
                         var liChildGroupTypeItem = new HtmlGenericContainer( "li", "rocktree-item rocktree-folder" );
-                        liChildGroupTypeItem.ID = "liGroupTypeItem" + groupType.Id;
+                        liChildGroupTypeItem.ID = "liGroupTypeItem" + childGroupType.Id;
                         ulGroupTypeList.Controls.Add( liChildGroupTypeItem );
                         AddGroupTypeControls( childGroupType, liChildGroupTypeItem, addedGroupTypes );
                     }
@@ -1205,7 +1211,7 @@ function(item) {
         #endregion
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum ShowBy
         {
@@ -1221,7 +1227,7 @@ function(item) {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum ViewBy
         {
@@ -1237,7 +1243,7 @@ function(item) {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum AttendeesFilterBy
         {
