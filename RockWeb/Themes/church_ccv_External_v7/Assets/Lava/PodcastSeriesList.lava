@@ -1,11 +1,13 @@
 {% comment %}
 
-Required Variables
+
+REQUIRED VARIABLES
 ==================
 
 {% assign seriesListPage = "/page/516" %}
 {% assign seriesDetailPage = "/page/546" %}
 {% assign messageDetailPage = "/page/547" %}
+
 
 {% endcomment %}
 

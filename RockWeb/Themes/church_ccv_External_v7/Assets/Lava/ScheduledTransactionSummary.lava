@@ -1,12 +1,14 @@
 {% comment %}
 
-Required Variables
+
+REQUIRED VARIABLES
 ==================
 
 {% assign currentPage      = "/page/216" %}
 {% assign loginPage        = "/page/207" %}
 {% assign faqPage          = "/page/212" %}
 {% assign annualReportPage = "//ccv.church/annualreport" %}
+
 
 {% endcomment %}
 

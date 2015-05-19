@@ -1,3 +1,5 @@
+{{ Group.Name | SetPageTitle }}
+
 {% if AllowedActions.View == true || AllowedActions.Edit == true || AllowedActions.Administrate == true %}
 
 
@@ -6,10 +8,10 @@
 
     {% assign groupgeo = groupLocation.Location.GeoPoint | Split: ',' %}
 
-    <div class="card card-lg">
-      <div class="packagesummary-image card-header" id="groupMap" style="height: 200px;">
+    <div class="thumbnail">
+      <div id="groupMap" style="height: 200px;">
       </div>
-      <div class="card-footer">
+      <div class="caption">
         <div class="margin-t-md pull-right">
           {% if LinkedPages.CommunicationPage != '' and AllowedActions.Edit == true %}
             <a href="#" onclick="{{ '' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
@@ -113,7 +115,7 @@
             <div class="row">
           {% endif %}
 
-          <div class="col-sm-6 margin-b-md rollover-container" style="overflow: hidden;">
+          <div class="col-sm-6 margin-b-md rollover-container">
             {% if LinkedPages.PersonDetailPage != '' %}
               <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
             {% endif %}
@@ -122,17 +124,28 @@
               <strong>{{ member.Person.FullName }}</strong>
               <small>({{ member.GroupRole.Name}})</small>
 
-              {% for phone in member.Person.PhoneNumbers %}
-              <br />{{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small>
-              {% endfor %}
-
-              {% assign memberAddress =  member.Person | Address:'Home' %}
-              {% if memberAddress != '' %}
-              <br />{{ member.Person | Address:'Home' }}
-              {% endif %}
-
               <br />
               <a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
+
+              <p>
+                {% assign baptismDate = member.Person | Attribute: 'BaptismDate' %}
+                {% if baptismDate != '' %}
+                  <i class="fa fa-tint text-info" data-toggle="tooltip" data-placement="bottom" title="Baptized on {{ baptismDate }}"></i>
+                {% endif %}
+                {% assign pendingBaptism = member.Person | Attribute: 'PendingBaptism' %}
+                {% if pendingBaptism != '' and pendingBaptism != 'No' %}
+                  <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Pending Baptism"></i>
+                {% endif %}
+
+                {% assign startingPointDate = member.Person | Attribute: 'DateAttendedStartingPoint' %}
+                {% if startingPointDate != '' %}
+                  <i class="fa fa-map-marker text-primary" data-toggle="tooltip" data-placement="bottom" title="Completed Starting Point on {{ startingPointDate }}"></i>
+                {% endif %}
+                {% assign pendingStartingPoint = member.Person | Attribute: 'PendingStartingPoint' %}
+                {% if pendingStartingPoint != '' %}
+                  <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Starting Point Pending"></i>
+                {% endif %}
+              </p>
             </div>
 
             {% if AllowedActions.Edit == true %}
@@ -182,7 +195,7 @@
           <div class="row">
           {% endif %}
 
-          <div class="col-sm-6 margin-b-md rollover-container" style="overflow: hidden;">
+          <div class="col-sm-6 margin-b-md rollover-container">
             {% if LinkedPages.PersonDetailPage != '' %}
               <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
             {% endif %}
@@ -191,17 +204,28 @@
               <strong>{{ member.Person.FullName }}</strong>
               <small>({{ member.GroupRole.Name}})</small>
 
-              {% for phone in member.Person.PhoneNumbers %}
-              <br />{{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small>
-              {% endfor %}
-
-              {% assign memberAddress =  member.Person | Address:'Home' %}
-              {% if memberAddress != '' %}
-              <br />{{ member.Person | Address:'Home' }}
-              {% endif %}
-
               <br />
               <a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
+
+              <p>
+                {% assign baptismDate = member.Person | Attribute: 'BaptismDate' %}
+                {% if baptismDate != '' %}
+                  <i class="fa fa-tint text-info" data-toggle="tooltip" data-placement="bottom" title="Baptized on {{ baptismDate }}"></i>
+                {% endif %}
+                {% assign pendingBaptism = member.Person | Attribute: 'PendingBaptism' %}
+                {% if pendingBaptism != '' and pendingBaptism != 'No' %}
+                  <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Pending Baptism"></i>
+                {% endif %}
+
+                {% assign startingPointDate = member.Person | Attribute: 'DateAttendedStartingPoint' %}
+                {% if startingPointDate != '' %}
+                  <i class="fa fa-map-marker text-primary" data-toggle="tooltip" data-placement="bottom" title="Completed Starting Point on {{ startingPointDate }}"></i>
+                {% endif %}
+                {% assign pendingStartingPoint = member.Person | Attribute: 'PendingStartingPoint' %}
+                {% if pendingStartingPoint != '' %}
+                  <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Starting Point Pending"></i>
+                {% endif %}
+              </p>
             </div>
 
             {% if AllowedActions.Edit == true %}
@@ -249,7 +273,7 @@
           <div class="row">
           {% endif %}
 
-          <div class="col-sm-6 margin-b-md rollover-container" style="overflow: hidden;">
+          <div class="col-sm-6 margin-b-md rollover-container">
             {% if LinkedPages.PersonDetailPage != '' %}
               <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
             {% endif %}
@@ -258,17 +282,28 @@
               <strong>{{ member.Person.FullName }}</strong>
               <small>({{ member.GroupRole.Name}})</small>
 
-              {% for phone in member.Person.PhoneNumbers %}
-              <br />{{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small>
-              {% endfor %}
-
-              {% assign memberAddress =  member.Person | Address:'Home' %}
-              {% if memberAddress != '' %}
-              <br />{{ member.Person | Address:'Home' }}
-              {% endif %}
-
               <br />
               <a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
+
+              <p>
+                {% assign baptismDate = member.Person | Attribute: 'BaptismDate' %}
+                {% if baptismDate != '' %}
+                  <i class="fa fa-tint text-info" data-toggle="tooltip" data-placement="bottom" title="Baptized on {{ baptismDate }}"></i>
+                {% endif %}
+                {% assign pendingBaptism = member.Person | Attribute: 'PendingBaptism' %}
+                {% if pendingBaptism != '' and pendingBaptism != 'No' %}
+                  <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Pending Baptism"></i>
+                {% endif %}
+
+                {% assign startingPointDate = member.Person | Attribute: 'DateAttendedStartingPoint' %}
+                {% if startingPointDate != '' %}
+                  <i class="fa fa-map-marker text-primary" data-toggle="tooltip" data-placement="bottom" title="Completed Starting Point on {{ startingPointDate }}"></i>
+                {% endif %}
+                {% assign pendingStartingPoint = member.Person | Attribute: 'PendingStartingPoint' %}
+                {% if pendingStartingPoint != '' %}
+                  <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Starting Point Pending"></i>
+                {% endif %}
+              </p>
             </div>
 
             {% if AllowedActions.Edit == true %}

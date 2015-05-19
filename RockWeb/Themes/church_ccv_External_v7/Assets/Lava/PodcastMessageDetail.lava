@@ -1,6 +1,7 @@
 {% comment %}
 
-Required Variables
+
+REQUIRED VARIABLES
 ==================
 
 {% assign seriesListPage = "/page/516" %}
@@ -10,12 +11,13 @@ Required Variables
 {% assign fullService = false %}
 
 
-Page Title Lava
+PAGE TITLE LAVA
 ===============
 
 {{ table1.rows.first.Title }} - {{ table1.rows.first.SeriesTitle }}
 
 {{ table1.rows.first.Title }} - {{ table1.rows.first.SeriesTitle }} (Full Service)
+
 
 {% endcomment %}
 
@@ -26,6 +28,8 @@ Page Title Lava
 @todo open graph meta tags
 
 {% endcomment %}
+
+
 
 
 {{ "/Themes/church_ccv_External_v7/Styles/pages/watch.css" | AddLinkTagToHead:'rel','stylesheet' }}

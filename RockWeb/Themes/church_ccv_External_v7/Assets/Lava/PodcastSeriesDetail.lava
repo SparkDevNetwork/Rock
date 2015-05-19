@@ -1,6 +1,7 @@
 {% comment %}
 
-Required Variables
+
+REQUIRED VARIABLES
 ==================
 
 {% assign seriesListPage = "/page/516" %}
@@ -8,10 +9,11 @@ Required Variables
 {% assign messageDetailPage = "/page/547" %}
 
 
-Page Title Lava
+PAGE TITLE LAVA
 ===============
 
 {{ table1.rows.first.Title }}
+
 
 {% endcomment %}
 
@@ -21,6 +23,8 @@ Page Title Lava
 @todo opengraph meta tags
 
 {% endcomment %}
+
+
 
 
 {{ "/Themes/church_ccv_External_v7/Styles/pages/watch.css" | AddLinkTagToHead:'rel','stylesheet' }}

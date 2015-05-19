@@ -1,16 +1,41 @@
+{% comment %}
+
+
+QUERY
+=====
+
+SELECT g.id, g.Name
+FROM [Group] g
+WHERE g.Id = {{ GroupId }}
+
+SELECT g.id, g.Name, l.GeoPoint.Lat as Lat, l.GeoPoint.Long as Long
+FROM [Group] g JOIN [GroupLocation] gl
+  ON gl.GroupId = g.Id JOIN [Location] l
+  ON gl.LocationId = l.Id
+WHERE g.ParentGroupId = {{ GroupId }}
+
+
+REQUIRED VARIABLES
+==================
+
+{% assign detailPageId = "/page/503" %}
+
+
+{% endcomment %}
+
+
+
+{{ table1.rows.first.Name | SetPageTitle }}
+
 {% unless rows == empty or detailPageId == empty %}
 
   <div class="row">
-    {% for g in rows %}
+    {% for g in table2.rows %}
       <div class="col-md-4 col-sm-6">
-        <a class="link-plain" href="/page/{{ detailPageId }}?GroupId={{ g.id }}">
-          <div class="card card-lg card-link">
-            <div class="card-header">
-              <img src="https://maps.googleapis.com/maps/api/staticmap?zoom=13&amp;size=260x160&amp;markers=scale:2%7Cicon:http://bit.ly/1npXPPc%7C{{ g.Lat }},{{ g.Long }}&amp;sensor=false&amp;style=feature:all%7Csaturation:-100&amp;scale=2" alt="Map of Group Location">
-            </div>
-            <div class="card-footer">
-              <h5 class="margin-all-sm">{{ g.Name }} &nbsp;<i class="fa fa-caret-right"></i></h5>
-            </div>
+        <a class="thumbnail padding-b-none" href="{{ detailPageId }}?GroupId={{ g.id }}">
+          <img src="https://maps.googleapis.com/maps/api/staticmap?zoom=13&amp;size=260x160&amp;markers=scale:2%7Cicon:http://bit.ly/1npXPPc%7C{{ g.Lat }},{{ g.Long }}&amp;sensor=false&amp;style=feature:all%7Csaturation:-100&amp;scale=2" alt="Map of Group Location">
+          <div class="caption">
+            <h3 class="panel-title">{{ g.Name }} &nbsp;<i class="fa fa-caret-right"></i></h5>
           </div>
         </a>
       </div>
@@ -18,3 +43,6 @@
   </div>
 
 {% endunless %}
+
+
+
