@@ -251,16 +251,16 @@
                         </div>
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="wpMemberWorkflowTriggers" runat="server" Title="Group Member Workflow Triggers" >
+                    <Rock:PanelWidget ID="wpMemberWorkflowTriggers" runat="server" Title="Group Member Workflows" >
                         <Rock:NotificationBox ID="NotificationBox3" runat="server" NotificationBoxType="Info" 
-                            Text="The workflows that should be triggered when group member changes are made to members of groups of this group type." />
+                            Text="The workflow(s) that should be launched when group members are changed in groups of this type." />
                         <div class="grid">
-                            <Rock:Grid ID="gMemberWorkflowTriggers" runat="server" EnableResponsiveTable="false" AllowPaging="false" DisplayType="Light" RowItemText="Workflow Trigger">
+                            <Rock:Grid ID="gMemberWorkflowTriggers" runat="server" EnableResponsiveTable="false" AllowPaging="false" DisplayType="Light" RowItemText="Workflow">
                                 <Columns>
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" />
-                                    <Rock:RockBoundField DataField="WorkflowType.Name" HeaderText="Workflow Type" />
-                                    <Rock:RockTemplateField HeaderText="Trigger Type">
+                                    <Rock:RockBoundField DataField="WorkflowType.Name" HeaderText="Workflow" />
+                                    <Rock:RockTemplateField HeaderText="When">
                                         <ItemTemplate>
                                             <%# FormatTriggerType( Eval("TriggerType"), Eval("TypeQualifier") ) %>
                                         </ItemTemplate>
@@ -383,6 +383,8 @@
             <Content>
                 <asp:HiddenField ID="hfTriggerGuid" runat="server" />
                 <asp:ValidationSummary ID="vsTrigger" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Trigger" />
+                <Rock:NotificationBox ID="nbInvalidWorkflowType" runat="server" NotificationBoxType="Danger" Visible="false"
+                    Text="The Workflow Type is missing or invalid. Make sure you selected a valid Workflow Type (and not a category)." />
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbTriggerName" runat="server" Label="Name" Required="true" ValidationGroup="Trigger" />
@@ -393,10 +395,11 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Workflow Type" Required="true" ValidationGroup="Trigger" />
+                        <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Launch Workflow" Required="true" ValidationGroup="Trigger"
+                            Help="The workflow type to launch." />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Type" Required="true" ValidationGroup="Trigger" AutoPostBack="true" OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" />
+                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="When" Required="true" ValidationGroup="Trigger" AutoPostBack="true" OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" />
                         <Rock:RockDropDownList ID="ddlTriggerMemberStatus" runat="server" Label="With Member Status of" ValidationGroup="Trigger" />
                         <Rock:RockDropDownList ID="ddlTriggerMemberRole" runat="server" Label="With Member Role of" ValidationGroup="Trigger" DataTextField="Name" DataValueField="Guid" />
                     </div>
