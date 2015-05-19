@@ -18,6 +18,10 @@
                 
                 <asp:LinkButton ID="btnFilter" runat="server" CssClass="btn btn-xs btn-default pull-right margin-l-sm" OnClick="btnFilter_Click"><i class="fa fa-gear" title="Filter Accounts"></i></asp:LinkButton>
                 
+                <Rock:RockControlWrapper ID="rcwAddNewBusiness" runat="server"  Visible="false">
+                    <a id="hlAddNewBusiness" class="btn btn-default btn-xs margin-r-sm pull-right" runat="server" href="#">Add Business</a>
+                </Rock:RockControlWrapper>
+                
                 <Rock:RockControlWrapper ID="rcwAddNewFamily" runat="server"  Visible="false">
                     <a id="hlAddNewFamily" class="btn btn-default btn-xs margin-r-sm pull-right" runat="server" href="#">Add Family</a>
                 </Rock:RockControlWrapper>
@@ -46,6 +50,8 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:RockDropDownList ID="ddlIndividual" runat="server" Label="Individual" Help="Select a person that has previously been matched to the bank account. If the person isn't in this list, use the 'Assign to New' to select the matching person." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
+                                    <span ID="badgeIndividualCount" runat="server" class="pull-right badge badge-danger" 
+                                        style="position: relative; top: -58px; left: 10px"></span>
                                     <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" Help="Select a new person to match to the bank account." IncludeBusinesses="true" OnSelectPerson="ppSelectNew_SelectPerson"/>
                                 </div>
 
@@ -82,7 +88,7 @@
                             <Rock:RockControlWrapper ID="rcwAccountSplit" runat="server" Label="Account Split" Help="Enter the amount that should be allocated to each account. The total must match the amount shown on the transaction image">
                                 <asp:Repeater ID="rptAccounts" runat="server">
                                     <ItemTemplate>
-                                        <Rock:CurrencyBox ID="cbAccountAmount" runat="server" Label='<%#Eval( "Name" )%>' data-account-id='<%#Eval("Id")%>' CssClass="js-account-amount" onkeypress="javascript:handleAmountBoxKeyPress(event.keyCode)" />
+                                        <Rock:CurrencyBox ID="cbAccountAmount" runat="server" Label='<%#Eval( "Name" )%>' data-account-id='<%#Eval("Id")%>' CssClass="js-account-amount" onkeypress="javascript:handleAmountBoxKeyPress(event.keyCode)" onkeyup="javascript:handleAmountBoxKeyUp(event.keyCode)" />
                                     </ItemTemplate>
                                 </asp:Repeater>
                             </Rock:RockControlWrapper>
@@ -138,13 +144,17 @@
             // handle onkeypress for the account amount input boxes
             function handleAmountBoxKeyPress(keyCode)
             {
-                // if Enter was pressed when in one of the Amount boxes, click the Next button.  Otherwise, updateRemainingAccountAllocation()
+                // if Enter was pressed when in one of the Amount boxes, click the Next button.
                 if (keyCode == 13)
                 {
                     $('#<%=btnNext.ClientID%>')[0].click();
-                } else {
-                    updateRemainingAccountAllocation();
                 }
+            }
+
+            // handle onkeyup for the account amount input boxes
+            function handleAmountBoxKeyUp(keyCode)
+            {
+                updateRemainingAccountAllocation();
             }
         </script>
 

@@ -388,10 +388,11 @@ namespace RockWeb.Blocks.Core
                 {
                     if ( mergeObject is IEntity )
                     {
-                        // convert the object to a Dictionary so we can add additional fields to it
+                        // add the additional fields to AdditionalLavaFields
                         IEntity mergeEntity = ( mergeObject as IEntity );
                         mergeEntity.AdditionalLavaFields = mergeEntity.AdditionalLavaFields ?? new Dictionary<string, object>();
-                        mergeEntity.AdditionalLavaFields.AddOrIgnore( additionalMergeValue.Key, additionalMergeValue.Value );
+                        object mergeValueObject = additionalMergeValue.Value;
+                        mergeEntity.AdditionalLavaFields.AddOrIgnore( additionalMergeValue.Key, mergeValueObject );
                     }
                     else if (mergeObject is IDictionary<string, object>)
                     {

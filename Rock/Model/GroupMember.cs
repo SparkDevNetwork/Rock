@@ -308,7 +308,7 @@ namespace Rock.Model
                     roleMembershipAboveMax = true;
                 }
             }
-            else if ( this.Id > 0 && ( this.GroupRoleId != databaseRecord.GroupRoleId || this.GroupMemberStatus != databaseRecord.GroupMemberStatus )
+            else if ( databaseRecord != null && this.Id > 0 && ( this.GroupRoleId != databaseRecord.GroupRoleId || this.GroupMemberStatus != databaseRecord.GroupMemberStatus )
                     && this.GroupMemberStatus == GroupMemberStatus.Active )
             {
                 // if existing group member changing role or status..

@@ -80,6 +80,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="container">The <see cref="T:System.Web.UI.Control" /> object to contain the instances of controls from the inline template.</param>
         public void InstantiateIn( Control container )
         {
+            var cell = container as DataControlFieldCell;
+            cell.AddCssClass( "grid-select-field" );
             string dataField = ( ( container as DataControlFieldCell ).ContainingField as CheckBoxEditableField ).DataField;
             CheckBox checkBox = new CheckBox();
             checkBox.ID = "checkBox_" + dataField;

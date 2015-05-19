@@ -32,6 +32,8 @@
                     <Rock:NotificationBox ID="nbRoleLimitWarning" runat="server" NotificationBoxType="Warning" Heading="Role Limit Warning" />
                     <Rock:NotificationBox ID="nbNotAllowedToEdit" runat="server" NotificationBoxType="Danger" Visible="false"
                         Text="You are not authorized to save group with the selected group type and/or parent group." />
+                    <Rock:NotificationBox ID="nbInvalidParentGroup" runat="server" NotificationBoxType="Danger" Visible="false"
+                        Text="The selected parent group does not allow child groups of the selected group type." />
                     <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                     <div id="pnlEditDetails" runat="server">
