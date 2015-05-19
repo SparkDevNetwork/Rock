@@ -28,7 +28,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "GroupMemberWorkflowTrigger" )]
     [DataContract]
-    public partial class GroupMemberWorkflowTrigger : Entity<GroupMemberWorkflowTrigger>
+    public partial class GroupMemberWorkflowTrigger : Entity<GroupMemberWorkflowTrigger>, IOrdered
     {
         #region Entity Properties
 
@@ -109,6 +109,15 @@ namespace Rock.Model
         [DataMember]
         public string WorkflowName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [DataMember( IsRequired = true )]
+        public int Order { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -171,8 +180,8 @@ namespace Rock.Model
         /// </summary>
         public GroupMemberWorkflowTriggerConfiguration()
         {
-            this.HasOptional( t => t.GroupType ).WithMany().HasForeignKey( t => t.GroupTypeId ).WillCascadeOnDelete( true );
-            this.HasOptional( t => t.Group ).WithMany().HasForeignKey( t => t.GroupId ).WillCascadeOnDelete( true );
+            this.HasOptional( t => t.GroupType ).WithMany( g => g.GroupMemberWorkflowTriggers ).HasForeignKey( t => t.GroupTypeId ).WillCascadeOnDelete( true );
+            this.HasOptional( t => t.Group ).WithMany( g => g.GroupMemberWorkflowTriggers ).HasForeignKey( t => t.GroupId ).WillCascadeOnDelete( true );
             this.HasRequired( t => t.WorkflowType ).WithMany().HasForeignKey( t => t.WorkflowTypeId ).WillCascadeOnDelete( true );
         }
     }
@@ -189,27 +198,27 @@ namespace Rock.Model
         /// <summary>
         ///AddedToGroup
         /// </summary>
-        AddedToGroup = 0,
+        MemberAddedToGroup = 0,
 
         /// <summary>
         /// RemovedFromGroup
         /// </summary>
-        RemovedFromGroup = 1,
+        MemberRemovedFromGroup = 1,
 
         /// <summary>
         /// StatusChanged
         /// </summary>
-        StatusChanged = 2,
+        MemberStatusChanged = 2,
 
         /// <summary>
         /// RoleChanged
         /// </summary>
-        RoleChanged = 3,
+        MemberRoleChanged = 3,
 
         /// <summary>
         /// Attended
         /// </summary>
-        Attended = 4
+        MemberAttendedGroup = 4
     }
 
     #endregion
