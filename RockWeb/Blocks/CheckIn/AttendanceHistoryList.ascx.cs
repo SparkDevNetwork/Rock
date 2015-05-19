@@ -235,6 +235,7 @@ namespace RockWeb.Blocks.Checkin
         }
 
         private List<GroupTypePath> _groupTypePaths;
+        private Dictionary<int, string> _locationPaths;
 
         /// <summary>
         /// Binds the grid.
@@ -303,6 +304,7 @@ namespace RockWeb.Blocks.Checkin
             var qry = qryAttendance
                 .Select( a => new
                 {
+                    LocationId = a.LocationId,
                     LocationName = a.Location.Name,
                     CampusId = a.CampusId,
                     CampusName = a.Campus.Name,
@@ -324,7 +326,31 @@ namespace RockWeb.Blocks.Checkin
                 qry = qry.OrderByDescending( p => p.StartDateTime );
             }
 
+            // build a lookup for _groupTypePaths for OnRowDatabound
             _groupTypePaths = new GroupTypeService( rockContext ).GetAllCheckinGroupTypePaths().ToList();
+
+            // build a lookup for _locationpaths for OnRowDatabound
+            _locationPaths = new Dictionary<int, string>();
+            var qryLocations = new LocationService( rockContext ).Queryable().Where( a => qry.Any( b => b.LocationId == a.Id ) );
+            foreach (var location in qryLocations)
+            {
+                var parentLocation = location.ParentLocation;
+                var locationNames = new List<string>();
+                while (parentLocation != null)
+                {
+                    locationNames.Add( parentLocation.Name );
+                    parentLocation = parentLocation.ParentLocation;
+                }
+
+                string locationPath = string.Empty;
+                if ( locationNames.Any() )
+                {
+                    locationNames.Reverse();
+                    locationPath = locationNames.AsDelimited( " > " );
+                }
+
+                _locationPaths.AddOrIgnore( location.Id, locationPath );
+            }
 
             gHistory.EntityTypeId = EntityTypeCache.Read<Attendance>().Id;
             gHistory.DataSource = qry.ToList();
@@ -357,7 +383,25 @@ namespace RockWeb.Blocks.Checkin
 
                     lGroupName.Text = string.Format( "{0}<br /><small>{1}</small>", dataItem.GetPropertyValue( "GroupName" ), groupTypePath );
                 }
+
+                Literal lLocationName = e.Row.FindControl( "lLocationName" ) as Literal;
+                if ( lLocationName != null )
+                {
+                    int? locationId = dataItem.GetPropertyValue( "LocationId" ) as int?;
+                    string locationPath = null;
+                    if ( locationId.HasValue )
+                    {
+                        if ( _locationPaths.ContainsKey( locationId.Value ) )
+                        {
+                            locationPath = _locationPaths[locationId.Value];
+                        }
+                    }
+
+                    lLocationName.Text = string.Format( "{0}<br /><small>{1}</small>", dataItem.GetPropertyValue( "LocationName" ), locationPath );
+                }
             }
+
+
         }
 
         #endregion
