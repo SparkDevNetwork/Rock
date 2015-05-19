@@ -68,7 +68,12 @@
 
                                 <div class="col-md-12">
                                     <Rock:CodeEditor ID="ceFormattedOutput" runat="server" Label="Formatted Output" CssClass="input-large" EditorHeight="400"
-                                        Help="Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }} {% endfor %} or if query returns multiple result sets: {% for row in table1.rows %} {{ row.FirstName }} {% endfor %} " />
+                                        Help="Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }} {% endfor %} or if the query returns multiple result sets: {% for row in table1.rows %} {{ row.FirstName }} {% endfor %} " />
+                                </div>
+
+                                <div class="col-md-12">
+                                    <Rock:CodeEditor ID="cePageTitleLava" runat="server" Label="Page Title Lava" EditorMode="Liquid" CssClass="input-large" EditorHeight="200"
+                                        Help="Optional Lava for setting the page title. If nothing is provided then the page's title will be used. Example '{{rows[0].FullName}}' or if the query returns multiple result sets '{{table1.rows[0].FullName}}'." />
                                 </div>
                             </div>
 

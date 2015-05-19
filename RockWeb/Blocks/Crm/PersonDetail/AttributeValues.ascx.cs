@@ -24,6 +24,7 @@ using System.Web.UI.HtmlControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Field.Types;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -378,7 +379,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
                         else
                         {
-                            formattedValue = attribute.FieldType.Field.FormatValueAsHtml( fsAttributes, attributeValue, attribute.QualifierValues, false );
+                            if ( attribute.FieldType.Class == typeof(Rock.Field.Types.ImageFieldType).FullName )
+                            {
+                                formattedValue = attribute.FieldType.Field.FormatValueAsHtml( fsAttributes, attributeValue, attribute.QualifierValues, true );
+                            }
+                            else
+                            {
+                                formattedValue = attribute.FieldType.Field.FormatValueAsHtml( fsAttributes, attributeValue, attribute.QualifierValues, false );
+                            }
+                            
                             if ( !string.IsNullOrWhiteSpace( formattedValue ) )
                             {
                                 fsAttributes.Controls.Add( new RockLiteral { Label = attribute.Name, Text = formattedValue } );

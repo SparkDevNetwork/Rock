@@ -240,6 +240,7 @@ namespace RockWeb.Blocks.Groups
             {
                 nbNotAllowedToEdit.Visible = false;
                 nbInvalidWorkflowType.Visible = false;
+                nbInvalidParentGroup.Visible = false;
                 ShowDialog();
             }
 
@@ -630,6 +631,19 @@ namespace RockWeb.Blocks.Groups
                 group.ParentGroup = groupService.Get( group.ParentGroupId.Value );
             }
 
+            // Check to see if group type is allowed as a child of new parent group.
+            if ( group.ParentGroup != null )
+            {
+                var allowedGroupTypeIds = GetAllowedGroupTypes( group.ParentGroup, rockContext ).Select( t => t.Id ).ToList();
+                if ( !allowedGroupTypeIds.Contains(group.GroupTypeId) )
+                {
+                    var groupType = CurrentGroupTypeCache;
+                    nbInvalidParentGroup.Text = string.Format( "The '{0}' group does not allow child groups with a '{1}' group type.", group.ParentGroup.Name, groupType != null ? groupType.Name : "" );
+                    nbInvalidParentGroup.Visible = true;
+                    return;
+                }
+            }
+            
             // Check to see if user is still allowed to edit with selected group type and parent group
             if ( !group.IsAuthorized( Authorization.EDIT, CurrentPerson ))
             {

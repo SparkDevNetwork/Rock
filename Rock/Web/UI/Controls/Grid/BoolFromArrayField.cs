@@ -22,7 +22,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// <see cref="Grid"/> Column to display a checkmark icon if the ArrayKey exists in the FieldValue, which is an IEnumerable<T>
+    /// <see cref="Grid"/> Column to display a checkmark icon if the ArrayKey exists in the FieldValue, which is an IEnumerable
     /// NOTE: can only be used from code-behind
     /// </summary>
     [ToolboxData( "<{0}:BoolFromArrayField runat=server></{0}:BoolFromArrayField>" )]

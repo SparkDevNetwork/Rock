@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -22,12 +23,9 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.HtmlControls;
-
 using DotLiquid;
 using DotLiquid.Util;
-
 using Humanizer;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -1281,6 +1279,61 @@ namespace Rock.Lava
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// adds a link tag to the head of the document
+        /// </summary>
+        /// <param name="input">The input to use for the href of the tag.</param>
+        /// <returns></returns>
+        public static string SetPageTitle( string input )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            if ( page != null )
+            {
+                page.BrowserTitle = input;
+                page.PageTitle = input;
+                page.Header.Title = input;
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region Array Filters
+
+        /// <summary>
+        /// Rearranges an array in a random order
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static object Shuffle( object input )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            if ( !(input is IList) )
+            {
+                return input;
+            }
+
+            var inputList = input as IList;
+            Random rng = new Random();
+            int n = inputList.Count;
+            while ( n > 1 )
+            {
+                n--;
+                int k = rng.Next( n + 1 );
+                var value = inputList[k];
+                inputList[k] = inputList[n];
+                inputList[n] = value;
+            }
+
+            return inputList;
         }
 
         #endregion

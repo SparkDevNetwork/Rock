@@ -633,7 +633,7 @@
 
 <script language="CS" runat="server">
     
-    const string baseStorageUrl = "//rockrms.blob.core.windows.net/install/";
+    const string baseStorageUrl = "https://rockrms.blob.core.windows.net/install/";
     const string baseVersion = "2_7_0";
 
     string storageUrl = string.Empty;
