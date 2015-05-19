@@ -301,6 +301,10 @@ function(item) {
                     break;
             }
 
+            string groupByTextPlural = groupBy.ConvertToString().ToLower().Pluralize();
+            lPatternXFor.Text = string.Format( " {0} for the selected date range", groupByTextPlural );
+            lPatternAndMissedXBetween.Text = string.Format( " {0} between", groupByTextPlural );
+
             dataSourceParams.AddOrReplace( "groupBy", hfGroupBy.Value.AsInteger() );
             dataSourceParams.AddOrReplace( "graphBy", hfGraphBy.Value.AsInteger() );
 
@@ -709,9 +713,9 @@ function(item) {
 
             if ( byNthVisit.HasValue )
             {
-                // only return attendees where their lastvisit was their nth Visit
+                // only return attendees where their nth visit is within the selected daterange
                 int skipCount = byNthVisit.Value - 1;
-                qryResult = qryResult.Where( a => a.LastVisit.Id == a.FirstVisits.OrderBy( x => x.StartDateTime ).Skip( skipCount ).Select( b => b.Id ).FirstOrDefault() );
+                qryResult = qryResult.Where( a => a.FirstVisits.OrderBy( x => x.StartDateTime ).Skip( skipCount ).Take( 1 ).Any( d => d.StartDateTime >= dateRange.Start && d.StartDateTime < dateRange.End) );
             }
 
             if ( attendedMinCount.HasValue )
@@ -719,20 +723,27 @@ function(item) {
                 qryResult = qryResult.Where( a => a.AttendanceSummary.Count() >= attendedMinCount );
             }
 
-            double? attendedMissedPossible = null;
             if ( attendedMissedCount.HasValue )
             {
                 if ( attendedMissedDateRange.Start.HasValue && attendedMissedDateRange.End.HasValue )
                 {
-                    attendedMissedPossible = Math.Ceiling( ( attendedMissedDateRange.End.Value - attendedMissedDateRange.Start.Value ).TotalDays / 7 );
-                    qryMissed = qryMissed.Where( a => a.StartDateTime >= attendedMissedDateRange.Start.Value && a.StartDateTime < attendedMissedDateRange.End.Value );
-                    var qryMissedByPerson = qryMissed.GroupBy( a => a.PersonAlias.PersonId ).Select( a => new
-                    {
-                        PersonId = a.Key,
-                        AttendanceCount = a.Count()
-                    } ).Where( x => ( attendedMissedPossible - x.AttendanceCount ) >= attendedMissedCount );
+                    var attendedMissedPossible = GetPossibleAttendancesForDateRange( attendedMissedDateRange, groupBy );
+                    int attendedMissedPossibleCount = attendedMissedPossible.Count();
 
-                    // filter to only people that missed at least X weeks between specified missed date range
+                    qryMissed = qryMissed.Where( a => a.StartDateTime >= attendedMissedDateRange.Start.Value && a.StartDateTime < attendedMissedDateRange.End.Value );
+                    var qryMissedAttendanceByPersonAndSummary = qryMissed.GetAttendanceWithSummaryDateTime( groupBy )
+                        .GroupBy( g1 => new { g1.SummaryDateTime, g1.Attendance.PersonAlias.PersonId } )
+                        .GroupBy( a => a.Key.PersonId )
+                        .Select(a => new
+                        {
+                            PersonId = a.Key,
+                            AttendanceCount = a.Count()
+                        });
+
+                    var qryMissedByPerson = qryMissedAttendanceByPersonAndSummary.
+                        Where( x => ( attendedMissedPossibleCount - x.AttendanceCount ) >= attendedMissedCount );
+
+                    // filter to only people that missed at least X weeks/months/years between specified missed date range
                     qryResult = qryResult.Where( a => qryMissedByPerson.Any( b => b.PersonId == a.PersonId ) );
                 }
             }
@@ -939,14 +950,20 @@ function(item) {
         /// <param name="attendanceGroupBy">The attendance group by.</param>
         public void UpdatePossibleAttendances( DateRange dateRange, AttendanceGroupBy attendanceGroupBy )
         {
-            foreach ( var checkmarkedAttendanceField in gAttendeesAttendance.Columns.OfType<CallbackField>() )
-            {
-                gAttendeesAttendance.Columns.Remove( checkmarkedAttendanceField );
-            }
+            _possibleAttendances = GetPossibleAttendancesForDateRange( dateRange, attendanceGroupBy );
+        }
 
+        /// <summary>
+        /// Gets the possible attendances for the date range.
+        /// </summary>
+        /// <param name="dateRange">The date range.</param>
+        /// <param name="attendanceGroupBy">The attendance group by type.</param>
+        /// <returns></returns>
+        public List<DateTime> GetPossibleAttendancesForDateRange( DateRange dateRange, AttendanceGroupBy attendanceGroupBy )
+        {
             TimeSpan dateRangeSpan = dateRange.End.Value - dateRange.Start.Value;
 
-            _possibleAttendances = new List<DateTime>();
+            var result = new List<DateTime>();
 
             if ( attendanceGroupBy == AttendanceGroupBy.Week )
             {
@@ -956,7 +973,7 @@ function(item) {
                 while ( weekEndDate <= endOfLastWeek )
                 {
                     // Weeks are summarized as the last day of the "Rock" week (Sunday)
-                    _possibleAttendances.Add( weekEndDate );
+                    result.Add( weekEndDate );
                     weekEndDate = weekEndDate.AddDays( 7 );
                 }
             }
@@ -969,7 +986,7 @@ function(item) {
                 var monthStartDate = new DateTime( endOfFirstMonth.Year, endOfFirstMonth.Month, 1 );
                 while ( monthStartDate <= endOfLastMonth )
                 {
-                    _possibleAttendances.Add( monthStartDate );
+                    result.Add( monthStartDate );
                     monthStartDate = monthStartDate.AddMonths( 1 );
                 }
             }
@@ -982,10 +999,12 @@ function(item) {
                 var yearStartDate = new DateTime( endOfFirstYear.Year, 1, 1 );
                 while ( yearStartDate <= endOfLastYear )
                 {
-                    _possibleAttendances.Add( yearStartDate );
+                    result.Add( yearStartDate );
                     yearStartDate = yearStartDate.AddYears( 1 );
                 }
             }
+
+            return result;
         }
 
         /// <summary>
@@ -1328,6 +1347,9 @@ function(item) {
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnGroupBy_Click( object sender, EventArgs e )
         {
+
+
+
             btnApply_Click( sender, e );
         }
     }
