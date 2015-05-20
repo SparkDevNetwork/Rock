@@ -718,7 +718,7 @@ function(item) {
             {
                 // only return attendees where their nth visit is within the selected daterange
                 int skipCount = byNthVisit.Value - 1;
-                qryResult = qryResult.Where( a => a.FirstVisits.OrderBy( x => x.StartDateTime ).Skip( skipCount ).Take( 1 ).Any( d => d.StartDateTime >= dateRange.Start && d.StartDateTime < dateRange.End) );
+                qryResult = qryResult.Where( a => a.FirstVisits.OrderBy( x => x.StartDateTime ).Skip( skipCount ).Take( 1 ).Any( d => d.StartDateTime >= dateRange.Start && d.StartDateTime < dateRange.End ) );
             }
 
             if ( attendedMinCount.HasValue )
@@ -737,11 +737,11 @@ function(item) {
                     var qryMissedAttendanceByPersonAndSummary = qryMissed.GetAttendanceWithSummaryDateTime( groupBy )
                         .GroupBy( g1 => new { g1.SummaryDateTime, g1.Attendance.PersonAlias.PersonId } )
                         .GroupBy( a => a.Key.PersonId )
-                        .Select(a => new
+                        .Select( a => new
                         {
                             PersonId = a.Key,
                             AttendanceCount = a.Count()
-                        });
+                        } );
 
                     var qryMissedByPerson = qryMissedAttendanceByPersonAndSummary.
                         Where( x => ( attendedMissedPossibleCount - x.AttendanceCount ) >= attendedMissedCount );
@@ -1353,9 +1353,6 @@ function(item) {
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnGroupBy_Click( object sender, EventArgs e )
         {
-
-
-
             btnApply_Click( sender, e );
         }
     }
