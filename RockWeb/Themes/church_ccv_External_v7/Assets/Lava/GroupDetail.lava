@@ -5,6 +5,7 @@ REQUIRED VARIABLES
 ==================
 
 {% assign fullRosterPage = "/page/558" %}
+{% assign invitationListPage = "/page/559" %}
 
 
 {% endcomment %}
@@ -348,6 +349,9 @@ REQUIRED VARIABLES
     {% endif %}
 
     <div class="pull-right margin-b-md">
+      {% if invitationListPage %}
+        <a href="{{ invitationListPage }}?GroupId={{ Group.Id }}" class="btn btn-default btn-xs"><i class="fa fa-street-view"></i> Invitation List</a>
+      {% endif %}
       {% if fullRosterPage %}
         <a href="{{ fullRosterPage }}?GroupId={{ Group.Id }}" class="btn btn-default btn-xs"><i class="fa fa-file-text-o"></i> Full Roster</a>
       {% endif %}
