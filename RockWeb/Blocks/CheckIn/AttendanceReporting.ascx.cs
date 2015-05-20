@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.CheckIn
     [Description( "Shows a graph of attendance statistics which can be configured for specific groups, date range, etc." )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked" )]
+    [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true)]
     [GroupTypeField( "Check-in Type", required: false, key: "GroupTypeTemplate", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
     public partial class AttendanceReporting : RockBlock
     {
@@ -1201,7 +1202,17 @@ function(item) {
             {
                 if ( group.ScheduleId.HasValue || group.GroupLocations.Any( l => l.Schedules.Any() ) )
                 {
-                    checkBoxList.Items.Add( new ListItem( service.GroupAncestorPathName( group.Id ), group.Id.ToString() ) );
+                    string displayName = string.Empty;
+                    if ( GetAttributeValue( "ShowGroupAncestry" ).AsBoolean() )
+                    {
+                        displayName = service.GroupAncestorPathName( group.Id );
+                    }
+                    else 
+                    {
+                        displayName = group.Name;
+                    }
+
+                    checkBoxList.Items.Add( new ListItem( displayName, group.Id.ToString() ) );
                 }
 
                 if ( group.Groups != null )
