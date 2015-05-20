@@ -18,6 +18,7 @@
                         </h1>
                     </div>
                     <div class="panel-body">
+                        <Rock:NotificationBox ID="nbFiltersError" runat="server" NotificationBoxType="Danger" Visible="false" />
                         <asp:PlaceHolder ID="phFilters" runat="server" />
 
                         <div class="actions margin-t-md">
