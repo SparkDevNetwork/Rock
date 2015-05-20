@@ -3244,7 +3244,7 @@ END
         }
 
         /// <summary>
-        /// Updates the BlockType Attribute for the given blocktype and key (if it exists);
+        /// Updates the Person Attribute for the given key (if it exists);
         /// otherwise it inserts a new record.
         /// </summary>
         /// <param name="fieldTypeGuid">The field type unique identifier.</param>

@@ -84,7 +84,8 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowFilters( true );
+            // reload the full page since controls are dynamically created based on block settings
+            NavigateToPage( this.CurrentPageReference );
         }
 
         /// <summary>
@@ -107,22 +108,30 @@ namespace RockWeb.Blocks.Reporting
 
             if (!this.IsPostBack)
             {
-                lResultsTitle.Text = GetAttributeValue( "ResultsTitle" );
-
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ResultsIconCssClass" ) ) )
-                {
-                    lResultsIconCssClass.Text = String.Format("<i class='{0}'></i>", GetAttributeValue( "ResultsIconCssClass" ));
-                }
-
-                lFilterTitle.Text = GetAttributeValue( "FilterTitle" );
-
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "FilterIconCssClass" ) ) )
-                {
-                    lFilterIconCssClass.Text = String.Format("<i class='{0}'></i>", GetAttributeValue( "FilterIconCssClass" ));
-                }
-                
-                BindReportGrid();
+                ShowReport();
             }
+        }
+
+        /// <summary>
+        /// Shows the report.
+        /// </summary>
+        private void ShowReport()
+        {
+            lResultsTitle.Text = GetAttributeValue( "ResultsTitle" );
+
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ResultsIconCssClass" ) ) )
+            {
+                lResultsIconCssClass.Text = String.Format( "<i class='{0}'></i>", GetAttributeValue( "ResultsIconCssClass" ) );
+            }
+
+            lFilterTitle.Text = GetAttributeValue( "FilterTitle" );
+
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "FilterIconCssClass" ) ) )
+            {
+                lFilterIconCssClass.Text = String.Format( "<i class='{0}'></i>", GetAttributeValue( "FilterIconCssClass" ) );
+            }
+
+            BindReportGrid();
         }
 
         /// <summary>
@@ -235,6 +244,9 @@ namespace RockWeb.Blocks.Reporting
                             rockContext );
                     }
                 }
+
+                // only show the filter and button if there visible filters
+                pnlFilter.Visible = phFilters.ControlsOfTypeRecursive<FilterField>().Any( a => a.Visible );
             }
         }
 
@@ -262,11 +274,14 @@ namespace RockWeb.Blocks.Reporting
             if ( filter.ExpressionType == FilterExpressionType.Filter )
             {
                 var filterControl = new FilterField();
-                filterControl.Visible = selectedDataFieldGuids.Contains( filter.Guid );
+
+                bool filterIsVisible = selectedDataFieldGuids.Contains( filter.Guid );
+                bool filterIsConfigurable = configurableDataFieldGuids.Contains( filter.Guid );
+                filterControl.Visible = filterIsVisible;
                 parentControl.Controls.Add( filterControl );
                 filterControl.DataViewFilterGuid = filter.Guid;
-                bool configurable = configurableDataFieldGuids.Contains( filter.Guid );
-                filterControl.HideFilterCriteria = !configurable;
+
+                filterControl.HideFilterCriteria = !filterIsConfigurable;
                 filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
                 filterControl.FilteredEntityTypeName = filteredEntityTypeName;
 
@@ -281,7 +296,7 @@ namespace RockWeb.Blocks.Reporting
 
                 filterControl.Expanded = true;
                 filterControl.HideFilterTypePicker = true;
-                filterControl.ShowCheckbox = !configurable;
+                filterControl.ShowCheckbox = filterIsVisible && !filterIsConfigurable;
                 if ( setSelection )
                 {
                     filterControl.Selection = filter.Selection;
@@ -294,7 +309,7 @@ namespace RockWeb.Blocks.Reporting
                 var component = Rock.Reporting.DataFilterContainer.GetComponent( filterEntityType.Name );
                 if ( component != null )
                 {
-                    if ( !configurable )
+                    if ( !filterIsConfigurable )
                     {
                         // not configurable so just label it with the selection summary
                         filterControl.Label = component.FormatSelection( reportEntityTypeModel, filter.Selection );
@@ -343,11 +358,11 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
-        /// Handles the Click event of the btnRun control.
+        /// Handles the Click event of the btnFilter control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnRun_Click( object sender, EventArgs e )
+        protected void btnFilter_Click( object sender, EventArgs e )
         {
             BindReportGrid();
         }
@@ -389,7 +404,7 @@ namespace RockWeb.Blocks.Reporting
                 }
                 else
                 {
-                    nbReportErrors.Visible = true;
+                    nbReportErrors.Visible = false;
                 }
             }
         }

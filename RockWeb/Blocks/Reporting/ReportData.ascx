@@ -8,31 +8,34 @@
         <%-- View Panel --%>
         <asp:Panel ID="pnlView" runat="server">
 
-            <div class="panel panel-block margin-t-md">
-                <div class="panel-heading clearfix">
-                    <h1 class="panel-title pull-left">
-                        <asp:Literal ID="lFilterIconCssClass" runat="server" /> <asp:Literal ID="lFilterTitle" runat="server" />
-                    </h1>
-                </div>
-                <div class="panel-body">
-                    <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />
 
-                    <asp:PlaceHolder ID="phFilters" runat="server" />
+            <asp:Panel ID="pnlFilter" runat="server">
+                <div class="panel panel-block margin-t-md">
+                    <div class="panel-heading clearfix">
+                        <h1 class="panel-title pull-left">
+                            <asp:Literal ID="lFilterIconCssClass" runat="server" />
+                            <asp:Literal ID="lFilterTitle" runat="server" />
+                        </h1>
+                    </div>
+                    <div class="panel-body">
+                        <asp:PlaceHolder ID="phFilters" runat="server" />
 
-                    <div class="actions">
-                        <asp:LinkButton ID="btnRun" runat="server" AccessKey="m" Text="Filter" CssClass="btn btn-primary btn-sm" OnClick="btnRun_Click" />
+                        <div class="actions margin-t-md">
+                            <asp:LinkButton ID="btnFilter" runat="server" AccessKey="m" Text="Filter" CssClass="btn btn-primary btn-sm" OnClick="btnFilter_Click" />
+                        </div>
                     </div>
                 </div>
-            </div>
+            </asp:Panel>
 
             <div class="panel panel-block margin-t-md">
                 <div class="panel-heading clearfix">
                     <h1 class="panel-title pull-left">
-                        <asp:Literal ID="lResultsIconCssClass" runat="server" /> <asp:Literal ID="lResultsTitle" runat="server" />
+                        <asp:Literal ID="lResultsIconCssClass" runat="server" />
+                        <asp:Literal ID="lResultsTitle" runat="server" />
                     </h1>
                 </div>
                 <div class="panel-body">
-                    <Rock:NotificationBox ID="nbReportErrors" runat="server" NotificationBoxType="Info" />
+                    <Rock:NotificationBox ID="nbReportErrors" runat="server" NotificationBoxType="Info" Visible="false" />
                     <div class="grid grid-panel">
                         <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
                     </div>
