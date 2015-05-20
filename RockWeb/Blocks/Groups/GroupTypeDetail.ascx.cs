@@ -2301,16 +2301,13 @@ namespace RockWeb.Blocks.Groups
             if ( qualifierParts.Length > 0 && !string.IsNullOrWhiteSpace( qualifierParts[0] ) )
             {
                 var status = qualifierParts[0].ConvertToEnum<GroupMemberStatus>();
-                if ( status != null )
+                if ( triggerType == GroupMemberWorkflowTriggerType.MemberStatusChanged )
                 {
-                    if ( triggerType == GroupMemberWorkflowTriggerType.MemberStatusChanged )
-                    {
-                        qualiferText.Add( string.Format( " to status of {0}", status.ConvertToString()));
-                    }
-                    else
-                    {
-                        qualiferText.Add( string.Format( " with status of {0}", status.ConvertToString()));
-                    }
+                    qualiferText.Add( string.Format( " to status of {0}", status.ConvertToString()));
+                }
+                else
+                {
+                    qualiferText.Add( string.Format( " with status of {0}", status.ConvertToString()));
                 }
             }
 
