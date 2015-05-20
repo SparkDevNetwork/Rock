@@ -69,6 +69,7 @@ namespace RockWeb.Blocks.Finance
             base.OnInit( e );
 
             gfTransactions.ApplyFilterClick += gfTransactions_ApplyFilterClick;
+            gfTransactions.ClearFilterClick += gfTransactions_ClearFilterClick;
             gfTransactions.DisplayFilterValue += gfTransactions_DisplayFilterValue;
 
             string title = GetAttributeValue( "Title" );
@@ -126,6 +127,17 @@ namespace RockWeb.Blocks.Finance
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upTransactions );
 
+        }
+
+        /// <summary>
+        /// Handles the ClearFilterClick event of the gfTransactions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gfTransactions_ClearFilterClick( object sender, EventArgs e )
+        {
+            gfTransactions.DeleteUserPreferences();
+            BindFilter();
         }
 
         /// <summary>
