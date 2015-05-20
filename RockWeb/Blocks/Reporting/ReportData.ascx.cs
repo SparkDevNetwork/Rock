@@ -208,45 +208,56 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
         protected void ShowFilters( bool setSelection )
         {
-            var rockContext = new RockContext();
-            var reportService = new ReportService( rockContext );
+            nbFiltersError.Visible = false;
+            try
+            {
+                var rockContext = new RockContext();
+                var reportService = new ReportService( rockContext );
 
-            var reportGuid = this.GetAttributeValue( "Report" ).AsGuidOrNull();
-            var selectedDataFieldGuids = ( this.GetAttributeValue( "SelectedDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
-            var configurableDataFieldGuids = ( this.GetAttributeValue( "ConfigurableDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
-            Report report = null;
-            if ( reportGuid.HasValue )
-            {
-                report = reportService.Get( reportGuid.Value );
-            }
-
-            if ( report == null )
-            {
-                nbConfigurationWarning.Visible = true;
-                nbConfigurationWarning.Text = "A report needs to be configured in block settings";
-                pnlView.Visible = false;
-            }
-            else
-            {
-                nbConfigurationWarning.Visible = false;
-                if ( report.DataView != null && report.DataView.DataViewFilter != null )
+                var reportGuid = this.GetAttributeValue( "Report" ).AsGuidOrNull();
+                var selectedDataFieldGuids = ( this.GetAttributeValue( "SelectedDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
+                var configurableDataFieldGuids = ( this.GetAttributeValue( "ConfigurableDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
+                Report report = null;
+                if ( reportGuid.HasValue )
                 {
-                    phFilters.Controls.Clear();
-                    if ( report.DataView.DataViewFilter != null && report.EntityTypeId.HasValue )
-                    {
-                        CreateFilterControl(
-                            phFilters,
-                            report.DataView.DataViewFilter,
-                            report.EntityType,
-                            setSelection,
-                            selectedDataFieldGuids,
-                            configurableDataFieldGuids,
-                            rockContext );
-                    }
+                    report = reportService.Get( reportGuid.Value );
                 }
 
-                // only show the filter and button if there visible filters
-                pnlFilter.Visible = phFilters.ControlsOfTypeRecursive<FilterField>().Any( a => a.Visible );
+                if ( report == null )
+                {
+                    nbConfigurationWarning.Visible = true;
+                    nbConfigurationWarning.Text = "A report needs to be configured in block settings";
+                    pnlView.Visible = false;
+                }
+                else
+                {
+                    nbConfigurationWarning.Visible = false;
+                    if ( report.DataView != null && report.DataView.DataViewFilter != null )
+                    {
+                        phFilters.Controls.Clear();
+                        if ( report.DataView.DataViewFilter != null && report.EntityTypeId.HasValue )
+                        {
+                            CreateFilterControl(
+                                phFilters,
+                                report.DataView.DataViewFilter,
+                                report.EntityType,
+                                setSelection,
+                                selectedDataFieldGuids,
+                                configurableDataFieldGuids,
+                                rockContext );
+                        }
+                    }
+
+                    // only show the filter and button if there visible filters
+                    pnlFilter.Visible = phFilters.ControlsOfTypeRecursive<FilterField>().Any( a => a.Visible );
+                }
+            }
+            catch (Exception ex)
+            {
+                this.LogException( ex );
+                nbFiltersError.Text = "An error occurred trying to load the filters. Click on 'Set Default' to try again with the default filter.";
+                nbFiltersError.Details = "see the exception log for additional details";
+                nbFiltersError.Visible = true;
             }
         }
 
@@ -473,6 +484,12 @@ namespace RockWeb.Blocks.Reporting
             {
                 nbConfigurationWarning.Visible = true;
                 nbConfigurationWarning.Text = "A report needs to be configured in block settings";
+                pnlView.Visible = false;
+            }
+            else if (report.DataView == null)
+            {
+                nbConfigurationWarning.Visible = true;
+                nbConfigurationWarning.Text = string.Format( "The {0} report does not have a dataview", report) ;
                 pnlView.Visible = false;
             }
             else
