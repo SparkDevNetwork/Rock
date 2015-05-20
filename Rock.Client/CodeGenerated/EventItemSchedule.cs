@@ -27,36 +27,21 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for EventItemCampus that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for EventItemSchedule that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class EventItemCampusEntity
+    public partial class EventItemScheduleEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int? CampusId { get; set; }
+        public int EventItemCampusId { get; set; }
 
         /// <summary />
-        public string CampusNote { get; set; }
+        public int? ScheduleId { get; set; }
 
         /// <summary />
-        public string ContactEmail { get; set; }
-
-        /// <summary />
-        public int ContactPersonAliasId { get; set; }
-
-        /// <summary />
-        public string ContactPhone { get; set; }
-
-        /// <summary />
-        public int EventItemId { get; set; }
-
-        /// <summary />
-        public string Location { get; set; }
-
-        /// <summary />
-        public string RegistrationUrl { get; set; }
+        public string ScheduleName { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -67,18 +52,15 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for EventItemCampus that includes all the fields that are available for GETs. Use this for GETs (use EventItemCampusEntity for POST/PUTs)
+    /// Client model for EventItemSchedule that includes all the fields that are available for GETs. Use this for GETs (use EventItemScheduleEntity for POST/PUTs)
     /// </summary>
-    public partial class EventItemCampus : EventItemCampusEntity
+    public partial class EventItemSchedule : EventItemScheduleEntity
     {
         /// <summary />
-        public Campus Campus { get; set; }
+        public EventItemCampus EventItemCampus { get; set; }
 
         /// <summary />
-        public PersonAlias ContactPersonAlias { get; set; }
-
-        /// <summary />
-        public EventItem EventItem { get; set; }
+        public Schedule Schedule { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

@@ -45,9 +45,11 @@ namespace RockWeb.Blocks.Calendar
 
         #region Properties
 
-        public List<CalendarItemAudience> CalendarItemAudiencesState { get; set; }
+        public List<EventItemAudience> EventItemAudiencesState { get; set; }
 
-        public List<CalendarItemSchedule> CalendarItemSchedulesState { get; set; }
+        public List<EventItemSchedule> EventItemSchedulesState { get; set; }
+
+        public List<EventCalendarItem> EventCalendarItemsState { get; set; }
 
         public List<EventItemCampus> EventItemCampusesState { get; set; }
 
@@ -64,24 +66,34 @@ namespace RockWeb.Blocks.Calendar
         {
             base.LoadViewState( savedState );
 
-            string json = ViewState["CalendarItemAudiencesState"] as string;
+            string json = ViewState["EventItemAudiencesState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
-                CalendarItemAudiencesState = new List<CalendarItemAudience>();
+                EventItemAudiencesState = new List<EventItemAudience>();
             }
             else
             {
-                CalendarItemAudiencesState = JsonConvert.DeserializeObject<List<CalendarItemAudience>>( json );
+                EventItemAudiencesState = JsonConvert.DeserializeObject<List<EventItemAudience>>( json );
             }
 
-            json = ViewState["CalendarItemSchedulesState"] as string;
+            json = ViewState["EventItemSchedulesState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
-                CalendarItemSchedulesState = new List<CalendarItemSchedule>();
+                EventItemSchedulesState = new List<EventItemSchedule>();
             }
             else
             {
-                CalendarItemSchedulesState = JsonConvert.DeserializeObject<List<CalendarItemSchedule>>( json );
+                EventItemSchedulesState = JsonConvert.DeserializeObject<List<EventItemSchedule>>( json );
+            }
+
+            json = ViewState["EventCalendarItemsState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                EventCalendarItemsState = new List<EventCalendarItem>();
+            }
+            else
+            {
+                EventCalendarItemsState = JsonConvert.DeserializeObject<List<EventCalendarItem>>( json );
             }
 
             json = ViewState["EventItemCampusesState"] as string;
@@ -177,8 +189,9 @@ namespace RockWeb.Blocks.Calendar
                 ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
             };
 
-            ViewState["CalendarItemAudiencesState"] = JsonConvert.SerializeObject( CalendarItemAudiencesState, Formatting.None, jsonSetting );
-            ViewState["CalendarItemSchedulesState"] = JsonConvert.SerializeObject( CalendarItemSchedulesState, Formatting.None, jsonSetting );
+            ViewState["EventItemAudiencesState"] = JsonConvert.SerializeObject( EventItemAudiencesState, Formatting.None, jsonSetting );
+            ViewState["EventCalendarItemsState"] = JsonConvert.SerializeObject( EventCalendarItemsState, Formatting.None, jsonSetting );
+            ViewState["EventItemSchedulesState"] = JsonConvert.SerializeObject( EventItemSchedulesState, Formatting.None, jsonSetting );
             ViewState["EventItemCampusesState"] = JsonConvert.SerializeObject( EventItemCampusesState, Formatting.None, jsonSetting );
             return base.SaveViewState();
         }
@@ -233,7 +246,7 @@ namespace RockWeb.Blocks.Calendar
             RockContext rockContext = new RockContext();
 
             EventItemService eventItemService = new EventItemService( rockContext );
-            CalendarItemScheduleService calendarItemScheduleService = new CalendarItemScheduleService( rockContext );
+            EventItemScheduleService calendarItemScheduleService = new EventItemScheduleService( rockContext );
             AttributeService attributeService = new AttributeService( rockContext );
             AttributeQualifierService attributeQualifierService = new AttributeQualifierService( rockContext );
             CategoryService categoryService = new CategoryService( rockContext );
@@ -247,7 +260,7 @@ namespace RockWeb.Blocks.Calendar
             }
             else
             {
-                eventItem = eventItemService.Queryable( "CalendarItemSchedules, CalendarItemAudiences, EventItemCampuses" ).Where( ei => ei.Id == eventItemId ).FirstOrDefault();
+                eventItem = eventItemService.Queryable( "EventItemSchedules, EventItemAudiences, EventItemCampuses" ).Where( ei => ei.Id == eventItemId ).FirstOrDefault();
             }
 
             eventItem.Name = tbName.Text;
@@ -256,11 +269,11 @@ namespace RockWeb.Blocks.Calendar
 
             //Save schedules
             eventItem.DetailsUrl = tbDetailUrl.Text;
-            foreach ( CalendarItemAudience audience in CalendarItemAudiencesState )
+            foreach ( EventItemAudience audience in EventItemAudiencesState )
             {
-                eventItem.CalendarItemAudiences.Add( audience );
+                eventItem.EventItemAudiences.Add( audience );
             }
-            eventItem.PhotoId = imgupPhoto.BinaryFileId.Value;
+            // eventItem.PhotoId = imgupPhoto.BinaryFileId.Value;
             foreach ( EventItemCampus campus in EventItemCampusesState )
             {
                 eventItem.EventItemCampuses.Add( campus );
@@ -385,14 +398,14 @@ namespace RockWeb.Blocks.Calendar
         protected void gAudiences_Delete( object sender, RowEventArgs e )
         {
             Guid rowGuid = (Guid)e.RowKeyValue;
-            CalendarItemAudiencesState.RemoveEntity( rowGuid );
+            EventItemAudiencesState.RemoveEntity( rowGuid );
 
             BindAudiencesGrid();
         }
         protected void btnAddAudience_Click( object sender, EventArgs e )
         {
             DefinedValue audienceValue = new DefinedValueService( new RockContext() ).Get( ddlAudience.SelectedValueAsInt().Value );
-            CalendarItemAudience audience = new CalendarItemAudience();
+            EventItemAudience audience = new EventItemAudience();
             audience.DefinedValue = audienceValue;
             // Controls will show warnings
             if ( !audience.IsValid )
@@ -400,11 +413,11 @@ namespace RockWeb.Blocks.Calendar
                 return;
             }
 
-            if ( CalendarItemAudiencesState.Any( a => a.Guid.Equals( audience.Guid ) ) )
+            if ( EventItemAudiencesState.Any( a => a.Guid.Equals( audience.Guid ) ) )
             {
-                CalendarItemAudiencesState.RemoveEntity( audience.Guid );
+                EventItemAudiencesState.RemoveEntity( audience.Guid );
             }
-            CalendarItemAudiencesState.Add( audience );
+            EventItemAudiencesState.Add( audience );
 
             BindAudiencesGrid();
 
@@ -420,7 +433,7 @@ namespace RockWeb.Blocks.Calendar
             ddlAudience.Items.Clear();
 
             ddlAudience.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() ) );
-            foreach ( CalendarItemAudience audience in CalendarItemAudiencesState )
+            foreach ( EventItemAudience audience in EventItemAudiencesState )
             {
                 ddlAudience.Items.Remove( audience.DefinedValue.Value );
             }
@@ -434,23 +447,23 @@ namespace RockWeb.Blocks.Calendar
         //protected void gSchedules_Delete( object sender, RowEventArgs e )
         //{
         //    Guid rowGuid = (Guid)e.RowKeyValue;
-        //    CalendarItemSchedulesState.RemoveEntity( rowGuid );
+        //    EventItemSchedulesState.RemoveEntity( rowGuid );
 
         //    BindSchedulesGrid();
         //}
         //protected void btnAddSchedule_Click( object sender, EventArgs e )
         //{
-        //    CalendarItemSchedule calendarItemSchedule = new CalendarItemSchedule();
+        //    EventItemSchedule calendarItemSchedule = new EventItemSchedule();
         //    calendarItemSchedule.Schedule = new Schedule();
         //    calendarItemSchedule.Schedule.iCalendarContent = sbSchedule.iCalendarContent;
         //    calendarItemSchedule.ScheduleName = tbSchedule.Text;
 
-        //    if ( CalendarItemSchedulesState.Any( a => a.Guid.Equals( calendarItemSchedule.Guid ) ) )
+        //    if ( EventItemSchedulesState.Any( a => a.Guid.Equals( calendarItemSchedule.Guid ) ) )
         //    {
-        //        CalendarItemSchedulesState.RemoveEntity( calendarItemSchedule.Guid );
+        //        EventItemSchedulesState.RemoveEntity( calendarItemSchedule.Guid );
         //    }
 
-        //    CalendarItemSchedulesState.Add( calendarItemSchedule );
+        //    EventItemSchedulesState.Add( calendarItemSchedule );
 
         //    BindSchedulesGrid();
 
@@ -476,7 +489,7 @@ namespace RockWeb.Blocks.Calendar
                 EventItemCampus eventItemCampus = new EventItemCampus();
                 try
                 {
-                    eventItemCampus.Campus = new CampusService( new RockContext() ).Get( rblCampus.SelectedValueAsId().Value );
+                    eventItemCampus.Campus = new CampusService( new RockContext() ).Get( ddlCampus.SelectedValueAsId().Value );
                 }
                 catch
                 {
@@ -518,9 +531,9 @@ namespace RockWeb.Blocks.Calendar
 
         private void gEventItemCampuses_Add( object sender, EventArgs e )
         {
-            rblCampus.DataSource = CampusCache.All();
-            rblCampus.DataBind();
-            rblCampus.Items.Insert( 0, new ListItem( All.Text, All.IdValue ) );
+            ddlCampus.DataSource = CampusCache.All();
+            ddlCampus.DataBind();
+            ddlCampus.Items.Insert( 0, new ListItem( All.Text, All.IdValue ) );
             ppContact.SelectedValue = null;
             pnPhone.Text = String.Empty;
             tbLocation.Text = string.Empty;
@@ -538,7 +551,21 @@ namespace RockWeb.Blocks.Calendar
 
         private void ShowItemAttributes()
         {
+            List<int> calendarIdList = cblCalendars.SelectedValuesAsInt;
+            foreach ( int calendarId in calendarIdList )
+            {
+                EventCalendarItem item = EventCalendarItemsState.FirstOrDefault( i => i.EventCalendarId == calendarId );
+                if ( item == null )
+                {
+                    item = new EventCalendarItem();
+                    item.EventCalendarId = calendarId;
+                }
+                item.LoadAttributes();
+                PlaceHolder phcalAttributes = new PlaceHolder();
+                Rock.Attribute.Helper.AddEditControls( item, phcalAttributes, true, BlockValidationGroup );
+                phEventItemAttributes.Controls.Add( phcalAttributes );
 
+            }
         }
 
         #endregion
@@ -619,17 +646,17 @@ namespace RockWeb.Blocks.Calendar
             tbName.Text = eventItem.Name;
             tbDescription.Text = eventItem.Description;
             cbIsActive.Checked = eventItem.IsActive.Value;
-            if ( CalendarItemSchedulesState == null )
+            if ( EventItemSchedulesState == null )
             {
-                CalendarItemSchedulesState = null; // eventItem.EventItemCampuses.Select( c => c.CalendarItemSchedules ).ToList();
+                EventItemSchedulesState = null; // eventItem.EventItemCampuses.Select( c => c.EventItemSchedules ).ToList();
             }
             if ( EventItemCampusesState == null )
             {
                 EventItemCampusesState = eventItem.EventItemCampuses.ToList();
             }
-            if ( CalendarItemAudiencesState == null )
+            if ( EventItemAudiencesState == null )
             {
-                CalendarItemAudiencesState = eventItem.CalendarItemAudiences.ToList();
+                EventItemAudiencesState = eventItem.EventItemAudiences.ToList();
             }
 
             var rockContext = new RockContext();
@@ -648,8 +675,8 @@ namespace RockWeb.Blocks.Calendar
 
         private void BindAudiencesGrid()
         {
-            SetAudienceListOrder( CalendarItemAudiencesState );
-            gAudiences.DataSource = CalendarItemAudiencesState.Select( a => new
+            SetAudienceListOrder( EventItemAudiencesState );
+            gAudiences.DataSource = EventItemAudiencesState.Select( a => new
             {
                 a.Id,
                 a.Guid,
@@ -660,8 +687,8 @@ namespace RockWeb.Blocks.Calendar
 
         //private void BindSchedulesGrid()
         //{
-        //    SetScheduleListOrder( CalendarItemSchedulesState );
-        //    gSchedules.DataSource = CalendarItemSchedulesState.Select( s => new
+        //    SetScheduleListOrder( EventItemSchedulesState );
+        //    gSchedules.DataSource = EventItemSchedulesState.Select( s => new
         //    {
         //        s.Id,
         //        s.Guid,
@@ -785,7 +812,7 @@ namespace RockWeb.Blocks.Calendar
         /// Sets the attribute list order.
         /// </summary>
         /// <param name="attributeList">The attribute list.</param>
-        private void SetAudienceListOrder( List<CalendarItemAudience> audienceList )
+        private void SetAudienceListOrder( List<EventItemAudience> audienceList )
         {
             if ( audienceList != null )
             {
@@ -802,7 +829,7 @@ namespace RockWeb.Blocks.Calendar
         /// Sets the attribute list order.
         /// </summary>
         /// <param name="attributeList">The attribute list.</param>
-        private void SetScheduleListOrder( List<CalendarItemSchedule> scheduleList )
+        private void SetScheduleListOrder( List<EventItemSchedule> scheduleList )
         {
             if ( scheduleList != null )
             {

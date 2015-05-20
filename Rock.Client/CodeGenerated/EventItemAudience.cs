@@ -27,36 +27,18 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for EventItemCampus that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for EventItemAudience that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class EventItemCampusEntity
+    public partial class EventItemAudienceEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int? CampusId { get; set; }
-
-        /// <summary />
-        public string CampusNote { get; set; }
-
-        /// <summary />
-        public string ContactEmail { get; set; }
-
-        /// <summary />
-        public int ContactPersonAliasId { get; set; }
-
-        /// <summary />
-        public string ContactPhone { get; set; }
+        public int DefinedValueId { get; set; }
 
         /// <summary />
         public int EventItemId { get; set; }
-
-        /// <summary />
-        public string Location { get; set; }
-
-        /// <summary />
-        public string RegistrationUrl { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -67,15 +49,12 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for EventItemCampus that includes all the fields that are available for GETs. Use this for GETs (use EventItemCampusEntity for POST/PUTs)
+    /// Client model for EventItemAudience that includes all the fields that are available for GETs. Use this for GETs (use EventItemAudienceEntity for POST/PUTs)
     /// </summary>
-    public partial class EventItemCampus : EventItemCampusEntity
+    public partial class EventItemAudience : EventItemAudienceEntity
     {
         /// <summary />
-        public Campus Campus { get; set; }
-
-        /// <summary />
-        public PersonAlias ContactPersonAlias { get; set; }
+        public DefinedValue DefinedValue { get; set; }
 
         /// <summary />
         public EventItem EventItem { get; set; }

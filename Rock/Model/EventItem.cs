@@ -118,17 +118,17 @@ namespace Rock.Model
         private ICollection<EventItemCampus> _eventItemCampuses;
 
         /// <summary>
-        /// Gets or sets a collection of the <see cref="Rock.Model.CalendarItemAudience">CalendarItemAudiences</see> that belong to this EventItem.
+        /// Gets or sets a collection of the <see cref="Rock.Model.EventItemAudience">EventItemAudiences</see> that belong to this EventItem.
         /// </summary>
         /// <value>
-        /// A collection containing a collection of the <see cref="Rock.Model.CalendarItemAudience">CalendarItemAudiences</see> that belong to this EventItem.
+        /// A collection containing a collection of the <see cref="Rock.Model.EventItemAudience">EventItemAudiences</see> that belong to this EventItem.
         /// </value>
-        public virtual ICollection<CalendarItemAudience> CalendarItemAudiences
+        public virtual ICollection<EventItemAudience> EventItemAudiences
         {
-            get { return _calendarItemAudiences ?? ( _calendarItemAudiences = new Collection<CalendarItemAudience>() ); }
+            get { return _calendarItemAudiences ?? ( _calendarItemAudiences = new Collection<EventItemAudience>() ); }
             set { _calendarItemAudiences = value; }
         }
-        private ICollection<CalendarItemAudience> _calendarItemAudiences;
+        private ICollection<EventItemAudience> _calendarItemAudiences;
 
         #endregion
 

@@ -30,7 +30,7 @@ namespace Rock.Migrations
         public override void Up()
         {
             CreateTable(
-                "dbo.CalendarItemAudience",
+                "dbo.EventItemAudience",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -167,7 +167,7 @@ namespace Rock.Migrations
                 .Index(t => t.ForeignId);
             
             CreateTable(
-                "dbo.CalendarItemSchedule",
+                "dbo.EventItemSchedule",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -200,18 +200,18 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DropForeignKey("dbo.CalendarItemAudience", "ModifiedByPersonAliasId", "dbo.PersonAlias");
-            DropForeignKey("dbo.CalendarItemAudience", "EventItemId", "dbo.EventItem");
+            DropForeignKey("dbo.EventItemAudience", "ModifiedByPersonAliasId", "dbo.PersonAlias");
+            DropForeignKey("dbo.EventItemAudience", "EventItemId", "dbo.EventItem");
             DropForeignKey("dbo.EventItem", "ModifiedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.EventItemCampus", "ModifiedByPersonAliasId", "dbo.PersonAlias");
+            DropForeignKey("dbo.EventItemSchedule", "ScheduleId", "dbo.Schedule");
+            DropForeignKey("dbo.EventItemSchedule", "ModifiedByPersonAliasId", "dbo.PersonAlias");
+            DropForeignKey("dbo.EventItemSchedule", "EventItemCampusId", "dbo.EventItemCampus");
+            DropForeignKey("dbo.EventItemSchedule", "CreatedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.EventItemCampus", "EventItemId", "dbo.EventItem");
             DropForeignKey("dbo.EventItemCampus", "CreatedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.EventItemCampus", "ContactPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.EventItemCampus", "CampusId", "dbo.Campus");
-            DropForeignKey("dbo.CalendarItemSchedule", "ScheduleId", "dbo.Schedule");
-            DropForeignKey("dbo.CalendarItemSchedule", "ModifiedByPersonAliasId", "dbo.PersonAlias");
-            DropForeignKey("dbo.CalendarItemSchedule", "EventItemCampusId", "dbo.EventItemCampus");
-            DropForeignKey("dbo.CalendarItemSchedule", "CreatedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.EventCalendarItem", "ModifiedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.EventCalendarItem", "EventItemId", "dbo.EventItem");
             DropForeignKey("dbo.EventCalendarItem", "EventCalendarId", "dbo.EventCalendar");
@@ -219,14 +219,14 @@ namespace Rock.Migrations
             DropForeignKey("dbo.EventCalendar", "CreatedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.EventCalendarItem", "CreatedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.EventItem", "CreatedByPersonAliasId", "dbo.PersonAlias");
-            DropForeignKey("dbo.CalendarItemAudience", "DefinedValueId", "dbo.DefinedValue");
-            DropForeignKey("dbo.CalendarItemAudience", "CreatedByPersonAliasId", "dbo.PersonAlias");
-            DropIndex("dbo.CalendarItemSchedule", new[] { "ForeignId" });
-            DropIndex("dbo.CalendarItemSchedule", new[] { "Guid" });
-            DropIndex("dbo.CalendarItemSchedule", new[] { "ModifiedByPersonAliasId" });
-            DropIndex("dbo.CalendarItemSchedule", new[] { "CreatedByPersonAliasId" });
-            DropIndex("dbo.CalendarItemSchedule", new[] { "ScheduleId" });
-            DropIndex("dbo.CalendarItemSchedule", new[] { "EventItemCampusId" });
+            DropForeignKey("dbo.EventItemAudience", "DefinedValueId", "dbo.DefinedValue");
+            DropForeignKey("dbo.EventItemAudience", "CreatedByPersonAliasId", "dbo.PersonAlias");
+            DropIndex("dbo.EventItemSchedule", new[] { "ForeignId" });
+            DropIndex("dbo.EventItemSchedule", new[] { "Guid" });
+            DropIndex("dbo.EventItemSchedule", new[] { "ModifiedByPersonAliasId" });
+            DropIndex("dbo.EventItemSchedule", new[] { "CreatedByPersonAliasId" });
+            DropIndex("dbo.EventItemSchedule", new[] { "ScheduleId" });
+            DropIndex("dbo.EventItemSchedule", new[] { "EventItemCampusId" });
             DropIndex("dbo.EventItemCampus", new[] { "ForeignId" });
             DropIndex("dbo.EventItemCampus", new[] { "Guid" });
             DropIndex("dbo.EventItemCampus", new[] { "ModifiedByPersonAliasId" });
@@ -249,18 +249,18 @@ namespace Rock.Migrations
             DropIndex("dbo.EventItem", new[] { "Guid" });
             DropIndex("dbo.EventItem", new[] { "ModifiedByPersonAliasId" });
             DropIndex("dbo.EventItem", new[] { "CreatedByPersonAliasId" });
-            DropIndex("dbo.CalendarItemAudience", new[] { "ForeignId" });
-            DropIndex("dbo.CalendarItemAudience", new[] { "Guid" });
-            DropIndex("dbo.CalendarItemAudience", new[] { "ModifiedByPersonAliasId" });
-            DropIndex("dbo.CalendarItemAudience", new[] { "CreatedByPersonAliasId" });
-            DropIndex("dbo.CalendarItemAudience", new[] { "DefinedValueId" });
-            DropIndex("dbo.CalendarItemAudience", new[] { "EventItemId" });
-            DropTable("dbo.CalendarItemSchedule");
+            DropIndex("dbo.EventItemAudience", new[] { "ForeignId" });
+            DropIndex("dbo.EventItemAudience", new[] { "Guid" });
+            DropIndex("dbo.EventItemAudience", new[] { "ModifiedByPersonAliasId" });
+            DropIndex("dbo.EventItemAudience", new[] { "CreatedByPersonAliasId" });
+            DropIndex("dbo.EventItemAudience", new[] { "DefinedValueId" });
+            DropIndex("dbo.EventItemAudience", new[] { "EventItemId" });
+            DropTable("dbo.EventItemSchedule");
             DropTable("dbo.EventItemCampus");
             DropTable("dbo.EventCalendar");
             DropTable("dbo.EventCalendarItem");
             DropTable("dbo.EventItem");
-            DropTable("dbo.CalendarItemAudience");
+            DropTable("dbo.EventItemAudience");
         }
     }
 }

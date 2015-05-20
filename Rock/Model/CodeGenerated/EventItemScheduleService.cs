@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// CalendarItemAudience Service class
+    /// EventItemSchedule Service class
     /// </summary>
-    public partial class CalendarItemAudienceService : Service<CalendarItemAudience>
+    public partial class EventItemScheduleService : Service<EventItemSchedule>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CalendarItemAudienceService"/> class
+        /// Initializes a new instance of the <see cref="EventItemScheduleService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public CalendarItemAudienceService(RockContext context) : base(context)
+        public EventItemScheduleService(RockContext context) : base(context)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( CalendarItemAudience item, out string errorMessage )
+        public bool CanDelete( EventItemSchedule item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -58,38 +58,39 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class CalendarItemAudienceExtensionMethods
+    public static partial class EventItemScheduleExtensionMethods
     {
         /// <summary>
-        /// Clones this CalendarItemAudience object to a new CalendarItemAudience object
+        /// Clones this EventItemSchedule object to a new EventItemSchedule object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static CalendarItemAudience Clone( this CalendarItemAudience source, bool deepCopy )
+        public static EventItemSchedule Clone( this EventItemSchedule source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as CalendarItemAudience;
+                return source.Clone() as EventItemSchedule;
             }
             else
             {
-                var target = new CalendarItemAudience();
+                var target = new EventItemSchedule();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another CalendarItemAudience object to this CalendarItemAudience object
+        /// Copies the properties from another EventItemSchedule object to this EventItemSchedule object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this CalendarItemAudience target, CalendarItemAudience source )
+        public static void CopyPropertiesFrom( this EventItemSchedule target, EventItemSchedule source )
         {
             target.Id = source.Id;
-            target.DefinedValueId = source.DefinedValueId;
-            target.EventItemId = source.EventItemId;
+            target.EventItemCampusId = source.EventItemCampusId;
+            target.ScheduleId = source.ScheduleId;
+            target.ScheduleName = source.ScheduleName;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
