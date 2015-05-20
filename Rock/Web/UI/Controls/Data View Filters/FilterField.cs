@@ -321,6 +321,20 @@ $('.filter-item-select').click(function (event) {
         }
 
         /// <summary>
+        /// Sets the CheckBox checked (if it is showing)
+        /// </summary>
+        /// <param name="value">if set to <c>true</c> [value].</param>
+        public void SetCheckBoxChecked( bool value )
+        {
+            EnsureChildControls();
+
+            if ( cbIncludeFilter != null )
+            {
+                cbIncludeFilter.Checked = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the label.
         /// </summary>
         /// <value>
