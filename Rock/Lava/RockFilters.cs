@@ -512,8 +512,9 @@ namespace Rock.Lava
         /// <summary>
         /// Adds a time interval to a date
         /// </summary>
-        /// <param name="interval"></param>
-        /// <param name="amount"></param>
+        /// <param name="input">The input.</param>
+        /// <param name="amount">The amount.</param>
+        /// <param name="interval">The interval.</param>
         /// <returns></returns>
         public static DateTime? DateAdd( object input, int amount, string interval = "d" )
         {

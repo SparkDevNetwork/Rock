@@ -38,6 +38,10 @@ namespace Rock.Transactions
         private GroupMemberStatus PreviousGroupMemberStatus;
         private int PreviousGroupMemberRoleId;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupMemberChangeTransaction"/> class.
+        /// </summary>
+        /// <param name="entry">The entry.</param>
         public GroupMemberChangeTransaction ( DbEntityEntry entry )
         {
             var groupMember = entry.Entity as GroupMember;
@@ -71,7 +75,7 @@ namespace Rock.Transactions
         }
 
         /// <summary>
-        /// Execute method to write transaction to the database.
+        /// Execute method to check for any workflows to launch.
         /// </summary>
         public void Execute()
         {

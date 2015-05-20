@@ -1147,6 +1147,8 @@ function(item) {
 
                 if ( groupType.Groups.Any() )
                 {
+                    bool showGroupAncestry = GetAttributeValue( "ShowGroupAncestry" ).AsBoolean( true );
+
                     var groupService = new GroupService( _rockContext );
 
                     var cblGroupTypeGroups = new RockCheckBoxList { ID = "cblGroupTypeGroups" + groupType.Id };
@@ -1160,7 +1162,7 @@ function(item) {
                         .ThenBy( a => a.Name )
                         .ToList() )
                     {
-                        AddGroupControls( group, cblGroupTypeGroups, groupService );
+                        AddGroupControls( group, cblGroupTypeGroups, groupService, showGroupAncestry );
                     }
 
                     liGroupTypeItem.Controls.Add( cblGroupTypeGroups );
@@ -1195,23 +1197,15 @@ function(item) {
         /// <param name="group">The group.</param>
         /// <param name="checkBoxList">The check box list.</param>
         /// <param name="service">The service.</param>
-        private void AddGroupControls( Group group, RockCheckBoxList checkBoxList, GroupService service )
+        /// <param name="showGroupAncestry">if set to <c>true</c> [show group ancestry].</param>
+        private void AddGroupControls( Group group, RockCheckBoxList checkBoxList, GroupService service, bool showGroupAncestry )
         {
             // Only show groups that actually have a schedule
             if ( group != null )
             {
                 if ( group.ScheduleId.HasValue || group.GroupLocations.Any( l => l.Schedules.Any() ) )
                 {
-                    string displayName = string.Empty;
-                    if ( GetAttributeValue( "ShowGroupAncestry" ).AsBoolean() )
-                    {
-                        displayName = service.GroupAncestorPathName( group.Id );
-                    }
-                    else 
-                    {
-                        displayName = group.Name;
-                    }
-
+                    string displayName = showGroupAncestry ? service.GroupAncestorPathName( group.Id ) : group.Name;
                     checkBoxList.Items.Add( new ListItem( displayName, group.Id.ToString() ) );
                 }
 
@@ -1222,7 +1216,7 @@ function(item) {
                         .ThenBy( a => a.Name )
                         .ToList() )
                     {
-                        AddGroupControls( childGroup, checkBoxList, service );
+                        AddGroupControls( childGroup, checkBoxList, service, showGroupAncestry );
                     }
                 }
             }
