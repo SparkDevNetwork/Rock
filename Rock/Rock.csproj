@@ -229,6 +229,12 @@
     <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
+    <Compile Include="Model\CodeGenerated\EventCalendarItemService.cs" />
+    <Compile Include="Model\CodeGenerated\EventCalendarService.cs" />
+    <Compile Include="Model\CodeGenerated\EventItemAudienceService.cs" />
+    <Compile Include="Model\CodeGenerated\EventItemCampusService.cs" />
+    <Compile Include="Model\CodeGenerated\EventItemScheduleService.cs" />
+    <Compile Include="Model\CodeGenerated\EventItemService.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
     <Compile Include="Field\Types\FinancialGatewayFieldType.cs" />
@@ -278,22 +284,16 @@
     <Compile Include="Model\BenevolenceResult.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\CalendarItemAudience.cs" />
-    <Compile Include="Model\CalendarItemSchedule.cs" />
+    <Compile Include="Model\EventItemAudience.cs" />
+    <Compile Include="Model\EventItemSchedule.cs" />
     <Compile Include="Model\CampusService.partial.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceRequestService.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceResultService.cs" />
-    <Compile Include="Model\CodeGenerated\CalendarItemAudienceService.cs" />
-    <Compile Include="Model\CodeGenerated\CalendarItemScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelItemService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelTypeService.cs" />
     <Compile Include="Model\CodeGenerated\EntitySetItemService.cs" />
     <Compile Include="Model\CodeGenerated\EntitySetService.cs" />
-    <Compile Include="Model\CodeGenerated\EventCalendarItemService.cs" />
-    <Compile Include="Model\CodeGenerated\EventCalendarService.cs" />
-    <Compile Include="Model\CodeGenerated\EventItemCampusService.cs" />
-    <Compile Include="Model\CodeGenerated\EventItemService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialGatewayService.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberRequirementService.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberWorkflowTriggerService.cs" />

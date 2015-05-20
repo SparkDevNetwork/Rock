@@ -86,7 +86,7 @@
                                 <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockCheckBoxList ID="cblCalendars" runat="server" Label="Calendars" OnSelectedIndexChanged="cblCalendars_SelectedIndexChanged" />
+                                <Rock:RockCheckBoxList ID="cblCalendars" runat="server" Label="Calendars" OnSelectedIndexChanged="cblCalendars_SelectedIndexChanged" AutoPostBack="true"/>
                             </div>
                         </div>
 
@@ -130,7 +130,7 @@
 
                 <asp:ValidationSummary ID="valCampusSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Campus" />
 
-                <Rock:RockRadioButtonList ID="rblCampus" runat="server" RepeatDirection="Horizontal" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name"/>
+                <Rock:RockDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name"/>
 
                 <div class="row">
                     <div class="col-md-6">

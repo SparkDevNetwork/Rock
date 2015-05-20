@@ -51,30 +51,6 @@ namespace Rock.Model
         public bool CanDelete( EventItem item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<CalendarItemAudience>( Context ).Queryable().Any( a => a.EventItemId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EventItem.FriendlyTypeName, CalendarItemAudience.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<CalendarItemSchedule>( Context ).Queryable().Any( a => a.EventItemCampusId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EventItem.FriendlyTypeName, CalendarItemSchedule.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<EventCalendarItem>( Context ).Queryable().Any( a => a.EventItemId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EventItem.FriendlyTypeName, EventCalendarItem.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<EventItemCampus>( Context ).Queryable().Any( a => a.EventItemId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EventItem.FriendlyTypeName, EventItemCampus.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }

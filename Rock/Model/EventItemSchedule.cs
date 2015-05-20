@@ -27,37 +27,37 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an CalendarItemSchedule.
+    /// Represents an EventItemSchedule.
     /// </summary>
-    [Table( "CalendarItemSchedule" )]
+    [Table( "EventItemSchedule" )]
     [DataContract]
-    public partial class CalendarItemSchedule : Model<CalendarItemSchedule>
+    public partial class EventItemSchedule : Model<EventItemSchedule>
     {
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.EventItem"/> that this CalendarItemSchedule is associated with. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.EventItem"/> that this EventItemSchedule is associated with. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EventItem"/> that the CalendarItemSchedule is associated with.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EventItem"/> that the EventItemSchedule is associated with.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int EventItemCampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Schedule"/> that this CalendarItemSchedule is associated with. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Schedule"/> that this EventItemSchedule is associated with. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Schedule"/> that the CalendarItemSchedule is associated with.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Schedule"/> that the EventItemSchedule is associated with.
         /// </value>
         [Required]
         [DataMember]
         public int? ScheduleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the CalendarItemSchedule.
+        /// Gets or sets the name of the EventItemSchedule.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the name of the CalendarItemSchedule.
+        /// A <see cref="System.String"/> representing the name of the EventItemSchedule.
         /// </value>
         [Required]
         [DataMember]
@@ -66,19 +66,19 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.EventItem"/> that this CalendarItemSchedule is a member of.
+        /// Gets or sets the <see cref="Rock.Model.EventItem"/> that this EventItemSchedule is a member of.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.EventItem"/> that this CalendarItemSchedule is a member of.
+        /// The <see cref="Rock.Model.EventItem"/> that this EventItemSchedule is a member of.
         /// </value>
         [DataMember]
         public virtual EventItemCampus EventItemCampus { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Schedule"/> that this CalendarItemSchedule is a member of.
+        /// Gets or sets the <see cref="Rock.Model.Schedule"/> that this EventItemSchedule is a member of.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Schedule"/> that this CalendarItemSchedule is a member of.
+        /// The <see cref="Rock.Model.Schedule"/> that this EventItemSchedule is a member of.
         /// </value>
         [DataMember]
         public virtual Schedule Schedule { get; set; }
@@ -90,16 +90,16 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// CalendarItemSchedule Configuration class.
+    /// EventItemSchedule Configuration class.
     /// </summary>
-    public partial class CalendarItemScheduleConfiguration : EntityTypeConfiguration<CalendarItemSchedule>
+    public partial class EventItemScheduleConfiguration : EntityTypeConfiguration<EventItemSchedule>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CalendarItemScheduleConfiguration" /> class.
+        /// Initializes a new instance of the <see cref="EventItemScheduleConfiguration" /> class.
         /// </summary>
-        public CalendarItemScheduleConfiguration()
+        public EventItemScheduleConfiguration()
         {
-            this.HasRequired( p => p.EventItemCampus ).WithMany( p => p.CalendarItemSchedules ).HasForeignKey( p => p.EventItemCampusId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.EventItemCampus ).WithMany( p => p.EventItemSchedules ).HasForeignKey( p => p.EventItemCampusId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
         }
     }

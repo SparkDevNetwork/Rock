@@ -27,27 +27,27 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a CalendarItemAudience.
+    /// Represents a EventItemAudience.
     /// </summary>
-    [Table( "CalendarItemAudience" )]
+    [Table( "EventItemAudience" )]
     [DataContract]
-    public partial class CalendarItemAudience : Model<CalendarItemAudience>
+    public partial class EventItemAudience : Model<EventItemAudience>
     {
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.EventItem"/> that this CalendarItemAudience is associated with. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.EventItem"/> that this EventItemAudience is associated with. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EventItem"/> that the CalendarItemAudience is associated with.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EventItem"/> that the EventItemAudience is associated with.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int EventItemId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Campus"/> that this CalendarItemAudience is associated with. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Campus"/> that this EventItemAudience is associated with. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that the CalendarItemAudience is associated with.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that the EventItemAudience is associated with.
         /// </value>
         [Required]
         [DataMember]
@@ -56,19 +56,19 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.EventItem"/> that this CalendarItemAudience is associated with.
+        /// Gets or sets the <see cref="Rock.Model.EventItem"/> that this EventItemAudience is associated with.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.EventItem"/> that this CalendarItemAudience is associated with.
+        /// The <see cref="Rock.Model.EventItem"/> that this EventItemAudience is associated with.
         /// </value>
         [DataMember]
         public virtual EventItem EventItem { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> that this CalendarItemAudience is associated with.
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> that this EventItemAudience is associated with.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.DefinedValue"/> that this CalendarItemAudience is associated with.
+        /// The <see cref="Rock.Model.DefinedValue"/> that this EventItemAudience is associated with.
         /// </value>
         [DataMember]
         public virtual DefinedValue DefinedValue { get; set; }
@@ -80,16 +80,16 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// CalendarItemAudience Configuration class.
+    /// EventItemAudience Configuration class.
     /// </summary>
-    public partial class CalendarItemAudienceConfiguration : EntityTypeConfiguration<CalendarItemAudience>
+    public partial class EventItemAudienceConfiguration : EntityTypeConfiguration<EventItemAudience>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CalendarItemAudienceConfiguration" /> class.
+        /// Initializes a new instance of the <see cref="EventItemAudienceConfiguration" /> class.
         /// </summary>
-        public CalendarItemAudienceConfiguration()
+        public EventItemAudienceConfiguration()
         {
-            this.HasRequired( p => p.EventItem ).WithMany( p => p.CalendarItemAudiences ).HasForeignKey( p => p.EventItemId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.EventItem ).WithMany( p => p.EventItemAudiences ).HasForeignKey( p => p.EventItemId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.DefinedValue ).WithMany().HasForeignKey( p => p.DefinedValueId ).WillCascadeOnDelete( false );
         }
     }

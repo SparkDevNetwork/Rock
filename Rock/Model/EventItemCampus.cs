@@ -144,17 +144,17 @@ namespace Rock.Model
         public virtual PersonAlias ContactPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets a collection of the <see cref="Rock.Model.CalendarItemSchedule">CalendarItemSchedules</see> that belong to this EventItem.
+        /// Gets or sets a collection of the <see cref="Rock.Model.EventItemSchedule">EventItemSchedules</see> that belong to this EventItem.
         /// </summary>
         /// <value>
-        /// A collection containing a collection of the <see cref="Rock.Model.CalendarItemSchedule">CalendarItemSchedules</see> that belong to this EventItem.
+        /// A collection containing a collection of the <see cref="Rock.Model.EventItemSchedule">EventItemSchedules</see> that belong to this EventItem.
         /// </value>
-        public virtual ICollection<CalendarItemSchedule> CalendarItemSchedules
+        public virtual ICollection<EventItemSchedule> EventItemSchedules
         {
-            get { return _calendarItemSchedules ?? ( _calendarItemSchedules = new Collection<CalendarItemSchedule>() ); }
+            get { return _calendarItemSchedules ?? ( _calendarItemSchedules = new Collection<EventItemSchedule>() ); }
             set { _calendarItemSchedules = value; }
         }
-        private ICollection<CalendarItemSchedule> _calendarItemSchedules;
+        private ICollection<EventItemSchedule> _calendarItemSchedules;
 
         #endregion
 
