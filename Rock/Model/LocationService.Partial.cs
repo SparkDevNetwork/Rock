@@ -25,9 +25,8 @@ namespace Rock.Model
     /// <summary>
     /// Data access and service class for <see cref="Rock.Model.Location"/> entities.
     /// </summary>
-    public partial class LocationService 
+    public partial class LocationService
     {
-
         /// <summary>
         /// Returns the first
         /// <see cref="Rock.Model.Location" /> where the address matches the provided address.  If no address is found with the provided values,
@@ -39,10 +38,11 @@ namespace Rock.Model
         /// <param name="state">A <see cref="System.String" /> representing the State to search by.</param>
         /// <param name="postalCode">A <see cref="System.String" /> representing the Zip/Postal code to search by</param>
         /// <param name="country">The country.</param>
+        /// <param name="verifyLocation">if set to <c>true</c> [verify location].</param>
         /// <returns>
         /// The first <see cref="Rock.Model.Location" /> where an address match is found, if no match is found a new <see cref="Rock.Model.Location" /> is created and returned.
         /// </returns>
-        public Location Get( string street1, string street2, string city, string state, string postalCode, string country )
+        public Location Get( string street1, string street2, string city, string state, string postalCode, string country, bool verifyLocation = true )
         {
             // Make sure it's not an empty address
             if ( string.IsNullOrWhiteSpace( street1 ) )
@@ -63,7 +63,7 @@ namespace Rock.Model
                 return existingLocation;
             }
 
-            // If existing location wasn't found with entered values, try standardizing the values, and 
+            // If existing location wasn't found with entered values, try standardizing the values, and
             // search for an existing value again
             var newLocation = new Location
             {
@@ -75,7 +75,10 @@ namespace Rock.Model
                 Country = country
             };
 
-            Verify( newLocation, false );
+            if ( verifyLocation )
+            {
+                Verify( newLocation, false );
+            }
 
             existingLocation = Queryable().FirstOrDefault( t =>
                 ( t.Street1 == newLocation.Street1 || ( newLocation.Street1 == null && t.Street1 == null ) ) &&
@@ -97,7 +100,7 @@ namespace Rock.Model
             rockContext.SaveChanges();
 
             // refetch it from the database to make sure we get a valid .Id
-            return Get(newLocation.Guid);
+            return Get( newLocation.Guid );
         }
 
         /// <summary>
@@ -111,11 +114,11 @@ namespace Rock.Model
         {
             // get the first address that has a GeoPoint the value
             var result = Queryable()
-                .Where( a => 
+                .Where( a =>
                     a.GeoPoint != null &&
-                    a.GeoPoint.SpatialEquals(point))
+                    a.GeoPoint.SpatialEquals( point ) )
                 .FirstOrDefault();
-            
+
             if ( result == null )
             {
                 // if the Location can't be found, save the new location to the database
@@ -142,15 +145,14 @@ namespace Rock.Model
         /// Returns the first <see cref="Rock.Model.Location"/> with a GeoFence that matches
         /// the specified GeoFence.
         /// </summary>
-        /// <param name="fence">A <see cref="System.Data.Entity.Spatial.DbGeography"/> object that 
+        /// <param name="fence">A <see cref="System.Data.Entity.Spatial.DbGeography"/> object that
         ///  represents the GeoFence of the location to retrieve.</param>
         /// <returns>The <see cref="Rock.Model.Location"/> for the specified GeoFence. </returns>
         public Location GetByGeoFence( DbGeography fence )
         {
-
             // get the first address that has a GeoPoint or GeoFence that matches the value
             var result = Queryable()
-                .Where( a => 
+                .Where( a =>
                     a.GeoFence != null &&
                     a.GeoFence.SpatialEquals( fence ) )
                 .FirstOrDefault();
@@ -175,7 +177,6 @@ namespace Rock.Model
             }
 
             return result;
-
         }
 
         /// <summary>
@@ -211,7 +212,7 @@ namespace Rock.Model
                         logService.Add( log );
                     }
 
-                    if (success)
+                    if ( success )
                     {
                         break;
                     }
@@ -219,7 +220,6 @@ namespace Rock.Model
             }
 
             rockContext.SaveChanges();
-
         }
 
         /// <summary>
@@ -247,11 +247,11 @@ namespace Rock.Model
         /// <param name="deviceId">The device identifier.</param>
         /// <param name="includeChildLocations">if set to <c>true</c> [include child locations].</param>
         /// <returns></returns>
-        public IEnumerable<Location> GetByDevice ( int deviceId, bool includeChildLocations = true )
+        public IEnumerable<Location> GetByDevice( int deviceId, bool includeChildLocations = true )
         {
             string childQuery = includeChildLocations ? @"
                     UNION ALL
-                    SELECT [a].* 
+                    SELECT [a].*
                         FROM [Location] [a]
                             INNER JOIN  CTE pcte ON pcte.Id = [a].[ParentLocationId]
 " : "";
@@ -259,7 +259,7 @@ namespace Rock.Model
             return ExecuteQuery( string.Format(
                 @"
             WITH CTE AS (
-                SELECT L.* 
+                SELECT L.*
                     FROM [DeviceLocation] D
                         INNER JOIN [Location] L ON L.[Id] = D.[LocationId]
                 WHERE D.[DeviceId] = {0}
@@ -269,6 +269,5 @@ namespace Rock.Model
             SELECT * FROM CTE
             ", deviceId, childQuery ) );
         }
-
     }
 }

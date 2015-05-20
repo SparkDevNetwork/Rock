@@ -126,6 +126,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the start date and time/check in date and time.
         /// </value>
         [DataMember]
+        [Index( "IX_StartDateTime" )]
         public DateTime StartDateTime { get; set; }
 
         /// <summary>
@@ -217,6 +218,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Group"/> that was attended.
         /// </value>
+        [LavaInclude]
         public virtual Group Group { get; set; }
 
         /// <summary>

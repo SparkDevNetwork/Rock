@@ -7,8 +7,11 @@
         <!-- Start Content Area -->
         
         <!-- Page Title -->
-        <Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1>
-        <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
+        <section id="page-title">
+            <Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1>
+            <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
+            <Rock:PageDescription ID="PageDescription" runat="server" />
+        </section>
                     
         <!-- Ajax Error -->
         <div class="alert alert-danger ajax-error" style="display:none">

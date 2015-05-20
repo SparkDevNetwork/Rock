@@ -102,6 +102,22 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
                     writer.AddAttribute( HtmlTextWriterAttribute.For, rockControl.ClientID );
                 }
+
+                if ( rockControl is WebControl )
+                {
+                    // if the control has a Display Style, make sure the Label and Help also get the same Display style
+                    // For example, you might have rockControl.Style["Display"] = "none", so you probably want the label and help to also get not displayed
+                    var rockControlDisplayStyle = ( rockControl as WebControl ).Style[HtmlTextWriterStyle.Display];
+                    if ( rockControlDisplayStyle != null )
+                    {
+                        writer.AddStyleAttribute( HtmlTextWriterStyle.Display, rockControlDisplayStyle );
+                        if (rockControl.HelpBlock != null)
+                        {
+                            rockControl.HelpBlock.Style[HtmlTextWriterStyle.Display] = rockControlDisplayStyle;
+                        }
+                    }
+                }
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Label );
                 writer.Write( rockControl.Label );
 

@@ -26,6 +26,7 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
+using Microsoft.AspNet.SignalR;
 
 using Rock;
 using Rock.Attribute;
@@ -53,6 +54,11 @@ namespace RockWeb.Blocks.Examples
     public partial class SampleData : Rock.Web.UI.RockBlock
     {
         #region Fields
+
+        /// <summary>
+        /// This holds the reference to the RockMessageHub SignalR Hub context.
+        /// </summary>
+        private IHubContext _hubContext = GlobalHost.ConnectionManager.GetHubContext<RockMessageHub>();
 
         /// <summary>
         /// Stopwatch used to measure time during certain operations.
@@ -193,6 +199,7 @@ namespace RockWeb.Blocks.Examples
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.1.2.min.js", fingerprint: false );
         }
 
         /// <summary>
@@ -204,9 +211,16 @@ namespace RockWeb.Blocks.Examples
             base.OnLoad( e );
             Server.ScriptTimeout = 300;
             ScriptManager.GetCurrent( Page ).AsyncPostBackTimeout = 300;
-            if ( ! IsPostBack )
+            if ( !IsPostBack )
             {
                 VerifyXMLDocumentExists();
+            }
+            else
+            {
+                if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
+                {
+                    messageContainer.Attributes["style"] = "visibility: visible";
+                }
             }
         }
 
@@ -228,6 +242,11 @@ namespace RockWeb.Blocks.Examples
                 string xmlFileUrl = GetAttributeValue( "XMLDocumentURL" );
                 if ( DownloadFile( xmlFileUrl, saveFile ) )
                 {
+                    if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
+                    {
+                        _hubContext.Clients.All.showLog( );
+                    }
+
                     ProcessXml( saveFile );
                     nbMessage.Visible = true;
                     nbMessage.Title = "Success";
@@ -238,6 +257,8 @@ namespace RockWeb.Blocks.Examples
                         ResolveRockUrl( "~/Person/Search/name/?SearchTerm=Decker" ),
                         GetStories( saveFile ) );
                     pnlInputForm.Visible = false;
+                    AppendFormat( "done<br/>" );
+
                     RecordSuccess();
                 }
             }
@@ -408,12 +429,14 @@ namespace RockWeb.Blocks.Examples
                 // First we'll clean up by deleting any previously created data such as
                 // families, addresses, people, photos, attendance data, etc.
                 _stopwatch.Start();
+                AppendFormat( "00:00.00 started <br/>" );
+
                 DeleteExistingGroups( elemGroups, rockContext );
                 DeleteExistingFamilyData( elemFamilies, rockContext );
                 //rockContext.ChangeTracker.DetectChanges();
                 //rockContext.SaveChanges( disablePrePostProcessing: true );
                 ts = _stopwatch.Elapsed;
-                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} data deleted <br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                AppendFormat( "{0:00}:{1:00}.{2:00} data deleted <br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
             } );
 
             // Import the sample data
@@ -423,43 +446,52 @@ namespace RockWeb.Blocks.Examples
                 // Now we can add the families (and people) and then groups.
                 AddFamilies( elemFamilies, rockContext );
                 ts = _stopwatch.Elapsed;
-                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} families added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                AppendFormat( "{0:00}:{1:00}.{2:00} families added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
 
                 AddRelationships( elemRelationships, rockContext );
                 ts = _stopwatch.Elapsed;
-                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} relationships added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                AppendFormat( "{0:00}:{1:00}.{2:00} relationships added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
 
                 AddGroups( elemGroups, rockContext );
                 ts = _stopwatch.Elapsed;
-                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} groups added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                AppendFormat( "{0:00}:{1:00}.{2:00} groups added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
 
                 AddToSecurityGroups( elemSecurityGroups, rockContext );
                 ts = _stopwatch.Elapsed;
-                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} people added to security roles<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                AppendFormat( "{0:00}:{1:00}.{2:00} people added to security roles<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
 
                 rockContext.ChangeTracker.DetectChanges();
                 rockContext.SaveChanges( disablePrePostProcessing: true );
                 ts = _stopwatch.Elapsed;
-                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} changes saved<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                AppendFormat( "{0:00}:{1:00}.{2:00} changes saved<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
 
                 // add logins, but only if we were supplied a password
                 if ( !string.IsNullOrEmpty( tbPassword.Text.Trim() ) )
                 {
                     AddPersonLogins( rockContext );
                     ts = _stopwatch.Elapsed;
-                    _sb.AppendFormat( "{0:00}:{1:00}.{2:00} person logins added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                    AppendFormat( "{0:00}:{1:00}.{2:00} person logins added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
                 }
 
                 // Add Person Notes
                 AddPersonNotes( elemFamilies, rockContext );
                 rockContext.SaveChanges( disablePrePostProcessing: true );
                 ts = _stopwatch.Elapsed;
-                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} notes added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                AppendFormat( "{0:00}:{1:00}.{2:00} notes added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
 
                 // Add Person Metaphone/Sounds-like stuff
                 AddMetaphone();
 
             } );
+
+            // done.
+            ts = _stopwatch.Elapsed;
+            AppendFormat( "{0:00}:{1:00}.{2:00} done.<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+
+            if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
+            {
+                lStopwatchLog.Text = _sb.ToString();
+            }
 
             // Clear the static objects that contains all security roles and auth rules (so that it will be refreshed)
             foreach ( var role in Rock.Security.Role.AllRoles() )
@@ -468,11 +500,18 @@ namespace RockWeb.Blocks.Examples
             }
 
             Rock.Security.Authorization.Flush();
+        }
 
-            if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
-            {
-                lTime.Text = _sb.ToString();
-            }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="format"></param>
+        /// <param name="args"></param>
+        private void AppendFormat( string format, params Object[] args)
+        {
+            var x = string.Format( format, args );
+            _sb.Append( x );
+            _hubContext.Clients.All.receiveNotification( x );
         }
 
         /// <summary>
@@ -764,7 +803,7 @@ namespace RockWeb.Blocks.Examples
                 allGroups.Add( family );
 
                 _stopwatch.Stop();
-                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} added {3}<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10, family.Name );
+                AppendFormat( "{0:00}:{1:00}.{2:00} added {3}<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10, family.Name );
                 _stopwatch.Start();
             }
             rockContext.ChangeTracker.DetectChanges();
@@ -797,7 +836,7 @@ namespace RockWeb.Blocks.Examples
             }
 
             _stopwatch.Stop();
-            _sb.AppendFormat( "{0:00}:{1:00}.{2:00} saved attributes for everyone <br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
+            AppendFormat( "{0:00}:{1:00}.{2:00} saved attributes for everyone <br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
             _stopwatch.Start();
 
             // Create person alias records for each person
@@ -823,7 +862,7 @@ namespace RockWeb.Blocks.Examples
             }
 
             _stopwatch.Stop();
-            _sb.AppendFormat( "{0:00}:{1:00}.{2:00} added person aliases<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
+            AppendFormat( "{0:00}:{1:00}.{2:00} added person aliases<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
             _stopwatch.Start();
 
             // Now that person aliases have been saved, save the attendance records
@@ -842,7 +881,7 @@ namespace RockWeb.Blocks.Examples
             rockContext.SaveChanges( disablePrePostProcessing: true );
 
             _stopwatch.Stop();
-            _sb.AppendFormat( "{0:00}:{1:00}.{2:00} added attendance records<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
+            AppendFormat( "{0:00}:{1:00}.{2:00} added attendance records<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
             _stopwatch.Start();
         }
 
@@ -1024,7 +1063,7 @@ namespace RockWeb.Blocks.Examples
                         { }
                     }
                     TimeSpan ts = _stopwatch.Elapsed;
-                    _sb.AppendFormat( "{0:00}:{1:00}.{2:00} group location schedules added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                    AppendFormat( "{0:00}:{1:00}.{2:00} group location schedules added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
                 }
              }
         }

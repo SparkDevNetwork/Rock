@@ -487,7 +487,7 @@ namespace Rock.Field
                         type = Nullable.GetUnderlyingType( type );
                     }
 
-                    object value = ConvertValueToPropertyType( filterValues[1], type );
+                    object value = ConvertValueToPropertyType( filterValues[1], type, isNullableType );
                     if ( value != null )
                     {
                         ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
@@ -501,13 +501,34 @@ namespace Rock.Field
         }
 
         /// <summary>
-        /// Converts the type of the value to property.
+        /// Converts the type of the value to property
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="propertyType">Type of the property.</param>
         /// <returns></returns>
         public virtual object ConvertValueToPropertyType( string value, Type propertyType )
         {
+            return ConvertValueToPropertyType( value, propertyType, false );
+        }
+        
+        /// <summary>
+        /// Converts the type of the value to property.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        public virtual object ConvertValueToPropertyType( string value, Type propertyType, bool isNullableType )
+        {
+            if ( propertyType == typeof(string) )
+            {
+                return value;
+            }
+
+            if ( string.IsNullOrWhiteSpace(value) && isNullableType)
+            {
+                return null;
+            }
+
             return Convert.ChangeType( value, propertyType );
         }
 

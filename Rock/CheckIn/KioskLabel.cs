@@ -89,7 +89,7 @@ namespace Rock.CheckIn
         {
             string cacheKey = KioskLabel.CacheKey( guid );
 
-            ObjectCache cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             KioskLabel label = cache[cacheKey] as KioskLabel;
 
             if ( label != null )
@@ -157,7 +157,7 @@ namespace Rock.CheckIn
         /// <param name="guid">The unique identifier.</param>
         public static void Flush( Guid guid)
         {
-            ObjectCache cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             cache.Remove( KioskLabel.CacheKey( guid ) );
         }
 

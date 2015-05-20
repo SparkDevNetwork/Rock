@@ -150,7 +150,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetCachedContent( int blockId, string entityValue )
         {
-            ObjectCache cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             string cacheKey = HtmlContentCacheKey( blockId, entityValue );
             return cache[cacheKey] as string;
         }
@@ -164,7 +164,7 @@ namespace Rock.Model
         /// <param name="cacheDuration">Duration of the cache.</param>
         public static void AddCachedContent( int blockId, string entityValue, string html, int cacheDuration )
         {
-            ObjectCache cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             cache.Set( HtmlContentCacheKey( blockId, entityValue ), html, new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( cacheDuration ) } );
         }
 
@@ -175,7 +175,7 @@ namespace Rock.Model
         /// <param name="entityValue">The entity value.</param>
         public static void FlushCachedContent( int blockId, string entityValue )
         {
-            ObjectCache cache = RockMemoryCache.Default;
+            RockMemoryCache cache = RockMemoryCache.Default;
             cache.Remove( HtmlContentCacheKey( blockId, entityValue ) );
         }
 

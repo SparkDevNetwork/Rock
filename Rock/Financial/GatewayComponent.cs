@@ -160,6 +160,16 @@ namespace Rock.Financial
         }
 
         /// <summary>
+        /// Returnes a boolean value indicating if 'Saved Account' functionality is supported for the given currency type. 
+        /// </summary>
+        /// <param name="currencyType">Type of the currency.</param>
+        /// <returns></returns>
+        public virtual bool SupportsSavedAccount( DefinedValueCache currencyType )
+        {
+            return true;
+        }
+
+        /// <summary>
         /// Authorizes the specified payment information.
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>

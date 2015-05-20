@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Caching;
 
@@ -41,6 +42,8 @@ namespace Rock.Web.Cache
         #endregion
 
         #region Properties
+
+        private object _obj = new object();
 
         /// <summary>
         /// Gets or sets the name.
@@ -70,32 +73,27 @@ namespace Rock.Web.Cache
             {
                 var restActions = new List<RestActionCache>();
 
-                if ( restActionIds != null )
+                lock ( _obj )
                 {
-                    foreach ( int id in restActionIds.ToList() )
+                    if ( restActionIds == null )
                     {
-                        var restAction = RestActionCache.Read( id );
-                        if ( restAction != null )
+                        using ( var rockContext = new RockContext() )
                         {
-                            restActions.Add( restAction );
+                            restActionIds = new Model.RestActionService( rockContext )
+                                .Queryable()
+                                .Where( a => a.ControllerId == this.Id )
+                                .Select( a => a.Id )
+                                .ToList();
                         }
                     }
                 }
-                else
+
+                foreach ( int id in restActionIds )
                 {
-                    using ( var rockContext = new RockContext() )
+                    var restAction = RestActionCache.Read( id );
+                    if ( restAction != null )
                     {
-                        var restActionService = new Model.RestActionService( rockContext );
-                        var restActionModels = restActionService.Queryable()
-                            .Where( a => a.ControllerId == this.Id )
-                            .ToList();
-
-                        restActionIds = restActionModels.Select( a => a.Id ).ToList();
-
-                        foreach ( var restAction in restActionModels )
-                        {
-                            restActions.Add( RestActionCache.Read( restAction ) );
-                        }
+                        restActions.Add( restAction );
                     }
                 }
 
@@ -118,12 +116,11 @@ namespace Rock.Web.Cache
 
             if ( model is RestController )
             {
-                var restController = (RestController)model;
-                this.Name = restController.Name;
-                this.ClassName = restController.ClassName;
+                var RestController = (RestController)model;
+                this.Name = RestController.Name;
+                this.ClassName = RestController.ClassName;
 
-                this.restActionIds = restController.Actions
-                    .Select( v => v.Id ).ToList();
+                SetCache( RestController.ClassName, new Lazy<int>( () => AsLazy( model.Id ) ), new CacheItemPolicy() );
             }
         }
 
@@ -156,43 +153,30 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static RestControllerCache Read( int id, RockContext rockContext = null )
         {
-            string cacheKey = RestControllerCache.CacheKey( id );
-
-            ObjectCache cache = RockMemoryCache.Default;
-            RestControllerCache restController = cache[cacheKey] as RestControllerCache;
-
-            if ( restController == null )
-            {
-                if ( rockContext != null )
-                {
-                    restController = LoadById( id, rockContext );
-                }
-                else
-                {
-                    using ( var myRockContext = new RockContext() )
-                    {
-                        restController = LoadById( id, myRockContext );
-                    }
-                }
-
-                if ( restController != null )
-                {
-                    var cachePolicy = new CacheItemPolicy();
-                    cache.Set( cacheKey, restController, cachePolicy );
-                    cache.Set( restController.Guid.ToString(), restController.Id, cachePolicy );
-                }
-            }
-
-            return restController;
+            return GetOrAddExisting( RestControllerCache.CacheKey( id ),
+                () => LoadById( id, rockContext ) );
         }
 
         private static RestControllerCache LoadById( int id, RockContext rockContext )
         {
-            var restControllerService = new RestControllerService( rockContext );
-            var restControllerModel = restControllerService.Get( id );
-            if ( restControllerModel != null )
+            if ( rockContext != null )
             {
-                return new RestControllerCache( restControllerModel );
+                return LoadById2( id, rockContext );
+            }
+
+            using ( var rockContext2 = new RockContext() )
+            {
+                return LoadById2( id, rockContext2 );
+            }
+        }
+
+        private static RestControllerCache LoadById2( int id, RockContext rockContext )
+        {
+            var RestControllerService = new RestControllerService( rockContext );
+            var RestControllerModel = RestControllerService.Get( id );
+            if ( RestControllerModel != null )
+            {
+                return new RestControllerCache( RestControllerModel );
             }
 
             return null;
@@ -206,53 +190,33 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static RestControllerCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = RockMemoryCache.Default;
-            object cacheObj = cache[guid.ToString()];
+            int id = GetOrAddExisting( guid.ToString(),
+                () => LoadByGuid( guid, rockContext ) );
 
-            RestControllerCache restController = null;
-            if ( cacheObj != null )
-            {
-                restController = Read( (int)cacheObj, rockContext );
-            }
-
-            if ( restController == null )
-            {
-                if ( rockContext != null )
-                {
-                    restController = LoadByGuid( guid, rockContext );
-                }
-                else
-                {
-                    using ( var myRockContext = new RockContext() )
-                    {
-                        restController = LoadByGuid( guid, myRockContext );
-                    }
-                }
-
-                if ( restController != null )
-                {
-                    var cachePolicy = new CacheItemPolicy();
-                    cache.Set( RestControllerCache.CacheKey( restController.Id ), restController, cachePolicy );
-                    cache.Set( restController.Guid.ToString(), restController.Id, cachePolicy );
-                }
-            }
-
-            return restController;
+            return Read( id, rockContext );
         }
 
-        private static RestControllerCache LoadByGuid( Guid guid, RockContext rockContext )
+        private static int LoadByGuid( Guid guid, RockContext rockContext )
         {
-            var restControllerService = new RestControllerService( rockContext );
-            var restControllerModel = restControllerService
-                .Queryable( "RestActions" )
-                .Where( t => t.Guid == guid )
-                .FirstOrDefault();
-            if ( restControllerModel != null )
+            if ( rockContext != null )
             {
-                return new RestControllerCache( restControllerModel );
+                return LoadByGuid2( guid, rockContext );
             }
 
-            return null;
+            using ( var rockContext2 = new RockContext() )
+            {
+                return LoadByGuid2( guid, rockContext2 );
+            }
+        }
+
+        private static int LoadByGuid2( Guid guid, RockContext rockContext )
+        {
+            var RestControllerService = new RestControllerService( rockContext );
+            return RestControllerService
+                .Queryable().AsNoTracking()
+                .Where( c => c.Guid.Equals( guid ) )
+                .Select( c => c.Id )
+                .FirstOrDefault();
         }
 
         /// <summary>
@@ -263,78 +227,53 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static RestControllerCache Read( string className, RockContext rockContext = null )
         {
-            ObjectCache cache = RockMemoryCache.Default;
-            object cacheObj = cache[className];
+            int id = GetOrAddExisting( className,
+                () => LoadByName( className, rockContext ) );
 
-            RestControllerCache restController = null;
-            if ( cacheObj != null )
-            {
-                restController = Read( (int)cacheObj, rockContext );
-            }
-
-            if ( restController == null )
-            {
-                if ( rockContext != null )
-                {
-                    restController = LoadByClassName( className, rockContext );
-                }
-                else
-                {
-                    using ( var myRockContext = new RockContext() )
-                    {
-                        restController = LoadByClassName( className, myRockContext );
-                    }
-                }
-
-                if ( restController != null )
-                {
-                    var cachePolicy = new CacheItemPolicy();
-                    cache.Set( RestControllerCache.CacheKey( restController.Id ), restController, cachePolicy );
-                    cache.Set( className, restController.Id, cachePolicy );
-                }
-            }
-
-            return restController;
+            return Read( id, rockContext );
         }
 
-        private static RestControllerCache LoadByClassName( string className, RockContext rockContext )
+        private static int LoadByName( string className, RockContext rockContext )
         {
-            var restControllerService = new RestControllerService( rockContext );
-            var restControllerModel = restControllerService.Queryable()
-                .Where( a => a.ClassName == className )
-                .FirstOrDefault();
-            if ( restControllerModel != null )
+            if ( rockContext != null )
             {
-                return new RestControllerCache( restControllerModel );
+                return LoadByName2( className, rockContext );
             }
 
-            return null;
+            using ( var rockContext2 = new RockContext() )
+            {
+                return LoadByName2( className, rockContext2 );
+            }
+        }
+
+        private static int LoadByName2( string className, RockContext rockContext )
+        {
+            var RestControllerService = new RestControllerService( rockContext );
+            return RestControllerService
+                .Queryable().AsNoTracking()
+                .Where( a => a.ClassName == className )
+                .Select( c => c.Id )
+                .FirstOrDefault();
         }
 
         /// <summary>
         /// Reads the specified defined type model.
         /// </summary>
-        /// <param name="restControllerModel">The defined type model.</param>
+        /// <param name="restControllerModel">The rest controller model.</param>
         /// <returns></returns>
         public static RestControllerCache Read( RestController restControllerModel )
         {
-            string cacheKey = RestControllerCache.CacheKey( restControllerModel.Id );
-            ObjectCache cache = RockMemoryCache.Default;
-            RestControllerCache restController = cache[cacheKey] as RestControllerCache;
+            return GetOrAddExisting( RestControllerCache.CacheKey( restControllerModel.Id ),
+                () => LoadByModel( restControllerModel ) );
+        }
 
-            if ( restController != null )
+        private static RestControllerCache LoadByModel( RestController restControllerModel )
+        {
+            if ( restControllerModel != null )
             {
-                restController.CopyFromModel( restControllerModel );
+                return new RestControllerCache( restControllerModel );
             }
-            else
-            {
-                restController = new RestControllerCache( restControllerModel );
-                var cachePolicy = new CacheItemPolicy();
-                cache.Set( cacheKey, restController, cachePolicy );
-                cache.Set( restController.Guid.ToString(), restController.Id, cachePolicy );
-            }
-
-            return restController;
+            return null;
         }
 
         /// <summary>
@@ -343,10 +282,10 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            ObjectCache cache = RockMemoryCache.Default;
-            cache.Remove( RestControllerCache.CacheKey( id ) );
+            FlushCache( RestControllerCache.CacheKey( id ) );
         }
 
         #endregion
+
     }
 }

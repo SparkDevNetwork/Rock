@@ -100,6 +100,9 @@ namespace Rock.Communication.Transport
                                     // Create merge field dictionary
                                     var mergeObjects = recipient.CommunicationMergeValues( globalConfigValues );
                                     string message = communication.GetMediumDataValue( "Message" );
+
+                                    // convert any special microsoft word characters to normal chars so they don't look funny (for example "Hey â€œdouble-quotesâ€ from â€˜single quoteâ€™")
+                                    message = message.ReplaceWordChars();
                                     message = message.ResolveMergeFields( mergeObjects );
  
                                     string twilioNumber = phoneNumber.Number;

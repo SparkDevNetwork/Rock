@@ -422,8 +422,8 @@ INSERT INTO [dbo].[HtmlContent]
            ,'13DA5069-802C-4831-BDEF-2C99BD612DAE'
            ,getdate()
            ,getdate()
-           ,1
-           ,1)" );
+           ,null
+           ,null)" );
 
             // add trans report content
             Sql( @"DECLARE @PledgeContentBlock int
@@ -455,8 +455,8 @@ INSERT INTO [dbo].[HtmlContent]
            ,'A1392134-FCE8-4379-AE81-6EDF2F7B8450'
            ,getdate()
            ,getdate()
-           ,1
-           ,1)" );
+           ,null
+           ,null)" );
 
             // add profile edit content
             Sql( @"DECLARE @PledgeContentBlock int
@@ -492,8 +492,8 @@ INSERT INTO [dbo].[HtmlContent]
            ,'6D736357-CEF0-4C29-B5E5-E0A7C9CDFD9B'
            ,getdate()
            ,getdate()
-           ,1
-           ,1)" );
+           ,null
+           ,null)" );
 
             // set blocks to be not system
             Sql( @"  UPDATE [Block]
