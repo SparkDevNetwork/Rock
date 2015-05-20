@@ -48,6 +48,9 @@ namespace RockWeb.Blocks.CheckIn
 
         private RockContext _rockContext = null;
 
+        private List<DateTime> _possibleAttendances = null;
+        private Dictionary<int, string> _scheduleNameLookup = null;
+
         #endregion
 
         #region Base Control Methods
@@ -576,9 +579,6 @@ function(item) {
 
             gChartAttendance.DataBind();
         }
-
-        private List<DateTime> _possibleAttendances = null;
-        private Dictionary<int, string> _scheduleNameLookup = null;
 
         /// <summary>
         /// Binds the attendees grid.
