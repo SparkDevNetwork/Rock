@@ -863,7 +863,7 @@ namespace Rock.Model
         #region User Preferences
 
         /// <summary>
-        /// Saves a <see cref="Rock.Model.Person">Person's</see> user preference setting by key.
+        /// Saves a <see cref="Rock.Model.Person">Person's</see> user preference setting by key and SavesChanges()
         /// </summary>
         /// <param name="person">The <see cref="Rock.Model.Person"/> who the preference value belongs to.</param>
         /// <param name="key">A <see cref="System.String"/> representing the key (name) of the preference setting.</param>
@@ -956,6 +956,35 @@ namespace Rock.Model
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Deletes a <see cref="Rock.Model.Person">Person's</see> user preference setting by key and SavesChanges()
+        /// </summary>
+        /// <param name="person">The <see cref="Rock.Model.Person"/> who the preference value belongs to.</param>
+        /// <param name="key">A <see cref="System.String"/> representing the key (name) of the preference setting.</param>
+        public static void DeleteUserPreference( Person person, string key )
+        {
+            int? personEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var attributeService = new Model.AttributeService( rockContext );
+                var attribute = attributeService.Get( personEntityTypeId, string.Empty, string.Empty, key );
+
+                if ( attribute != null )
+                {
+                    var attributeValueService = new Model.AttributeValueService( rockContext );
+                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id );
+                    if ( attributeValue != null )
+                    {
+                        attributeValueService.Delete( attributeValue );
+                    }
+                    
+                    attributeService.Delete( attribute );
+                    rockContext.SaveChanges();
+                }
+            }
         }
 
         /// <summary>

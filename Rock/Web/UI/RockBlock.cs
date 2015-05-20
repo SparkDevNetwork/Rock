@@ -899,6 +899,15 @@ namespace Rock.Web.UI
             RockPage.SetUserPreference( key, value );
         }
 
+        /// <summary>
+        /// Deletes a user preference value for the specified key
+        /// </summary>
+        /// <param name="key">A <see cref="System.String"/> representing the name of the key.</param>
+        public void DeleteUserPreference( string key )
+        {
+            RockPage.DeleteUserPreference( key );
+        }
+
         #endregion
 
         /// <summary>
