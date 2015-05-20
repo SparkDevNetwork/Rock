@@ -2493,6 +2493,7 @@ td.grid-col-actions {
 .grid-select-field .checkbox:last-child,
 .grid-select-field .radio:last-child {
   margin-bottom: 0px;
+  margin-left: -12px;
 }
 .grid-select-field .checkbox label,
 .grid-select-field .radio label {

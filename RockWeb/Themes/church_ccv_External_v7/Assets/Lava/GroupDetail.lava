@@ -1,7 +1,20 @@
-{{ Group.Name | SetPageTitle }}
+{% comment %}
+
+
+REQUIRED VARIABLES
+==================
+
+{% assign fullRosterPage = "/page/558" %}
+
+
+{% endcomment %}
+
+
+
 
 {% if AllowedActions.View == true || AllowedActions.Edit == true || AllowedActions.Administrate == true %}
 
+  {{ Group.Name | SetPageTitle }}
 
   {% for groupLocation in Group.GroupLocations %}
     {% if groupLocation.Location.GeoPoint != '' %}
@@ -335,6 +348,9 @@
     {% endif %}
 
     <div class="pull-right margin-b-md">
+      {% if fullRosterPage %}
+        <a href="{{ fullRosterPage }}?GroupId={{ Group.Id }}" class="btn btn-default btn-xs"><i class="fa fa-file-text-o"></i> Full Roster</a>
+      {% endif %}
       {% if AllowedActions.Edit == true %}
         <a href="#" onclick="{{ '' | Postback:'AddGroupMember' }}" class="btn btn-default btn-xs">
           <i class="fa fa-plus"></i> Add Member

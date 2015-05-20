@@ -1,0 +1,299 @@
+{% if AllowedActions.View == true || AllowedActions.Edit == true || AllowedActions.Administrate == true %}
+
+  {% capture pageTitle %}{{ Group.Name }} Roster{% endcapture %}
+  {{ pageTitle | SetPageTitle }}
+
+  <style>
+    @media all {
+      .page-break {
+        display: none;
+      }
+    }
+    @media print {
+      body {
+        font-size: 10px;
+      }
+      .page-break {
+        display: block;
+        page-break-before: always;
+      }
+      @page {
+        margin: .5in;
+      }
+      .col-sm-6 {
+        width: 50%;
+        float: left;
+      }
+      h1.page-header {
+        margin-top: 0;
+      }
+    }
+  </style>
+
+  {% assign countActive = -1 %}
+  {% assign countInactive = -1 %}
+  {% assign countPending = -1 %}
+  {% for member in Group.Members %}
+    {% case member.GroupMemberStatus %}
+      {% when 'Active' %}
+        {% assign countActive = countActive | Plus: 1 %}
+      {% when 'Inactive' %}
+        {% assign countInactive = countInactive | Plus: 1 %}
+      {% when 'Pending' %}
+        {% assign countPending = countPending | Plus: 1 %}
+      {% else %}
+    {% endcase %}
+  {% endfor %}
+
+
+  <div class="container">
+
+    <h1 class="page-header">{{ Group.Name }}</h1>
+
+
+    {% if countPending > -1 %}
+
+        <h4>Pending Members</h4>
+      {% assign icountPending = 0 %}
+
+
+
+      {% for member in Group.Members %}
+
+        {% if member.GroupMemberStatus == 'Pending' %}
+
+          {% assign loopcycle = icountPending | Modulo:2 %}
+
+          {% if loopcycle == 0 %}
+            <div class="row">
+          {% endif %}
+
+          <div class="col-sm-6 margin-b-md">
+            {% if LinkedPages.PersonDetailPage != '' %}
+              <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
+            {% endif %}
+            <div class="media">
+              <div class="pull-left">
+                <img src="{{ member.Person.PhotoUrl }}&height=180&width=180&mode=crop&scale=both" height="60" width="60" />
+                {% comment %} Badges {% endcomment %}
+                <div>
+                  {% assign baptismDate = member.Person | Attribute: 'BaptismDate' %}
+                  {% if baptismDate != '' %}
+                    <i class="fa fa-tint text-info" data-toggle="tooltip" data-placement="bottom" title="Baptized on {{ baptismDate }}"></i>
+                  {% endif %}
+                  {% assign pendingBaptism = member.Person | Attribute: 'PendingBaptism' %}
+                  {% if pendingBaptism != '' and pendingBaptism != 'No' %}
+                    <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Pending Baptism"></i>
+                  {% endif %}
+
+                  {% assign startingPointDate = member.Person | Attribute: 'DateAttendedStartingPoint' %}
+                  {% if startingPointDate != '' %}
+                    <i class="fa fa-map-marker text-primary" data-toggle="tooltip" data-placement="bottom" title="Completed Starting Point on {{ startingPointDate }}"></i>
+                  {% endif %}
+                  {% assign pendingStartingPoint = member.Person | Attribute: 'PendingStartingPoint' %}
+                  {% if pendingStartingPoint != '' %}
+                    <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Starting Point Pending"></i>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="media-body">
+                <strong class="media-heading">{{ member.Person.FullName }}</strong> <small>({{ member.GroupRole.Name}})</small>
+                <div>
+                  {% for phone in member.Person.PhoneNumbers %}
+                  {{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small><br />
+                  {% endfor %}
+
+                  {% assign memberAddress =  member.Person | Address:'Home' %}
+                  {% if memberAddress != '' %}
+                  {{ member.Person | Address:'Home' }}<br />
+                  {% endif %}
+
+                  <a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
+                </div>
+              </div>
+            </div>
+
+            {% if LinkedPages.PersonDetailPage != '' %}
+              </a>
+            {% endif %}
+          </div>
+
+          {% if loopcycle != 0 or icountPending == countPending %}
+            </div>
+          {% endif %}
+
+          {% assign icountPending = icountPending | Plus: 1 %}
+
+        {% endif %}
+
+      {% endfor %}
+
+
+    {% endif %}
+
+
+
+    {% if countActive > -1 %}
+      {% assign icountActive = 0 %}
+
+      <h4>Active Members</h4>
+
+      {% for member in Group.Members %}
+
+        {% if member.GroupMemberStatus == 'Active' %}
+
+          {% assign loopcycle = icountActive | Modulo:2 %}
+
+          {% if loopcycle == 0 %}
+          <div class="row">
+          {% endif %}
+
+          <div class="col-sm-6 margin-b-md">
+            {% if LinkedPages.PersonDetailPage != '' %}
+              <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
+            {% endif %}
+            <div class="media">
+              <div class="pull-left">
+                <img src="{{ member.Person.PhotoUrl }}&height=180&width=180&mode=crop&scale=both" height="60" width="60" />
+                {% comment %} Badges {% endcomment %}
+                <div>
+                  {% assign baptismDate = member.Person | Attribute: 'BaptismDate' %}
+                  {% if baptismDate != '' %}
+                    <i class="fa fa-tint text-info" data-toggle="tooltip" data-placement="bottom" title="Baptized on {{ baptismDate }}"></i>
+                  {% endif %}
+                  {% assign pendingBaptism = member.Person | Attribute: 'PendingBaptism' %}
+                  {% if pendingBaptism != '' and pendingBaptism != 'No' %}
+                    <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Pending Baptism"></i>
+                  {% endif %}
+
+                  {% assign startingPointDate = member.Person | Attribute: 'DateAttendedStartingPoint' %}
+                  {% if startingPointDate != '' %}
+                    <i class="fa fa-map-marker text-primary" data-toggle="tooltip" data-placement="bottom" title="Completed Starting Point on {{ startingPointDate }}"></i>
+                  {% endif %}
+                  {% assign pendingStartingPoint = member.Person | Attribute: 'PendingStartingPoint' %}
+                  {% if pendingStartingPoint != '' %}
+                    <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Starting Point Pending"></i>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="media-body">
+                <strong class="media-heading">{{ member.Person.FullName }}</strong> <small>({{ member.GroupRole.Name}})</small>
+                <div>
+                  {% for phone in member.Person.PhoneNumbers %}
+                  {{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small><br />
+                  {% endfor %}
+
+                  {% assign memberAddress =  member.Person | Address:'Home' %}
+                  {% if memberAddress != '' %}
+                  {{ member.Person | Address:'Home' }}<br />
+                  {% endif %}
+
+                  <a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
+                </div>
+              </div>
+            </div>
+
+            {% if LinkedPages.PersonDetailPage != '' %}
+              </a>
+            {% endif %}
+          </div>
+
+          {% if loopcycle != 0 or icountActive == countActive %}
+            </div>
+          {% endif %}
+
+          {% assign icountActive = icountActive | Plus: 1 %}
+
+        {% endif %}
+
+      {% endfor %}
+
+    {% endif %}
+
+
+
+    {% if countInactive > -1 %}
+      {% assign icountInactive = 0 %}
+
+      <h4>Inactive Members</h4>
+
+      {% for member in Group.Members %}
+
+        {% if member.GroupMemberStatus == 'Inactive' %}
+
+          {% assign loopcycle = icountInactive | Modulo:2 %}
+
+          {% if loopcycle == 0 %}
+          <div class="row">
+          {% endif %}
+
+          <div class="col-sm-6 margin-b-md">
+            {% if LinkedPages.PersonDetailPage != '' %}
+              <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
+            {% endif %}
+            <div class="media">
+              <div class="pull-left">
+                <img src="{{ member.Person.PhotoUrl }}&height=180&width=180&mode=crop&scale=both" height="60" width="60" />
+                {% comment %} Badges {% endcomment %}
+                <div>
+                  {% assign baptismDate = member.Person | Attribute: 'BaptismDate' %}
+                  {% if baptismDate != '' %}
+                    <i class="fa fa-tint text-info" data-toggle="tooltip" data-placement="bottom" title="Baptized on {{ baptismDate }}"></i>
+                  {% endif %}
+                  {% assign pendingBaptism = member.Person | Attribute: 'PendingBaptism' %}
+                  {% if pendingBaptism != '' and pendingBaptism != 'No' %}
+                    <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Pending Baptism"></i>
+                  {% endif %}
+
+                  {% assign startingPointDate = member.Person | Attribute: 'DateAttendedStartingPoint' %}
+                  {% if startingPointDate != '' %}
+                    <i class="fa fa-map-marker text-primary" data-toggle="tooltip" data-placement="bottom" title="Completed Starting Point on {{ startingPointDate }}"></i>
+                  {% endif %}
+                  {% assign pendingStartingPoint = member.Person | Attribute: 'PendingStartingPoint' %}
+                  {% if pendingStartingPoint != '' %}
+                    <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Starting Point Pending"></i>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="media-body">
+                <strong class="media-heading">{{ member.Person.FullName }}</strong> <small>({{ member.GroupRole.Name}})</small>
+                <div>
+                  {% for phone in member.Person.PhoneNumbers %}
+                  {{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small><br />
+                  {% endfor %}
+
+                  {% assign memberAddress =  member.Person | Address:'Home' %}
+                  {% if memberAddress != '' %}
+                  {{ member.Person | Address:'Home' }}<br />
+                  {% endif %}
+
+                  <a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
+                </div>
+              </div>
+            </div>
+
+            {% if LinkedPages.PersonDetailPage != '' %}
+              </a>
+            {% endif %}
+          </div>
+
+          {% if loopcycle != 0 or icountInactive == countInactive %}
+            </div>
+          {% endif %}
+
+          {% assign icountInactive = icountInactive | Plus: 1 %}
+
+        {% endif %}
+
+      {% endfor %}
+
+    {% endif %}
+  </div>
+
+
+
+{% else %}
+  {% if Group.Id %}
+    <div class='alert alert-warning'>You do not have persmission to view this group.</div>
+  {% endif %}
+{% endif %}
