@@ -190,8 +190,8 @@ function() {
             RockDropDownList ddlGroupMemberStatus = new RockDropDownList();
             ddlGroupMemberStatus.CssClass = "js-group-member-status";
             ddlGroupMemberStatus.ID = filterControl.ID + "_ddlGroupMemberStatus";
-            ddlGroupMemberStatus.Label = "with Group Member status";
-            ddlGroupMemberStatus.Help = "Select a specific group member status to only include group members with that status";
+            ddlGroupMemberStatus.Label = "with Group Member Status";
+            ddlGroupMemberStatus.Help = "Select a specific group member status to only include group members with that status. Leaving this blank will return all members.";
             ddlGroupMemberStatus.BindToEnum<GroupMemberStatus>( true );
             ddlGroupMemberStatus.SetValue( GroupMemberStatus.Active.ConvertToInt() );
             filterControl.Controls.Add( ddlGroupMemberStatus );

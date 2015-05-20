@@ -113,6 +113,7 @@ body {
   font-size: 20px;
   font-weight: @checkin-button-alttext-weight;
   margin-left: 20px;
+  white-space: normal;
 }
 
 // checkin body items
@@ -230,6 +231,10 @@ body {
     height: 80px;
   }
 
+   a:focus, a:active {
+       background-color: @btn-default-bg;
+   }
+
    a.digit {
     font-size: 48px;
     font-weight: @font-weight-semibold;
@@ -253,6 +258,17 @@ body {
   .modal-footer {
     border-top-color: lighten(@bg-color, 20%);
   }
+}
+
+// checkin override button
+.btn-checkin-override {
+    position: absolute;
+    width: 110px;
+    height: 110px;
+    bottom: 0;
+    right: 0;
+    border: 0;
+    background-color: transparent;
 }
 
 // 5. Specific Page Styles

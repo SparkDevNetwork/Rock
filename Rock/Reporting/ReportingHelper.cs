@@ -29,13 +29,19 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class ReportingHelper
     {
         /// <summary>
         /// Shows the preview.
         /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="filter">The filter.</param>
+        /// <param name="report">The report.</param>
+        /// <param name="gReport">The g report.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
+        /// <param name="errorMessage">The error message.</param>
         public static void BindGrid( Report report, Grid gReport, Person currentPerson, int? databaseTimeoutSeconds, out string errorMessage )
         {
             errorMessage = null;

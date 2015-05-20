@@ -273,21 +273,29 @@ namespace Rock
 
                 foreach ( var key in liquidObject.AvailableKeys )
                 {
-                    try
+                    // Ignore the person property of the person's primary alias (prevent unnecessary recursion) 
+                    if ( key == "Person" && parentElement.Contains( ".PrimaryAlias" ) )
                     {
-                        object propValue = liquidObject[key];
-                        if ( propValue != null )
-                        {
-                            result.Add( key, propValue.LiquidizeChildren( levelsDeep, rockContext, parentElement + "." + key ) );
-                        }
-                        else
-                        {
-                            result.AddOrIgnore( key, string.Empty );
-                        }
+                        result.AddOrIgnore( key, string.Empty );
                     }
-                    catch ( Exception ex )
+                    else
                     {
-                        result.AddOrIgnore( key, ex.ToString() );
+                        try
+                        {
+                            object propValue = liquidObject[key];
+                            if ( propValue != null )
+                            {
+                                result.Add( key, propValue.LiquidizeChildren( levelsDeep, rockContext, parentElement + "." + key ) );
+                            }
+                            else
+                            {
+                                result.AddOrIgnore( key, string.Empty );
+                            }
+                        }
+                        catch ( Exception ex )
+                        {
+                            result.AddOrIgnore( key, ex.ToString() );
+                        }
                     }
                 }
 
@@ -335,6 +343,39 @@ namespace Rock
                 }
 
                 return result;
+            }
+
+            if ( myObject is Newtonsoft.Json.Linq.JObject )
+            {
+                var result = new Dictionary<string, object>();
+                var jObject = myObject as Newtonsoft.Json.Linq.JObject;
+
+                foreach ( var keyValue in jObject )
+                {
+                    try
+                    {
+                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep, rockContext, keyValue.Key ) );
+                    }
+                    catch ( Exception ex )
+                    {
+                        result.Add( keyValue.Key, ex.ToString() );
+                    }
+                }
+
+                return result;
+            }
+
+            if ( myObject is Newtonsoft.Json.Linq.JValue )
+            {
+                var jValue = ( myObject as Newtonsoft.Json.Linq.JValue );
+                if (jValue != null && jValue.Value != null)
+                {
+                    return jValue.Value.ToString();
+                }
+                else
+                {
+                    return string.Empty;
+                }
             }
 
             if ( myObject is IEnumerable )
@@ -521,7 +562,7 @@ namespace Rock
         #region String Extensions
 
         /// <summary>
-        /// Removed special characters from strings.
+        /// Removes special characters from the string so that only Alpha, Numeric, '.' and '_' remain;
         /// </summary>
         /// <param name="str">The identifier.</param>
         /// <returns></returns>
@@ -1748,6 +1789,39 @@ namespace Rock
             mdp = mdp.Replace( dtf.DateSeparator + "yyyy", "" ).Replace( "yyyy" + dtf.DateSeparator, "" );
             return dateTime.ToString( mdp );
         }
+
+        /// <summary>
+        /// Returns the date of the start of the week for the specified date/time
+        /// For example, if Monday is considered the start of the week: "2015-05-13" would return "2015-05-11"
+        /// from http://stackoverflow.com/a/38064/1755417
+        /// </summary>
+        /// <param name="dt">The dt.</param>
+        /// <param name="startOfWeek">The start of week.</param>
+        /// <returns></returns>
+        public static DateTime StartOfWeek( this DateTime dt, DayOfWeek startOfWeek )
+        {
+            int diff = dt.DayOfWeek - startOfWeek;
+            if ( diff < 0 )
+            {
+                diff += 7;
+            }
+
+            return dt.AddDays( -1 * diff ).Date;
+        }
+
+        /// <summary>
+        /// Returns the date of the last day of the week for the specified date/time
+        /// For example, if Monday is considered the start of the week: "2015-05-13" would return "2015-05-17"
+        /// from http://stackoverflow.com/a/38064/1755417
+        /// </summary>
+        /// <param name="dt">The dt.</param>
+        /// <param name="startOfWeek">The start of week.</param>
+        /// <returns></returns>
+        public static DateTime EndOfWeek( this DateTime dt, DayOfWeek startOfWeek )
+        {
+            return dt.StartOfWeek( startOfWeek ).AddDays( 6 );
+        }
+
 
         #endregion DateTime Extensions
 

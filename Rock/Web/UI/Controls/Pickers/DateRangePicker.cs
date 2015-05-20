@@ -169,6 +169,27 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private DatePicker _tbUpperValue;
 
+
+        /// <summary>
+        /// Gets or sets the class that should be applied to the div that wraps the two date pickers
+        /// default is "form-control-group"
+        /// </summary>
+        /// <value>
+        /// The inputs class.
+        /// </value>
+        public string InputsClass
+        {
+            get
+            {
+                return ( ViewState["InputsClass"] as string ) ?? "form-control-group";
+            }
+
+            set
+            {
+                ViewState["InputsClass"] = value;
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -194,9 +215,11 @@ $('#{0}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
         $('#{1}').datepicker('setStartDate', ev.date);
     }}
     
-    // close the start date picker and set focus to the end date
-    $('#{0}').data('datepicker').hide();
-    $('#{1}')[0].focus();
+    if (event && event.type == 'click') {{
+        // close the start date picker and set focus to the end date
+        $('#{0}').data('datepicker').hide();
+        $('#{1}')[0].focus();
+    }}
 }});
 
 $('#{1}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
@@ -265,11 +288,11 @@ $('#{1}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( "class", "form-control-group" );
+            writer.AddAttribute( "class", this.InputsClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _tbLowerValue.RenderControl( writer );
-            writer.Write( "<span class='to'> to </span>" );
+            writer.Write( "<div class='input-group form-control-static'> to </div>" );
             _tbUpperValue.RenderControl( writer );
 
             writer.RenderEndTag(); // form-control-group

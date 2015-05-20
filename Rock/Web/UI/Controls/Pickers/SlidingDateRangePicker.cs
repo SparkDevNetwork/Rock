@@ -15,12 +15,11 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.ComponentModel;
+using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Utility;
 
 namespace Rock.Web.UI.Controls
 {
@@ -188,28 +187,31 @@ namespace Rock.Web.UI.Controls
             this.Label = "Date Range";
 
             _ddlLastCurrent = new DropDownList();
-            _ddlLastCurrent.CssClass = "form-control input-width-md";
+            _ddlLastCurrent.CssClass = "form-control input-width-md js-slidingdaterange-select slidingdaterange-select";
             _ddlLastCurrent.ID = "ddlLastCurrent_" + this.ID;
             _ddlLastCurrent.SelectedIndexChanged += ddl_SelectedIndexChanged;
 
             _nbNumber = new NumberBox();
-            _nbNumber.CssClass = "form-control input-width-sm js-number";
+            _nbNumber.CssClass = "form-control input-width-sm js-number slidingdaterange-number";
             _nbNumber.NumberType = ValidationDataType.Integer;
             _nbNumber.ID = "nbNumber_" + this.ID;
             _nbNumber.Text = "1";
 
             _ddlTimeUnitTypeSingular = new DropDownList();
-            _ddlTimeUnitTypeSingular.CssClass = "form-control input-width-md js-time-units-singular";
+            _ddlTimeUnitTypeSingular.CssClass = "form-control input-width-md js-time-units-singular slidingdaterange-timeunits-singular";
             _ddlTimeUnitTypeSingular.ID = "ddlTimeUnitTypeSingular_" + this.ID;
             _ddlTimeUnitTypeSingular.SelectedIndexChanged += ddl_SelectedIndexChanged;
 
             _ddlTimeUnitTypePlural = new DropDownList();
-            _ddlTimeUnitTypePlural.CssClass = "form-control input-width-md js-time-units-plural";
+            _ddlTimeUnitTypePlural.CssClass = "form-control input-width-md js-time-units-plural slidingdaterange-timeunits-plural";
             _ddlTimeUnitTypePlural.ID = "ddlTimeUnitTypePlural_" + this.ID;
             _ddlTimeUnitTypePlural.SelectedIndexChanged += ddl_SelectedIndexChanged;
 
             _drpDateRange = new DateRangePicker();
-            _drpDateRange.CssClass = "js-time-units-date-range";
+
+            // change the inputsClass on the DateRangePicker to "" instead of "form-control-group";
+            _drpDateRange.InputsClass = "";
+            _drpDateRange.CssClass = "js-time-units-date-range slidingdaterange-daterange";
             _drpDateRange.ID = "drpDateRange_" + this.ID;
 
             Controls.Add( _ddlLastCurrent );
@@ -229,7 +231,7 @@ namespace Rock.Web.UI.Controls
         protected void ddl_SelectedIndexChanged( object sender, EventArgs e )
         {
             EnsureChildControls();
-            
+
             if ( SelectedDateRangeChanged != null )
             {
                 SelectedDateRangeChanged( this, e );
@@ -249,8 +251,9 @@ namespace Rock.Web.UI.Controls
             EnsureChildControls();
             _ddlLastCurrent.Items.Clear();
             _ddlLastCurrent.Items.Add( new ListItem( string.Empty, SlidingDateRangeType.All.ConvertToInt().ToString() ) );
-            _ddlLastCurrent.Items.Add( new ListItem( SlidingDateRangeType.Last.ConvertToString(), SlidingDateRangeType.Last.ConvertToInt().ToString() ) );
             _ddlLastCurrent.Items.Add( new ListItem( SlidingDateRangeType.Current.ConvertToString(), SlidingDateRangeType.Current.ConvertToInt().ToString() ) );
+            _ddlLastCurrent.Items.Add( new ListItem( SlidingDateRangeType.Previous.ConvertToString(), SlidingDateRangeType.Previous.ConvertToInt().ToString() ) );
+            _ddlLastCurrent.Items.Add( new ListItem( SlidingDateRangeType.Last.ConvertToString(), SlidingDateRangeType.Last.ConvertToInt().ToString() ) );
             _ddlLastCurrent.Items.Add( new ListItem( SlidingDateRangeType.DateRange.ConvertToString(), SlidingDateRangeType.DateRange.ConvertToInt().ToString() ) );
 
             _ddlTimeUnitTypeSingular.Items.Clear();
@@ -277,19 +280,24 @@ namespace Rock.Web.UI.Controls
             All = -1,
 
             /// <summary>
-            /// The last
+            /// The last X days,weeks,months, etc (inclusive of current day,week,month,...)
             /// </summary>
             Last = 0,
 
             /// <summary>
-            /// The current
+            /// The current day,week,month,year
             /// </summary>
             Current = 1,
 
             /// <summary>
             /// The date range
             /// </summary>
-            DateRange = 2
+            DateRange = 2,
+
+            /// <summary>
+            /// The previous X days,weeks,months, etc (excludes current day,week,month,...)
+            /// </summary>
+            Previous = 4
         }
 
         /// <summary>
@@ -331,7 +339,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                RockControlHelper.RenderControl( this, writer );
+                RockControlHelper.RenderControl( this, writer, "slidingdaterange" );
             }
         }
 
@@ -341,17 +349,17 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            // "-1" = All, "0" = Last, "1" = Current, "2" = Date Range
-            _nbNumber.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "0" ) ? string.Empty : "none";
-            _ddlTimeUnitTypeSingular.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "1" ) ? string.Empty : "none";
-            _ddlTimeUnitTypePlural.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "0" ) ? string.Empty : "none";
-            _drpDateRange.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "2" ) ? string.Empty : "none";
-            
             bool needsAutoPostBack = SelectedDateRangeChanged != null;
             _ddlLastCurrent.AutoPostBack = needsAutoPostBack;
             _ddlTimeUnitTypeSingular.AutoPostBack = needsAutoPostBack;
             _ddlTimeUnitTypePlural.AutoPostBack = needsAutoPostBack;
 
+            writer.WriteLine();
+            writer.AddAttribute( "class", "label label-info js-slidingdaterange-info slidingdaterange-info" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( "id", this.ClientID );
             writer.AddAttribute( "class", "form-control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -371,40 +379,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected virtual void RegisterJavaScript()
         {
-            string scriptFormat = @"
-                $('#{0}').on('change', function(a,b) {{
-                    if ($('#{0}').val() == '2') {{
-                        // date range ...
-                        $('#{0}').siblings('.js-number').hide();
-                        $('#{0}').siblings('.js-time-units-singular').hide();
-                        $('#{0}').siblings('.js-time-units-plural').hide();
-                        $('#{0}').siblings('.js-time-units-date-range').show();
-                    }}                    
-                    else if ($('#{0}').val() == '1') {{
-                        // current ...
-                        $('#{0}').siblings('.js-number').hide();
-                        $('#{0}').siblings('.js-time-units-singular').show();
-                        $('#{0}').siblings('.js-time-units-plural').hide();
-                        $('#{0}').siblings('.js-time-units-date-range').hide();
-                    }}
-                    else if ($('#{0}').val() == '0') {{
-                        // last x ...
-                        $('#{0}').siblings('.js-number').show();    
-                        $('#{0}').siblings('.js-time-units-singular').hide();
-                        $('#{0}').siblings('.js-time-units-plural').show();
-                        $('#{0}').siblings('.js-time-units-date-range').hide();
-                    }}
-                    else {{
-                        // all    
-                        $('#{0}').siblings('.js-number').hide();
-                        $('#{0}').siblings('.js-time-units-singular').hide();
-                        $('#{0}').siblings('.js-time-units-plural').hide();
-                        $('#{0}').siblings('.js-time-units-date-range').hide();
-                    }}
-                }});
-";
-
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "sliding-date-range-script", string.Format( scriptFormat, _ddlLastCurrent.ClientID ), true );
+            var script = string.Format( @"Rock.controls.slidingDateRangePicker.initialize({{ id: '{0}' }});", this.ClientID );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "slidingdaterange_picker-" + this.ClientID, script, true );
         }
 
         /// <summary>
@@ -461,7 +437,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                if ( SlidingDateRangeMode == SlidingDateRangeType.Last )
+                if ( ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous ).HasFlag( this.SlidingDateRangeMode ) )
                 {
                     return _ddlTimeUnitTypePlural.SelectedValueAsEnum<TimeUnitType>();
                 }
@@ -542,12 +518,12 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return string.Format( 
-                    "{0}|{1}|{2}|{3}|{4}", 
-                    this.SlidingDateRangeMode, 
-                    this.SlidingDateRangeMode == SlidingDateRangeType.Last ? this.NumberOfTimeUnits : (int?)null,
-                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Current ).HasFlag(this.SlidingDateRangeMode) ? this.TimeUnit : (TimeUnitType?)null,
-                    this.SlidingDateRangeMode == SlidingDateRangeType.DateRange ? this.DateRangeModeStart : null, 
+                return string.Format(
+                    "{0}|{1}|{2}|{3}|{4}",
+                    this.SlidingDateRangeMode,
+                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous ).HasFlag( this.SlidingDateRangeMode ) ? this.NumberOfTimeUnits : (int?)null,
+                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Current ).HasFlag( this.SlidingDateRangeMode ) ? this.TimeUnit : (TimeUnitType?)null,
+                    this.SlidingDateRangeMode == SlidingDateRangeType.DateRange ? this.DateRangeModeStart : null,
                     this.SlidingDateRangeMode == SlidingDateRangeType.DateRange ? this.DateRangeModeEnd : null );
             }
 
@@ -585,7 +561,7 @@ namespace Rock.Web.UI.Controls
                 {
                     return string.Format( "{0} {1}", slidingDateRangeMode.ConvertToString(), timeUnit.ConvertToString() );
                 }
-                else if ( slidingDateRangeMode == SlidingDateRangeType.Last )
+                else if ( ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous ).HasFlag( slidingDateRangeMode ) )
                 {
                     return string.Format( "{0} {1} {2}", slidingDateRangeMode.ConvertToString(), numberOfTimeUnits, timeUnit.ConvertToString() );
                 }
@@ -599,7 +575,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Calculates the date range from delimited values.
+        /// Calculates the date range from delimited values in format SlidingDateRangeType|Number|TimeUnitType|StartDate|EndDate
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
@@ -651,19 +627,23 @@ namespace Rock.Web.UI.Controls
                             break;
                     }
                 }
-                else if ( slidingDateRangeMode == SlidingDateRangeType.Last )
+                else if ( ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous ).HasFlag( slidingDateRangeMode ) )
                 {
-                    // Last X Days/Hours, 
+                    // Last X Days/Hours. NOTE: addCount is the number of X that it go back (it'll actually subtract)
                     int addCount = numberOfTimeUnits;
+
+                    // if we are getting "Last" round up to inlude the current day/week/month/year
+                    int roundUpCount = slidingDateRangeMode == SlidingDateRangeType.Last ? 1 : 0;
+
                     switch ( timeUnit )
                     {
                         case TimeUnitType.Hour:
-                            result.End = new DateTime( currentDateTime.Year, currentDateTime.Month, currentDateTime.Day, currentDateTime.Hour, 0, 0 ).AddHours( 1 );
+                            result.End = new DateTime( currentDateTime.Year, currentDateTime.Month, currentDateTime.Day, currentDateTime.Hour, 0, 0 ).AddHours( roundUpCount );
                             result.Start = result.End.Value.AddHours( -addCount );
                             break;
 
                         case TimeUnitType.Day:
-                            result.End = currentDateTime.Date.AddDays( 1 );
+                            result.End = currentDateTime.Date.AddDays( roundUpCount );
                             result.Start = result.End.Value.AddDays( -addCount );
                             break;
 
@@ -675,17 +655,17 @@ namespace Rock.Web.UI.Controls
                                 diff += 7;
                             }
 
-                            result.End = currentDateTime.AddDays( -1 * diff ).Date.AddDays( 7 );
+                            result.End = currentDateTime.AddDays( -1 * diff ).Date.AddDays( 7 * roundUpCount );
                             result.Start = result.End.Value.AddDays( -addCount * 7 );
                             break;
 
                         case TimeUnitType.Month:
-                            result.End = new DateTime( currentDateTime.Year, currentDateTime.Month, 1 ).AddMonths( 1 );
+                            result.End = new DateTime( currentDateTime.Year, currentDateTime.Month, 1 ).AddMonths( roundUpCount );
                             result.Start = result.End.Value.AddMonths( -addCount );
                             break;
 
                         case TimeUnitType.Year:
-                            result.End = new DateTime( currentDateTime.Year, 1, 1 ).AddYears( 1 );
+                            result.End = new DateTime( currentDateTime.Year, 1, 1 ).AddYears( roundUpCount );
                             result.Start = result.End.Value.AddYears( -addCount );
                             break;
                     }
@@ -694,10 +674,10 @@ namespace Rock.Web.UI.Controls
                 {
                     result.Start = splitValues[3].AsDateTime();
                     DateTime? endDateTime = splitValues[4].AsDateTime();
-                    if (endDateTime.HasValue)
+                    if ( endDateTime.HasValue )
                     {
                         // add a day to the end since the compare will be "< EndDateTime"
-                        result.End = endDateTime.Value.AddDays(1);
+                        result.End = endDateTime.Value.AddDays( 1 );
                     }
                     else
                     {
@@ -707,6 +687,62 @@ namespace Rock.Web.UI.Controls
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the help HTML that explains usage of the SlidingDateRange picker with examples
+        /// </summary>
+        /// <param name="currentDateTime">The current date time.</param>
+        /// <returns></returns>
+        public static string GetHelpHtml( DateTime currentDateTime )
+        {
+            SlidingDateRangePicker helperPicker = new SlidingDateRangePicker();
+            SlidingDateRangeType[] slidingDateRangeTypesForHelp = new SlidingDateRangeType[] { SlidingDateRangeType.Current, SlidingDateRangeType.Previous, SlidingDateRangeType.Last };
+
+            string helpHtml = @"
+    
+    <div class='slidingdaterange-help'>
+
+        <p>A date range can either be a specific date range, or a sliding date range based on the current date and time.</p>
+        <p>For a sliding date range, you can choose either <strong>current, previous, or last</strong> with a time period of <strong>hour, day, week, month, or year</strong>. Note that a week is Monday thru Sunday.</p>
+        <br />
+        <ul class=''>
+            <li><strong>Current</strong> - the time period that the current date/time is in</li>
+            <li><strong>Previous</strong> - the time period(s) prior to the current period (does not include the current time period). For example, to see the most recent weekend, select 'Previous 1 Week'</li>
+            <li><strong>Last</strong> - the last X time period(s), including the current period. For example, to see the current week and prior week, select 'Last 2 weeks'</li>
+        </ul>
+
+        <h3>Preview of the sliding date ranges</h3>";
+
+            foreach ( var slidingDateRangeType in slidingDateRangeTypesForHelp )
+            {
+                helperPicker.SlidingDateRangeMode = slidingDateRangeType;
+                helperPicker.NumberOfTimeUnits = 2;
+                StringBuilder sb = new StringBuilder();
+                sb.AppendFormat( @"<h4>{0}</h4>", slidingDateRangeType.ConvertToString() );
+                sb.AppendLine( "<ul>" );
+                foreach ( var timeUnitType in Enum.GetValues( typeof( TimeUnitType ) ).OfType<TimeUnitType>() )
+                {
+                    helperPicker.TimeUnit = timeUnitType;
+                    sb.AppendFormat( @"
+                    <li>
+                        <span class='slidingdaterange-help-key'>{0} {1}</span>
+                        <span class='slidingdaterange-help-value'> - {2}</span>
+                    </li>",
+                          slidingDateRangeType != SlidingDateRangeType.Current ? helperPicker.NumberOfTimeUnits.ToString() : string.Empty,
+                          helperPicker.TimeUnit.ConvertToString().PluralizeIf( slidingDateRangeType != SlidingDateRangeType.Current && helperPicker.NumberOfTimeUnits > 1 ),
+                          SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( helperPicker.DelimitedValues ).ToStringAutomatic() );
+                }
+                sb.AppendLine( "</ul>" );
+
+                helpHtml += sb.ToString();
+            }
+
+            helpHtml += @"
+    </div>
+";
+
+            return helpHtml;
         }
     }
 }

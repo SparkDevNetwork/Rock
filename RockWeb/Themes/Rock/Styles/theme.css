@@ -748,6 +748,7 @@ Copyright (c) 2012 Dan Eden*/
     28. Key Value Pair Control - styling for key/value pair control
     29. Context Setters
     30. Paneled List Group - extends the bootstrap list group to behave in a panel
+    31. Sliding Date Range 
 */
 .picker {
   position: relative;
@@ -2095,6 +2096,11 @@ ul.list-group-panel .list-group-item {
 ul.list-group-panel .list-group-item:first-child {
   border: 0;
 }
+.slidingdaterange-select,
+.slidingdaterange-number,
+.slidingdaterange-daterange .input-group {
+  margin-bottom: 6px;
+}
 /*
     Used to manage styles related to Rock's forms
     
@@ -2471,6 +2477,7 @@ td.grid-col-actions {
 }
 .grid-select-field {
   text-align: center;
+  min-width: 40px;
 }
 .grid-select-field .checkbox,
 .grid-select-field .radio {
@@ -2485,6 +2492,7 @@ td.grid-col-actions {
 .grid-select-field .checkbox:last-child,
 .grid-select-field .radio:last-child {
   margin-bottom: 0px;
+  margin-left: -12px;
 }
 .grid-select-field .checkbox label,
 .grid-select-field .radio label {
@@ -2681,6 +2689,11 @@ tr.row-highlight td {
 }
 .filter-item div[class*='col'] {
   margin-bottom: 6px;
+}
+.data-view-filter-field-label {
+  font-weight: 900;
+  margin-top: 8px;
+  display: block;
 }
 @media (min-width: 992px) {
   .filter-item div[class*='col'] {
@@ -3948,13 +3961,34 @@ iframe.email-body {
     Used to manage styles for check-in administration.
 
     1. Group / Location
-    2. 
+    2. Attendance Analysis
 */
 .panel.panel-widget.checkin-group {
   border-top-color: #afd074;
 }
 .panel.panel-widget.checkin-grouptype {
   border-top-color: #5593a4;
+}
+.attendance-reporting .panel-body {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.attendance-reporting .panel-body > .row > [class*="col-"]:first-child {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+@media (min-width: 992px) {
+  .attendance-reporting .panel-body .row {
+    margin-left: -16px;
+  }
+}
+.attendance-reporting .filter-options {
+  background-color: #efefef;
+}
+.attendance-reporting .analysis-types {
+  padding: 15px 0;
+  background-color: #efefef;
+  margin-bottom: 24px;
 }
 /*
     Used to manage styles for specific blocks.
@@ -4146,6 +4180,7 @@ iframe.email-body {
   1. Variables - specific variables for sizing classes and media query helpers
   2. Colors - creates utility classes for each of the accent colors
   3. Spacing - provides utility classes for spacing based off of the themes gutter widths
+  4. Even Height Columns - provides classes for making columns even heights
 
 */
 .accent-color {
@@ -4419,6 +4454,20 @@ iframe.email-body {
 }
 .margin-l-xl {
   margin-left: 60px !important;
+}
+.row-eq-height {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  overflow: hidden;
+}
+@media (min-width: 992px) {
+  .row-eq-height-md {
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    overflow: hidden;
+  }
 }
 .cke_dialog_contents {
   background-color: #f3f3f4 !important;
@@ -5557,6 +5606,10 @@ h4,
 }
 #content-wrapper #page-title .breadcrumb li + li:before {
   color: #a1998d;
+}
+#content-wrapper #page-title .pageoverview-description {
+  opacity: .7;
+  margin-top: 4px;
 }
 #content-wrapper #page-content {
   padding: 15px;

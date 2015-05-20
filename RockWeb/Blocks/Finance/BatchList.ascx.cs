@@ -35,7 +35,6 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Batch List" )]
     [Category( "Finance" )]
     [Description( "Lists all financial batches and provides filtering by campus, status, etc." )]
-
     [LinkedPage( "Detail Page", order: 0 )]
     [BooleanField( "Show Accounting Code", "Should the accounting code column be displayed.", false, "", 1 )]
     public partial class BatchList : Rock.Web.UI.RockBlock, IPostBackEventHandler
@@ -187,6 +186,7 @@ namespace RockWeb.Blocks.Finance
         protected void gfBatchFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             gfBatchFilter.SaveUserPreference( "Date Range", drpBatchDate.DelimitedValues );
+            gfBatchFilter.SaveUserPreference( "Row Limit", nbRowLimit.Text );
             gfBatchFilter.SaveUserPreference( "Title", tbTitle.Text );
             if ( tbAccountingCode.Visible )
             {
@@ -226,6 +226,27 @@ namespace RockWeb.Blocks.Finance
             }
 
             BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gBatchList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gBatchList_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var batchRow = e.Row.DataItem as BatchRow;
+                var deleteField = gBatchList.Columns.OfType<DeleteField>().First();
+                var cell = ( e.Row.Cells[gBatchList.Columns.IndexOf( deleteField )] as DataControlFieldCell ).Controls[0];
+
+                // Hide delete button if the batch is closed.
+                if ( batchRow != null && batchRow.Status == BatchStatus.Closed && cell != null )
+                {
+                    cell.Visible = false;
+                }
+            }
         }
 
         /// <summary>
@@ -359,11 +380,13 @@ namespace RockWeb.Blocks.Finance
 
             ddlStatus.SetValue( statusFilter );
 
+            nbRowLimit.Text = gfBatchFilter.GetUserPreference( "Row Limit" );
+
             var campusi = CampusCache.All();
             campCampus.Campuses = campusi;
             campCampus.Visible = campusi.Any();
             campCampus.SetValue( gfBatchFilter.GetUserPreference( "Campus" ) );
-            
+
             drpBatchDate.DelimitedValues = gfBatchFilter.GetUserPreference( "Date Range" );
         }
 
@@ -387,9 +410,14 @@ namespace RockWeb.Blocks.Finance
                     UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue )
                 } );
 
-            var batchRowList = batchRowQry.ToList();
+            // Row Limit
+            int? rowLimit = gfBatchFilter.GetUserPreference( "Row Limit" ).AsIntegerOrNull();
+            if ( rowLimit.HasValue )
+            {
+                batchRowQry = batchRowQry.Take( rowLimit.Value );
+            }
 
-            gBatchList.DataSource = batchRowList;
+            gBatchList.DataSource = batchRowQry.ToList();
             gBatchList.EntityTypeId = EntityTypeCache.Read<Rock.Model.FinancialBatch>().Id;
             gBatchList.DataBind();
 

@@ -50,18 +50,81 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// Adds the attributes of the <see cref="T:System.Web.UI.WebControls.LinkButton" /> control to the output stream for rendering on the client.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
-        public override void RenderControl( HtmlTextWriter writer )
+        /// <param name="writer">A <see cref="T:System.Web.UI.HtmlTextWriter" /> that contains the output stream to render on the client.</param>
+        protected override void AddAttributesToRender( HtmlTextWriter writer )
         {
+            // Implementation of LinkButton and WebControl base methods to prevent href value from being rendered...
+
+            if ( this.Page != null )
+            {
+                this.Page.VerifyRenderingInServerForm( this );
+            }
+
+            // Check for enabled/disabled
+            bool isEnabled = base.IsEnabled;
+            if ( this.Enabled && !isEnabled && this.SupportsDisabledAttribute )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Disabled, "disabled" );
+            }
+
+            if ( this.ID != null )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
+            }
+
+            if ( !this.Enabled )
+            {
+                if ( this.SupportsDisabledAttribute )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Disabled, "disabled" );
+                }
+
+                if ( !string.IsNullOrEmpty( this.CssClass ) )
+                {
+                    this.ControlStyle.CssClass = string.Concat( WebControl.DisabledCssClass, " ", this.CssClass );
+                }
+                else
+                {
+                    this.ControlStyle.CssClass = WebControl.DisabledCssClass;
+                }
+            }
+
+            int tabIndex = this.TabIndex;
+            if ( tabIndex != 0 )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Tabindex, tabIndex.ToString( NumberFormatInfo.InvariantInfo ) );
+            }
+            string toolTip = this.ToolTip;
+            if ( toolTip.Length > 0 )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Title, toolTip );
+            }
+
+            if ( this.ControlStyleCreated && !this.ControlStyle.IsEmpty )
+            {
+                this.ControlStyle.AddAttributesToRender( writer, this );
+            }
+
+            string postBackEventReference = "";
+            if ( isEnabled && this.Page != null )
+            {
+                PostBackOptions postBackOptions = this.GetPostBackOptions();
+                if ( postBackOptions != null )
+                {
+                    postBackEventReference = this.Page.ClientScript.GetPostBackEventReference( postBackOptions, true );
+                }
+            }
+
             if ( !string.IsNullOrWhiteSpace( DataLoadingText ) )
             {
                 writer.AddAttribute( "data-loading-text", DataLoadingText );
             }
 
-            this.OnClientClick = "Rock.controls.bootstrapButton.showLoading(this);";
-            base.RenderControl( writer );
+            writer.AddAttribute( HtmlTextWriterAttribute.Onclick, "Rock.controls.bootstrapButton.showLoading(this);" + postBackEventReference );
+            writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
         }
+
     }
 }
