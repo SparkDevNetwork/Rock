@@ -51,6 +51,9 @@ namespace RockWeb.Blocks.CheckIn
         private List<DateTime> _possibleAttendances = null;
         private Dictionary<int, string> _scheduleNameLookup = null;
 
+        private List<Guid> ProcessedGroupTypeIds = new List<Guid>();
+        private List<Guid> ProcessedGroupIds = new List<Guid>();
+
         #endregion
 
         #region Base Control Methods
@@ -102,6 +105,9 @@ namespace RockWeb.Blocks.CheckIn
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            ProcessedGroupTypeIds = new List<Guid>();
+            ProcessedGroupIds = new List<Guid>();
 
             // GroupTypesUI dynamically creates controls, so we need to rebuild it on every OnLoad()
             BuildGroupTypesUI();
@@ -1134,59 +1140,53 @@ function(item) {
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
         /// <param name="pnlGroupTypes">The PNL group types.</param>
-        private void AddGroupTypeControls( GroupType groupType, HtmlGenericContainer liGroupTypeItem, List<int> addedGroupTypes = null )
+        private void AddGroupTypeControls( GroupType groupType, HtmlGenericContainer liGroupTypeItem )
         {
-            if ( addedGroupTypes == null )
+            ProcessedGroupTypeIds.Add( groupType.Guid );
+
+            if ( groupType.Groups.Any() )
             {
-                addedGroupTypes = new List<int>();
+                bool showGroupAncestry = GetAttributeValue( "ShowGroupAncestry" ).AsBoolean( true );
+
+                var groupService = new GroupService( _rockContext );
+
+                var cblGroupTypeGroups = new RockCheckBoxList { ID = "cblGroupTypeGroups" + groupType.Id };
+
+                cblGroupTypeGroups.Label = groupType.Name;
+                cblGroupTypeGroups.Items.Clear();
+
+                var allGroupIds = groupType.Groups.Select( g => g.Id ).ToList();
+                foreach ( var group in groupType.Groups
+                    .Where( g => !g.ParentGroupId.HasValue ||
+                        !allGroupIds.Contains( g.ParentGroupId.Value ) )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name )
+                    .ToList() )
+                {
+                    AddGroupControls( group, cblGroupTypeGroups, groupService, showGroupAncestry );
+                }
+
+                liGroupTypeItem.Controls.Add( cblGroupTypeGroups );
             }
-
-            if ( !addedGroupTypes.Contains( groupType.Id ) )
+            else
             {
-                addedGroupTypes.Add( groupType.Id );
-
-                if ( groupType.Groups.Any() )
-                {
-                    bool showGroupAncestry = GetAttributeValue( "ShowGroupAncestry" ).AsBoolean( true );
-
-                    var groupService = new GroupService( _rockContext );
-
-                    var cblGroupTypeGroups = new RockCheckBoxList { ID = "cblGroupTypeGroups" + groupType.Id };
-
-                    cblGroupTypeGroups.Label = groupType.Name;
-                    cblGroupTypeGroups.Items.Clear();
-
-                    foreach ( var group in groupType.Groups
-                        .Where( g => !g.ParentGroupId.HasValue )
-                        .OrderBy( a => a.Order )
-                        .ThenBy( a => a.Name )
-                        .ToList() )
-                    {
-                        AddGroupControls( group, cblGroupTypeGroups, groupService, showGroupAncestry );
-                    }
-
-                    liGroupTypeItem.Controls.Add( cblGroupTypeGroups );
-                }
-                else
-                {
-                    if ( groupType.ChildGroupTypes.Any() )
-                    {
-                        liGroupTypeItem.Controls.Add( new Label { Text = groupType.Name, ID = "lbl" + groupType.Name } );
-                    }
-                }
-
                 if ( groupType.ChildGroupTypes.Any() )
                 {
-                    var ulGroupTypeList = new HtmlGenericContainer( "ul", "rocktree-children" );
+                    liGroupTypeItem.Controls.Add( new Label { Text = groupType.Name, ID = "lbl" + groupType.Name } );
+                }
+            }
 
-                    liGroupTypeItem.Controls.Add( ulGroupTypeList );
-                    foreach ( var childGroupType in groupType.ChildGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
-                    {
-                        var liChildGroupTypeItem = new HtmlGenericContainer( "li", "rocktree-item rocktree-folder" );
-                        liChildGroupTypeItem.ID = "liGroupTypeItem" + childGroupType.Id;
-                        ulGroupTypeList.Controls.Add( liChildGroupTypeItem );
-                        AddGroupTypeControls( childGroupType, liChildGroupTypeItem, addedGroupTypes );
-                    }
+            if ( groupType.ChildGroupTypes.Any() )
+            {
+                var ulGroupTypeList = new HtmlGenericContainer( "ul", "rocktree-children" );
+
+                liGroupTypeItem.Controls.Add( ulGroupTypeList );
+                foreach ( var childGroupType in groupType.ChildGroupTypes.Where( a => !ProcessedGroupTypeIds.Contains( a.Guid ) ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+                {
+                    var liChildGroupTypeItem = new HtmlGenericContainer( "li", "rocktree-item rocktree-folder" );
+                    liChildGroupTypeItem.ID = "liGroupTypeItem" + childGroupType.Id;
+                    ulGroupTypeList.Controls.Add( liChildGroupTypeItem );
+                    AddGroupTypeControls( childGroupType, liChildGroupTypeItem );
                 }
             }
         }
@@ -1200,6 +1200,8 @@ function(item) {
         /// <param name="showGroupAncestry">if set to <c>true</c> [show group ancestry].</param>
         private void AddGroupControls( Group group, RockCheckBoxList checkBoxList, GroupService service, bool showGroupAncestry )
         {
+            ProcessedGroupIds.Add( group.Guid );
+
             // Only show groups that actually have a schedule
             if ( group != null )
             {
@@ -1212,6 +1214,8 @@ function(item) {
                 if ( group.Groups != null )
                 {
                     foreach ( var childGroup in group.Groups
+                        .Where( a => !ProcessedGroupIds.Contains( a.Guid ) &&
+                            a.GroupTypeId == group.GroupTypeId )
                         .OrderBy( a => a.Order )
                         .ThenBy( a => a.Name )
                         .ToList() )
