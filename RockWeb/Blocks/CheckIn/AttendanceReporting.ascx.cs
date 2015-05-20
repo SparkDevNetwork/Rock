@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.CheckIn
     [Description( "Shows a graph of attendance statistics which can be configured for specific groups, date range, etc." )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked" )]
+    [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true)]
     [GroupTypeField( "Check-in Type", required: false, key: "GroupTypeTemplate", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
     public partial class AttendanceReporting : RockBlock
     {
@@ -718,7 +719,7 @@ function(item) {
             {
                 // only return attendees where their nth visit is within the selected daterange
                 int skipCount = byNthVisit.Value - 1;
-                qryResult = qryResult.Where( a => a.FirstVisits.OrderBy( x => x.StartDateTime ).Skip( skipCount ).Take( 1 ).Any( d => d.StartDateTime >= dateRange.Start && d.StartDateTime < dateRange.End) );
+                qryResult = qryResult.Where( a => a.FirstVisits.OrderBy( x => x.StartDateTime ).Skip( skipCount ).Take( 1 ).Any( d => d.StartDateTime >= dateRange.Start && d.StartDateTime < dateRange.End ) );
             }
 
             if ( attendedMinCount.HasValue )
@@ -737,11 +738,11 @@ function(item) {
                     var qryMissedAttendanceByPersonAndSummary = qryMissed.GetAttendanceWithSummaryDateTime( groupBy )
                         .GroupBy( g1 => new { g1.SummaryDateTime, g1.Attendance.PersonAlias.PersonId } )
                         .GroupBy( a => a.Key.PersonId )
-                        .Select(a => new
+                        .Select( a => new
                         {
                             PersonId = a.Key,
                             AttendanceCount = a.Count()
-                        });
+                        } );
 
                     var qryMissedByPerson = qryMissedAttendanceByPersonAndSummary.
                         Where( x => ( attendedMissedPossibleCount - x.AttendanceCount ) >= attendedMissedCount );
@@ -1201,7 +1202,17 @@ function(item) {
             {
                 if ( group.ScheduleId.HasValue || group.GroupLocations.Any( l => l.Schedules.Any() ) )
                 {
-                    checkBoxList.Items.Add( new ListItem( service.GroupAncestorPathName( group.Id ), group.Id.ToString() ) );
+                    string displayName = string.Empty;
+                    if ( GetAttributeValue( "ShowGroupAncestry" ).AsBoolean() )
+                    {
+                        displayName = service.GroupAncestorPathName( group.Id );
+                    }
+                    else 
+                    {
+                        displayName = group.Name;
+                    }
+
+                    checkBoxList.Items.Add( new ListItem( displayName, group.Id.ToString() ) );
                 }
 
                 if ( group.Groups != null )
@@ -1353,9 +1364,6 @@ function(item) {
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnGroupBy_Click( object sender, EventArgs e )
         {
-
-
-
             btnApply_Click( sender, e );
         }
     }
