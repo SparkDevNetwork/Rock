@@ -27,7 +27,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an eventitemcampus.
+    /// Represents an event item campus.
     /// </summary>
     [Table( "EventItemCampus" )]
     [DataContract]

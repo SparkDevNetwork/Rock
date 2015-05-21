@@ -32,7 +32,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Calendar
 {
     [DisplayName( "Event Calendar Item List" )]
-    [Category( "Calendar" )]
+    [Category( "Event Calendar" )]
     [Description( "Lists all the items in the given calendar." )]
 
     [LinkedPage( "Detail Page" )]

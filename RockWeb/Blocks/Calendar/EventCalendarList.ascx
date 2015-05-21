@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CalendarTypes.ascx.cs" Inherits="RockWeb.Blocks.Calendar.CalendarTypes" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EventCalendarList.ascx.cs" Inherits="RockWeb.Blocks.Calendar.CalendarTypes" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -16,7 +16,7 @@
 
                 <div class="list-as-blocks margin-t-lg clearfix">
                     <ul class="list-unstyled">
-                        <asp:Repeater ID="rptEventCalendarTypes" runat="server">
+                        <asp:Repeater ID="rptEventCalendars" runat="server">
                             <ItemTemplate>
                                 <li>
                                     <asp:LinkButton ID="lbEventCalendar" runat="server" CommandArgument='<%# Eval("EventCalendar.Id") %>' CommandName="Display">

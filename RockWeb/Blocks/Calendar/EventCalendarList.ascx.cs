@@ -37,9 +37,9 @@ namespace RockWeb.Blocks.Calendar
     /// <summary>
     /// Block to display the evnet calendars that user is authorized to view, and the activities that are currently assigned to the user.
     /// </summary>
-    [DisplayName( "Calendar Types" )]
-    [Category( "Calendar" )]
-    [Description( "Block to display the calendar types." )]
+    [DisplayName( "Event Calendar List" )]
+    [Category( "Event Calendar" )]
+    [Description( "Block to display the event calendars." )]
 
     [LinkedPage( "Detail Page", "Page used to view status of an event calendar." )]
     public partial class CalendarTypes : Rock.Web.UI.RockBlock
@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Calendar
         {
             base.OnInit( e );
 
-            rptEventCalendarTypes.ItemCommand += rptEventCalendarTypes_ItemCommand;
+            rptEventCalendars.ItemCommand += rptEventCalendars_ItemCommand;
         }
 
         /// <summary>
@@ -83,11 +83,11 @@ namespace RockWeb.Blocks.Calendar
         }
 
         /// <summary>
-        /// Handles the ItemCommand event of the rptEventCalendarTypes control.
+        /// Handles the ItemCommand event of the rptEventCalendars control.
         /// </summary>
         /// <param name="source">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void rptEventCalendarTypes_ItemCommand( object source, RepeaterCommandEventArgs e )
+        protected void rptEventCalendars_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             int? eventCalendarId = e.CommandArgument.ToString().AsIntegerOrNull();
             if ( eventCalendarId.HasValue )
@@ -126,8 +126,8 @@ namespace RockWeb.Blocks.Calendar
                     EventCalendar = w
                 } );
 
-            rptEventCalendarTypes.DataSource = qry.ToList();
-            rptEventCalendarTypes.DataBind();
+            rptEventCalendars.DataSource = qry.ToList();
+            rptEventCalendars.DataBind();
         }
         #endregion
 

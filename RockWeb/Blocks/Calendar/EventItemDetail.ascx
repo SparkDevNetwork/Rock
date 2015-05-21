@@ -8,7 +8,6 @@
 
 <asp:UpdatePanel ID="upnlEventItemList" runat="server">
     <ContentTemplate>
-
         <asp:Panel ID="pnlDetails" runat="server">
             <asp:HiddenField ID="hfEventItemId" runat="server" />
 
@@ -51,16 +50,6 @@
                         </div>
 
                         <div class="row">
-                            <%--<div class="col-md-6">
-                                <div class="grid">
-                                    <Rock:Grid ID="gSchedules" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Schedule">
-                                        <Columns>
-                                            <Rock:RockBoundField DataField="Schedule" HeaderText="Schedules" />
-                                            <Rock:DeleteField OnClick="gSchedules_Delete" />
-                                        </Columns>
-                                    </Rock:Grid>
-                                </div>
-                            </div>--%>
                             <div class="col-md-6">
                                 <div class="grid">
                                     <Rock:Grid ID="gAudiences" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Audience">
@@ -70,6 +59,8 @@
                                         </Columns>
                                     </Rock:Grid>
                                 </div>
+                            </div>
+                            <div class="col-md-6">
                             </div>
                         </div>
 
@@ -86,12 +77,12 @@
                                 <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockCheckBoxList ID="cblCalendars" runat="server" Label="Calendars" OnSelectedIndexChanged="cblCalendars_SelectedIndexChanged" AutoPostBack="true"/>
+                                <Rock:RockCheckBoxList ID="cblCalendars" runat="server" Label="Calendars" OnSelectedIndexChanged="cblCalendars_SelectedIndexChanged" AutoPostBack="true" />
                             </div>
                         </div>
-
+                        <Rock:BootstrapButton ID="btnButton" runat="server" Text="Click" OnClick="cblCalendars_SelectedIndexChanged" />
                         <Rock:PanelWidget ID="wpEventItemAttributes" runat="server" Title="Item Attribute Values">
-                            <asp:PlaceHolder ID="phEventItemAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpCampus" runat="server" Title="Campuses">
@@ -104,6 +95,7 @@
                                         <Rock:RockBoundField DataField="Phone" HeaderText="Phone" />
                                         <Rock:RockBoundField DataField="Email" HeaderText="Email" />
                                         <Rock:RockBoundField DataField="Registration" HeaderText="Registration" />
+                                        <Rock:EditField OnClick="gEventItemCampuses_Edit" />
                                         <Rock:DeleteField OnClick="gEventItemCampuses_Delete" />
                                     </Columns>
                                 </Rock:Grid>
@@ -130,14 +122,12 @@
 
                 <asp:ValidationSummary ID="valCampusSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Campus" />
 
-                <Rock:RockDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name"/>
-
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" ValidationGroup="Campus" />
+                        <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:PhoneNumberBox ID="pnPhone" runat="server" Label="Phone" ValidationGroup="Campus" />
+                        <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" ValidationGroup="Campus" />
                     </div>
                 </div>
 
@@ -146,13 +136,28 @@
                         <Rock:RockTextBox ID="tbLocation" runat="server" Label="Location" ValidationGroup="Campus" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" ValidationGroup="Campus" />
+                        <Rock:PhoneNumberBox ID="pnPhone" runat="server" Label="Phone" ValidationGroup="Campus" />
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbRegistration" runat="server" Label="Registration URL" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" ValidationGroup="Campus" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="grid">
+                            <Rock:Grid ID="gSchedules" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Schedule">
+                                <Columns>
+                                    <Rock:RockBoundField DataField="Schedule" HeaderText="Schedules" />
+                                    <Rock:DeleteField OnClick="gSchedules_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
                     </div>
                     <div class="col-md-6">
                     </div>
@@ -170,7 +175,7 @@
                 <Rock:RockDropDownList ID="ddlAudience" runat="server" Label="Select Audience" ValidationGroup="Audience" />
             </Content>
         </Rock:ModalDialog>
-        <%--<Rock:ModalDialog ID="dlgSchedules" runat="server" ScrollbarEnabled="false" ValidationGroup="Schedule" SaveButtonText="Add" OnSaveClick="btnAddSchedule_Click" Title="Select Schedule">
+        <Rock:ModalDialog ID="dlgSchedules" runat="server" ScrollbarEnabled="false" ValidationGroup="Schedule" SaveButtonText="Add" OnSaveClick="btnAddSchedule_Click" Title="Select Schedule">
             <Content>
                 <asp:HiddenField ID="hfAddScheduleGuid" runat="server" />
                 <div class="row">
@@ -182,6 +187,6 @@
                     </div>
                 </div>
             </Content>
-        </Rock:ModalDialog>--%>
+        </Rock:ModalDialog>
     </ContentTemplate>
 </asp:UpdatePanel>

@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EventCalendarTypeDetail.ascx.cs" Inherits="RockWeb.Blocks.Calendar.EventCalendarTypeDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EventCalendarDetail.ascx.cs" Inherits="RockWeb.Blocks.Calendar.EventCalendarDetail" %>
 
 <script type="text/javascript">
     function clearActiveDialog() {
@@ -73,7 +73,7 @@
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
                                     <Rock:RockBoundField DataField="FieldType" HeaderText="Field Type" />
-                                    <%--                                <Rock:BoolField DataField="AllowSearch" HeaderText="On Search" />--%>
+                                    <Rock:BoolField DataField="AllowSearch" HeaderText="Allow Search" />
                                     <Rock:EditField OnClick="gEventCalendarAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gEventCalendarAttributes_Delete" />
                                 </Columns>
