@@ -270,6 +270,7 @@ h4, .h4 {
 }
 
 .smartsearch {
+  float: right;
   margin: 12px 4%;
   border: 0;
   background-color: lighten(@accent-bold-color, 5%);
@@ -415,6 +416,61 @@ h4, .h4 {
 // 5. Theme Styling          */
 // -------------------------
 
+// Notifications
+.navbar-top-links {
+  float: left;
+  margin-left: 12px;
+  color: @text-color;
+}
+  .navbar-top-links > li {
+    display: inline-block;
+  }
+    .navbar-top-links > li > a {
+      padding: 15px;
+      color: @navbar-default-link-color;
+      &:hover, &:focus {
+        color: @accent-bold-text-color;
+        background-color: lighten(@accent-bold-color, 5%);
+        @media @sm {
+          color: @navbar-default-link-hover-color;
+          background-color: darken(@header-bg, 5%);
+        }
+      }
+    }
+    .navbar-top-links > li.open > a {
+      &, &:hover, &:focus {
+        background-color: lighten(@accent-bold-color, 5%);
+        @media @sm {
+          background-color: darken(@header-bg, 10%);
+        }
+      }
+    }
+    .navbar-top-links ul .divider {
+      background-color: @gray-light!important;
+    }
+  .navbar-top-links .dropdown-menu {
+    width: 310px;
+    padding: 10px 0;
+  }
+  .navbar-top-links .dropdown-messages .media {
+    padding: 3px 15px;
+  }
+
+.count-info .label {
+  line-height: 12px;
+  padding: 2px 4px;
+  position: absolute;
+  right: 3px;
+  top: 6px;
+}
+
+a.link-block,
+.link-block > a {
+  display: block;
+  padding: @grid-gutter-width/4;
+}
+
+
 #page-wrapper {
   width: 100%;
   //overflow: hidden;
@@ -433,7 +489,7 @@ h4, .h4 {
       color: @accent-bold-text-color;
 
       .navbar-header {
-        padding: 8px 0 0 12px;
+        padding: 10px 0 0 12px;
         float: left;
       }
 
