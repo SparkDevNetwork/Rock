@@ -27,7 +27,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an EventItemSchedule.
+    /// Represents an event item schedule.
     /// </summary>
     [Table( "EventItemSchedule" )]
     [DataContract]

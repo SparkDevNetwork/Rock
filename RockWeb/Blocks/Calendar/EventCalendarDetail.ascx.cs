@@ -35,10 +35,10 @@ using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Calendar
 {
-    [DisplayName( "Event Calendar Type Detail" )]
-    [Category( "Calendar" )]
-    [Description( "Displays the details of the given Event Calendar Type for editing." )]
-    public partial class EventCalendarTypeDetail : RockBlock, IDetailBlock
+    [DisplayName( "Event Calendar Detail" )]
+    [Category( "Event Calendar" )]
+    [Description( "Displays the details of the given Event Calendar for editing." )]
+    public partial class EventCalendarDetail : RockBlock, IDetailBlock
     {
 
         #region Child Grid Dictionarys
@@ -248,7 +248,7 @@ namespace RockWeb.Blocks.Calendar
 
                 /* Save Attributes */
                 string qualifierValue = eventCalendar.Id.ToString();
-                SaveAttributes( new EventCalendarItem().TypeId, "EventCalendarTypeId", qualifierValue, EventCalendarAttributesState, rockContext );
+                SaveAttributes( new EventCalendarItem().TypeId, "EventCalendarId", qualifierValue, EventCalendarAttributesState, rockContext );
 
                 // Reload to save default role
                 eventCalendar = eventCalendarService.Get( eventCalendar.Id );
@@ -387,7 +387,7 @@ namespace RockWeb.Blocks.Calendar
             EventCalendarAttributesState = new ViewStateList<Attribute>();
             EventCalendarAttributesState.AddAll( attributeService.GetByEntityTypeId( new EventCalendarItem().TypeId ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "EventCalendarTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn.Equals( "EventCalendarId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )

@@ -27,7 +27,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a benevolence request that a person has submitted.
+    /// Represents an event item for one or more event calendars.
     /// </summary>
     [Table( "EventItem" )]
     [DataContract]
