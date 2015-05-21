@@ -90,9 +90,28 @@ namespace RockWeb.Blocks.Finance
             {
                 SetVisibilityOption();
                 BindFilter();
-                BindGrid();
-            }
 
+                bool promptWithFilter = true;
+
+                if ( promptWithFilter && gfBatchFilter.Visible )
+                {
+                    //// NOTE: Special Case for this List Block since there could be a very large number of batches:
+                    //// If the filter is shown and we aren't filtering by anything else, don't automatically populate the grid. Wait for them to hit apply on the filter
+                    gfBatchFilter.Show();
+                }
+                else
+                {
+                    BindGrid();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Registers the java script for grid actions.
+        /// NOTE: This needs to be done after the BindGrid
+        /// </summary>
+        private void RegisterJavaScriptForGridActions()
+        {
             string scriptFormat = @"
     $('#{0}').change(function( e ){{
         var count = $(""#{1} input[id$='_cbSelect_0']:checked"").length;
@@ -420,6 +439,8 @@ namespace RockWeb.Blocks.Finance
             gBatchList.DataSource = batchRowQry.ToList();
             gBatchList.EntityTypeId = EntityTypeCache.Read<Rock.Model.FinancialBatch>().Id;
             gBatchList.DataBind();
+
+            RegisterJavaScriptForGridActions();
 
             var qryTransactionDetails = qry.SelectMany( a => a.Transactions ).SelectMany( a => a.TransactionDetails );
             var accountSummaryQry = qryTransactionDetails.GroupBy( a => a.Account ).Select( a => new
