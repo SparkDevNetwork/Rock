@@ -879,6 +879,27 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Sets the linq data source 
+        /// The grid will use it to load only the records it needs based on the current page and page size
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="qry">The qry.</param>
+        public void SetLinqDataSource<T>( IQueryable<T> qry )
+        {
+            this.AllowCustomPaging = true;
+            if ( this.AllowPaging )
+            {
+                this.DataSource = qry.Skip( this.PageIndex * this.PageSize ).Take( this.PageSize ).ToList();
+            }
+            else
+            {
+                this.DataSource = qry.ToList();
+            }
+
+            this.VirtualItemCount = qry.Count();
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.WebControls.BaseDataBoundControl.DataBound"/> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
@@ -888,7 +909,11 @@ namespace Rock.Web.UI.Controls
 
             // Get ItemCount
             int itemCount = 0;
-            if ( this.DataSourceAsDataTable != null )
+            if (this.AllowCustomPaging)
+            {
+                itemCount = this.VirtualItemCount;
+            }
+            else if ( this.DataSourceAsDataTable != null )
             {
                 itemCount = this.DataSourceAsDataTable.Rows.Count;
             }
@@ -1252,7 +1277,10 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Actions_ExcelExportClick( object sender, EventArgs e )
         {
+            var origPaging = this.AllowPaging;
+            this.AllowPaging = false;
             OnGridRebind( e );
+            this.AllowPaging = origPaging;
 
             // create default settings
             string filename = ExportFilename;
