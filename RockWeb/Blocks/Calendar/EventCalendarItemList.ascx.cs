@@ -34,7 +34,6 @@ namespace RockWeb.Blocks.Calendar
     [DisplayName( "Event Calendar Item List" )]
     [Category( "Event Calendar" )]
     [Description( "Lists all the items in the given calendar." )]
-
     [LinkedPage( "Detail Page" )]
     public partial class EventCalendarItemList : RockBlock, ISecondaryBlock
     {
@@ -84,7 +83,7 @@ namespace RockWeb.Blocks.Calendar
 
             if ( eventCalendarGuid == Guid.Empty )
             {
-                eventCalendarId = PageParameter( "CalendarTypeId" ).AsInteger();
+                eventCalendarId = PageParameter( "EventCalendarId" ).AsInteger();
             }
 
             if ( !( eventCalendarId == 0 && eventCalendarGuid == Guid.Empty ) )
@@ -114,7 +113,6 @@ namespace RockWeb.Blocks.Calendar
                     gEventCalendarItems.Actions.ShowAdd = canEditBlock;
                     gEventCalendarItems.IsDeleteEnabled = canEditBlock;
                 }
-
             }
         }
 
@@ -176,7 +174,6 @@ namespace RockWeb.Blocks.Calendar
         /// <param name="e">The e.</param>
         protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-
             if ( AvailableAttributes != null )
             {
                 var attribute = AvailableAttributes.FirstOrDefault( a => MakeKeyUniqueToEventCalendar( a.Key ) == e.Key );
@@ -212,7 +209,6 @@ namespace RockWeb.Blocks.Calendar
             {
                 e.Value = string.Empty;
             }
-
         }
 
         /// <summary>
@@ -261,7 +257,7 @@ namespace RockWeb.Blocks.Calendar
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gEventCalendarItems_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "EventItemId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "EventItemId", e.RowKeyId, "EventCalendarId", _eventCalendar.Id );
         }
 
         /// <summary>
@@ -307,7 +303,6 @@ namespace RockWeb.Blocks.Calendar
             {
                 cbActive.Checked = statusValue.AsBoolean();
             }
-
         }
 
         /// <summary>
@@ -342,27 +337,21 @@ namespace RockWeb.Blocks.Calendar
                 DateTime plusOneMonth = DateTime.Now.AddDays( 30 );
                 if ( drpDate.LowerValue.HasValue && drpDate.UpperValue.HasValue )
                 {
-                    //qry = qry.Where( i => i.EventItem.EventItemSchedules.Any( s => s.Schedule.GetScheduledStartTimes( drpDate.LowerValue.Value, drpDate.UpperValue.Value ).Any() ) );
-                   // qry = qry.Where( i => i.EventItem.EventItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > drpDate.LowerValue.Value && s.Schedule.EffectiveStartDate.Value < drpDate.UpperValue.Value ) );
+                    qry = qry.Where( i => i.EventItem.EventItemCampuses.Any( c => c.EventItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > drpDate.LowerValue.Value && s.Schedule.EffectiveStartDate.Value < drpDate.UpperValue.Value ) ) );
                 }
                 else
                 {
                     if ( !drpDate.LowerValue.HasValue && !drpDate.UpperValue.HasValue )
                     {
-                        //qry = qry.Where( i => i.EventItem.EventItemSchedules.Any( s => s.Schedule.GetScheduledStartTimes( DateTime.Now.AddMonths( -6 ), DateTime.Now.AddDays( 30 ) ).Any() ) );
-                      //  qry = qry.Where( i => i.EventItem.EventItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > minusSixMonths && s.Schedule.EffectiveStartDate.Value < plusOneMonth ) );
-
+                        //Remove when schedule is ready qry = qry.Where( i => i.EventItem.EventItemCampuses.Any(c=> c.EventItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > minusSixMonths && s.Schedule.EffectiveStartDate.Value < plusOneMonth ) ));
                     }
                     if ( drpDate.LowerValue.HasValue )
                     {
-                        // qry = qry.Where( i => i.EventItem.EventItemSchedules.Any( s => s.Schedule.GetScheduledStartTimes( drpDate.LowerValue.Value, DateTime.Now.AddDays( 30 ) ).Any() ) );
-                       // qry = qry.Where( i => i.EventItem.EventItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > drpDate.LowerValue.Value && s.Schedule.EffectiveStartDate.Value < plusOneMonth ) );
+                        qry = qry.Where( i => i.EventItem.EventItemCampuses.Any( c => c.EventItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > drpDate.LowerValue.Value && s.Schedule.EffectiveStartDate.Value < plusOneMonth ) ) );
                     }
                     if ( drpDate.UpperValue.HasValue )
                     {
-                        //qry = qry.Where( i => i.EventItem.EventItemSchedules.Any( s => s.Schedule.GetScheduledStartTimes( DateTime.Now.AddDays( -30 ), drpDate.UpperValue.Value ).Any() ) );
-                        //qry = qry.Where( i => i.EventItem.EventItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > minusOneMonth && s.Schedule.EffectiveStartDate.Value < drpDate.UpperValue.Value ) );
-
+                        qry = qry.Where( i => i.EventItem.EventItemCampuses.Any( c => c.EventItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > minusOneMonth && s.Schedule.EffectiveStartDate.Value < drpDate.UpperValue.Value ) ) );
                     }
                 }
 
@@ -373,12 +362,11 @@ namespace RockWeb.Blocks.Calendar
                     qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => audiences.Contains( c.DefinedValueId ) ) );
                 }
 
-                // Filter by Status                
+                // Filter by Status
                 if ( cbActive.Checked )
                 {
                     qry = qry.Where( i => i.EventItem.IsActive.HasValue && i.EventItem.IsActive.HasValue );
                 }
-
 
                 SortProperty sortProperty = gEventCalendarItems.SortProperty;
 
@@ -403,15 +391,15 @@ namespace RockWeb.Blocks.Calendar
                 {
                     m.Id,
                     m.Guid,
+                    // Date = m.EventItem.EventItemCampuses.FirstOrDefault().EventItemSchedules.FirstOrDefault().Schedule.EffectiveStartDate,
                     Name = m.EventItem.Name,
-                    Campus = m.EventItem.EventItemCampuses.ToList().Select( c => c.Campus.Name ).ToList().AsDelimited( "/n" ),
+                    Campus = m.EventItem.EventItemCampuses.ToList().Select( c => c.Campus != null ? c.Campus.Name : "All Campuses" ).ToList().AsDelimited( "/n" ),
                     Calendar = m.EventItem.EventCalendarItems.ToList().Select( i => i.EventCalendar.Name ).ToList().AsDelimited( "/n" ),
                     Audience = m.EventItem.EventItemAudiences.ToList().Select( i => i.DefinedValue.Value ).ToList().AsDelimited( "/n" ),
-                    Active = m.EventItem.IsActive.Value ? "<Rock:HighlightLabel ID='hlInactive' runat='server' LabelType='Success' Text='Active' />" : "<Rock:HighlightLabel ID='hlInactive' runat='server' LabelType='Danger' Text='Inactive' />"
+                    Active = m.EventItem.IsActive.Value ? "Active" : "Inactive"
                 } ).ToList();
 
                 gEventCalendarItems.DataBind();
-
             }
             else
             {

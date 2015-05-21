@@ -149,15 +149,16 @@ namespace Rock.Model
         /// <value>
         /// A collection containing a collection of the <see cref="Rock.Model.EventItemSchedule">EventItemSchedules</see> that belong to this EventItem.
         /// </value>
+        [DataMember]
         public virtual ICollection<EventItemSchedule> EventItemSchedules
         {
             get { return _calendarItemSchedules ?? ( _calendarItemSchedules = new Collection<EventItemSchedule>() ); }
             set { _calendarItemSchedules = value; }
         }
+
         private ICollection<EventItemSchedule> _calendarItemSchedules;
 
         #endregion
-
     }
 
     #region Entity Configuration

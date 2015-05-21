@@ -54,7 +54,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The guid for the Rock.Model.EventCalendarItem entity.
         /// </summary>
-        public const string EVENT_CALENDAR_ITEM = "DE22C82E-77D4-4C69-8675-F94FABD65C61";
+        public const string EVENT_CALENDAR_ITEM = "234EF286-6F0A-43FE-BB41-78E68C0930D5";
 
         /// <summary>
         /// The guid for the Rock.Model.GroupMember entity.

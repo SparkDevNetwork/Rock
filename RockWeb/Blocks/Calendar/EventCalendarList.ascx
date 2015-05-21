@@ -5,12 +5,11 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-calendar"></i>Calendar Types</h1>
+                <h1 class="panel-title"><i class="fa fa-calendar"></i>Event Calendars</h1>
 
                 <div class="pull-right">
                     <asp:LinkButton ID="lbAddCalendarType" runat="server" CssClass="btn btn-action btn-xs pull-right" OnClick="lbAddCalendarType_Click" CausesValidation="false"><i class="fa fa-plus"></i></asp:LinkButton>
                 </div>
-
             </div>
             <div class="panel-body">
 

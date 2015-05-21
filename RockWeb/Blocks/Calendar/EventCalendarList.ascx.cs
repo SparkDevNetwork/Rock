@@ -21,16 +21,14 @@ using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Newtonsoft.Json;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using Rock.Security;
 
 namespace RockWeb.Blocks.Calendar
 {
@@ -40,11 +38,9 @@ namespace RockWeb.Blocks.Calendar
     [DisplayName( "Event Calendar List" )]
     [Category( "Event Calendar" )]
     [Description( "Block to display the event calendars." )]
-
     [LinkedPage( "Detail Page", "Page used to view status of an event calendar." )]
     public partial class CalendarTypes : Rock.Web.UI.RockBlock
     {
-
         #region Base Control Methods
 
         protected override void OnInit( EventArgs e )
@@ -92,7 +88,7 @@ namespace RockWeb.Blocks.Calendar
             int? eventCalendarId = e.CommandArgument.ToString().AsIntegerOrNull();
             if ( eventCalendarId.HasValue )
             {
-                NavigateToLinkedPage( "DetailPage", "CalendarTypeId", eventCalendarId.Value );
+                NavigateToLinkedPage( "DetailPage", "EventCalendarId", eventCalendarId.Value );
             }
 
             GetData();
@@ -129,12 +125,12 @@ namespace RockWeb.Blocks.Calendar
             rptEventCalendars.DataSource = qry.ToList();
             rptEventCalendars.DataBind();
         }
+
         #endregion
 
         protected void lbAddCalendarType_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "CalendarTypeId", 0 );
+            NavigateToLinkedPage( "DetailPage", "EventCalendarId", 0 );
         }
     }
-
 }
