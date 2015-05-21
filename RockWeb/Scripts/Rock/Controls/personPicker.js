@@ -38,8 +38,10 @@
                     // Is this needed? If an error is thrown on the server, we should see an exception in the log now...
                     promise.fail(function (xhr, status, error) {
                         console.log(status + ' [' + error + ']: ' + xhr.responseText);
-
-                        // TODO: Display some feedback to the user that something went wrong?
+                        var errorCode = xhr.status;
+                        if (errorCode == 401) {
+                            $('#' + controlId + '_personPickerItems').first().html("<li class='text-danger'>Sorry, you're not authorized to search.</li>");
+                        }
                     });
                 },
                 minLength: 3,
