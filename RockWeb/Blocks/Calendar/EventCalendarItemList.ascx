@@ -35,19 +35,18 @@
                             </Rock:GridFilter>
                             <Rock:Grid ID="gEventCalendarItems" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gEventCalendarItems_Edit">
                                 <Columns>
-                                    <Rock:RockBoundField DataField="Date" HeaderText="Start Date" SortExpression="EventCalendarItemStatus" />
+                                    <%--                                    <Rock:RockBoundField DataField="Date" HeaderText="Start Date" SortExpression="EventCalendarItemStatus" />--%>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Person.LastName,Person.NickName" />
                                     <Rock:RockBoundField DataField="Campus" HeaderText="Campuses" SortExpression="EventCalendarRole.Name" />
                                     <Rock:RockBoundField DataField="Calendar" HeaderText="Calendars" SortExpression="EventCalendarItemStatus" />
                                     <Rock:RockBoundField DataField="Audience" HeaderText="Audiences" SortExpression="EventCalendarItemStatus" />
-                                    <Rock:RockBoundField DataField="Active" HeaderText="Status" SortExpression="EventCalendarItemStatus" />
+                                    <Rock:BadgeField SuccessMin="0" DataField="Active" HeaderText="Status" SortExpression="EventCalendarItemStatus" HtmlEncode="false" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
                     </div>
                 </div>
             </div>
-
         </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>

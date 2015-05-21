@@ -42,7 +42,6 @@ namespace RockWeb.Blocks.Calendar
     [BooleanField( "Show Edit", "", true, "", 2 )]
     public partial class EventItemDetail : RockBlock, IDetailBlock
     {
-
         #region Properties
 
         public List<EventItemAudience> EventItemAudiencesState { get; set; }
@@ -53,7 +52,7 @@ namespace RockWeb.Blocks.Calendar
 
         public EventItemCampus _selectedEventItemCampusState { get; set; } //Used to manage Schedules
 
-        #endregion
+        #endregion Properties
 
         #region Control Methods
 
@@ -167,7 +166,6 @@ namespace RockWeb.Blocks.Calendar
             if ( pnlDetails.Visible )
             {
                 //TODO: Build attributes based off of calendars cbl
-
             }
         }
 
@@ -226,7 +224,7 @@ namespace RockWeb.Blocks.Calendar
             return breadCrumbs;
         }
 
-        #endregion
+        #endregion Control Methods
 
         #region Edit Events
 
@@ -259,7 +257,7 @@ namespace RockWeb.Blocks.Calendar
             }
             else
             {
-                eventItem = eventItemService.Queryable( "EventItemSchedules, EventItemAudiences, EventItemCampuses" ).Where( ei => ei.Id == eventItemId ).FirstOrDefault();
+                eventItem = eventItemService.Queryable( "EventItemAudiences, EventItemCampuses, EventItemCampuses.EventItemSchedules" ).Where( ei => ei.Id == eventItemId ).FirstOrDefault();
                 // remove any campuses that removed in the UI
                 var selectedCampuses = EventItemCampusesState.Select( l => l.Guid );
                 foreach ( var campus in eventItem.EventItemCampuses.Where( l => !selectedCampuses.Contains( l.Guid ) ).ToList() )
@@ -322,8 +320,25 @@ namespace RockWeb.Blocks.Calendar
                     campus = new EventItemCampus();
                     eventItem.EventItemCampuses.Add( campus );
                 }
+                else
+                {
+                    campusState.Id = campus.Id;
+                    campusState.Guid = campus.Guid;
+
+                    var selectedSchedules = campusState.EventItemSchedules.Select( s => s.Guid ).ToList();
+                    foreach ( var schedule in campus.EventItemSchedules.Where( s => !selectedSchedules.Contains( s.Guid ) ).ToList() )
+                    {
+                        campus.EventItemSchedules.Remove( schedule );
+                    }
+                }
 
                 campus.CopyPropertiesFrom( campusState );
+
+                var existingSchedules = campus.EventItemSchedules.Select( s => s.Guid ).ToList();
+                foreach ( var scheduleState in campusState.EventItemSchedules.Where( s => !existingSchedules.Contains( s.Guid ) ).ToList() )
+                {
+                    campus.EventItemSchedules.Add( scheduleState );
+                }
             }
 
             List<int> calendarIdList = cblCalendars.SelectedValuesAsInt;
@@ -357,7 +372,7 @@ namespace RockWeb.Blocks.Calendar
 
             if ( !eventItem.IsValid )
             {
-                // Controls will render the error messages                    
+                // Controls will render the error messages
                 return;
             }
 
@@ -377,7 +392,7 @@ namespace RockWeb.Blocks.Calendar
                 }
                 if ( adding )
                 {
-                    // add ADMINISTRATE to the person who added the eventItem 
+                    // add ADMINISTRATE to the person who added the eventItem
                     Rock.Security.Authorization.AllowPerson( eventItem, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
                 }
 
@@ -385,8 +400,9 @@ namespace RockWeb.Blocks.Calendar
 
                 rockContext.SaveChanges();
             } );
-
-            NavigateToParentPage();
+            var qryParams = new Dictionary<string, string>();
+            qryParams["EventCalendarId"] = PageParameter( "EventCalendarId" );
+            NavigateToParentPage( qryParams );
         }
 
         /// <summary>
@@ -415,17 +431,21 @@ namespace RockWeb.Blocks.Calendar
                 else
                 {
                     // Cancelling on Add.  Return to Grid
-                    NavigateToParentPage();
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams["EventCalendarId"] = PageParameter( "EventCalendarId" );
+                    NavigateToParentPage( qryParams );
                 }
             }
             else
             {
                 // Cancelling on Edit.  Return to Details
-                NavigateToParentPage();
+                var qryParams = new Dictionary<string, string>();
+                qryParams["EventCalendarId"] = PageParameter( "EventCalendarId" );
+                NavigateToParentPage( qryParams );
             }
         }
 
-        #endregion
+        #endregion Edit Events
 
         #region Control Events
 
@@ -454,6 +474,7 @@ namespace RockWeb.Blocks.Calendar
                 }
             }
         }
+
         #region Audience Events
 
         protected void gAudiences_Delete( object sender, RowEventArgs e )
@@ -463,11 +484,13 @@ namespace RockWeb.Blocks.Calendar
 
             BindAudiencesGrid();
         }
+
         protected void btnAddAudience_Click( object sender, EventArgs e )
         {
             DefinedValue audienceValue = new DefinedValueService( new RockContext() ).Get( ddlAudience.SelectedValueAsInt().Value );
             EventItemAudience audience = new EventItemAudience();
             audience.DefinedValue = audienceValue;
+            audience.DefinedValueId = audienceValue.Id;
             // Controls will show warnings
             if ( !audience.IsValid )
             {
@@ -484,10 +507,12 @@ namespace RockWeb.Blocks.Calendar
 
             HideDialog();
         }
+
         private void gAudiences_GridRebind( object sender, EventArgs e )
         {
             BindAudiencesGrid();
         }
+
         private void gAudiences_Add( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
@@ -500,43 +525,51 @@ namespace RockWeb.Blocks.Calendar
             }
 
             ShowDialog( "Audiences", true );
-
         }
-        #endregion
+
+        #endregion Audience Events
 
         #region Schedule Events
+
         protected void gSchedules_Delete( object sender, RowEventArgs e )
         {
             Guid rowGuid = (Guid)e.RowKeyValue;
             _selectedEventItemCampusState.EventItemSchedules.Remove( _selectedEventItemCampusState.EventItemSchedules.Where( s => s.Guid == rowGuid ).FirstOrDefault() );
             BindSchedulesGrid();
         }
+
         protected void btnAddSchedule_Click( object sender, EventArgs e )
         {
             EventItemSchedule eventItemSchedule = new EventItemSchedule();
             eventItemSchedule.Schedule = new Schedule();
             eventItemSchedule.Schedule.iCalendarContent = sbSchedule.iCalendarContent;
             eventItemSchedule.ScheduleName = tbSchedule.Text;
+            eventItemSchedule.ScheduleId = 0;
 
             _selectedEventItemCampusState.EventItemSchedules.Add( eventItemSchedule );
 
             BindSchedulesGrid();
 
             HideDialog();
+            ShowDialog( "Campuses", true );
         }
+
         private void gSchedules_GridRebind( object sender, EventArgs e )
         {
             BindSchedulesGrid();
         }
+
         private void gSchedules_Add( object sender, EventArgs e )
         {
             tbSchedule.Text = String.Empty;
-            sbSchedule.iCalendarContent = null;
+            sbSchedule.iCalendarContent = String.Empty;
             ShowDialog( "Schedules", true );
         }
-        #endregion
+
+        #endregion Schedule Events
 
         #region Campus Events
+
         protected void dlgCampus_SaveClick( object sender, EventArgs e )
         {
             if ( ppContact.PersonAliasId != null )
@@ -563,6 +596,7 @@ namespace RockWeb.Blocks.Calendar
                 }
                 eventItemCampus.Location = tbLocation.Text;
                 eventItemCampus.ContactPersonAlias = new PersonAliasService( new RockContext() ).Get( ppContact.PersonAliasId.Value );
+                eventItemCampus.ContactPersonAliasId = ppContact.PersonAliasId.Value;
                 eventItemCampus.ContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), pnPhone.Number );
                 eventItemCampus.ContactEmail = tbEmail.Text;
                 eventItemCampus.RegistrationUrl = tbRegistration.Text;
@@ -570,6 +604,10 @@ namespace RockWeb.Blocks.Calendar
                 foreach ( EventItemSchedule schedule in _selectedEventItemCampusState.EventItemSchedules )
                 {
                     eventItemCampus.EventItemSchedules.Add( schedule );
+                }
+                if ( !eventItemCampus.IsValid )
+                {
+                    return;
                 }
                 _selectedEventItemCampusState = null;
                 if ( EventItemCampusesState.Any( a => a.Guid.Equals( eventItemCampus.Guid ) ) )
@@ -583,7 +621,6 @@ namespace RockWeb.Blocks.Calendar
 
                 HideDialog();
             }
-
         }
 
         protected void gEventItemCampuses_Delete( object sender, RowEventArgs e )
@@ -601,7 +638,6 @@ namespace RockWeb.Blocks.Calendar
 
         protected void gEventItemCampuses_Edit( object sender, RowEventArgs e )
         {
-
             Guid eventItemCampusGuid = (Guid)e.RowKeyValue;
             gEventItemCampuses_ShowEdit( eventItemCampusGuid );
         }
@@ -633,7 +669,6 @@ namespace RockWeb.Blocks.Calendar
                 BindSchedulesGrid();
                 ShowDialog( "Campuses", true );
             }
-
         }
 
         private void gEventItemCampuses_Add( object sender, EventArgs e )
@@ -652,7 +687,8 @@ namespace RockWeb.Blocks.Calendar
             BindSchedulesGrid();
             ShowDialog( "Campuses", true );
         }
-        #endregion
+
+        #endregion Campus Events
 
         protected void cblCalendars_SelectedIndexChanged( object sender, EventArgs e )
         {
@@ -678,7 +714,7 @@ namespace RockWeb.Blocks.Calendar
             }
         }
 
-        #endregion
+        #endregion Control Events
 
         #region Internal Methods
 
@@ -774,13 +810,10 @@ namespace RockWeb.Blocks.Calendar
             var eventItemService = new EventItemService( rockContext );
             var attributeService = new AttributeService( rockContext );
 
-            LoadDropDowns();
+            LoadDropDowns( eventItem.EventCalendarItems.ToList() );
             ShowItemAttributes();
-            // BindSchedulesGrid();
             BindAudiencesGrid();
             BindCampusesGrid();
-            //ddlCampus.SetValue( eventItem.CampusId );
-
         }
 
         private void BindAudiencesGrid()
@@ -857,11 +890,34 @@ namespace RockWeb.Blocks.Calendar
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
-        private void LoadDropDowns()
+        private void LoadDropDowns( List<EventCalendarItem> itemList )
         {
             ddlAudience.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() ) );
-            cblCalendars.DataSource = new EventCalendarService( new RockContext() ).Queryable().Select( e => e.Name ).ToList();
+            cblCalendars.DataSource = new EventCalendarService( new RockContext() ).Queryable().Select( c => new
+            {
+                c.Id,
+                c.Name
+            } ).ToList();
             cblCalendars.DataBind();
+            if ( !Page.IsPostBack )
+            {
+                string eventItemId = PageParameter( "EventItemId" );
+                if ( !string.IsNullOrWhiteSpace( eventItemId ) )
+                {
+                    if ( eventItemId.AsInteger() == 0 )
+                    {
+                        string eventCalendarId = PageParameter( "EventItemId" );
+                        if ( !string.IsNullOrWhiteSpace( eventItemId ) )
+                        {
+                            cblCalendars.SetValue( eventCalendarId );
+                        }
+                    }
+                    else
+                    {
+                        cblCalendars.SetValues( itemList.Select( i => i.EventCalendarId.ToString() ).ToList() );
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -886,9 +942,11 @@ namespace RockWeb.Blocks.Calendar
                 case "AUDIENCES":
                     dlgAudiences.Show();
                     break;
+
                 case "SCHEDULES":
                     dlgSchedules.Show();
                     break;
+
                 case "CAMPUSES":
                     dlgCampus.Show();
                     break;
@@ -905,9 +963,11 @@ namespace RockWeb.Blocks.Calendar
                 case "AUDIENCES":
                     dlgAudiences.Hide();
                     break;
+
                 case "SCHEDULES":
                     dlgSchedules.Hide();
                     break;
+
                 case "CAMPUSES":
                     dlgCampus.Hide();
                     break;
@@ -915,7 +975,6 @@ namespace RockWeb.Blocks.Calendar
 
             hfActiveDialog.Value = string.Empty;
         }
-
 
         /// <summary>
         /// Sets the attribute list order.
@@ -931,7 +990,6 @@ namespace RockWeb.Blocks.Calendar
                     audienceList.OrderBy( a => a.DefinedValue.Order ).ThenBy( a => a.DefinedValue.Value ).ToList().ForEach( a => a.DefinedValue.Order = order++ );
                 }
             }
-
         }
 
         /// <summary>
@@ -949,6 +1007,13 @@ namespace RockWeb.Blocks.Calendar
             }
         }
 
-        #endregion
+        #endregion Internal Methods
+
+        protected void ppContact_SelectPerson( object sender, EventArgs e )
+        {
+            Person contact = new PersonService( new RockContext() ).Get( ppContact.PersonId.Value );
+            tbEmail.Text = contact.Email;
+            pnPhone.Text = contact.PhoneNumbers.FirstOrDefault().NumberFormatted;
+        }
     }
 }

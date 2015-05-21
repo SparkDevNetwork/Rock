@@ -85,12 +85,9 @@
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
-
                 </div>
             </div>
-
         </asp:Panel>
-
 
         <Rock:ModalAlert ID="modalAlert" runat="server" />
 
@@ -101,6 +98,5 @@
                 <Rock:AttributeEditor ID="edtEventCalendarAttributes" runat="server" ShowActions="false" ValidationGroup="EventCalendarAttributes" />
             </Content>
         </Rock:ModalDialog>
-
     </ContentTemplate>
 </asp:UpdatePanel>

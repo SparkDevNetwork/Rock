@@ -77,7 +77,7 @@
                                 <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockCheckBoxList ID="cblCalendars" runat="server" Label="Calendars" OnSelectedIndexChanged="cblCalendars_SelectedIndexChanged" AutoPostBack="true" />
+                                <Rock:RockCheckBoxList ID="cblCalendars" runat="server" Label="Calendars" OnSelectedIndexChanged="cblCalendars_SelectedIndexChanged" AutoPostBack="true" DataValueField="Id" DataTextField="Name" />
                             </div>
                         </div>
                         <Rock:BootstrapButton ID="btnButton" runat="server" Text="Click" OnClick="cblCalendars_SelectedIndexChanged" />
@@ -94,7 +94,7 @@
                                         <Rock:RockBoundField DataField="Contact" HeaderText="Contact" />
                                         <Rock:RockBoundField DataField="Phone" HeaderText="Phone" />
                                         <Rock:RockBoundField DataField="Email" HeaderText="Email" />
-                                        <Rock:RockBoundField DataField="Registration" HeaderText="Registration" />
+                                        <Rock:RockBoundField DataField="Registration" HeaderText="Registration" HtmlEncode="false" />
                                         <Rock:EditField OnClick="gEventItemCampuses_Edit" />
                                         <Rock:DeleteField OnClick="gEventItemCampuses_Delete" />
                                     </Columns>
@@ -106,11 +106,9 @@
                             <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                             <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                         </div>
-
                     </div>
                 </div>
             </div>
-
         </asp:Panel>
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
@@ -127,16 +125,16 @@
                         <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" ValidationGroup="Campus" />
+                        <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" ValidationGroup="Campus" OnSelectPerson="ppContact_SelectPerson" />
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbLocation" runat="server" Label="Location" ValidationGroup="Campus" />
+                        <Rock:RockTextBox ID="tbLocation" runat="server" Label="Location" ValidationGroup="Campus" Required="true" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:PhoneNumberBox ID="pnPhone" runat="server" Label="Phone" ValidationGroup="Campus" />
+                        <Rock:PhoneNumberBox ID="pnPhone" runat="server" Label="Phone" ValidationGroup="Campus" Required="true" />
                     </div>
                 </div>
 
@@ -145,7 +143,7 @@
                         <Rock:RockTextBox ID="tbRegistration" runat="server" Label="Registration URL" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" ValidationGroup="Campus" />
+                        <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" ValidationGroup="Campus" Required="true" />
                     </div>
                 </div>
                 <div class="row">

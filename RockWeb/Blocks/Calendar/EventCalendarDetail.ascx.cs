@@ -40,7 +40,6 @@ namespace RockWeb.Blocks.Calendar
     [Description( "Displays the details of the given Event Calendar for editing." )]
     public partial class EventCalendarDetail : RockBlock, IDetailBlock
     {
-
         #region Child Grid Dictionarys
 
         /// <summary>
@@ -92,7 +91,7 @@ namespace RockWeb.Blocks.Calendar
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "CalendarTypeId" ).AsInteger() );
+                ShowDetail( PageParameter( "EventCalendarId" ).AsInteger() );
             }
             else
             {
@@ -128,7 +127,7 @@ namespace RockWeb.Blocks.Calendar
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? eventCalendarId = PageParameter( pageReference, "CalendarTypeId" ).AsIntegerOrNull();
+            int? eventCalendarId = PageParameter( pageReference, "EventCalendarId" ).AsIntegerOrNull();
             if ( eventCalendarId != null )
             {
                 EventCalendar eventCalendar = new EventCalendarService( new RockContext() ).Get( eventCalendarId.Value );
@@ -138,7 +137,7 @@ namespace RockWeb.Blocks.Calendar
                 }
                 else
                 {
-                    breadCrumbs.Add( new BreadCrumb( "New Event Calendar Type", pageReference ) );
+                    breadCrumbs.Add( new BreadCrumb( "New Event Calendar", pageReference ) );
                 }
             }
             else
@@ -230,18 +229,17 @@ namespace RockWeb.Blocks.Calendar
                 eventCalendar = eventCalendarService.Get( eventCalendarId );
             }
 
-
             eventCalendar.Name = tbName.Text;
             eventCalendar.Description = tbDescription.Text;
             eventCalendar.IconCssClass = tbIconCssClass.Text;
 
             if ( !eventCalendar.IsValid )
             {
-                // Controls will render the error messages                    
+                // Controls will render the error messages
                 return;
             }
 
-            // need WrapTransaction due to Attribute saves    
+            // need WrapTransaction due to Attribute saves
             rockContext.WrapTransaction( () =>
             {
                 rockContext.SaveChanges();
@@ -269,7 +267,14 @@ namespace RockWeb.Blocks.Calendar
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            if ( hfCalendarTypeId.Value.Equals( "0" ) )
+            {
+                NavigateToParentPage();
+            }
+            else
+            {
+                ShowReadonlyDetails( GetEventCalendar( hfCalendarTypeId.ValueAsInt(), new RockContext() ) );
+            }
         }
 
         #endregion
@@ -288,7 +293,7 @@ namespace RockWeb.Blocks.Calendar
             }
             else
             {
-                string eventCalendarId = PageParameter( "CalendarTypeId" );
+                string eventCalendarId = PageParameter( "EventCalendarId" );
                 if ( !string.IsNullOrWhiteSpace( eventCalendarId ) )
                 {
                     ShowDetail( eventCalendarId.AsInteger() );
@@ -468,7 +473,6 @@ namespace RockWeb.Blocks.Calendar
                 case "EVENTCALENDARATTRIBUTES":
                     dlgEventCalendarAttribute.Show();
                     break;
-
             }
         }
 
@@ -692,6 +696,5 @@ namespace RockWeb.Blocks.Calendar
         }
 
         #endregion
-
     }
 }
