@@ -751,6 +751,7 @@ Copyright (c) 2012 Dan Eden*/
     29. Context Setters
     30. Paneled List Group - extends the bootstrap list group to behave in a panel
     31. Sliding Date Range 
+    32. Photo Round
 */
 .picker {
   position: relative;
@@ -2102,6 +2103,15 @@ ul.list-group-panel .list-group-item:first-child {
 .slidingdaterange-number,
 .slidingdaterange-daterange .input-group {
   margin-bottom: 6px;
+}
+.photo-round {
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.photo-round.photo-round-sm {
+  height: 35px;
+  width: 35px;
+  border-radius: 17.5px;
 }
 /*
     Used to manage styles related to Rock's forms

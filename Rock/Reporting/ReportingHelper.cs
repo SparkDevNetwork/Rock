@@ -89,7 +89,7 @@ namespace Rock.Reporting
                     gReport.RowItemText = EntityTypeCache.Read( report.EntityTypeId.Value, rockContext ).FriendlyName;
                 }
 
-                List<EntityField> entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
+                List<EntityField> entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType, true, false );
 
                 var selectedEntityFields = new Dictionary<int, EntityField>();
                 var selectedAttributes = new Dictionary<int, AttributeCache>();
@@ -150,7 +150,14 @@ namespace Rock.Reporting
                                 }
                                 else
                                 {
-                                    boundField = new BoundField();
+                                    boundField = new CallbackField();
+                                    boundField.HtmlEncode = false;
+                                    ( boundField as CallbackField ).OnFormatDataValue += (sender, e) => {
+
+                                        bool condensed = true;
+                                        string resultHtml = attribute.FieldType.Field.FormatValueAsHtml( gReport, e.DataValue as string, attribute.QualifierValues, condensed );
+                                        e.FormattedValue = resultHtml ?? string.Empty;
+                                    };
                                 }
 
                                 boundField.DataField = string.Format( "Attribute_{0}_{1}", attribute.Id, columnIndex );
