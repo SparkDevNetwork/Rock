@@ -98,7 +98,7 @@
 
                             <div class="navbar-content">
                                 <div class="navbar-zone-login pull-right"><Rock:Zone Name="Login" runat="server" /></div>
-                                <div class="navbar-zone-header pull-right divided"><Rock:Zone Name="Header" runat="server" /></div>
+                                <div class="navbar-zone-header divided"><Rock:Zone Name="Header" runat="server" /></div>
 			                </div>
                     </nav>
 
