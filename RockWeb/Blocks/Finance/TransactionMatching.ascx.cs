@@ -395,6 +395,7 @@ namespace RockWeb.Blocks.Finance
                     else
                     {
                         ddlIndividual.Attributes["disabled"] = "disabled";
+                        _focusControl = ppSelectNew;
                     }
 
                     ddlIndividual_SelectedIndexChanged( null, null );
@@ -474,7 +475,10 @@ namespace RockWeb.Blocks.Finance
 
                 hfBackNextHistory.Value = historyList.AsDelimited( "," );
 
-                _focusControl = rptAccounts.ControlsOfTypeRecursive<Rock.Web.UI.Controls.CurrencyBox>().FirstOrDefault();
+                if ( _focusControl == null )
+                {
+                    _focusControl = rptAccounts.ControlsOfTypeRecursive<Rock.Web.UI.Controls.CurrencyBox>().FirstOrDefault();
+                }
             }
         }
 
@@ -707,6 +711,10 @@ namespace RockWeb.Blocks.Finance
                 // if a person was selected using the PersonPicker, set the PersonDropDown to unselected
                 ddlIndividual.SetValue( string.Empty );
                 LoadPersonPreview( ppSelectNew.PersonId.Value );
+                _focusControl = rptAccounts.ControlsOfTypeRecursive<Rock.Web.UI.Controls.CurrencyBox>().FirstOrDefault();
+
+                nbSaveError.Text = "";
+                nbSaveError.Visible = false;
             }
         }
 

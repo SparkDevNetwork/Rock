@@ -368,7 +368,7 @@ namespace Rock.Communication.Transport
                 {
                     foreach ( string ccRecipient in template.Bcc.SplitDelimitedValues() )
                     {
-                        message.CC.Add( new MailAddress( ccRecipient ) );
+                        message.Bcc.Add( new MailAddress( ccRecipient ) );
                     }
                 }
 
