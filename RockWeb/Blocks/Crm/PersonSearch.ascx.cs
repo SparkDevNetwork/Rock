@@ -29,6 +29,9 @@ using System.Text.RegularExpressions;
 using System.Data.Entity.SqlServer;
 using Rock.Data;
 using Rock.Web.Cache;
+using System.Diagnostics;
+using System.Data.Entity.Core.Objects;
+using System.Text;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -37,18 +40,22 @@ namespace RockWeb.Blocks.Crm
     [Description( "Displays list of people that match a given search type and term." )]
 
     [LinkedPage("Person Detail Page")]
+    [BooleanField("Show Performance", "Displays how long the search took.", false)]
     public partial class PersonSearch : Rock.Web.UI.RockBlock
     {
         #region Fields
 
         private DefinedValueCache _inactiveStatus = null;
-
+        private Stopwatch _sw = new Stopwatch();
+        private Literal _lPerf = new Literal();
         #endregion
 
         #region Base Control Methods
 
         protected override void OnInit( EventArgs e )
         {
+            _sw.Start();
+            
             base.OnInit( e );
 
             gPeople.DataKeyNames = new string[] { "Id" };
@@ -56,6 +63,21 @@ namespace RockWeb.Blocks.Crm
             gPeople.GridRebind += gPeople_GridRebind;
             gPeople.RowDataBound += gPeople_RowDataBound;
             gPeople.PersonIdField = "Id";
+
+            if ( GetAttributeValue( "ShowPerformance" ).AsBoolean() )
+            {
+                gPeople.Actions.AddCustomActionControl( _lPerf );
+            }
+        }
+
+        protected override void OnPreRender( EventArgs e )
+        {
+            base.OnPreRender( e );
+            _sw.Stop();
+
+            
+            _lPerf.Text = string.Format( "<small class='pull-left' style='margin-top: 6px;'>Search time: {0} ms.</small>", _sw.Elapsed.Milliseconds );
+            
         }
 
         protected override void OnLoad( EventArgs e )
@@ -81,12 +103,12 @@ namespace RockWeb.Blocks.Crm
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                var person = e.Row.DataItem as Person;
+                var person = e.Row.DataItem as PersonSearchResult;
                 if ( person != null )
                 {
                     if (_inactiveStatus != null && 
-                        person.RecordStatusValueId.HasValue && 
-                        person.RecordStatusValueId == _inactiveStatus.Id)
+                        person.RecordStatusValue!= null && 
+                        person.RecordStatusValue.Id == _inactiveStatus.Id)
                     {
                         e.Row.AddCssClass( "inactive" );
                     }
@@ -94,6 +116,70 @@ namespace RockWeb.Blocks.Crm
                     if ( person.IsDeceased ?? false )
                     {
                         e.Row.AddCssClass( "deceased" );
+                    }
+
+                    string campuses = string.Empty;
+
+                    foreach ( var campus in person.Families.ToList().Select(f => f.Campus).Distinct())
+                    {
+                        campuses += string.Format( "{0}, ", campus );
+                    }
+
+                    var lCampus = e.Row.FindControl( "lCampus" ) as Literal;
+
+                    if ( campuses.Length > 0 )
+                    {
+                        campuses = campuses.ReplaceLastOccurrence( ", ", "" );
+                    }
+
+                    lCampus.Text = campuses;
+
+                    var lPerson = e.Row.FindControl( "lPerson" ) as Literal;
+
+                    if ( !person.IsBusiness )
+                    {
+                        StringBuilder sbPersonDetails = new StringBuilder();
+                        sbPersonDetails.Append(string.Format( "<div class=\"photo-round photo-round-sm pull-left\" style=\"background-image: url('{0}');\"></div>", person.PhotoUrl));
+                        sbPersonDetails.Append("<div class=\"pull-left margin-l-sm\">");
+                        sbPersonDetails.Append(string.Format("<strong>{0}</strong> ", person.FullNameReversed));
+                        sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\"><br>{0}</br></small>", campuses ) );
+                        sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\">{0}</small>", person.ConnectionStatusValue.Value ) );
+                        sbPersonDetails.Append(string.Format(" <small class=\"hidden-md hidden-lg\">{0}</small>", person.AgeFormatted));
+                        if (!string.IsNullOrWhiteSpace(person.Email)){
+                            sbPersonDetails.Append(string.Format("<br/><small>{0}</small>", person.Email));
+                        }
+                        
+                        // add home addresses
+                        foreach(var homeAddress in person.HomeAddresses) {
+                            string format = string.Empty;
+                            var countryValue = Rock.Web.Cache.DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
+                                                .DefinedValues
+                                                .Where( v => v.Value.Equals( person.HomeAddresses.FirstOrDefault().Location.Country, StringComparison.OrdinalIgnoreCase ) )
+                                                .FirstOrDefault();
+
+                            if ( countryValue != null )
+                            {
+                                format = countryValue.GetAttributeValue( "AddressFormat" );
+                            }
+                            
+                            if ( !string.IsNullOrWhiteSpace( format ) )
+                            {
+                                var dict = homeAddress.Location.ToDictionary();
+                                dict["Country"] = countryValue.Description;
+                                sbPersonDetails.Append(string.Format("<small><br>{0}</small>" ,format.ResolveMergeFields( dict ).ConvertCrLfToHtmlBr().Replace("<br/><br/>", "<br/>")));
+                            }
+                            else
+                            {
+                                sbPersonDetails.Append( string.Format( string.Format( "<small><br>{0}<br>{1} {2}, {3} {4}</small>", homeAddress.Location.Street1, homeAddress.Location.Street2, homeAddress.Location.City, homeAddress.Location.City, homeAddress.Location.PostalCode ) ) );
+                            }
+                        }
+                        sbPersonDetails.Append("</div>");
+
+                        lPerson.Text = sbPersonDetails.ToString();
+                    }
+                    else
+                    {
+                        lPerson.Text = string.Format( "{0}", person.LastName );
                     }
                 }
             }
@@ -110,13 +196,17 @@ namespace RockWeb.Blocks.Crm
 
         private void BindGrid()
         {
+            
+
+            
+
             string type = PageParameter( "SearchType" );
             string term = PageParameter( "SearchTerm" );
 
             if ( !String.IsNullOrWhiteSpace( type ) && !String.IsNullOrWhiteSpace( term ) )
             {
-                using ( var rockContext = new RockContext() )
-                {
+                    var rockContext = new RockContext();
+                
                     var personService = new PersonService( rockContext );
                     IQueryable<Person> people = null;
 
@@ -163,7 +253,30 @@ namespace RockWeb.Blocks.Crm
                         people = people.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );
                     }
 
-                    var personList = people.ToList();
+                    Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                    Guid homeAddressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
+
+                    var personList = people.Select( p => new PersonSearchResult
+                    {
+                        Id = p.Id,
+                        FirstName = p.FirstName,
+                        NickName = p.NickName,
+                        LastName = p.LastName,
+                        BirthDate = p.BirthDate,
+                        BirthYear = p.BirthYear,
+                        BirthMonth = p.BirthMonth,
+                        BirthDay = p.BirthDay,
+                        ConnectionStatusValue = p.ConnectionStatusValue,
+                        RecordStatusValue = p.RecordStatusValue,
+                        RecordTypeValue = p.RecordTypeValue,
+                        SuffixValue = p.SuffixValue,
+                        IsDeceased = p.IsDeceased,
+                        Email = p.Email,
+                        Gender = p.Gender,
+                        PhotoId = p.PhotoId,
+                        Families = p.Members.Where(m => m.Group.GroupType.Guid == familyGuid ).Select( m => m.Group),
+                        HomeAddresses = p.Members.Where( m => m.Group.GroupType.Guid == familyGuid ).Select( m => m.Group.GroupLocations ).FirstOrDefault().Where( l => l.GroupLocationTypeValue.Guid == homeAddressTypeGuid )
+                    }).ToList();
 
                     if ( personList.Count == 1 )
                     {
@@ -197,10 +310,291 @@ namespace RockWeb.Blocks.Crm
                         gPeople.DataBind();
                     }
                 }
-            }
         }
 
         #endregion
 
 }
+    #region result models
+    public class PersonSearchResult
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>
+        /// The id.
+        /// </value>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the full name last first.
+        /// </summary>
+        /// <value>
+        /// The full name last first.
+        /// </value>
+        public string FirstName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the nick.
+        /// </summary>
+        /// <value>
+        /// The name of the nick.
+        /// </value>
+        public string NickName { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is business.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is business; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsBusiness
+        {
+            get
+            {
+                int recordTypeValueIdBusiness = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                return this.RecordTypeValue != null && this.RecordTypeValue.Id == recordTypeValueIdBusiness;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the home addresses.
+        /// </summary>
+        /// <value>
+        /// The home addresses.
+        /// </value>
+        public IEnumerable<GroupLocation> HomeAddresses { get; set; }
+
+        /// <summary>
+        /// Gets the photo URL.
+        /// </summary>
+        /// <value>
+        /// The photo URL.
+        /// </value>
+        public string PhotoUrl
+        {
+            get
+            {
+                if ( this.RecordTypeValue != null )
+                {
+                    return Person.GetPhotoUrl( this.PhotoId, this.Age, this.Gender, this.RecordTypeValue.Guid );
+                }
+                else
+                {
+                    return Person.GetPhotoUrl( this.PhotoId, this.Age, this.Gender );
+                }
+            }
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets or sets the last name.
+        /// </summary>
+        /// <value>
+        /// The last name.
+        /// </value>
+        public string LastName { get; set; }
+
+        /// <summary>
+        /// Gets the full name reversed.
+        /// </summary>
+        /// <value>
+        /// The full name reversed.
+        /// </value>
+        public virtual string FullNameReversed
+        {
+            get
+            {
+                if ( this.IsBusiness )
+                {
+                    return LastName;
+                }
+
+                var fullName = new StringBuilder();
+
+                fullName.Append( LastName );
+
+                // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so 
+                // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
+                if ( SuffixValue != null )
+                {
+                    var suffix = DefinedValueCache.Read( SuffixValue.Value );
+                    if ( suffix != null )
+                    {
+                        fullName.AppendFormat( " {0}", suffix.Value );
+                    }
+                }
+
+                fullName.AppendFormat( ", {0}", NickName );
+                return fullName.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the birth date.
+        /// </summary>
+        /// <value>
+        /// The birth date.
+        /// </value>
+        public DateTime? BirthDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the birth year.
+        /// </summary>
+        /// <value>
+        /// The birth year.
+        /// </value>
+        public int? BirthYear { get; set; }
+
+        /// <summary>
+        /// Gets or sets the email.
+        /// </summary>
+        /// <value>
+        /// The email.
+        /// </value>
+        public string Email { get; set; }
+
+        /// <summary>
+        /// Gets or sets the photo identifier.
+        /// </summary>
+        /// <value>
+        /// The photo identifier.
+        /// </value>
+        public int? PhotoId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the birth month.
+        /// </summary>
+        /// <value>
+        /// The birth month.
+        /// </value>
+        public int? BirthMonth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the birth day.
+        /// </summary>
+        /// <value>
+        /// The birth day.
+        /// </value>
+        public int? BirthDay { get; set; }
+
+        /// <summary>
+        /// Gets or sets the families.
+        /// </summary>
+        /// <value>
+        /// The families.
+        /// </value>
+        public IEnumerable<Rock.Model.Group> Families { get; set; }
+
+        /// <summary>
+        /// Gets or sets the gender.
+        /// </summary>
+        /// <value>The gender.</value>
+        public Gender Gender { get; set; }
+
+        /// <summary>
+        /// Gets or sets the is deceased.
+        /// </summary>
+        /// <value>
+        /// The is deceased.
+        /// </value>
+        public bool? IsDeceased { get; set; }
+
+        /// <summary>
+        /// Gets the age.
+        /// </summary>
+        /// <value>
+        /// The age.
+        /// </value>
+        public int? Age
+        {
+            get
+            {
+                if ( BirthYear.HasValue )
+                {
+                    DateTime? bd = BirthDate;
+                    if ( bd.HasValue )
+                    {
+                        DateTime today = RockDateTime.Today;
+                        int age = today.Year - bd.Value.Year;
+                        if ( bd.Value > today.AddYears( -age ) ) age--;
+                        return age;
+                    }
+                }
+                return null;
+            }
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets the age formatted.
+        /// </summary>
+        /// <value>
+        /// The age formatted.
+        /// </value>
+        public string AgeFormatted
+        {
+            get
+            {
+                if ( this.Age.HasValue )
+                {
+                    return string.Format( "({0})", this.Age.Value.ToString() );
+                }
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the connection status.
+        /// </summary>
+        /// <value>The connection status.</value>
+        public DefinedValue ConnectionStatusValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the record type value.
+        /// </summary>
+        /// <value>
+        /// The record type value.
+        /// </value>
+        public DefinedValue RecordTypeValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the suffix value.
+        /// </summary>
+        /// <value>
+        /// The suffix value.
+        /// </value>
+        public DefinedValue SuffixValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the record status.
+        /// </summary>
+        /// <value>The member status.</value>
+        public DefinedValue RecordStatusValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the spouse.
+        /// </summary>
+        /// <value>
+        /// The name of the spouse.
+        /// </value>
+        public string SpouseName { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the picker item details HTML.
+        /// </summary>
+        /// <value>
+        /// The picker item details HTML.
+        /// </value>
+        public string PickerItemDetailsHtml { get; set; }
+    }
+#endregion
 }
