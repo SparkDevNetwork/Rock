@@ -287,7 +287,7 @@ namespace Rock.Model
                     MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
                     if ( getMethod != null )
                     {
-                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, null, this.FetchTop } );
+                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, null, null } );
                         var qry = getResult as IQueryable<IEntity>;
                         var qryExpression = qry.Expression;
 
@@ -335,11 +335,19 @@ namespace Rock.Model
 
                         var selectExpression = Expression.Call( typeof( Queryable ), "Select", new Type[] { qry.ElementType, dynamicType }, qryExpression, selector );
 
-                        var query = qry.Provider.CreateQuery( selectExpression );
+                        var query = qry.Provider.CreateQuery( selectExpression ).AsNoTracking();
+
+                        // cast to a dynamic so that we can do a Queryable.Take (the compiler figures out the T in IQueryable at runtime)
+                        dynamic dquery = query;
+
+                        if ( FetchTop.HasValue )
+                        {
+                            dquery = Queryable.Take( dquery, FetchTop.Value );
+                        }
 
                         // enumerate thru the query results and put into a list
                         var reportResult = new List<object>();
-                        var enumerator = query.AsNoTracking().GetEnumerator();
+                        var enumerator = ( dquery as System.Collections.IEnumerable ).GetEnumerator();
                         while ( enumerator.MoveNext() )
                         {
                             reportResult.Add( enumerator.Current );
