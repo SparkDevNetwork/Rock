@@ -5465,6 +5465,7 @@ h4,
   background-color: #eaf7fc;
 }
 .smartsearch {
+  float: right;
   margin: 12px 4%;
   border: 0;
   background-color: #353133;
@@ -5472,6 +5473,27 @@ h4,
 }
 .smartsearch input.searchinput {
   color: #d3cec5;
+}
+@media (min-width: 992px) {
+  .smartsearch {
+    margin: 0;
+    height: 50px;
+    border-radius: 0;
+    width: 290px;
+    background-color: #b8ac98;
+  }
+  .smartsearch input,
+  .smartsearch a.dropdown-toggle {
+    line-height: 38px;
+  }
+  .smartsearch i {
+    margin-top: 0;
+    line-height: 46px;
+    margin-left: 4px;
+  }
+  .smartsearch input.searchinput {
+    color: #616161;
+  }
 }
 .loginstatus {
   margin-right: 2px;
@@ -5546,6 +5568,64 @@ h4,
 /*#endregion */
 /*#region
 // 5. Theme Styling          */
+.navbar-top-links {
+  float: left;
+  margin-left: 12px;
+  color: #6a6a6a;
+}
+.navbar-top-links > li {
+  display: inline-block;
+}
+.navbar-top-links > li > a {
+  padding: 15px;
+  color: #777777;
+}
+.navbar-top-links > li > a:hover,
+.navbar-top-links > li > a:focus {
+  color: #d3cec5;
+  background-color: #353133;
+}
+@media (min-width: 768px) {
+  .navbar-top-links > li > a:hover,
+  .navbar-top-links > li > a:focus {
+    color: #333333;
+    background-color: #b8ac98;
+  }
+}
+.navbar-top-links > li.open > a,
+.navbar-top-links > li.open > a:hover,
+.navbar-top-links > li.open > a:focus {
+  background-color: #353133;
+}
+@media (min-width: 768px) {
+  .navbar-top-links > li.open > a,
+  .navbar-top-links > li.open > a:hover,
+  .navbar-top-links > li.open > a:focus {
+    background-color: #ada089;
+  }
+}
+.navbar-top-links ul .divider {
+  background-color: #f3f3f4 !important;
+}
+.navbar-top-links .dropdown-menu {
+  width: 310px;
+  padding: 10px 0;
+}
+.navbar-top-links .dropdown-messages .media {
+  padding: 3px 15px;
+}
+.count-info .label {
+  line-height: 12px;
+  padding: 2px 4px;
+  position: absolute;
+  right: 3px;
+  top: 6px;
+}
+a.link-block,
+.link-block > a {
+  display: block;
+  padding: 7.5px;
+}
 #page-wrapper {
   width: 100%;
 }
@@ -5561,7 +5641,7 @@ h4,
   color: #d3cec5;
 }
 #content-wrapper header .navbar-default .navbar-header {
-  padding: 8px 0 0 12px;
+  padding: 10px 0 0 12px;
   float: left;
 }
 #content-wrapper header .navbar-default .navbar-mobile-logo {
@@ -5730,14 +5810,6 @@ body#splash.error #content #logo {
   #content-wrapper header .navbar-default .dropdown-menu li.divider {
     background-color: #f3f3f4;
   }
-  #content-wrapper .smartsearch {
-    margin: 9px 8px 9px 0;
-    width: 290px;
-    background-color: #bcb19e;
-  }
-  #content-wrapper .smartsearch input.searchinput {
-    color: #616161;
-  }
 }
 /*#endregion */
 /*#region
@@ -5875,4 +5947,3 @@ body.navbar-side-close #content-wrapper {
 .title .first-word {
   font-weight: 900;
 }
-/*#endregion */
