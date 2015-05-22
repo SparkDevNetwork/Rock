@@ -49,9 +49,12 @@
 
                         </div>
                     </div>
+                    
+
+                    <Rock:NotificationBox ID="nbMergeError" runat="server" NotificationBoxType="Warning" Visible="false" CssClass="js-merge-error"/>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnMerge" runat="server" Text="Merge" CssClass="btn btn-primary" OnClick="btnMerge_Click" />
+                        <asp:LinkButton ID="btnMerge" runat="server" Text="Merge" CssClass="btn btn-primary" OnClientClick="$('.js-merge-error').hide()" OnClick="btnMerge_Click" />
                     </div>
                 </fieldset>
             </div>
