@@ -107,8 +107,8 @@ namespace RockWeb.Blocks.Crm
                 if ( person != null )
                 {
                     if (_inactiveStatus != null && 
-                        person.RecordStatusValue!= null && 
-                        person.RecordStatusValue.Id == _inactiveStatus.Id)
+                        person.RecordStatusValueId.HasValue && 
+                        person.RecordStatusValueId.Value == _inactiveStatus.Id)
                     {
                         e.Row.AddCssClass( "inactive" );
                     }
@@ -118,21 +118,28 @@ namespace RockWeb.Blocks.Crm
                         e.Row.AddCssClass( "deceased" );
                     }
 
-                    string campuses = string.Empty;
-
-                    foreach ( var campus in person.Families.ToList().Select(f => f.Campus).Distinct())
+                    string delimitedCampuses = string.Empty;
+                    if ( person.CampusIds.Any() )
                     {
-                        campuses += string.Format( "{0}, ", campus );
+                        var campuses = new List<string>();
+                        foreach ( var campusId in person.CampusIds )
+                        {
+                            var campus = CampusCache.Read( campusId );
+                            if ( campus != null )
+                            {
+                                campuses.Add( campus.Name );
+                            }
+                        }
+                        if ( campuses.Any() )
+                        {
+                            delimitedCampuses = campuses.AsDelimited( ", " );
+                            var lCampus = e.Row.FindControl( "lCampus" ) as Literal;
+                            if ( lCampus != null )
+                            {
+                                lCampus.Text = delimitedCampuses;
+                            }
+                        }
                     }
-
-                    var lCampus = e.Row.FindControl( "lCampus" ) as Literal;
-
-                    if ( campuses.Length > 0 )
-                    {
-                        campuses = campuses.ReplaceLastOccurrence( ", ", "" );
-                    }
-
-                    lCampus.Text = campuses;
 
                     var lPerson = e.Row.FindControl( "lPerson" ) as Literal;
 
@@ -142,35 +149,43 @@ namespace RockWeb.Blocks.Crm
                         sbPersonDetails.Append(string.Format( "<div class=\"photo-round photo-round-sm pull-left\" style=\"background-image: url('{0}');\"></div>", person.PhotoUrl));
                         sbPersonDetails.Append("<div class=\"pull-left margin-l-sm\">");
                         sbPersonDetails.Append(string.Format("<strong>{0}</strong> ", person.FullNameReversed));
-                        sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\"><br>{0}</br></small>", campuses ) );
-                        sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\">{0}</small>", person.ConnectionStatusValue.Value ) );
+                        sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\"><br>{0}</br></small>", delimitedCampuses ) );
+                        sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\">{0}</small>", DefinedValueCache.GetName( person.ConnectionStatusValueId ) ) );
                         sbPersonDetails.Append(string.Format(" <small class=\"hidden-md hidden-lg\">{0}</small>", person.AgeFormatted));
                         if (!string.IsNullOrWhiteSpace(person.Email)){
                             sbPersonDetails.Append(string.Format("<br/><small>{0}</small>", person.Email));
                         }
                         
                         // add home addresses
-                        foreach(var homeAddress in person.HomeAddresses) {
+                        foreach(var location in person.HomeAddresses )
+                        {
+                            if ( string.IsNullOrWhiteSpace( location.Street1 ) &&
+                                string.IsNullOrWhiteSpace( location.Street2 ) &&
+                                string.IsNullOrWhiteSpace( location.City ) )
+                            {
+                                continue;
+                            }
+
                             string format = string.Empty;
-                            var countryValue = Rock.Web.Cache.DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
-                                                .DefinedValues
-                                                .Where( v => v.Value.Equals( person.HomeAddresses.FirstOrDefault().Location.Country, StringComparison.OrdinalIgnoreCase ) )
-                                                .FirstOrDefault();
+                            var countryValue = Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() )
+                                .DefinedValues
+                                .Where( v => v.Value.Equals( location.Country, StringComparison.OrdinalIgnoreCase ) )
+                                .FirstOrDefault();
 
                             if ( countryValue != null )
                             {
                                 format = countryValue.GetAttributeValue( "AddressFormat" );
                             }
-                            
+
                             if ( !string.IsNullOrWhiteSpace( format ) )
                             {
-                                var dict = homeAddress.Location.ToDictionary();
+                                var dict = location.ToDictionary();
                                 dict["Country"] = countryValue.Description;
-                                sbPersonDetails.Append(string.Format("<small><br>{0}</small>" ,format.ResolveMergeFields( dict ).ConvertCrLfToHtmlBr().Replace("<br/><br/>", "<br/>")));
+                                sbPersonDetails.Append( string.Format( "<small><br>{0}</small>", format.ResolveMergeFields( dict ).ConvertCrLfToHtmlBr().Replace( "<br/><br/>", "<br/>" ) ) );
                             }
                             else
                             {
-                                sbPersonDetails.Append( string.Format( string.Format( "<small><br>{0}<br>{1} {2}, {3} {4}</small>", homeAddress.Location.Street1, homeAddress.Location.Street2, homeAddress.Location.City, homeAddress.Location.City, homeAddress.Location.PostalCode ) ) );
+                                sbPersonDetails.Append( string.Format( string.Format( "<small><br>{0}<br>{1} {2}, {3} {4}</small>", location.Street1, location.Street2, location.City, location.City, location.PostalCode ) ) );
                             }
                         }
                         sbPersonDetails.Append("</div>");
@@ -196,120 +211,126 @@ namespace RockWeb.Blocks.Crm
 
         private void BindGrid()
         {
-            
-
-            
 
             string type = PageParameter( "SearchType" );
             string term = PageParameter( "SearchTerm" );
 
             if ( !String.IsNullOrWhiteSpace( type ) && !String.IsNullOrWhiteSpace( term ) )
             {
-                    var rockContext = new RockContext();
-                
-                    var personService = new PersonService( rockContext );
-                    IQueryable<Person> people = null;
+                var rockContext = new RockContext();
 
-                    switch ( type.ToLower() )
-                    {
-                        case ( "name" ):
-                            {
-                                bool allowFirstNameOnly = false;
-                                if ( !bool.TryParse( PageParameter( "allowFirstNameOnly" ), out allowFirstNameOnly ) )
-                                {
-                                    allowFirstNameOnly = false;
-                                }
-                                people = personService.GetByFullName( term, allowFirstNameOnly, true );
-                                break;
-                            }
-                        case ( "phone" ):
-                            {
-                                var phoneService = new PhoneNumberService( rockContext );
-                                var personIds = phoneService.GetPersonIdsByNumber( term );
-                                people = personService.Queryable().Where( p => personIds.Contains( p.Id ) );
-                                break;
-                            }
-                        case ( "address" ):
-                            {
-                                var groupMemberService = new GroupMemberService( rockContext );
-                                var personIds2 = groupMemberService.GetPersonIdsByHomeAddress( term );
-                                people = personService.Queryable().Where( p => personIds2.Contains( p.Id ) );
-                                break;
-                            }
-                        case ( "email" ):
-                            {
-                                people = personService.Queryable().Where( p => p.Email.Contains( term ) );
-                                break;
-                            }
-                    }
+                var personService = new PersonService( rockContext );
+                IQueryable<Person> people = null;
 
-                    SortProperty sortProperty = gPeople.SortProperty;
-                    if ( sortProperty != null )
-                    {
-                        people = people.Sort( sortProperty );
-                    }
-                    else
-                    {
-                        people = people.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );
-                    }
-
-                    Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-                    Guid homeAddressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
-
-                    var personList = people.Select( p => new PersonSearchResult
-                    {
-                        Id = p.Id,
-                        FirstName = p.FirstName,
-                        NickName = p.NickName,
-                        LastName = p.LastName,
-                        BirthDate = p.BirthDate,
-                        BirthYear = p.BirthYear,
-                        BirthMonth = p.BirthMonth,
-                        BirthDay = p.BirthDay,
-                        ConnectionStatusValue = p.ConnectionStatusValue,
-                        RecordStatusValue = p.RecordStatusValue,
-                        RecordTypeValue = p.RecordTypeValue,
-                        SuffixValue = p.SuffixValue,
-                        IsDeceased = p.IsDeceased,
-                        Email = p.Email,
-                        Gender = p.Gender,
-                        PhotoId = p.PhotoId,
-                        Families = p.Members.Where(m => m.Group.GroupType.Guid == familyGuid ).Select( m => m.Group),
-                        HomeAddresses = p.Members.Where( m => m.Group.GroupType.Guid == familyGuid ).Select( m => m.Group.GroupLocations ).FirstOrDefault().Where( l => l.GroupLocationTypeValue.Guid == homeAddressTypeGuid )
-                    }).ToList();
-
-                    if ( personList.Count == 1 )
-                    {
-                        Response.Redirect( string.Format( "~/Person/{0}", personList[0].Id ), false );
-                        Context.ApplicationInstance.CompleteRequest();
-                    }
-                    else
-                    {
-                        if ( type.ToLower() == "name" )
+                switch ( type.ToLower() )
+                {
+                    case ( "name" ):
                         {
-                            var similiarNames = personService.GetSimiliarNames( term,
-                                personList.Select( p => p.Id ).ToList(), true );
-                            if ( similiarNames.Any() )
+                            bool allowFirstNameOnly = false;
+                            if ( !bool.TryParse( PageParameter( "allowFirstNameOnly" ), out allowFirstNameOnly ) )
                             {
-                                var hyperlinks = new List<string>();
-                                foreach ( string name in similiarNames.Distinct() )
-                                {
-                                    var pageRef = CurrentPageReference;
-                                    pageRef.Parameters["SearchTerm"] = name;
-                                    hyperlinks.Add( string.Format( "<a href='{0}'>{1}</a>", pageRef.BuildUrl(), name ) );
-                                }
-                                string altNames = string.Join( ", ", hyperlinks );
-                                nbNotice.Text = string.Format( "Other Possible Matches: {0}", altNames );
-                                nbNotice.Visible = true;
+                                allowFirstNameOnly = false;
                             }
+                            people = personService.GetByFullName( term, allowFirstNameOnly, true );
+                            break;
                         }
-
-                        _inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
-
-                        gPeople.DataSource = personList;
-                        gPeople.DataBind();
-                    }
+                    case ( "phone" ):
+                        {
+                            var phoneService = new PhoneNumberService( rockContext );
+                            var personIds = phoneService.GetPersonIdsByNumber( term );
+                            people = personService.Queryable().Where( p => personIds.Contains( p.Id ) );
+                            break;
+                        }
+                    case ( "address" ):
+                        {
+                            var groupMemberService = new GroupMemberService( rockContext );
+                            var personIds2 = groupMemberService.GetPersonIdsByHomeAddress( term );
+                            people = personService.Queryable().Where( p => personIds2.Contains( p.Id ) );
+                            break;
+                        }
+                    case ( "email" ):
+                        {
+                            people = personService.Queryable().Where( p => p.Email.Contains( term ) );
+                            break;
+                        }
                 }
+
+                SortProperty sortProperty = gPeople.SortProperty;
+                if ( sortProperty != null )
+                {
+                    people = people.Sort( sortProperty );
+                }
+                else
+                {
+                    people = people.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );
+                }
+
+                Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                Guid homeAddressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
+
+                var personList = people.Select( p => new PersonSearchResult
+                {
+                    Id = p.Id,
+                    FirstName = p.FirstName,
+                    NickName = p.NickName,
+                    LastName = p.LastName,
+                    BirthDate = p.BirthDate,
+                    BirthYear = p.BirthYear,
+                    BirthMonth = p.BirthMonth,
+                    BirthDay = p.BirthDay,
+                    ConnectionStatusValueId = p.ConnectionStatusValueId,
+                    RecordStatusValueId = p.RecordStatusValueId,
+                    RecordTypeValueId = p.RecordTypeValueId,
+                    SuffixValueId = p.SuffixValueId,
+                    IsDeceased = p.IsDeceased,
+                    Email = p.Email,
+                    Gender = p.Gender,
+                    PhotoId = p.PhotoId,
+                    CampusIds = p.Members
+                        .Where( m =>
+                            m.Group.GroupType.Guid.Equals( familyGuid ) &&
+                            m.Group.CampusId.HasValue )
+                        .Select( m => m.Group.CampusId.Value )
+                        .ToList(),
+                    HomeAddresses = p.Members
+                        .Where( m => m.Group.GroupType.Guid == familyGuid )
+                        .SelectMany( m => m.Group.GroupLocations )
+                        .Where( gl => gl.GroupLocationTypeValue.Guid.Equals( homeAddressTypeGuid ) )
+                        .Select( gl => gl.Location )
+                } ).ToList();
+
+                if ( personList.Count == 1 )
+                {
+                    Response.Redirect( string.Format( "~/Person/{0}", personList[0].Id ), false );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
+                else
+                {
+                    if ( type.ToLower() == "name" )
+                    {
+                        var similiarNames = personService.GetSimiliarNames( term,
+                            personList.Select( p => p.Id ).ToList(), true );
+                        if ( similiarNames.Any() )
+                        {
+                            var hyperlinks = new List<string>();
+                            foreach ( string name in similiarNames.Distinct() )
+                            {
+                                var pageRef = CurrentPageReference;
+                                pageRef.Parameters["SearchTerm"] = name;
+                                hyperlinks.Add( string.Format( "<a href='{0}'>{1}</a>", pageRef.BuildUrl(), name ) );
+                            }
+                            string altNames = string.Join( ", ", hyperlinks );
+                            nbNotice.Text = string.Format( "Other Possible Matches: {0}", altNames );
+                            nbNotice.Visible = true;
+                        }
+                    }
+
+                    _inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
+
+                    gPeople.DataSource = personList;
+                    gPeople.DataBind();
+                }
+            }
         }
 
         #endregion
@@ -353,7 +374,7 @@ namespace RockWeb.Blocks.Crm
             get
             {
                 int recordTypeValueIdBusiness = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
-                return this.RecordTypeValue != null && this.RecordTypeValue.Id == recordTypeValueIdBusiness;
+                return this.RecordTypeValueId.HasValue && this.RecordTypeValueId.Value == recordTypeValueIdBusiness;
             }
         }
 
@@ -363,7 +384,7 @@ namespace RockWeb.Blocks.Crm
         /// <value>
         /// The home addresses.
         /// </value>
-        public IEnumerable<GroupLocation> HomeAddresses { get; set; }
+        public IEnumerable<Location> HomeAddresses { get; set; }
 
         /// <summary>
         /// Gets the photo URL.
@@ -375,14 +396,15 @@ namespace RockWeb.Blocks.Crm
         {
             get
             {
-                if ( this.RecordTypeValue != null )
+                if ( RecordTypeValueId.HasValue )
                 {
-                    return Person.GetPhotoUrl( this.PhotoId, this.Age, this.Gender, this.RecordTypeValue.Guid );
+                    var recordType = DefinedValueCache.Read( RecordTypeValueId.Value );
+                    if ( recordType != null )
+                    {
+                        return Person.GetPhotoUrl( this.PhotoId, this.Age, this.Gender, recordType.Guid );
+                    }
                 }
-                else
-                {
-                    return Person.GetPhotoUrl( this.PhotoId, this.Age, this.Gender );
-                }
+                return Person.GetPhotoUrl( this.PhotoId, this.Age, this.Gender );
             }
             private set { }
         }
@@ -416,12 +438,12 @@ namespace RockWeb.Blocks.Crm
 
                 // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so 
                 // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
-                if ( SuffixValue != null )
+                if ( SuffixValueId.HasValue )
                 {
-                    var suffix = DefinedValueCache.Read( SuffixValue.Value );
+                    var suffix = DefinedValueCache.GetName( SuffixValueId.Value );
                     if ( suffix != null )
                     {
-                        fullName.AppendFormat( " {0}", suffix.Value );
+                        fullName.AppendFormat( " {0}", suffix );
                     }
                 }
 
@@ -484,7 +506,7 @@ namespace RockWeb.Blocks.Crm
         /// <value>
         /// The families.
         /// </value>
-        public IEnumerable<Rock.Model.Group> Families { get; set; }
+        public List<int> CampusIds { get; set; }
 
         /// <summary>
         /// Gets or sets the gender.
@@ -548,7 +570,7 @@ namespace RockWeb.Blocks.Crm
         /// Gets or sets the connection status.
         /// </summary>
         /// <value>The connection status.</value>
-        public DefinedValue ConnectionStatusValue { get; set; }
+        public int? ConnectionStatusValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the record type value.
@@ -556,7 +578,7 @@ namespace RockWeb.Blocks.Crm
         /// <value>
         /// The record type value.
         /// </value>
-        public DefinedValue RecordTypeValue { get; set; }
+        public int? RecordTypeValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the suffix value.
@@ -564,13 +586,13 @@ namespace RockWeb.Blocks.Crm
         /// <value>
         /// The suffix value.
         /// </value>
-        public DefinedValue SuffixValue { get; set; }
+        public int? SuffixValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the record status.
         /// </summary>
         /// <value>The member status.</value>
-        public DefinedValue RecordStatusValue { get; set; }
+        public int? RecordStatusValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the spouse.

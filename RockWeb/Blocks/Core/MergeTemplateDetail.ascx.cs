@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -464,6 +466,79 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Handles the FileUploaded event of the fuTemplateBinaryFile control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void fuTemplateBinaryFile_FileUploaded( object sender, EventArgs e )
+        {
+            nbFileTypeWarning.Visible = false;
+            var mergeTemplateEntityType = EntityTypeCache.Read( ddlMergeTemplateType.SelectedValue.AsInteger() );
+            var binaryFile = new BinaryFileService( new RockContext() ).Get( fuTemplateBinaryFile.BinaryFileId ?? 0 );
+            if ( binaryFile != null )
+            {
+                string fileExtension = Path.GetExtension( binaryFile.FileName );
+                fileExtension = fileExtension.TrimStart( '.' );
+                if ( string.IsNullOrWhiteSpace( fileExtension ) )
+                {
+                    // nothing more to do
+                    return;
+                }
+
+                MergeTemplateType mergeTemplateType = null;
+
+                if ( mergeTemplateEntityType != null )
+                {
+                    mergeTemplateType = MergeTemplateTypeContainer.GetComponent( mergeTemplateEntityType.Name );
+                }
+                else
+                {
+                    // if a merge template type isn't selected, automatically pick the first matching one 
+                    foreach ( var item in MergeTemplateTypeContainer.Instance.Components.Values )
+                    {
+                        if ( item.Value.IsActive )
+                        {
+                            var testMergeTemplateType = item.Value;
+                            if ( testMergeTemplateType.SupportedFileExtensions != null && testMergeTemplateType.SupportedFileExtensions.Any() )
+                            {
+                                if ( testMergeTemplateType.SupportedFileExtensions.Contains( fileExtension ) )
+                                {
+                                    mergeTemplateType = testMergeTemplateType;
+                                    var entityType = EntityTypeCache.Read( mergeTemplateType.EntityType.Id );
+                                    if ( entityType != null )
+                                    {
+                                        ddlMergeTemplateType.SetValue( entityType.Id );
+                                    }
+
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if ( mergeTemplateType.SupportedFileExtensions != null && mergeTemplateType.SupportedFileExtensions.Any() )
+                {
+                    if ( !mergeTemplateType.SupportedFileExtensions.Contains( fileExtension ) )
+                    {
+                        nbFileTypeWarning.Text = string.Format(
+                                "Warning: The selected template type doesn't support '{0}' files. Please use a {1} file for this template type.",
+                                fileExtension,
+                                mergeTemplateType.SupportedFileExtensions.Select( a => a.Quoted() ).ToList().AsDelimited( ", ", " or " ) );
+                        nbFileTypeWarning.Visible = true;
+                        nbFileTypeWarning.Dismissable = true;
+                        return;
+                    }
+                }
+            }
+
+            if ( binaryFile != null && string.IsNullOrWhiteSpace( tbName.Text ) )
+            {
+                tbName.Text = Path.GetFileNameWithoutExtension( binaryFile.FileName ).SplitCase().ReplaceWhileExists( "  ", " " );
+            }
+        }
+
+        /// <summary>
         /// Shows the readonly details.
         /// </summary>
         /// <param name="mergeTemplate">The merge template.</param>
@@ -473,14 +548,17 @@ namespace RockWeb.Blocks.Core
             hfMergeTemplateId.SetValue( mergeTemplate.Id );
             lReadOnlyTitle.Text = mergeTemplate.Name.FormatAsHtmlTitle();
 
-            DescriptionList descriptionList = new DescriptionList()
+            DescriptionList descriptionListCol1 = new DescriptionList()
                 .Add( "Template File", string.Format( "<a href='{0}'>{1}</a>", mergeTemplate.TemplateBinaryFile.Url, mergeTemplate.TemplateBinaryFile.FileName ) )
                 .Add( "Description", mergeTemplate.Description ?? string.Empty )
-                .Add( "Type", mergeTemplate.MergeTemplateTypeEntityType )
+                .Add( "Type", mergeTemplate.MergeTemplateTypeEntityType );
+
+            DescriptionList descriptionListCol2 = new DescriptionList()
                 .Add( "Category", mergeTemplate.Category != null ? mergeTemplate.Category.Name : string.Empty )
                 .Add( "Person", mergeTemplate.PersonAlias, false );
 
-            lblMainDetails.Text = descriptionList.Html;
+            lblMainDetailsCol1.Text = descriptionListCol1.Html;
+            lblMainDetailsCol2.Text = descriptionListCol2.Html;
         }
 
         /// <summary>
