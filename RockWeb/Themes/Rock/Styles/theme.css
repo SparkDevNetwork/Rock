@@ -5376,10 +5376,6 @@ pre {
 /*#endregion */
 /*#region
 // 3. Bootstrap Overrides    */
-a:hover,
-a:focus {
-  text-decoration: none;
-}
 h1 small,
 h2 small,
 h3 small,
@@ -5951,3 +5947,4 @@ body.navbar-side-close #content-wrapper {
 .title .first-word {
   font-weight: 900;
 }
+/*#endregion */
