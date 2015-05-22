@@ -27,7 +27,8 @@
                                 <Rock:RockDropDownList ID="ddlMergeTemplateType" runat="server" Label="Type" Required="true" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:FileUploader ID="fuTemplateBinaryFile" runat="server" Label="Template File" Required="true" />
+                                <Rock:NotificationBox ID="nbFileTypeWarning" runat="server" NotificationBoxType="Warning" Visible="true" Dismissable="true" />
+                                <Rock:FileUploader ID="fuTemplateBinaryFile" runat="server" Label="Template File" Required="true" OnFileUploaded="fuTemplateBinaryFile_FileUploaded" />
                                 <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" Required="true" />
                                 <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Help="Set this to make it a personal merge template. Leave it blank to make it a global." />
                             </div>
@@ -59,8 +60,11 @@
 
                     <fieldset>
                         <div class="row">
-                            <div class="col-md-12">
-                                <asp:Literal ID="lblMainDetails" runat="server" />
+                            <div class="col-md-6">
+                                <asp:Literal ID="lblMainDetailsCol1" runat="server" />
+                            </div>
+                            <div class="col-md-6">
+                                <asp:Literal ID="lblMainDetailsCol2" runat="server" />
                             </div>
                         </div>
                         <div class="actions">

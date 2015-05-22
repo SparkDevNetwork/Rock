@@ -19,15 +19,16 @@
                         HeaderStyle-HorizontalAlign="Right"
                         DataField="Age"  
                         HeaderText="Age"  
-                        SortExpression="BirthYear desc,BirthMonth desc,BirthDay desc" ColumnPriority="Desktop" />
+                        SortExpression="BirthYear desc,BirthMonth desc,BirthDay desc" 
+                        ColumnPriority="Desktop" />
                     <Rock:DefinedValueField
-                        DataField="ConnectionStatusValue.Id"
+                        DataField="ConnectionStatusValueId"
                         HeaderText="Connection Status"
-                        SortExpression="ConnectionStatusValue.Value" ColumnPriority="Tablet" />
+                        ColumnPriority="Tablet" />
                     <Rock:DefinedValueField
-                        DataField="RecordStatusValue.Id"
-                        HeaderText="Record Status"
-                        SortExpression="RecordStatusValue.Value" ColumnPriority="Desktop" />
+                        DataField="RecordStatusValueId"
+                        HeaderText="Record Status" 
+                        ColumnPriority="Desktop" />
                     <Rock:RockTemplateField HeaderText="Campus" ColumnPriority="Tablet" >
                         <ItemTemplate>
                             <asp:Literal ID="lCampus" runat="server" />

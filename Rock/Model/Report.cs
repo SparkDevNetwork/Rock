@@ -197,6 +197,32 @@ namespace Rock.Model
         /// <returns></returns>
         public List<object> GetDataSource( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, int? databaseTimeoutSeconds, out List<string> errorMessages )
         {
+            var qry = GetQueryable( entityType, entityFields, attributes, selectComponents, sortProperty, databaseTimeoutSeconds, out errorMessages );
+
+            // enumerate thru the query results and put into a list
+            var reportResult = new List<object>();
+            var enumerator = ( qry as System.Collections.IEnumerable ).GetEnumerator();
+            while ( enumerator.MoveNext() )
+            {
+                reportResult.Add( enumerator.Current );
+            }
+
+            return reportResult;
+        }
+
+        /// <summary>
+        /// Returns a IQueryable of the report
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="entityFields">The entity fields.</param>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="selectComponents">The select components.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public IQueryable GetQueryable( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, int? databaseTimeoutSeconds, out List<string> errorMessages )
+        {
             errorMessages = new List<string>();
 
             if ( entityType != null )
@@ -268,7 +294,7 @@ namespace Rock.Model
                         DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.Value.DataSelectComponentEntityType.Name );
                         if ( selectComponent != null )
                         {
-                            bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), selectComponent.GetExpression(reportDbContext, idExpression, reportField.Value.Selection ?? string.Empty ) ) );
+                            bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), selectComponent.GetExpression( reportDbContext, idExpression, reportField.Value.Selection ?? string.Empty ) ) );
                         }
                     }
 
@@ -287,7 +313,7 @@ namespace Rock.Model
                     MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
                     if ( getMethod != null )
                     {
-                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, null, this.FetchTop } );
+                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, null, null } );
                         var qry = getResult as IQueryable<IEntity>;
                         var qryExpression = qry.Expression;
 
@@ -335,17 +361,17 @@ namespace Rock.Model
 
                         var selectExpression = Expression.Call( typeof( Queryable ), "Select", new Type[] { qry.ElementType, dynamicType }, qryExpression, selector );
 
-                        var query = qry.Provider.CreateQuery( selectExpression );
+                        var query = qry.Provider.CreateQuery( selectExpression ).AsNoTracking();
 
-                        // enumerate thru the query results and put into a list
-                        var reportResult = new List<object>();
-                        var enumerator = query.AsNoTracking().GetEnumerator();
-                        while ( enumerator.MoveNext() )
+                        // cast to a dynamic so that we can do a Queryable.Take (the compiler figures out the T in IQueryable at runtime)
+                        dynamic dquery = query;
+
+                        if ( FetchTop.HasValue )
                         {
-                            reportResult.Add( enumerator.Current );
+                            dquery = Queryable.Take( dquery, FetchTop.Value );
                         }
 
-                        return reportResult;
+                        return dquery as IQueryable;
                     }
                 }
             }
