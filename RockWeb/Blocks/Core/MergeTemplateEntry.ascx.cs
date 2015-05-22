@@ -527,8 +527,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                string preText = "<div class='alert alert-warning'>Select a Merge Template to see Merge Fields help for that template type.</div>";
-                lShowMergeFields.Text = MergeTemplateType.GetDefaultLavaDebugInfo( mergeObjectsList, globalMergeFields, preText );
+                lShowMergeFields.Text = MergeTemplateType.GetDefaultLavaDebugInfo( mergeObjectsList, globalMergeFields );
             }
         }
 
