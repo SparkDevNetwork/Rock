@@ -460,7 +460,11 @@ namespace Rock.Communication.Transport
                     fromName = fromName.ResolveMergeFields( globalConfigValues );
 
                     string subject = string.Empty;
+                    mediumData.TryGetValue( "Subject", out subject );
+
                     string body = string.Empty;
+                    mediumData.TryGetValue( "Body", out body );
+
                     if ( !string.IsNullOrWhiteSpace( themeRoot ) )
                     {
                         subject = subject.Replace( "~~/", themeRoot );
@@ -474,8 +478,6 @@ namespace Rock.Communication.Transport
                         body = body.Replace( @" src=""/", @" src=""" + appRoot );
                         body = body.Replace( @" href=""/", @" href=""" + appRoot );
                     }
-                    mediumData.TryGetValue( "Subject", out subject );
-                    mediumData.TryGetValue( "Body", out body );
 
                     MailMessage message = new MailMessage();
 
@@ -534,25 +536,26 @@ namespace Rock.Communication.Transport
                 {
                     // Resolve any possible merge fields in the from address
                     var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-                    from = from.ResolveMergeFields( globalConfigValues );
+                    string msgFrom = from.ResolveMergeFields( globalConfigValues );
 
+                    string msgSubject = subject;
+                    string msgBody = body;
                     if ( !string.IsNullOrWhiteSpace( themeRoot ) )
                     {
-                        subject = subject.Replace( "~~/", themeRoot );
-                        body = body.Replace( "~~/", themeRoot );
+                        msgSubject = msgSubject.Replace( "~~/", themeRoot );
+                        msgBody = msgBody.Replace( "~~/", themeRoot );
                     }
 
                     if ( !string.IsNullOrWhiteSpace( appRoot ) )
                     {
-                        subject = subject.Replace( "~/", appRoot );
-                        body = body.Replace( "~/", appRoot );
-                        body = body.Replace( @" src=""/", @" src=""" + appRoot );
-                        body = body.Replace( @" href=""/", @" href=""" + appRoot );
+                        msgSubject = msgSubject.Replace( "~/", appRoot );
+                        msgBody = msgBody.Replace( "~/", appRoot );
+                        msgBody = msgBody.Replace( @" src=""/", @" src=""" + appRoot );
+                        msgBody = msgBody.Replace( @" href=""/", @" href=""" + appRoot );
                     }
 
                     MailMessage message = new MailMessage();
-                    message.From = new MailAddress( from );
-
+                    message.From = new MailAddress( msgFrom );
                     CheckSafeSender( message, globalAttributes );
 
                     message.IsBodyHtml = true;
@@ -561,8 +564,8 @@ namespace Rock.Communication.Transport
                     message.To.Clear();
                     recipients.ForEach( r => message.To.Add( r ) );
 
-                    message.Subject = subject;
-                    message.Body = body;       
+                    message.Subject = msgSubject;
+                    message.Body = msgBody;       
                     
                     using ( var smtpClient = GetSmtpClient() )
                     {
