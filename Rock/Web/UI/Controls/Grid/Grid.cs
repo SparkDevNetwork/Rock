@@ -2169,14 +2169,16 @@ namespace Rock.Web.UI.Controls
                 additionalMergeProperties = dataSourceObjectType.GetProperties().ToList();
             }
 
-
-            var gridDataFields = this.Columns.OfType<BoundField>();
+            var gridDataFields = this.Columns.OfType<BoundField>().ToList();
 
             Dictionary<int, Dictionary<string, object>> itemMergeFieldsList = new Dictionary<int, Dictionary<string, object>>();
             if ( additionalMergeProperties != null && additionalMergeProperties.Any() && idProp != null )
             {
                 foreach ( var item in this.DataSourceAsList )
                 {
+                    // since Reporting fieldnames are dynamic and can have special internal names, use the header text instead of the datafield name
+                    bool useHeaderNamesIfAvailable = item.GetType().Assembly.IsDynamic;
+                    
                     var idVal = idProp.GetValue( item ) as int?;
                     if ( idVal.HasValue && selectedKeys.Contains( idVal.Value ) )
                     {
@@ -2185,11 +2187,11 @@ namespace Rock.Web.UI.Controls
                         {
                             var objValue = mergeProperty.GetValue( item );
 
-                            var dataField = gridDataFields.FirstOrDefault( a => a.DataField == mergeProperty.Name );
+                            var boundField = gridDataFields.FirstOrDefault( a => a.DataField == mergeProperty.Name );
                             string mergeFieldKey;
-                            if ( dataField != null && !string.IsNullOrWhiteSpace( dataField.HeaderText ) )
+                            if ( useHeaderNamesIfAvailable && boundField != null && !string.IsNullOrWhiteSpace( boundField.HeaderText ) )
                             {
-                                mergeFieldKey = dataField.HeaderText.RemoveSpecialCharacters().Replace( " ", "_" );
+                                mergeFieldKey = boundField.HeaderText.RemoveSpecialCharacters().Replace( " ", "_" );
                             }
                             else
                             {

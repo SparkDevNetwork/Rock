@@ -132,7 +132,8 @@
 
                     <div class="actions">
                         <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" AccessKey="m" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
-                        <asp:LinkButton ID="lbAddTransaction" runat="server" Text="Add New Transaction" AccessKey="a" CssClass="btn btn-default pull-right" CausesValidation="false" OnClick="lbAddTransaction_Click" />
+                        <asp:HyperLink ID="lbNext" runat="server" AccessKey="n" CssClass="btn btn-default margin-r-sm pull-right">Next <i class="fa fa-chevron-right"></i></asp:HyperLink>
+                        <asp:LinkButton ID="lbAddTransaction" runat="server" Text="Add New Transaction" AccessKey="a" CssClass="btn btn-default margin-r-sm pull-right" CausesValidation="false" OnClick="lbAddTransaction_Click" />
                     </div>
 
                 </fieldset>

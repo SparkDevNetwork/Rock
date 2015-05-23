@@ -510,6 +510,59 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Adds a time interval to a date
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="amount">The amount.</param>
+        /// <param name="interval">The interval.</param>
+        /// <returns></returns>
+        public static DateTime? DateAdd( object input, int amount, string interval = "d" )
+        {
+            DateTime? date = null;
+            
+            if ( input == null )
+                return null;
+
+            if ( input.ToString() == "Now" )
+            {
+                date = RockDateTime.Now;
+            }
+            else
+            {
+                DateTime d;
+                bool success = DateTime.TryParse( input.ToString(), out d );
+                if ( success )
+                {
+                    date = d;
+                }
+            }
+
+            if ( date.HasValue )
+            {
+                TimeSpan timeInterval = new TimeSpan();
+                switch ( interval )
+                {
+                    case "d":
+                        timeInterval = new TimeSpan(amount, 0, 0, 0);
+                        break;
+                    case "h":
+                        timeInterval = new TimeSpan( 0, amount, 0, 0 );
+                        break;
+                    case "m":
+                        timeInterval = new TimeSpan(0, 0, amount, 0);
+                        break;
+                    case "s":
+                        timeInterval = new TimeSpan(0, 0, 0, amount);
+                        break;
+                }
+                
+                date = date.Value.Add(timeInterval);
+            }
+
+            return date;
+        }
+
+        /// <summary>
         /// takes a date time and compares it to RockDateTime.Now and returns a human friendly string like 'yesterday' or '2 hours ago'
         /// </summary>
         /// <param name="input"></param>

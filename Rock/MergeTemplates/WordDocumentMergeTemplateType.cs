@@ -33,9 +33,25 @@ namespace Rock.MergeTemplates
     /// </summary>
     [System.ComponentModel.Description( "A Word Document merge template" )]
     [Export( typeof( MergeTemplateType ) )]
-    [ExportMetadata( "ComponentName", "Word Document" )]
+    [ExportMetadata( "ComponentName", "Word" )]
     public class WordDocumentMergeTemplateType : MergeTemplateType
     {
+        /// <summary>
+        /// Gets the supported file extensions
+        /// Returns NULL if the file extension doesn't matter or doesn't apply
+        /// Rock will use this to warn the user if the file extension isn't supported
+        /// </summary>
+        /// <value>
+        /// The supported file extensions.
+        /// </value>
+        public override IEnumerable<string> SupportedFileExtensions
+        {
+            get
+            {
+                return new string[] { "docx" };
+            }
+        }
+
         /// <summary>
         /// Gets or sets the exceptions.
         /// </summary>

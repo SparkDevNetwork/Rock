@@ -56,6 +56,22 @@ namespace Rock.MergeTemplates
         }
 
         /// <summary>
+        /// Gets the supported file extensions 
+        /// Returns NULL if the file extension doesn't matter or doesn't apply
+        /// Rock will use this to warn the user if the file extension isn't supported
+        /// </summary>
+        /// <value>
+        /// The supported file extensions.
+        /// </value>
+        public virtual IEnumerable<string> SupportedFileExtensions
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Gets the default lava debug information.
         /// </summary>
         /// <param name="mergeObjectList">The merge object list.</param>
@@ -68,7 +84,7 @@ namespace Rock.MergeTemplates
 
             if ( mergeObjectList.Count >= 1 )
             {
-                debugMergeFields.Add( "Row", mergeObjectList[0]);
+                debugMergeFields.Add( "Row", mergeObjectList[0] );
             }
 
             foreach ( var mergeField in globalMergeFields )

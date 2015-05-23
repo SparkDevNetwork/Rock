@@ -338,6 +338,20 @@ namespace Rock.Model
         private ICollection<GroupRequirement> _groupsRequirements;
 
         /// <summary>
+        /// Gets or sets the group member workflow triggers.
+        /// </summary>
+        /// <value>
+        /// The group member workflow triggers.
+        /// </value>
+        public virtual ICollection<GroupMemberWorkflowTrigger> GroupMemberWorkflowTriggers
+        {
+            get { return _triggers ?? ( _triggers = new Collection<GroupMemberWorkflowTrigger>() ); }
+            set { _triggers = value; }
+        }
+        
+        private ICollection<GroupMemberWorkflowTrigger> _triggers;
+        
+        /// <summary>
         /// Gets the securable object that security permissions should be inherited from.  If block is located on a page
         /// security will be inherited from the page, otherwise it will be inherited from the site.
         /// </summary>

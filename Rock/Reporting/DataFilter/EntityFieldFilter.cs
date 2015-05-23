@@ -213,7 +213,7 @@ namespace Rock.Reporting.DataFilter
         }
 
         /// <summary>
-        /// Updates the selection from page parameters.
+        /// Updates the selection from page parameters if there is a page parameter for the selection
         /// </summary>
         /// <param name="selection">The selection.</param>
         /// <param name="rockBlock">The rock block.</param>
@@ -244,6 +244,66 @@ namespace Rock.Reporting.DataFilter
                     }
                 }
 
+            }
+
+            return selection;
+        }
+
+        /// <summary>
+        /// Updates the selection from user preference selection if the original selection is compatible with the user preference
+        /// </summary>
+        /// <param name="selection">The original selection value from the saved data filter</param>
+        /// <param name="userPreferenceSelection">The user preference selection value</param>
+        /// <param name="setFieldNameSelection">if set to <c>true</c> [set field name selection].</param>
+        /// <returns></returns>
+        public string UpdateSelectionFromUserPreferenceSelection( string selection, string userPreferenceSelection, bool setFieldNameSelection = false )
+        {
+            if ( !string.IsNullOrWhiteSpace( selection ) )
+            {
+                var selectionValues = JsonConvert.DeserializeObject<List<string>>( selection );
+                List<string> userPreferenceValues = null;
+                try
+                {
+                    userPreferenceValues = JsonConvert.DeserializeObject<List<string>>( userPreferenceSelection );
+                }
+                catch
+                {
+                    userPreferenceValues = null;
+                }
+
+                // only apply the UserPreferenceValues if they match the structure of the saved selection values
+                if ( userPreferenceValues != null )
+                {
+                    if ( userPreferenceValues.Count >= 1 )
+                    {
+                        if ( setFieldNameSelection )
+                        {
+                            selectionValues[0] = userPreferenceValues[0];
+                        }
+                        else
+                        {
+                            // if the fieldname is different than the orig, don't use the user preference
+                            if ( selectionValues[0] != userPreferenceValues[0] )
+                            {
+                                return selection;
+                            }
+                        }
+                    }
+
+                    // selection list  is either "FieldName, Comparision, Value(s)" or "FieldName, Value(s)", so only update the selection if it is one of those
+                    if ( selectionValues.Count == 3 && userPreferenceValues.Count == 3 )
+                    {
+                        selectionValues[1] = userPreferenceValues[1];
+                        selectionValues[2] = userPreferenceValues[2];
+                        return selectionValues.ToJson();
+
+                    }
+                    else if ( selectionValues.Count == 2 && userPreferenceValues.Count == 2 )
+                    {
+                        selectionValues[1] = userPreferenceValues[1];
+                        return selectionValues.ToJson();
+                    }
+                }
             }
 
             return selection;
