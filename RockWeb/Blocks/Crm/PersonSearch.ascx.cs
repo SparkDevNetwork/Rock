@@ -58,6 +58,8 @@ namespace RockWeb.Blocks.Crm
             
             base.OnInit( e );
 
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.lazyload.min.js" ) );
+
             gPeople.DataKeyNames = new string[] { "Id" };
             gPeople.Actions.ShowAdd = false;
             gPeople.GridRebind += gPeople_GridRebind;
@@ -146,7 +148,7 @@ namespace RockWeb.Blocks.Crm
                     if ( !person.IsBusiness )
                     {
                         StringBuilder sbPersonDetails = new StringBuilder();
-                        sbPersonDetails.Append(string.Format( "<div class=\"photo-round photo-round-sm pull-left\" style=\"background-image: url('{0}');\"></div>", person.PhotoUrl));
+                        sbPersonDetails.Append( string.Format( "<div class=\"photo-round photo-round-sm pull-left\" data-original=\"{0}&w=100\" style=\"background-image: url('{1}');\"></div>", person.PhotoUrl, ResolveUrl("~/Assets/Images/person-no-photo-male.svg") ) );
                         sbPersonDetails.Append("<div class=\"pull-left margin-l-sm\">");
                         sbPersonDetails.Append(string.Format("<strong>{0}</strong> ", person.FullNameReversed));
                         sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\"><br>{0}</br></small>", delimitedCampuses ) );
