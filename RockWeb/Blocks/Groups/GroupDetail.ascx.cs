@@ -411,6 +411,7 @@ namespace RockWeb.Blocks.Groups
         {
             Group group;
             bool wasSecurityRole = false;
+            bool triggersUpdated = false;
 
             RockContext rockContext = new RockContext();
 
@@ -464,6 +465,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     group.GroupMemberWorkflowTriggers.Remove( trigger );
                     groupMemberWorkflowTriggerService.Delete( trigger );
+                    triggersUpdated = true;
                 }
 
             }
@@ -530,6 +532,8 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 trigger.CopyPropertiesFrom( triggerState );
+
+                triggersUpdated = true;
             }
 
             group.Name = tbName.Text;
@@ -723,6 +727,11 @@ namespace RockWeb.Blocks.Groups
                     // new security role, flush
                     Rock.Security.Authorization.Flush();
                 }
+            }
+
+            if ( triggersUpdated )
+            {
+                GroupMemberWorkflowTriggerService.FlushCachedTriggers();
             }
 
             var qryParams = new Dictionary<string, string>();
@@ -2355,7 +2364,6 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
-
         #region Group Member Workflow Trigger Grid and Picker
 
         /// <summary>
@@ -2386,17 +2394,23 @@ namespace RockWeb.Blocks.Groups
         protected void gMemberWorkflowTriggers_ShowEdit( Guid memberWorkflowTriggersGuid )
         {
             ddlTriggerType.BindToEnum<GroupMemberWorkflowTriggerType>( false );
-            ddlTriggerMemberStatus.BindToEnum<GroupMemberStatus>( false );
-            ddlTriggerMemberStatus.Items.Insert( 0, new ListItem( "Any", "" ) );
 
-            ddlTriggerMemberRole.Items.Clear();
+            ddlTriggerToStatus.BindToEnum<GroupMemberStatus>( false );
+            ddlTriggerToStatus.Items.Insert( 0, new ListItem( "Any", "" ) );
+
+            ddlTriggerFromRole.Items.Clear();
+            ddlTriggerToRole.Items.Clear();
             var groupType = CurrentGroupTypeCache;
             if ( groupType != null )
             {
-                ddlTriggerMemberRole.DataSource = groupType.Roles;
-                ddlTriggerMemberRole.DataBind();
+                ddlTriggerFromRole.DataSource = groupType.Roles;
+                ddlTriggerFromRole.DataBind();
+
+                ddlTriggerToRole.DataSource = groupType.Roles;
+                ddlTriggerToRole.DataBind();
             }
-            ddlTriggerMemberRole.Items.Insert( 0, new ListItem( "Any", "" ) );
+            ddlTriggerFromRole.Items.Insert( 0, new ListItem( "Any", "" ) );
+            ddlTriggerToRole.Items.Insert( 0, new ListItem( "Any", "" ) );
 
             GroupMemberWorkflowTrigger memberWorkflowTrigger = MemberWorkflowTriggersState.FirstOrDefault( a => a.Guid.Equals( memberWorkflowTriggersGuid ) );
             if ( memberWorkflowTrigger == null )
@@ -2426,25 +2440,11 @@ namespace RockWeb.Blocks.Groups
             ddlTriggerType.SetValue( memberWorkflowTrigger.TriggerType.ConvertToInt() );
 
             var qualifierParts = ( memberWorkflowTrigger.TypeQualifier ?? "" ).Split( new char[] { '|' } );
-            if ( qualifierParts.Length > 0 )
-            {
-                ddlTriggerMemberStatus.SetValue( qualifierParts[0] );
-            }
-            else
-            {
-                ddlTriggerMemberStatus.SetValue( "" );
-            }
-
-            if ( qualifierParts.Length > 1 )
-            {
-                ddlTriggerMemberRole.SetValue( qualifierParts[1] );
-            }
-            else
-            {
-                ddlTriggerMemberRole.SetValue( "" );
-            }
-
-            ddlTriggerMemberRole.SetValue( memberWorkflowTrigger.TriggerType.ConvertToInt() );
+            ddlTriggerToStatus.SetValue( qualifierParts.Length > 0 ? qualifierParts[0] : string.Empty );
+            ddlTriggerToRole.SetValue( qualifierParts.Length > 1 ? qualifierParts[1] : string.Empty );
+            ddlTriggerFromStatus.SetValue( qualifierParts.Length > 2 ? qualifierParts[2] : string.Empty );
+            ddlTriggerFromRole.SetValue( qualifierParts.Length > 3 ? qualifierParts[3] : string.Empty );
+            cbTriggerFirstTime.Checked = qualifierParts.Length > 4 ? qualifierParts[4].AsBoolean() : false;
 
             ShowTriggerQualifierControls();
             ShowDialog( "MemberWorkflowTriggers", true );
@@ -2458,33 +2458,53 @@ namespace RockWeb.Blocks.Groups
                 case GroupMemberWorkflowTriggerType.MemberAddedToGroup:
                 case GroupMemberWorkflowTriggerType.MemberRemovedFromGroup:
                     {
-                        ddlTriggerMemberStatus.Label = "With Member Status of";
-                        ddlTriggerMemberStatus.Visible = true;
+                        ddlTriggerFromStatus.Visible = false;
+                        ddlTriggerToStatus.Label = "With Status of";
+                        ddlTriggerToStatus.Visible = true;
 
-                        ddlTriggerMemberRole.Label = "With Member Role of";
-                        ddlTriggerMemberRole.Visible = true;
+                        ddlTriggerFromRole.Visible = false;
+                        ddlTriggerToRole.Label = "With Role of";
+                        ddlTriggerToRole.Visible = true;
+
+                        cbTriggerFirstTime.Visible = false;
 
                         break;
                     }
                 case GroupMemberWorkflowTriggerType.MemberAttendedGroup:
                     {
-                        ddlTriggerMemberStatus.Visible = false;
-                        ddlTriggerMemberRole.Visible = false;
+                        ddlTriggerFromStatus.Visible = false;
+                        ddlTriggerToStatus.Visible = false;
+
+                        ddlTriggerFromRole.Visible = false;
+                        ddlTriggerToRole.Visible = false;
+
+                        cbTriggerFirstTime.Visible = true;
+                        
                         break;
                     }
                 case GroupMemberWorkflowTriggerType.MemberRoleChanged:
                     {
-                        ddlTriggerMemberStatus.Visible = false;
-                        ddlTriggerMemberRole.Label = "To Role of";
-                        ddlTriggerMemberRole.Visible = true;
+                        ddlTriggerFromStatus.Visible = false;
+                        ddlTriggerToStatus.Visible = false;
+
+                        ddlTriggerFromRole.Visible = true;
+                        ddlTriggerToRole.Label = "To Role of";
+                        ddlTriggerToRole.Visible = true;
+
+                        cbTriggerFirstTime.Visible = false;
 
                         break;
                     }
                 case GroupMemberWorkflowTriggerType.MemberStatusChanged:
                     {
-                        ddlTriggerMemberStatus.Label = "To Status of";
-                        ddlTriggerMemberStatus.Visible = true;
-                        ddlTriggerMemberRole.Visible = false;
+                        ddlTriggerFromStatus.Visible = true;
+                        ddlTriggerToStatus.Label = "To Status of";
+                        ddlTriggerToStatus.Visible = true;
+
+                        ddlTriggerFromRole.Visible = false;
+                        ddlTriggerToRole.Visible = false;
+
+                        cbTriggerFirstTime.Visible = false;
 
                         break;
                     }
@@ -2581,8 +2601,13 @@ namespace RockWeb.Blocks.Groups
 
             memberWorkflowTrigger.TriggerType = ddlTriggerType.SelectedValueAsEnum<GroupMemberWorkflowTriggerType>();
 
-            memberWorkflowTrigger.TypeQualifier = string.Format( "{0}|{1}",
-                ddlTriggerMemberStatus.SelectedValue, ddlTriggerMemberRole.SelectedValue );
+            memberWorkflowTrigger.TypeQualifier = string.Format( "{0}|{1}|{2}|{3}|{4}",
+                ddlTriggerToStatus.SelectedValue, 
+                ddlTriggerToRole.SelectedValue,
+                ddlTriggerFromStatus.SelectedValue, 
+                ddlTriggerFromRole.SelectedValue,
+                cbTriggerFirstTime.Checked.ToString()
+            );
 
             // Controls will show warnings
             if ( !memberWorkflowTrigger.IsValid )
@@ -2614,39 +2639,60 @@ namespace RockWeb.Blocks.Groups
 
             var qualiferText = new List<string>();
             var qualifierParts = ( typeQualifer ?? "" ).Split( new char[] { '|' } );
+
+            if ( qualifierParts.Length > 2 && !string.IsNullOrWhiteSpace( qualifierParts[2] ) )
+            {
+                var status = qualifierParts[2].ConvertToEnum<GroupMemberStatus>();
+                qualiferText.Add( string.Format( " from status of <strong>{0}</strong>", status.ConvertToString() ) );
+            }
+
             if ( qualifierParts.Length > 0 && !string.IsNullOrWhiteSpace( qualifierParts[0] ) )
             {
                 var status = qualifierParts[0].ConvertToEnum<GroupMemberStatus>();
                 if ( triggerType == GroupMemberWorkflowTriggerType.MemberStatusChanged )
                 {
-                    qualiferText.Add( string.Format( " to status of {0}", status.ConvertToString() ) );
+                    qualiferText.Add( string.Format( " to status of <strong>{0}</strong>", status.ConvertToString() ) );
                 }
                 else
                 {
-                    qualiferText.Add( string.Format( " with status of {0}", status.ConvertToString() ) );
+                    qualiferText.Add( string.Format( " with status of <strong>{0}</strong>", status.ConvertToString() ) );
                 }
             }
 
-            if ( qualifierParts.Length > 1 && !string.IsNullOrWhiteSpace( qualifierParts[1] ) )
+            var groupType = CurrentGroupTypeCache;
+            if ( groupType != null )
             {
-                Guid roleGuid = qualifierParts[1].AsGuid();
-                ddlTriggerMemberRole.Items.Clear();
-                var groupType = CurrentGroupTypeCache;
-                if ( groupType != null )
+                if ( qualifierParts.Length > 3 && !string.IsNullOrWhiteSpace( qualifierParts[3] ) )
                 {
+                    Guid roleGuid = qualifierParts[3].AsGuid();
                     var role = groupType.Roles.FirstOrDefault( r => r.Guid.Equals( roleGuid ) );
                     if ( role != null )
                     {
-                        if ( triggerType == GroupMemberWorkflowTriggerType.MemberStatusChanged )
+                        qualiferText.Add( string.Format( " from role of <strong>{0}</strong>", role.Name ) );
+                    }
+                }
+
+                if ( qualifierParts.Length > 1 && !string.IsNullOrWhiteSpace( qualifierParts[1] ) )
+                {
+                    Guid roleGuid = qualifierParts[1].AsGuid();
+                    var role = groupType.Roles.FirstOrDefault( r => r.Guid.Equals( roleGuid ) );
+                    if ( role != null )
+                    {
+                        if ( triggerType == GroupMemberWorkflowTriggerType.MemberRoleChanged )
                         {
-                            qualiferText.Add( string.Format( " to role of {0}", role.Name ) );
+                            qualiferText.Add( string.Format( " to role of <strong>{0}</strong>", role.Name ) );
                         }
                         else
                         {
-                            qualiferText.Add( string.Format( " with role of {0}", role.Name ) );
+                            qualiferText.Add( string.Format( " with role of <strong>{0}</strong>", role.Name ) );
                         }
                     }
                 }
+            }
+
+            if ( qualifierParts.Length > 4 && qualifierParts[4].AsBoolean() )
+            {
+                qualiferText.Add( " for the first time" );
             }
 
             return triggerType.ConvertToString() + qualiferText.AsDelimited( " and " );
