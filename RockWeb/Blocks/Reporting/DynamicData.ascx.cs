@@ -294,7 +294,7 @@ namespace RockWeb.Blocks.Reporting
                     string formattedOutput = GetAttributeValue( "FormattedOutput" );
 
                     // load merge objects if needed by either for formatted output OR page title
-                    if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PageTitleLava" ).Trim() ) || !string.IsNullOrWhiteSpace( formattedOutput ) )
+                    if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PageTitleLava" ) ) || !string.IsNullOrWhiteSpace( formattedOutput ) )
                     {
                         
                         if ( CurrentPerson != null )
@@ -332,7 +332,7 @@ namespace RockWeb.Blocks.Reporting
                     }
 
                     // set page title
-                    if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PageTitleLava" ).Trim() ) )
+                    if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PageTitleLava" ) ) )
                     {
                         string title = GetAttributeValue( "PageTitleLava" ).ResolveMergeFields( mergeFields );
 

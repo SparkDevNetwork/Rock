@@ -555,7 +555,10 @@ namespace RockWeb.Blocks.CheckIn
             groupEditor.DeleteGroupClick += groupEditor_DeleteGroupClick;
 
             foreach ( var childGroup in group.Groups
-                .Where( a => !ProcessedGroupIds.Contains( a.Guid ))
+                .Where( a => 
+                    !ProcessedGroupIds.Contains( a.Guid ) &&
+                    a.GroupTypeId == group.GroupTypeId
+                    )
                 .OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
                 childGroup.GroupType = group.GroupType;

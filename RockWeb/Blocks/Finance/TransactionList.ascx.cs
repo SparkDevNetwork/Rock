@@ -69,6 +69,7 @@ namespace RockWeb.Blocks.Finance
             base.OnInit( e );
 
             gfTransactions.ApplyFilterClick += gfTransactions_ApplyFilterClick;
+            gfTransactions.ClearFilterClick += gfTransactions_ClearFilterClick;
             gfTransactions.DisplayFilterValue += gfTransactions_DisplayFilterValue;
 
             string title = GetAttributeValue( "Title" );
@@ -126,6 +127,17 @@ namespace RockWeb.Blocks.Finance
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upTransactions );
 
+        }
+
+        /// <summary>
+        /// Handles the ClearFilterClick event of the gfTransactions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gfTransactions_ClearFilterClick( object sender, EventArgs e )
+        {
+            gfTransactions.DeleteUserPreferences();
+            BindFilter();
         }
 
         /// <summary>
@@ -220,6 +232,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 // If the batch is closed, do not allow any editing of the transactions
+                // NOTE that gTransactions_Delete click will also check if the transaction is part of a closed batch
                 if ( _batch.Status != BatchStatus.Closed && _canEdit )
                 {
                     gTransactions.Actions.ShowAdd = true;
@@ -429,6 +442,16 @@ namespace RockWeb.Blocks.Finance
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                     return;
+                }
+
+                // prevent deleting a Transaction that is in closed batch
+                if (transaction.Batch != null )
+                {
+                    if ( transaction.Batch.Status == BatchStatus.Closed )
+                    {
+                        mdGridWarning.Show( string.Format( "This {0} is assigned to a closed {1}", FinancialTransaction.FriendlyTypeName, FinancialBatch.FriendlyTypeName ), ModalAlertType.Information );
+                        return;
+                    }
                 }
 
                 transactionService.Delete( transaction );

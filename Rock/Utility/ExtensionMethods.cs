@@ -345,6 +345,39 @@ namespace Rock
                 return result;
             }
 
+            if ( myObject is Newtonsoft.Json.Linq.JObject )
+            {
+                var result = new Dictionary<string, object>();
+                var jObject = myObject as Newtonsoft.Json.Linq.JObject;
+
+                foreach ( var keyValue in jObject )
+                {
+                    try
+                    {
+                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep, rockContext, keyValue.Key ) );
+                    }
+                    catch ( Exception ex )
+                    {
+                        result.Add( keyValue.Key, ex.ToString() );
+                    }
+                }
+
+                return result;
+            }
+
+            if ( myObject is Newtonsoft.Json.Linq.JValue )
+            {
+                var jValue = ( myObject as Newtonsoft.Json.Linq.JValue );
+                if (jValue != null && jValue.Value != null)
+                {
+                    return jValue.Value.ToString();
+                }
+                else
+                {
+                    return string.Empty;
+                }
+            }
+
             if ( myObject is IEnumerable )
             {
                 var result = new List<object>();

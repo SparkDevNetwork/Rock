@@ -171,12 +171,12 @@
                                             <asp:Panel ID="pnlByPatternOptions" runat="server" CssClass="js-attendees-by-pattern-options padding-l-lg">
                                                 <div class="form-inline">
                                                     <span>Attended at least </span>
-                                                    <Rock:NumberBox ID="tbPatternXTimes" runat="server" CssClass="input-width-xs" /><span> times for the selected date range </span>
+                                                    <Rock:NumberBox ID="tbPatternXTimes" runat="server" CssClass="input-width-xs" /><asp:Literal ID="lPatternXFor" runat="server" Text=" times for the selected date range" />
                                                 </div>
                                                 <div class="padding-l-lg">
                                                     <div class="form-inline">
                                                         <Rock:RockCheckBox ID="cbPatternAndMissed" runat="server" />and missed at least                                                           
-                                                                    <Rock:NumberBox ID="tbPatternMissedXTimes" runat="server" CssClass="input-width-xs" />&nbsp;weeks between
+                                                                    <Rock:NumberBox ID="tbPatternMissedXTimes" runat="server" CssClass="input-width-xs" />&nbsp;<asp:Literal ID="lPatternAndMissedXBetween" runat="server" Text=" weeks between" />
                                                         <Rock:NotificationBox ID="nbMissedDateRangeRequired" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" />
                                                         <Rock:DateRangePicker ID="drpPatternDateRange" runat="server" />
                                                     </div>
@@ -201,7 +201,7 @@
                                     <Rock:RockLiteralField HeaderText="First Visit" ID="lFirstVisitDate" SortExpression="FirstVisit.StartDateTime"/>
                                     <Rock:RockLiteralField HeaderText="Second Visit" ID="lSecondVisitDate" />
                                     <Rock:DateField DataField="LastVisit.StartDateTime" HeaderText="Last Visit" SortExpression="LastVisit.StartDateTime" />
-                                    <Rock:CampusField DataField="LastVisit.CampusId" HeaderText="Campus" SortExpression="LastVisit.Campu.sName" />
+                                    <Rock:CampusField DataField="LastVisit.CampusId" HeaderText="Campus" SortExpression="LastVisit.Campus.Name" />
                                     <Rock:RockLiteralField HeaderText="Service Time" ID="lServiceTime" />
                                     <Rock:RockBoundField DataField="LastVisit.Group.Name" HeaderText="Check-in Area" SortExpression="LastVisit.Group.Name" />
                                     <Rock:RockLiteralField HeaderText="Home Address" ID="lHomeAddress" ItemStyle-Wrap="false" />

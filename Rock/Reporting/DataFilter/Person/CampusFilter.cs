@@ -30,7 +30,7 @@ namespace Rock.Reporting.DataFilter.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter people that are associated with the selected campus." )]
+    [Description( "Filter people that are associated with a specific campus." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Campus Filter" )]
     public class CampusFilter : DataFilterComponent, IUpdateSelectionFromPageParameters

@@ -136,6 +136,8 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnMerge_Click( object sender, EventArgs e )
         {
+            // NOTE: This is a full postback (not a partial like most other blocks)
+
             var rockContext = new RockContext();
 
             List<object> mergeObjectsList = GetMergeObjectList( rockContext );
@@ -160,33 +162,50 @@ namespace RockWeb.Blocks.Core
 
             var globalMergeFields = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
             globalMergeFields.Add( "CurrentPerson", this.CurrentPerson );
+            BinaryFile outputBinaryFileDoc = null;
 
-            var outputBinaryFileDoc = mergeTemplateType.CreateDocument( mergeTemplate, mergeObjectsList, globalMergeFields );
-
-            if ( mergeTemplateType.Exceptions != null && mergeTemplateType.Exceptions.Any() )
+            try
             {
-                if ( mergeTemplateType.Exceptions.Count == 1 )
+                outputBinaryFileDoc = mergeTemplateType.CreateDocument( mergeTemplate, mergeObjectsList, globalMergeFields );
+
+                if ( mergeTemplateType.Exceptions != null && mergeTemplateType.Exceptions.Any() )
                 {
-                    this.LogException( mergeTemplateType.Exceptions[0] );
+                    if ( mergeTemplateType.Exceptions.Count == 1 )
+                    {
+                        this.LogException( mergeTemplateType.Exceptions[0] );
+                    }
+                    else if ( mergeTemplateType.Exceptions.Count > 50 )
+                    {
+                        this.LogException( new AggregateException( string.Format( "Exceptions merging template {0}. See InnerExceptions for top 50.", mergeTemplate.Name ), mergeTemplateType.Exceptions.Take( 50 ).ToList() ) );
+                    }
+                    else
+                    {
+                        this.LogException( new AggregateException( string.Format( "Exceptions merging template {0}. See InnerExceptions", mergeTemplate.Name ), mergeTemplateType.Exceptions.ToList() ) );
+                    }
                 }
-                else if ( mergeTemplateType.Exceptions.Count > 50 )
+
+                var uri = new UriBuilder( outputBinaryFileDoc.Url );
+                var qry = System.Web.HttpUtility.ParseQueryString( uri.Query );
+                qry["attachment"] = true.ToTrueFalse();
+                uri.Query = qry.ToString();
+                Response.Redirect( uri.ToString(), false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
+            catch ( Exception ex )
+            {
+                this.LogException( ex );
+                if ( ex is System.FormatException )
                 {
-                    this.LogException( new AggregateException( string.Format( "Exceptions merging template {0}. See InnerExceptions for top 50.", mergeTemplate.Name ), mergeTemplateType.Exceptions.Take( 50 ).ToList() ) );
+                    nbMergeError.Text = "Error loading the merge template. Please verify that the merge template file is valid.";
                 }
                 else
                 {
-                    this.LogException( new AggregateException( string.Format( "Exceptions merging template {0}. See InnerExceptions", mergeTemplate.Name ), mergeTemplateType.Exceptions.ToList() ) );
+                    nbMergeError.Text = "An error occurred while merging";
                 }
+                
+                nbMergeError.Details = ex.Message;
+                nbMergeError.Visible = true;
             }
-
-            var uri = new UriBuilder( outputBinaryFileDoc.Url );
-            var qry = System.Web.HttpUtility.ParseQueryString( uri.Query );
-            qry["attachment"] = true.ToTrueFalse();
-            uri.Query = qry.ToString();
-            Response.Redirect( uri.ToString(), false );
-            Context.ApplicationInstance.CompleteRequest();
-
-            return;
         }
 
         /// <summary>
@@ -311,8 +330,8 @@ namespace RockWeb.Blocks.Core
                     {
                         var person = groupMember.Person;
                         person.AdditionalLavaFields = new Dictionary<string, object>();
-                        
-                        foreach (var item in groupMember.ToDictionary())
+
+                        foreach ( var item in groupMember.ToDictionary() )
                         {
                             if ( item.Key == "Id" )
                             {
@@ -351,13 +370,13 @@ namespace RockWeb.Blocks.Core
 
             // the entityId to use for NonEntity objects
             int nonEntityId = 1;
-            
+
             // now, add the additional MergeValues regardless of if the EntitySet contains IEntity items or just Non-IEntity items
             foreach ( var additionalMergeValuesItem in entitySetItemMergeValuesQry.AsNoTracking() )
             {
                 object mergeObject;
                 int entityId;
-                if (additionalMergeValuesItem.EntityId > 0)
+                if ( additionalMergeValuesItem.EntityId > 0 )
                 {
                     entityId = additionalMergeValuesItem.EntityId;
                 }
@@ -380,7 +399,7 @@ namespace RockWeb.Blocks.Core
                     }
 
                     // non-Entity merge object, so just use Dictionary
-                    mergeObject = new Dictionary<string,object>();
+                    mergeObject = new Dictionary<string, object>();
                     mergeObjectsDictionary.Add( entityId, mergeObject );
                 }
 
@@ -388,12 +407,13 @@ namespace RockWeb.Blocks.Core
                 {
                     if ( mergeObject is IEntity )
                     {
-                        // convert the object to a Dictionary so we can add additional fields to it
+                        // add the additional fields to AdditionalLavaFields
                         IEntity mergeEntity = ( mergeObject as IEntity );
                         mergeEntity.AdditionalLavaFields = mergeEntity.AdditionalLavaFields ?? new Dictionary<string, object>();
-                        mergeEntity.AdditionalLavaFields.AddOrIgnore( additionalMergeValue.Key, additionalMergeValue.Value );
+                        object mergeValueObject = additionalMergeValue.Value;
+                        mergeEntity.AdditionalLavaFields.AddOrIgnore( additionalMergeValue.Key, mergeValueObject );
                     }
-                    else if (mergeObject is IDictionary<string, object>)
+                    else if ( mergeObject is IDictionary<string, object> )
                     {
                         // anonymous object with no fields yet
                         IDictionary<string, object> nonEntityObject = mergeObject as IDictionary<string, object>;
@@ -507,8 +527,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                string preText = "<div class='alert alert-warning'>Select a Merge Template to see Merge Fields help for that template type.</div>";
-                lShowMergeFields.Text = MergeTemplateType.GetDefaultLavaDebugInfo( mergeObjectsList, globalMergeFields, preText );
+                lShowMergeFields.Text = MergeTemplateType.GetDefaultLavaDebugInfo( mergeObjectsList, globalMergeFields );
             }
         }
 

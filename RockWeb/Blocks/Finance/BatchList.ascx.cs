@@ -35,7 +35,6 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Batch List" )]
     [Category( "Finance" )]
     [Description( "Lists all financial batches and provides filtering by campus, status, etc." )]
-
     [LinkedPage( "Detail Page", order: 0 )]
     [BooleanField( "Show Accounting Code", "Should the accounting code column be displayed.", false, "", 1 )]
     public partial class BatchList : Rock.Web.UI.RockBlock, IPostBackEventHandler
@@ -91,9 +90,28 @@ namespace RockWeb.Blocks.Finance
             {
                 SetVisibilityOption();
                 BindFilter();
-                BindGrid();
-            }
 
+                bool promptWithFilter = true;
+
+                if ( promptWithFilter && gfBatchFilter.Visible )
+                {
+                    //// NOTE: Special Case for this List Block since there could be a very large number of batches:
+                    //// If the filter is shown and we aren't filtering by anything else, don't automatically populate the grid. Wait for them to hit apply on the filter
+                    gfBatchFilter.Show();
+                }
+                else
+                {
+                    BindGrid();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Registers the java script for grid actions.
+        /// NOTE: This needs to be done after the BindGrid
+        /// </summary>
+        private void RegisterJavaScriptForGridActions()
+        {
             string scriptFormat = @"
     $('#{0}').change(function( e ){{
         var count = $(""#{1} input[id$='_cbSelect_0']:checked"").length;
@@ -187,6 +205,7 @@ namespace RockWeb.Blocks.Finance
         protected void gfBatchFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             gfBatchFilter.SaveUserPreference( "Date Range", drpBatchDate.DelimitedValues );
+            gfBatchFilter.SaveUserPreference( "Row Limit", nbRowLimit.Text );
             gfBatchFilter.SaveUserPreference( "Title", tbTitle.Text );
             if ( tbAccountingCode.Visible )
             {
@@ -380,11 +399,13 @@ namespace RockWeb.Blocks.Finance
 
             ddlStatus.SetValue( statusFilter );
 
+            nbRowLimit.Text = gfBatchFilter.GetUserPreference( "Row Limit" );
+
             var campusi = CampusCache.All();
             campCampus.Campuses = campusi;
             campCampus.Visible = campusi.Any();
             campCampus.SetValue( gfBatchFilter.GetUserPreference( "Campus" ) );
-            
+
             drpBatchDate.DelimitedValues = gfBatchFilter.GetUserPreference( "Date Range" );
         }
 
@@ -408,11 +429,18 @@ namespace RockWeb.Blocks.Finance
                     UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue )
                 } );
 
-            var batchRowList = batchRowQry.ToList();
+            // Row Limit
+            int? rowLimit = gfBatchFilter.GetUserPreference( "Row Limit" ).AsIntegerOrNull();
+            if ( rowLimit.HasValue )
+            {
+                batchRowQry = batchRowQry.Take( rowLimit.Value );
+            }
 
-            gBatchList.DataSource = batchRowList;
+            gBatchList.DataSource = batchRowQry.ToList();
             gBatchList.EntityTypeId = EntityTypeCache.Read<Rock.Model.FinancialBatch>().Id;
             gBatchList.DataBind();
+
+            RegisterJavaScriptForGridActions();
 
             var qryTransactionDetails = qry.SelectMany( a => a.Transactions ).SelectMany( a => a.TransactionDetails );
             var accountSummaryQry = qryTransactionDetails.GroupBy( a => a.Account ).Select( a => new
@@ -622,6 +650,5 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
-
-}
+    }
 }

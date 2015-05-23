@@ -27,7 +27,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type used to display a workflow type picker 
+    /// Field Type used to display a workflow type picker. Stored as WorkflowType guid. 
     /// </summary>
     [Serializable]
     public class WorkflowTypeFieldType : FieldType, IEntityFieldType

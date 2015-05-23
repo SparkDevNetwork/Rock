@@ -8047,6 +8047,7 @@ body {
   font-size: 20px;
   font-weight: 300;
   margin-left: 20px;
+  white-space: normal;
 }
 .checkin-body .checkin-actions {
   text-align: right;
@@ -8123,6 +8124,10 @@ body {
   margin: 2px;
   width: 80px;
   height: 80px;
+}
+.tenkey a:focus,
+.tenkey a:active {
+  background-color: #ecdebf;
 }
 .tenkey a.digit {
   font-size: 48px;
