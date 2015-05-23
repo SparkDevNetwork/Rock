@@ -25,14 +25,15 @@ using Rock.Model;
 namespace Rock.Transactions
 {
     /// <summary>
-    /// Writes entity audits 
+    /// Launches a group member change workflow
     /// </summary>
     public class GroupMemberChangeTransaction : ITransaction
     {
         private EntityState State;
         private Guid? GroupMemberGuid;
-        private int GroupId;
-        private int PersonId;
+        private int? GroupTypeId;
+        private int? GroupId;
+        private int? PersonId;
         private GroupMemberStatus GroupMemberStatus;
         private int GroupMemberRoleId;
         private GroupMemberStatus PreviousGroupMemberStatus;
@@ -44,6 +45,7 @@ namespace Rock.Transactions
         /// <param name="entry">The entry.</param>
         public GroupMemberChangeTransaction ( DbEntityEntry entry )
         {
+            // If entity was a group member, save the values
             var groupMember = entry.Entity as GroupMember;
             if ( groupMember != null )
             {
@@ -53,6 +55,12 @@ namespace Rock.Transactions
                 GroupMemberStatus = groupMember.GroupMemberStatus;
                 GroupMemberRoleId = groupMember.GroupRoleId;
 
+                if ( groupMember.Group != null )
+                {
+                    GroupTypeId = groupMember.Group.GroupTypeId;
+                }
+
+                // If this isn't a new group member, get the previous status and role values
                 if ( State != EntityState.Added )
                 {
                     var dbStatusProperty = entry.Property( "GroupMemberStatus" );
@@ -67,6 +75,7 @@ namespace Rock.Transactions
                     }
                 }
 
+                // If this isn't a deleted group member, get the group member guid
                 if ( State != EntityState.Deleted )
                 {
                     GroupMemberGuid = groupMember.Guid;
@@ -79,78 +88,142 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            using ( var rockContext = new RockContext() )
+            // Verify that valid ids were saved
+            if ( GroupId.HasValue && PersonId.HasValue )
             {
-                var service = new GroupMemberWorkflowTriggerService( rockContext );
+                // Get all the triggers from cache
+                var cachedTriggers = GroupMemberWorkflowTriggerService.GetCachedTriggers();
 
-                var groupWorkflows = service.Queryable().AsNoTracking()
-                    .Where( w => w.GroupId == GroupId )
-                    .OrderBy( w => w.Order );
-
-                var groupTypeWorkflows = service.Queryable().AsNoTracking()
-                    .Where( w => w.GroupType.Groups.Any( g => g.Id == GroupId ) )
-                    .OrderBy( w => w.Order );
-
-                foreach ( var workflowTrigger in groupWorkflows.Union( groupTypeWorkflows ) )
+                // If any triggers exist
+                if ( cachedTriggers != null && cachedTriggers.Any() )
                 {
-                    switch ( workflowTrigger.TriggerType )
+                    // Get the triggers associated to the group 
+                    var groupTriggers = cachedTriggers
+                        .Where( w =>
+                            w.TriggerType != GroupMemberWorkflowTriggerType.MemberAttendedGroup &&
+                            w.GroupId.HasValue &&
+                            w.GroupId.Value == GroupId.Value )
+                        .OrderBy( w => w.Order )
+                        .ToList();
+
+                    // Get any triggers associated to a group type ( if any are found, will then filter by group type )
+                    var groupTypeTriggers = cachedTriggers
+                        .Where( w =>
+                            w.TriggerType != GroupMemberWorkflowTriggerType.MemberAttendedGroup &&
+                            w.GroupTypeId.HasValue )
+                        .OrderBy( w => w.Order )
+                        .ToList();
+
+                    if ( groupTriggers.Any() || groupTypeTriggers.Any() )
                     {
-                        case GroupMemberWorkflowTriggerType.MemberAddedToGroup:
+                        using ( var rockContext = new RockContext() )
+                        {
+                            // If there were any group type triggers, will now need to read the group's group type id
+                            // and then further filter these triggers by the current txn's group type
+                            if ( groupTypeTriggers.Any() )
                             {
-                                if ( State == EntityState.Added && QualifiersMatch( rockContext, workflowTrigger, GroupMemberStatus, GroupMemberRoleId ) )
+                                // Get the current txn's group type id
+                                if ( !GroupTypeId.HasValue )
                                 {
-                                    LaunchWorkflow( rockContext, workflowTrigger.WorkflowTypeId );
+                                    GroupTypeId = new GroupService( rockContext )
+                                        .Queryable().AsNoTracking()
+                                        .Where( g => g.Id == GroupId.Value )
+                                        .Select( g => g.GroupTypeId )
+                                        .FirstOrDefault();
                                 }
-                                break;
+
+                                // Further filter the group type triggers by the group type id
+                                groupTypeTriggers = groupTypeTriggers
+                                    .Where( t =>
+                                        t.GroupTypeId.HasValue &&
+                                        t.GroupTypeId.Equals( GroupTypeId ) )
+                                    .OrderBy( t => t.Order )
+                                    .ToList();
                             }
-                        case GroupMemberWorkflowTriggerType.MemberRemovedFromGroup:
+
+                            // Combine group and grouptype trigers
+                            var triggers = groupTriggers.Union( groupTypeTriggers ).ToList();
+
+                            // If any triggers were found
+                            if ( triggers.Any() )
                             {
-                                if ( State == EntityState.Deleted && QualifiersMatch( rockContext, workflowTrigger, PreviousGroupMemberStatus, PreviousGroupMemberRoleId ) )
+                                // Loop through triggers and lauch appropriate workflow
+                                foreach ( var trigger in triggers )
                                 {
-                                    LaunchWorkflow( rockContext, workflowTrigger.WorkflowTypeId );
+                                    switch ( trigger.TriggerType )
+                                    {
+                                        case GroupMemberWorkflowTriggerType.MemberAddedToGroup:
+                                            {
+                                                if ( State == EntityState.Added && QualifiersMatch( rockContext, trigger, GroupMemberStatus, GroupMemberStatus, GroupMemberRoleId, GroupMemberRoleId ) )
+                                                {
+                                                    LaunchWorkflow( rockContext, trigger.WorkflowTypeId, trigger.Name );
+                                                }
+                                                break;
+                                            }
+                                        case GroupMemberWorkflowTriggerType.MemberRemovedFromGroup:
+                                            {
+                                                if ( State == EntityState.Deleted && QualifiersMatch( rockContext, trigger, PreviousGroupMemberStatus, PreviousGroupMemberStatus, PreviousGroupMemberRoleId, PreviousGroupMemberRoleId ) )
+                                                {
+                                                    LaunchWorkflow( rockContext, trigger.WorkflowTypeId, trigger.Name );
+                                                }
+                                                break;
+                                            }
+                                        case GroupMemberWorkflowTriggerType.MemberRoleChanged:
+                                            {
+                                                if ( State == EntityState.Modified && QualifiersMatch( rockContext, trigger, PreviousGroupMemberRoleId, GroupMemberRoleId ) )
+                                                {
+                                                    LaunchWorkflow( rockContext, trigger.WorkflowTypeId, trigger.Name );
+                                                }
+                                                break;
+                                            }
+                                        case GroupMemberWorkflowTriggerType.MemberStatusChanged:
+                                            {
+                                                if ( State == EntityState.Modified && QualifiersMatch( rockContext, trigger, PreviousGroupMemberStatus, GroupMemberStatus ) )
+                                                {
+                                                    LaunchWorkflow( rockContext, trigger.WorkflowTypeId, trigger.Name );
+                                                }
+                                                break;
+                                            }
+                                    }
                                 }
-                                break;
                             }
-                        case GroupMemberWorkflowTriggerType.MemberRoleChanged:
-                            {
-                                if ( State == EntityState.Modified && QualifiersMatch( rockContext, workflowTrigger, GroupMemberRoleId ) )
-                                {
-                                    LaunchWorkflow( rockContext, workflowTrigger.WorkflowTypeId );
-                                }
-                                break;
-                            }
-                        case GroupMemberWorkflowTriggerType.MemberStatusChanged:
-                            {
-                                if ( State == EntityState.Modified && QualifiersMatch( rockContext, workflowTrigger, GroupMemberStatus ) )
-                                {
-                                    LaunchWorkflow( rockContext, workflowTrigger.WorkflowTypeId );
-                                }
-                                break;
-                            }
+                        }
                     }
                 }
             }
         }
 
-        private bool QualifiersMatch( RockContext rockContext, GroupMemberWorkflowTrigger workflowTrigger, GroupMemberStatus status, int roleId )
+        private bool QualifiersMatch( RockContext rockContext, GroupMemberWorkflowTrigger workflowTrigger, GroupMemberStatus prevStatus, GroupMemberStatus status, int prevRoleId, int roleId )
         {
-            return QualifiersMatch( rockContext, workflowTrigger, status ) && QualifiersMatch( rockContext, workflowTrigger, roleId );
+            return QualifiersMatch( rockContext, workflowTrigger, prevStatus, status ) && QualifiersMatch( rockContext, workflowTrigger, prevRoleId, roleId );
         }
 
-        private bool QualifiersMatch( RockContext rockContext, GroupMemberWorkflowTrigger workflowTrigger, GroupMemberStatus status )
+        private bool QualifiersMatch( RockContext rockContext, GroupMemberWorkflowTrigger workflowTrigger, GroupMemberStatus prevStatus, GroupMemberStatus status )
         {
             var qualifierParts = ( workflowTrigger.TypeQualifier ?? "" ).Split( new char[] { '|' } );
-            if ( qualifierParts.Length > 0 && !string.IsNullOrWhiteSpace( qualifierParts[0] ) )
+
+            bool matches = true;
+
+            if ( matches && qualifierParts.Length > 0 && !string.IsNullOrWhiteSpace( qualifierParts[0] ) )
             {
-                return qualifierParts[0].AsInteger() == status.ConvertToInt();
+                matches = qualifierParts[0].AsInteger() == status.ConvertToInt();
             }
-            return true;
+
+            if ( matches && qualifierParts.Length > 2 && !string.IsNullOrWhiteSpace( qualifierParts[2] ) )
+            {
+                matches = qualifierParts[2].AsInteger() == prevStatus.ConvertToInt();
+            }
+
+            return matches;
         }
 
-        private bool QualifiersMatch( RockContext rockContext, GroupMemberWorkflowTrigger workflowTrigger, int roleId )
+        private bool QualifiersMatch( RockContext rockContext, GroupMemberWorkflowTrigger workflowTrigger, int prevRoleId, int roleId )
         {
             var qualifierParts = ( workflowTrigger.TypeQualifier ?? "" ).Split( new char[] { '|' } );
-            if ( qualifierParts.Length > 1 && !string.IsNullOrWhiteSpace( qualifierParts[1] ) )
+
+            bool matches = true;
+
+            if ( matches && qualifierParts.Length > 1 && !string.IsNullOrWhiteSpace( qualifierParts[1] ) )
             {
                 var guid = qualifierParts[1].AsGuidOrNull();
                 if ( guid.HasValue )
@@ -159,14 +232,35 @@ namespace Rock.Transactions
                         .Where( r => r.Guid.Equals( guid.Value ) )
                         .Select( r => r.Id )
                         .FirstOrDefault();
-                    return qualifierRoleId != 0 && qualifierRoleId == roleId;
+                    matches = qualifierRoleId != 0 && qualifierRoleId == roleId;
                 }
-                return false;
+                else
+                {
+                    matches = false;
+                }
             }
-            return true;
+
+            if ( matches && qualifierParts.Length > 3 && !string.IsNullOrWhiteSpace( qualifierParts[3] ) )
+            {
+                var guid = qualifierParts[3].AsGuidOrNull();
+                if ( guid.HasValue )
+                {
+                    var qualifierRoleId = new GroupTypeRoleService( rockContext ).Queryable().AsNoTracking()
+                        .Where( r => r.Guid.Equals( guid.Value ) )
+                        .Select( r => r.Id )
+                        .FirstOrDefault();
+                    matches = qualifierRoleId != 0 && qualifierRoleId == prevRoleId;
+                }
+                else
+                {
+                    matches = false;
+                }
+            }
+
+            return matches;
         }
 
-        private void LaunchWorkflow( RockContext rockContext, int workflowTypeId )
+        private void LaunchWorkflow( RockContext rockContext, int workflowTypeId, string name )
         {
             GroupMember groupMember = null;
             if ( GroupMemberGuid.HasValue )
@@ -178,13 +272,13 @@ namespace Rock.Transactions
             var workflowType = workflowTypeService.Get( workflowTypeId );
             if ( workflowType != null )
             {
-                var workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
+                var workflow = Rock.Model.Workflow.Activate( workflowType, name );
 
                 if ( workflow.AttributeValues != null )
                 {
                     if ( workflow.AttributeValues.ContainsKey( "Group" ) )
                     {
-                        var group = new GroupService( rockContext ).Get( GroupId );
+                        var group = new GroupService( rockContext ).Get( GroupId.Value );
                         if ( group != null )
                         {
                             workflow.AttributeValues["Group"].Value = group.Guid.ToString();
@@ -193,7 +287,7 @@ namespace Rock.Transactions
 
                     if ( workflow.AttributeValues.ContainsKey( "Person" ) )
                     {
-                        var person = new PersonService( rockContext ).Get( PersonId );
+                        var person = new PersonService( rockContext ).Get( PersonId.Value );
                         if ( person != null )
                         {
                             workflow.AttributeValues["Person"].Value = person.PrimaryAlias.Guid.ToString();
