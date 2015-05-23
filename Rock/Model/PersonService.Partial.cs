@@ -561,7 +561,20 @@ namespace Rock.Model
         /// </summary>
         public class ChildWithParents
         {
+            /// <summary>
+            /// Gets or sets the child.
+            /// </summary>
+            /// <value>
+            /// The child.
+            /// </value>
             public Person Child { get; set; }
+
+            /// <summary>
+            /// Gets or sets the parents.
+            /// </summary>
+            /// <value>
+            /// The parents.
+            /// </value>
             public IEnumerable<Person> Parents { get; set; }
         }
 
@@ -609,7 +622,20 @@ namespace Rock.Model
         /// </summary>
         public class ChildWithParent
         {
+            /// <summary>
+            /// Gets or sets the child.
+            /// </summary>
+            /// <value>
+            /// The child.
+            /// </value>
             public Person Child { get; set; }
+
+            /// <summary>
+            /// Gets or sets the parent.
+            /// </summary>
+            /// <value>
+            /// The parent.
+            /// </value>
             public Person Parent { get; set; }
         }
 
