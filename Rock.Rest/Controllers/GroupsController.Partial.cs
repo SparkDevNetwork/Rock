@@ -22,7 +22,6 @@ using System.Linq;
 using System.Net;
 using System.Web.Http;
 using System.Web.Http.OData;
-using System.Data.Entity;
 
 using Rock.Data;
 using Rock.Model;
