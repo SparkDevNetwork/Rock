@@ -791,6 +791,7 @@ namespace Rock.Model
         /// Initializes a new instance of the <see cref="ScheduleOccurrence" /> class.
         /// </summary>
         /// <param name="date">The date.</param>
+        /// <param name="startTime">The start time.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="scheduleName">Name of the schedule.</param>
         /// <param name="locationId">The location identifier.</param>
