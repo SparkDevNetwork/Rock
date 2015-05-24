@@ -259,7 +259,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Reads the specified defined type model.
         /// </summary>
-        /// <param name="RestControllerModel">The defined type model.</param>
+        /// <param name="restControllerModel">The rest controller model.</param>
         /// <returns></returns>
         public static RestControllerCache Read( RestController restControllerModel )
         {

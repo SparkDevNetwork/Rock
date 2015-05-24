@@ -251,9 +251,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             scheduleIds.Contains( a.ScheduleId.Value ) )
                         .OrderByDescending( a => a.StartDateTime )
                         .Take( 20 )
-                        .ToList()                                                   // Run query to get recent most 20 checkins
-                        .OrderByDescending( a => a.StartDateTime )                  // Then sort again by startdatetime and schedule start (which is not avail to sql query )
-                        .ThenByDescending( a => a.Schedule.StartTimeOfDay )
                         .Select( a => new AttendanceInfo
                         {
                             Date = a.StartDateTime,

@@ -62,11 +62,22 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Gets an item as a Lazy type
+        /// </summary>
+        /// <typeparam name="TT">The type of the t.</typeparam>
+        /// <param name="item">The item.</param>
+        /// <returns></returns>
         public static TT AsLazy<TT>( TT item )
         {
             return item;
         }
 
+        /// <summary>
+        /// Gets an integer as a Lazy integer
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns></returns>
         public static int AsLazy( int item )
         {
             return item;
@@ -75,7 +86,6 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the or add existing.
         /// </summary>
-        /// <typeparam name="Int32">The type of the NT32.</typeparam>
         /// <param name="key">The key.</param>
         /// <param name="valueFactory">The value factory.</param>
         /// <returns></returns>
