@@ -163,6 +163,10 @@ namespace Rock.Web.Cache
             return null;
         }
 
+        /// <summary>
+        /// Copies from model.
+        /// </summary>
+        /// <param name="model">The model.</param>
         public override void CopyFromModel( Data.IEntity model )
         {
             base.CopyFromModel( model );

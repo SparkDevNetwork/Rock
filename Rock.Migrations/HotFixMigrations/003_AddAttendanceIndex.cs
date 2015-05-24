@@ -23,7 +23,7 @@ namespace Rock.Migrations.HotFixMigrations
     /// 
     /// </summary>
     [MigrationNumber( 3, "1.3.4" )]
-    public class FixAttendanceEmail : Migration
+    public class AddAttendanceIndex : Migration
     {
         /// <summary>
         /// The commands to run to migrate plugin to the specific version

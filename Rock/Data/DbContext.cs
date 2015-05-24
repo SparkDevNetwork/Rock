@@ -292,6 +292,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="updatedItems">The updated items.</param>
         /// <param name="personAlias">The person alias.</param>
+        /// <param name="enableAuditing">if set to <c>true</c> [enable auditing].</param>
         protected virtual void RockPostSave( List<ContextItem> updatedItems, PersonAlias personAlias, bool enableAuditing = false )
         {
             if ( enableAuditing )
