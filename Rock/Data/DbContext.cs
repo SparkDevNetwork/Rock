@@ -131,8 +131,10 @@ namespace Rock.Data
                 }
             }
 
+            bool enableAuditing = Rock.Web.Cache.GlobalAttributesCache.Value( "EnableAuditing" ).AsBoolean();
+
             // Evaluate the current context for items that have changes
-            var updatedItems = RockPreSave( this, personAlias );
+            var updatedItems = RockPreSave( this, personAlias, enableAuditing );
 
             // If update was not cancelled by triggered workflow
             if ( updatedItems != null )
@@ -159,7 +161,7 @@ namespace Rock.Data
                 // If any items changed process audit and triggers
                 if ( updatedItems.Any() )
                 {
-                    RockPostSave( updatedItems, personAlias );
+                    RockPostSave( updatedItems, personAlias, enableAuditing );
                 }
             }
 
@@ -171,8 +173,9 @@ namespace Rock.Data
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="personAlias">The person alias.</param>
+        /// <param name="enableAuditing">if set to <c>true</c> [enable auditing].</param>
         /// <returns></returns>
-        protected virtual List<ContextItem> RockPreSave( DbContext dbContext, PersonAlias personAlias )
+        protected virtual List<ContextItem> RockPreSave( DbContext dbContext, PersonAlias personAlias, bool enableAuditing = false )
         {
             int? personAliasId = null;
             if ( personAlias != null )
@@ -265,13 +268,16 @@ namespace Rock.Data
                     }
                 }
 
-                try
+                if ( enableAuditing )
                 {
-                    GetAuditDetails( dbContext, contextItem, personAliasId );
-                }
-                catch ( SystemException ex )
-                {
-                    ExceptionLogService.LogException( ex, null );
+                    try
+                    {
+                            GetAuditDetails( dbContext, contextItem, personAliasId );
+                    }
+                    catch ( SystemException ex )
+                    {
+                        ExceptionLogService.LogException( ex, null );
+                    }
                 }
 
                 updatedItems.Add( contextItem );
@@ -285,21 +291,24 @@ namespace Rock.Data
         /// </summary>
         /// <param name="updatedItems">The updated items.</param>
         /// <param name="personAlias">The person alias.</param>
-        protected virtual void RockPostSave( List<ContextItem> updatedItems, PersonAlias personAlias )
+        protected virtual void RockPostSave( List<ContextItem> updatedItems, PersonAlias personAlias, bool enableAuditing = false )
         {
-            try
+            if ( enableAuditing )
             {
-                var audits = updatedItems.Select( i => i.Audit ).ToList();
-                if ( audits.Any( a => a.Details.Any() ) )
+                try
                 {
-                    var transaction = new Rock.Transactions.AuditTransaction();
-                    transaction.Audits = audits;
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                    var audits = updatedItems.Select( i => i.Audit ).ToList();
+                    if ( audits.Any( a => a.Details.Any() ) )
+                    {
+                        var transaction = new Rock.Transactions.AuditTransaction();
+                        transaction.Audits = audits;
+                        Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                    }
                 }
-            }
-            catch ( SystemException ex )
-            {
-                ExceptionLogService.LogException( ex, null );
+                catch ( SystemException ex )
+                {
+                    ExceptionLogService.LogException( ex, null );
+                }
             }
 
             foreach ( var item in updatedItems )
