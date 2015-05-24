@@ -523,12 +523,20 @@ namespace Rock.Model
         public IQueryable<GroupMember> GetFamilyMembers( int personId, bool includeSelf = false )
         {
             int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            
+            var groupMemberService = new GroupMemberService( (RockContext)this.Context );
 
-            return new GroupMemberService( (RockContext)this.Context ).Queryable( "Person" )
-                .Where( m => m.PersonId == personId && m.Group.GroupTypeId == groupTypeFamilyId )
-                .SelectMany( m => m.Group.Members)
-                .Where( fm => includeSelf || fm.PersonId != personId )
+            var familyGroupIds = groupMemberService.Queryable()
+                .Where( m =>
+                    m.PersonId == personId &&
+                    m.Group.GroupTypeId == groupTypeFamilyId )
+                .Select( m => m.GroupId )
                 .Distinct();
+
+            return groupMemberService.Queryable( "Person,GroupRole" )
+                .Where( m => 
+                    familyGroupIds.Contains( m.GroupId ) &&
+                    ( includeSelf || m.PersonId != personId ) );
         }
 
         /// <summary>
