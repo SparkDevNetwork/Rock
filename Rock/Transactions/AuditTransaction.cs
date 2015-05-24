@@ -50,7 +50,7 @@ namespace Rock.Transactions
 
                         auditService.AddRange( auditsToAdd );
 
-                        rockContext.SaveChanges();
+                        rockContext.SaveChanges( true );
                     }
                 }
             }
