@@ -27,15 +27,25 @@
                     <div class="col-md-3 filter-options">
 
                         <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" />
+
+                        <Rock:RockControlWrapper ID="rcwGroupBy" runat="server" Label="Group By">
+                            <div class="controls">
+                                <div class="js-group-by">
+                                    <Rock:HiddenFieldWithClass ID="hfGroupBy" CssClass="js-hidden-selected" runat="server" />
+                                    <div class="btn-group">
+                                        <asp:LinkButton ID="btnGroupByWeek" runat="server" CssClass="btn btn-xs btn-default active" Text="Week" data-val="0" OnClick="btnGroupBy_Click" />
+                                        <asp:LinkButton ID="btnGroupByMonth" runat="server" CssClass="btn btn-xs btn-default" Text="Month" data-val="1" OnClick="btnGroupBy_Click" />
+                                        <asp:LinkButton ID="btnGroupByYear" runat="server" CssClass="btn btn-xs btn-default" Text="Year" data-val="2" OnClick="btnGroupBy_Click" />
+                                    </div>
+                                </div>
+                            </div>
+                        </Rock:RockControlWrapper>
+
                         <Rock:NumberRangeEditor ID="nreAmount" runat="server" NumberType="Currency" Label="Total Amount" />
                         <Rock:RockCheckBoxList ID="cblCurrencyTypes" runat="server" Label="Currency Types" RepeatDirection="Vertical" />
                         <Rock:RockCheckBoxList ID="cblTransactionSource" runat="server" Label="Transaction Source" RepeatDirection="Vertical" />
                         <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Account Campus" RepeatDirection="Vertical" />
-                        <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by DataView" />
-                        <Rock:RockRadioButtonList ID="rblDataViewAction" runat="server" Label="Dataview Results" RepeatDirection="Vertical">
-                            <asp:ListItem Text="Include All" Value="All" />
-                            <asp:ListItem Text="Limit to results with matching transactions" Value="Limit" />
-                        </Rock:RockRadioButtonList>
+                        <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by DataView" AutoPostBack="true" OnSelectedIndexChanged="dvpDataView_SelectedIndexChanged" />
 
                     </div>
                     <div class="col-md-9">
@@ -64,25 +74,26 @@
                         </div>
 
                         <asp:Panel ID="pnlChart" runat="server">
+
                             <div class="clearfix">
                                 <div class="pull-right">
-                                
-                                        <Rock:RockControlWrapper ID="rcwGraphBy" runat="server" Label="Graph By">
-                                            <div class="controls">
-                                                <div class="js-graph-by">
-                                                    <Rock:HiddenFieldWithClass ID="hfGraphBy" CssClass="js-hidden-selected" runat="server" />
-                                                    <div class="btn-group">
-                                                        <asp:LinkButton ID="btnGraphByTotal" runat="server" CssClass="btn btn-xs btn-default active" Text="Total" data-val="0" OnClick="btnGraphBy_Click" />
-                                                        <asp:LinkButton ID="btnGraphByAccount" runat="server" CssClass="btn btn-xs btn-default" Text="Account" data-val="1" OnClick="btnGraphBy_Click" />
-                                                        <asp:LinkButton ID="btnGraphByCampus" runat="server" CssClass="btn btn-xs btn-default" Text="Campus" data-val="2" OnClick="btnGraphBy_Click" />
-                                                    </div>
+                                    <Rock:RockControlWrapper ID="rcwGraphBy" runat="server" Label="Graph By">
+                                        <div class="controls">
+                                            <div class="js-graph-by">
+                                                <Rock:HiddenFieldWithClass ID="hfGraphBy" CssClass="js-hidden-selected" runat="server" />
+                                                <div class="btn-group">
+                                                    <asp:LinkButton ID="btnGraphByTotal" runat="server" CssClass="btn btn-xs btn-default active" Text="Total" data-val="0" OnClick="btnGraphBy_Click" />
+                                                    <asp:LinkButton ID="btnGraphByAccount" runat="server" CssClass="btn btn-xs btn-default" Text="Account" data-val="1" OnClick="btnGraphBy_Click" />
+                                                    <asp:LinkButton ID="btnGraphByCampus" runat="server" CssClass="btn btn-xs btn-default" Text="Campus" data-val="2" OnClick="btnGraphBy_Click" />
                                                 </div>
                                             </div>
-                                        </Rock:RockControlWrapper>
-                                
+                                        </div>
+                                    </Rock:RockControlWrapper>
                                 </div>
                             </div>
+
                             <Rock:LineChart ID="lcAmount" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="300" />
+
                             <div class="row margin-t-sm">
                                 <div class="col-md-12">
                                     <div class="pull-right">
@@ -90,23 +101,25 @@
                                     </div>
                                 </div>
                             </div>
-                            <asp:Panel ID="pnlChartAmountGrid" runat="server" Visible="false">
 
+                            <asp:Panel ID="pnlChartAmountGrid" runat="server" Visible="false">
                                 <div class="grid">
                                     <Rock:Grid ID="gChartAmount" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesId" RowItemText="Amount Summary">
                                         <Columns>
                                             <Rock:DateField DataField="DateTime" HeaderText="Date" SortExpression="DateTimeStamp" />
                                             <Rock:RockBoundField DataField="SeriesId" HeaderText="Series" SortExpression="SeriesId" />
-                                            <Rock:RockBoundField DataField="YValue" HeaderText="Amount" SortExpression="YValue" />
+                                            <Rock:CurrencyField DataField="YValue" HeaderText="Amount" SortExpression="YValue" />
                                         </Columns>
                                     </Rock:Grid>
                                 </div>
                             </asp:Panel>
+
                         </asp:Panel>
 
                         <asp:Panel ID="pnlDetails" runat="server">
                             <div class="panel">
                                 <div class="grid-filter">
+
                                     <div class="controls pull-right margin-t-sm">
                                         <div class="js-view-by">
                                             <Rock:HiddenFieldWithClass ID="hfViewBy" CssClass="js-hidden-selected" runat="server" />
@@ -126,7 +139,8 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <Rock:RockControlWrapper ID="rcwGiversFilter" runat="server" Label="Filter">
+
+                                    <Rock:RockControlWrapper ID="rcwGiversFilter" runat="server" Label="Filter" CssClass="rock-radio-button-list">
                                         <p>
                                             <Rock:RockRadioButton ID="radAllGivers" runat="server" GroupName="grpFilterBy" Text="All Givers" CssClass="js-givers-all" />
                                         </p>
@@ -135,22 +149,26 @@
                                         </p>
                                         <p>
                                             <Rock:RockRadioButton ID="radByPattern" runat="server" GroupName="grpFilterBy" Text="Pattern" CssClass="js-givers-by-pattern" />
-
-                                            <asp:Panel ID="pnlByPatternOptions" runat="server" CssClass="js-givers-by-pattern-options padding-l-lg">
-                                                <div class="form-inline">
-                                                    <span>Gave at least </span>
-                                                    <Rock:NumberBox ID="tbPatternXTimes" runat="server" CssClass="input-width-xs" /><span> times for the selected date range </span>
-                                                </div>
-                                                <div class="padding-l-lg">
-                                                    <div class="form-inline">
-                                                        <Rock:RockCheckBox ID="cbPatternAndMissed" runat="server" />and did not give between
-                                                        <Rock:NotificationBox ID="nbMissedDateRangeRequired" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" />
-                                                        <Rock:DateRangePicker ID="drpPatternDateRange" runat="server" />
-                                                    </div>
-                                                </div>
-                                            </asp:Panel>
                                         </p>
+                                        <asp:Panel ID="pnlByPatternOptions" runat="server" CssClass="js-givers-by-pattern-options padding-l-lg">
+                                            <div class="form-inline">
+                                                <span>Gave at least </span>
+                                                <Rock:NumberBox ID="tbPatternXTimes" runat="server" CssClass="input-width-xs" /><span> times for the selected date range </span>
+                                            </div>
+                                            <div class="padding-l-lg">
+                                                <div class="form-inline">
+                                                    <Rock:RockCheckBox ID="cbPatternAndMissed" runat="server" />and did not give between
+                                                    <Rock:NotificationBox ID="nbMissedDateRangeRequired" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" />
+                                                    <Rock:DateRangePicker ID="drpPatternDateRange" runat="server" />
+                                                </div>
+                                            </div>
+                                        </asp:Panel>
                                     </Rock:RockControlWrapper>
+
+                                    <Rock:RockRadioButtonList ID="rblDataViewAction" runat="server" Label="Dataview Results" RepeatDirection="Vertical" Visible="false">
+                                        <asp:ListItem Text="Only show people from dataview that have giving data" Value="Limit" />
+                                        <asp:ListItem Text="Include all people from dataview" Value="All" />
+                                    </Rock:RockRadioButtonList>
 
                                     <div class="actions margin-b-md">
                                         <asp:LinkButton ID="btnApplyGiversFilter" runat="server" Visible="false" CssClass="btn btn-primary" Text="Apply" ToolTip="Update the Givers grid" OnClick="btnApplyGiversFilter_Click" />
@@ -160,14 +178,14 @@
                             </div>
 
                             <Rock:NotificationBox ID="nbGiversError" runat="server" NotificationBoxType="Danger" Dismissable="true" Visible="false" />
-                            <Rock:Grid ID="gGiversGifts" runat="server" AllowSorting="true" RowItemText="Attendee" OnRowDataBound="gGiversGifts_RowDataBound" ExportGridAsWYSIWYG="true">
+
+                            <Rock:Grid ID="gGiversGifts" runat="server" AllowSorting="true" RowItemText="Attendee" ExportGridAsWYSIWYG="true">
                                 <Columns>
                                     <Rock:SelectField />
                                     <Rock:PersonField DataField="Person" HeaderText="Name" SortExpression="Person.LastName, Person.NickName" />
-                                    <Rock:CurrencyField DataField="Amount" HeaderText="Total Amount" SortExpression="Total" />
-                                    <Rock:BoolField DataField="FirstTimeGiver" HeaderText="First Time Giver" SortExpression="FirstTimeGiver" />
-                                    <Rock:DateField DataField="FirstTxnDate" HeaderText="First Transaction" SortExpression="FirstTxnDate" />
-                                    <Rock:DateField DataField="FirstTxnInRange" HeaderText="First Transaction in Date Range" SortExpression="FirstTxnInRange" />
+                                    <Rock:CurrencyField DataField="TotalAmount" HeaderText="Total Amount" SortExpression="TotalAmount" />
+                                    <Rock:DateField DataField="VeryFirstTxnDate" HeaderText="First Transaction" SortExpression="VeryFirstTxnDate" />
+                                    <Rock:DateField DataField="FirstTxnDate" HeaderText="First Transaction in Date Range" SortExpression="FirstTxnDate" />
                                 </Columns>
                             </Rock:Grid>
 
