@@ -51,7 +51,7 @@
                                         <Rock:RockCheckBox ID="cbMember" runat="server" Checked='<%# Eval("Attended") %>' Text='<%# Eval("FullName") %>' />
                                     </ItemTemplate>
                                 </asp:ListView>
-                                <div class="pull-right">
+                                <div class="pull-right margin-b-lg">
                                     <Rock:PersonPicker ID="ppAddPerson" runat="server" CssClass="picker-menu-right" PersonName="Add New Attendee" OnSelectPerson="ppAddPerson_SelectPerson" />
                                 </div>
                             </div>
