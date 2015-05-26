@@ -16,9 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
-
+using System.Linq.Expressions;
+using System.Reflection;
 using Rock.Data;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Model
 {
@@ -48,6 +52,51 @@ namespace Rock.Model
             return Queryable()
                 .Where( d => d.EntityTypeId == entityTypeId )
                 .OrderBy( d => d.Name );
+        }
+
+        /// <summary>
+        /// Gets the ids.
+        /// </summary>
+        /// <param name="dataViewId">The data view identifier.</param>
+        /// <returns></returns>
+        public List<int> GetIds ( int dataViewId )
+        {
+            var dataView = Queryable().AsNoTracking().FirstOrDefault( d => d.Id == dataViewId );
+            if ( dataView != null && dataView.EntityTypeId.HasValue )
+            {
+                var cachedEntityType = EntityTypeCache.Read( dataView.EntityTypeId.Value );
+                if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
+                {
+                    Type entityType = cachedEntityType.GetEntityType();
+
+                    if ( entityType != null )
+                    {
+                        System.Data.Entity.DbContext reportDbContext = Reflection.GetDbContextForEntityType( entityType );
+                        if ( reportDbContext != null )
+                        {
+                            reportDbContext.Database.CommandTimeout = 180;
+                            IService serviceInstance = Reflection.GetServiceForEntityType( entityType, reportDbContext );
+                            if ( serviceInstance != null )
+                            {
+                                var errorMessages = new List<string>();
+                                ParameterExpression paramExpression = serviceInstance.ParameterExpression;
+                                Expression whereExpression = dataView.GetExpression( serviceInstance, paramExpression, out errorMessages );
+
+                                MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
+                                if ( getMethod != null )
+                                {
+                                    var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression } );
+                                    var qry = getResult as IQueryable<IEntity>;
+
+                                    return qry.Select( t => t.Id ).ToList();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
        
     }
