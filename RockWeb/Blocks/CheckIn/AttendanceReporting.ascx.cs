@@ -249,11 +249,11 @@ namespace RockWeb.Blocks.CheckIn
                 dataSourceParams.AddOrReplace( "endDate", dateRange.End.Value.ToString( "o" ) );
             }
 
-            var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<AttendanceGroupBy>() ?? AttendanceGroupBy.Week;
+            var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
             lcAttendance.TooltipFormatter = null;
             switch ( groupBy )
             {
-                case AttendanceGroupBy.Week:
+                case ChartGroupBy.Week:
                     {
                         lcAttendance.Options.xaxis.tickSize = new string[] { "7", "day" };
                         lcAttendance.TooltipFormatter = @"
@@ -269,7 +269,7 @@ function(item) {
 
                     break;
 
-                case AttendanceGroupBy.Month:
+                case ChartGroupBy.Month:
                     {
                         lcAttendance.Options.xaxis.tickSize = new string[] { "1", "month" };
                         lcAttendance.TooltipFormatter = @"
@@ -286,7 +286,7 @@ function(item) {
 
                     break;
 
-                case AttendanceGroupBy.Year:
+                case ChartGroupBy.Year:
                     {
                         lcAttendance.Options.xaxis.tickSize = new string[] { "1", "year" };
                         lcAttendance.TooltipFormatter = @"
@@ -308,6 +308,7 @@ function(item) {
             lPatternAndMissedXBetween.Text = string.Format( " {0} between", groupByTextPlural );
 
             dataSourceParams.AddOrReplace( "groupBy", hfGroupBy.Value.AsInteger() );
+
             dataSourceParams.AddOrReplace( "graphBy", hfGraphBy.Value.AsInteger() );
 
             if ( cpCampuses.SelectedCampusIds.Any() )
@@ -558,7 +559,7 @@ function(item) {
             SortProperty sortProperty = gChartAttendance.SortProperty;
 
             var chartData = new AttendanceService( _rockContext ).GetChartData(
-                hfGroupBy.Value.ConvertToEnumOrNull<AttendanceGroupBy>() ?? AttendanceGroupBy.Week,
+                hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week,
                 hfGraphBy.Value.ConvertToEnumOrNull<AttendanceGraphBy>() ?? AttendanceGraphBy.Total,
                 dateRange.Start,
                 dateRange.End,
@@ -635,7 +636,7 @@ function(item) {
                 qry = qry.Where( a => a.StartDateTime < dateRange.End.Value );
             }
 
-            AttendanceGroupBy groupBy = hfGroupBy.Value.ConvertToEnumOrNull<AttendanceGroupBy>() ?? AttendanceGroupBy.Week;
+            ChartGroupBy groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
 
             var qryAttendanceWithSummaryDateTime = qry.GetAttendanceWithSummaryDateTime( groupBy );
 
@@ -895,7 +896,7 @@ function(item) {
         /// <param name="groupBy">The group by.</param>
         private void CreateDynamicAttendanceGridColumns()
         {
-            AttendanceGroupBy groupBy = hfGroupBy.Value.ConvertToEnumOrNull<AttendanceGroupBy>() ?? AttendanceGroupBy.Week;
+            ChartGroupBy groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
 
             // Ensure the columns for the Attendance Checkmarks are there
             var attendanceSummaryFields = gAttendeesAttendance.Columns.OfType<BoolFromArrayField<DateTime>>().Where( a => a.DataField == "AttendanceSummary" ).ToList();
@@ -919,15 +920,15 @@ function(item) {
                     boolFromArrayField.DataField = "AttendanceSummary";
                     switch ( groupBy )
                     {
-                        case AttendanceGroupBy.Year:
+                        case ChartGroupBy.Year:
                             boolFromArrayField.HeaderText = summaryDate.ToString( "yyyy" );
                             break;
 
-                        case AttendanceGroupBy.Month:
+                        case ChartGroupBy.Month:
                             boolFromArrayField.HeaderText = summaryDate.ToString( "MMM yyyy" );
                             break;
 
-                        case AttendanceGroupBy.Week:
+                        case ChartGroupBy.Week:
                             boolFromArrayField.HeaderText = summaryDate.ToShortDateString();
                             break;
 
@@ -947,7 +948,7 @@ function(item) {
         /// </summary>
         /// <param name="dateRange">The date range.</param>
         /// <param name="attendanceGroupBy">The attendance group by.</param>
-        public void UpdatePossibleAttendances( DateRange dateRange, AttendanceGroupBy attendanceGroupBy )
+        public void UpdatePossibleAttendances( DateRange dateRange, ChartGroupBy attendanceGroupBy )
         {
             _possibleAttendances = GetPossibleAttendancesForDateRange( dateRange, attendanceGroupBy );
         }
@@ -958,13 +959,13 @@ function(item) {
         /// <param name="dateRange">The date range.</param>
         /// <param name="attendanceGroupBy">The attendance group by type.</param>
         /// <returns></returns>
-        public List<DateTime> GetPossibleAttendancesForDateRange( DateRange dateRange, AttendanceGroupBy attendanceGroupBy )
+        public List<DateTime> GetPossibleAttendancesForDateRange( DateRange dateRange, ChartGroupBy attendanceGroupBy )
         {
             TimeSpan dateRangeSpan = dateRange.End.Value - dateRange.Start.Value;
 
             var result = new List<DateTime>();
 
-            if ( attendanceGroupBy == AttendanceGroupBy.Week )
+            if ( attendanceGroupBy == ChartGroupBy.Week )
             {
                 var endOfFirstWeek = dateRange.Start.Value.EndOfWeek( RockDateTime.FirstDayOfWeek );
                 var endOfLastWeek = dateRange.End.Value.EndOfWeek( RockDateTime.FirstDayOfWeek );
@@ -976,7 +977,7 @@ function(item) {
                     weekEndDate = weekEndDate.AddDays( 7 );
                 }
             }
-            else if ( attendanceGroupBy == AttendanceGroupBy.Month )
+            else if ( attendanceGroupBy == ChartGroupBy.Month )
             {
                 var endOfFirstMonth = dateRange.Start.Value.AddDays( -( dateRange.Start.Value.Day - 1 ) ).AddMonths( 1 ).AddDays( -1 );
                 var endOfLastMonth = dateRange.End.Value.AddDays( -( dateRange.End.Value.Day - 1 ) ).AddMonths( 1 ).AddDays( -1 );
@@ -989,7 +990,7 @@ function(item) {
                     monthStartDate = monthStartDate.AddMonths( 1 );
                 }
             }
-            else if ( attendanceGroupBy == AttendanceGroupBy.Year )
+            else if ( attendanceGroupBy == ChartGroupBy.Year )
             {
                 var endOfFirstYear = new DateTime( dateRange.Start.Value.Year, 1, 1 ).AddYears( 1 ).AddDays( -1 );
                 var endOfLastYear = new DateTime( dateRange.End.Value.Year, 1, 1 ).AddYears( 1 ).AddDays( -1 );
@@ -1327,17 +1328,6 @@ function(item) {
         protected void ddlCheckinType_SelectedIndexChanged( object sender, EventArgs e )
         {
             BuildGroupTypesUI();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnApplyAttendeesFilter control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnApplyAttendeesFilter_Click( object sender, EventArgs e )
-        {
-            // both Attendess Filter Apply button just do the same thing as the main apply button
-            btnApply_Click( sender, e );
         }
 
         /// <summary>

@@ -136,8 +136,11 @@ namespace Rock
             {
                 autoFormat = dateFormat;
 
-                // when showing just the Date, the human readable end date is the Last Full Day, not the exact Point-In-Time of Midnite that us computers think of
-                humanReadableEnd = humanReadableEnd.Value.AddDays( -1 );
+                if ( humanReadableEnd.HasValue )
+                {
+                    // when showing just the Date, the human readable end date is the Last Full Day, not the exact Point-In-Time of Midnite that us computers think of
+                    humanReadableEnd = humanReadableEnd.Value.AddDays( -1 );
+                }
             }
 
             if ( Start.HasValue && humanReadableEnd.HasValue )
