@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.CheckIn
     [Description( "Shows a graph of attendance statistics which can be configured for specific groups, date range, etc." )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked" )]
-    [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true)]
+    [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true )]
     [GroupTypeField( "Check-in Type", required: false, key: "GroupTypeTemplate", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
     public partial class AttendanceReporting : RockBlock
     {
@@ -249,11 +249,11 @@ namespace RockWeb.Blocks.CheckIn
                 dataSourceParams.AddOrReplace( "endDate", dateRange.End.Value.ToString( "o" ) );
             }
 
-            var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<AttendanceGroupBy>() ?? AttendanceGroupBy.Week;
+            var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
             lcAttendance.TooltipFormatter = null;
             switch ( groupBy )
             {
-                case AttendanceGroupBy.Week:
+                case ChartGroupBy.Week:
                     {
                         lcAttendance.Options.xaxis.tickSize = new string[] { "7", "day" };
                         lcAttendance.TooltipFormatter = @"
@@ -269,7 +269,7 @@ function(item) {
 
                     break;
 
-                case AttendanceGroupBy.Month:
+                case ChartGroupBy.Month:
                     {
                         lcAttendance.Options.xaxis.tickSize = new string[] { "1", "month" };
                         lcAttendance.TooltipFormatter = @"
@@ -286,7 +286,7 @@ function(item) {
 
                     break;
 
-                case AttendanceGroupBy.Year:
+                case ChartGroupBy.Year:
                     {
                         lcAttendance.Options.xaxis.tickSize = new string[] { "1", "year" };
                         lcAttendance.TooltipFormatter = @"
@@ -308,6 +308,7 @@ function(item) {
             lPatternAndMissedXBetween.Text = string.Format( " {0} between", groupByTextPlural );
 
             dataSourceParams.AddOrReplace( "groupBy", hfGroupBy.Value.AsInteger() );
+
             dataSourceParams.AddOrReplace( "graphBy", hfGraphBy.Value.AsInteger() );
 
             if ( cpCampuses.SelectedCampusIds.Any() )
@@ -558,7 +559,7 @@ function(item) {
             SortProperty sortProperty = gChartAttendance.SortProperty;
 
             var chartData = new AttendanceService( _rockContext ).GetChartData(
-                hfGroupBy.Value.ConvertToEnumOrNull<AttendanceGroupBy>() ?? AttendanceGroupBy.Week,
+                hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week,
                 hfGraphBy.Value.ConvertToEnumOrNull<AttendanceGraphBy>() ?? AttendanceGraphBy.Total,
                 dateRange.Start,
                 dateRange.End,
@@ -635,7 +636,7 @@ function(item) {
                 qry = qry.Where( a => a.StartDateTime < dateRange.End.Value );
             }
 
-            AttendanceGroupBy groupBy = hfGroupBy.Value.ConvertToEnumOrNull<AttendanceGroupBy>() ?? AttendanceGroupBy.Week;
+            ChartGroupBy groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
 
             var qryAttendanceWithSummaryDateTime = qry.GetAttendanceWithSummaryDateTime( groupBy );
 
@@ -683,7 +684,7 @@ function(item) {
             var qryByPersonWithSummary = qryByPerson.Select( a => new
             {
                 PersonId = a.PersonId,
-                FirstVisits = qryAllVisits.Where( b => b.PersonAlias.PersonId == a.PersonId ).Select( s => new { s.Id, s.StartDateTime } ).OrderBy( x => x.StartDateTime ).Take( 2 ),
+                FirstVisits = qryAllVisits.Where( b => b.PersonAlias.PersonId == a.PersonId ).Select( s => s.StartDateTime ).OrderBy( x => x ).Take( 2 ),
                 LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
                 AttendanceSummary = qryAttendanceWithSummaryDateTime.Where( x => x.Attendance.PersonAlias.PersonId == a.PersonId ).GroupBy( g => g.SummaryDateTime ).Select( s => s.Key )
             } );
@@ -693,38 +694,22 @@ function(item) {
                 qryByPersonWithSummary = qryByPerson.Select( a => new
                 {
                     PersonId = a.PersonId,
-                    FirstVisits = qryAllVisits.Where( b => b.PersonAlias.PersonId == a.PersonId ).Select( s => new { s.Id, s.StartDateTime } ).OrderBy( x => x.StartDateTime ).Take( 5 ),
+                    FirstVisits = qryAllVisits.Where( b => b.PersonAlias.PersonId == a.PersonId ).Select( s => s.StartDateTime ).OrderBy( x => x ).Take( 5 ),
                     LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
                     AttendanceSummary = qryAttendanceWithSummaryDateTime.Where( x => x.Attendance.PersonAlias.PersonId == a.PersonId ).GroupBy( g => g.SummaryDateTime ).Select( s => s.Key )
                 } );
             }
 
-            var qryPerson = new PersonService( rockContext ).Queryable();
-
-            var qryResult = qryByPersonWithSummary.Join(
-                qryPerson,
-                a => a.PersonId,
-                p => p.Id,
-                ( a, p ) => new
-                    {
-                        a.PersonId,
-                        Person = p,
-                        a.FirstVisits,
-                        a.LastVisit,
-                        p.PhoneNumbers,
-                        a.AttendanceSummary
-                    } );
-
             if ( byNthVisit.HasValue )
             {
                 // only return attendees where their nth visit is within the selected daterange
                 int skipCount = byNthVisit.Value - 1;
-                qryResult = qryResult.Where( a => a.FirstVisits.OrderBy( x => x.StartDateTime ).Skip( skipCount ).Take( 1 ).Any( d => d.StartDateTime >= dateRange.Start && d.StartDateTime < dateRange.End ) );
+                qryByPersonWithSummary = qryByPersonWithSummary.Where( a => a.FirstVisits.OrderBy( x => x ).Skip( skipCount ).Take( 1 ).Any( d => d >= dateRange.Start && d < dateRange.End ) );
             }
 
             if ( attendedMinCount.HasValue )
             {
-                qryResult = qryResult.Where( a => a.AttendanceSummary.Count() >= attendedMinCount );
+                qryByPersonWithSummary = qryByPersonWithSummary.Where( a => a.AttendanceSummary.Count() >= attendedMinCount );
             }
 
             if ( attendedMissedCount.HasValue )
@@ -744,12 +729,60 @@ function(item) {
                             AttendanceCount = a.Count()
                         } );
 
-                    var qryMissedByPerson = qryMissedAttendanceByPersonAndSummary.
-                        Where( x => ( attendedMissedPossibleCount - x.AttendanceCount ) >= attendedMissedCount );
+                    var qryMissedByPerson = qryMissedAttendanceByPersonAndSummary
+                        .Where( x => ( attendedMissedPossibleCount - x.AttendanceCount ) >= attendedMissedCount );
 
                     // filter to only people that missed at least X weeks/months/years between specified missed date range
-                    qryResult = qryResult.Where( a => qryMissedByPerson.Any( b => b.PersonId == a.PersonId ) );
+                    qryByPersonWithSummary = qryByPersonWithSummary.Where( a => qryMissedByPerson.Any( b => b.PersonId == a.PersonId ) );
                 }
+            }
+
+            // declare the qryResult that we'll use in case they didn't choose IncludeParents (and the Anonymous Type will also work if we do include parents)
+            var qryPerson = new PersonService( rockContext ).Queryable();
+
+            var qryResult = qryByPersonWithSummary.Join(
+                    qryPerson,
+                    a => a.PersonId,
+                    p => p.Id,
+                    ( a, p ) => new
+                        {
+                            a.PersonId,
+                            ParentId = (int?)null,
+                            Person = p,
+                            Parent = (Person)null,
+                            a.FirstVisits,
+                            a.LastVisit,
+                            p.PhoneNumbers,
+                            a.AttendanceSummary
+                        } );
+
+            var includeParents = hfViewBy.Value.ConvertToEnumOrNull<ViewBy>().GetValueOrDefault( ViewBy.Attendees ) == ViewBy.ParentsOfAttendees;
+
+            // if Including Parents, join with qryChildWithParent instead of qryPerson
+            if ( includeParents )
+            {
+                var qryChildWithParent = new PersonService( rockContext ).GetChildWithParent();
+                qryResult = qryByPersonWithSummary.Join(
+                    qryChildWithParent,
+                    a => a.PersonId,
+                    p => p.Child.Id,
+                    ( a, p ) => new
+                    {
+                        a.PersonId,
+                        ParentId = (int?)p.Parent.Id,
+                        Person = p.Child,
+                        Parent = p.Parent,
+                        a.FirstVisits,
+                        a.LastVisit,
+                        p.Parent.PhoneNumbers,
+                        a.AttendanceSummary
+                    } );
+            }
+
+            var parentField = gAttendeesAttendance.Columns.OfType<PersonField>().FirstOrDefault( a => a.HeaderText == "Parent" );
+            if ( parentField != null )
+            {
+                parentField.Visible = includeParents;
             }
 
             SortProperty sortProperty = gAttendeesAttendance.SortProperty;
@@ -771,11 +804,11 @@ function(item) {
                 {
                     if ( sortProperty.Direction == SortDirection.Descending )
                     {
-                        qryResult = qryResult.OrderByDescending( a => a.FirstVisits.FirstOrDefault().StartDateTime );
+                        qryResult = qryResult.OrderByDescending( a => a.FirstVisits.Min() );
                     }
                     else
                     {
-                        qryResult = qryResult.OrderBy( a => a.FirstVisits.FirstOrDefault().StartDateTime );
+                        qryResult = qryResult.OrderBy( a => a.FirstVisits.Min() );
                     }
                 }
                 else
@@ -791,13 +824,6 @@ function(item) {
             var attendancePercentField = gAttendeesAttendance.Columns.OfType<RockTemplateField>().First( a => a.HeaderText.EndsWith( "Attendance %" ) );
             attendancePercentField.HeaderText = string.Format( "{0}ly Attendance %", groupBy.ConvertToString() );
 
-            var includeParents = hfViewBy.Value.ConvertToEnumOrNull<ViewBy>().GetValueOrDefault( ViewBy.Attendees ) == ViewBy.ParentsOfAttendees;
-            var parentField = gAttendeesAttendance.Columns.OfType<PersonField>().FirstOrDefault( a => a.HeaderText == "Parent" );
-            if ( parentField != null )
-            {
-                parentField.Visible = includeParents;
-            }
-
             // Calculate all the possible attendance summary dates
             UpdatePossibleAttendances( dateRange, groupBy );
 
@@ -806,48 +832,15 @@ function(item) {
                 .ToList()
                 .ToDictionary( k => k.Id, v => v.FriendlyScheduleText );
 
-            IQueryable<object> qryFinalResult;
-
             if ( includeParents )
             {
-                var groupTypeFamily = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-                int adultRoleId = groupTypeFamily.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
-                int childRoleId = groupTypeFamily.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
-                int groupTypeFamilyId = groupTypeFamily.Id;
-                var qryFamilyGroups = new GroupService( rockContext ).Queryable().Where( m => m.GroupTypeId == groupTypeFamilyId );
-
-                var qryResultWithParent = qryResult.Select( a =>
-                    qryFamilyGroups.Where( g => g.Members.Any( m => m.PersonId == a.PersonId && m.GroupRoleId == childRoleId ) )
-                      .SelectMany( aa => aa.Members ).Where( bb => bb.GroupRoleId == adultRoleId )
-                      .Select( s =>
-                          new
-                          {
-                              Parent = s.Person,
-                              Attendance = a
-                          } )
-                 )
-                .SelectMany( x => x )
-                .Select( s => new
-                {
-                    ParentId = s.Parent.Id,
-                    PersonId = s.Attendance.PersonId,
-                    s.Parent,
-                    s.Attendance.Person,
-                    s.Attendance.FirstVisits,
-                    s.Attendance.LastVisit,
-                    s.Attendance.PhoneNumbers,
-                    s.Attendance.AttendanceSummary
-                } );
-
                 gAttendeesAttendance.PersonIdField = "ParentId";
                 gAttendeesAttendance.DataKeyNames = new string[] { "ParentId", "PersonId" };
-                qryFinalResult = qryResultWithParent;
             }
             else
             {
                 gAttendeesAttendance.PersonIdField = "PersonId";
                 gAttendeesAttendance.DataKeyNames = new string[] { "PersonId" };
-                qryFinalResult = qryResult;
             }
 
             // Create the dynamic attendance grid columns as needed
@@ -858,9 +851,9 @@ function(item) {
                 nbAttendeesError.Visible = false;
 
                 // increase the timeout from 30 to 90. The Query can be slow if SQL hasn't calculated the Query Plan for the query yet.
-                // Most of the time consumption is figuring out the Query Plan, but after it figures it out, it caches it so that the next time it'll be much faster
-                rockContext.Database.CommandTimeout = 90;
-                gAttendeesAttendance.DataSource = qryFinalResult.AsNoTracking().ToList();
+                // Sometimes, most of the time consumption is figuring out the Query Plan, but after it figures it out, it caches it so that the next time it'll be much faster
+                rockContext.Database.CommandTimeout = 20;
+                gAttendeesAttendance.DataSource = qryResult.AsNoTracking().ToList();
 
                 gAttendeesAttendance.DataBind();
             }
@@ -903,7 +896,7 @@ function(item) {
         /// <param name="groupBy">The group by.</param>
         private void CreateDynamicAttendanceGridColumns()
         {
-            AttendanceGroupBy groupBy = hfGroupBy.Value.ConvertToEnumOrNull<AttendanceGroupBy>() ?? AttendanceGroupBy.Week;
+            ChartGroupBy groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
 
             // Ensure the columns for the Attendance Checkmarks are there
             var attendanceSummaryFields = gAttendeesAttendance.Columns.OfType<BoolFromArrayField<DateTime>>().Where( a => a.DataField == "AttendanceSummary" ).ToList();
@@ -927,15 +920,15 @@ function(item) {
                     boolFromArrayField.DataField = "AttendanceSummary";
                     switch ( groupBy )
                     {
-                        case AttendanceGroupBy.Year:
+                        case ChartGroupBy.Year:
                             boolFromArrayField.HeaderText = summaryDate.ToString( "yyyy" );
                             break;
 
-                        case AttendanceGroupBy.Month:
+                        case ChartGroupBy.Month:
                             boolFromArrayField.HeaderText = summaryDate.ToString( "MMM yyyy" );
                             break;
 
-                        case AttendanceGroupBy.Week:
+                        case ChartGroupBy.Week:
                             boolFromArrayField.HeaderText = summaryDate.ToShortDateString();
                             break;
 
@@ -955,7 +948,7 @@ function(item) {
         /// </summary>
         /// <param name="dateRange">The date range.</param>
         /// <param name="attendanceGroupBy">The attendance group by.</param>
-        public void UpdatePossibleAttendances( DateRange dateRange, AttendanceGroupBy attendanceGroupBy )
+        public void UpdatePossibleAttendances( DateRange dateRange, ChartGroupBy attendanceGroupBy )
         {
             _possibleAttendances = GetPossibleAttendancesForDateRange( dateRange, attendanceGroupBy );
         }
@@ -966,13 +959,13 @@ function(item) {
         /// <param name="dateRange">The date range.</param>
         /// <param name="attendanceGroupBy">The attendance group by type.</param>
         /// <returns></returns>
-        public List<DateTime> GetPossibleAttendancesForDateRange( DateRange dateRange, AttendanceGroupBy attendanceGroupBy )
+        public List<DateTime> GetPossibleAttendancesForDateRange( DateRange dateRange, ChartGroupBy attendanceGroupBy )
         {
             TimeSpan dateRangeSpan = dateRange.End.Value - dateRange.Start.Value;
 
             var result = new List<DateTime>();
 
-            if ( attendanceGroupBy == AttendanceGroupBy.Week )
+            if ( attendanceGroupBy == ChartGroupBy.Week )
             {
                 var endOfFirstWeek = dateRange.Start.Value.EndOfWeek( RockDateTime.FirstDayOfWeek );
                 var endOfLastWeek = dateRange.End.Value.EndOfWeek( RockDateTime.FirstDayOfWeek );
@@ -984,7 +977,7 @@ function(item) {
                     weekEndDate = weekEndDate.AddDays( 7 );
                 }
             }
-            else if ( attendanceGroupBy == AttendanceGroupBy.Month )
+            else if ( attendanceGroupBy == ChartGroupBy.Month )
             {
                 var endOfFirstMonth = dateRange.Start.Value.AddDays( -( dateRange.Start.Value.Day - 1 ) ).AddMonths( 1 ).AddDays( -1 );
                 var endOfLastMonth = dateRange.End.Value.AddDays( -( dateRange.End.Value.Day - 1 ) ).AddMonths( 1 ).AddDays( -1 );
@@ -997,7 +990,7 @@ function(item) {
                     monthStartDate = monthStartDate.AddMonths( 1 );
                 }
             }
-            else if ( attendanceGroupBy == AttendanceGroupBy.Year )
+            else if ( attendanceGroupBy == ChartGroupBy.Year )
             {
                 var endOfFirstYear = new DateTime( dateRange.Start.Value.Year, 1, 1 ).AddYears( 1 ).AddDays( -1 );
                 var endOfLastYear = new DateTime( dateRange.End.Value.Year, 1, 1 ).AddYears( 1 ).AddDays( -1 );
@@ -1047,27 +1040,34 @@ function(item) {
                 Literal lAttendancePercent = e.Row.FindControl( "lAttendancePercent" ) as Literal;
                 var person = dataItem.GetPropertyValue( "Person" ) as Person;
 
-                var firstVisits = dataItem.GetPropertyValue( "FirstVisits" ) as IEnumerable<object>;
+                var firstVisits = dataItem.GetPropertyValue( "FirstVisits" ) as IEnumerable<DateTime>;
 
                 if ( firstVisits != null )
                 {
-                    var firstVisit = firstVisits.FirstOrDefault();
-                    var secondVisit = firstVisits.Skip( 1 ).FirstOrDefault();
-                    if ( firstVisit != null )
+                    if ( firstVisits.Count() >= 1 )
                     {
-                        DateTime? firstVisitDateTime = firstVisit.GetPropertyValue( "StartDateTime" ) as DateTime?;
-                        if ( firstVisitDateTime.HasValue )
-                        {
-                            lFirstVisitDate.Text = firstVisitDateTime.Value.ToShortDateString();
-                        }
-                    }
+                        var firstVisit = firstVisits.Min();
 
-                    if ( secondVisit != null )
-                    {
-                        DateTime? secondVisitDateTime = secondVisit.GetPropertyValue( "StartDateTime" ) as DateTime?;
-                        if ( secondVisitDateTime.HasValue )
+                        if ( firstVisit != null )
                         {
-                            lSecondVisitDate.Text = secondVisitDateTime.Value.ToShortDateString();
+                            DateTime? firstVisitDateTime = firstVisit;
+                            if ( firstVisitDateTime.HasValue )
+                            {
+                                lFirstVisitDate.Text = firstVisitDateTime.Value.ToShortDateString();
+                            }
+                        }
+
+                        if ( firstVisits.Count() >= 2 )
+                        {
+                            var secondVisit = firstVisits.Skip( 1 ).FirstOrDefault();
+                            if ( secondVisit != null )
+                            {
+                                DateTime? secondVisitDateTime = secondVisit;
+                                if ( secondVisitDateTime.HasValue )
+                                {
+                                    lSecondVisitDate.Text = secondVisitDateTime.Value.ToShortDateString();
+                                }
+                            }
                         }
                     }
                 }
@@ -1328,17 +1328,6 @@ function(item) {
         protected void ddlCheckinType_SelectedIndexChanged( object sender, EventArgs e )
         {
             BuildGroupTypesUI();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnApplyAttendeesFilter control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnApplyAttendeesFilter_Click( object sender, EventArgs e )
-        {
-            // both Attendess Filter Apply button just do the same thing as the main apply button
-            btnApply_Click( sender, e );
         }
 
         /// <summary>

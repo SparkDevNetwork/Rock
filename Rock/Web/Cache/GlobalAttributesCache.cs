@@ -110,6 +110,21 @@ namespace Rock.Web.Cache
 
                 return attributes;
             }
+
+            set
+            {
+                lock ( _obj )
+                {
+                    if ( value != null )
+                    {
+                        attributeIds = value.Select( a => a.Id ).ToList();
+                    }
+                    else
+                    {
+                        attributeIds = null;
+                    }
+                }
+            }
         }
         private List<int> attributeIds = null;
 

@@ -14,13 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 
-namespace Rock.Data
+namespace Rock.Chart
 {
     /// <summary>
     /// 
     /// </summary>
-    public interface IChartData
+    public class SummaryData : IChartData
     {
         /// <summary>
         /// Gets the date time stamp.
@@ -28,7 +29,15 @@ namespace Rock.Data
         /// <value>
         /// The date time stamp.
         /// </value>
-        long DateTimeStamp { get; }
+        public long DateTimeStamp { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date time.
+        /// </summary>
+        /// <value>
+        /// The date time.
+        /// </value>
+        public DateTime DateTime { get; set; }
 
         /// <summary>
         /// Gets the y value.
@@ -36,7 +45,7 @@ namespace Rock.Data
         /// <value>
         /// The y value.
         /// </value>
-        decimal? YValue { get; }
+        public decimal? YValue { get; set; }
 
         /// <summary>
         /// Gets the series identifier.
@@ -44,6 +53,6 @@ namespace Rock.Data
         /// <value>
         /// The series identifier.
         /// </value>
-        string SeriesId { get;  }
+        public string SeriesId { get; set; }
     }
 }

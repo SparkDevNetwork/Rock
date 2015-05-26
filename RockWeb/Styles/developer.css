@@ -172,3 +172,26 @@ div.toggle-container {   /* ???? JME */
   color: #eca9a7;
   vertical-align: super;
 }
+
+/* DT 2015-05-25 Giving Analysis Block ( copied from the .attendance-reporting css settings ) */
+.giving-analysis .panel-body {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.giving-analysis .panel-body > .row > [class*="col-"]:first-child {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+@media (min-width: 992px) {
+  .giving-analysis .panel-body .row {
+    margin-left: -16px;
+  }
+}
+.giving-analysis .filter-options {
+  background-color: #efefef;
+}
+.giving-analysis .analysis-types {
+  padding: 15px 0;
+  background-color: #efefef;
+  margin-bottom: 24px;
+}

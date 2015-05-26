@@ -510,12 +510,13 @@ namespace Rock.Field
         {
             return ConvertValueToPropertyType( value, propertyType, false );
         }
-        
+
         /// <summary>
         /// Converts the type of the value to property.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="propertyType">Type of the property.</param>
+        /// <param name="isNullableType">if set to <c>true</c> [is nullable type].</param>
         /// <returns></returns>
         public virtual object ConvertValueToPropertyType( string value, Type propertyType, bool isNullableType )
         {
