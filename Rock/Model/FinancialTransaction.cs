@@ -419,4 +419,25 @@ namespace Rock.Model
     }
 
     #endregion Entity Configuration
+
+    /// <summary>
+    /// For giving analysis reporting
+    /// </summary>
+    public enum TransactionGraphBy
+    {
+        /// <summary>
+        /// The total
+        /// </summary>
+        Total = 0,
+
+        /// <summary>
+        /// The financial account
+        /// </summary>
+        FinancialAccount = 1,
+
+        /// <summary>
+        /// The campus
+        /// </summary>
+        Campus = 2,
+    }
 }

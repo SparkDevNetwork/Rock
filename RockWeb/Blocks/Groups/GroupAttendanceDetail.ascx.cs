@@ -37,7 +37,8 @@ namespace RockWeb.Blocks.Groups
     [Description( "Lists the group members for a specific occurrence datetime and allows selecting if they attended or not." )]
 
     [BooleanField( "Allow Add", "Should block support adding new attendance dates outside of the group's configured schedule and group type's exclusion dates?", true, "", 0 )]
-    [WorkflowTypeField( "Workflow", "An optional workflow type to launch whenever attendance is saved. The Group will be used as the workflow 'Entity' when processing is started. Additionally if a 'StartDateTime' and/or 'Schedule' attribute exist, their values will be set with the corresponding saved attendance values.", false, false, "", "", 1 )]
+    [BooleanField( "Allow Adding Person", "Should block support adding new attendee ( Requires that person has rights to search for new person )?", false, "", 1 )]
+    [WorkflowTypeField( "Workflow", "An optional workflow type to launch whenever attendance is saved. The Group will be used as the workflow 'Entity' when processing is started. Additionally if a 'StartDateTime' and/or 'Schedule' attribute exist, their values will be set with the corresponding saved attendance values.", false, false, "", "", 2 )]
     public partial class GroupAttendanceDetail : RockBlock
     {
         #region Private Variables
@@ -47,11 +48,17 @@ namespace RockWeb.Blocks.Groups
         private bool _canEdit = false;
         private bool _allowAdd = false;
         private ScheduleOccurrence _occurrence = null;
+        private List<GroupAttendanceAttendee> _attendees;
 
         #endregion
 
         #region Control Methods
 
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+            _attendees = ViewState["Attendees"] as List<GroupAttendanceAttendee>;
+        }
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -104,6 +111,32 @@ namespace RockWeb.Blocks.Groups
                     nbNotice.Visible = true;
                 }
             }
+            else
+            {
+                foreach ( var item in lvMembers.Items )
+                {
+                    var hfMember = item.FindControl( "hfMember" ) as HiddenField;
+                    var cbMember = item.FindControl( "cbMember" ) as CheckBox;
+
+                    if ( hfMember != null && cbMember != null )
+                    {
+                        int personId = hfMember.ValueAsInt();
+
+                        var attendance = _attendees.Where( a => a.PersonId == personId ).FirstOrDefault();
+                        if ( attendance != null )
+                        {
+                            attendance.Attended = cbMember.Checked;
+                        }
+                    }
+                }
+
+            }
+        }
+
+        protected override object SaveViewState()
+        {
+            ViewState["Attendees"] = _attendees;
+            return base.SaveViewState();
         }
 
         #endregion
@@ -156,47 +189,40 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
 
-                    foreach ( var item in lvMembers.Items )
+
+                    foreach ( var attendee in _attendees )
                     {
-                        var hfMember = item.FindControl( "hfMember" ) as HiddenField;
-                        var cbMember = item.FindControl( "cbMember" ) as CheckBox;
+                        var attendance = existingAttendees
+                            .Where( a => a.PersonAlias.PersonId == attendee.PersonId )
+                            .FirstOrDefault();
 
-                        if ( hfMember != null && cbMember != null )
+                        if ( attendance == null )
                         {
-                            int personId = hfMember.ValueAsInt();
-
-                            var attendance = existingAttendees
-                                .Where( a => a.PersonAlias.PersonId == personId )
-                                .FirstOrDefault();
-
-                            if ( attendance == null )
+                            int? personAliasId = personAliasService.GetPrimaryAliasId( attendee.PersonId );
+                            if ( personAliasId.HasValue )
                             {
-                                int? personAliasId = personAliasService.GetPrimaryAliasId( personId );
-                                if ( personAliasId.HasValue )
-                                {
-                                    attendance = new Attendance();
-                                    attendance.GroupId = _group.Id;
-                                    attendance.ScheduleId = _group.ScheduleId;
-                                    attendance.PersonAliasId = personAliasId;
-                                    attendance.StartDateTime = _occurrence.StartDateTime;
-                                    attendance.LocationId = _occurrence.LocationId;
-                                    attendance.ScheduleId = _occurrence.ScheduleId;
-                                    attendanceService.Add( attendance );
-                                }
+                                attendance = new Attendance();
+                                attendance.GroupId = _group.Id;
+                                attendance.ScheduleId = _group.ScheduleId;
+                                attendance.PersonAliasId = personAliasId;
+                                attendance.StartDateTime = _occurrence.StartDateTime;
+                                attendance.LocationId = _occurrence.LocationId;
+                                attendance.ScheduleId = _occurrence.ScheduleId;
+                                attendanceService.Add( attendance );
                             }
+                        }
 
-                            if ( attendance != null )
+                        if ( attendance != null )
+                        {
+                            if ( cbDidNotMeet.Checked )
                             {
-                                if ( cbDidNotMeet.Checked )
-                                {
-                                    attendance.DidAttend = null;
-                                    attendance.DidNotOccur = true;
-                                }
-                                else
-                                {
-                                    attendance.DidAttend = cbMember.Checked;
-                                    attendance.DidNotOccur = null;
-                                }
+                                attendance.DidAttend = null;
+                                attendance.DidNotOccur = true;
+                            }
+                            else
+                            {
+                                attendance.DidAttend = attendee.Attended;
+                                attendance.DidNotOccur = null;
                             }
                         }
                     }
@@ -277,6 +303,27 @@ namespace RockWeb.Blocks.Groups
             BindSchedules( ddlLocation.SelectedValueAsInt() );
         }
 
+        protected void ppAddPerson_SelectPerson( object sender, EventArgs e )
+        {
+            if ( ppAddPerson.PersonId.HasValue )
+            {
+                if ( !_attendees.Any( a => a.PersonId == ppAddPerson.PersonId.Value ) )
+                {
+                    var Person = new PersonService( new RockContext() ).Get( ppAddPerson.PersonId.Value );
+                    if ( Person != null )
+                    {
+                        var attendee = new GroupAttendanceAttendee();
+                        attendee.PersonId = Person.Id;
+                        attendee.NickName = Person.NickName;
+                        attendee.LastName = Person.LastName;
+                        attendee.Attended = true;
+                        _attendees.Add( attendee );
+                        BindAttendees();
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Handles the ItemCommand event of the lvPendingMembers control.
         /// </summary>
@@ -345,7 +392,7 @@ namespace RockWeb.Blocks.Groups
 
                     // Get all the occurrences for this group ( without loading attendance yet )
                     var occurrence = new ScheduleService( _rockContext )
-                        .GetGroupOccurrences( _group, occurrenceDate.Value.Date, occurrenceDate.Value.AddDays(1), locationId ?? 0, scheduleId ?? 0, false )
+                        .GetGroupOccurrences( _group, occurrenceDate.Value.Date, occurrenceDate.Value.AddDays( 1 ), locationId ?? 0, scheduleId ?? 0, false )
                         .OrderBy( o => o.StartDateTime )
                         .FirstOrDefault();
 
@@ -359,7 +406,7 @@ namespace RockWeb.Blocks.Groups
                 // occurrences can be added, create a new one
                 if ( _allowAdd )
                 {
-                    return new ScheduleOccurrence( occurrenceDate.Value, occurrenceDate.Value.Date.AddDays(1), scheduleId, string.Empty, locationId, string.Empty );
+                    return new ScheduleOccurrence( occurrenceDate.Value, occurrenceDate.Value.Date.AddDays( 1 ), scheduleId, string.Empty, locationId, string.Empty );
                 }
             }
 
@@ -375,14 +422,29 @@ namespace RockWeb.Blocks.Groups
 
             if ( _group != null )
             {
-                _group.GroupLocations
+                var locationPaths = new Dictionary<int, string>();
+                var locationService = new LocationService( _rockContext );
+
+                foreach ( var location in _group.GroupLocations
                     .Where( l =>
                         l.Location.Name != null &&
                         l.Location.Name != "" )
-                    .Select( l => l.Location )
-                    .OrderBy( l => l.Name )
-                    .ToList()
-                    .ForEach( l => locations.AddOrIgnore( l.Id, l.Name ) );
+                    .Select( l => l.Location ) )
+                {
+                    // Get location path
+                    string parentLocationPath = string.Empty;
+                    if ( location.ParentLocationId.HasValue )
+                    {
+                        var locId = location.ParentLocationId.Value;
+                        if ( !locationPaths.ContainsKey( locId ) )
+                        {
+                            locationPaths.Add( locId, locationService.GetPath( locId ) );
+                        }
+                        parentLocationPath = locationPaths[locId];
+                    }
+
+                    locations.Add( location.Id, new List<string> { parentLocationPath, location.Name }.AsDelimited( " > " ) );
+                }
             }
 
             if ( locations.Any() )
@@ -395,7 +457,7 @@ namespace RockWeb.Blocks.Groups
         private void BindSchedules( int? locationId )
         {
             var schedules = new Dictionary<int, string> { { 0, "" } };
-            
+
             if ( _group != null && locationId.HasValue )
             {
                 _group.GroupLocations
@@ -431,7 +493,7 @@ namespace RockWeb.Blocks.Groups
                 nbNotice.Visible = true;
 
                 pnlDetails.Visible = false;
-            }            
+            }
             else
             {
                 if ( existingOccurrence )
@@ -440,8 +502,15 @@ namespace RockWeb.Blocks.Groups
                     lOccurrenceDate.Text = _occurrence.StartDateTime.ToShortDateString();
                     dpOccurrenceDate.Visible = false;
 
-                    lLocation.Visible = !string.IsNullOrWhiteSpace(_occurrence.LocationName);
-                    lLocation.Text = _occurrence.LocationName;
+                    if ( _occurrence.LocationId.HasValue )
+                    {
+                        lLocation.Visible = true;
+                        lLocation.Text = new LocationService( _rockContext ).GetPath( _occurrence.LocationId.Value );
+                    }
+                    else
+                    {
+                        lLocation.Visible = false;
+                    }
                     ddlLocation.Visible = false;
 
                     lSchedule.Visible = !string.IsNullOrWhiteSpace( _occurrence.ScheduleName );
@@ -480,6 +549,8 @@ namespace RockWeb.Blocks.Groups
                         .ToList();
                 }
 
+                ppAddPerson.Visible = GetAttributeValue( "AllowAddingPerson" ).AsBoolean(); 
+
                 // Get the group members
                 var groupMemberService = new GroupMemberService( _rockContext );
 
@@ -494,19 +565,18 @@ namespace RockWeb.Blocks.Groups
                     .ToList();
 
                 // Bind the attendance roster
-                lvMembers.DataSource = new PersonService( _rockContext )
+                _attendees = new PersonService( _rockContext )
                     .Queryable().AsNoTracking()
                     .Where( p => attendedIds.Contains( p.Id ) || unattendedIds.Contains( p.Id ) )
-                    .OrderBy( p => p.LastName )
-                    .ThenBy( p => p.NickName )
-                    .Select( p => new
+                    .Select( p => new GroupAttendanceAttendee()
                     {
-                        Id = p.Id,
-                        Attended = attendedIds.Contains( p.Id ),
-                        FullName = p.NickName + " " + p.LastName
+                        PersonId = p.Id,
+                        NickName = p.NickName,
+                        LastName = p.LastName,
+                        Attended = attendedIds.Contains( p.Id )
                     } )
                     .ToList();
-                lvMembers.DataBind();
+                BindAttendees();
 
                 // Bind the pending members
                 var pendingMembers = groupMemberService
@@ -528,6 +598,15 @@ namespace RockWeb.Blocks.Groups
                 lvPendingMembers.DataBind();
             }
 
+        }
+
+        private void BindAttendees()
+        {
+            lvMembers.DataSource = _attendees.OrderBy( a => a.LastName ).ThenBy( a => a.NickName ).ToList();
+            lvMembers.DataBind();
+
+            ppAddPerson.PersonId = Rock.Constants.None.Id;
+            ppAddPerson.PersonName = "Add New Attendee";
         }
 
         protected void RegisterScript()
@@ -568,6 +647,55 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
-}
+        #region Helper Classes
 
+        [Serializable]
+        public class GroupAttendanceAttendee
+        {
+            /// <summary>
+            /// Gets or sets the person identifier.
+            /// </summary>
+            /// <value>
+            /// The person identifier.
+            /// </value>
+            public int PersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the nick.
+            /// </summary>
+            /// <value>
+            /// The name of the nick.
+            /// </value>
+            public string NickName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the last name.
+            /// </summary>
+            /// <value>
+            /// The last name.
+            /// </value>
+            public string LastName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the full name.
+            /// </summary>
+            /// <value>
+            /// The full name.
+            /// </value>
+            public string FullName
+            {
+                get { return NickName + " " + LastName; }
+            }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this <see cref="GroupAttendanceAttendee"/> is attended.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if attended; otherwise, <c>false</c>.
+            /// </value>
+            public bool Attended { get; set; }
+        }
+
+        #endregion
+    }
 }

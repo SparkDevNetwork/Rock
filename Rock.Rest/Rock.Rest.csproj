@@ -134,6 +134,7 @@
     <Compile Include="Controllers\CodeGenerated\PersonPreviousNamesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PluginMigrationsController.cs" />
     <Compile Include="Controllers\ExceptionLogsController.Partial.cs" />
+    <Compile Include="Controllers\FinancialTransactionDetailsController.Partial.cs" />
     <Compile Include="Controllers\FollowingsController.Partial.cs" />
     <Compile Include="Controllers\MetricValuesController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormAttributesController.cs" />

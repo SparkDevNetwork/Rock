@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.CheckIn
                     using ( var rockContext = new RockContext() )
                     {
                         ddlKiosk.DataSource = new DeviceService( rockContext ).Queryable()
-                            .Where( d => d.DeviceType.Guid.Equals( kioskDeviceType ) )
+                            .Where( d => d.DeviceType.Guid.Equals( kioskDeviceType ) ).OrderBy(d => d.Name)
                             .ToList();
                     }
                     ddlKiosk.DataBind();

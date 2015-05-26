@@ -47,10 +47,13 @@
                                 <h4><asp:Literal ID="lMembers" runat="server" /></h4>
                                 <asp:ListView ID="lvMembers" runat="server">
                                     <ItemTemplate>
-                                        <asp:HiddenField ID="hfMember" runat="server" Value='<%# Eval("Id") %>' />
+                                        <asp:HiddenField ID="hfMember" runat="server" Value='<%# Eval("PersonId") %>' />
                                         <Rock:RockCheckBox ID="cbMember" runat="server" Checked='<%# Eval("Attended") %>' Text='<%# Eval("FullName") %>' />
                                     </ItemTemplate>
                                 </asp:ListView>
+                                <div class="pull-right">
+                                    <Rock:PersonPicker ID="ppAddPerson" runat="server" CssClass="picker-menu-right" PersonName="Add New Attendee" OnSelectPerson="ppAddPerson_SelectPerson" />
+                                </div>
                             </div>
 
                         </div>

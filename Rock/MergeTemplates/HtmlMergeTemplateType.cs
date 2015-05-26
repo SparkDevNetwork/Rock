@@ -33,6 +33,22 @@ namespace Rock.MergeTemplates
     public class HtmlMergeTemplateType : MergeTemplateType
     {
         /// <summary>
+        /// Gets the supported file extensions
+        /// Returns NULL if the file extension doesn't matter or doesn't apply
+        /// Rock will use this to warn the user if the file extension isn't supported
+        /// </summary>
+        /// <value>
+        /// The supported file extensions.
+        /// </value>
+        public override IEnumerable<string> SupportedFileExtensions
+        {
+            get
+            {
+                return new string[] { "htm", "html" };
+            }
+        }
+        
+        /// <summary>
         /// Creates the document.
         /// </summary>
         /// <param name="mergeTemplate">The merge template.</param>
