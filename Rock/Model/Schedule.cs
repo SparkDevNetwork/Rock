@@ -679,6 +679,14 @@ namespace Rock.Model
         public string LocationName { get; set; }
 
         /// <summary>
+        /// Gets or sets the location path.
+        /// </summary>
+        /// <value>
+        /// The location path.
+        /// </value>
+        public string LocationPath { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether attendance has been entered for this occurrence.
         /// </summary>
         /// <value>
@@ -786,14 +794,15 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ScheduleOccurrence"/> class.
+        /// Initializes a new instance of the <see cref="ScheduleOccurrence" /> class.
         /// </summary>
         /// <param name="occurrence">The occurrence.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="scheduleName">Name of the schedule.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="locationName">Name of the location.</param>
-        public ScheduleOccurrence( DDay.iCal.Occurrence occurrence, int? scheduleId = null, string scheduleName = "", int? locationId = null, string locationName = "" )
+        /// <param name="locationPath">The location path.</param>
+        public ScheduleOccurrence( DDay.iCal.Occurrence occurrence, int? scheduleId = null, string scheduleName = "", int? locationId = null, string locationName = "", string locationPath = "" )
         {
             StartDateTime = occurrence.Period.StartTime.Value;
             EndDateTime = occurrence.Period.EndTime.Value;
@@ -801,10 +810,11 @@ namespace Rock.Model
             ScheduleName = scheduleName;
             LocationId = locationId;
             LocationName = locationName;
+            LocationPath = locationPath;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ScheduleOccurrence"/> class.
+        /// Initializes a new instance of the <see cref="ScheduleOccurrence" /> class.
         /// </summary>
         /// <param name="startDateTime">The start date time.</param>
         /// <param name="endDateTime">The end date time.</param>
@@ -812,7 +822,9 @@ namespace Rock.Model
         /// <param name="scheduleName">Name of the schedule.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="locationName">Name of the location.</param>
-        public ScheduleOccurrence( DateTime startDateTime, DateTime endDateTime, int? scheduleId = null, string scheduleName = "", int? locationId = null, string locationName = "" )
+        /// <param name="locationPath">The location path.</param>
+        /// ,
+        public ScheduleOccurrence( DateTime startDateTime, DateTime endDateTime, int? scheduleId = null, string scheduleName = "", int? locationId = null, string locationName = "", string locationPath = "" )
         {
             StartDateTime = startDateTime;
             EndDateTime = endDateTime;
@@ -820,6 +832,7 @@ namespace Rock.Model
             ScheduleName = scheduleName;
             LocationId = locationId;
             LocationName = locationName;
+            LocationPath = locationPath;
         }
     }
 

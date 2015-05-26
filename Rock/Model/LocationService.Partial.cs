@@ -242,6 +242,36 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the path.
+        /// </summary>
+        /// <param name="locationId">The location identifier.</param>
+        /// <returns></returns>
+        public string GetPath( int locationId )
+        {
+            var locations = ExecuteQuery( string.Format(
+                @"
+                WITH CTE AS (
+                    SELECT * FROM [Location] WHERE [Id]={0}
+                    UNION ALL
+                    SELECT [a].* FROM [Location] [a]
+                    INNER JOIN CTE ON CTE.[ParentLocationId] = [a].[Id]
+                )
+                SELECT * FROM CTE
+                WHERE [Name] IS NOT NULL 
+                AND [Name] <> ''
+                ", locationId ) );
+
+            if ( locations.Any() )
+            {
+                var locationNames = locations.Select( l => l.Name ).ToList();
+                locationNames.Reverse();
+                return locationNames.AsDelimited( " > " );
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Gets the locations associated to a device and optionally any child locaitons
         /// </summary>
         /// <param name="deviceId">The device identifier.</param>
