@@ -1142,6 +1142,7 @@ namespace RockWeb.Blocks.Groups
                     var securityRoleGroupType = GroupTypeCache.GetSecurityRoleGroupType();
                     if ( securityRoleGroupType != null )
                     {
+                        CurrentGroupTypeId = securityRoleGroupType.Id;
                         ddlGroupType.SetValue( securityRoleGroupType.Id );
                     }
                     else
@@ -1157,12 +1158,11 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
+                CurrentGroupTypeId = group.GroupTypeId;
                 ddlGroupType.SetValue( group.GroupTypeId );
                 var groupType = GroupTypeCache.Read( group.GroupTypeId, rockContext );
                 lGroupType.Text = groupType != null ? groupType.Name : "";
             }
-
-            CurrentGroupTypeId = group.GroupTypeId;
 
             ddlCampus.SetValue( group.CampusId );
 
