@@ -538,6 +538,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mtPicker_SelectItem( object sender, EventArgs e )
         {
+            nbMergeError.Visible = false;
             if ( pnlMergeFieldsHelp.Visible )
             {
                 ShowLavaHelp();

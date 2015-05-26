@@ -5,6 +5,14 @@
 
         <Rock:NotificationBox ID="nbNotice" runat="server" NotificationBoxType="Info" Visible="false"></Rock:NotificationBox>
         
+        <script>
+            Sys.Application.add_load( function () {
+                $("div.photo-round").lazyload({
+                    effect: "fadeIn"
+                });
+            });
+        </script>
+
         <div class="grid">
             <Rock:Grid ID="gPeople" runat="server" EmptyDataText="No People Found" AllowSorting="true" OnRowSelected="gPeople_RowSelected">
                 <Columns>

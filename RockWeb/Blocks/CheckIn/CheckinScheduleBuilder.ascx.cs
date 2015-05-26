@@ -358,20 +358,31 @@ namespace RockWeb.Blocks.CheckIn
                 dataRow["GroupPath"] = groupPaths.Where( gt => gt.GroupTypeId == row.GroupTypeId ).Select( gt => gt.Path ).FirstOrDefault();
                 dataRow["LocationName"] = row.Location.Name;
 
-                if ( row.Location.ParentLocationId.HasValue && !locationPaths.ContainsKey( row.Location.ParentLocationId.Value ) )
+                if ( row.Location.ParentLocationId.HasValue )
                 {
-                    var locationNames = new List<string>();
-                    var parentLocation = locationService.Get( row.Location.ParentLocationId.Value );
-                    while ( parentLocation != null )
+                    int locationId = row.Location.ParentLocationId.Value;
+
+                    if ( !locationPaths.ContainsKey( locationId ) )
                     {
-                        locationNames.Add( parentLocation.Name );
-                        parentLocation = parentLocation.ParentLocation;
+                        var locationNames = new List<string>();
+                        var parentLocation = locationService.Get( locationId );
+                        while ( parentLocation != null )
+                        {
+                            locationNames.Add( parentLocation.Name );
+                            parentLocation = parentLocation.ParentLocation;
+                        }
+                        if ( locationNames.Any() )
+                        {
+                            locationNames.Reverse();
+                            locationPaths.Add( locationId, locationNames.AsDelimited( " > " ) );
+                        }
+                        else
+                        {
+                            locationPaths.Add( locationId, string.Empty );
+                        }
                     }
-                    if ( locationNames.Any() )
-                    {
-                        locationNames.Reverse();
-                        dataRow["LocationPath"] = locationNames.AsDelimited( " > " );
-                    }
+
+                    dataRow["LocationPath"] = locationPaths[locationId];
                 }
 
                 foreach ( var field in gGroupLocationSchedule.Columns.OfType<CheckBoxEditableField>() )

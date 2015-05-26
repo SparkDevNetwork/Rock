@@ -557,6 +557,113 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Special class that holds the result of a GetChildWithParents query
+        /// </summary>
+        public class ChildWithParents
+        {
+            /// <summary>
+            /// Gets or sets the child.
+            /// </summary>
+            /// <value>
+            /// The child.
+            /// </value>
+            public Person Child { get; set; }
+
+            /// <summary>
+            /// Gets or sets the parents.
+            /// </summary>
+            /// <value>
+            /// The parents.
+            /// </value>
+            public IEnumerable<Person> Parents { get; set; }
+        }
+
+        /// <summary>
+        /// Gets a Queryable of Children with their Parents
+        /// </summary>
+        /// <param name="includeChildrenWithoutParents">if set to <c>true</c> [include children without parents].</param>
+        /// <returns></returns>
+        public IQueryable<ChildWithParents> GetChildWithParents( bool includeChildrenWithoutParents )
+        {
+            var groupTypeFamily = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            int adultRoleId = groupTypeFamily.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+            int childRoleId = groupTypeFamily.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
+            int groupTypeFamilyId = groupTypeFamily.Id;
+
+            var qryFamilyGroups = new GroupService( this.Context as RockContext ).Queryable().Where( g => g.GroupTypeId == groupTypeFamilyId && g.Members.Any( a => a.GroupRoleId == childRoleId ) )
+                .Select( g => new
+                {
+                    KidsWithAdults = g.Members.Where( a => a.GroupRoleId == childRoleId ).Select( a => new
+                    {
+                        Child = a.Person,
+                        Parents = g.Members.Where( aa => aa.GroupRoleId == adultRoleId ).Select( b => b.Person )
+                    } )
+                } )
+                .SelectMany( x => x.KidsWithAdults.Select( xx => new { xx.Child, xx.Parents } ) );
+
+            var qryKids = this.Queryable();
+
+            var qryChildrenWithParents = qryKids.Join( qryFamilyGroups, k => k.Id, k2 => k2.Child.Id, ( k, f ) => new ChildWithParents
+            {
+                Child = f.Child,
+                Parents = f.Parents
+            } );
+
+            if ( !includeChildrenWithoutParents )
+            {
+                qryChildrenWithParents = qryChildrenWithParents.Where( a => a.Parents.Any() );
+            }
+
+            return qryChildrenWithParents;
+        }
+
+        /// <summary>
+        /// Special class that holds the result of a ChildWithParent query
+        /// </summary>
+        public class ChildWithParent
+        {
+            /// <summary>
+            /// Gets or sets the child.
+            /// </summary>
+            /// <value>
+            /// The child.
+            /// </value>
+            public Person Child { get; set; }
+
+            /// <summary>
+            /// Gets or sets the parent.
+            /// </summary>
+            /// <value>
+            /// The parent.
+            /// </value>
+            public Person Parent { get; set; }
+        }
+
+        /// <summary>
+        /// Gets a Queryable of Children with their Parents flattened out so each record is a child with a parent (a kid with 2 parents would return two records)
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<ChildWithParent> GetChildWithParent()
+        {
+            var qryChildrenWithParents = this.GetChildWithParents( false );
+
+            var qryChildWithParent = qryChildrenWithParents.Select( a => new
+            {
+                ParentKid = a.Parents.Select( aa => new
+                {
+                    Parent = aa,
+                    Child = a.Child
+                } )
+            } ).SelectMany( sm => sm.ParentKid ).Select( s => new ChildWithParent
+            {
+                Child = s.Child,
+                Parent = s.Parent
+            } );
+
+            return qryChildWithParent;
+        }
+
+        /// <summary>
         /// Gets the family names.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
@@ -751,6 +858,8 @@ namespace Rock.Model
                 .Select( m => m.Person )
                 .FirstOrDefault();
         }
+
+
 
         #endregion
 
@@ -980,7 +1089,7 @@ namespace Rock.Model
                     {
                         attributeValueService.Delete( attributeValue );
                     }
-                    
+
                     attributeService.Delete( attribute );
                     rockContext.SaveChanges();
                 }
