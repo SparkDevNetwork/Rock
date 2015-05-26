@@ -26,7 +26,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Service/Data access class for <see cref="Rock.Model.FinancialDetailTransaction"/> entity objects.
+    /// Service/Data access class for <see cref="Rock.Model.FinancialTransactionDetail"/> entity objects.
     /// </summary>
     public partial class FinancialTransactionDetailService 
     {
@@ -44,7 +44,6 @@ namespace Rock.Model
         /// <param name="sourceTypeIds">The source type ids.</param>
         /// <param name="campusIds">The campus ids.</param>
         /// <param name="dataViewId">The data view identifier.</param>
-        /// <param name="dataViewIncludeAll">if set to <c>true</c> [data view include all].</param>
         /// <returns></returns>
         public IEnumerable<IChartData> GetChartData(
             ChartGroupBy groupBy, TransactionGraphBy graphBy, DateTime? start, DateTime? end, decimal? minAmount, decimal? maxAmount,
