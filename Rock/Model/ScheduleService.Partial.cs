@@ -49,6 +49,7 @@ namespace Rock.Model
                 var rockContext = (RockContext)this.Context;
                 var attendanceService = new AttendanceService( rockContext );
                 var scheduleService = new ScheduleService( rockContext );
+                var locationService = new LocationService( rockContext );
 
                 // Get existing 'occurrences'
                 var qry = attendanceService
@@ -81,11 +82,14 @@ namespace Rock.Model
                         ( !a.ScheduleId.HasValue && scheduleId.Value == 0 ) );
                 }
 
+                var locationPaths = new Dictionary<int, string>();
+
                 foreach ( var occurrence in qry
                     .Select( a => new
                     {
                         a.LocationId,
                         LocationName = a.Location != null ? a.Location.Name : "",
+                        ParentLocationId = a.Location != null ? a.Location.ParentLocationId : null,
                         a.ScheduleId,
                         ScheduleName = a.Schedule != null ? a.Schedule.Name : "",
                         Date = DbFunctions.TruncateTime( a.StartDateTime )
@@ -95,6 +99,18 @@ namespace Rock.Model
                 {
                     if ( occurrence.Date.HasValue )
                     {
+                        // Get location path
+                        string locationPath = string.Empty;
+                        if ( occurrence.ParentLocationId.HasValue )
+                        {
+                            var locId = occurrence.ParentLocationId.Value;
+                            if ( !locationPaths.ContainsKey( locId ) )
+                            {
+                                locationPaths.Add( locId, locationService.GetPath( locId ) );
+                            }
+                            locationPath = locationPaths[locId];
+                        }
+
                         occurrences.Add(
                             new ScheduleOccurrence(
                                 occurrence.Date.Value,
@@ -102,7 +118,8 @@ namespace Rock.Model
                                 occurrence.ScheduleId,
                                 occurrence.ScheduleName,
                                 occurrence.LocationId, 
-                                occurrence.LocationName ) );
+                                occurrence.LocationName,
+                                locationPath) );
                     }
                 }
 
