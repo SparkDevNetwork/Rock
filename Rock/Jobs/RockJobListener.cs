@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Quartz;
 using Rock.Data;
@@ -127,19 +129,47 @@ namespace Rock.Jobs
             }
             else
             {
+                Exception exceptionToLog = jobException;
+
+                // drill down to the interesting exception
+                while ( exceptionToLog is Quartz.SchedulerException && exceptionToLog.InnerException != null )
+                {
+                    exceptionToLog = exceptionToLog.InnerException;
+                }
+
                 // log the exception to the database
-                ExceptionLogService.LogException( jobException, null );
+                ExceptionLogService.LogException( exceptionToLog, null );
+
+                var summaryException = exceptionToLog;
 
                 // put the exception into the status
                 job.LastStatus = "Exception";
-                job.LastStatusMessage = "An Exception occurred.  See the Exception Log for more details. " + jobException.Message;
+
+                AggregateException aggregateException = summaryException as AggregateException;
+                if ( aggregateException != null && aggregateException.InnerExceptions != null && aggregateException.InnerExceptions.Count == 1 )
+                {
+                    // if it's an aggregate, but there is only one, convert it to a single exception
+                    summaryException = aggregateException.InnerExceptions[0];
+                    aggregateException = null;
+                }
+
+                if ( aggregateException != null )
+                {
+                    var firstException = aggregateException.InnerExceptions.First();
+                    job.LastStatusMessage = "One or more exceptions occurred. First Exception: " + firstException.Message;
+                    summaryException = firstException;
+                }
+                else
+                {
+                    job.LastStatusMessage = summaryException.Message;
+                }
 
                 message.Append( "Result: Exception<p>Message:<br>" + job.LastStatusMessage );
 
-                if ( jobException.InnerException != null )
+                if ( summaryException.InnerException != null )
                 {
-                    job.LastStatusMessage += " Inner Exception: " + jobException.InnerException.Message;
-                    message.Append( "<p>Inner Exception:<br>" + jobException.InnerException.Message );
+                    job.LastStatusMessage += " (" + summaryException.InnerException.Message + ")";
+                    message.Append( "<p>Inner Exception:<br>" + summaryException.InnerException.Message );
                 }
 
                 if ( job.NotificationStatus == JobNotificationStatus.Error )
