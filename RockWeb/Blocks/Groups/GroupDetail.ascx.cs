@@ -543,6 +543,7 @@ namespace RockWeb.Blocks.Groups
             group.ParentGroupId = gpParentGroup.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( gpParentGroup.SelectedValue );
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
+            group.IsPublic = cbIsPublic.Checked;
             group.MustMeetRequirementsToAddMember = cbMembersMustMeetRequirementsOnAdd.Checked;
 
             // save sync settings
@@ -941,7 +942,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( group == null )
             {
-                group = new Group { Id = 0, IsActive = true, ParentGroupId = parentGroupId, Name = "" };
+                group = new Group { Id = 0, IsActive = true, IsPublic = true, ParentGroupId = parentGroupId, Name = "" };
                 wpGeneral.Expanded = true;
 
                 if ( parentGroupId.HasValue )
@@ -1076,6 +1077,7 @@ namespace RockWeb.Blocks.Groups
             tbDescription.Text = group.Description;
             cbIsSecurityRole.Checked = group.IsSecurityRole;
             cbIsActive.Checked = group.IsActive;
+            cbIsPublic.Checked = group.IsPublic;
 
             var rockContext = new RockContext();
 
@@ -1341,6 +1343,7 @@ namespace RockWeb.Blocks.Groups
             lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
 
             hlInactive.Visible = !group.IsActive;
+            hlIsPrivate.Visible = !group.IsPublic;
 
             lGroupDescription.Text = group.Description;
 
