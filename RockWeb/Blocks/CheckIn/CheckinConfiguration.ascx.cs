@@ -495,6 +495,7 @@ namespace RockWeb.Blocks.CheckIn
             Group checkinGroup = new Group();
             checkinGroup.Guid = Guid.NewGuid();
             checkinGroup.IsActive = true;
+            checkinGroup.IsPublic = true;
             checkinGroup.IsSystem = false;
 
             // set GroupType by Guid (just in case the parent groupType hasn't been added to the database yet)
@@ -580,6 +581,7 @@ namespace RockWeb.Blocks.CheckIn
             Group checkinGroup = new Group();
             checkinGroup.Guid = Guid.NewGuid();
             checkinGroup.IsActive = true;
+            checkinGroup.IsPublic = true;
             checkinGroup.IsSystem = false;
 
             // set GroupType by Guid (just in case the parent groupType hasn't been added to the database yet)
