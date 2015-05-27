@@ -159,7 +159,7 @@ namespace RockWeb.Blocks.Calendar
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Campus" ), "Campus", cpsCampus.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Campus" ), "Campus", cblCampus.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Date Range" ), "Date Range", drpDate.DelimitedValues );
             rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Audience" ), "Audience", cblAudience.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Status" ), "Status", cbActive.Checked.ToTrueFalse() );
@@ -191,7 +191,7 @@ namespace RockWeb.Blocks.Calendar
 
             if ( e.Key == MakeKeyUniqueToEventCalendar( "Campus" ) )
             {
-                return;
+                e.Value = ResolveValues( e.Value, cblCampus );
             }
             else if ( e.Key == MakeKeyUniqueToEventCalendar( "Date Range" ) )
             {
@@ -203,7 +203,14 @@ namespace RockWeb.Blocks.Calendar
             }
             else if ( e.Key == MakeKeyUniqueToEventCalendar( "Status" ) )
             {
-                return;
+                if ( e.Value == "False" )
+                {
+                    e.Value = string.Empty;
+                }
+                else
+                {
+                    return;
+                }
             }
             else
             {
@@ -257,7 +264,11 @@ namespace RockWeb.Blocks.Calendar
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gEventCalendarItems_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "EventItemId", e.RowKeyId, "EventCalendarId", _eventCalendar.Id );
+            bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _eventCalendar.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
+            if ( canEditBlock )
+            {
+                NavigateToLinkedPage( "DetailPage", "EventItemId", new EventCalendarItemService( new RockContext() ).Get( e.RowKeyId ).EventItemId, "EventCalendarId", _eventCalendar.Id );
+            }
         }
 
         /// <summary>
@@ -285,12 +296,18 @@ namespace RockWeb.Blocks.Calendar
             if ( _eventCalendar != null )
             {
                 cblAudience.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() ) );
+                //TODO: Fix this.
+                cblAudience.Items.RemoveAt( 0 );
+                cblAudience.Items.RemoveAt( 0 );
+                cblAudience.Items.RemoveAt( 0 );
+                cblCampus.DataSource = CampusCache.All();
+                cblCampus.DataBind();
             }
 
             string campusValue = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Campus" ) );
             if ( !string.IsNullOrWhiteSpace( campusValue ) )
             {
-                cpsCampus.SetValues( campusValue.Split( ';' ).ToList() );
+                cblCampus.SetValues( campusValue.Split( ';' ).ToList() );
             }
             string audienceValue = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Audience" ) );
             if ( !string.IsNullOrWhiteSpace( audienceValue ) )
@@ -306,7 +323,7 @@ namespace RockWeb.Blocks.Calendar
         }
 
         /// <summary>
-        /// Binds the group members grid.
+        /// Binds the event calendar items grid.
         /// </summary>
         protected void BindEventCalendarItemsGrid()
         {
@@ -324,7 +341,7 @@ namespace RockWeb.Blocks.Calendar
                     .Where( m => m.EventCalendarId == _eventCalendar.Id );
 
                 // Filter by Campus
-                List<int> campusIds = cpsCampus.SelectedValuesAsInt;
+                List<int> campusIds = cblCampus.SelectedValuesAsInt;
                 if ( campusIds.Count > 0 )
                 {
                     qry = qry.Where( i => i.EventItem.EventItemCampuses.Any( c => c.CampusId.HasValue && campusIds.Contains( c.CampusId.Value ) ) );
@@ -337,7 +354,7 @@ namespace RockWeb.Blocks.Calendar
                 DateTime plusOneMonth = DateTime.Now.AddDays( 30 );
                 if ( drpDate.LowerValue.HasValue && drpDate.UpperValue.HasValue )
                 {
-                    qry = qry.Where( i => i.EventItem.EventItemCampuses.Any( c => c.EventItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > drpDate.LowerValue.Value && s.Schedule.EffectiveStartDate.Value < drpDate.UpperValue.Value ) ) );
+                    qry = qry.Where( i => i.EventItem.EventItemCampuses.Any( c => c.CampusId.HasValue && campusIds.Contains( c.CampusId.Value ) && c.EventItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > drpDate.LowerValue.Value && s.Schedule.EffectiveStartDate.Value < drpDate.UpperValue.Value ) ) );
                 }
                 else
                 {
@@ -347,11 +364,11 @@ namespace RockWeb.Blocks.Calendar
                     }
                     if ( drpDate.LowerValue.HasValue )
                     {
-                        qry = qry.Where( i => i.EventItem.EventItemCampuses.Any( c => c.EventItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > drpDate.LowerValue.Value && s.Schedule.EffectiveStartDate.Value < plusOneMonth ) ) );
+                        qry = qry.Where( i => i.EventItem.EventItemCampuses.Any( c => c.CampusId.HasValue && campusIds.Contains( c.CampusId.Value ) && c.EventItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > drpDate.LowerValue.Value && s.Schedule.EffectiveStartDate.Value < plusOneMonth ) ) );
                     }
                     if ( drpDate.UpperValue.HasValue )
                     {
-                        qry = qry.Where( i => i.EventItem.EventItemCampuses.Any( c => c.EventItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > minusOneMonth && s.Schedule.EffectiveStartDate.Value < drpDate.UpperValue.Value ) ) );
+                        qry = qry.Where( i => i.EventItem.EventItemCampuses.Any( c => c.CampusId.HasValue && campusIds.Contains( c.CampusId.Value ) && c.EventItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > minusOneMonth && s.Schedule.EffectiveStartDate.Value < drpDate.UpperValue.Value ) ) );
                     }
                 }
 
@@ -381,11 +398,9 @@ namespace RockWeb.Blocks.Calendar
                     eventCalendarItems = qry.ToList();  // qry.OrderBy( a => a.EventItem.EventItemSchedules.OrderByDescending( s => s.Schedule.EffectiveStartDate.Value ).FirstOrDefault().Schedule.EffectiveStartDate.Value ).ToList();
                 }
 
-                // Since we're not binding to actual group member list, but are using AttributeField columns,
-                // we need to save the workflows into the grid's object list
                 gEventCalendarItems.ObjectList = new Dictionary<string, object>();
                 eventCalendarItems.ForEach( m => gEventCalendarItems.ObjectList.Add( m.Id.ToString(), m ) );
-                gEventCalendarItems.EntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.EVENT_CALENDAR_ITEM.AsGuid() ).Id;
+                gEventCalendarItems.EntityTypeId = EntityTypeCache.Read( "Rock.Model.EventCalendarItem" ).Id;
 
                 gEventCalendarItems.DataSource = eventCalendarItems.Select( m => new
                 {
@@ -393,10 +408,10 @@ namespace RockWeb.Blocks.Calendar
                     m.Guid,
                     // Date = m.EventItem.EventItemCampuses.FirstOrDefault().EventItemSchedules.FirstOrDefault().Schedule.EffectiveStartDate,
                     Name = m.EventItem.Name,
-                    Campus = m.EventItem.EventItemCampuses.ToList().Select( c => c.Campus != null ? c.Campus.Name : "All Campuses" ).ToList().AsDelimited( "/n" ),
-                    Calendar = m.EventItem.EventCalendarItems.ToList().Select( i => i.EventCalendar.Name ).ToList().AsDelimited( "/n" ),
-                    Audience = m.EventItem.EventItemAudiences.ToList().Select( i => i.DefinedValue.Value ).ToList().AsDelimited( "/n" ),
-                    Active = m.EventItem.IsActive.Value ? "Active" : "Inactive"
+                    Campus = m.EventItem.EventItemCampuses.ToList().Select( c => c.Campus != null ? c.Campus.Name : "All Campuses" ).ToList().AsDelimited( "<br>" ),
+                    Calendar = m.EventItem.EventCalendarItems.ToList().Select( i => i.EventCalendar.Name ).ToList().AsDelimited( "<br>" ),
+                    Audience = m.EventItem.EventItemAudiences.ToList().Select( i => i.DefinedValue.Value ).ToList().AsDelimited( "<br>" ),
+                    Active = m.EventItem.IsActive.Value ? "<span class='label label-success'>Active</span>" : "<span class='label label-campus'>Inactive</span>"
                 } ).ToList();
 
                 gEventCalendarItems.DataBind();
@@ -430,7 +445,7 @@ namespace RockWeb.Blocks.Calendar
         }
 
         /// <summary>
-        /// Makes the key unique to group.
+        /// Makes the key unique to event calendar.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
