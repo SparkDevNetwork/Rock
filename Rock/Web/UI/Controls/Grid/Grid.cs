@@ -881,22 +881,22 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Sets the linq data source 
         /// The grid will use it to load only the records it needs based on the current page and page size
+        /// NOTE: Make sure that your query is sorted/ordered
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="qry">The qry.</param>
         public void SetLinqDataSource<T>( IQueryable<T> qry )
         {
-            this.AllowCustomPaging = true;
             if ( this.AllowPaging )
             {
+                this.AllowCustomPaging = true;
                 this.DataSource = qry.Skip( this.PageIndex * this.PageSize ).Take( this.PageSize ).ToList();
+                this.VirtualItemCount = qry.Count();
             }
             else
             {
                 this.DataSource = qry.ToList();
             }
-
-            this.VirtualItemCount = qry.Count();
         }
 
         /// <summary>
@@ -909,7 +909,7 @@ namespace Rock.Web.UI.Controls
 
             // Get ItemCount
             int itemCount = 0;
-            if (this.AllowCustomPaging)
+            if ( this.AllowCustomPaging )
             {
                 itemCount = this.VirtualItemCount;
             }
@@ -959,7 +959,7 @@ namespace Rock.Web.UI.Controls
                 this.SortProperty = new SortProperty( e );
             }
 
-            OnGridRebind( e );
+            RebindGrid( e, false );
         }
 
         #endregion
@@ -1125,7 +1125,7 @@ namespace Rock.Web.UI.Controls
             }
 
             this.PageSize = e.Number;
-            OnGridRebind( e );
+            RebindGrid( e, false );
         }
 
         /// <summary>
@@ -1136,7 +1136,7 @@ namespace Rock.Web.UI.Controls
         void pagerTemplate_NavigateClick( object sender, NumericalEventArgs e )
         {
             this.PageIndex = e.Number;
-            OnGridRebind( e );
+            RebindGrid( e, false );
         }
 
         #endregion
@@ -1183,7 +1183,7 @@ namespace Rock.Web.UI.Controls
             var rockPage = Page as RockPage;
             if ( rockPage != null )
             {
-                OnGridRebind( e );
+                RebindGrid( e, true );
 
                 var recipients = GetPersonData();
                 if ( recipients.Any() )
@@ -1252,7 +1252,7 @@ namespace Rock.Web.UI.Controls
         /// <exception cref="System.NotImplementedException"></exception>
         protected void Actions_MergeTemplateClick( object sender, EventArgs e )
         {
-            OnGridRebind( e );
+            RebindGrid( e, true );
             int? entitySetId = GetEntitySetFromGrid( e );
             if ( entitySetId.HasValue )
             {
@@ -1277,10 +1277,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Actions_ExcelExportClick( object sender, EventArgs e )
         {
-            var origPaging = this.AllowPaging;
-            this.AllowPaging = false;
-            OnGridRebind( e );
-            this.AllowPaging = origPaging;
+            RebindGrid( e, true );
 
             // create default settings
             string filename = ExportFilename;
@@ -1634,6 +1631,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Calls OnGridRebind with an option to disable paging so the entire datasource is loaded vs just what is needed for the current page
+        /// </summary>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <param name="disablePaging">if set to <c>true</c> [disable paging].</param>
+        private void RebindGrid( EventArgs e, bool disablePaging )
+        {
+            var origPaging = this.AllowPaging;
+            if ( disablePaging )
+            {
+                this.AllowPaging = false;
+            }
+
+            OnGridRebind( e );
+            this.AllowPaging = origPaging;
+        }
+
+        /// <summary>
         /// Formats a raw value from the Grid DataSource so that it is suitable for export to an Excel Worksheet.
         /// </summary>
         /// <param name="prop"></param>
@@ -1949,7 +1963,7 @@ namespace Rock.Web.UI.Controls
 
         private int? GetPersonEntitySet( EventArgs e )
         {
-            OnGridRebind( e );
+            RebindGrid( e, true );
 
             var keys = GetPersonData();
             if ( keys.Any() )
