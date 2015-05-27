@@ -47,6 +47,11 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_MEDIUM_SMS = "4BC02764-512A-4A10-ACDE-586F71D8A8BD";
 
         /// <summary>
+        /// The guid for the Rock.Model.DataView entity.
+        /// </summary>
+        public const string DATAVIEW = "57F8FA29-DCF1-4F74-8553-87E90F234139";
+
+        /// <summary>
         /// The guid for the Rock.Model.Group entity.
         /// </summary>
         public const string GROUP = "9BBFDA11-0D22-40D5-902F-60ADFBC88987";
