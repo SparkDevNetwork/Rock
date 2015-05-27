@@ -43,10 +43,10 @@ namespace RockWeb.Blocks.Calendar
         #region Child Grid Dictionarys
 
         /// <summary>
-        /// Gets or sets the state of the group attributes.
+        /// Gets or sets the state of the event calendar attributes.
         /// </summary>
         /// <value>
-        /// The state of the group attributes.
+        /// The state of the event calendar attributes.
         /// </value>
         private ViewStateList<Attribute> EventCalendarAttributesState
         {
@@ -72,9 +72,10 @@ namespace RockWeb.Blocks.Calendar
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            bool editAllowed = IsUserAuthorized( Authorization.ADMINISTRATE );
 
             gEventCalendarAttributes.DataKeyNames = new string[] { "Guid" };
-            gEventCalendarAttributes.Actions.ShowAdd = true;
+            gEventCalendarAttributes.Actions.ShowAdd = editAllowed;
             gEventCalendarAttributes.Actions.AddClick += gEventCalendarAttributes_Add;
             gEventCalendarAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
             gEventCalendarAttributes.GridRebind += gEventCalendarAttributes_GridRebind;
@@ -161,7 +162,7 @@ namespace RockWeb.Blocks.Calendar
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            ShowEditDetails( GetEventCalendar( hfCalendarTypeId.Value.AsInteger() ) );
+            ShowEditDetails( GetEventCalendar( hfEventCalendarId.Value.AsInteger() ) );
         }
 
         /// <summary>
@@ -175,7 +176,7 @@ namespace RockWeb.Blocks.Calendar
 
             EventCalendarService eventCalendarService = new EventCalendarService( rockContext );
             AuthService authService = new AuthService( rockContext );
-            EventCalendar eventCalendar = eventCalendarService.Get( int.Parse( hfCalendarTypeId.Value ) );
+            EventCalendar eventCalendar = eventCalendarService.Get( int.Parse( hfEventCalendarId.Value ) );
 
             if ( eventCalendar != null )
             {
@@ -217,7 +218,7 @@ namespace RockWeb.Blocks.Calendar
             AttributeService attributeService = new AttributeService( rockContext );
             AttributeQualifierService qualifierService = new AttributeQualifierService( rockContext );
 
-            int eventCalendarId = int.Parse( hfCalendarTypeId.Value );
+            int eventCalendarId = int.Parse( hfEventCalendarId.Value );
 
             if ( eventCalendarId == 0 )
             {
@@ -255,7 +256,7 @@ namespace RockWeb.Blocks.Calendar
             } );
 
             var qryParams = new Dictionary<string, string>();
-            qryParams["CalendarTypeId"] = eventCalendar.Id.ToString();
+            qryParams["EventCalendarId"] = eventCalendar.Id.ToString();
 
             NavigateToPage( RockPage.Guid, qryParams );
         }
@@ -267,13 +268,13 @@ namespace RockWeb.Blocks.Calendar
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            if ( hfCalendarTypeId.Value.Equals( "0" ) )
+            if ( hfEventCalendarId.Value.Equals( "0" ) )
             {
                 NavigateToParentPage();
             }
             else
             {
-                ShowReadonlyDetails( GetEventCalendar( hfCalendarTypeId.ValueAsInt(), new RockContext() ) );
+                ShowReadonlyDetails( GetEventCalendar( hfEventCalendarId.ValueAsInt(), new RockContext() ) );
             }
         }
 
@@ -286,7 +287,7 @@ namespace RockWeb.Blocks.Calendar
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            var currentEventCalendar = GetEventCalendar( hfCalendarTypeId.Value.AsInteger() );
+            var currentEventCalendar = GetEventCalendar( hfEventCalendarId.Value.AsInteger() );
             if ( currentEventCalendar != null )
             {
                 ShowReadonlyDetails( currentEventCalendar );
@@ -327,18 +328,18 @@ namespace RockWeb.Blocks.Calendar
 
             if ( eventCalendar == null )
             {
-                eventCalendar = new EventCalendar { Id = 0 }; //TODO: Add default?
+                eventCalendar = new EventCalendar { Id = 0 };
             }
 
             bool editAllowed = eventCalendar.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
             pnlDetails.Visible = true;
-            hfCalendarTypeId.Value = eventCalendar.Id.ToString();
+            hfEventCalendarId.Value = eventCalendar.Id.ToString();
 
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed || !IsUserAuthorized( Authorization.EDIT ) ) //TODO: Somewere here put admin/edit/view properties
+            if ( !editAllowed || !IsUserAuthorized( Authorization.ADMINISTRATE ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( EventCalendar.FriendlyTypeName );
@@ -349,14 +350,17 @@ namespace RockWeb.Blocks.Calendar
             }
             else
             {
-                ShowEditDetails( eventCalendar );
+                if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
+                {
+                    ShowEditDetails( eventCalendar );
+                }
             }
         }
 
         /// <summary>
         /// Shows the edit details.
         /// </summary>
-        /// <param name="eventCalendar">Type of the group.</param>
+        /// <param name="eventCalendar">the event calendar</param>
         private void ShowEditDetails( EventCalendar eventCalendar )
         {
             if ( eventCalendar == null )
@@ -403,12 +407,12 @@ namespace RockWeb.Blocks.Calendar
         /// <summary>
         /// Shows the readonly details.
         /// </summary>
-        /// <param name="group">The group.</param>
+        /// <param name="eventCalendar">The event calendar.</param>
         private void ShowReadonlyDetails( EventCalendar eventCalendar )
         {
             SetEditMode( false );
 
-            hfCalendarTypeId.SetValue( eventCalendar.Id );
+            hfEventCalendarId.SetValue( eventCalendar.Id );
             lReadOnlyTitle.Text = eventCalendar.Name.FormatAsHtmlTitle();
 
             lEventCalendarDescription.Text = eventCalendar.Description;
@@ -416,12 +420,18 @@ namespace RockWeb.Blocks.Calendar
             DescriptionList descriptionList = new DescriptionList();
             descriptionList.Add( string.Empty, string.Empty );
             lblMainDetails.Text = descriptionList.Html;
+
+            if ( !eventCalendar.IsAuthorized( Authorization.EDIT, CurrentPerson ) || !IsUserAuthorized( Authorization.ADMINISTRATE ) )
+            {
+                btnEdit.Visible = false;
+                btnDelete.Visible = false;
+            }
         }
 
         /// <summary>
-        /// Gets the group.
+        /// Gets the event calendar.
         /// </summary>
-        /// <param name="groupId">The group identifier.</param>
+        /// <param name="eventCalendarId">The event calendar identifier.</param>
         /// <returns></returns>
         private EventCalendar GetEventCalendar( int eventCalendarId, RockContext rockContext = null )
         {
@@ -591,7 +601,7 @@ namespace RockWeb.Blocks.Calendar
         }
 
         /// <summary>
-        /// Gs the group attributes_ show edit.
+        /// Gets the event calendar's attributes_ show edit.
         /// </summary>
         /// <param name="attributeGuid">The attribute GUID.</param>
         protected void gEventCalendarAttributes_ShowEdit( Guid attributeGuid )
