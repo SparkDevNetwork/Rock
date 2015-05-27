@@ -28,7 +28,7 @@
 
                         <div class="grid grid-panel">
                             <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                                <Rock:CampusesPicker ID="cpsCampus" runat="server" Label="Campus" />
+                                <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id"/>
                                 <Rock:DateRangePicker ID="drpDate" runat="server" Label="Date Range" />
                                 <Rock:RockCheckBoxList ID="cblAudience" runat="server" Label="Audience" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                                 <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" RepeatDirection="Horizontal" />
@@ -37,10 +37,10 @@
                                 <Columns>
                                     <%--                                    <Rock:RockBoundField DataField="Date" HeaderText="Start Date" SortExpression="EventCalendarItemStatus" />--%>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Person.LastName,Person.NickName" />
-                                    <Rock:RockBoundField DataField="Campus" HeaderText="Campuses" SortExpression="EventCalendarRole.Name" />
-                                    <Rock:RockBoundField DataField="Calendar" HeaderText="Calendars" SortExpression="EventCalendarItemStatus" />
-                                    <Rock:RockBoundField DataField="Audience" HeaderText="Audiences" SortExpression="EventCalendarItemStatus" />
-                                    <Rock:BadgeField SuccessMin="0" DataField="Active" HeaderText="Status" SortExpression="EventCalendarItemStatus" HtmlEncode="false" />
+                                    <Rock:RockBoundField DataField="Campus" HeaderText="Campuses" SortExpression="EventCalendarRole.Name" HtmlEncode="false" />
+                                    <Rock:RockBoundField DataField="Calendar" HeaderText="Calendars" SortExpression="EventCalendarItemStatus" HtmlEncode="false" />
+                                    <Rock:RockBoundField DataField="Audience" HeaderText="Audiences" SortExpression="EventCalendarItemStatus" HtmlEncode="false" />
+                                    <Rock:RockBoundField DataField="Active" HeaderText="Status" SortExpression="EventCalendarItemStatus" HtmlEncode="false" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

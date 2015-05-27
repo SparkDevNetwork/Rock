@@ -8,7 +8,7 @@
                 <h1 class="panel-title"><i class="fa fa-calendar"></i>Event Calendars</h1>
 
                 <div class="pull-right">
-                    <asp:LinkButton ID="lbAddCalendarType" runat="server" CssClass="btn btn-action btn-xs pull-right" OnClick="lbAddCalendarType_Click" CausesValidation="false"><i class="fa fa-plus"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbAddEventCalendar" runat="server" CssClass="btn btn-action btn-xs pull-right" OnClick="lbAddEventCalendar_Click" CausesValidation="false"><i class="fa fa-plus"></i></asp:LinkButton>
                 </div>
             </div>
             <div class="panel-body">
