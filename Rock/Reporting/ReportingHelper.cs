@@ -256,7 +256,8 @@ namespace Rock.Reporting
                         }
                     }
 
-                    gReport.DataSource = report.GetDataSource( entityType, selectedEntityFields, selectedAttributes, selectedComponents, sortProperty, databaseTimeoutSeconds ?? 180, out errors );
+                    dynamic qry = report.GetQueryable( entityType, selectedEntityFields, selectedAttributes, selectedComponents, sortProperty, databaseTimeoutSeconds ?? 180, out errors );
+                    gReport.SetLinqDataSource( qry );
                     gReport.DataBind();
                 }
                 catch ( Exception ex )
