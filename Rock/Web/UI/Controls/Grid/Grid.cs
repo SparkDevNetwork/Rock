@@ -1183,7 +1183,9 @@ namespace Rock.Web.UI.Controls
             var rockPage = Page as RockPage;
             if ( rockPage != null )
             {
-                RebindGrid( e, true );
+                // disable paging if no specific keys where selected
+                bool selectAll = !SelectedKeys.Any();
+                RebindGrid( e, selectAll );
 
                 var recipients = GetPersonData();
                 if ( recipients.Any() )
@@ -1252,7 +1254,9 @@ namespace Rock.Web.UI.Controls
         /// <exception cref="System.NotImplementedException"></exception>
         protected void Actions_MergeTemplateClick( object sender, EventArgs e )
         {
-            RebindGrid( e, true );
+            // disable paging if no specific keys where selected (or if no select option is shown)
+            bool selectAll = !SelectedKeys.Any();
+            RebindGrid( e, selectAll );
             int? entitySetId = GetEntitySetFromGrid( e );
             if ( entitySetId.HasValue )
             {
@@ -1277,7 +1281,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Actions_ExcelExportClick( object sender, EventArgs e )
         {
-            RebindGrid( e, true );
+            // disable paging if no specific keys where selected (or if no select option is shown)
+            bool selectAll = !SelectedKeys.Any();
+            RebindGrid( e, selectAll );
 
             // create default settings
             string filename = ExportFilename;
@@ -1963,7 +1969,9 @@ namespace Rock.Web.UI.Controls
 
         private int? GetPersonEntitySet( EventArgs e )
         {
-            RebindGrid( e, true );
+            // disable paging if no specific keys where selected (or if no select option is shown)
+            bool selectAll = !SelectedKeys.Any();
+            RebindGrid( e, selectAll );
 
             var keys = GetPersonData();
             if ( keys.Any() )
