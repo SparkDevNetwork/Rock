@@ -319,44 +319,47 @@ namespace Rock.Model
 
                         // apply the OrderBy clauses to the Expression from whatever columns are specified in sortProperty.Property
                         string orderByMethod = "OrderBy";
-                        if ( sortProperty != null )
+                        if ( sortProperty == null )
                         {
-                            /*
-                             NOTE:  The sort property sorting rules can be a little confusing. Here is how it works:
-                             * - SortProperty.Direction of Ascending means sort exactly as what the Columns specification says
-                             * - SortProperty.Direction of Descending means sort the _opposite_ of what the Columns specification says
-                             * Examples:
-                             *  1) SortProperty.Property "LastName desc, FirstName, BirthDate desc" and SortProperty.Direction = Ascending
-                             *     OrderBy should be: "order by LastName desc, FirstName, BirthDate desc"
-                             *  2) SortProperty.Property "LastName desc, FirstName, BirthDate desc" and SortProperty.Direction = Descending
-                             *     OrderBy should be: "order by LastName, FirstName desc, BirthDate"
-                             */
+                            // if no sorting was specified, sort by Id
+                            sortProperty = new Web.UI.Controls.SortProperty { Direction = SortDirection.Ascending, Property = "Id" };
+                        }
 
-                            foreach ( var column in sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                        /*
+                         NOTE:  The sort property sorting rules can be a little confusing. Here is how it works:
+                         * - SortProperty.Direction of Ascending means sort exactly as what the Columns specification says
+                         * - SortProperty.Direction of Descending means sort the _opposite_ of what the Columns specification says
+                         * Examples:
+                         *  1) SortProperty.Property "LastName desc, FirstName, BirthDate desc" and SortProperty.Direction = Ascending
+                         *     OrderBy should be: "order by LastName desc, FirstName, BirthDate desc"
+                         *  2) SortProperty.Property "LastName desc, FirstName, BirthDate desc" and SortProperty.Direction = Descending
+                         *     OrderBy should be: "order by LastName, FirstName desc, BirthDate"
+                         */
+
+                        foreach ( var column in sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                        {
+                            string propertyName;
+
+                            var direction = sortProperty.Direction;
+                            if ( column.EndsWith( " desc", StringComparison.OrdinalIgnoreCase ) )
                             {
-                                string propertyName;
+                                propertyName = column.Left( column.Length - 5 );
 
-                                var direction = sortProperty.Direction;
-                                if ( column.EndsWith( " desc", StringComparison.OrdinalIgnoreCase ) )
-                                {
-                                    propertyName = column.Left( column.Length - 5 );
-
-                                    // if the column ends with " desc", toggle the direction if sortProperty is Descending
-                                    direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
-                                }
-                                else
-                                {
-                                    propertyName = column;
-                                }
-
-                                string methodName = direction == SortDirection.Descending ? orderByMethod + "Descending" : orderByMethod;
-
-                                // Call OrderBy on whatever the Expression is for that Column
-                                var sortMember = bindings.FirstOrDefault( a => a.Member.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) );
-                                LambdaExpression sortSelector = Expression.Lambda( sortMember.Expression, paramExpression );
-                                qryExpression = Expression.Call( typeof( Queryable ), methodName, new Type[] { qry.ElementType, sortSelector.ReturnType }, qryExpression, sortSelector );
-                                orderByMethod = "ThenBy";
+                                // if the column ends with " desc", toggle the direction if sortProperty is Descending
+                                direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
                             }
+                            else
+                            {
+                                propertyName = column;
+                            }
+
+                            string methodName = direction == SortDirection.Descending ? orderByMethod + "Descending" : orderByMethod;
+
+                            // Call OrderBy on whatever the Expression is for that Column
+                            var sortMember = bindings.FirstOrDefault( a => a.Member.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) );
+                            LambdaExpression sortSelector = Expression.Lambda( sortMember.Expression, paramExpression );
+                            qryExpression = Expression.Call( typeof( Queryable ), methodName, new Type[] { qry.ElementType, sortSelector.ReturnType }, qryExpression, sortSelector );
+                            orderByMethod = "ThenBy";
                         }
 
                         var selectExpression = Expression.Call( typeof( Queryable ), "Select", new Type[] { qry.ElementType, dynamicType }, qryExpression, selector );

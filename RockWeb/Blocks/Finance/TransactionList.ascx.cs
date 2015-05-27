@@ -784,7 +784,7 @@ namespace RockWeb.Blocks.Finance
                 qry = qry.Take( rowLimit.Value );
             }
 
-            gTransactions.DataSource = qry.AsNoTracking().ToList();
+            gTransactions.SetLinqDataSource( qry.AsNoTracking() );
             gTransactions.DataBind();
         }
 
