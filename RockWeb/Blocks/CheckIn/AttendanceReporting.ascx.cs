@@ -852,8 +852,8 @@ function(item) {
 
                 // increase the timeout from 30 to 90. The Query can be slow if SQL hasn't calculated the Query Plan for the query yet.
                 // Sometimes, most of the time consumption is figuring out the Query Plan, but after it figures it out, it caches it so that the next time it'll be much faster
-                rockContext.Database.CommandTimeout = 20;
-                gAttendeesAttendance.DataSource = qryResult.AsNoTracking().ToList();
+                rockContext.Database.CommandTimeout = 90;
+                gAttendeesAttendance.SetLinqDataSource( qryResult.AsNoTracking() );
 
                 gAttendeesAttendance.DataBind();
             }

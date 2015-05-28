@@ -743,7 +743,7 @@ namespace Rock.Data
         #region Category Methods
 
         /// <summary>
-        /// Updates the category.
+        /// Updates the category or adds if it doesn't already exist (based on Guid)
         /// </summary>
         /// <param name="entityTypeGuid">The entity type unique identifier.</param>
         /// <param name="name">The name.</param>
@@ -787,7 +787,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Updates the name of the category by.
+        /// Updates the category or adds if it doesn't already exist (based on Name)
         /// </summary>
         /// <param name="entityTypeGuid">The entity type unique identifier.</param>
         /// <param name="name">The name.</param>

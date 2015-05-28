@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
@@ -134,13 +135,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [Previewable]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
-
-        private bool _isActive = true;
+        public bool IsActive { get; set; }
 
         /// <summary>
         /// Gets or sets the display order of the group in the group list and group hierarchy. The lower the number the higher the 
@@ -210,6 +205,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool? MustMeetRequirementsToAddMember { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the group should be shown in group finders
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is public; otherwise, <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public bool IsPublic { get; set; }
 
         #endregion
 
@@ -348,9 +353,9 @@ namespace Rock.Model
             get { return _triggers ?? ( _triggers = new Collection<GroupMemberWorkflowTrigger>() ); }
             set { _triggers = value; }
         }
-        
+
         private ICollection<GroupMemberWorkflowTrigger> _triggers;
-        
+
         /// <summary>
         /// Gets the securable object that security permissions should be inherited from.  If block is located on a page
         /// security will be inherited from the page, otherwise it will be inherited from the site.
@@ -449,7 +454,7 @@ namespace Rock.Model
         public IEnumerable<PersonGroupRequirementStatus> PersonMeetsGroupRequirements( int personId, int? groupRoleId )
         {
             var result = new List<PersonGroupRequirementStatus>();
-            foreach ( var groupRequirement in this.GroupRequirements.OrderBy(a => a.GroupRequirementType.Name ))
+            foreach ( var groupRequirement in this.GroupRequirements.OrderBy( a => a.GroupRequirementType.Name ) )
             {
                 var meetsRequirement = groupRequirement.PersonMeetsGroupRequirement( personId, groupRoleId );
                 result.Add( new PersonGroupRequirementStatus { PersonId = personId, GroupRequirement = groupRequirement, MeetsGroupRequirement = meetsRequirement } );

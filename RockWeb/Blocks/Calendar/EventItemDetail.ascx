@@ -15,14 +15,11 @@
 
                 <div class="panel-heading clearfix">
                     <h1 class="panel-title pull-left">
-                        <asp:Literal ID="lEventItemIconHtml" runat="server" />
                         <asp:Literal ID="lReadOnlyTitle" runat="server" />
                     </h1>
 
                     <div class="panel-labels">
-                        <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
-                        <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
-                        <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
+                        <Rock:HighlightLabel ID="hlStatus" runat="server"/>
                     </div>
                 </div>
 
@@ -52,10 +49,10 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="grid">
-                                    <Rock:Grid ID="gAudiences" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Audience">
+                                    <Rock:Grid ID="gEventItemAudiences" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Audience">
                                         <Columns>
                                             <Rock:RockBoundField DataField="Audience" HeaderText="Audiences" />
-                                            <Rock:DeleteField OnClick="gAudiences_Delete" />
+                                            <Rock:DeleteField OnClick="gEventItemAudiences_Delete" />
                                         </Columns>
                                     </Rock:Grid>
                                 </div>
@@ -77,15 +74,14 @@
                                 <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockCheckBoxList ID="cblCalendars" runat="server" Label="Calendars" OnSelectedIndexChanged="cblCalendars_SelectedIndexChanged" AutoPostBack="true" DataValueField="Id" DataTextField="Name" />
+                                <Rock:RockCheckBoxList ID="cblEventCalendars" runat="server" Label="Calendars" OnSelectedIndexChanged="cblEventCalendars_SelectedIndexChanged" AutoPostBack="true" DataValueField="Id" DataTextField="Name" />
                             </div>
                         </div>
-                        <Rock:BootstrapButton ID="btnButton" runat="server" Text="Click" OnClick="cblCalendars_SelectedIndexChanged" />
                         <Rock:PanelWidget ID="wpEventItemAttributes" runat="server" Title="Item Attribute Values">
                             <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
                         </Rock:PanelWidget>
 
-                        <Rock:PanelWidget ID="wpCampus" runat="server" Title="Campuses">
+                        <Rock:PanelWidget ID="wpEventItemCampus" runat="server" Title="Campuses">
                             <div class="grid">
                                 <Rock:Grid ID="gEventItemCampuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location">
                                     <Columns>
@@ -113,28 +109,28 @@
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
-        <Rock:ModalDialog ID="dlgCampus" runat="server" Title="Campus Select" OnSaveClick="dlgCampus_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Campus">
+        <Rock:ModalDialog ID="dlgEventItemCampus" runat="server" Title="Campus Select" OnSaveClick="dlgEventItemCampus_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="EventItemCampus">
             <Content>
 
                 <asp:HiddenField ID="hfAddEventItemCampusGuid" runat="server" />
 
-                <asp:ValidationSummary ID="valCampusSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Campus" />
+                <asp:ValidationSummary ID="valEventItemCampusSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="EventItemCampus" />
 
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" ValidationGroup="Campus" OnSelectPerson="ppContact_SelectPerson" />
+                        <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" ValidationGroup="EventItemCampus" OnSelectPerson="ppContact_SelectPerson" />
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbLocation" runat="server" Label="Location" ValidationGroup="Campus" Required="true" />
+                        <Rock:RockTextBox ID="tbLocation" runat="server" Label="Location" ValidationGroup="EventItemCampus" Required="true" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:PhoneNumberBox ID="pnPhone" runat="server" Label="Phone" ValidationGroup="Campus" Required="true" />
+                        <Rock:PhoneNumberBox ID="pnPhone" runat="server" Label="Phone" ValidationGroup="EventItemCampus" Required="true" />
                     </div>
                 </div>
 
@@ -143,16 +139,16 @@
                         <Rock:RockTextBox ID="tbRegistration" runat="server" Label="Registration URL" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" ValidationGroup="Campus" Required="true" />
+                        <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" ValidationGroup="EventItemCampus" Required="true" />
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="grid">
-                            <Rock:Grid ID="gSchedules" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Schedule">
+                            <Rock:Grid ID="gEventItemSchedules" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Schedule">
                                 <Columns>
                                     <Rock:RockBoundField DataField="Schedule" HeaderText="Schedules" />
-                                    <Rock:DeleteField OnClick="gSchedules_Delete" />
+                                    <Rock:DeleteField OnClick="gEventItemSchedules_Delete" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
@@ -167,21 +163,21 @@
                 </div>
             </Content>
         </Rock:ModalDialog>
-        <Rock:ModalDialog ID="dlgAudiences" runat="server" ScrollbarEnabled="false" ValidationGroup="Audience" SaveButtonText="Add" OnSaveClick="btnAddAudience_Click" Title="Select Audience">
+        <Rock:ModalDialog ID="dlgEventItemAudiences" runat="server" ScrollbarEnabled="false" ValidationGroup="EventItemAudience" SaveButtonText="Add" OnSaveClick="btnAddEventItemAudience_Click" Title="Select Audience">
             <Content>
-                <asp:HiddenField ID="hfAddAudienceGuid" runat="server" />
-                <Rock:RockDropDownList ID="ddlAudience" runat="server" Label="Select Audience" ValidationGroup="Audience" />
+                <asp:HiddenField ID="hfEventItemAddAudienceGuid" runat="server" />
+                <Rock:RockDropDownList ID="ddlAudience" runat="server" Label="Select Audience" ValidationGroup="EventItemAudience" />
             </Content>
         </Rock:ModalDialog>
-        <Rock:ModalDialog ID="dlgSchedules" runat="server" ScrollbarEnabled="false" ValidationGroup="Schedule" SaveButtonText="Add" OnSaveClick="btnAddSchedule_Click" Title="Select Schedule">
+        <Rock:ModalDialog ID="dlgEventItemSchedules" runat="server" ScrollbarEnabled="false" ValidationGroup="EventItemSchedule" SaveButtonText="Add" OnSaveClick="btnAddEventItemSchedule_Click" Title="Select Schedule">
             <Content>
-                <asp:HiddenField ID="hfAddScheduleGuid" runat="server" />
+                <asp:HiddenField ID="hfAddEventItemScheduleGuid" runat="server" />
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbSchedule" runat="server" Label="Name" ValidationGroup="Schedule" />
+                        <Rock:RockTextBox ID="tbEventItemSchedule" runat="server" Label="Name" ValidationGroup="EventItemSchedule" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:ScheduleBuilder ID="sbSchedule" runat="server" Label="Schedule" ValidationGroup="Schedule" AllowMultiSelect="true" />
+                        <Rock:ScheduleBuilder ID="sbSchedule" runat="server" Label="Schedule" ValidationGroup="EventItemSchedule" AllowMultiSelect="true" />
                     </div>
                 </div>
             </Content>

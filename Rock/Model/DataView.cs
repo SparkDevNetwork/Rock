@@ -262,6 +262,12 @@ namespace Rock.Model
                             MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
                             if ( getMethod != null )
                             {
+                                if (sortProperty == null)
+                                {
+                                    // if no sorting is specified, just sort by Id
+                                    sortProperty = new SortProperty { Direction = SortDirection.Ascending, Property = "Id" };
+                                }
+
                                 var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty } );
                                 var qry = getResult as IQueryable<IEntity>;
 

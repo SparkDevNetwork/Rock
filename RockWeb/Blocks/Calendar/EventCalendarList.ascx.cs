@@ -57,7 +57,11 @@ namespace RockWeb.Blocks.Calendar
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
+            bool editAllowed = IsUserAuthorized( Authorization.ADMINISTRATE );
+            if ( !editAllowed )
+            {
+                lbAddEventCalendar.Visible = false;
+            }
             if ( !Page.IsPostBack )
             {
                 GetData();
@@ -128,7 +132,7 @@ namespace RockWeb.Blocks.Calendar
 
         #endregion
 
-        protected void lbAddCalendarType_Click( object sender, EventArgs e )
+        protected void lbAddEventCalendar_Click( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "DetailPage", "EventCalendarId", 0 );
         }

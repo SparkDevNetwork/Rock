@@ -436,7 +436,7 @@ namespace RockWeb.Blocks.Finance
                 batchRowQry = batchRowQry.Take( rowLimit.Value );
             }
 
-            gBatchList.DataSource = batchRowQry.ToList();
+            gBatchList.SetLinqDataSource( batchRowQry.AsNoTracking() );
             gBatchList.EntityTypeId = EntityTypeCache.Read<Rock.Model.FinancialBatch>().Id;
             gBatchList.DataBind();
 
