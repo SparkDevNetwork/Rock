@@ -40,7 +40,10 @@ namespace RockWeb.Blocks.Calendar
     [DisplayName( "Event Calendar Lava" )]
     [Category( "Event Calendar" )]
     [Description( "Displays details for a specific package." )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Assets/Lava/Calendar/ExternalCalendar.lava' %}", "", 2 )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Assets/Lava/EventCalendar/ExternalCalendar.lava' %}", "", 2 )]
+    [BooleanField( "Show Campus Filter", "Determines whether the campus filters are shown", true )]
+    [BooleanField( "Show Category Filter", "Determines whether the campus filters are shown", true )]
+    [BooleanField( "Show Date Range Filter", "Determines whether the campus filters are shown", true )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar name.", false )]
     [IntegerField( "Event Calendar Id", "The Id of the event calendar to be displayed", true, 1 )]
@@ -54,13 +57,49 @@ namespace RockWeb.Blocks.Calendar
 
         #region Properties
 
-        // used for public / protected properties
+        /// <summary>
+        /// Gets or sets the accounts that are available for user to add to the list.
+        /// </summary>
+        protected String CurrentViewMode
+        {
+            get
+            {
+                var CurrentViewMode = ViewState["CurrentViewMode"] as String;
+                if ( String.IsNullOrWhiteSpace( CurrentViewMode ) )
+                {
+                    CurrentViewMode = "Day";
+                }
 
+                return CurrentViewMode;
+            }
+
+            set
+            {
+                ViewState["CurrentViewMode"] = value;
+            }
+        }
+
+        protected DateTime? SelectedDate
+        {
+            get
+            {
+                var SelectedDate = ViewState["SelectedDate"] as DateTime?;
+                if ( SelectedDate == null)
+                {
+                    SelectedDate = DateTime.Today;
+                }
+
+                return SelectedDate;
+            }
+
+            set
+            {
+                ViewState["SelectedDate"] = value;
+            }
+        }
         #endregion
 
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -82,7 +121,7 @@ namespace RockWeb.Blocks.Calendar
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
+            calEventCalendar.SelectedDate = SelectedDate.Value;
             if ( !Page.IsPostBack )
             {
                 LoadDropDowns();
@@ -108,6 +147,39 @@ namespace RockWeb.Blocks.Calendar
 
         #endregion
 
+        protected void calEventCalendar_SelectionChanged( object sender, EventArgs e )
+        {
+            SelectedDate = calEventCalendar.SelectedDate;
+            drpDateRange.UpperValue = null;
+            drpDateRange.LowerValue = null;
+            DisplayCalendarItemList();
+        }
+
+        protected void calEventCalendar_DayRender( object sender, DayRenderEventArgs e )
+        {
+            DateTime day = e.Day.Date;
+            if ( day == calEventCalendar.SelectedDate )
+            {
+                e.Cell.Style.Add( "font-weight", "bold" );
+                e.Cell.AddCssClass( "alert-success" );
+            }
+            if ( CurrentViewMode == "Week" )
+            {
+                if ( day.StartOfWeek( DayOfWeek.Sunday ) == calEventCalendar.SelectedDate.StartOfWeek( DayOfWeek.Sunday ) )
+                {
+                    e.Cell.AddCssClass( "alert-success" );
+                }
+            }
+            if ( CurrentViewMode == "Month" )
+            {
+                if ( day.Month == calEventCalendar.SelectedDate.Month )
+                {
+                    e.Cell.AddCssClass( "alert-success" );
+                }
+            }
+
+        }
+
         protected void cblCampus_SelectedIndexChanged( object sender, EventArgs e )
         {
             DisplayCalendarItemList();
@@ -118,7 +190,25 @@ namespace RockWeb.Blocks.Calendar
             DisplayCalendarItemList();
         }
 
-        #region Methods
+        protected void btnDay_Click( object sender, EventArgs e )
+        {
+            CurrentViewMode = "Day";
+            DisplayCalendarItemList();
+        }
+
+        protected void btnWeek_Click( object sender, EventArgs e )
+        {
+            CurrentViewMode = "Week";
+            DisplayCalendarItemList();
+        }
+
+        protected void btnMonth_Click( object sender, EventArgs e )
+        {
+            CurrentViewMode = "Month";
+            DisplayCalendarItemList();
+        }
+
+        #region
 
         private void LoadDropDowns()
         {
@@ -132,6 +222,9 @@ namespace RockWeb.Blocks.Calendar
         }
         private void DisplayCalendarItemList()
         {
+            cblCampus.Visible = GetAttributeValue( "ShowCampusFilter" ).AsBoolean();
+            cblCategory.Visible = GetAttributeValue( "ShowCategoryFilter" ).AsBoolean();
+            drpDateRange.Visible = GetAttributeValue( "ShowDateRangeFilter" ).AsBoolean();
             // get package id
             int eventCalendarId = -1;
 
@@ -143,24 +236,82 @@ namespace RockWeb.Blocks.Calendar
             EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( new RockContext() );
 
             // Grab events
-            var events = eventCalendarItemService.Queryable( "EventItem, EventCalendar, EventItem.EventItemCampuses, EventItem.EventItemAudiences" )
-                    .Where( m => m.EventCalendarId == eventCalendarId );
+            var qry = eventCalendarItemService.Queryable( "EventItem, EventCalendar, EventItem.EventItemCampuses, EventItem.EventItemAudiences" )
+                    .Where( m => m.EventCalendarId == eventCalendarId ).ToList();
 
             // Filter by campus
             List<int> campusIds = cblCampus.SelectedValuesAsInt;
             if ( campusIds.Any() )
             {
-                events = events.Where( e => e.EventItem.EventItemCampuses.Any( c => ( c.CampusId.HasValue && campusIds.Contains( c.CampusId.Value ) ) || c.CampusId == null ) );
+                qry = qry.Where( e => e.EventItem.EventItemCampuses.Any( c => ( c.CampusId.HasValue && campusIds.Contains( c.CampusId.Value ) ) || c.CampusId == null ) ).ToList();
             }
 
             //Filter by Category
             List<int> categories = cblCategory.SelectedValuesAsInt;
             if ( categories.Any() )
             {
-                events = events.Where( i => i.EventItem.EventItemAudiences.Any( c => categories.Contains( c.DefinedValueId ) ) );
+                qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => categories.Contains( c.DefinedValueId ) ) ).ToList();
             }
-            // Filter by date range 
-            // TODO: Filter by date range
+            // Filter by date
+
+            //Daterange filter
+            DateTime minusOneMonth = DateTime.Now.AddDays( -30 );
+            DateTime plusOneMonth = DateTime.Now.AddDays( 30 );
+            if ( drpDateRange.LowerValue.HasValue && drpDateRange.UpperValue.HasValue )
+            {
+                qry = qry.Where( i =>
+                    i.EventItem.GetEarliestStartDate().HasValue
+                    && i.EventItem.GetEarliestStartDate() > drpDateRange.LowerValue.Value
+                    && i.EventItem.GetEarliestStartDate() < drpDateRange.UpperValue.Value
+                    ).ToList();
+            }
+            else
+            {
+                if ( drpDateRange.LowerValue.HasValue )
+                {
+                    qry = qry.Where( i =>
+                        i.EventItem.GetEarliestStartDate().HasValue
+                        && i.EventItem.GetEarliestStartDate() > drpDateRange.LowerValue.Value
+                        && i.EventItem.GetEarliestStartDate() < plusOneMonth
+                        ).ToList();
+                }
+                if ( drpDateRange.UpperValue.HasValue )
+                {
+                    qry = qry.Where( i =>
+                        i.EventItem.GetEarliestStartDate().HasValue
+                        && i.EventItem.GetEarliestStartDate() > minusOneMonth
+                        && i.EventItem.GetEarliestStartDate() < drpDateRange.UpperValue.Value
+                        ).ToList();
+                }
+            }
+
+            //Calendar filter
+            if ( !drpDateRange.LowerValue.HasValue && !drpDateRange.UpperValue.HasValue )
+            {
+                if ( CurrentViewMode == "Day" )
+                {
+                    qry = qry.Where( i =>
+                        i.EventItem.GetEarliestStartDate().HasValue
+                        && i.EventItem.GetEarliestStartDate() == calEventCalendar.SelectedDate
+                        ).ToList();
+                }
+                if ( CurrentViewMode == "Week" )
+                {
+                    qry = qry.Where( i =>
+                        i.EventItem.GetEarliestStartDate().HasValue
+                        && i.EventItem.GetEarliestStartDate().Value.StartOfWeek( DayOfWeek.Sunday ) == calEventCalendar.SelectedDate.StartOfWeek( DayOfWeek.Sunday )
+                        ).ToList();
+                }
+                if ( CurrentViewMode == "Month" )
+                {
+                    qry = qry.Where( i =>
+                        i.EventItem.GetEarliestStartDate().HasValue
+                        && i.EventItem.GetEarliestStartDate().Value.Month == calEventCalendar.SelectedDate.Month
+                        ).ToList();
+                }
+            }
+            qry = qry.OrderByDescending( a => a.EventItem.GetEarliestStartDate() ).ToList();
+            var events = qry.Select( e => new EventSummary { Event = e.EventItem, Date = e.EventItem.GetEarliestStartDate().Value.Date.ToShortDateString(), Time = e.EventItem.GetEarliestStartDate().Value.Date.ToShortTimeString(), Location = e.EventItem.EventItemCampuses.ToList().Select( c => c.Campus != null ? c.Campus.Name : "All Campuses" ).ToList().AsDelimited( "<br>" ), Description = e.EventItem.Description, DetailPage = String.IsNullOrWhiteSpace( e.EventItem.DetailsUrl ) ? null : e.EventItem.DetailsUrl } ).ToList();
 
             var mergeFields = new Dictionary<string, object>();
 
@@ -188,7 +339,17 @@ namespace RockWeb.Blocks.Calendar
             }
         }
 
-        #endregion
+        [DotLiquid.LiquidType( "Event", "Date", "Time", "Location", "Description", "DetailPage" )]
+        public class EventSummary
+        {
+            public EventItem Event { get; set; }
+            public String Date { get; set; }
+            public String Time { get; set; }
+            public String Location { get; set; }
+            public String Description { get; set; }
+            public String DetailPage { get; set; }
+        }
 
+        #endregion
     }
 }

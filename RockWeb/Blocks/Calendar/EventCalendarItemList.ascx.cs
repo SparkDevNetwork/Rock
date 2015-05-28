@@ -291,7 +291,7 @@ namespace RockWeb.Blocks.Calendar
         /// </summary>
         private void SetFilter()
         {
-            drpDate.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
+            drpDate.DelimitedValues = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Date Range" ) );
 
             if ( _eventCalendar != null )
             {
@@ -336,39 +336,57 @@ namespace RockWeb.Blocks.Calendar
 
                 var rockContext = new RockContext();
 
+                // The reason why we ToList() everything is so that we're using LINQ to Object rather than LINQ to Entity, enabling us to use object methods such as GetEarliestStartDate()
                 EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
-                var qry = eventCalendarItemService.Queryable( "EventItem, EventCalendar, EventItem.EventItemCampuses, EventItem.EventItemAudiences" )
-                    .Where( m => m.EventCalendarId == _eventCalendar.Id );
+                var qry = eventCalendarItemService.Queryable( "EventItem, EventCalendar, EventItem.EventItemCampuses, EventItem.EventItemAudiences, EventItem.EventItemCampuses.EventItemSchedules" )
+                    .Where( m => m.EventCalendarId == _eventCalendar.Id ).ToList();
 
                 // Filter by Campus
                 List<int> campusIds = cblCampus.SelectedValuesAsInt;
                 if ( campusIds.Count > 0 )
                 {
-                    qry = qry.Where( i => i.EventItem.EventItemCampuses.Any( c => c.CampusId.HasValue && campusIds.Contains( c.CampusId.Value ) ) );
+                    qry = qry.Where( i => i.EventItem.EventItemCampuses.Any( c => c.CampusId.HasValue && campusIds.Contains( c.CampusId.Value ) ) ).ToList();
                 }
 
                 // Filter by Date Range
-                drpDate.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
-                DateTime minusSixMonths = DateTime.Now.AddMonths( -6 );
+                var drp = new DateRangePicker();
+                drp.DelimitedValues = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Date Range" ) );
                 DateTime minusOneMonth = DateTime.Now.AddDays( -30 );
                 DateTime plusOneMonth = DateTime.Now.AddDays( 30 );
-                if ( drpDate.LowerValue.HasValue && drpDate.UpperValue.HasValue )
+                if ( drp.LowerValue.HasValue && drp.UpperValue.HasValue )
                 {
-                    qry = qry.Where( i => i.EventItem.EventItemCampuses.Any( c => c.CampusId.HasValue && campusIds.Contains( c.CampusId.Value ) && c.EventItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > drpDate.LowerValue.Value && s.Schedule.EffectiveStartDate.Value < drpDate.UpperValue.Value ) ) );
+                    qry = qry.Where( i =>
+                        i.EventItem.GetEarliestStartDate().HasValue
+                        && i.EventItem.GetEarliestStartDate() > drp.LowerValue.Value
+                        && i.EventItem.GetEarliestStartDate() < drp.UpperValue.Value
+                        ).ToList();
                 }
                 else
                 {
-                    if ( !drpDate.LowerValue.HasValue && !drpDate.UpperValue.HasValue )
+                    if ( !drp.LowerValue.HasValue && !drp.UpperValue.HasValue )
                     {
-                        //Remove when schedule is ready qry = qry.Where( i => i.EventItem.EventItemCampuses.Any(c=> c.EventItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > minusSixMonths && s.Schedule.EffectiveStartDate.Value < plusOneMonth ) ));
+                        qry = qry.Where( i =>
+                            (
+                            i.EventItem.GetEarliestStartDate() > minusOneMonth
+                            && i.EventItem.GetEarliestStartDate() < plusOneMonth
+                            )
+                            || !i.EventItem.GetEarliestStartDate().HasValue ).ToList();
                     }
-                    if ( drpDate.LowerValue.HasValue )
+                    if ( drp.LowerValue.HasValue )
                     {
-                        qry = qry.Where( i => i.EventItem.EventItemCampuses.Any( c => c.CampusId.HasValue && campusIds.Contains( c.CampusId.Value ) && c.EventItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > drpDate.LowerValue.Value && s.Schedule.EffectiveStartDate.Value < plusOneMonth ) ) );
+                        qry = qry.Where( i =>
+                            i.EventItem.GetEarliestStartDate().HasValue
+                            && i.EventItem.GetEarliestStartDate() > drp.LowerValue.Value
+                            && i.EventItem.GetEarliestStartDate() < plusOneMonth
+                            ).ToList();
                     }
-                    if ( drpDate.UpperValue.HasValue )
+                    if ( drp.UpperValue.HasValue )
                     {
-                        qry = qry.Where( i => i.EventItem.EventItemCampuses.Any( c => c.CampusId.HasValue && campusIds.Contains( c.CampusId.Value ) && c.EventItemSchedules.Any( s => s.Schedule.EffectiveStartDate.Value > minusOneMonth && s.Schedule.EffectiveStartDate.Value < drpDate.UpperValue.Value ) ) );
+                        qry = qry.Where( i =>
+                            i.EventItem.GetEarliestStartDate().HasValue
+                            && i.EventItem.GetEarliestStartDate() > minusOneMonth
+                            && i.EventItem.GetEarliestStartDate() < drp.UpperValue.Value
+                            ).ToList();
                     }
                 }
 
@@ -376,27 +394,17 @@ namespace RockWeb.Blocks.Calendar
                 List<int> audiences = cblAudience.SelectedValuesAsInt;
                 if ( audiences.Any() )
                 {
-                    qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => audiences.Contains( c.DefinedValueId ) ) );
+                    qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => audiences.Contains( c.DefinedValueId ) ) ).ToList();
                 }
 
                 // Filter by Status
                 if ( cbActive.Checked )
                 {
-                    qry = qry.Where( i => i.EventItem.IsActive.HasValue && i.EventItem.IsActive.HasValue );
+                    qry = qry.Where( i => i.EventItem.IsActive.HasValue && i.EventItem.IsActive.HasValue ).ToList();
                 }
-
-                SortProperty sortProperty = gEventCalendarItems.SortProperty;
 
                 List<EventCalendarItem> eventCalendarItems = null;
-
-                if ( sortProperty != null )
-                {
-                    eventCalendarItems = qry.Sort( sortProperty ).ToList();
-                }
-                else
-                {
-                    eventCalendarItems = qry.ToList();  // qry.OrderBy( a => a.EventItem.EventItemSchedules.OrderByDescending( s => s.Schedule.EffectiveStartDate.Value ).FirstOrDefault().Schedule.EffectiveStartDate.Value ).ToList();
-                }
+                eventCalendarItems = qry.OrderByDescending( a => a.EventItem.GetEarliestStartDate() ).ToList();
 
                 gEventCalendarItems.ObjectList = new Dictionary<string, object>();
                 eventCalendarItems.ForEach( m => gEventCalendarItems.ObjectList.Add( m.Id.ToString(), m ) );
@@ -406,7 +414,7 @@ namespace RockWeb.Blocks.Calendar
                 {
                     m.Id,
                     m.Guid,
-                    // Date = m.EventItem.EventItemCampuses.FirstOrDefault().EventItemSchedules.FirstOrDefault().Schedule.EffectiveStartDate,
+                    Date = m.EventItem.GetEarliestStartDate().HasValue ? m.EventItem.GetEarliestStartDate().Value.ToShortDateString() : "N/A",
                     Name = m.EventItem.Name,
                     Campus = m.EventItem.EventItemCampuses.ToList().Select( c => c.Campus != null ? c.Campus.Name : "All Campuses" ).ToList().AsDelimited( "<br>" ),
                     Calendar = m.EventItem.EventCalendarItems.ToList().Select( i => i.EventCalendar.Name ).ToList().AsDelimited( "<br>" ),

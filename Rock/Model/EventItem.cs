@@ -52,7 +52,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Summary { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Description of the EventItem.
         /// </summary>
@@ -102,6 +102,7 @@ namespace Rock.Model
             get { return _eventCalenderItems ?? ( _eventCalenderItems = new Collection<EventCalendarItem>() ); }
             set { _eventCalenderItems = value; }
         }
+
         private ICollection<EventCalendarItem> _eventCalenderItems;
 
         /// <summary>
@@ -115,6 +116,7 @@ namespace Rock.Model
             get { return _eventItemCampuses ?? ( _eventItemCampuses = new Collection<EventItemCampus>() ); }
             set { _eventItemCampuses = value; }
         }
+
         private ICollection<EventItemCampus> _eventItemCampuses;
 
         /// <summary>
@@ -128,10 +130,26 @@ namespace Rock.Model
             get { return _calendarItemAudiences ?? ( _calendarItemAudiences = new Collection<EventItemAudience>() ); }
             set { _calendarItemAudiences = value; }
         }
+
         private ICollection<EventItemAudience> _calendarItemAudiences;
 
-        #endregion
+        #endregion Virtual Properties
 
+        public DateTime? GetEarliestStartDate()
+        {
+            DateTime? earliestStartDate = null;
+            foreach ( EventItemCampus eventItemCampus in EventItemCampuses )
+            {
+                foreach ( EventItemSchedule eventItemSchedule in eventItemCampus.EventItemSchedules )
+                {
+                    if ( earliestStartDate == null || eventItemSchedule.Schedule.GetCalenderEvent().DTStart.Date < earliestStartDate )
+                    {
+                        earliestStartDate = eventItemSchedule.Schedule.GetCalenderEvent().DTStart.Date;
+                    }
+                }
+            }
+            return earliestStartDate;
+        }
     }
 
     #region Entity Configuration
@@ -149,5 +167,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
+    #endregion Entity Configuration
 }
