@@ -159,7 +159,7 @@ namespace RockWeb.Blocks.Calendar
             {
                 nbNotAllowedToEdit.Visible = false;
                 ShowItemAttributes();
-                ShowDialog();
+                //ShowDialog();
             }
         }
 
@@ -282,12 +282,29 @@ namespace RockWeb.Blocks.Calendar
                     eventItemAudienceService.Delete( eventItemAudience );
                 }
             }
+            try
+            {
+                if ( tbDetailUrl.Text.Substring( 0, 4 ) != "http" )
+                {
+                    eventItem.DetailsUrl = String.Format( "http://{0}", tbDetailUrl.Text );
+                }
+                else
+                {
+                    eventItem.DetailsUrl = tbDetailUrl.Text;
+                }
+            }
+            catch
+            {
+                if ( !String.IsNullOrWhiteSpace( tbDetailUrl.Text ) )
+                {
+                    eventItem.DetailsUrl = String.Format( "http://{0}", tbDetailUrl.Text );
+                }
+            }
+
 
             eventItem.Name = tbName.Text;
             eventItem.Description = tbDescription.Text;
             eventItem.IsActive = cbIsActive.Checked;
-
-            eventItem.DetailsUrl = tbDetailUrl.Text;
 
             foreach ( var eventItemAudienceState in EventItemAudiencesState )
             {
@@ -333,7 +350,6 @@ namespace RockWeb.Blocks.Calendar
                 }
                 catch
                 {
-
                 }
                 var existingEventItemSchedules = eventItemCampus.EventItemSchedules.Select( s => s.Guid ).ToList();
                 foreach ( var eventItemScheduleState in eventItemCampusState.EventItemSchedules.Where( s => !existingEventItemSchedules.Contains( s.Guid ) ).ToList() )
@@ -541,7 +557,14 @@ namespace RockWeb.Blocks.Calendar
             EventItemSchedule eventItemSchedule = new EventItemSchedule();
             eventItemSchedule.Schedule = new Schedule();
             eventItemSchedule.Schedule.iCalendarContent = sbSchedule.iCalendarContent;
-            eventItemSchedule.ScheduleName = tbEventItemSchedule.Text;
+            if ( !String.IsNullOrWhiteSpace( tbEventItemSchedule.Text ) )
+            {
+                eventItemSchedule.ScheduleName = tbEventItemSchedule.Text;
+            }
+            else
+            {
+                eventItemSchedule.ScheduleName = eventItemSchedule.Schedule.FriendlyScheduleText;
+            }
             eventItemSchedule.ScheduleId = 0;
 
             _selectedEventItemCampusState.EventItemSchedules.Add( eventItemSchedule );
@@ -693,12 +716,18 @@ namespace RockWeb.Blocks.Calendar
             ShowItemAttributes();
         }
 
-
         protected void ppContact_SelectPerson( object sender, EventArgs e )
         {
-            Person contact = new PersonService( new RockContext() ).Get( ppContact.PersonId.Value );
-            tbEmail.Text = contact.Email;
-            pnPhone.Text = contact.PhoneNumbers.FirstOrDefault().NumberFormatted;
+            if ( ppContact.PersonId.HasValue )
+            {
+                Person contact = new PersonService( new RockContext() ).Get( ppContact.PersonId.Value );
+                tbEmail.Text = contact.Email;
+                PhoneNumber phoneNumber = contact.PhoneNumbers.FirstOrDefault();
+                if ( phoneNumber != null )
+                {
+                    pnPhone.Text = phoneNumber.NumberFormatted;
+                }
+            }
         }
 
         #endregion
@@ -789,6 +818,7 @@ namespace RockWeb.Blocks.Calendar
             tbName.Text = eventItem.Name;
             tbDescription.Text = eventItem.Description;
             cbIsActive.Checked = eventItem.IsActive.Value;
+            tbDetailUrl.Text = eventItem.DetailsUrl;
             if ( EventItemCampusesState == null )
             {
                 EventItemCampusesState = eventItem.EventItemCampuses.ToList();
@@ -926,7 +956,7 @@ namespace RockWeb.Blocks.Calendar
                 {
                     if ( eventItemId.AsInteger() == 0 )
                     {
-                        string eventCalendarId = PageParameter( "EventItemId" );
+                        string eventCalendarId = PageParameter( "EventCalendarId" );
                         if ( !string.IsNullOrWhiteSpace( eventItemId ) )
                         {
                             cblEventCalendars.SetValue( eventCalendarId );

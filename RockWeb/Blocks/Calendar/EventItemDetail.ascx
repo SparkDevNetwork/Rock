@@ -19,7 +19,7 @@
                     </h1>
 
                     <div class="panel-labels">
-                        <Rock:HighlightLabel ID="hlStatus" runat="server"/>
+                        <Rock:HighlightLabel ID="hlStatus" runat="server" />
                     </div>
                 </div>
 
