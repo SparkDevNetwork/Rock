@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Web;
@@ -118,8 +119,15 @@ namespace RockWeb.Blocks.CheckIn
                     ddlKiosk.Items.Clear();
                     using ( var rockContext = new RockContext() )
                     {
-                        ddlKiosk.DataSource = new DeviceService( rockContext ).Queryable()
-                            .Where( d => d.DeviceType.Guid.Equals( kioskDeviceType ) ).OrderBy(d => d.Name)
+                        ddlKiosk.DataSource = new DeviceService( rockContext )
+                        	.Queryable().AsNoTracking()
+                            .Where( d => d.DeviceType.Guid.Equals( kioskDeviceType ) )
+                            .OrderBy(d => d.Name)
+                            .Select( d => new
+                            {
+                                d.Id,
+                                d.Name
+                            } )
                             .ToList();
                     }
                     ddlKiosk.DataBind();
@@ -399,26 +407,24 @@ namespace RockWeb.Blocks.CheckIn
 
             // Get all locations (and their children) associated with device
             var locationIds = locationService
-                .GetByDevice(deviceId, true)
-                .Select( l => l.Id)
+                .GetByDevice( deviceId, true )
+                .Select( l => l.Id )
                 .ToList();
 
             // Requery using EF
-            foreach ( var groupType in locationService.Queryable()
+            foreach ( var groupType in locationService
+                .Queryable().AsNoTracking()
                 .Where( l => locationIds.Contains( l.Id ) )
                 .SelectMany( l => l.GroupLocations )
                 .Where( gl => gl.Group.GroupType.TakesAttendance )
                 .Select( gl => gl.Group.GroupType )
-                .Distinct()
                 .ToList() )
             {
-                if ( !groupTypes.ContainsKey( groupType.Id ) )
-                {
-                    groupTypes.Add( groupType.Id, groupType );
-                }
+                groupTypes.AddOrIgnore( groupType.Id, groupType );
             }
 
-            return groupTypes.Select( g => g.Value )
+            return groupTypes
+                .Select( g => g.Value )
                 .OrderBy( g => g.Order )
                 .ToList();
         }
@@ -439,12 +445,8 @@ namespace RockWeb.Blocks.CheckIn
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var kiosk = new DeviceService( rockContext ).Get( Int32.Parse( ddlKiosk.SelectedValue ) );
-                    if ( kiosk != null )
-                    {
-                        cblGroupTypes.DataSource = GetDeviceGroupTypes( kiosk.Id, rockContext );
-                        cblGroupTypes.DataBind();
-                    }
+                    cblGroupTypes.DataSource = GetDeviceGroupTypes( ddlKiosk.SelectedValueAsInt() ?? 0, rockContext );
+                    cblGroupTypes.DataBind();
                 }
 
                 if ( selectedValues != string.Empty )

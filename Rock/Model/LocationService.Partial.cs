@@ -242,13 +242,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the path.
+        /// Gets all ancestors.
         /// </summary>
         /// <param name="locationId">The location identifier.</param>
         /// <returns></returns>
-        public string GetPath( int locationId )
+        public IEnumerable<Location> GetAllAncestors( int locationId )
         {
-            var locations = ExecuteQuery( string.Format(
+            return ExecuteQuery( string.Format(
                 @"
                 WITH CTE AS (
                     SELECT * FROM [Location] WHERE [Id]={0}
@@ -260,7 +260,16 @@ namespace Rock.Model
                 WHERE [Name] IS NOT NULL 
                 AND [Name] <> ''
                 ", locationId ) );
+        }
 
+        /// <summary>
+        /// Gets the path.
+        /// </summary>
+        /// <param name="locationId">The location identifier.</param>
+        /// <returns></returns>
+        public string GetPath( int locationId )
+        {
+            var locations = GetAllAncestors( locationId );
             if ( locations.Any() )
             {
                 var locationNames = locations.Select( l => l.Name ).ToList();
