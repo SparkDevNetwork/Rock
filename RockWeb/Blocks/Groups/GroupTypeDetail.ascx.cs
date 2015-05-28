@@ -1158,6 +1158,8 @@ namespace RockWeb.Blocks.Groups
             {
                 Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
+
+            AttributeCache.FlushEntityAttributes();
         }
 
         #endregion

@@ -1025,6 +1025,9 @@ namespace RockWeb.Blocks.CheckIn
                 }
 
                 rockContext.SaveChanges();
+
+                AttributeCache.FlushEntityAttributes();
+
             } );
 
             if ( !hasValidationErrors )
