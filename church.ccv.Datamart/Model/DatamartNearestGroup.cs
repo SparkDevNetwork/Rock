@@ -19,7 +19,6 @@ namespace church.ccv.Datamart.Model
         /// The family location identifier.
         /// </value>
         [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.None )]
         public int FamilyLocationId { get; set; }
 
         /// <summary>

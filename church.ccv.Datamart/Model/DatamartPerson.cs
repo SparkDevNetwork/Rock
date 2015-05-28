@@ -509,7 +509,8 @@ namespace church.ccv.Datamart.Model
         /// The C2015 contrib.
         /// </value>
         [DataMember]
-        public decimal? C2015Contrib { get; set; }
+        [Column( "2015Contrib" )]
+        public decimal? Contrib2015 { get; set; }
 
         /// <summary>
         /// Gets or sets the C2014 contrib.
@@ -518,7 +519,8 @@ namespace church.ccv.Datamart.Model
         /// The C2014 contrib.
         /// </value>
         [DataMember]
-        public decimal? C2014Contrib { get; set; }
+        [Column( "2014Contrib" )]
+        public decimal? Contrib2014 { get; set; }
 
         /// <summary>
         /// Gets or sets the C2013 contrib.
@@ -527,7 +529,8 @@ namespace church.ccv.Datamart.Model
         /// The C2013 contrib.
         /// </value>
         [DataMember]
-        public decimal? C2013Contrib { get; set; }
+        [Column( "2013Contrib" )]
+        public decimal? Contrib2013 { get; set; }
 
         /// <summary>
         /// Gets or sets the C2012 contrib.
@@ -536,7 +539,8 @@ namespace church.ccv.Datamart.Model
         /// The C2012 contrib.
         /// </value>
         [DataMember]
-        public decimal? C2012Contrib { get; set; }
+        [Column( "2012Contrib" )]
+        public decimal? Contrib2012 { get; set; }
 
         /// <summary>
         /// Gets or sets the C2011 contrib.
@@ -545,7 +549,8 @@ namespace church.ccv.Datamart.Model
         /// The C2011 contrib.
         /// </value>
         [DataMember]
-        public decimal? C2011Contrib { get; set; }
+        [Column( "2011Contrib" )]
+        public decimal? Contrib2011 { get; set; }
 
         /// <summary>
         /// Gets or sets the C2010 contrib.
@@ -554,28 +559,38 @@ namespace church.ccv.Datamart.Model
         /// The C2010 contrib.
         /// </value>
         [DataMember]
-        public decimal? C2010Contrib { get; set; }
+        [Column( "2010Contrib" )]
+        public decimal? Contrib2010 { get; set; }
 
         /// <summary>
-        /// Gets or sets the C2009 contrib.
+        /// Gets or sets the 2009 contrib.
         /// </summary>
         /// <value>
-        /// The C2009 contrib.
+        /// The 2009 contrib.
         /// </value>
         [DataMember]
-        public decimal? C2009Contrib { get; set; }
+        [Column( "2009Contrib" )]
+        public decimal? Contrib2009 { get; set; }
 
         /// <summary>
-        /// Gets or sets the C2008 contrib.
+        /// Gets or sets the 2008 contrib.
         /// </summary>
         /// <value>
-        /// The C2008 contrib.
+        /// The 2008 contrib.
         /// </value>
         [DataMember]
-        public decimal? C2008Contrib { get; set; }
+        [Column( "2008Contrib" )]
+        public decimal? Contrib2008 { get; set; }
 
+        /// <summary>
+        /// Gets or sets the 2007 contrib.
+        /// </summary>
+        /// <value>
+        /// The 2007 contrib.
+        /// </value>
         [DataMember]
-        public decimal? C2007Contrib { get; set; }
+        [Column( "2007Contrib" )]
+        public decimal? Contrib2007 { get; set; }
 
         /// <summary>
         /// Gets or sets the geo point.

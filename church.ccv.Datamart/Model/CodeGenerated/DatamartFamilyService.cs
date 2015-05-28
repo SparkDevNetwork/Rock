@@ -77,15 +77,6 @@ namespace church.ccv.Datamart.Model
             target.AdultCount = source.AdultCount;
             target.AdultNames = source.AdultNames;
             target.Attendance16Week = source.Attendance16Week;
-            target.C2007Contrib = source.C2007Contrib;
-            target.C2008Contrib = source.C2008Contrib;
-            target.C2009Contrib = source.C2009Contrib;
-            target.C2010Contrib = source.C2010Contrib;
-            target.C2011Contrib = source.C2011Contrib;
-            target.C2012Contrib = source.C2012Contrib;
-            target.C2013Contrib = source.C2013Contrib;
-            target.C2014Contrib = source.C2014Contrib;
-            target.C2015Contrib = source.C2015Contrib;
             target.Campus = source.Campus;
             target.ChildCount = source.ChildCount;
             target.ChildNames = source.ChildNames;

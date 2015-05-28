@@ -79,15 +79,6 @@ namespace church.ccv.Datamart.Model
             target.AnniversaryYears = source.AnniversaryYears;
             target.BaptismDate = source.BaptismDate;
             target.BirthDate = source.BirthDate;
-            target.C2007Contrib = source.C2007Contrib;
-            target.C2008Contrib = source.C2008Contrib;
-            target.C2009Contrib = source.C2009Contrib;
-            target.C2010Contrib = source.C2010Contrib;
-            target.C2011Contrib = source.C2011Contrib;
-            target.C2012Contrib = source.C2012Contrib;
-            target.C2013Contrib = source.C2013Contrib;
-            target.C2014Contrib = source.C2014Contrib;
-            target.C2015Contrib = source.C2015Contrib;
             target.Campus = source.Campus;
             target.CampusId = source.CampusId;
             target.CellPhone = source.CellPhone;
