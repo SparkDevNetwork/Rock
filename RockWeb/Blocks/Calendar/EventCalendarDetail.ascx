@@ -10,7 +10,7 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" Visible="false">
-            <asp:HiddenField ID="hfCalendarTypeId" runat="server" />
+            <asp:HiddenField ID="hfEventCalendarId" runat="server" />
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-calendar"></i>

@@ -22,11 +22,12 @@
 
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
+                        <Rock:HighlightLabel ID="hlIsPrivate" runat="server" LabelType="Default" Text="Private" />
                         <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                         <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
                     </div>
                 </div>
-
+                
                 <div class="panel-body">
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                     <Rock:NotificationBox ID="nbRoleLimitWarning" runat="server" NotificationBoxType="Warning" Heading="Role Limit Warning" />
@@ -44,6 +45,7 @@
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                                <Rock:RockCheckBox ID="cbIsPublic" runat="server" Text="Public" />
                             </div>
                         </div>
 

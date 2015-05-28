@@ -113,23 +113,25 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                foreach ( var item in lvMembers.Items )
+                if ( _attendees != null )
                 {
-                    var hfMember = item.FindControl( "hfMember" ) as HiddenField;
-                    var cbMember = item.FindControl( "cbMember" ) as CheckBox;
-
-                    if ( hfMember != null && cbMember != null )
+                    foreach ( var item in lvMembers.Items )
                     {
-                        int personId = hfMember.ValueAsInt();
+                        var hfMember = item.FindControl( "hfMember" ) as HiddenField;
+                        var cbMember = item.FindControl( "cbMember" ) as CheckBox;
 
-                        var attendance = _attendees.Where( a => a.PersonId == personId ).FirstOrDefault();
-                        if ( attendance != null )
+                        if ( hfMember != null && cbMember != null )
                         {
-                            attendance.Attended = cbMember.Checked;
+                            int personId = hfMember.ValueAsInt();
+
+                            var attendance = _attendees.Where( a => a.PersonId == personId ).FirstOrDefault();
+                            if ( attendance != null )
+                            {
+                                attendance.Attended = cbMember.Checked;
+                            }
                         }
                     }
                 }
-
             }
         }
 
@@ -150,23 +152,23 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
-
             if ( _group != null && _occurrence != null )
             {
                 var rockContext = new RockContext();
                 var attendanceService = new AttendanceService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
 
-                var existingAttendees = attendanceService.Queryable()
+                DateTime startDate = _occurrence.Date;
+                DateTime endDate = _occurrence.Date.AddDays( 1 );
+
+                var existingAttendees = attendanceService
+                    .Queryable( "PersonAlias" )
                     .Where( a =>
                         a.GroupId == _group.Id &&
-                        a.StartDateTime >= _occurrence.StartDateTime &&
-                        a.StartDateTime < _occurrence.EndDateTime )
-                    .ToList()
-                    .Where( a =>
-                        a.LocationId.Equals( _occurrence.LocationId ) &&
-                        a.ScheduleId.Equals( _occurrence.ScheduleId ) )
-                    .ToList();
+                        a.LocationId == _occurrence.LocationId &&
+                        a.ScheduleId == _occurrence.ScheduleId &&
+                        a.StartDateTime >= startDate &&
+                        a.StartDateTime < endDate );
 
                 // If did not meet was selected and this was a manually entered occurrence (not based on a schedule/location)
                 // then just delete all the attendance records instead of tracking a 'did not meet' value
@@ -189,7 +191,6 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
 
-
                     foreach ( var attendee in _attendees )
                     {
                         var attendance = existingAttendees
@@ -205,7 +206,7 @@ namespace RockWeb.Blocks.Groups
                                 attendance.GroupId = _group.Id;
                                 attendance.ScheduleId = _group.ScheduleId;
                                 attendance.PersonAliasId = personAliasId;
-                                attendance.StartDateTime = _occurrence.StartDateTime;
+                                attendance.StartDateTime = _occurrence.Date;
                                 attendance.LocationId = _occurrence.LocationId;
                                 attendance.ScheduleId = _occurrence.ScheduleId;
                                 attendanceService.Add( attendance );
@@ -243,7 +244,7 @@ namespace RockWeb.Blocks.Groups
                             var workflowService = new WorkflowService( rockContext );
                             var workflow = Workflow.Activate( workflowType, _group.Name );
 
-                            workflow.SetAttributeValue( "StartDateTime", _occurrence.StartDateTime.ToString( "o" ) );
+                            workflow.SetAttributeValue( "StartDateTime", _occurrence.Date.ToString( "o" ) );
                             workflow.SetAttributeValue( "Schedule", _group.Schedule.Guid.ToString() );
 
                             List<string> workflowErrors;
@@ -362,8 +363,20 @@ namespace RockWeb.Blocks.Groups
         private ScheduleOccurrence GetOccurrence()
         {
             DateTime? occurrenceDate = PageParameter( "Date" ).AsDateTime();
+
+            List<int> locationIds = new List<int>();
             int? locationId = PageParameter( "LocationId" ).AsIntegerOrNull();
+            if ( locationId.HasValue )
+            {
+                locationIds.Add( locationId.Value );
+            }
+
+            List<int> scheduleIds = new List<int>();
             int? scheduleId = PageParameter( "ScheduleId" ).AsIntegerOrNull();
+            if ( scheduleId.HasValue )
+            {
+                scheduleIds.Add( scheduleId.Value );
+            }
 
             if ( Page.IsPostBack && _allowAdd )
             {
@@ -372,14 +385,14 @@ namespace RockWeb.Blocks.Groups
                     occurrenceDate = dpOccurrenceDate.SelectedDate;
                 }
 
-                if ( !locationId.HasValue && ddlLocation.SelectedValueAsInt().HasValue )
+                if ( !locationIds.Any() && ddlLocation.SelectedValueAsInt().HasValue )
                 {
-                    locationId = ddlLocation.SelectedValueAsInt();
+                    locationIds.Add( ddlLocation.SelectedValueAsInt().Value );
                 }
 
-                if ( !scheduleId.HasValue && ddlSchedule.SelectedValueAsInt().HasValue )
+                if ( !scheduleIds.Any() && ddlSchedule.SelectedValueAsInt().HasValue )
                 {
-                    scheduleId = ddlSchedule.SelectedValueAsInt();
+                    scheduleIds.Add( ddlSchedule.SelectedValueAsInt().Value );
                 }
             }
 
@@ -392,8 +405,8 @@ namespace RockWeb.Blocks.Groups
 
                     // Get all the occurrences for this group ( without loading attendance yet )
                     var occurrence = new ScheduleService( _rockContext )
-                        .GetGroupOccurrences( _group, occurrenceDate.Value.Date, occurrenceDate.Value.AddDays( 1 ), locationId ?? 0, scheduleId ?? 0, false )
-                        .OrderBy( o => o.StartDateTime )
+                        .GetGroupOccurrences( _group, occurrenceDate.Value.Date, occurrenceDate.Value.AddDays( 1 ), locationIds, scheduleIds, false )
+                        .OrderBy( o => o.Date )
                         .FirstOrDefault();
 
                     if ( occurrence != null )
@@ -406,7 +419,7 @@ namespace RockWeb.Blocks.Groups
                 // occurrences can be added, create a new one
                 if ( _allowAdd )
                 {
-                    return new ScheduleOccurrence( occurrenceDate.Value, occurrenceDate.Value.Date.AddDays( 1 ), scheduleId, string.Empty, locationId, string.Empty );
+                    return new ScheduleOccurrence( occurrenceDate.Value.Date, occurrenceDate.Value.TimeOfDay, scheduleId, string.Empty, locationId );
                 }
             }
 
@@ -499,7 +512,7 @@ namespace RockWeb.Blocks.Groups
                 if ( existingOccurrence )
                 {
                     lOccurrenceDate.Visible = true;
-                    lOccurrenceDate.Text = _occurrence.StartDateTime.ToShortDateString();
+                    lOccurrenceDate.Text = _occurrence.Date.ToShortDateString();
                     dpOccurrenceDate.Visible = false;
 
                     if ( _occurrence.LocationId.HasValue )
@@ -538,14 +551,13 @@ namespace RockWeb.Blocks.Groups
                 // Load the attendance for the selected occurrence
                 if ( existingOccurrence )
                 {
-                    new ScheduleService( _rockContext ).LoadAttendanceData( _group, _occurrence );
-
                     cbDidNotMeet.Checked = _occurrence.DidNotOccur;
 
                     // Get the list of people who attended
-                    attendedIds = _occurrence.Attendance
+                    attendedIds = new ScheduleService( _rockContext ).GetAttendance( _group, _occurrence )
                         .Where( a => a.DidAttend.HasValue && a.DidAttend.Value )
                         .Select( a => a.PersonAlias.PersonId )
+                        .Distinct()
                         .ToList();
                 }
 
