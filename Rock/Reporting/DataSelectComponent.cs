@@ -49,7 +49,7 @@ namespace Rock.Reporting
         /// </value>
         public virtual string Section
         {
-            get { return "Other"; }
+            get { return "Advanced"; }
         }
 
         /// <summary>
