@@ -30,6 +30,8 @@ namespace Rock.Migrations.HotFixMigrations
         /// </summary>
         public override void Up()
         {
+            RockMigrationHelper.AddGlobalAttribute( "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "", "", "Enable Auditing", "Enable the saving of audit information for every row/field change made in Rock.", 0, "false", "66B13C02-CBA0-4427-9D60-8B331A51CC96" );
+
             Sql( @"
     CREATE NONCLUSTERED INDEX [IX_LocationId_ScheduleId_GroupId_StartDateTime] ON [dbo].[Attendance]
     (
@@ -50,6 +52,8 @@ namespace Rock.Migrations.HotFixMigrations
         /// </summary>
         public override void Down()
         {
+            RockMigrationHelper.DeleteAttribute( "66B13C02-CBA0-4427-9D60-8B331A51CC96" );
+
             Sql( @"
     DROP INDEX [IX_LocationId_ScheduleId_GroupId_StartDateTime] ON [dbo].[Attendance]
 " );
