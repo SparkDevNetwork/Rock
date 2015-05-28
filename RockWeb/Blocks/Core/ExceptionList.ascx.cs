@@ -115,17 +115,12 @@ namespace RockWeb.Blocks.Administraton
 
             // get data for graphs
             ExceptionLogService exceptionLogService = new ExceptionLogService( new RockContext() );
-            var exceptionList = exceptionLogService.Queryable()
-            .Where(x => x.HasInnerException == false && x.CreatedDateTime != null)
-            .GroupBy( x => DbFunctions.TruncateTime(x.CreatedDateTime.Value ))
-            .Select( eg => new
-            {
-                DateValue = eg.Key,
-                ExceptionCount = eg.Count(),
-                UniqueExceptionCount = eg.Select( y => y.ExceptionType ).Distinct().Count()
-            } ).OrderBy(eg => eg.DateValue).ToList();
+            var exceptionListCount = exceptionLogService.Queryable()
+            .Where( x => x.HasInnerException == false && x.CreatedDateTime != null )
+            .GroupBy( x => DbFunctions.TruncateTime( x.CreatedDateTime.Value ) )
+            .Count();
 
-            if ( exceptionList.Count == 1 )
+            if ( exceptionListCount == 1 )
             {
                 // if there is only one datapoint for the Chart, the yaxis labeling gets messed up, plus the graph wouldn't be useful anyways
                 lcExceptions.Visible = false;
