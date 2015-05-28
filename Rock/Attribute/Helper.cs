@@ -69,6 +69,7 @@ namespace Rock.Attribute
         public static bool UpdateAttributes( Type type, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, RockContext rockContext = null )
         {
             bool attributesUpdated = false;
+            bool attributesDeleted = false;
 
             List<string> existingKeys = new List<string>();
 
@@ -122,6 +123,7 @@ namespace Rock.Attribute
                     if ( !existingKeys.Contains( a.Key ) )
                     {
                         attributeService.Delete( a );
+                        attributesDeleted = true;
                     }
                 }
                 rockContext.SaveChanges();
@@ -129,6 +131,11 @@ namespace Rock.Attribute
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( new Exception( "Could not delete one or more old attributes.", ex ), null );
+            }
+
+            if ( attributesUpdated || attributesDeleted )
+            {
+                AttributeCache.FlushEntityAttributes();
             }
 
             return attributesUpdated;
@@ -388,36 +395,33 @@ namespace Rock.Attribute
                 if ( entityTypeCache != null )
                 {
                     int entityTypeId = entityTypeCache.Id;
-                    foreach ( var attribute in attributeService.Queryable()
-                        .AsNoTracking()
-                        .Where( a => a.EntityTypeId == entityTypeCache.Id )
-                        .Select( a => new
-                        {
-                            a.Id,
-                            a.EntityTypeQualifierColumn,
-                            a.EntityTypeQualifierValue
-                        }
-                        ) )
+                    foreach ( var entityAttributes in AttributeCache.GetByEntity( entityTypeCache.Id ) )
                     {
                         // group type ids exist (entity is either GroupMember, Group, or GroupType) and qualifier is for a group type id
                         if ( groupTypeIds.Any() && (
-                                ( entity is GroupMember && string.Compare( attribute.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
-                                ( entity is Group && string.Compare( attribute.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
-                                ( entity is GroupType && string.Compare( attribute.EntityTypeQualifierColumn, "Id", true ) == 0 ) ) )
+                                ( entity is GroupMember && string.Compare( entityAttributes.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
+                                ( entity is Group && string.Compare( entityAttributes.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
+                                ( entity is GroupType && string.Compare( entityAttributes.EntityTypeQualifierColumn, "Id", true ) == 0 ) ) )
                         {
                             int groupTypeIdValue = int.MinValue;
-                            if ( int.TryParse( attribute.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
+                            if ( int.TryParse( entityAttributes.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
                             {
-                                inheritedAttributes[groupTypeIdValue].Add( Rock.Web.Cache.AttributeCache.Read( attribute.Id ) );
+                                foreach( int attributeId in entityAttributes.AttributeIds )
+                                {
+                                    inheritedAttributes[groupTypeIdValue].Add( Rock.Web.Cache.AttributeCache.Read( attributeId ) );
+                                }
                             }
                         }
 
-                        else if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) ||
-                            ( properties.ContainsKey( attribute.EntityTypeQualifierColumn.ToLower() ) &&
-                            ( string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) ||
-                            ( properties[attribute.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ) ?? "" ).ToString() == attribute.EntityTypeQualifierValue ) ) )
+                        else if ( string.IsNullOrEmpty( entityAttributes.EntityTypeQualifierColumn ) ||
+                            ( properties.ContainsKey( entityAttributes.EntityTypeQualifierColumn.ToLower() ) &&
+                            ( string.IsNullOrEmpty( entityAttributes.EntityTypeQualifierValue ) ||
+                            ( properties[entityAttributes.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ) ?? "" ).ToString() == entityAttributes.EntityTypeQualifierValue ) ) )
                         {
-                            attributes.Add( Rock.Web.Cache.AttributeCache.Read( attribute.Id ) );
+                            foreach( int attributeId in entityAttributes.AttributeIds )
+                            {
+                                attributes.Add( Rock.Web.Cache.AttributeCache.Read( attributeId ) );
+                            }
                         }
                     }
                 }
@@ -660,11 +664,13 @@ namespace Rock.Attribute
                 attribute = internalAttributeService.Get( newAttribute.Id );
             }
 
+            bool isNew = false;
             if ( attribute == null )
             {
                 // If the attribute didn't exist, create it
                 attribute = new Rock.Model.Attribute();
                 internalAttributeService.Add( attribute );
+                isNew = true;
             }
             else
             {

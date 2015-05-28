@@ -535,7 +535,6 @@ namespace RockWeb.Blocks.Core
                 rockContext.SaveChanges();
             }
 
-
             BindDefinedTypeAttributesGrid();
         }
 
@@ -564,6 +563,8 @@ namespace RockWeb.Blocks.Core
                 attributeService.Delete( attribute );
                 rockContext.SaveChanges();
             }
+
+            AttributeCache.FlushEntityAttributes();
 
             BindDefinedTypeAttributesGrid();            
         }
@@ -596,6 +597,8 @@ namespace RockWeb.Blocks.Core
 
             pnlDetails.Visible = true;
             pnlDefinedTypeAttributes.Visible = false;
+
+            AttributeCache.FlushEntityAttributes();
 
             BindDefinedTypeAttributesGrid();
 

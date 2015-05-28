@@ -730,6 +730,8 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            AttributeCache.FlushEntityAttributes();
+
             if ( triggersUpdated )
             {
                 GroupMemberWorkflowTriggerService.FlushCachedTriggers();
