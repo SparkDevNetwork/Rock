@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.CheckIn
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked" )]
     [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true )]
     [GroupTypeField( "Check-in Type", required: false, key: "GroupTypeTemplate", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
+    [LinkedPage("Check-in Detail Page", "Page that shows the user details for the check-in data.", false)]
     public partial class AttendanceReporting : RockBlock
     {
         #region Fields
@@ -70,6 +71,9 @@ namespace RockWeb.Blocks.CheckIn
             gAttendeesAttendance.EntityTypeId = EntityTypeCache.Read<Rock.Model.Person>().Id;
 
             _rockContext = new RockContext();
+
+            // show / hide the checkin details page
+            btnCheckinDetails.Visible = !string.IsNullOrWhiteSpace( GetAttributeValue("Check-inDetailPage") );
         }
 
         /// <summary>
@@ -1349,5 +1353,23 @@ function(item) {
         {
             btnApply_Click( sender, e );
         }
-    }
+
+        /// <summary>
+        /// Handles the Click event of the btnCheckinDetails control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCheckinDetails_Click( object sender, EventArgs e )
+        {
+            var groupType = GetSelectedTemplateGroupType();
+
+            if ( groupType != null )
+            {
+                Dictionary<string, string> queryParams = new Dictionary<string, string>();
+                queryParams.Add( "GroupTypeId", groupType.Id.ToString() );
+
+                NavigateToLinkedPage( "Check-inDetailPage", queryParams );
+            }
+        }
+}
 }
