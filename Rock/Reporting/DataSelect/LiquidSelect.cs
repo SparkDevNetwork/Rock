@@ -25,11 +25,11 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting.DataSelect
 {
     /// <summary>
-    /// A special-case DataSelectComponent that can be used to apply a DotLiquid template against the row returned from a Report query
+    /// A special-case DataSelectComponent that can be used to apply a Rock Lava template against the row returned from a Report query
     /// </summary>
-    [Description( "Select output using Liquid template" )]
+    [Description( "Select output using Lava template" )]
     [Export( typeof( DataSelectComponent ) )]
-    [ExportMetadata( "ComponentName", "Liquid Template" )]
+    [ExportMetadata( "ComponentName", "Lava Template" )]
     public class LiquidSelect : DataSelectComponent
     {
         #region Properties
@@ -59,7 +59,7 @@ namespace Rock.Reporting.DataSelect
         {
             get
             {
-                return "Advanced";
+                return base.Section;
             }
         }
 
@@ -73,7 +73,7 @@ namespace Rock.Reporting.DataSelect
         {
             get
             {
-                return "Liquid";
+                return "Lava";
             }
         }
 
@@ -98,7 +98,7 @@ namespace Rock.Reporting.DataSelect
         {
             get
             {
-                return "Liquid";
+                return "Lava";
             }
         }
 
@@ -130,7 +130,7 @@ namespace Rock.Reporting.DataSelect
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Liquid";
+            return "Lava";
         }
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace Rock.Reporting.DataSelect
         {
             CodeEditor codeEditor = new CodeEditor();
             codeEditor.HelpBlock.Text = @"
-Use Liquid syntax to get the values of any of the fields in this report. For example, to create a link to the Person record, type <code>&lt;a href=&quot;~/Person/{{ Id }}&quot;&gt;{{ NickName }} {{ LastName }}&lt;/a&gt</code><br />  
+Use Lava syntax to get the values of any of the fields in this report. For example, to create a link to the Person record, type <code>&lt;a href=&quot;~/Person/{{ Id }}&quot;&gt;{{ NickName }} {{ LastName }}&lt;/a&gt</code><br />  
 Note: The fieldname will be the Column Label without spaces or special characters.";
 
             codeEditor.EditorMode = CodeEditorMode.Liquid;
