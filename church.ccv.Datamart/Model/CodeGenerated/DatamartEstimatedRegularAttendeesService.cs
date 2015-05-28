@@ -39,6 +39,20 @@ namespace church.ccv.Datamart.Model
         public DatamartEstimatedRegularAttendeesService(church.ccv.Datamart.Data.DatamartContext context) : base(context)
         {
         }
+
+        /// <summary>
+        /// Determines whether this instance can delete the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDelete( DatamartEstimatedRegularAttendees item, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            return true;
+        }
     }
 
     /// <summary>
@@ -73,6 +87,8 @@ namespace church.ccv.Datamart.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this DatamartEstimatedRegularAttendees target, DatamartEstimatedRegularAttendees source )
         {
+            target.Id = source.Id;
+            target.FamilyId = source.FamilyId;
             target.FirstAttended = source.FirstAttended;
             target.LastAttended = source.LastAttended;
             target.LastGave = source.LastGave;
@@ -84,6 +100,8 @@ namespace church.ccv.Datamart.Model
             target.TimesGaveLastYear = source.TimesGaveLastYear;
             target.TimesGaveTotal = source.TimesGaveTotal;
             target.WeekendDate = source.WeekendDate;
+            target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

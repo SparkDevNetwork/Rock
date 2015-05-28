@@ -28,15 +28,16 @@ using Rock.Data;
 namespace church.ccv.Datamart.Model
 {
     /// <summary>
-    /// DatamartNearestGroup Service class
+    /// DatamartNeighborhoods Service class
     /// </summary>
-    public partial class DatamartNearestGroupService : Service<DatamartNearestGroup>
+    public partial class DatamartNeighborhoodsService : Service<DatamartNeighborhoods>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DatamartNearestGroupService"/> class
+        /// Initializes a new instance of the <see cref="DatamartNeighborhoodsService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public DatamartNearestGroupService(church.ccv.Datamart.Data.DatamartContext context) : base(context)
+        public DatamartNeighborhoodsService(church.ccv.Datamart.Data.DatamartContext context)
+            : base( context )
         {
         }
 
@@ -48,7 +49,7 @@ namespace church.ccv.Datamart.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( DatamartNearestGroup item, out string errorMessage )
+        public bool CanDelete( DatamartNeighborhoods item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -58,39 +59,58 @@ namespace church.ccv.Datamart.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class DatamartNearestGroupExtensionMethods
+    public static partial class DatamartNeighborhoodsExtensionMethods
     {
         /// <summary>
-        /// Clones this DatamartNearestGroup object to a new DatamartNearestGroup object
+        /// Clones this DatamartNeighborhoods object to a new DatamartNeighborhoods object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static DatamartNearestGroup Clone( this DatamartNearestGroup source, bool deepCopy )
+        public static DatamartNeighborhoods Clone( this DatamartNeighborhoods source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as DatamartNearestGroup;
+                return source.Clone() as DatamartNeighborhoods;
             }
             else
             {
-                var target = new DatamartNearestGroup();
+                var target = new DatamartNeighborhoods();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another DatamartNearestGroup object to this DatamartNearestGroup object
+        /// Copies the properties from another DatamartNeighborhoods object to this DatamartNeighborhoods object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this DatamartNearestGroup target, DatamartNearestGroup source )
+        public static void CopyPropertiesFrom( this DatamartNeighborhoods target, DatamartNeighborhoods source )
         {
             target.Id = source.Id;
-            target.Distance = source.Distance;
-            target.FamilyLocationId = source.FamilyLocationId;
-            target.GroupLocationId = source.GroupLocationId;
+            target.AdultAttendees = source.AdultAttendees;
+            target.AdultAttendeesInGroups = source.AdultAttendeesInGroups;
+            target.AdultAttendeesInGroupsPercentage = source.AdultAttendeesInGroupsPercentage;
+            target.AdultCount = source.AdultCount;
+            target.AdultMemberCount = source.AdultMemberCount;
+            target.AdultMembersInGroups = source.AdultMembersInGroups;
+            target.AdultMembersInGroupsPercentage = source.AdultMembersInGroupsPercentage;
+            target.AdultParticipants = source.AdultParticipants;
+            target.AdultsBaptized = source.AdultsBaptized;
+            target.AdultsBaptizedPercentage = source.AdultsBaptizedPercentage;
+            target.AdultsInGroups = source.AdultsInGroups;
+            target.AdultsInGroupsPercentage = source.AdultsInGroupsPercentage;
+            target.AdultVisitors = source.AdultVisitors;
+            target.ChildrenCount = source.ChildrenCount;
+            target.GroupCount = source.GroupCount;
+            target.HouseholdCount = source.HouseholdCount;
+            target.NeighborhoodId = source.NeighborhoodId;
+            target.NeighborhoodLeaderId = source.NeighborhoodLeaderId;
+            target.NeighborhoodLeaderName = source.NeighborhoodLeaderName;
+            target.NeighborhoodName = source.NeighborhoodName;
+            target.NeighborhoodPastorId = source.NeighborhoodPastorId;
+            target.NeighborhoodPastorName = source.NeighborhoodPastorName;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

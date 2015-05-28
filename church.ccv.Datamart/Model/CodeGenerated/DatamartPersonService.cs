@@ -39,6 +39,20 @@ namespace church.ccv.Datamart.Model
         public DatamartPersonService(church.ccv.Datamart.Data.DatamartContext context) : base(context)
         {
         }
+
+        /// <summary>
+        /// Determines whether this instance can delete the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDelete( DatamartPerson item, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            return true;
+        }
     }
 
     /// <summary>
@@ -73,6 +87,7 @@ namespace church.ccv.Datamart.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this DatamartPerson target, DatamartPerson source )
         {
+            target.Id = source.Id;
             target.Address = source.Address;
             target.Age = source.Age;
             target.AnniversaryDate = source.AnniversaryDate;
@@ -84,7 +99,17 @@ namespace church.ccv.Datamart.Model
             target.CellPhone = source.CellPhone;
             target.City = source.City;
             target.ConnectionStatus = source.ConnectionStatus;
+            target.Contrib2007 = source.Contrib2007;
+            target.Contrib2008 = source.Contrib2008;
+            target.Contrib2009 = source.Contrib2009;
+            target.Contrib2010 = source.Contrib2010;
+            target.Contrib2011 = source.Contrib2011;
+            target.Contrib2012 = source.Contrib2012;
+            target.Contrib2013 = source.Contrib2013;
+            target.Contrib2014 = source.Contrib2014;
+            target.Contrib2015 = source.Contrib2015;
             target.Email = source.Email;
+            target.FamilyId = source.FamilyId;
             target.FamilyRole = source.FamilyRole;
             target.FirstName = source.FirstName;
             target.FirstVisitDate = source.FirstVisitDate;
@@ -113,6 +138,7 @@ namespace church.ccv.Datamart.Model
             target.NeighborhoodName = source.NeighborhoodName;
             target.NickName = source.NickName;
             target.PersonGuid = source.PersonGuid;
+            target.PersonId = source.PersonId;
             target.PhotoUrl = source.PhotoUrl;
             target.PostalCode = source.PostalCode;
             target.ServingAreas = source.ServingAreas;
@@ -125,6 +151,8 @@ namespace church.ccv.Datamart.Model
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
+            target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

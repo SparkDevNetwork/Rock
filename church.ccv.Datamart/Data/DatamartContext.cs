@@ -5,7 +5,7 @@ namespace church.ccv.Datamart.Data
 {
     /// <summary>
     /// HrContext
-    /// NOTE: Inherits from RockContext instead of Rock.Data.DbContext so we can use it for both TimeCard and Core services
+    /// NOTE: Inherits from RockContext instead of Rock.Data.DbContext so we can use it for both Datamart and Core services
     /// </summary>
     public partial class DatamartContext : Rock.Data.RockContext
     {
@@ -18,6 +18,8 @@ namespace church.ccv.Datamart.Data
         public DbSet<DatamartNearestGroup> DatamartNearestGroups { get; set; }
 
         public DbSet<DatamartPerson> DatamartPeople { get; set; }
+
+        public DbSet<DatamartNeighborhoods> DatamartNeighborhoods { get; set; }
 
         #endregion
 
