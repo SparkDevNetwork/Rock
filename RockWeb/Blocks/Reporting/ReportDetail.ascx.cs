@@ -778,6 +778,7 @@ namespace RockWeb.Blocks.Reporting
             else
             {
                 lReadOnlyTitle.Text = report.Name.FormatAsHtmlTitle();
+                lActionTitle.Text = report.Name.FormatAsHtmlTitle();
             }
 
             LoadDropDowns();
