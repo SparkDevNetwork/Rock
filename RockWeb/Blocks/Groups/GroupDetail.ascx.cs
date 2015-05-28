@@ -547,14 +547,11 @@ namespace RockWeb.Blocks.Groups
             group.MustMeetRequirementsToAddMember = cbMembersMustMeetRequirementsOnAdd.Checked;
 
             // save sync settings
-            if ( wpGroupSync.Visible )
-            {
-                group.SyncDataViewId = dvpSyncDataview.SelectedValue.AsIntegerOrNull();
-                group.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedValue.AsIntegerOrNull();
-                group.ExitSystemEmailId = ddlExitEmail.SelectedValue.AsIntegerOrNull();
-                group.AddUserAccountsDuringSync = rbCreateLoginDuringSync.Checked;
-            }
-
+            group.SyncDataViewId = dvpSyncDataview.SelectedValue.AsIntegerOrNull();
+            group.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedValue.AsIntegerOrNull();
+            group.ExitSystemEmailId = ddlExitEmail.SelectedValue.AsIntegerOrNull();
+            group.AddUserAccountsDuringSync = rbCreateLoginDuringSync.Checked;
+            
             string iCalendarContent = string.Empty;
 
             // If unique schedule option was selected, but a schedule was not defined, set option to 'None'
@@ -1094,43 +1091,41 @@ namespace RockWeb.Blocks.Groups
             wpGroupSync.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             wpGroupRequirements.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
 
-            // load system emails
-            if ( wpGroupSync.Visible )
+            
+            var systemEmails = new SystemEmailService( new RockContext() ).Queryable().OrderBy( e => e.Title );
+
+            // add a blank for the first option
+            ddlWelcomeEmail.Items.Add( new ListItem() );
+            ddlExitEmail.Items.Add( new ListItem() );
+
+            if ( systemEmails.Any() )
             {
-                var systemEmails = new SystemEmailService( new RockContext() ).Queryable().OrderBy( e => e.Title );
-
-                // add a blank for the first option
-                ddlWelcomeEmail.Items.Add( new ListItem() );
-                ddlExitEmail.Items.Add( new ListItem() );
-
-                if ( systemEmails.Any() )
+                foreach ( var systemEmail in systemEmails )
                 {
-                    foreach ( var systemEmail in systemEmails )
-                    {
-                        ddlWelcomeEmail.Items.Add( new ListItem( systemEmail.Title, systemEmail.Id.ToString() ) );
-                        ddlExitEmail.Items.Add( new ListItem( systemEmail.Title, systemEmail.Id.ToString() ) );
-                    }
-                }
-
-                // set dataview
-                dvpSyncDataview.EntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-                dvpSyncDataview.SetValue( group.SyncDataViewId );
-
-                if ( group.AddUserAccountsDuringSync.HasValue )
-                {
-                    rbCreateLoginDuringSync.Checked = group.AddUserAccountsDuringSync.Value;
-                }
-
-                if ( group.WelcomeSystemEmailId.HasValue )
-                {
-                    ddlWelcomeEmail.SetValue( group.WelcomeSystemEmailId );
-                }
-
-                if ( group.ExitSystemEmailId.HasValue )
-                {
-                    ddlExitEmail.SetValue( group.ExitSystemEmailId );
+                    ddlWelcomeEmail.Items.Add( new ListItem( systemEmail.Title, systemEmail.Id.ToString() ) );
+                    ddlExitEmail.Items.Add( new ListItem( systemEmail.Title, systemEmail.Id.ToString() ) );
                 }
             }
+
+            // set dataview
+            dvpSyncDataview.EntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+            dvpSyncDataview.SetValue( group.SyncDataViewId );
+
+            if ( group.AddUserAccountsDuringSync.HasValue )
+            {
+                rbCreateLoginDuringSync.Checked = group.AddUserAccountsDuringSync.Value;
+            }
+
+            if ( group.WelcomeSystemEmailId.HasValue )
+            {
+                ddlWelcomeEmail.SetValue( group.WelcomeSystemEmailId );
+            }
+
+            if ( group.ExitSystemEmailId.HasValue )
+            {
+                ddlExitEmail.SetValue( group.ExitSystemEmailId );
+            }
+            
 
             // GroupType depends on Selected ParentGroup
             ddlParentGroup_SelectedIndexChanged( null, null );
