@@ -135,6 +135,10 @@ namespace Rock.Model
 
         #endregion Virtual Properties
 
+        /// <summary>
+        /// Gets the earliest start date.
+        /// </summary>
+        /// <returns></returns>
         public DateTime? GetEarliestStartDate()
         {
             DateTime? earliestStartDate = null;
