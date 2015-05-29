@@ -894,20 +894,18 @@ namespace Rock.Data
 
             try
             {
-                // dynamically add plugin entities so that Reports can use a mixture of entities from different plugins and core
+                // dynamically add plugin entities so that queryables can use a mixture of entities from different plugins and core
                 // from http://romiller.com/2012/03/26/dynamically-building-a-model-with-code-first/
                 var entityMethod = typeof( DbModelBuilder ).GetMethod( "Entity" );
 
-                var entityTypeList = Reflection.FindTypes( typeof( Rock.Data.IEntity ) )
+                // look for IRockEntity classes
+                var entityTypeList = Reflection.FindTypes( typeof( Rock.Data.IRockEntity ) )
                     .Where( a => !a.Value.IsAbstract && ( a.Value.GetCustomAttribute<NotMappedAttribute>() == null ) && ( a.Value.GetCustomAttribute<System.Runtime.Serialization.DataContractAttribute>() != null ) )
                     .OrderBy( a => a.Key ).Select( a => a.Value );
 
                 foreach ( var entityType in entityTypeList )
                 {
-                    if ( entityType.Assembly != typeof( RockContext ).Assembly )
-                    {
-                        entityMethod.MakeGenericMethod( entityType ).Invoke( modelBuilder, new object[] { } );
-                    }
+                    entityMethod.MakeGenericMethod( entityType ).Invoke( modelBuilder, new object[] { } );
                 }
             }
             catch ( Exception ex )
