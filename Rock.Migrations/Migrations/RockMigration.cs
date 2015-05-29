@@ -54,6 +54,16 @@ namespace Rock.Migrations
         private Rock.Data.MigrationHelper _migrationHelper = null;
 
         /// <summary>
+        ///  Contains embedded SQL files that be used in migrations
+        ///  to Add SQL files, name the SQL files so it starts with the Migration name, 
+        ///  put them in the migrations folder, then add it to RockMigrationSQL.resx
+        /// </summary>
+        /// <value>
+        /// The resources.
+        /// </value>
+        public class MigrationSQL : Rock.Migrations.Migrations.RockMigrationSQL { };
+
+        /// <summary>
         /// Adds an operation to execute a SQL command.  Entity Framework Migrations
         /// APIs are not designed to accept input provided by untrusted sources (such
         /// as the end user of an application). If input is accepted from such sources
