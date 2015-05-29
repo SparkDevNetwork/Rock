@@ -1373,8 +1373,19 @@ namespace Rock.Web.UI.Controls
                         return;
                     }
 
+                    var selectedKeys = SelectedKeys.ToList();
                     foreach ( var dataItem in dataItems )
                     {
+                        if (selectedKeys.Any() && this.DataKeyNames.Count() == 1)
+                        {
+                            var dataKeyValue = dataItem.GetPropertyValue( this.DataKeyNames[0] );
+                            if (!selectedKeys.Contains(dataKeyValue))
+                            {
+                                // if there are specific rows selected, skip over rows that aren't selected
+                                continue;
+                            }
+                        }
+                        
                         GridViewRowEventArgs args = new GridViewRowEventArgs( gridViewRow );
                         gridViewRow.DataItem = dataItem;
                         this.OnRowDataBound( args );
@@ -1488,8 +1499,20 @@ namespace Rock.Web.UI.Controls
                     int dataIndex = 0;
 
                     IList data = this.DataSourceAsList;
+
+                    var selectedKeys = SelectedKeys.ToList();
                     foreach ( var item in data )
                     {
+                        if (selectedKeys.Any() && this.DataKeyNames.Count() == 1)
+                        {
+                            var dataKeyValue = item.GetPropertyValue( this.DataKeyNames[0] );
+                            if (!selectedKeys.Contains(dataKeyValue))
+                            {
+                                // if there are specific rows selected, skip over rows that aren't selected
+                                continue;
+                            }
+                        }
+
                         columnCounter = 0;
                         foreach ( PropertyInfo prop in props )
                         {

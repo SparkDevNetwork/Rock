@@ -73,10 +73,17 @@
                         </div>
 
                     </fieldset>
+                </div>
+            </div>
 
-                    <h4>Results</h4>
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title"><i class="fa fa-table"></i> Results</h1>
+                </div>
+                <div class="panel-body">
+                    
 
-                    <div class="grid">
+                    <div class="grid grid-panel">
                         <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
                     </div>
 
