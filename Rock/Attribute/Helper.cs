@@ -664,13 +664,11 @@ namespace Rock.Attribute
                 attribute = internalAttributeService.Get( newAttribute.Id );
             }
 
-            bool isNew = false;
             if ( attribute == null )
             {
                 // If the attribute didn't exist, create it
                 attribute = new Rock.Model.Attribute();
                 internalAttributeService.Add( attribute );
-                isNew = true;
             }
             else
             {
