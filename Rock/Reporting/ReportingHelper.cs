@@ -192,7 +192,15 @@ namespace Rock.Reporting
                             if ( columnField is BoundField )
                             {
                                 ( columnField as BoundField ).DataField = string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, columnIndex );
-                                columnField.SortExpression = ( columnField as BoundField ).DataField;
+                                var customSortExpression = selectComponent.SortProperties( reportField.Selection );
+                                if ( customSortExpression != null )
+                                {
+                                    columnField.SortExpression = customSortExpression.Split( ',' ).Select( a => string.Format( "Sort_{0}_{1}", a, columnIndex ) ).ToList().AsDelimited( "," );
+                                }
+                                else
+                                {
+                                    columnField.SortExpression = ( columnField as BoundField ).DataField;
+                                }
                             }
 
                             columnField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? selectComponent.ColumnHeaderText : reportField.ColumnHeaderText;
