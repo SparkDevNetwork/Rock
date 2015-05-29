@@ -637,5 +637,142 @@ namespace Rock.Web.Cache
         }
 
         #endregion
+
+        #region Entity Attributes Cache
+
+        /// <summary>
+        /// The _lock
+        /// </summary>
+        private static object _lock = new object();
+
+        /// <summary>
+        /// Gets or sets all entity attributes.
+        /// </summary>
+        /// <value>
+        /// All entity attributes.
+        /// </value>
+        private static List<EntityAttributes> AllEntityAttributes { get; set; }
+
+        /// <summary>
+        /// Gets the by entity.
+        /// </summary>
+        /// <param name="entityTypeid">The entity typeid.</param>
+        /// <returns></returns>
+        internal static List<EntityAttributes> GetByEntity( int? entityTypeid )
+        {
+            LoadEntityAttributes();
+
+            return AllEntityAttributes
+                .Where( a => a.EntityTypeId.Equals( entityTypeid ) )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the by entity.
+        /// </summary>
+        /// <param name="entityTypeid">The entity typeid.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <returns></returns>
+        internal static List<int> GetByEntity( int? entityTypeid, string entityTypeQualifierColumn, string entityTypeQualifierValue )
+        {
+            LoadEntityAttributes();
+
+            return AllEntityAttributes
+                .Where( a =>
+                    a.EntityTypeId.Equals( entityTypeid ) &&
+                    a.EntityTypeQualifierColumn.Equals( entityTypeQualifierColumn ) &&
+                    a.EntityTypeQualifierValue.Equals( entityTypeQualifierValue ) )
+                .SelectMany( a => a.AttributeIds )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Loads the entity attributes.
+        /// </summary>
+        private static void LoadEntityAttributes()
+        {
+            lock ( _lock )
+            {
+                if ( AllEntityAttributes == null )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        AllEntityAttributes = new AttributeService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .GroupBy( a => new
+                            {
+                                a.EntityTypeId,
+                                a.EntityTypeQualifierColumn,
+                                a.EntityTypeQualifierValue
+                            } )
+                            .Select( a => new EntityAttributes()
+                            {
+                                EntityTypeId = a.Key.EntityTypeId,
+                                EntityTypeQualifierColumn = a.Key.EntityTypeQualifierColumn,
+                                EntityTypeQualifierValue = a.Key.EntityTypeQualifierValue,
+                                AttributeIds = a.Select( v => v.Id ).ToList()
+                            } )
+                            .ToList();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Flushes the entity attributes.
+        /// </summary>
+        public static void FlushEntityAttributes()
+        {
+            lock ( _lock )
+            {
+                AllEntityAttributes = null;
+            }
+        }
+
+        #endregion
     }
+
+    #region Helper class for entity attributes
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Serializable]
+    internal class EntityAttributes
+    {
+        /// <summary>
+        /// Gets or sets the entity type id.
+        /// </summary>
+        /// <value>
+        /// The entity type id.
+        /// </value>
+        public int? EntityTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier column.
+        /// </summary>
+        /// <value>
+        /// The entity type qualifier column.
+        /// </value>
+        public string EntityTypeQualifierColumn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier value.
+        /// </summary>
+        /// <value>
+        /// The entity type qualifier value.
+        /// </value>
+        public string EntityTypeQualifierValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute ids.
+        /// </summary>
+        /// <value>
+        /// The attribute ids.
+        /// </value>
+        public List<int> AttributeIds { get; set; }
+    }
+
+    #endregion
 }

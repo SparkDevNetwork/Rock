@@ -931,6 +931,7 @@
     <Compile Include="Workflow\Action\DeleteWorkflow.cs" />
     <Compile Include="Workflow\Action\BackgroundCheckRequest.cs" />
     <Compile Include="Workflow\Action\AddPersonToGroup.cs" />
+    <Compile Include="Workflow\Action\PersonNoteAdd.cs" />
     <Compile Include="Workflow\Action\PersonTagRemove.cs" />
     <Compile Include="Workflow\Action\SendSms.cs" />
     <Compile Include="Workflow\Action\PersonTagAdd.cs" />

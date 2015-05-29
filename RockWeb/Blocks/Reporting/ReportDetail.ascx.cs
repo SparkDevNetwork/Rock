@@ -557,7 +557,7 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else
                     {
-                        listItem.Attributes["optiongroup"] = "Other";
+                        listItem.Attributes["optiongroup"] = string.Format( "{0} Fields", entityType.Name );
                     }
 
                     if ( entityField.FieldKind == FieldKind.Attribute && entityField.AttributeGuid.HasValue )
@@ -778,6 +778,7 @@ namespace RockWeb.Blocks.Reporting
             else
             {
                 lReadOnlyTitle.Text = report.Name.FormatAsHtmlTitle();
+                lActionTitle.Text = report.Name.FormatAsHtmlTitle();
             }
 
             LoadDropDowns();
