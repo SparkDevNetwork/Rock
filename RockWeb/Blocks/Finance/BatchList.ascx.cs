@@ -60,6 +60,7 @@ namespace RockWeb.Blocks.Finance
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             gfBatchFilter.ApplyFilterClick += gfBatchFilter_ApplyFilterClick;
+            gfBatchFilter.ClearFilterClick += gfBatchFilter_ClearFilterClick;
             gfBatchFilter.DisplayFilterValue += gfBatchFilter_DisplayFilterValue;
 
             gBatchList.DataKeyNames = new string[] { "Id" };
@@ -79,6 +80,17 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Handles the ClearFilterClick event of the gfBatchFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gfBatchFilter_ClearFilterClick( object sender, EventArgs e )
+        {
+            gfBatchFilter.DeleteUserPreferences();
+            BindFilter();
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -90,19 +102,7 @@ namespace RockWeb.Blocks.Finance
             {
                 SetVisibilityOption();
                 BindFilter();
-
-                bool promptWithFilter = true;
-
-                if ( promptWithFilter && gfBatchFilter.Visible )
-                {
-                    //// NOTE: Special Case for this List Block since there could be a very large number of batches:
-                    //// If the filter is shown and we aren't filtering by anything else, don't automatically populate the grid. Wait for them to hit apply on the filter
-                    gfBatchFilter.Show();
-                }
-                else
-                {
-                    BindGrid();
-                }
+                BindGrid();
             }
         }
 
@@ -159,6 +159,13 @@ namespace RockWeb.Blocks.Finance
         {
             switch ( e.Key )
             {
+                case "Row Limit": 
+                    {                    
+                        // row limit filter was removed, so hide it just in case
+                        e.Value = null;
+                        break;
+                    }
+
                 case "Date Range":
                     {
                         e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
@@ -205,7 +212,6 @@ namespace RockWeb.Blocks.Finance
         protected void gfBatchFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             gfBatchFilter.SaveUserPreference( "Date Range", drpBatchDate.DelimitedValues );
-            gfBatchFilter.SaveUserPreference( "Row Limit", nbRowLimit.Text );
             gfBatchFilter.SaveUserPreference( "Title", tbTitle.Text );
             if ( tbAccountingCode.Visible )
             {
@@ -399,8 +405,6 @@ namespace RockWeb.Blocks.Finance
 
             ddlStatus.SetValue( statusFilter );
 
-            nbRowLimit.Text = gfBatchFilter.GetUserPreference( "Row Limit" );
-
             var campusi = CampusCache.All();
             campCampus.Campuses = campusi;
             campCampus.Visible = campusi.Any();
@@ -428,13 +432,6 @@ namespace RockWeb.Blocks.Finance
                     Status = b.Status,
                     UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue )
                 } );
-
-            // Row Limit
-            int? rowLimit = gfBatchFilter.GetUserPreference( "Row Limit" ).AsIntegerOrNull();
-            if ( rowLimit.HasValue )
-            {
-                batchRowQry = batchRowQry.Take( rowLimit.Value );
-            }
 
             gBatchList.SetLinqDataSource( batchRowQry.AsNoTracking() );
             gBatchList.EntityTypeId = EntityTypeCache.Read<Rock.Model.FinancialBatch>().Id;
