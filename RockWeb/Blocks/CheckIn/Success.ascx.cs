@@ -209,7 +209,6 @@ namespace RockWeb.Blocks.CheckIn
                         foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
                         {
                             groupType.Selected = false;
-                            groupType.Groups = new List<CheckInGroup>();
                         }
                     }
                 }
