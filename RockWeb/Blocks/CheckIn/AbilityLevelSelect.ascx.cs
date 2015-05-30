@@ -205,7 +205,7 @@ namespace RockWeb.Blocks.CheckIn
                 .SelectMany( f => f.People.Where( p => p.Selected )
                     .SelectMany( p => p.GroupTypes.Where( t => !t.ExcludedByFilter ) ) )
                 .Count() <= 0,
-                "<ul><li>Sorry, based on your selection, there are currently not any available locations that can be checked into.</li></ul>" ) ) 
+                "<p>Sorry, based on your selection, there are currently not any available locations that can be checked into.</p>" ) ) 
             {
                 // Clear any filtered items so that user can select another option
                 var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )

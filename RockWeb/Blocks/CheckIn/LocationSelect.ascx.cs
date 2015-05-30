@@ -199,7 +199,7 @@ namespace RockWeb.Blocks.CheckIn
                             .SelectMany( g => g.Locations.Where( l => l.Selected )
                                 .SelectMany( l => l.Schedules.Where( s => !s.ExcludedByFilter ) ) ) ) ) )
                 .Count() <= 0,
-                "<ul><li>Sorry, based on your selection, there are currently not any available times that can be checked into.</li></ul>" );
+                "<p>Sorry, based on your selection, there are currently not any available times that can be checked into.</p>" );
         }
 
     }
