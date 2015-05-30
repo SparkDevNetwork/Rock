@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -22,12 +23,9 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.HtmlControls;
-
 using DotLiquid;
 using DotLiquid.Util;
-
 using Humanizer;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -509,6 +507,59 @@ namespace Rock.Lava
             return DateTime.TryParse( input.ToString(), out date )
                 ? Liquid.UseRubyDateFormat ? date.ToStrFTime( format ).Trim() : date.ToString( format ).Trim()
                 : input.ToString().Trim();
+        }
+
+        /// <summary>
+        /// Adds a time interval to a date
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="amount">The amount.</param>
+        /// <param name="interval">The interval.</param>
+        /// <returns></returns>
+        public static DateTime? DateAdd( object input, int amount, string interval = "d" )
+        {
+            DateTime? date = null;
+            
+            if ( input == null )
+                return null;
+
+            if ( input.ToString() == "Now" )
+            {
+                date = RockDateTime.Now;
+            }
+            else
+            {
+                DateTime d;
+                bool success = DateTime.TryParse( input.ToString(), out d );
+                if ( success )
+                {
+                    date = d;
+                }
+            }
+
+            if ( date.HasValue )
+            {
+                TimeSpan timeInterval = new TimeSpan();
+                switch ( interval )
+                {
+                    case "d":
+                        timeInterval = new TimeSpan(amount, 0, 0, 0);
+                        break;
+                    case "h":
+                        timeInterval = new TimeSpan( 0, amount, 0, 0 );
+                        break;
+                    case "m":
+                        timeInterval = new TimeSpan(0, 0, amount, 0);
+                        break;
+                    case "s":
+                        timeInterval = new TimeSpan(0, 0, 0, amount);
+                        break;
+                }
+                
+                date = date.Value.Add(timeInterval);
+            }
+
+            return date;
         }
 
         /// <summary>
@@ -1025,18 +1076,17 @@ namespace Rock.Lava
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="status">The status.</param>
         /// <returns></returns>
         public static List<Rock.Model.GroupMember> Groups( DotLiquid.Context context, object input, string groupTypeId, string status = "Active" )
         {
             var person = GetPerson( input );
             int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
 
-            
-
             if ( person != null && numericalGroupTypeId.HasValue )
             {
                 var groupQuery =  new GroupMemberService( GetRockContext( context ) )
-                    .Queryable("Group").AsNoTracking()
+                    .Queryable("Group, GroupRole").AsNoTracking()
                     .Where( m =>
                         m.PersonId == person.Id &&
                         m.Group.GroupTypeId == numericalGroupTypeId.Value &&
@@ -1070,10 +1120,36 @@ namespace Rock.Lava
 
             if ( person != null && numericalGroupTypeId.HasValue )
             {
-                return new AttendanceService( GetRockContext( context ) ).Queryable().AsNoTracking().Where(a => a.Group.GroupTypeId == numericalGroupTypeId && a.PersonAlias.PersonId == person.Id).Select(a => a.Group).Distinct().ToList();
+                return new AttendanceService( GetRockContext( context ) ).Queryable().AsNoTracking()
+                    .Where(a => a.Group.GroupTypeId == numericalGroupTypeId && a.PersonAlias.PersonId == person.Id && a.DidAttend == true)
+                    .Select(a => a.Group).Distinct().ToList();
             }
 
             return new List<Model.Group>();
+        }
+
+        /// <summary>
+        /// Gets the last attendance item for a given person in a group of type provided
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public static Attendance LastAttendedGroupOfType( DotLiquid.Context context, object input, string groupTypeId )
+        {
+            var person = GetPerson( input );
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+
+            if ( person != null && numericalGroupTypeId.HasValue )
+            {
+                var attendance =  new AttendanceService( GetRockContext( context ) ).Queryable("Group").AsNoTracking()
+                    .Where( a => a.Group.GroupTypeId == numericalGroupTypeId && a.PersonAlias.PersonId == person.Id && a.DidAttend == true )
+                    .OrderByDescending( a => a.StartDateTime ).FirstOrDefault();
+
+                return attendance;
+            }
+
+            return new Attendance();
         }
 
         /// <summary>
@@ -1256,6 +1332,61 @@ namespace Rock.Lava
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// adds a link tag to the head of the document
+        /// </summary>
+        /// <param name="input">The input to use for the href of the tag.</param>
+        /// <returns></returns>
+        public static string SetPageTitle( string input )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            if ( page != null )
+            {
+                page.BrowserTitle = input;
+                page.PageTitle = input;
+                page.Header.Title = input;
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region Array Filters
+
+        /// <summary>
+        /// Rearranges an array in a random order
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static object Shuffle( object input )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            if ( !(input is IList) )
+            {
+                return input;
+            }
+
+            var inputList = input as IList;
+            Random rng = new Random();
+            int n = inputList.Count;
+            while ( n > 1 )
+            {
+                n--;
+                int k = rng.Next( n + 1 );
+                var value = inputList[k];
+                inputList[k] = inputList[n];
+                inputList[n] = value;
+            }
+
+            return inputList;
         }
 
         #endregion

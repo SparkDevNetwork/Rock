@@ -124,8 +124,13 @@ namespace Rock.Financial
         /// <returns></returns>
         protected string GetAttributeValue( FinancialGateway financialGateway, string key )
         {
+            if ( financialGateway.AttributeValues == null )
+            {
+                financialGateway.LoadAttributes();
+            }
+
             var values = financialGateway.AttributeValues;
-            if ( values.ContainsKey( key ) )
+            if ( values != null && values.ContainsKey( key ) )
             {
                 var keyValues = values[key];
                 if ( keyValues != null )
@@ -157,6 +162,16 @@ namespace Rock.Financial
         public virtual List<DefinedValueCache> SupportedPaymentSchedules
         {
             get { return new List<DefinedValueCache>(); }
+        }
+
+        /// <summary>
+        /// Returnes a boolean value indicating if 'Saved Account' functionality is supported for the given currency type. 
+        /// </summary>
+        /// <param name="currencyType">Type of the currency.</param>
+        /// <returns></returns>
+        public virtual bool SupportsSavedAccount( DefinedValueCache currencyType )
+        {
+            return true;
         }
 
         /// <summary>

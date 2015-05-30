@@ -37,8 +37,8 @@
     <meta charset="utf-8">
     <title></title>
 
-    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js", true) %>"></script>
-    <script src="<%# ResolveRockUrl("~/Scripts/jquery.jquery-dotimeout.js", true) %>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js" ) %>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery.jquery-dotimeout.js" ) %>"></script>
 
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -50,7 +50,7 @@
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
 
-    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>" ></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
@@ -98,7 +98,7 @@
 
                             <div class="navbar-content">
                                 <div class="navbar-zone-login pull-right"><Rock:Zone Name="Login" runat="server" /></div>
-                                <div class="navbar-zone-header pull-right divided"><Rock:Zone Name="Header" runat="server" /></div>
+                                <div class="navbar-zone-header divided"><Rock:Zone Name="Header" runat="server" /></div>
 			                </div>
                     </nav>
 

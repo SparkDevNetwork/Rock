@@ -23,12 +23,17 @@
 
                     <Rock:Grid ID="gOccurrences" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Occurrence" OnRowSelected="gOccurrences_Edit" >
                         <Columns>
-                            <Rock:DateField DataField="StartDateTime" HeaderText="Date" ItemStyle-HorizontalAlign="Left" SortExpression="StartDateTime" />
-                            <Rock:RockBoundField DataField="LocationName" HeaderText="Location" SortExpression="LocationName" />
+                            <Rock:DateField DataField="Date" HeaderText="Date" ItemStyle-HorizontalAlign="Left" SortExpression="Date" />
+		                    <Rock:RockTemplateField HeaderText="Location" SortExpression="LocationPath,LocationName">
+		                        <ItemTemplate>
+		                            <%#Eval("LocationName")%><br />
+		                            <small><%#Eval("LocationPath")%></small>
+		                        </ItemTemplate>
+		                    </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="ScheduleName" HeaderText="Schedule" SortExpression="ScheduleName" />
                             <Rock:BoolField DataField="AttendanceEntered" HeaderText="Attendance Entered" SortExpression="AttendanceEntered" />
                             <Rock:BoolField DataField="DidNotOccur" HeaderText="Didn't Meet" SortExpression="DidNotOccur" />
-                            <Rock:RockBoundField DataField="NumberAttended" HeaderText="Attendance Count" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:N0}" SortExpression="NumberAttended" />
+                            <Rock:RockBoundField DataField="DidAttendCount" HeaderText="Attendance Count" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:N0}" SortExpression="DidAttendCount" />
                             <Rock:RockBoundField DataField="Percentage" HeaderText="Percent Attended" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:P0}" SortExpression="Percentage" />
                             <Rock:EditField IconCssClass="fa fa-check-square-o" OnClick="gOccurrences_Edit" ToolTip="Enter Attendance" />
                         </Columns>

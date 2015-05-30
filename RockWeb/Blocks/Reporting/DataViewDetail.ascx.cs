@@ -142,22 +142,6 @@ $(document).ready(function() {
         }
 
         /// <summary>
-        /// Set the Guids on the datafilter and it's children to Guid.NewGuid
-        /// </summary>
-        /// <param name="dataViewFilter">The data view filter.</param>
-        private void SetNewDataFilterGuids( DataViewFilter dataViewFilter )
-        {
-            if ( dataViewFilter != null )
-            {
-                dataViewFilter.Guid = Guid.NewGuid();
-                foreach ( var childFilter in dataViewFilter.ChildFilters )
-                {
-                    SetNewDataFilterGuids( childFilter );
-                }
-            }
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -170,7 +154,7 @@ $(document).ready(function() {
             DataViewService service = new DataViewService( rockContext );
 
             int dataViewId = int.Parse( hfDataViewId.Value );
-            int? dataViewFilterId = null;
+            int? origDataViewFilterId = null;
 
             if ( dataViewId == 0 )
             {
@@ -180,7 +164,7 @@ $(document).ready(function() {
             else
             {
                 dataView = service.Get( dataViewId );
-                dataViewFilterId = dataView.DataViewFilterId;
+                origDataViewFilterId = dataView.DataViewFilterId;
             }
 
             dataView.Name = tbName.Text;
@@ -189,10 +173,8 @@ $(document).ready(function() {
             dataView.EntityTypeId = etpEntityType.SelectedEntityTypeId;
             dataView.CategoryId = cpCategory.SelectedValueAsInt();
 
-            dataView.DataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
-
-            // update Guids since we are creating a new dataFilter and children and deleting the old one
-            SetNewDataFilterGuids( dataView.DataViewFilter );
+            var newDataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
+            
 
             if ( !Page.IsValid )
             {
@@ -211,15 +193,24 @@ $(document).ready(function() {
                 service.Add( dataView );
             }
 
-            // Delete old report filter
-            if ( dataViewFilterId.HasValue )
+            rockContext.WrapTransaction( () =>
             {
-                DataViewFilterService dataViewFilterService = new DataViewFilterService( rockContext );
-                DataViewFilter dataViewFilter = dataViewFilterService.Get( dataViewFilterId.Value );
-                DeleteDataViewFilter( dataViewFilter, dataViewFilterService );
-            }
+                
+                if ( origDataViewFilterId.HasValue )
+                {
+                    // delete old report filter so that we can add the new filter (but with original guids), then drop the old filter
+                    DataViewFilterService dataViewFilterService = new DataViewFilterService( rockContext );
+                    DataViewFilter origDataViewFilter = dataViewFilterService.Get( origDataViewFilterId.Value );
 
-            rockContext.SaveChanges();
+                    dataView.DataViewFilterId = null;
+                    rockContext.SaveChanges();
+                    
+                    DeleteDataViewFilter( origDataViewFilter, dataViewFilterService );
+                }
+                
+                dataView.DataViewFilter = newDataViewFilter;
+                rockContext.SaveChanges();
+            } );
 
             if ( adding )
             {
@@ -603,7 +594,8 @@ $(document).ready(function() {
 
                         try
                         {
-                            grid.DataSource = qry.AsNoTracking().ToList();
+                            grid.SetLinqDataSource( qry.AsNoTracking() );
+                            grid.DataBind();
                         }
                         catch ( Exception ex )
                         {
@@ -651,7 +643,6 @@ $(document).ready(function() {
             if ( grid.DataSource != null )
             {
                 grid.ExportFilename = dataView.Name;
-                grid.DataBind();
                 return true;
             }
 

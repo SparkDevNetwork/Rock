@@ -39,7 +39,8 @@ var ZebraPrintPlugin = {
             console.log('Rock Windows Client 1.0');
             window.external.PrintLabels(tagJson);
         } else {
-            bootbox.alert("<strong>2Could Not Print</strong> <p>Print from client settings configured but no client plugin is available. You should run this from the Rock Windows Check-in client or the Rock Check-in iPad Application.")
+            console.log('Rock Windows Client 3.0');
+            window.external.PrintLabels(tagJson);
         }
     }
 };

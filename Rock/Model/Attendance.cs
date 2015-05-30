@@ -126,6 +126,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the start date and time/check in date and time.
         /// </value>
         [DataMember]
+        [Index( "IX_StartDateTime" )]
         public DateTime StartDateTime { get; set; }
 
         /// <summary>
@@ -217,6 +218,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Group"/> that was attended.
         /// </value>
+        [LavaInclude]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -266,6 +268,19 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Pres the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        {
+            var transaction = new Rock.Transactions.GroupAttendedTransaction( entry );
+            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+
+            base.PreSaveChanges( dbContext, entry );
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -330,27 +345,6 @@ namespace Rock.Model
     #endregion
 
     #region Enumerations
-
-    /// <summary>
-    /// For Attendance Reporting, summarize counts by Week, Month, or Year
-    /// </summary>
-    public enum AttendanceGroupBy
-    {
-        /// <summary>
-        /// Week (using RockDateTime.FirstDayOfWeek to determine week)
-        /// </summary>
-        Week = 0,
-
-        /// <summary>
-        /// Month
-        /// </summary>
-        Month = 1,
-
-        /// <summary>
-        /// Year
-        /// </summary>
-        Year = 2
-    }
 
     /// <summary>
     /// For Attendance Reporting, graph into series partitioned by Total, Group, Campus, or Schedule

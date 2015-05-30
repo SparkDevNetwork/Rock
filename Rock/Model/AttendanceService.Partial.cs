@@ -19,7 +19,8 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
-using Rock.Data;
+
+using Rock.Chart;
 
 namespace Rock.Model
 {
@@ -84,68 +85,37 @@ namespace Rock.Model
         /// <param name="groupIds">The group ids.</param>
         /// <param name="campusIds">The campus ids.</param>
         /// <returns></returns>
-        public IEnumerable<IChartData> GetChartData( AttendanceGroupBy groupBy = AttendanceGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null )
+        public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy = ChartGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null )
         {
-            var qry = Queryable().AsNoTracking().Where( a => a.DidAttend.HasValue && a.DidAttend.Value );
+            var qryAttendance = Queryable().AsNoTracking().Where( a => a.DidAttend.HasValue && a.DidAttend.Value );
 
             if ( startDate.HasValue )
             {
-                qry = qry.Where( a => a.StartDateTime >= startDate.Value );
+                qryAttendance = qryAttendance.Where( a => a.StartDateTime >= startDate.Value );
             }
 
             if ( endDate.HasValue )
             {
-                qry = qry.Where( a => a.StartDateTime < endDate.Value );
+                qryAttendance = qryAttendance.Where( a => a.StartDateTime < endDate.Value );
             }
 
             if ( !string.IsNullOrWhiteSpace( groupIds ) )
             {
                 var groupIdList = groupIds.Split( ',' ).AsIntegerList();
-                qry = qry.Where( a => a.GroupId.HasValue && groupIdList.Contains( a.GroupId.Value ) );
+                qryAttendance = qryAttendance.Where( a => a.GroupId.HasValue && groupIdList.Contains( a.GroupId.Value ) );
             }
 
             if ( !string.IsNullOrWhiteSpace( campusIds ) )
             {
                 var campusIdList = campusIds.Split( ',' ).AsIntegerList();
-                qry = qry.Where( a => a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) );
+                qryAttendance = qryAttendance.Where( a => a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) );
             }
 
-            //// for Date SQL functions, borrowed some ideas from http://stackoverflow.com/a/1177529/1755417 and http://stackoverflow.com/a/133101/1755417 and http://stackoverflow.com/a/607837/1755417
-            
-            var knownSunday = new DateTime(1966, 1, 30);    // Because we can't use the @@DATEFIRST option in Linq to query how DATEPART("weekday",) will work, use a known Sunday date instead.
-            var qryWithSundayDate = qry.Select( a => new
+            var qryAttendanceWithSummaryDateTime = qryAttendance.GetAttendanceWithSummaryDateTime( groupBy );
+
+            var summaryQry = qryAttendanceWithSummaryDateTime.Select( a => new
             {
-                Attendance = a,
-                SundayDate = SqlFunctions.DateAdd( 
-                        "day",
-                        SqlFunctions.DateDiff( "day", 
-                            "1900-01-01", 
-                            SqlFunctions.DateAdd( "day", 
-                                ((( SqlFunctions.DatePart( "weekday", knownSunday ) + 7 ) - SqlFunctions.DatePart( "weekday", a.StartDateTime ) ) % 7),
-                                a.StartDateTime 
-                            ) 
-                        ),
-                        "1900-01-01" 
-                    )
-            } );
-
-            var summaryQry = qryWithSundayDate.Select( a => new
-            {
-                // Build a CASE statement to group by week, or month, or year
-                SummaryDateTime = (DateTime)(
-
-                    // GroupBy Week with Monday as FirstDayOfWeek ( +1 ) and Sunday as Summary Date ( +6 )
-                    groupBy == AttendanceGroupBy.Week ? a.SundayDate :
-
-                    // GroupBy Month 
-                    groupBy == AttendanceGroupBy.Month ? SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "day", a.SundayDate ) + 1, a.SundayDate ) :
-
-                    // GroupBy Year
-                    groupBy == AttendanceGroupBy.Year ? SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "dayofyear", a.SundayDate ) + 1, a.SundayDate ) :
-
-                    // shouldn't happen
-                    null
-                ),
+                a.SummaryDateTime,
                 Campus = new
                 {
                     Id = a.Attendance.CampusId,
@@ -163,13 +133,13 @@ namespace Rock.Model
                 }
             } );
 
-            List<AttendanceSummaryData> result = null;
+            List<SummaryData> result = null;
 
             if ( graphBy == AttendanceGraphBy.Total )
             {
                 var groupByQry = summaryQry.GroupBy( a => new { a.SummaryDateTime } ).Select( s => new { s.Key, Count = s.Count() } ).OrderBy( o => o.Key );
 
-                result = groupByQry.ToList().Select( a => new AttendanceSummaryData
+                result = groupByQry.ToList().Select( a => new SummaryData
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
@@ -181,7 +151,7 @@ namespace Rock.Model
             {
                 var groupByQry = summaryQry.GroupBy( a => new { a.SummaryDateTime, Series = a.Campus } ).Select( s => new { s.Key, Count = s.Count() } ).OrderBy( o => o.Key );
 
-                result = groupByQry.ToList().Select( a => new AttendanceSummaryData
+                result = groupByQry.ToList().Select( a => new SummaryData
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
@@ -193,7 +163,7 @@ namespace Rock.Model
             {
                 var groupByQry = summaryQry.GroupBy( a => new { a.SummaryDateTime, Series = a.Group } ).Select( s => new { s.Key, Count = s.Count() } ).OrderBy( o => o.Key );
 
-                result = groupByQry.ToList().Select( a => new AttendanceSummaryData
+                result = groupByQry.ToList().Select( a => new SummaryData
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
@@ -205,7 +175,7 @@ namespace Rock.Model
             {
                 var groupByQry = summaryQry.GroupBy( a => new { a.SummaryDateTime, Series = a.Schedule } ).Select( s => new { s.Key, Count = s.Count() } ).OrderBy( o => o.Key );
 
-                result = groupByQry.ToList().Select( a => new AttendanceSummaryData
+                result = groupByQry.ToList().Select( a => new SummaryData
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
@@ -214,51 +184,93 @@ namespace Rock.Model
                 } ).ToList();
             }
 
-            if (result.Count == 1)
+            if ( result.Count == 1 )
             {
                 var dummyZeroDate = startDate ?? DateTime.MinValue;
-                result.Insert( 0, new AttendanceSummaryData { DateTime = dummyZeroDate, DateTimeStamp = dummyZeroDate.ToJavascriptMilliseconds(), SeriesId = result[0].SeriesId, YValue = 0 } );
+                result.Insert( 0, new SummaryData { DateTime = dummyZeroDate, DateTimeStamp = dummyZeroDate.ToJavascriptMilliseconds(), SeriesId = result[0].SeriesId, YValue = 0 } );
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class AttendanceWithSummaryDateTime
+        {
+            /// <summary>
+            /// Gets or sets the summary date time.
+            /// </summary>
+            /// <value>
+            /// The summary date time.
+            /// </value>
+            public DateTime SummaryDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the attendance.
+            /// </summary>
+            /// <value>
+            /// The attendance.
+            /// </value>
+            public Attendance Attendance { get; set; }
         }
     }
 
     /// <summary>
     /// 
     /// </summary>
-    public class AttendanceSummaryData : IChartData
+    public static class AttendanceQryExtensions
     {
         /// <summary>
-        /// Gets the date time stamp.
+        /// Gets the attendance with a SummaryDateTime column by Week, Month, or Year
         /// </summary>
-        /// <value>
-        /// The date time stamp.
-        /// </value>
-        public long DateTimeStamp { get; set; }
+        /// <param name="qryAttendance">The qry attendance.</param>
+        /// <param name="summarizeBy">The group by.</param>
+        /// <returns></returns>
+        public static IQueryable<AttendanceService.AttendanceWithSummaryDateTime> GetAttendanceWithSummaryDateTime( this IQueryable<Attendance> qryAttendance, ChartGroupBy summarizeBy )
+        {
+            //// for Date SQL functions, borrowed some ideas from http://stackoverflow.com/a/1177529/1755417 and http://stackoverflow.com/a/133101/1755417 and http://stackoverflow.com/a/607837/1755417
 
-        /// <summary>
-        /// Gets or sets the date time.
-        /// </summary>
-        /// <value>
-        /// The date time.
-        /// </value>
-        public DateTime DateTime { get; set; }
+            var knownSunday = new DateTime( 1966, 1, 30 );    // Because we can't use the @@DATEFIRST option in Linq to query how DATEPART("weekday",) will work, use a known Sunday date instead.
+            var qryWithSundayDate = qryAttendance.Select( a => new
+            {
+                Attendance = a,
+                SundayDate = SqlFunctions.DateAdd(
+                        "day",
+                        SqlFunctions.DateDiff( "day",
+                            "1900-01-01",
+                            SqlFunctions.DateAdd( "day",
+                                ( ( ( SqlFunctions.DatePart( "weekday", knownSunday ) + 7 ) - SqlFunctions.DatePart( "weekday", a.StartDateTime ) ) % 7 ),
+                                a.StartDateTime
+                            )
+                        ),
+                        "1900-01-01"
+                    )
+            } );
 
-        /// <summary>
-        /// Gets the y value.
-        /// </summary>
-        /// <value>
-        /// The y value.
-        /// </value>
-        public decimal? YValue { get; set; }
+            var qryAttendanceGroupedBy = qryWithSundayDate.Select( a => new AttendanceService.AttendanceWithSummaryDateTime
+            {
+                // Build a CASE statement to group by week, or month, or year
+                SummaryDateTime = (DateTime)(
 
-        /// <summary>
-        /// Gets the series identifier.
-        /// </summary>
-        /// <value>
-        /// The series identifier.
-        /// </value>
-        public string SeriesId { get; set; }
+                    // GroupBy Week with Monday as FirstDayOfWeek ( +1 ) and Sunday as Summary Date ( +6 )
+                    summarizeBy == ChartGroupBy.Week ? a.SundayDate :
+
+                    // GroupBy Month 
+                    summarizeBy == ChartGroupBy.Month ? SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "day", a.SundayDate ) + 1, a.SundayDate ) :
+
+                    // GroupBy Year
+                    summarizeBy == ChartGroupBy.Year ? SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "dayofyear", a.SundayDate ) + 1, a.SundayDate ) :
+
+                    // shouldn't happen
+                    null
+                ),
+                Attendance = a.Attendance
+            } );
+
+            return qryAttendanceGroupedBy;
+        }
     }
+
+
 }

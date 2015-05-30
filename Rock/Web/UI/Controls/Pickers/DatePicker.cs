@@ -259,11 +259,11 @@ namespace Rock.Web.UI.Controls
                 {
                     // set this.Attributes["disabled"] instead of this.Enabled so that our child controls don't get disabled
                     this.Attributes["disabled"] = "true";
-                    _nbDayOffset.Enabled = true;
+                    _nbDayOffset.Style[HtmlTextWriterStyle.Display] = "";
                 }
                 else
                 {
-                    _nbDayOffset.Enabled = false;
+                    _nbDayOffset.Style[HtmlTextWriterStyle.Display] = "none";
                 }
             }
 

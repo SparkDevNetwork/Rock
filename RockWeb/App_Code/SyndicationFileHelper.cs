@@ -38,9 +38,8 @@ public class SyndicationFeedHelper
     /// <param name="feedUrl">A <see cref="System.String"/> representing the URL of the feed.</param>
     public static void ClearCachedFeed( string feedUrl )
     {
-        ObjectCache cache = RockMemoryCache.Default;
+        RockMemoryCache cache = RockMemoryCache.Default;
         string cacheKey = GetFeedCacheKey( feedUrl );
-
         cache.Remove( cacheKey );
     }
 

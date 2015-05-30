@@ -35,7 +35,6 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Batch List" )]
     [Category( "Finance" )]
     [Description( "Lists all financial batches and provides filtering by campus, status, etc." )]
-
     [LinkedPage( "Detail Page", order: 0 )]
     [BooleanField( "Show Accounting Code", "Should the accounting code column be displayed.", false, "", 1 )]
     public partial class BatchList : Rock.Web.UI.RockBlock, IPostBackEventHandler
@@ -61,6 +60,7 @@ namespace RockWeb.Blocks.Finance
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             gfBatchFilter.ApplyFilterClick += gfBatchFilter_ApplyFilterClick;
+            gfBatchFilter.ClearFilterClick += gfBatchFilter_ClearFilterClick;
             gfBatchFilter.DisplayFilterValue += gfBatchFilter_DisplayFilterValue;
 
             gBatchList.DataKeyNames = new string[] { "Id" };
@@ -80,6 +80,17 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Handles the ClearFilterClick event of the gfBatchFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gfBatchFilter_ClearFilterClick( object sender, EventArgs e )
+        {
+            gfBatchFilter.DeleteUserPreferences();
+            BindFilter();
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -93,7 +104,14 @@ namespace RockWeb.Blocks.Finance
                 BindFilter();
                 BindGrid();
             }
+        }
 
+        /// <summary>
+        /// Registers the java script for grid actions.
+        /// NOTE: This needs to be done after the BindGrid
+        /// </summary>
+        private void RegisterJavaScriptForGridActions()
+        {
             string scriptFormat = @"
     $('#{0}').change(function( e ){{
         var count = $(""#{1} input[id$='_cbSelect_0']:checked"").length;
@@ -141,6 +159,13 @@ namespace RockWeb.Blocks.Finance
         {
             switch ( e.Key )
             {
+                case "Row Limit": 
+                    {                    
+                        // row limit filter was removed, so hide it just in case
+                        e.Value = null;
+                        break;
+                    }
+
                 case "Date Range":
                     {
                         e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
@@ -226,6 +251,27 @@ namespace RockWeb.Blocks.Finance
             }
 
             BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gBatchList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gBatchList_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var batchRow = e.Row.DataItem as BatchRow;
+                var deleteField = gBatchList.Columns.OfType<DeleteField>().First();
+                var cell = ( e.Row.Cells[gBatchList.Columns.IndexOf( deleteField )] as DataControlFieldCell ).Controls[0];
+
+                // Hide delete button if the batch is closed.
+                if ( batchRow != null && batchRow.Status == BatchStatus.Closed && cell != null )
+                {
+                    cell.Visible = false;
+                }
+            }
         }
 
         /// <summary>
@@ -363,7 +409,7 @@ namespace RockWeb.Blocks.Finance
             campCampus.Campuses = campusi;
             campCampus.Visible = campusi.Any();
             campCampus.SetValue( gfBatchFilter.GetUserPreference( "Campus" ) );
-            
+
             drpBatchDate.DelimitedValues = gfBatchFilter.GetUserPreference( "Date Range" );
         }
 
@@ -387,11 +433,11 @@ namespace RockWeb.Blocks.Finance
                     UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue )
                 } );
 
-            var batchRowList = batchRowQry.ToList();
-
-            gBatchList.DataSource = batchRowList;
+            gBatchList.SetLinqDataSource( batchRowQry.AsNoTracking() );
             gBatchList.EntityTypeId = EntityTypeCache.Read<Rock.Model.FinancialBatch>().Id;
             gBatchList.DataBind();
+
+            RegisterJavaScriptForGridActions();
 
             var qryTransactionDetails = qry.SelectMany( a => a.Transactions ).SelectMany( a => a.TransactionDetails );
             var accountSummaryQry = qryTransactionDetails.GroupBy( a => a.Account ).Select( a => new

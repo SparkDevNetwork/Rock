@@ -743,7 +743,7 @@ namespace Rock.Data
         #region Category Methods
 
         /// <summary>
-        /// Updates the category.
+        /// Updates the category or adds if it doesn't already exist (based on Guid)
         /// </summary>
         /// <param name="entityTypeGuid">The entity type unique identifier.</param>
         /// <param name="name">The name.</param>
@@ -787,7 +787,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Updates the name of the category by.
+        /// Updates the category or adds if it doesn't already exist (based on Name)
         /// </summary>
         /// <param name="entityTypeGuid">The entity type unique identifier.</param>
         /// <param name="name">The name.</param>
@@ -3244,7 +3244,7 @@ END
         }
 
         /// <summary>
-        /// Updates the BlockType Attribute for the given blocktype and key (if it exists);
+        /// Updates the Person Attribute for the given key (if it exists);
         /// otherwise it inserts a new record.
         /// </summary>
         /// <param name="fieldTypeGuid">The field type unique identifier.</param>

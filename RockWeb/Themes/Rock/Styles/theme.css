@@ -716,38 +716,40 @@ Copyright (c) 2012 Dan Eden*/
   border: none;
 }
 /*
-    Used to manage styles related to reusable components / widgets.
+  Used to manage styles related to reusable components / widgets.
 
-    1. Pickers - used to pick complex data types
-    2. Banner - used as the primary heading for a page or large section
-    3. Tree - used for tree control
-    4. Person List - used to show a list of people
-    5. Rollover - Used to hide/show items in the UI has the mouse rolls-over a container.
-    6. Pagelist - used to list child pages; currently used in admin screens
-    7. Pagelist Nav - Pill nav of pages
-    8. Tags - component that allows you to tag entities
-    9. Photo Frame - wraps a nice border around photos
-    10. Smart Search - search at th top of the page for searching people, groups, etc.
-    11. Fieldset Actions - styling for the button actions on field sets
-    12. Title - markup for styling header titles
-    13. Code Editor - styling for code editor
-    14. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
-    15. Date Picker - styles for the date picker
-    16. Time Picker - styles for the time picker
-    17. File Upload / Image Upload - styles for the file / image uploader
-    18. Update Panel Actions - annimation for update panels
-    19. Group List - Reusable styles for listing group members (family view/edit in CRM Person Profile)
-    20. Well Messgae - A larger alert type function for delivering important messages.
-    21. Security Controls - login status etc
-    22. Rock List - styles for the Rock list component
-    23. TypeAhead - styles for type ahead support
-    24. Image Cropper - styles for image crop component
-    25. Active Users - styles for the active users block
-    26. Navigation for Paging - styles for creating a pager
-    27. List Extensions - additional list options
-    28. Key Value Pair Control - styling for key/value pair control
-    29. Context Setters
-    30. Paneled List Group - extends the bootstrap list group to behave in a panel
+  1. Pickers - used to pick complex data types
+  2. Banner - used as the primary heading for a page or large section
+  3. Tree - used for tree control
+  4. Person List - used to show a list of people
+  5. Rollover - Used to hide/show items in the UI has the mouse rolls-over a container.
+  6. Pagelist - used to list child pages; currently used in admin screens
+  7. Pagelist Nav - Pill nav of pages
+  8. Tags - component that allows you to tag entities
+  9. Photo Frame - wraps a nice border around photos
+  10. Smart Search - search at th top of the page for searching people, groups, etc.
+  11. Fieldset Actions - styling for the button actions on field sets
+  12. Title - markup for styling header titles
+  13. Code Editor - styling for code editor
+  14. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
+  15. Date Picker - styles for the date picker
+  16. Time Picker - styles for the time picker
+  17. File Upload / Image Upload - styles for the file / image uploader
+  18. Update Panel Actions - annimation for update panels
+  19. Group List - Reusable styles for listing group members (family view/edit in CRM Person Profile)
+  20. Well Messgae - A larger alert type function for delivering important messages.
+  21. Security Controls - login status etc
+  22. Rock List - styles for the Rock list component
+  23. TypeAhead - styles for type ahead support
+  24. Image Cropper - styles for image crop component
+  25. Active Users - styles for the active users block
+  26. Navigation for Paging - styles for creating a pager
+  27. List Extensions - additional list options
+  28. Key Value Pair Control - styling for key/value pair control
+  29. Context Setters
+  30. Paneled List Group - extends the bootstrap list group to behave in a panel
+  31. Sliding Date Range
+  32. Photo Round
 */
 .picker {
   position: relative;
@@ -873,35 +875,35 @@ Copyright (c) 2012 Dan Eden*/
 }
 /*.banner
 {
-    color: @banner-text-color;
-    background-color: @banner-bg;
-    border-radius: @banner-border-radius;
-    border: @banner-border-size solid @banner-border-color;
+  color: @banner-text-color;
+  background-color: @banner-bg;
+  border-radius: @banner-border-radius;
+  border: @banner-border-size solid @banner-border-color;
+  font-weight: @banner-font-weight;
+  font-size: @banner-font-size;
+  padding: @banner-padding;
+  margin: 0 0 @spacing-md-px;
+  .clearfix;
+
+  h1 {
+    float: left;
+    margin: 0;
     font-weight: @banner-font-weight;
-    font-size: @banner-font-size;
-    padding: @banner-padding;
-    margin: 0 0 @spacing-md-px;
-    .clearfix;
 
-    h1 {
-        float: left;
-        margin: 0;
-        font-weight: @banner-font-weight;
-
-        .first-word {
-            font-weight: @banner-firstword-weight;
-        }
-
-        i {
-            margin-right: @spacing-md-px;
-        }
+    .first-word {
+      font-weight: @banner-firstword-weight;
     }
 
-    .label {
-        float: right;
-        margin-top: @spacing-md-px;
-        margin-left: @spacing-md-px;
+    i {
+      margin-right: @spacing-md-px;
     }
+  }
+
+  .label {
+    float: right;
+    margin-top: @spacing-md-px;
+    margin-left: @spacing-md-px;
+  }
 }*/
 ul.rocktree,
 ul.rocktree ul {
@@ -2095,6 +2097,20 @@ ul.list-group-panel .list-group-item {
 ul.list-group-panel .list-group-item:first-child {
   border: 0;
 }
+.slidingdaterange-select,
+.slidingdaterange-number,
+.slidingdaterange-daterange .input-group {
+  margin-bottom: 6px;
+}
+.photo-round {
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.photo-round.photo-round-sm {
+  height: 35px;
+  width: 35px;
+  border-radius: 17.5px;
+}
 /*
     Used to manage styles related to Rock's forms
     
@@ -2471,6 +2487,7 @@ td.grid-col-actions {
 }
 .grid-select-field {
   text-align: center;
+  min-width: 40px;
 }
 .grid-select-field .checkbox,
 .grid-select-field .radio {
@@ -2485,6 +2502,7 @@ td.grid-col-actions {
 .grid-select-field .checkbox:last-child,
 .grid-select-field .radio:last-child {
   margin-bottom: 0px;
+  margin-left: -12px;
 }
 .grid-select-field .checkbox label,
 .grid-select-field .radio label {
@@ -2681,6 +2699,11 @@ tr.row-highlight td {
 }
 .filter-item div[class*='col'] {
   margin-bottom: 6px;
+}
+.data-view-filter-field-label {
+  font-weight: 900;
+  margin-top: 8px;
+  display: block;
 }
 @media (min-width: 992px) {
   .filter-item div[class*='col'] {
@@ -3948,13 +3971,34 @@ iframe.email-body {
     Used to manage styles for check-in administration.
 
     1. Group / Location
-    2. 
+    2. Attendance Analysis
 */
 .panel.panel-widget.checkin-group {
   border-top-color: #afd074;
 }
 .panel.panel-widget.checkin-grouptype {
   border-top-color: #5593a4;
+}
+.attendance-reporting .panel-body {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.attendance-reporting .panel-body > .row > [class*="col-"]:first-child {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+@media (min-width: 992px) {
+  .attendance-reporting .panel-body .row {
+    margin-left: -16px;
+  }
+}
+.attendance-reporting .filter-options {
+  background-color: #efefef;
+}
+.attendance-reporting .analysis-types {
+  padding: 15px 0;
+  background-color: #efefef;
+  margin-bottom: 24px;
 }
 /*
     Used to manage styles for specific blocks.
@@ -4146,6 +4190,7 @@ iframe.email-body {
   1. Variables - specific variables for sizing classes and media query helpers
   2. Colors - creates utility classes for each of the accent colors
   3. Spacing - provides utility classes for spacing based off of the themes gutter widths
+  4. Even Height Columns - provides classes for making columns even heights
 
 */
 .accent-color {
@@ -4419,6 +4464,20 @@ iframe.email-body {
 }
 .margin-l-xl {
   margin-left: 60px !important;
+}
+.row-eq-height {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  overflow: hidden;
+}
+@media (min-width: 992px) {
+  .row-eq-height-md {
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    overflow: hidden;
+  }
 }
 .cke_dialog_contents {
   background-color: #f3f3f4 !important;
@@ -4938,6 +4997,11 @@ fieldset[disabled] .btn-authenication.active {
   content: "\f09a";
   margin-right: 12px;
 }
+.btn-authenication.google:before {
+  font-family: 'FontAwesome';
+  content: "\f1a0";
+  margin-right: 12px;
+}
 .btn-minimal {
   text-decoration: none;
   color: #b7b7b7;
@@ -5251,18 +5315,18 @@ div.aspNetDisabled {
 }
 /*#endregion */
 /*
-    Rock Theme Styles
+  Rock Theme Styles
 
-    1.
-    2. HTML Overrides
-    3. Bootstrap Overides
-    4. Rock Overrides
-    5. Theme Styling
-    6. Utilities
-    7. Responsive Overrides
-    8. Side Navbar
-    9. Person Details
-    10. First Word Weight
+  1.
+  2. HTML Overrides
+  3. Bootstrap Overides
+  4. Rock Overrides
+  5. Theme Styling
+  6. Utilities
+  7. Responsive Overrides
+  8. Side Navbar
+  9. Person Details
+  10. First Word Weight
 
 */
 /*#region
@@ -5401,6 +5465,7 @@ h4,
   background-color: #eaf7fc;
 }
 .smartsearch {
+  float: right;
   margin: 12px 4%;
   border: 0;
   background-color: #353133;
@@ -5408,6 +5473,27 @@ h4,
 }
 .smartsearch input.searchinput {
   color: #d3cec5;
+}
+@media (min-width: 992px) {
+  .smartsearch {
+    margin: 0;
+    height: 50px;
+    border-radius: 0;
+    width: 290px;
+    background-color: #b8ac98;
+  }
+  .smartsearch input,
+  .smartsearch a.dropdown-toggle {
+    line-height: 38px;
+  }
+  .smartsearch i {
+    margin-top: 0;
+    line-height: 46px;
+    margin-left: 4px;
+  }
+  .smartsearch input.searchinput {
+    color: #616161;
+  }
 }
 .loginstatus {
   margin-right: 2px;
@@ -5482,6 +5568,64 @@ h4,
 /*#endregion */
 /*#region
 // 5. Theme Styling          */
+.navbar-top-links {
+  float: left;
+  margin-left: 12px;
+  color: #6a6a6a;
+}
+.navbar-top-links > li {
+  display: inline-block;
+}
+.navbar-top-links > li > a {
+  padding: 15px;
+  color: #777777;
+}
+.navbar-top-links > li > a:hover,
+.navbar-top-links > li > a:focus {
+  color: #d3cec5;
+  background-color: #353133;
+}
+@media (min-width: 768px) {
+  .navbar-top-links > li > a:hover,
+  .navbar-top-links > li > a:focus {
+    color: #333333;
+    background-color: #b8ac98;
+  }
+}
+.navbar-top-links > li.open > a,
+.navbar-top-links > li.open > a:hover,
+.navbar-top-links > li.open > a:focus {
+  background-color: #353133;
+}
+@media (min-width: 768px) {
+  .navbar-top-links > li.open > a,
+  .navbar-top-links > li.open > a:hover,
+  .navbar-top-links > li.open > a:focus {
+    background-color: #ada089;
+  }
+}
+.navbar-top-links ul .divider {
+  background-color: #f3f3f4 !important;
+}
+.navbar-top-links .dropdown-menu {
+  width: 310px;
+  padding: 10px 0;
+}
+.navbar-top-links .dropdown-messages .media {
+  padding: 3px 15px;
+}
+.count-info .label {
+  line-height: 12px;
+  padding: 2px 4px;
+  position: absolute;
+  right: 3px;
+  top: 6px;
+}
+a.link-block,
+.link-block > a {
+  display: block;
+  padding: 7.5px;
+}
 #page-wrapper {
   width: 100%;
 }
@@ -5497,7 +5641,7 @@ h4,
   color: #d3cec5;
 }
 #content-wrapper header .navbar-default .navbar-header {
-  padding: 8px 0 0 12px;
+  padding: 10px 0 0 12px;
   float: left;
 }
 #content-wrapper header .navbar-default .navbar-mobile-logo {
@@ -5552,6 +5696,10 @@ h4,
 }
 #content-wrapper #page-title .breadcrumb li + li:before {
   color: #a1998d;
+}
+#content-wrapper #page-title .pageoverview-description {
+  opacity: .7;
+  margin-top: 4px;
 }
 #content-wrapper #page-content {
   padding: 15px;
@@ -5661,14 +5809,6 @@ body#splash.error #content #logo {
   }
   #content-wrapper header .navbar-default .dropdown-menu li.divider {
     background-color: #f3f3f4;
-  }
-  #content-wrapper .smartsearch {
-    margin: 9px 8px 9px 0;
-    width: 290px;
-    background-color: #bcb19e;
-  }
-  #content-wrapper .smartsearch input.searchinput {
-    color: #616161;
   }
 }
 /*#endregion */

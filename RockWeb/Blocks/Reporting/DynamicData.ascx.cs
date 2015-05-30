@@ -55,7 +55,8 @@ namespace RockWeb.Blocks.Reporting
         CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
     [BooleanField( "Person Report", "Is this report a list of people.?", false, "CustomSetting" )]
     [TextField( "Merge Fields", "Any fields to make available as merge fields for any new communications", false, "", "CustomSetting" )]
-
+    [CodeEditorField( "Page Title Lava", "Optional Lava for setting the page title. If nothing is provided then the page's title will be used.",
+        CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
     public partial class DynamicData : RockBlockCustomSettings
     {
         #region Fields
@@ -145,6 +146,7 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( "Columns", tbColumns.Text );
             SetAttributeValue( "ShowColumns", ddlHideShow.SelectedValue );
             SetAttributeValue( "FormattedOutput", ceFormattedOutput.Text );
+            SetAttributeValue( "PageTitleLava", cePageTitleLava.Text );
             SetAttributeValue( "PersonReport", cbPersonReport.Checked.ToString() );
             SetAttributeValue( "MergeFields", tbMergeFields.Text );
             SaveAttributeValues();
@@ -261,6 +263,7 @@ namespace RockWeb.Blocks.Reporting
             ddlHideShow.SelectedValue = GetAttributeValue( "ShowColumns" );
             tbColumns.Text = GetAttributeValue( "Columns" );
             ceFormattedOutput.Text = GetAttributeValue( "FormattedOutput" );
+            cePageTitleLava.Text = GetAttributeValue( "PageTitleLava" );
             cbPersonReport.Checked = GetAttributeValue( "PersonReport" ).AsBoolean();
             tbMergeFields.Text = GetAttributeValue( "MergeFields" );
         }
@@ -284,10 +287,60 @@ namespace RockWeb.Blocks.Reporting
             else
             {
                 phContent.Controls.Clear();
+                var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
 
                 if ( dataSet != null )
                 {
                     string formattedOutput = GetAttributeValue( "FormattedOutput" );
+
+                    // load merge objects if needed by either for formatted output OR page title
+                    if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PageTitleLava" ) ) || !string.IsNullOrWhiteSpace( formattedOutput ) )
+                    {
+                        
+                        if ( CurrentPerson != null )
+                        {
+                            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+                            mergeFields.Add( "Person", CurrentPerson );
+                            mergeFields.Add( "CurrentPerson", CurrentPerson );
+                        }
+
+                        mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+                        mergeFields.Add( "Campuses", CampusCache.All() );
+                        mergeFields.Add( "PageParameter", PageParameters() );
+
+                        int i = 1;
+                        foreach ( DataTable dataTable in dataSet.Tables )
+                        {
+                            var dropRows = new List<DataRowDrop>();
+                            foreach ( DataRow row in dataTable.Rows )
+                            {
+                                dropRows.Add( new DataRowDrop( row ) );
+                            }
+
+                            if ( dataSet.Tables.Count > 1 )
+                            {
+                                var tableField = new Dictionary<string, object>();
+                                tableField.Add( "rows", dropRows );
+                                mergeFields.Add( "table" + i.ToString(), tableField );
+                            }
+                            else
+                            {
+                                mergeFields.Add( "rows", dropRows );
+                            }
+                            i++;
+                        }
+                    }
+
+                    // set page title
+                    if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PageTitleLava" ) ) )
+                    {
+                        string title = GetAttributeValue( "PageTitleLava" ).ResolveMergeFields( mergeFields );
+
+                        RockPage.BrowserTitle = title;
+                        RockPage.PageTitle = title;
+                        RockPage.Header.Title = title;
+                    }
+
                     if ( string.IsNullOrWhiteSpace( formattedOutput ) )
                     {
                         bool personReport = GetAttributeValue( "PersonReport" ).AsBoolean();
@@ -329,40 +382,6 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else
                     {
-                        var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-                        if ( CurrentPerson != null )
-                        {
-                            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                            mergeFields.Add( "Person", CurrentPerson );
-                            mergeFields.Add( "CurrentPerson", CurrentPerson );
-                        }
-
-                        mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-                        mergeFields.Add( "Campuses", CampusCache.All() );
-                        mergeFields.Add( "PageParameter", PageParameters() );
-
-                        int i = 1;
-                        foreach ( DataTable dataTable in dataSet.Tables )
-                        {
-                            var dropRows = new List<DataRowDrop>();
-                            foreach ( DataRow row in dataTable.Rows )
-                            {
-                                dropRows.Add( new DataRowDrop( row ) );
-                            }
-
-                            if ( dataSet.Tables.Count > 1 )
-                            {
-                                var tableField = new Dictionary<string, object>();
-                                tableField.Add( "rows", dropRows );
-                                mergeFields.Add( "table" + i.ToString(), tableField );
-                            }
-                            else
-                            {
-                                mergeFields.Add( "rows", dropRows );
-                            }
-                            i++;
-                        }
-
                         phContent.Controls.Add( new LiteralControl( formattedOutput.ResolveMergeFields( mergeFields ) ) );
                     }
                 }

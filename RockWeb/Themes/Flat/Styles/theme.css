@@ -718,38 +718,40 @@ Copyright (c) 2012 Dan Eden*/
   border: none;
 }
 /*
-    Used to manage styles related to reusable components / widgets.
+  Used to manage styles related to reusable components / widgets.
 
-    1. Pickers - used to pick complex data types
-    2. Banner - used as the primary heading for a page or large section
-    3. Tree - used for tree control
-    4. Person List - used to show a list of people
-    5. Rollover - Used to hide/show items in the UI has the mouse rolls-over a container.
-    6. Pagelist - used to list child pages; currently used in admin screens
-    7. Pagelist Nav - Pill nav of pages
-    8. Tags - component that allows you to tag entities
-    9. Photo Frame - wraps a nice border around photos
-    10. Smart Search - search at th top of the page for searching people, groups, etc.
-    11. Fieldset Actions - styling for the button actions on field sets
-    12. Title - markup for styling header titles
-    13. Code Editor - styling for code editor
-    14. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
-    15. Date Picker - styles for the date picker
-    16. Time Picker - styles for the time picker
-    17. File Upload / Image Upload - styles for the file / image uploader
-    18. Update Panel Actions - annimation for update panels
-    19. Group List - Reusable styles for listing group members (family view/edit in CRM Person Profile)
-    20. Well Messgae - A larger alert type function for delivering important messages.
-    21. Security Controls - login status etc
-    22. Rock List - styles for the Rock list component
-    23. TypeAhead - styles for type ahead support
-    24. Image Cropper - styles for image crop component
-    25. Active Users - styles for the active users block
-    26. Navigation for Paging - styles for creating a pager
-    27. List Extensions - additional list options
-    28. Key Value Pair Control - styling for key/value pair control
-    29. Context Setters
-    30. Paneled List Group - extends the bootstrap list group to behave in a panel
+  1. Pickers - used to pick complex data types
+  2. Banner - used as the primary heading for a page or large section
+  3. Tree - used for tree control
+  4. Person List - used to show a list of people
+  5. Rollover - Used to hide/show items in the UI has the mouse rolls-over a container.
+  6. Pagelist - used to list child pages; currently used in admin screens
+  7. Pagelist Nav - Pill nav of pages
+  8. Tags - component that allows you to tag entities
+  9. Photo Frame - wraps a nice border around photos
+  10. Smart Search - search at th top of the page for searching people, groups, etc.
+  11. Fieldset Actions - styling for the button actions on field sets
+  12. Title - markup for styling header titles
+  13. Code Editor - styling for code editor
+  14. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
+  15. Date Picker - styles for the date picker
+  16. Time Picker - styles for the time picker
+  17. File Upload / Image Upload - styles for the file / image uploader
+  18. Update Panel Actions - annimation for update panels
+  19. Group List - Reusable styles for listing group members (family view/edit in CRM Person Profile)
+  20. Well Messgae - A larger alert type function for delivering important messages.
+  21. Security Controls - login status etc
+  22. Rock List - styles for the Rock list component
+  23. TypeAhead - styles for type ahead support
+  24. Image Cropper - styles for image crop component
+  25. Active Users - styles for the active users block
+  26. Navigation for Paging - styles for creating a pager
+  27. List Extensions - additional list options
+  28. Key Value Pair Control - styling for key/value pair control
+  29. Context Setters
+  30. Paneled List Group - extends the bootstrap list group to behave in a panel
+  31. Sliding Date Range
+  32. Photo Round
 */
 .picker {
   position: relative;
@@ -875,35 +877,35 @@ Copyright (c) 2012 Dan Eden*/
 }
 /*.banner
 {
-    color: @banner-text-color;
-    background-color: @banner-bg;
-    border-radius: @banner-border-radius;
-    border: @banner-border-size solid @banner-border-color;
+  color: @banner-text-color;
+  background-color: @banner-bg;
+  border-radius: @banner-border-radius;
+  border: @banner-border-size solid @banner-border-color;
+  font-weight: @banner-font-weight;
+  font-size: @banner-font-size;
+  padding: @banner-padding;
+  margin: 0 0 @spacing-md-px;
+  .clearfix;
+
+  h1 {
+    float: left;
+    margin: 0;
     font-weight: @banner-font-weight;
-    font-size: @banner-font-size;
-    padding: @banner-padding;
-    margin: 0 0 @spacing-md-px;
-    .clearfix;
 
-    h1 {
-        float: left;
-        margin: 0;
-        font-weight: @banner-font-weight;
-
-        .first-word {
-            font-weight: @banner-firstword-weight;
-        }
-
-        i {
-            margin-right: @spacing-md-px;
-        }
+    .first-word {
+      font-weight: @banner-firstword-weight;
     }
 
-    .label {
-        float: right;
-        margin-top: @spacing-md-px;
-        margin-left: @spacing-md-px;
+    i {
+      margin-right: @spacing-md-px;
     }
+  }
+
+  .label {
+    float: right;
+    margin-top: @spacing-md-px;
+    margin-left: @spacing-md-px;
+  }
 }*/
 ul.rocktree,
 ul.rocktree ul {
@@ -2097,6 +2099,20 @@ ul.list-group-panel .list-group-item {
 ul.list-group-panel .list-group-item:first-child {
   border: 0;
 }
+.slidingdaterange-select,
+.slidingdaterange-number,
+.slidingdaterange-daterange .input-group {
+  margin-bottom: 6px;
+}
+.photo-round {
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.photo-round.photo-round-sm {
+  height: 35px;
+  width: 35px;
+  border-radius: 17.5px;
+}
 /*
     Used to manage styles related to Rock's forms
     
@@ -2473,6 +2489,7 @@ td.grid-col-actions {
 }
 .grid-select-field {
   text-align: center;
+  min-width: 40px;
 }
 .grid-select-field .checkbox,
 .grid-select-field .radio {
@@ -2487,6 +2504,7 @@ td.grid-col-actions {
 .grid-select-field .checkbox:last-child,
 .grid-select-field .radio:last-child {
   margin-bottom: 0px;
+  margin-left: -12px;
 }
 .grid-select-field .checkbox label,
 .grid-select-field .radio label {
@@ -2683,6 +2701,11 @@ tr.row-highlight td {
 }
 .filter-item div[class*='col'] {
   margin-bottom: 6px;
+}
+.data-view-filter-field-label {
+  font-weight: 700;
+  margin-top: 8px;
+  display: block;
 }
 @media (min-width: 992px) {
   .filter-item div[class*='col'] {
@@ -3950,13 +3973,34 @@ iframe.email-body {
     Used to manage styles for check-in administration.
 
     1. Group / Location
-    2. 
+    2. Attendance Analysis
 */
 .panel.panel-widget.checkin-group {
   border-top-color: #afd074;
 }
 .panel.panel-widget.checkin-grouptype {
   border-top-color: #5593a4;
+}
+.attendance-reporting .panel-body {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.attendance-reporting .panel-body > .row > [class*="col-"]:first-child {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+@media (min-width: 992px) {
+  .attendance-reporting .panel-body .row {
+    margin-left: -16px;
+  }
+}
+.attendance-reporting .filter-options {
+  background-color: #ecf0f1;
+}
+.attendance-reporting .analysis-types {
+  padding: 15px 0;
+  background-color: #ecf0f1;
+  margin-bottom: 24px;
 }
 /*
     Used to manage styles for specific blocks.
@@ -4148,6 +4192,7 @@ iframe.email-body {
   1. Variables - specific variables for sizing classes and media query helpers
   2. Colors - creates utility classes for each of the accent colors
   3. Spacing - provides utility classes for spacing based off of the themes gutter widths
+  4. Even Height Columns - provides classes for making columns even heights
 
 */
 .accent-color {
@@ -4421,6 +4466,20 @@ iframe.email-body {
 }
 .margin-l-xl {
   margin-left: 60px !important;
+}
+.row-eq-height {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  overflow: hidden;
+}
+@media (min-width: 992px) {
+  .row-eq-height-md {
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    overflow: hidden;
+  }
 }
 .cke_dialog_contents {
   background-color: #ffffff !important;
@@ -4938,6 +4997,11 @@ fieldset[disabled] .btn-authenication.active {
 .btn-authenication.facebook:before {
   font-family: 'FontAwesome';
   content: "\f09a";
+  margin-right: 12px;
+}
+.btn-authenication.google:before {
+  font-family: 'FontAwesome';
+  content: "\f1a0";
   margin-right: 12px;
 }
 .btn-minimal {

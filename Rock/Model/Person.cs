@@ -296,6 +296,30 @@ namespace Rock.Model
         public int? GivingGroupId { get; set; }
 
         /// <summary>
+        /// Gets the giver identifier.
+        /// </summary>
+        /// <value>
+        /// The giver identifier.
+        /// </value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        public string GivingId
+        {
+            get
+            {
+                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database
+                return GivingGroupId.HasValue ?
+                    string.Format( "G{0}", GivingGroupId.Value ) :
+                    string.Format( "P{0}", Id );
+            }
+
+            private set
+            {
+                // don't do anthing here since EF uses this for loading 
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the Person's email address.
         /// </summary>
         /// <value>
@@ -1703,11 +1727,12 @@ namespace Rock.Model
         /// Gets the home location.
         /// </summary>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static Location GetHomeLocation( this Person person )
+        public static Location GetHomeLocation( this Person person, RockContext rockContext = null )
         {
             Guid homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
-            foreach ( var family in person.GetFamilies() )
+            foreach ( var family in person.GetFamilies( rockContext ) )
             {
                 var loc = family.GroupLocations
                     .Where( l =>
@@ -1768,9 +1793,9 @@ namespace Rock.Model
         /// <param name="personQry">The person qry.</param>
         /// <param name="minAge">The minimum age.</param>
         /// <param name="maxAge">The maximum age.</param>
-        /// <param name="includePeopleWitNoAge">if set to <c>true</c> [include people wit no age].</param>
+        /// <param name="includePeopleWithNoAge">if set to <c>true</c> [include people with no age].</param>
         /// <returns></returns>
-        public static IQueryable<Person> WhereAgeRange( this IQueryable<Person> personQry, int? minAge, int? maxAge, bool includePeopleWitNoAge = true )
+        public static IQueryable<Person> WhereAgeRange( this IQueryable<Person> personQry, int? minAge, int? maxAge, bool includePeopleWithNoAge = true )
         {
             var currentDate = RockDateTime.Today;
             var qryWithAge = personQry.Select(
@@ -1782,19 +1807,29 @@ namespace Rock.Model
                             : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) )
                       } );
 
-            if ( minAge.HasValue )
+            if ( includePeopleWithNoAge )
             {
-                qryWithAge = qryWithAge.Where( a => a.Age >= minAge );
-            }
+                if ( minAge.HasValue )
+                {
+                    qryWithAge = qryWithAge.Where( a => !a.Age.HasValue || a.Age >= minAge );
+                }
 
-            if ( maxAge.HasValue )
-            {
-                qryWithAge = qryWithAge.Where( a => a.Age <= maxAge );
+                if ( maxAge.HasValue )
+                {
+                    qryWithAge = qryWithAge.Where( a => !a.Age.HasValue || a.Age <= maxAge );
+                }
             }
-
-            if ( !includePeopleWitNoAge )
+            else
             {
-                qryWithAge = qryWithAge.Where( a => a.Age.HasValue );
+                if ( minAge.HasValue )
+                {
+                    qryWithAge = qryWithAge.Where( a => a.Age.HasValue && a.Age >= minAge );
+                }
+
+                if ( maxAge.HasValue )
+                {
+                    qryWithAge = qryWithAge.Where( a => a.Age.HasValue && a.Age <= maxAge );
+                }
             }
 
             return qryWithAge.Select( a => a.Person );

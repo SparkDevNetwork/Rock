@@ -22,6 +22,7 @@ using System.Linq;
 using System.Net;
 using System.Web.Http;
 using System.Web.Http.OData;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -73,7 +74,11 @@ namespace Rock.Rest.Controllers
             var excludedGroupTypeIdList = excludedGroupTypeIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
 
             var groupService = (GroupService)Service;
-            var qry = groupService.GetNavigationChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIdList, excludedGroupTypeIdList, includeInactiveGroups );
+            
+            // if specific group types are specified, show the groups regardless of ShowInNavigation
+            bool limitToShowInNavigation = !includedGroupTypeIdList.Any();
+
+            var qry = groupService.GetChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIdList, excludedGroupTypeIdList, includeInactiveGroups, limitToShowInNavigation );
 
             List<Group> groupList = new List<Group>();
             List<TreeViewItem> groupNameList = new List<TreeViewItem>();
@@ -142,6 +147,70 @@ namespace Rock.Rest.Controllers
         public IQueryable<Group> GetFamilies( int personId )
         {
             return new PersonService( (RockContext)Service.Context ).GetFamilies( personId );
+        }
+
+        /// <summary>
+        /// Gets the families by name search.
+        /// </summary>
+        /// <param name="searchString">String to use for search.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/Groups/GetFamiliesByPersonNameSearch/{searchString}" )]
+        public IQueryable<FamilySearchResult> GetFamiliesByPersonNameSearch( string searchString )
+        {
+            return GetFamiliesByPersonNameSearch( searchString, 20 );
+        }
+
+        /// <summary>
+        /// Gets the families by name search.
+        /// </summary>
+        /// <param name="searchString">String to use for search.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/Groups/GetFamiliesByPersonNameSearch/{searchString}/{maxResults}" )]
+        public IQueryable<FamilySearchResult> GetFamiliesByPersonNameSearch( string searchString, int maxResults = 20 )
+        {
+            bool reversed;
+
+            RockContext rockContext = new RockContext();
+            PersonService personService = new PersonService( rockContext );
+            Guid homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
+
+            // get list of people matching the search string
+            IOrderedQueryable<Person> sortedPersonQry = personService
+                .GetByFullNameOrdered( searchString, true, false, false, out reversed );
+
+            var personResults = sortedPersonQry.AsNoTracking().ToList();
+
+            List<FamilySearchResult> familyResults = new List<FamilySearchResult>();
+            foreach (var person in personResults){
+                var families = personService.GetFamilies( person.Id )
+                                    .Select( f => new FamilySearchResult
+                                                        { 
+                                                            Id = f.Id,
+                                                            Name = f.Name,
+                                                            FamilyMembers = f.Members.ToList(),
+                                                            HomeLocation = f.GroupLocations
+                                                                            .Where( l => l.GroupLocationTypeValue.Guid == homeAddressGuid )
+                                                                            .OrderByDescending( l => l.IsMailingLocation)
+                                                                            .Select(l => l.Location)
+                                                                            .FirstOrDefault(),
+                                                            MainPhone = f.Members
+                                                                            .OrderBy(m => m.GroupRole.Order)
+                                                                            .ThenBy(m => m.Person.Gender)
+                                                                            .FirstOrDefault()
+                                                                            .Person.PhoneNumbers.OrderBy( p => p.NumberTypeValue.Order).FirstOrDefault()
+                                                        })
+                                                        .ToList();
+
+                foreach ( var family in families) {
+                    familyResults.Add( family );
+                }
+            }
+
+            return familyResults.DistinctBy(f => f.Id).AsQueryable(); 
         }
 
         /// <summary>
@@ -591,6 +660,52 @@ namespace Rock.Rest.Controllers
             {
                 throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        public class FamilySearchResult
+        {
+            /// <summary>
+            /// Gets or sets the id.
+            /// </summary>
+            /// <value>
+            /// The id.
+            /// </value>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the family members.
+            /// </summary>
+            /// <value>
+            /// The family members.
+            /// </value>
+            public List<GroupMember> FamilyMembers { get; set; }
+
+            /// <summary>
+            /// Gets or sets the home location.
+            /// </summary>
+            /// <value>
+            /// The home location.
+            /// </value>
+            public Location HomeLocation { get; set; }
+
+            /// <summary>
+            /// Gets or sets the main phone.
+            /// </summary>
+            /// <value>
+            /// The main phone.
+            /// </value>
+            public PhoneNumber MainPhone { get; set; }
         }
 
         public class InfoWindowRequest

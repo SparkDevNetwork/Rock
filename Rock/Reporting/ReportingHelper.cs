@@ -29,13 +29,19 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class ReportingHelper
     {
         /// <summary>
         /// Shows the preview.
         /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="filter">The filter.</param>
+        /// <param name="report">The report.</param>
+        /// <param name="gReport">The g report.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
+        /// <param name="errorMessage">The error message.</param>
         public static void BindGrid( Report report, Grid gReport, Person currentPerson, int? databaseTimeoutSeconds, out string errorMessage )
         {
             errorMessage = null;
@@ -83,7 +89,7 @@ namespace Rock.Reporting
                     gReport.RowItemText = EntityTypeCache.Read( report.EntityTypeId.Value, rockContext ).FriendlyName;
                 }
 
-                List<EntityField> entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
+                List<EntityField> entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType, true, false );
 
                 var selectedEntityFields = new Dictionary<int, EntityField>();
                 var selectedAttributes = new Dictionary<int, AttributeCache>();
@@ -144,7 +150,14 @@ namespace Rock.Reporting
                                 }
                                 else
                                 {
-                                    boundField = new BoundField();
+                                    boundField = new CallbackField();
+                                    boundField.HtmlEncode = false;
+                                    ( boundField as CallbackField ).OnFormatDataValue += (sender, e) => {
+
+                                        bool condensed = true;
+                                        string resultHtml = attribute.FieldType.Field.FormatValueAsHtml( gReport, e.DataValue as string, attribute.QualifierValues, condensed );
+                                        e.FormattedValue = resultHtml ?? string.Empty;
+                                    };
                                 }
 
                                 boundField.DataField = string.Format( "Attribute_{0}_{1}", attribute.Id, columnIndex );
@@ -179,7 +192,15 @@ namespace Rock.Reporting
                             if ( columnField is BoundField )
                             {
                                 ( columnField as BoundField ).DataField = string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, columnIndex );
-                                columnField.SortExpression = ( columnField as BoundField ).DataField;
+                                var customSortExpression = selectComponent.SortProperties( reportField.Selection );
+                                if ( customSortExpression != null )
+                                {
+                                    columnField.SortExpression = customSortExpression.Split( ',' ).Select( a => string.Format( "Sort_{0}_{1}", a, columnIndex ) ).ToList().AsDelimited( "," );
+                                }
+                                else
+                                {
+                                    columnField.SortExpression = ( columnField as BoundField ).DataField;
+                                }
                             }
 
                             columnField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? selectComponent.ColumnHeaderText : reportField.ColumnHeaderText;
@@ -243,7 +264,8 @@ namespace Rock.Reporting
                         }
                     }
 
-                    gReport.DataSource = report.GetDataSource( entityType, selectedEntityFields, selectedAttributes, selectedComponents, sortProperty, databaseTimeoutSeconds ?? 180, out errors );
+                    dynamic qry = report.GetQueryable( entityType, selectedEntityFields, selectedAttributes, selectedComponents, sortProperty, databaseTimeoutSeconds ?? 180, out errors );
+                    gReport.SetLinqDataSource( qry );
                     gReport.DataBind();
                 }
                 catch ( Exception ex )

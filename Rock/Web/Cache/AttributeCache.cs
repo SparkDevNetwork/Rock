@@ -16,14 +16,16 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Caching;
 using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
@@ -43,7 +45,7 @@ namespace Rock.Web.Cache
     [Serializable]
     [DataContract]
     [JsonConverter( typeof( Rock.Utility.AttributeCacheJsonConverter ) )]
-    public class AttributeCache : ISecured, Lava.ILiquidizable
+    public class AttributeCache : CachedModel<Rock.Model.Attribute>
     {
         #region constructors
 
@@ -65,23 +67,7 @@ namespace Rock.Web.Cache
 
         #region Properties
 
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>
-        /// The id.
-        /// </value>
-        [DataMember]
-        public virtual int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GUID.
-        /// </summary>
-        /// <value>
-        /// The GUID.
-        /// </value>
-        [DataMember]
-        public virtual Guid Guid { get; set; }
+        private object _obj = new object();
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is system.
@@ -273,20 +259,24 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Copies from model.
         /// </summary>
-        /// <param name="attribute">The attribute.</param>
-        public void CopyFromModel( Rock.Model.Attribute attribute )
+        /// <param name="model">The model.</param>
+        public override void CopyFromModel( Data.IEntity model )
         {
-            var qualifiers = new Dictionary<string, string>();
-
-            if ( attribute.AttributeQualifiers != null )
+            if ( model is Rock.Model.Attribute )
             {
-                foreach ( Rock.Model.AttributeQualifier qualifier in attribute.AttributeQualifiers )
-                {
-                    qualifiers.Add( qualifier.Key, qualifier.Value );
-                }
-            }
+                var attribute = (Rock.Model.Attribute)model;
 
-            CopyFromModel( attribute, qualifiers );
+                var qualifiers = new Dictionary<string, string>();
+                if ( attribute.AttributeQualifiers != null )
+                {
+                    foreach ( Rock.Model.AttributeQualifier qualifier in attribute.AttributeQualifiers )
+                    {
+                        qualifiers.Add( qualifier.Key, qualifier.Value );
+                    }
+                }
+
+                CopyFromModel( attribute, qualifiers );
+            }
         }
 
         /// <summary>
@@ -296,8 +286,8 @@ namespace Rock.Web.Cache
         /// <param name="qualifiers">The qualifiers.</param>
         public void CopyFromModel( Rock.Model.Attribute attribute, Dictionary<string, string> qualifiers )
         {
-            this.Id = attribute.Id;
-            this.Guid = attribute.Guid;
+            base.CopyFromModel( attribute );
+
             this.IsSystem = attribute.IsSystem;
             this.FieldTypeId = attribute.FieldTypeId;
             this.EntityTypeId = attribute.EntityTypeId;
@@ -312,10 +302,6 @@ namespace Rock.Web.Cache
             this.DefaultValue = attribute.DefaultValue;
             this.IsMultiValue = attribute.IsMultiValue;
             this.IsRequired = attribute.IsRequired;
-
-            this.TypeId = attribute.TypeId;
-            this.TypeName = attribute.TypeName;
-            this.SupportedActions = attribute.SupportedActions;
 
             this.QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )
@@ -452,118 +438,14 @@ namespace Rock.Web.Cache
         #region ISecured implementation
 
         /// <summary>
-        /// Gets the Entity Type ID for this entity.
-        /// </summary>
-        /// <value>
-        /// The type id.
-        /// </value>
-        [DataMember]
-        public virtual int TypeId { get; private set; }
-
-        /// <summary>
-        /// The auth entity. Classes that implement the <see cref="ISecured" /> interface should return
-        /// a value that is unique across all <see cref="ISecured" /> classes.  Typically this is the
-        /// qualified name of the class.
-        /// </summary>
-        [DataMember]
-        public virtual string TypeName { get; private set; }
-
-        /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
         /// this object, Rock will check access to the parent authority specified by this property.
         /// </summary>
-        public virtual ISecured ParentAuthority
+        public override ISecured ParentAuthority
         {
             get
             {
                 return new Rock.Model.Attribute { Id = 0, EntityTypeId = this.EntityTypeId };
-            }
-        }
-
-        /// <summary>
-        /// An optional additional parent authority.  (i.e for Groups, the GroupType is main parent
-        /// authority, but parent group is an additional parent authority )
-        /// </summary>
-        public virtual Security.ISecured ParentAuthorityPre
-        {
-            get { return null; }
-        }
-
-        /// <summary>
-        /// A dictionary of actions that this class supports and the description of each.
-        /// </summary>
-        public virtual Dictionary<string, string> SupportedActions { get; private set; }
-
-        /// <summary>
-        /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
-        /// </returns>
-        public virtual bool IsAuthorized( string action, Person person )
-        {
-            return Security.Authorization.Authorized( this, action, person );
-        }
-
-        /// <summary>
-        /// If a user or role is not specifically allowed or denied to perform the selected action,
-        /// return <c>true</c> if they should be allowed anyway or <c>false</c> if not.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <returns></returns>
-        public virtual bool IsAllowedByDefault( string action )
-        {
-            return action == Authorization.VIEW;
-        }
-
-        /// <summary>
-        /// Determines whether the specified action is private (Only the current user has access).
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
-        /// </returns>
-        public virtual bool IsPrivate( string action, Person person )
-        {
-            return Security.Authorization.IsPrivate( this, action, person );
-        }
-
-        /// <summary>
-        /// Makes the action on the current entity private (Only the current user will have access).
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
-        public virtual void MakePrivate( string action, Person person, RockContext rockContext = null )
-        {
-            if ( rockContext != null )
-            {
-                Security.Authorization.MakePrivate( this, action, person, rockContext );
-            }
-            else
-            {
-                Security.Authorization.MakePrivate( this, action, person );
-            }
-        }
-
-        /// <summary>
-        /// If action on the current entity is private, removes security that made it private.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
-        public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
-        {
-            if ( rockContext != null )
-            {
-                Security.Authorization.MakeUnPrivate( this, action, person, rockContext );
-            }
-            else
-            {
-                Security.Authorization.MakeUnPrivate( this, action, person );
             }
         }
 
@@ -585,37 +467,24 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static AttributeCache Read( int id, RockContext rockContext = null )
         {
-            string cacheKey = AttributeCache.CacheKey( id );
-
-            ObjectCache cache = RockMemoryCache.Default;
-            AttributeCache attribute = cache[cacheKey] as AttributeCache;
-
-            if ( attribute == null )
-            {
-                if ( rockContext != null )
-                {
-                    attribute = LoadById( id, rockContext );
-                }
-                else
-                {
-                    using ( var myRockContext = new RockContext() )
-                    {
-                        attribute = LoadById( id, myRockContext );
-                    }
-                }
-
-                if ( attribute != null )
-                {
-                    var cachePolicy = new CacheItemPolicy();
-                    cache.Set( cacheKey, attribute, cachePolicy );
-                    cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
-                }
-            }
-
-            return attribute;
+            return GetOrAddExisting( AttributeCache.CacheKey( id ),
+                () => LoadById( id, rockContext ) );
         }
 
         private static AttributeCache LoadById( int id, RockContext rockContext )
+        {
+            if ( rockContext != null )
+            {
+                return LoadById2( id, rockContext );
+            }
+
+            using ( var rockContext2 = new RockContext() )
+            {
+                return LoadById2( id, rockContext2 );
+            }
+        }
+
+        private static AttributeCache LoadById2( int id, RockContext rockContext )
         {
             var attributeService = new Rock.Model.AttributeService( rockContext );
             var attributeModel = attributeService.Get( id );
@@ -635,50 +504,33 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static AttributeCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = RockMemoryCache.Default;
-            object cacheObj = cache[guid.ToString()];
+            int id = GetOrAddExisting( guid.ToString(),
+                () => LoadByGuid( guid, rockContext ) );
 
-            AttributeCache attribute = null;
-            if ( cacheObj != null )
-            {
-                attribute = Read( (int)cacheObj, rockContext );
-            }
-
-            if ( attribute == null )
-            {
-                if ( rockContext != null )
-                {
-                    attribute = LoadByGuid( guid, rockContext );
-                }
-                else
-                {
-                    using ( var myRockContext = new RockContext() )
-                    {
-                        attribute = LoadByGuid( guid, myRockContext );
-                    }
-                }
-
-                if ( attribute != null )
-                {
-                    var cachePolicy = new CacheItemPolicy();
-                    cache.Set( AttributeCache.CacheKey( attribute.Id ), attribute, cachePolicy );
-                    cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
-                }
-            }
-
-            return attribute;
+            return Read( id, rockContext );
         }
 
-        private static AttributeCache LoadByGuid( Guid guid, RockContext rockContext )
+        private static int LoadByGuid( Guid guid, RockContext rockContext )
         {
-            var attributeService = new AttributeService( rockContext );
-            var attributeModel = attributeService.Get( guid );
-            if ( attributeModel != null )
+            if ( rockContext != null )
             {
-                return new AttributeCache( attributeModel );
+                return LoadByGuid2( guid, rockContext );
             }
 
-            return null;
+            using ( var rockContext2 = new RockContext() )
+            {
+                return LoadByGuid2( guid, rockContext2 );
+            }
+        }
+
+        private static int LoadByGuid2( Guid guid, RockContext rockContext )
+        {
+            var attributeService = new AttributeService( rockContext );
+            return attributeService
+                .Queryable().AsNoTracking()
+                .Where( c => c.Guid.Equals( guid ) )
+                .Select( c => c.Id )
+                .FirstOrDefault();
         }
 
         /// <summary>
@@ -688,24 +540,17 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static AttributeCache Read( Rock.Model.Attribute attributeModel )
         {
-            string cacheKey = AttributeCache.CacheKey( attributeModel.Id );
+            return GetOrAddExisting( AttributeCache.CacheKey( attributeModel.Id ),
+                () => LoadByModel( attributeModel ) );
+        }
 
-            ObjectCache cache = RockMemoryCache.Default;
-            AttributeCache attribute = cache[cacheKey] as AttributeCache;
-
-            if ( attribute != null )
+        private static AttributeCache LoadByModel( Rock.Model.Attribute attributeModel )
+        {
+            if ( attributeModel != null )
             {
-                attribute.CopyFromModel( attributeModel );
+                return new AttributeCache( attributeModel );
             }
-            else
-            {
-                attribute = new AttributeCache( attributeModel );
-                var cachePolicy = new CacheItemPolicy();
-                cache.Set( cacheKey, attribute, cachePolicy );
-                cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
-            }
-
-            return attribute;
+            return null;
         }
 
         /// <summary>
@@ -716,17 +561,17 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static AttributeCache Read( Rock.Model.Attribute attributeModel, Dictionary<string, string> qualifiers )
         {
-            AttributeCache attribute = new AttributeCache( attributeModel, qualifiers );
+            return GetOrAddExisting( AttributeCache.CacheKey( attributeModel.Id ),
+                () => LoadByModel( attributeModel, qualifiers ) );
+        }
 
-            string cacheKey = AttributeCache.CacheKey( attributeModel.Id );
-
-            ObjectCache cache = RockMemoryCache.Default;
-
-            var cachePolicy = new CacheItemPolicy();
-            cache.Set( cacheKey, attribute, cachePolicy );
-            cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
-
-            return attribute;
+        private static AttributeCache LoadByModel( Rock.Model.Attribute attributeModel, Dictionary<string, string> qualifiers )
+        {
+            if ( attributeModel != null )
+            {
+                return new AttributeCache( attributeModel, qualifiers );
+            }
+            return null;
         }
 
         /// <summary>
@@ -735,47 +580,12 @@ namespace Rock.Web.Cache
         /// <param name="id">The id of the attribute to remove from cache</param>
         public static void Flush( int id )
         {
-            ObjectCache cache = RockMemoryCache.Default;
-            cache.Remove( AttributeCache.CacheKey( id ) );
+            FlushCache( AttributeCache.CacheKey( id ) );
         }
 
         #endregion
 
         #region ILiquidizable Implementation
-
-        /// <summary>
-        /// To the liquid.
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this;
-        }
-
-        /// <summary>
-        /// Gets the available keys (for debuging info).
-        /// </summary>
-        /// <value>
-        /// The available keys.
-        /// </value>
-        [LavaIgnore]
-        public List<string> AvailableKeys
-        {
-            get
-            {
-                var availableKeys = new List<string>();
-
-                foreach ( var propInfo in GetType().GetProperties() )
-                {
-                    if ( propInfo != null && propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
-                    {
-                        availableKeys.Add( propInfo.Name );
-                    }
-                }
-
-                return availableKeys;
-            }
-        }
 
         /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
@@ -786,7 +596,7 @@ namespace Rock.Web.Cache
         /// <param name="key">The key.</param>
         /// <returns></returns>
         [LavaIgnore]
-        public object this[object key]
+        public override object this[object key]
         {
             get
             {
@@ -815,7 +625,7 @@ namespace Rock.Web.Cache
         /// </remarks>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public bool ContainsKey( object key )
+        public override bool ContainsKey( object key )
         {
             var propInfo = GetType().GetProperty( key.ToStringSafe() );
             if ( propInfo != null && propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
@@ -827,5 +637,142 @@ namespace Rock.Web.Cache
         }
 
         #endregion
+
+        #region Entity Attributes Cache
+
+        /// <summary>
+        /// The _lock
+        /// </summary>
+        private static object _lock = new object();
+
+        /// <summary>
+        /// Gets or sets all entity attributes.
+        /// </summary>
+        /// <value>
+        /// All entity attributes.
+        /// </value>
+        private static List<EntityAttributes> AllEntityAttributes { get; set; }
+
+        /// <summary>
+        /// Gets the by entity.
+        /// </summary>
+        /// <param name="entityTypeid">The entity typeid.</param>
+        /// <returns></returns>
+        internal static List<EntityAttributes> GetByEntity( int? entityTypeid )
+        {
+            LoadEntityAttributes();
+
+            return AllEntityAttributes
+                .Where( a => a.EntityTypeId.Equals( entityTypeid ) )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the by entity.
+        /// </summary>
+        /// <param name="entityTypeid">The entity typeid.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <returns></returns>
+        internal static List<int> GetByEntity( int? entityTypeid, string entityTypeQualifierColumn, string entityTypeQualifierValue )
+        {
+            LoadEntityAttributes();
+
+            return AllEntityAttributes
+                .Where( a =>
+                    a.EntityTypeId.Equals( entityTypeid ) &&
+                    a.EntityTypeQualifierColumn.Equals( entityTypeQualifierColumn ) &&
+                    a.EntityTypeQualifierValue.Equals( entityTypeQualifierValue ) )
+                .SelectMany( a => a.AttributeIds )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Loads the entity attributes.
+        /// </summary>
+        private static void LoadEntityAttributes()
+        {
+            lock ( _lock )
+            {
+                if ( AllEntityAttributes == null )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        AllEntityAttributes = new AttributeService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .GroupBy( a => new
+                            {
+                                a.EntityTypeId,
+                                a.EntityTypeQualifierColumn,
+                                a.EntityTypeQualifierValue
+                            } )
+                            .Select( a => new EntityAttributes()
+                            {
+                                EntityTypeId = a.Key.EntityTypeId,
+                                EntityTypeQualifierColumn = a.Key.EntityTypeQualifierColumn,
+                                EntityTypeQualifierValue = a.Key.EntityTypeQualifierValue,
+                                AttributeIds = a.Select( v => v.Id ).ToList()
+                            } )
+                            .ToList();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Flushes the entity attributes.
+        /// </summary>
+        public static void FlushEntityAttributes()
+        {
+            lock ( _lock )
+            {
+                AllEntityAttributes = null;
+            }
+        }
+
+        #endregion
     }
+
+    #region Helper class for entity attributes
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Serializable]
+    internal class EntityAttributes
+    {
+        /// <summary>
+        /// Gets or sets the entity type id.
+        /// </summary>
+        /// <value>
+        /// The entity type id.
+        /// </value>
+        public int? EntityTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier column.
+        /// </summary>
+        /// <value>
+        /// The entity type qualifier column.
+        /// </value>
+        public string EntityTypeQualifierColumn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier value.
+        /// </summary>
+        /// <value>
+        /// The entity type qualifier value.
+        /// </value>
+        public string EntityTypeQualifierValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute ids.
+        /// </summary>
+        /// <value>
+        /// The attribute ids.
+        /// </value>
+        public List<int> AttributeIds { get; set; }
+    }
+
+    #endregion
 }

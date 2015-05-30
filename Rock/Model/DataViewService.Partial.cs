@@ -16,10 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
-
+using System.Linq.Expressions;
+using System.Reflection;
 using Rock.Data;
-using Rock.Reporting.DataFilter;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Model
 {
@@ -52,32 +55,48 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Determines whether the specified Data View forms part of a filter.
+        /// Gets the ids.
         /// </summary>
-        /// <param name="dataViewId">The unique identifier of a Data View.</param>
-        /// <param name="filter">The filter.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified Data View forms part of the conditions for the specified filter.
-        /// </returns>
-        public bool IsViewInFilter( int dataViewId, DataViewFilter filter )
+        /// <param name="dataViewId">The data view identifier.</param>
+        /// <returns></returns>
+        public List<int> GetIds ( int dataViewId )
         {
-            var dataViewFilterEntityId = new EntityTypeService((RockContext)this.Context).Get(typeof(OtherDataViewFilter), false, null).Id;
-
-            return IsViewInFilter(dataViewId, filter, dataViewFilterEntityId);
-        }
-
-        private bool IsViewInFilter( int dataViewId, DataViewFilter filter, int dataViewFilterEntityId )
-        {
-            if ( filter.EntityTypeId == dataViewFilterEntityId )
+            var dataView = Queryable().AsNoTracking().FirstOrDefault( d => d.Id == dataViewId );
+            if ( dataView != null && dataView.EntityTypeId.HasValue )
             {
-                var filterDataViewId = filter.Selection.AsIntegerOrNull();
-                if ( filterDataViewId == dataViewId )
+                var cachedEntityType = EntityTypeCache.Read( dataView.EntityTypeId.Value );
+                if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
                 {
-                    return true;
+                    Type entityType = cachedEntityType.GetEntityType();
+
+                    if ( entityType != null )
+                    {
+                        System.Data.Entity.DbContext reportDbContext = Reflection.GetDbContextForEntityType( entityType );
+                        if ( reportDbContext != null )
+                        {
+                            reportDbContext.Database.CommandTimeout = 180;
+                            IService serviceInstance = Reflection.GetServiceForEntityType( entityType, reportDbContext );
+                            if ( serviceInstance != null )
+                            {
+                                var errorMessages = new List<string>();
+                                ParameterExpression paramExpression = serviceInstance.ParameterExpression;
+                                Expression whereExpression = dataView.GetExpression( serviceInstance, paramExpression, out errorMessages );
+
+                                MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
+                                if ( getMethod != null )
+                                {
+                                    var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression } );
+                                    var qry = getResult as IQueryable<IEntity>;
+
+                                    return qry.Select( t => t.Id ).ToList();
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
-            return filter.ChildFilters.Any( childFilter => IsViewInFilter( dataViewId, childFilter, dataViewFilterEntityId ) );
+            return null;
         }
        
     }

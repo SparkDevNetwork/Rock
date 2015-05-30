@@ -81,14 +81,20 @@ namespace Rock.Jobs
             var activeStatusGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid();
             
             // only include alive people that have record status of Active
-            var personQry = personService.Queryable( false, false ).Where( a => a.RecordStatusValue.Guid == activeStatusGuid );
-            var ageRange = ( dataMap.GetString( "AgeRange" ) ?? string.Empty ).Split( ',' );
+            var personQry = personService.Queryable( false, false ).Where( a => a.RecordStatusValue.Guid == activeStatusGuid && a.IsDeceased == false );
+            var ageRange = ( dataMap.GetString( "AgeRange" ) ?? string.Empty ).Split( ',' ); 
             if ( ageRange.Length == 2 )
             {
                 int? minimumAge = ageRange[0].AsIntegerOrNull();
                 int? maximumAge = ageRange[1].AsIntegerOrNull();
                 personQry = personQry.WhereAgeRange( minimumAge, maximumAge, true );
             }
+
+            // only include people whose birthday is today
+            var currentDate = RockDateTime.Today;
+            int currentMonth = currentDate.Month;
+            int currentDay = currentDate.Day;
+            personQry = personQry.Where( a => a.BirthMonth == currentMonth && a.BirthDay == currentDay );
 
             var connectionStatusGuids = ( dataMap.GetString( "ConnectionStatuses" ) ?? string.Empty ).Split( ',' ).AsGuidList();
 

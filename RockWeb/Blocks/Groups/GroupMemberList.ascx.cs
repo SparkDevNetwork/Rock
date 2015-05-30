@@ -180,19 +180,18 @@ namespace RockWeb.Blocks.Groups
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                var groupMember = e.Row.DataItem as GroupMember;
-                if ( groupMember != null && groupMember.Person != null )
-                {
-                    if ( _inactiveStatus != null &&
-                        groupMember.Person.RecordStatusValueId.HasValue &&
-                        groupMember.Person.RecordStatusValueId == _inactiveStatus.Id )
-                    {
-                        e.Row.AddCssClass( "inactive" );
-                    }
+                dynamic  groupMember = e.Row.DataItem;
 
-                    if ( groupMember.Person.IsDeceased ?? false )
+                if ( groupMember != null )
+                {
+                    if ( groupMember != null && groupMember.IsDeceased )
                     {
                         e.Row.AddCssClass( "deceased" );
+                    }
+
+                    if ( _inactiveStatus != null && groupMember.RecordStatusValueId == _inactiveStatus.Id )
+                    {
+                        e.Row.AddCssClass( "inactive" );
                     }
                 }
             }
@@ -599,7 +598,6 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
 
-
                     _inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
 
                     SortProperty sortProperty = gGroupMembers.SortProperty;
@@ -628,7 +626,10 @@ namespace RockWeb.Blocks.Groups
                         m.PersonId,
                         Name = m.Person.NickName + " " + m.Person.LastName,
                         GroupRole = m.GroupRole.Name,
-                        m.GroupMemberStatus
+                        m.GroupMemberStatus,
+                        RecordStatusValueId = m.Person.RecordStatusValueId,
+                        IsDeceased = m.Person.IsDeceased,
+
                     } ).ToList();
 
                     gGroupMembers.DataBind();

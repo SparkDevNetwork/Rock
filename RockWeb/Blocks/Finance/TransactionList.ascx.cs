@@ -69,6 +69,7 @@ namespace RockWeb.Blocks.Finance
             base.OnInit( e );
 
             gfTransactions.ApplyFilterClick += gfTransactions_ApplyFilterClick;
+            gfTransactions.ClearFilterClick += gfTransactions_ClearFilterClick;
             gfTransactions.DisplayFilterValue += gfTransactions_DisplayFilterValue;
 
             string title = GetAttributeValue( "Title" );
@@ -76,6 +77,7 @@ namespace RockWeb.Blocks.Finance
             {
                 title = "Transaction List";
             }
+
             lTitle.Text = title;
 
             _canEdit = UserCanEdit;
@@ -129,50 +131,46 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Handles the ClearFilterClick event of the gfTransactions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gfTransactions_ClearFilterClick( object sender, EventArgs e )
+        {
+            gfTransactions.DeleteUserPreferences();
+            BindFilter();
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-            bool promptWithFilter = true;
             var contextEntity = this.ContextEntity();
             if ( contextEntity != null )
             {
                 if ( contextEntity is Person )
                 {
                     _person = contextEntity as Person;
-                    promptWithFilter = false;
                 }
                 else if ( contextEntity is FinancialBatch )
                 {
                     _batch = contextEntity as FinancialBatch;
                     gfTransactions.Visible = false;
-                    promptWithFilter = false;
                 }
                 else if ( contextEntity is FinancialScheduledTransaction )
                 {
                     _scheduledTxn = contextEntity as FinancialScheduledTransaction;
                     gfTransactions.Visible = false;
-                    promptWithFilter = false;
                 }
             }
 
             if ( !Page.IsPostBack )
             {
                 BindFilter();
-
-                if ( promptWithFilter && gfTransactions.Visible )
-                {
-                    //// NOTE: Special Case for this List Block since there could be a very large number of transactions:
-                    //// If the filter is shown and we aren't filtering by anything else, don't automatically populate the grid. Wait for them to hit apply on the filter
-                    gfTransactions.Show();
-                }
-                else
-                {
-                    BindGrid();
-                }
+                BindGrid();
             }
 
             if ( _canEdit && _batch != null )
@@ -220,6 +218,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 // If the batch is closed, do not allow any editing of the transactions
+                // NOTE that gTransactions_Delete click will also check if the transaction is part of a closed batch
                 if ( _batch.Status != BatchStatus.Closed && _canEdit )
                 {
                     gTransactions.Actions.ShowAdd = true;
@@ -269,6 +268,11 @@ namespace RockWeb.Blocks.Finance
         {
             switch ( e.Key )
             {
+                case "Row Limit":
+                    // row limit filter was removed, so hide it just in case
+                    e.Value = null;
+                    break;
+
                 case "Date Range":
                     e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
                     break;
@@ -319,7 +323,6 @@ namespace RockWeb.Blocks.Finance
         protected void gfTransactions_ApplyFilterClick( object sender, EventArgs e )
         {
             gfTransactions.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
-            gfTransactions.SaveUserPreference( "Row Limit", nbRowLimit.Text );
             gfTransactions.SaveUserPreference( "Amount Range", nreAmount.DelimitedValues );
             gfTransactions.SaveUserPreference( "Transaction Code", tbTransactionCode.Text );
             gfTransactions.SaveUserPreference( "Account", ddlAccount.SelectedValue != All.Id.ToString() ? ddlAccount.SelectedValue : string.Empty );
@@ -431,6 +434,16 @@ namespace RockWeb.Blocks.Finance
                     return;
                 }
 
+                // prevent deleting a Transaction that is in closed batch
+                if (transaction.Batch != null )
+                {
+                    if ( transaction.Batch.Status == BatchStatus.Closed )
+                    {
+                        mdGridWarning.Show( string.Format( "This {0} is assigned to a closed {1}", FinancialTransaction.FriendlyTypeName, FinancialBatch.FriendlyTypeName ), ModalAlertType.Information );
+                        return;
+                    }
+                }
+
                 transactionService.Delete( transaction );
                 rockContext.SaveChanges();
 
@@ -530,7 +543,6 @@ namespace RockWeb.Blocks.Finance
         private void BindFilter()
         {
             drpDates.DelimitedValues = gfTransactions.GetUserPreference( "Date Range" );
-            nbRowLimit.Text = gfTransactions.GetUserPreference( "Row Limit" );
             nreAmount.DelimitedValues = gfTransactions.GetUserPreference( "Amount Range" );
             tbTransactionCode.Text = gfTransactions.GetUserPreference( "Transaction Code" );
 
@@ -663,8 +675,6 @@ namespace RockWeb.Blocks.Finance
                     qry = qry.Where( t => t.TransactionDateTime < upperDate );
                 }
 
-                
-
                 // Amount Range
                 var nre = new NumberRangeEditor();
                 nre.DelimitedValues = gfTransactions.GetUserPreference( "Amount Range" );
@@ -754,14 +764,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            // Row Limit
-            int? rowLimit = gfTransactions.GetUserPreference( "Row Limit" ).AsIntegerOrNull();
-            if ( rowLimit.HasValue )
-            {
-                qry = qry.Take( rowLimit.Value );
-            }
-
-            gTransactions.DataSource = qry.AsNoTracking().ToList();
+            gTransactions.SetLinqDataSource( qry.AsNoTracking() );
             gTransactions.DataBind();
         }
 

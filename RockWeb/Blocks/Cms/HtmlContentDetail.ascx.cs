@@ -544,6 +544,22 @@ namespace RockWeb.Blocks.Cms
             return maxVersion;
         }
 
+        private Dictionary<string, object> GetPageProperties()
+        {
+            Dictionary<string, object> pageProperties = new Dictionary<string, object>();
+            pageProperties.Add( "Id", this.RockPage.PageId.ToString() );
+            pageProperties.Add( "BrowserTitle", this.RockPage.BrowserTitle );
+            pageProperties.Add( "PageTitle", this.RockPage.PageTitle );
+            pageProperties.Add( "Site", this.RockPage.Site.Name );
+            pageProperties.Add( "SiteId", this.RockPage.Site.Id.ToString() );
+            pageProperties.Add( "LayoutId", this.RockPage.Layout.Id.ToString() );
+            pageProperties.Add( "Layout", this.RockPage.Layout.Name );
+            pageProperties.Add( "SiteTheme", this.RockPage.Site.Theme );
+            pageProperties.Add( "PageIcon", this.RockPage.PageIcon );
+            pageProperties.Add( "Description", this.RockPage.MetaDescription );
+            return pageProperties;
+        }
+
         /// <summary>
         /// Shows the view.
         /// </summary>
@@ -587,6 +603,7 @@ namespace RockWeb.Blocks.Cms
 
                             mergeFields.Add( "Campuses", CampusCache.All() );
                             mergeFields.Add( "PageParameter", PageParameters() );
+                            mergeFields.Add( "CurrentPage", GetPageProperties() );
 
                             var contextObjects = new Dictionary<string, object>();
                             foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )

@@ -363,6 +363,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the person merge page route
+        /// </summary>
+        /// <value>
+        /// The merge page route.
+        /// </value>
+        [Obsolete("Use PersonMergePageRoute instead")]
+        public virtual string MergePageRoute
+        {
+            get
+            {
+                return PersonMergePageRoute;
+            }
+
+            set
+            {
+                PersonMergePageRoute = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the person merge page route.
         /// </summary>
         /// <value>
@@ -859,6 +879,27 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Sets the linq data source 
+        /// The grid will use it to load only the records it needs based on the current page and page size
+        /// NOTE: Make sure that your query is sorted/ordered
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="qry">The qry.</param>
+        public void SetLinqDataSource<T>( IQueryable<T> qry )
+        {
+            if ( this.AllowPaging )
+            {
+                this.AllowCustomPaging = true;
+                this.DataSource = qry.Skip( this.PageIndex * this.PageSize ).Take( this.PageSize ).ToList();
+                this.VirtualItemCount = qry.Count();
+            }
+            else
+            {
+                this.DataSource = qry.ToList();
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.WebControls.BaseDataBoundControl.DataBound"/> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
@@ -868,7 +909,11 @@ namespace Rock.Web.UI.Controls
 
             // Get ItemCount
             int itemCount = 0;
-            if ( this.DataSourceAsDataTable != null )
+            if ( this.AllowCustomPaging )
+            {
+                itemCount = this.VirtualItemCount;
+            }
+            else if ( this.DataSourceAsDataTable != null )
             {
                 itemCount = this.DataSourceAsDataTable.Rows.Count;
             }
@@ -914,7 +959,7 @@ namespace Rock.Web.UI.Controls
                 this.SortProperty = new SortProperty( e );
             }
 
-            OnGridRebind( e );
+            RebindGrid( e, false );
         }
 
         #endregion
@@ -1080,7 +1125,7 @@ namespace Rock.Web.UI.Controls
             }
 
             this.PageSize = e.Number;
-            OnGridRebind( e );
+            RebindGrid( e, false );
         }
 
         /// <summary>
@@ -1091,7 +1136,7 @@ namespace Rock.Web.UI.Controls
         void pagerTemplate_NavigateClick( object sender, NumericalEventArgs e )
         {
             this.PageIndex = e.Number;
-            OnGridRebind( e );
+            RebindGrid( e, false );
         }
 
         #endregion
@@ -1138,7 +1183,9 @@ namespace Rock.Web.UI.Controls
             var rockPage = Page as RockPage;
             if ( rockPage != null )
             {
-                OnGridRebind( e );
+                // disable paging if no specific keys where selected
+                bool selectAll = !SelectedKeys.Any();
+                RebindGrid( e, selectAll );
 
                 var recipients = GetPersonData();
                 if ( recipients.Any() )
@@ -1207,7 +1254,9 @@ namespace Rock.Web.UI.Controls
         /// <exception cref="System.NotImplementedException"></exception>
         protected void Actions_MergeTemplateClick( object sender, EventArgs e )
         {
-            OnGridRebind( e );
+            // disable paging if no specific keys where selected (or if no select option is shown)
+            bool selectAll = !SelectedKeys.Any();
+            RebindGrid( e, selectAll );
             int? entitySetId = GetEntitySetFromGrid( e );
             if ( entitySetId.HasValue )
             {
@@ -1218,13 +1267,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to export the data that is shown instead of the properties of the underlying data
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [export grid as wysiwyg]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ExportGridAsWYSIWYG { get; set; }
+
+        /// <summary>
         /// Handles the ExcelExportClick event of the Actions control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Actions_ExcelExportClick( object sender, EventArgs e )
         {
-            OnGridRebind( e );
+            // disable paging if no specific keys where selected (or if no select option is shown)
+            bool selectAll = !SelectedKeys.Any();
+            RebindGrid( e, selectAll );
 
             // create default settings
             string filename = ExportFilename;
@@ -1235,7 +1294,7 @@ namespace Rock.Web.UI.Controls
             ExcelPackage excel = new ExcelPackage( ms );
 
             // if the grid has a caption customize on it
-            if ( !string.IsNullOrEmpty(this.Caption) )
+            if ( !string.IsNullOrEmpty( this.Caption ) )
             {
                 excel.Workbook.Properties.Title = this.Caption;
                 workSheetName = this.Caption;
@@ -1299,151 +1358,243 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                var oType = GetDataSourceObjectType();
-
-                // get all properties of the objects in the grid
-                IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
-                IList<PropertyInfo> props = new List<PropertyInfo>();
-
-                var gridDataFields = this.Columns.OfType<BoundField>().ToList();
-
-                // Inspect the collection of Fields that appear in the Grid and add the corresponding data item properties to the set of fields to be exported.
-                // The fields are exported in the same order as they appear in the Grid.
-                var orderedProps = new SortedDictionary<int, PropertyInfo>();
-
-                foreach ( PropertyInfo prop in allprops )
+                if ( this.ExportGridAsWYSIWYG )
                 {
-                    // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
-                    if ( prop.GetGetMethod().IsVirtual )
-                        continue;
-
-                    // Find a matching field in the Grid and add it to the list of exported properties.
-                    var gridField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
-
-                    if ( gridField == null )
-                        continue;
-
-                    int fieldIndex = gridDataFields.IndexOf( gridField );
-
-                    orderedProps.Add( fieldIndex, prop );
-                }
-
-                props = orderedProps.Values.ToList();
-
-                // print column headings
-                foreach ( PropertyInfo prop in props )
-                {
-                    var gridDataField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
-                    if ( gridDataField != null )
+                    var gridColumns = this.Columns.OfType<DataControlField>().Where( a => a.Visible ).ToList();
+                    foreach ( var col in gridColumns )
                     {
-                        worksheet.Cells[3, columnCounter].Value = gridDataField.HeaderText;
-                    }
-                    else
-                    {
-                        worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();
+                        worksheet.Cells[3, columnCounter++].Value = col.HeaderText;
                     }
 
-                    columnCounter++;
+                    var dataItems = this.DataSourceAsList;
+                    var gridViewRow = this.Rows.OfType<GridViewRow>().FirstOrDefault();
+                    if ( gridViewRow == null )
+                    {
+                        return;
+                    }
+
+                    var selectedKeys = SelectedKeys.ToList();
+                    foreach ( var dataItem in dataItems )
+                    {
+                        if (selectedKeys.Any() && this.DataKeyNames.Count() == 1)
+                        {
+                            var dataKeyValue = dataItem.GetPropertyValue( this.DataKeyNames[0] );
+                            if (!selectedKeys.Contains(dataKeyValue))
+                            {
+                                // if there are specific rows selected, skip over rows that aren't selected
+                                continue;
+                            }
+                        }
+                        
+                        GridViewRowEventArgs args = new GridViewRowEventArgs( gridViewRow );
+                        gridViewRow.DataItem = dataItem;
+                        this.OnRowDataBound( args );
+                        int colIndex = 1;
+                        foreach ( var col in gridColumns )
+                        {
+                            var cell = gridViewRow.Cells[colIndex - 1] as DataControlFieldCell;
+
+                            object exportValue = null;
+                            if ( cell.ContainingField is RockBoundField )
+                            {
+                                exportValue = ( cell.ContainingField as RockBoundField ).GetExportValue( gridViewRow );
+                            }
+                            else if ( cell.ContainingField is RockTemplateField )
+                            {
+                                var textControls = cell.ControlsOfTypeRecursive<Control>().OfType<ITextControl>();
+                                if ( textControls.Any() )
+                                {
+                                    exportValue = textControls.Select( a => a.Text ).Where( t => !string.IsNullOrWhiteSpace( t ) ).ToList().AsDelimited( string.Empty );
+                                }
+                            }
+
+                            if ( exportValue != null )
+                            {
+                                worksheet.Cells[rowCounter, colIndex].Value = exportValue.ToString();
+                            }
+                            else
+                            {
+                                worksheet.Cells[rowCounter, colIndex].Value = cell.Text;
+                            }
+
+                            // format background color for alternating rows
+                            if ( rowCounter % 2 == 1 )
+                            {
+                                worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
+                            }
+
+                            if ( exportValue != null && exportValue is DateTime )
+                            {
+                                worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
+                            }
+
+                            colIndex++;
+                        }
+
+                        rowCounter++;
+                    }
                 }
-
-                // Get any defined value columns
-                List<DefinedValueField> definedValueFields = this.Columns.OfType<DefinedValueField>().ToList();
-
-                // Get any attribute columns
-                List<AttributeField> attributeFields = this.Columns.OfType<AttributeField>().ToList();
-                foreach ( var attributeField in attributeFields )
+                else
                 {
-                    worksheet.Cells[3, columnCounter].Value = attributeField.HeaderText;
-                    columnCounter++;
-                }
+                    var oType = GetDataSourceObjectType();
 
-                // print data
-                int dataIndex = 0;
+                    // get all properties of the objects in the grid
+                    IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
+                    IList<PropertyInfo> props = new List<PropertyInfo>();
 
-                IList data = this.DataSourceAsList;
-                foreach ( var item in data )
-                {
-                    columnCounter = 0;
+                    var gridDataFields = this.Columns.OfType<BoundField>().ToList();
+
+                    // Inspect the collection of Fields that appear in the Grid and add the corresponding data item properties to the set of fields to be exported.
+                    // The fields are exported in the same order as they appear in the Grid.
+                    var orderedProps = new SortedDictionary<int, PropertyInfo>();
+
+                    foreach ( PropertyInfo prop in allprops )
+                    {
+                        // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
+                        if ( prop.GetGetMethod().IsVirtual )
+                            continue;
+
+                        // Find a matching field in the Grid and add it to the list of exported properties.
+                        var gridField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
+
+                        if ( gridField == null )
+                            continue;
+
+                        int fieldIndex = gridDataFields.IndexOf( gridField );
+
+                        orderedProps.Add( fieldIndex, prop );
+                    }
+
+                    props = orderedProps.Values.ToList();
+
+                    // print column headings
                     foreach ( PropertyInfo prop in props )
                     {
+                        var gridDataField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
+                        if ( gridDataField != null )
+                        {
+                            worksheet.Cells[3, columnCounter].Value = gridDataField.HeaderText;
+                        }
+                        else
+                        {
+                            worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();
+                        }
+
                         columnCounter++;
-
-                        object propValue = prop.GetValue( item, null );
-
-                        var definedValueAttribute = prop.GetCustomAttributes( typeof( DefinedValueAttribute ), true ).FirstOrDefault();
-
-                        bool isDefinedValue = ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) );
-
-                        string value = this.GetExportValue( prop, propValue, isDefinedValue );
-
-                        worksheet.Cells[rowCounter, columnCounter].Value = value.ConvertBrToCrLf();
-
-                        // format background color for alternating rows
-                        if ( rowCounter % 2 == 1 )
-                        {
-                            worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                            worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
-                        }
-
-                        if ( propValue is DateTime )
-                        {
-                            worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
-                        }
-
                     }
 
-                    if ( attributeFields.Any() )
+                    // Get any defined value columns
+                    List<DefinedValueField> definedValueFields = this.Columns.OfType<DefinedValueField>().ToList();
+
+                    // Get any attribute columns
+                    List<AttributeField> attributeFields = this.Columns.OfType<AttributeField>().ToList();
+                    foreach ( var attributeField in attributeFields )
                     {
-                        // First check if DataItem has attributes
-                        var dataItem = item as Rock.Attribute.IHasAttributes;
-                        if ( dataItem == null )
-                        {
-                            // If the DataItem does not have attributes, check to see if there is an object list
-                            if ( ObjectList != null )
-                            {
-                                // If an object list exists, check to see if the associated object has attributes
-                                string key = DataKeys[dataIndex].Value.ToString();
-                                if ( !string.IsNullOrWhiteSpace( key ) && ObjectList.ContainsKey( key ) )
-                                {
-                                    dataItem = ObjectList[key] as Rock.Attribute.IHasAttributes;
-                                }
-                            }
-                        }
-
-                        if ( dataItem != null )
-                        {
-                            if ( dataItem.Attributes == null )
-                            {
-                                dataItem.LoadAttributes();
-                            }
-
-                            foreach ( var attributeField in attributeFields )
-                            {
-                                columnCounter++;
-
-                                bool exists = dataItem.Attributes.ContainsKey( attributeField.DataField );
-                                if ( exists )
-                                {
-                                    var attrib = dataItem.Attributes[attributeField.DataField];
-                                    string rawValue = dataItem.GetAttributeValue( attributeField.DataField );
-                                    string resultHtml = attrib.FieldType.Field.FormatValue( null, rawValue, attrib.QualifierValues, false );
-                                    worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
-                                }
-
-                                // format background color for alternating rows
-                                if ( rowCounter % 2 == 1 )
-                                {
-                                    worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                    worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
-                                }
-
-                            }
-                        }
+                        worksheet.Cells[3, columnCounter].Value = attributeField.HeaderText;
+                        columnCounter++;
                     }
 
-                    rowCounter++;
-                    dataIndex++;
-                }            
+                    // print data
+                    int dataIndex = 0;
+
+                    IList data = this.DataSourceAsList;
+
+                    var selectedKeys = SelectedKeys.ToList();
+                    foreach ( var item in data )
+                    {
+                        if (selectedKeys.Any() && this.DataKeyNames.Count() == 1)
+                        {
+                            var dataKeyValue = item.GetPropertyValue( this.DataKeyNames[0] );
+                            if (!selectedKeys.Contains(dataKeyValue))
+                            {
+                                // if there are specific rows selected, skip over rows that aren't selected
+                                continue;
+                            }
+                        }
+
+                        columnCounter = 0;
+                        foreach ( PropertyInfo prop in props )
+                        {
+                            columnCounter++;
+
+                            object propValue = prop.GetValue( item, null );
+
+                            var definedValueAttribute = prop.GetCustomAttributes( typeof( DefinedValueAttribute ), true ).FirstOrDefault();
+
+                            bool isDefinedValue = ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) );
+
+                            string value = this.GetExportValue( prop, propValue, isDefinedValue );
+
+                            worksheet.Cells[rowCounter, columnCounter].Value = value.ConvertBrToCrLf();
+
+                            // format background color for alternating rows
+                            if ( rowCounter % 2 == 1 )
+                            {
+                                worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
+                            }
+
+                            if ( propValue is DateTime )
+                            {
+                                worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
+                            }
+
+                        }
+
+                        if ( attributeFields.Any() )
+                        {
+                            // First check if DataItem has attributes
+                            var dataItem = item as Rock.Attribute.IHasAttributes;
+                            if ( dataItem == null )
+                            {
+                                // If the DataItem does not have attributes, check to see if there is an object list
+                                if ( ObjectList != null )
+                                {
+                                    // If an object list exists, check to see if the associated object has attributes
+                                    string key = DataKeys[dataIndex].Value.ToString();
+                                    if ( !string.IsNullOrWhiteSpace( key ) && ObjectList.ContainsKey( key ) )
+                                    {
+                                        dataItem = ObjectList[key] as Rock.Attribute.IHasAttributes;
+                                    }
+                                }
+                            }
+
+                            if ( dataItem != null )
+                            {
+                                if ( dataItem.Attributes == null )
+                                {
+                                    dataItem.LoadAttributes();
+                                }
+
+                                foreach ( var attributeField in attributeFields )
+                                {
+                                    columnCounter++;
+
+                                    bool exists = dataItem.Attributes.ContainsKey( attributeField.DataField );
+                                    if ( exists )
+                                    {
+                                        var attrib = dataItem.Attributes[attributeField.DataField];
+                                        string rawValue = dataItem.GetAttributeValue( attributeField.DataField );
+                                        string resultHtml = attrib.FieldType.Field.FormatValue( null, rawValue, attrib.QualifierValues, false );
+                                        worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
+                                    }
+
+                                    // format background color for alternating rows
+                                    if ( rowCounter % 2 == 1 )
+                                    {
+                                        worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                        worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
+                                    }
+
+                                }
+                            }
+                        }
+
+                        rowCounter++;
+                        dataIndex++;
+                    }
+                }
             }
 
             // format header range
@@ -1509,14 +1660,31 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Calls OnGridRebind with an option to disable paging so the entire datasource is loaded vs just what is needed for the current page
+        /// </summary>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <param name="disablePaging">if set to <c>true</c> [disable paging].</param>
+        private void RebindGrid( EventArgs e, bool disablePaging )
+        {
+            var origPaging = this.AllowPaging;
+            if ( disablePaging )
+            {
+                this.AllowPaging = false;
+            }
+
+            OnGridRebind( e );
+            this.AllowPaging = origPaging;
+        }
+
+        /// <summary>
         /// Formats a raw value from the Grid DataSource so that it is suitable for export to an Excel Worksheet.
         /// </summary>
         /// <param name="prop"></param>
         /// <param name="propValue"></param>
         /// <param name="isDefinedValueField"></param>
         /// <returns></returns>
-        private string GetExportValue(PropertyInfo prop, object propValue, bool isDefinedValueField)
-        {            
+        private string GetExportValue( PropertyInfo prop, object propValue, bool isDefinedValueField )
+        {
             // Get the formatted value string for export.
             string value = string.Empty;
 
@@ -1529,7 +1697,7 @@ namespace Rock.Web.UI.Controls
                         // Attempt to parse the value as a single Defined Value Id.
                         int definedValueId;
 
-                        if ( prop.PropertyType == typeof(int) )
+                        if ( prop.PropertyType == typeof( int ) )
                         {
                             definedValueId = (int)propValue;
                         }
@@ -1571,7 +1739,7 @@ namespace Rock.Web.UI.Controls
 
                             if ( addRaw )
                             {
-                                definedValues.Add(guidString);
+                                definedValues.Add( guidString );
                             }
                         }
 
@@ -1586,7 +1754,7 @@ namespace Rock.Web.UI.Controls
                 {
                     DateTime dateTimeValue = ( propValue as DateTime? ).Value;
                     var columnAttribute = prop.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.ColumnAttribute>( true );
-                    if (( columnAttribute != null && columnAttribute.Name == "Date" ) || prop.Name.EndsWith( "Date" ))
+                    if ( ( columnAttribute != null && columnAttribute.Name == "Date" ) || prop.Name.EndsWith( "Date" ) )
                     {
                         value = dateTimeValue.ToShortDateString();
                     }
@@ -1824,7 +1992,9 @@ namespace Rock.Web.UI.Controls
 
         private int? GetPersonEntitySet( EventArgs e )
         {
-            OnGridRebind( e );
+            // disable paging if no specific keys where selected (or if no select option is shown)
+            bool selectAll = !SelectedKeys.Any();
+            RebindGrid( e, selectAll );
 
             var keys = GetPersonData();
             if ( keys.Any() )
@@ -2072,14 +2242,16 @@ namespace Rock.Web.UI.Controls
                 additionalMergeProperties = dataSourceObjectType.GetProperties().ToList();
             }
 
-
-            var gridDataFields = this.Columns.OfType<BoundField>();
+            var gridDataFields = this.Columns.OfType<BoundField>().ToList();
 
             Dictionary<int, Dictionary<string, object>> itemMergeFieldsList = new Dictionary<int, Dictionary<string, object>>();
             if ( additionalMergeProperties != null && additionalMergeProperties.Any() && idProp != null )
             {
                 foreach ( var item in this.DataSourceAsList )
                 {
+                    // since Reporting fieldnames are dynamic and can have special internal names, use the header text instead of the datafield name
+                    bool useHeaderNamesIfAvailable = item.GetType().Assembly.IsDynamic;
+                    
                     var idVal = idProp.GetValue( item ) as int?;
                     if ( idVal.HasValue && selectedKeys.Contains( idVal.Value ) )
                     {
@@ -2088,11 +2260,11 @@ namespace Rock.Web.UI.Controls
                         {
                             var objValue = mergeProperty.GetValue( item );
 
-                            var dataField = gridDataFields.FirstOrDefault( a => a.DataField == mergeProperty.Name );
+                            var boundField = gridDataFields.FirstOrDefault( a => a.DataField == mergeProperty.Name );
                             string mergeFieldKey;
-                            if ( dataField != null && !string.IsNullOrWhiteSpace( dataField.HeaderText ) )
+                            if ( useHeaderNamesIfAvailable && boundField != null && !string.IsNullOrWhiteSpace( boundField.HeaderText ) )
                             {
-                                mergeFieldKey = dataField.HeaderText.RemoveSpecialCharacters().Replace( " ", "_" );
+                                mergeFieldKey = boundField.HeaderText.RemoveSpecialCharacters().Replace( " ", "_" );
                             }
                             else
                             {
