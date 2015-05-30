@@ -1,6 +1,16 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PersonSelect.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.PersonSelect" %>
+
+<script type="text/javascript">
+    Sys.Application.add_load(function () {
+        $('a.btn-checkin-select').click(function () {
+            $(this).siblings().attr('onclick', 'return false;');
+        });
+    });
+</script>
+
 <asp:UpdatePanel ID="upContent" runat="server">
 <ContentTemplate>
+
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
