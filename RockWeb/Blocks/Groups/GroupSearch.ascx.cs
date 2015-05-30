@@ -106,14 +106,32 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
-        private string ParentStructure( Group group )
+        private string ParentStructure( Group group, List<int> parentIds = null )
         {
             if ( group == null )
             {
                 return string.Empty;
             }
 
-            string prefix = ParentStructure( group.ParentGroup );
+            // Create or add this node to the history stack for this tree walk.
+            if (parentIds == null)
+            {
+                parentIds = new List<int>();
+            }
+            else
+            {
+                // If we have encountered this node before during this tree walk, we have found an infinite recursion in the tree.
+                // Truncate the path with an error message and exit.
+                if (parentIds.Contains(group.Id))
+                {
+                    return "#Invalid-Parent-Reference#";
+                }
+            }
+
+            parentIds.Add(group.Id);
+
+            string prefix = ParentStructure( group.ParentGroup, parentIds );
+
             if ( !string.IsNullOrWhiteSpace( prefix ) )
             {
                 prefix += " <i class='fa fa-angle-right'></i> ";
