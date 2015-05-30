@@ -329,7 +329,8 @@ namespace Rock.Field.Types
             var ddl = control as DropDownList;
             if (ddl != null )
             {
-                return ddl.SelectedValue;
+                // Return the filter value only if a value has been selected.
+                return string.IsNullOrEmpty(ddl.SelectedValue) ? null : ddl.SelectedValue;
             }
 
             return string.Empty;
