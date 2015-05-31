@@ -1072,15 +1072,22 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     CurrentNavPath = _configuredMode;
                 }
 
-                SetUserPreference( "CurrentNavPath", CurrentNavPath );
-
                 var pathParts = CurrentNavPath.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-                int numParts = pathParts.Length - 1;
+                int numParts = pathParts.Length;
 
-                string itemKey = pathParts[numParts];
+                NavigationItem item = NavData.GetItem( pathParts[numParts-1] );
+                while (item == null && numParts > 1)
+                {
+                    numParts--;
+                    item = NavData.GetItem( pathParts[numParts-1] );
+                }
+                CurrentNavPath = pathParts.Take( numParts ).ToList().AsDelimited( "|" );
+
+                string itemKey = pathParts[numParts - 1];
                 string itemType = itemKey.Left( 1 );
                 int? itemId = itemKey.Length > 1 ? itemKey.Substring( 1 ).AsIntegerOrNull() : null;
-                NavigationItem item = NavData.GetItem( pathParts[numParts] );
+
+                SetUserPreference( "CurrentNavPath", CurrentNavPath );
 
                 var navItems = new List<NavigationItem>();
 
@@ -1184,8 +1191,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 pnlNavHeading.Visible = item != null;
                 if ( item != null )
                 {
-                    pnlNavHeading.Attributes["onClick"] = upnlContent.GetPostBackEventReference(
-                        pathParts.ToList().Take( numParts ).ToList().AsDelimited( "|" ) );
+                    if ( numParts > 0 )
+                    {
+                        pnlNavHeading.Attributes["onClick"] = upnlContent.GetPostBackEventReference(
+                            pathParts.ToList().Take( numParts - 1 ).ToList().AsDelimited( "|" ) );
+                    }
                     lNavHeading.Text = item.Name;
 
                     var locationItem = item as NavigationLocation;
