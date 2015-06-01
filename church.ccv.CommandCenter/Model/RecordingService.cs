@@ -31,20 +31,16 @@ namespace church.ccv.CommandCenter.Model
         static public Rock.Net.RockWebResponse SendRecordingRequest( string app, string streamName, string recordingName, string action )
         {
             var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-
-            if ( globalAttributes.AttributeValues.ContainsKey( "WowzaServer" ) )
+            string wowzaServerUrl = globalAttributes.GetValue( "WowzaServer" );
+            if ( !string.IsNullOrWhiteSpace( wowzaServerUrl ) )
             {
-                string wowzaServerUrl = globalAttributes.AttributeValues["WowzaServer"];
-                if ( !string.IsNullOrWhiteSpace( wowzaServerUrl ) )
-                {
-                    Dictionary<string, string> parms = new Dictionary<string, string>();
-                    parms.Add( "app", HttpUtility.UrlEncode( app ) );
-                    parms.Add( "streamname", HttpUtility.UrlEncode( streamName ) );
-                    parms.Add( "recordingname", HttpUtility.UrlEncode( recordingName ) );
-                    parms.Add( "action", HttpUtility.UrlEncode( action ) );
+                Dictionary<string, string> parms = new Dictionary<string, string>();
+                parms.Add( "app", HttpUtility.UrlEncode( app ) );
+                parms.Add( "streamname", HttpUtility.UrlEncode( streamName ) );
+                parms.Add( "recordingname", HttpUtility.UrlEncode( recordingName ) );
+                parms.Add( "action", HttpUtility.UrlEncode( action ) );
 
-                    return Rock.Net.RockWebRequest.Send( wowzaServerUrl, "GET", parms, null );
-                }
+                return Rock.Net.RockWebRequest.Send( wowzaServerUrl, "GET", parms, null );
             }
 
             throw new ApplicationException( "missing 'WowzaServer' Global Attribute value" );
