@@ -34,7 +34,8 @@ namespace RockWeb.Blocks.CheckIn
     [Description("Welcome screen for check-in.")]
     [LinkedPage( "Family Select Page" )]
     [IntegerField( "Refresh Interval", "How often (seconds) should page automatically query server for new Check-in data", false, 10 )]
-    [BooleanField("Enable Override", "Allows the override link to be placed on the page.", true)]
+    [BooleanField("Enable Override", "Allows the override link to be used on the configuration page.", true)]
+    [BooleanField( "Enable Manager", "Allows the manager link to be placed on the page.", true )]
     public partial class Welcome : CheckInBlock
     {
         protected override void OnInit( EventArgs e )
@@ -79,6 +80,7 @@ namespace RockWeb.Blocks.CheckIn
                 RefreshView();
 
                 // enable override
+                btnManager.Visible = GetAttributeValue( "EnableManager" ).AsBoolean();
                 btnOverride.Visible = GetAttributeValue( "EnableOverride" ).AsBoolean();
 
             }
@@ -108,7 +110,8 @@ namespace RockWeb.Blocks.CheckIn
             // a plethora of partial postbacks occurring when the countdown expires.
             string script = string.Format( @"
 
-var timeout = window.setTimeout(refreshKiosk, {1}000);
+var timeoutSeconds = $('.js-refresh-timer-seconds').val();
+var timeout = window.setTimeout(refreshKiosk, timeoutSeconds * 1000);
 
 var $ActiveWhen = $('.active-when');
 var $CountdownTimer = $('.countdown-timer');
@@ -136,7 +139,7 @@ if ($ActiveWhen.text() != '')
     }});
 }}
 
-", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ), GetAttributeValue( "RefreshInterval" ) );
+", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ));
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "RefreshScript", script, true );
         }
 
@@ -163,6 +166,7 @@ if ($ActiveWhen.text() != '')
 
         private void RefreshView()
         {
+            hfRefreshTimerSeconds.Value = GetAttributeValue( "RefreshInterval" );
             pnlNotActive.Visible = false;
             pnlNotActiveYet.Visible = false;
             pnlClosed.Visible = false;
@@ -213,5 +217,36 @@ if ($ActiveWhen.text() != '')
             }
 
         }
-    }
+
+        /// <summary>
+        /// Handles the Click event of the btnManager control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnManager_Click( object sender, EventArgs e )
+        {
+            pnlWelcome.Visible = false;
+            pnlManager.Visible = true;
+            
+            // set manager timer to 10 minutes
+            hfRefreshTimerSeconds.Value = "600";
+        }
+        
+        protected void rLocations_ItemCommand( object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e )
+        {
+
+        }
+        
+        protected void btnBack_Click( object sender, EventArgs e )
+        {
+            RefreshView();
+            pnlWelcome.Visible = true;
+            pnlManager.Visible = false;
+        }
+        
+        protected void btnScheduleLocations_Click( object sender, EventArgs e )
+        {
+
+        }
+}
 }
