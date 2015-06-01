@@ -50,6 +50,19 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns an enumerable collection of  active <see cref="Rock.Model.GroupLocation">GroupLocations</see> by their <see cref="Rock.Model.Location"/> Ids
+        /// </summary>
+        /// <param name="locationIds">The location ids.</param>
+        /// <returns></returns>
+        public IQueryable<GroupLocation> GetActiveByLocations( List<int> locationIds )
+        {
+            return Queryable( "Schedules,Group.GroupType,Location" )
+                .Where( g =>
+                    locationIds.Contains(g.LocationId) &&
+                    g.Group.IsActive );
+        }
+
+        /// <summary>
         /// Gets the 'IsMappedLocation' locations that are within and of the selected geofences
         /// </summary>
         /// <param name="geofences">The geofences.</param>

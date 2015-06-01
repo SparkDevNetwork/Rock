@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -156,9 +157,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             using ( var rockContext = new RockContext() )
             {
-                var personService = new PersonService( new RockContext() );
+                var personService = new PersonService( rockContext );
 
-                var person = personService.Get( personGuid );
+                var person = personService.Queryable( "PhoneNumbers.NumberTypeValue,RecordTypeValue", true, true )
+                    .FirstOrDefault( a => a.Guid == personGuid );
 
                 if ( person != null )
                 {
@@ -167,25 +169,47 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     string photoTag = Rock.Model.Person.GetPhotoImageTag( person, 120, 120 );
                     if ( person.PhotoId.HasValue )
                     {
-                        lPhoto.Text = string.Format( "<a href='{0}'>{1}</a>", person.PhotoUrl, photoTag );
+                        lPhoto.Text = string.Format( "<div class='photoframe'><a href='{0}'>{1}</a></div>", person.PhotoUrl, photoTag );
                     }
                     else
                     {
                         lPhoto.Text = photoTag;
                     }
 
+
+                    lGender.Text = person.Gender != Gender.Unknown ? person.Gender.ConvertToString() : "";
+                    
+                    if ( person.BirthDate.HasValue )
+                    {
+                        string ageText = ( person.BirthYear.HasValue && person.BirthYear != DateTime.MinValue.Year ) ?
+                            string.Format( "{0} yrs old ", person.BirthDate.Value.Age() ) : string.Empty;
+                        lAge.Text = string.Format( "{0} <small>({1})</small><br/>", ageText, person.BirthDate.Value.ToShortDateString() );
+                    }
+                    else
+                    {
+                        lAge.Text = string.Empty;
+                    }
+
+                    lGrade.Text = person.GradeFormatted;
+                    
                     lEmail.Visible = !string.IsNullOrWhiteSpace( person.Email );
                     lEmail.Text = person.GetEmailTag( ResolveRockUrl( "/" ), "btn btn-default", "<i class='fa fa-envelope'></i>" );
 
+                    // Get all family member from all families ( including self )
+                    var allFamilyMembers = personService.GetFamilyMembers( person.Id, true ).ToList();
+
+                    // Add flag for this person in each family indicating if they are a child in family.
                     var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
                     var isFamilyChild = new Dictionary<int, bool>();
+                    foreach ( var thisPerson in allFamilyMembers.Where( m => m.PersonId == person.Id ) )
+                    {
+                        isFamilyChild.Add( thisPerson.GroupId, thisPerson.GroupRole.Guid.Equals( childGuid ) );
+                    }
 
-                    var allFamilyMembers = person.GetFamilyMembers( true ).ToList();
-                    allFamilyMembers.Where( m => m.PersonId == person.Id ).ToList().ForEach(
-                        m => isFamilyChild.Add( m.GroupId, m.GroupRole.Guid.Equals( childGuid ) ) );
-
+                    // Get the current url's root (without the person's guid)
                     string urlRoot = Request.Url.ToString().ReplaceCaseInsensitive( personGuid.ToString(), "" );
 
+                    // Get the other family members and the info needed for rendering
                     var familyMembers = allFamilyMembers.Where( m => m.PersonId != person.Id )
                         .OrderBy( m => m.GroupId )
                         .ThenBy( m => m.Person.BirthDate )
@@ -208,10 +232,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     rptrPhones.DataSource = person.PhoneNumbers.Where( p => !p.IsUnlisted ).ToList();
                     rptrPhones.DataBind();
 
-                    var schedules = new ScheduleService( rockContext ).Queryable()
-                            .Where( s => s.CheckInStartOffsetMinutes.HasValue )
-                            .ToList();
-
+                    var schedules = new ScheduleService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( s => s.CheckInStartOffsetMinutes.HasValue )
+                        .ToList();
+                    
                     var scheduleIds = schedules.Select( s => s.Id ).ToList();
 
                     var activeScheduleIds = new List<int>();
@@ -242,6 +267,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             scheduleIds.Contains( a.ScheduleId.Value ) )
                         .OrderByDescending( a => a.StartDateTime )
                         .Take( 20 )
+                        .ToList()                                                   // Run query to get recent most 20 checkins
+                        .OrderByDescending( a => a.StartDateTime )                  // Then sort again by startdatetime and schedule start (which is not avail to sql query )
+                        .ThenByDescending( a => a.Schedule.StartTimeOfDay )
                         .Select( a => new AttendanceInfo
                         {
                             Date = a.StartDateTime,

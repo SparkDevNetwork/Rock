@@ -1874,6 +1874,8 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 Helper.SaveAttributeEdits( attribute, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
+
+            AttributeCache.FlushEntityAttributes();
         }
 
         #endregion

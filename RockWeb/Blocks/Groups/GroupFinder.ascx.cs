@@ -726,7 +726,7 @@ namespace RockWeb.Blocks.Groups
             var groupService = new GroupService( rockContext );
             var groupQry = groupService
                 .Queryable( "GroupLocations.Location" )
-                .Where( g => g.GroupType.Guid.Equals( groupTypeGuid.Value ) );
+                .Where( g => g.IsActive && g.GroupType.Guid.Equals( groupTypeGuid.Value ) && g.IsPublic);
 
             var groupParameterExpression = groupService.ParameterExpression;
             var schedulePropertyExpression = Expression.Property( groupParameterExpression, "Schedule" );

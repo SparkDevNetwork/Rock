@@ -128,7 +128,13 @@ namespace Rock.Model
         {
             return this.GetEntities()
                 .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
-                .Where( a => !Rock.Web.Cache.EntityTypeCache.Read( a ).GetEntityType().GetCustomAttributes( typeof( HideFromReportingAttribute ), true ).Any() );
+                .Select( s => new
+                {
+                    EntityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( s ),
+                    Entity = s,
+                } )
+                .Where( a => a.EntityTypeCache != null && a.EntityTypeCache.GetEntityType() != null && !a.EntityTypeCache.GetEntityType().GetCustomAttributes( typeof( HideFromReportingAttribute ), true ).Any() )
+                .Select( s => s.Entity );
         }
 
         /// <summary>

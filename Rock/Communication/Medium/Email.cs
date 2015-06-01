@@ -37,10 +37,7 @@ namespace Rock.Communication.Medium
     [ExportMetadata( "ComponentName", "Email" )]
 
     [CodeEditorField( "Unsubscribe HTML", "The HTML to inject into email contents when the communication is a Bulk Communication.  Contents will be placed wherever the 'Unsubcribe HTML' merge field is used, or if not used, at the end of the email in email contents.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"
-<p style='float: right;'>
-    <small><a href='{{ GlobalAttribute.PublicApplicationRoot }}Unsubscribe/{{ Person.UrlEncodedKey }}'>Unsubscribe</a></small>
-</p>
-", "", 2 )]
+<a href='{{ 'Global' | Attribute:'PublicApplicationRoot' }}Unsubscribe/{{ Person.UrlEncodedKey }}'>Unsubscribe</a>", "", 2 )]
     [CodeEditorField( "Default Plain Text", "The text to use when the plain text field is left blank.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"
 Unfortunately, you cannot view the contents of this email as it contains formatting that is not supported 
 by your email client.  

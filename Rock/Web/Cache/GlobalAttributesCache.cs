@@ -110,6 +110,21 @@ namespace Rock.Web.Cache
 
                 return attributes;
             }
+
+            set
+            {
+                lock ( _obj )
+                {
+                    if ( value != null )
+                    {
+                        attributeIds = value.Select( a => a.Id ).ToList();
+                    }
+                    else
+                    {
+                        attributeIds = null;
+                    }
+                }
+            }
         }
         private List<int> attributeIds = null;
 
@@ -119,7 +134,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute values.
         /// </value>
-        public ConcurrentDictionary<string, string> AttributeValues { get; set; }
+        private ConcurrentDictionary<string, string> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets or sets the attribute values formatted.
@@ -127,7 +142,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute values formatted.
         /// </value>
-        public ConcurrentDictionary<string, string> AttributeValuesFormatted { get; set; }
+        private ConcurrentDictionary<string, string> AttributeValuesFormatted { get; set; }
 
         #endregion
 

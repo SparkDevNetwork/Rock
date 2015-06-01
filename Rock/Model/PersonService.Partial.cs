@@ -18,9 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
-using System.Data.Entity.SqlServer;
 using System.Linq;
-using Rock;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -29,7 +28,7 @@ namespace Rock.Model
     /// <summary>
     /// Data Access/Service class for <see cref="Rock.Model.Person"/> entity objects.
     /// </summary>
-    public partial class PersonService 
+    public partial class PersonService
     {
         /// <summary>
         /// Gets the specified unique identifier.
@@ -52,7 +51,7 @@ namespace Rock.Model
             // if a specific person Id is specified, get the person record even if IsDeceased or IsBusiness
             return this.Queryable( true, true ).FirstOrDefault( a => a.Id == id );
         }
-        
+
         /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities.
         /// </summary>
@@ -97,7 +96,7 @@ namespace Rock.Model
         /// <returns>
         /// A queryable collection of <see cref="Rock.Model.Person"/> entities with properties that support eager loading, with deceased individuals either included or excluded based on the provided value.
         /// </returns>
-        public IQueryable<Person> Queryable( string includes, bool includeDeceased, bool includeBusinesses = true)
+        public IQueryable<Person> Queryable( string includes, bool includeDeceased, bool includeBusinesses = true )
         {
             if ( !includeBusinesses )
             {
@@ -131,7 +130,7 @@ namespace Rock.Model
         public IQueryable<Person> GetByEmail( string email, bool includeDeceased = false, bool includeBusinesses = false )
         {
             return Queryable( includeDeceased, includeBusinesses )
-                .Where( p => 
+                .Where( p =>
                     p.Email == email || ( email == null && p.Email == null ) );
         }
 
@@ -150,9 +149,9 @@ namespace Rock.Model
         public IEnumerable<Person> GetByMatch( string firstName, string lastName, string email, bool includeDeceased = false, bool includeBusinesses = false )
         {
             return Queryable( includeDeceased, includeBusinesses )
-                .Where( p => 
-                    p.Email == email && 
-                    (p.FirstName == firstName || p.NickName == firstName) && 
+                .Where( p =>
+                    p.Email == email &&
+                    ( p.FirstName == firstName || p.NickName == firstName ) &&
                     p.LastName == lastName )
                 .ToList();
         }
@@ -317,6 +316,7 @@ namespace Rock.Model
             if ( fullName.Contains( ',' ) )
             {
                 reversed = true;
+
                 // only split by comma if there is a comma present (for example if 'Smith Jones, Sally' is the search, last name would be 'Smith Jones')
                 var nameParts = fullName.Split( ',' );
                 lastName = nameParts.Length >= 1 ? nameParts[0].Trim() : string.Empty;
@@ -325,6 +325,7 @@ namespace Rock.Model
             else if ( fullName.Trim().Contains( ' ' ) )
             {
                 reversed = false;
+
                 // if no comma, assume the search is in 'firstname lastname' format (note: 'firstname lastname1 lastname2' isn't supported yet)
                 var names = fullName.Split( ' ' );
                 firstName = names.Length >= 1 ? names[0].Trim() : string.Empty;
@@ -348,29 +349,27 @@ namespace Rock.Model
                             p.LastName.StartsWith( singleName ) ||
                             p.FirstName.StartsWith( singleName ) ||
                             p.NickName.StartsWith( singleName ) ||
-                            previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName))
-                            );
+                            previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName ) ) );
                 }
                 else
                 {
                     return Queryable( includeDeceased, includeBusinesses )
                         .Where( p =>
                             p.LastName.StartsWith( singleName ) ||
-                            previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName))
-                            );
+                            previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName ) ) );
                 }
             }
             else
             {
                 int recordTypeBusinessId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
-                
+
                 return Queryable( includeDeceased, includeBusinesses )
                     .Where( p =>
-                        ( includeBusinesses &&  p.RecordTypeValueId.HasValue && p.RecordTypeValueId.Value == recordTypeBusinessId && p.LastName.StartsWith(fullName) )
+                        ( includeBusinesses && p.RecordTypeValueId.HasValue && p.RecordTypeValueId.Value == recordTypeBusinessId && p.LastName.StartsWith( fullName ) )
                         ||
-                        ( (p.LastName.StartsWith( lastName ) || previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( lastName ) )) &&
+                        ( ( p.LastName.StartsWith( lastName ) || previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( lastName ) ) ) &&
                         ( p.FirstName.StartsWith( firstName ) ||
-                        p.NickName.StartsWith( firstName ) )) );
+                        p.NickName.StartsWith( firstName ) ) ) );
             }
         }
 
@@ -383,7 +382,7 @@ namespace Rock.Model
         /// <param name="allowFirstNameOnly">if set to true, a single value in fullName will also search for matching first names.</param>
         /// <param name="reversed">if set to <c>true</c> [reversed].</param>
         /// <returns></returns>
-        public IOrderedQueryable<Person> GetByFullNameOrdered(string fullName, bool includeDeceased, bool includeBusinesses, bool allowFirstNameOnly, out bool reversed)
+        public IOrderedQueryable<Person> GetByFullNameOrdered( string fullName, bool includeDeceased, bool includeBusinesses, bool allowFirstNameOnly, out bool reversed )
         {
             var qry = GetByFullName( fullName, includeDeceased, includeBusinesses, allowFirstNameOnly, out reversed );
             if ( reversed )
@@ -434,13 +433,13 @@ namespace Rock.Model
 
             if ( !string.IsNullOrWhiteSpace( firstName ) && !string.IsNullOrWhiteSpace( lastName ) )
             {
-                var metaphones = ((RockContext)this.Context).Metaphones;
+                var metaphones = ( (RockContext)this.Context ).Metaphones;
 
                 string ln1 = string.Empty;
                 string ln2 = string.Empty;
                 Rock.Utility.DoubleMetaphone.doubleMetaphone( lastName, ref ln1, ref ln2 );
-                ln1 = ln1 ?? "";
-                ln2 = ln2 ?? "";
+                ln1 = ln1 ?? string.Empty;
+                ln2 = ln2 ?? string.Empty;
 
                 var lastNames = metaphones
                     .Where( m =>
@@ -455,11 +454,11 @@ namespace Rock.Model
                     string fn1 = string.Empty;
                     string fn2 = string.Empty;
                     Rock.Utility.DoubleMetaphone.doubleMetaphone( firstName, ref fn1, ref fn2 );
-                    fn1 = fn1 ?? "";
-                    fn2 = fn2 ?? "";
+                    fn1 = fn1 ?? string.Empty;
+                    fn2 = fn2 ?? string.Empty;
 
                     var firstNames = metaphones
-                        .Where( m => 
+                        .Where( m =>
                             ( fn1 != "" && ( m.Metaphone1 == fn1 || m.Metaphone2 == fn1 ) ) ||
                             ( fn2 != "" && ( m.Metaphone1 == fn2 || m.Metaphone2 == fn2 ) ) )
                         .Select( m => m.Name )
@@ -508,11 +507,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
-        public IQueryable<Group> GetFamilies(int personId)
+        public IQueryable<Group> GetFamilies( int personId )
         {
             Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
-            return new GroupMemberService((RockContext)this.Context).Queryable()
+            return new GroupMemberService( (RockContext)this.Context ).Queryable()
                 .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
                 .Select( m => m.Group )
                 .Distinct();
@@ -529,12 +528,20 @@ namespace Rock.Model
         public IQueryable<GroupMember> GetFamilyMembers( int personId, bool includeSelf = false )
         {
             int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            
+            var groupMemberService = new GroupMemberService( (RockContext)this.Context );
 
-            return new GroupMemberService( (RockContext)this.Context ).Queryable( "Person" )
-                .Where( m => m.PersonId == personId && m.Group.GroupTypeId == groupTypeFamilyId )
-                .SelectMany( m => m.Group.Members)
-                .Where( fm => includeSelf || fm.PersonId != personId )
+            var familyGroupIds = groupMemberService.Queryable()
+                .Where( m =>
+                    m.PersonId == personId &&
+                    m.Group.GroupTypeId == groupTypeFamilyId )
+                .Select( m => m.GroupId )
                 .Distinct();
+
+            return groupMemberService.Queryable( "Person,GroupRole" )
+                .Where( m => 
+                    familyGroupIds.Contains( m.GroupId ) &&
+                    ( includeSelf || m.PersonId != personId ) );
         }
 
         /// <summary>
@@ -551,10 +558,117 @@ namespace Rock.Model
             return new GroupMemberService( (RockContext)this.Context ).Queryable( "GroupRole, Person" )
                 .Where( m => m.GroupId == family.Id )
                 .Where( m => includeSelf || m.PersonId != personId )
-                .OrderBy( m => m.GroupRole.Order)
-                .ThenBy( m => m.Person.BirthDate ?? DateTime.MinValue)
+                .OrderBy( m => m.GroupRole.Order )
+                .ThenBy( m => m.Person.BirthDate ?? DateTime.MinValue )
                 .ThenByDescending( m => m.Person.Gender )
                 .Distinct();
+        }
+
+        /// <summary>
+        /// Special class that holds the result of a GetChildWithParents query
+        /// </summary>
+        public class ChildWithParents
+        {
+            /// <summary>
+            /// Gets or sets the child.
+            /// </summary>
+            /// <value>
+            /// The child.
+            /// </value>
+            public Person Child { get; set; }
+
+            /// <summary>
+            /// Gets or sets the parents.
+            /// </summary>
+            /// <value>
+            /// The parents.
+            /// </value>
+            public IEnumerable<Person> Parents { get; set; }
+        }
+
+        /// <summary>
+        /// Gets a Queryable of Children with their Parents
+        /// </summary>
+        /// <param name="includeChildrenWithoutParents">if set to <c>true</c> [include children without parents].</param>
+        /// <returns></returns>
+        public IQueryable<ChildWithParents> GetChildWithParents( bool includeChildrenWithoutParents )
+        {
+            var groupTypeFamily = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            int adultRoleId = groupTypeFamily.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+            int childRoleId = groupTypeFamily.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
+            int groupTypeFamilyId = groupTypeFamily.Id;
+
+            var qryFamilyGroups = new GroupService( this.Context as RockContext ).Queryable().Where( g => g.GroupTypeId == groupTypeFamilyId && g.Members.Any( a => a.GroupRoleId == childRoleId ) )
+                .Select( g => new
+                {
+                    KidsWithAdults = g.Members.Where( a => a.GroupRoleId == childRoleId ).Select( a => new
+                    {
+                        Child = a.Person,
+                        Parents = g.Members.Where( aa => aa.GroupRoleId == adultRoleId ).Select( b => b.Person )
+                    } )
+                } )
+                .SelectMany( x => x.KidsWithAdults.Select( xx => new { xx.Child, xx.Parents } ) );
+
+            var qryKids = this.Queryable();
+
+            var qryChildrenWithParents = qryKids.Join( qryFamilyGroups, k => k.Id, k2 => k2.Child.Id, ( k, f ) => new ChildWithParents
+            {
+                Child = f.Child,
+                Parents = f.Parents
+            } );
+
+            if ( !includeChildrenWithoutParents )
+            {
+                qryChildrenWithParents = qryChildrenWithParents.Where( a => a.Parents.Any() );
+            }
+
+            return qryChildrenWithParents;
+        }
+
+        /// <summary>
+        /// Special class that holds the result of a ChildWithParent query
+        /// </summary>
+        public class ChildWithParent
+        {
+            /// <summary>
+            /// Gets or sets the child.
+            /// </summary>
+            /// <value>
+            /// The child.
+            /// </value>
+            public Person Child { get; set; }
+
+            /// <summary>
+            /// Gets or sets the parent.
+            /// </summary>
+            /// <value>
+            /// The parent.
+            /// </value>
+            public Person Parent { get; set; }
+        }
+
+        /// <summary>
+        /// Gets a Queryable of Children with their Parents flattened out so each record is a child with a parent (a kid with 2 parents would return two records)
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<ChildWithParent> GetChildWithParent()
+        {
+            var qryChildrenWithParents = this.GetChildWithParents( false );
+
+            var qryChildWithParent = qryChildrenWithParents.Select( a => new
+            {
+                ParentKid = a.Parents.Select( aa => new
+                {
+                    Parent = aa,
+                    Child = a.Child
+                } )
+            } ).SelectMany( sm => sm.ParentKid ).Select( s => new ChildWithParent
+            {
+                Child = s.Child,
+                Parent = s.Parent
+            } );
+
+            return qryChildWithParent;
         }
 
         /// <summary>
@@ -564,11 +678,11 @@ namespace Rock.Model
         /// <param name="includeMemberNames">if set to <c>true</c> [include member names].</param>
         /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
         /// <returns></returns>
-        public List<string> GetFamilyNames( int personId, bool includeMemberNames = true, bool includeSelf = true)
+        public List<string> GetFamilyNames( int personId, bool includeMemberNames = true, bool includeSelf = true )
         {
             var familyNames = new List<string>();
 
-            foreach(var family in GetFamilies(personId))
+            foreach ( var family in GetFamilies( personId ) )
             {
                 string familyName = family.Name;
 
@@ -621,10 +735,10 @@ namespace Rock.Model
         /// <param name="person">The person.</param>
         /// <param name="phoneType">Type of the phone.</param>
         /// <returns></returns>
-        public PhoneNumber GetPhoneNumber(Person person, Rock.Web.Cache.DefinedValueCache phoneType)
+        public PhoneNumber GetPhoneNumber( Person person, Rock.Web.Cache.DefinedValueCache phoneType )
         {
             return new PhoneNumberService( (RockContext)this.Context ).Queryable()
-                .Where( n => n.PersonId == person.Id && n.NumberTypeValueId == phoneType.Id)
+                .Where( n => n.PersonId == person.Id && n.NumberTypeValueId == phoneType.Id )
                 .FirstOrDefault();
         }
 
@@ -642,15 +756,15 @@ namespace Rock.Model
         public Person Get( int id, bool followMerges )
         {
             var person = Get( id );
-            if (person != null)
+            if ( person != null )
             {
                 return person;
             }
 
-            if (followMerges )
+            if ( followMerges )
             {
                 var personAlias = new PersonAliasService( (RockContext)this.Context ).GetByAliasId( id );
-                if (personAlias != null)
+                if ( personAlias != null )
                 {
                     return personAlias.Person;
                 }
@@ -669,15 +783,15 @@ namespace Rock.Model
         public Person Get( Guid guid, bool followMerges )
         {
             var person = Get( guid );
-            if (person != null)
+            if ( person != null )
             {
                 return person;
             }
 
-            if (followMerges )
+            if ( followMerges )
             {
                 var personAlias = new PersonAliasService( (RockContext)this.Context ).GetByAliasGuid( guid );
-                if (personAlias != null)
+                if ( personAlias != null )
                 {
                     return personAlias.Person;
                 }
@@ -707,7 +821,7 @@ namespace Rock.Model
         public Person GetByEncryptedKey( string encryptedKey, bool followMerges )
         {
             var person = base.GetByEncryptedKey( encryptedKey );
-            if (person != null)
+            if ( person != null )
             {
                 return person;
             }
@@ -715,7 +829,7 @@ namespace Rock.Model
             if ( followMerges )
             {
                 var personAlias = new PersonAliasService( (RockContext)this.Context ).GetByAliasEncryptedKey( encryptedKey );
-                if (personAlias != null)
+                if ( personAlias != null )
                 {
                     return personAlias.Person;
                 }
@@ -731,10 +845,10 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.Person"/> entity containing the provided Person's spouse. If the provided Person's spouse is not found, this value will be null.</returns>
         public Person GetSpouse( Person person )
         {
-            // Spouse is determined if all these conditions are met
-            // 1) Adult in the same family as Person (GroupType = Family, GroupRole = Adult, and in same Group)
-            // 2) Opposite Gender as Person
-            // 3) Both Persons are Married
+            //// Spouse is determined if all these conditions are met
+            //// 1) Adult in the same family as Person (GroupType = Family, GroupRole = Adult, and in same Group)
+            //// 2) Opposite Gender as Person
+            //// 3) Both Persons are Married
 
             Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
             int adultRoleId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Roles.First( a => a.Guid == adultGuid ).Id;
@@ -745,13 +859,15 @@ namespace Rock.Model
                 return null;
             }
 
-            return GetFamilyMembers(person.Id)
+            return GetFamilyMembers( person.Id )
                 .Where( m => m.GroupRoleId == adultRoleId )
                 .Where( m => m.Person.Gender != person.Gender )
-                .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId)
+                .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId )
                 .Select( m => m.Person )
                 .FirstOrDefault();
         }
+
+
 
         #endregion
 
@@ -761,7 +877,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
-        public IQueryable<DbGeography> GetGeopoints ( int personId )
+        public IQueryable<DbGeography> GetGeopoints( int personId )
         {
             var rockContext = (RockContext)this.Context;
             var groupMemberService = new GroupMemberService( rockContext );
@@ -790,7 +906,7 @@ namespace Rock.Model
         /// <param name="campusId">The campus identifier.</param>
         /// <param name="savePersonAttributes">if set to <c>true</c> [save person attributes].</param>
         /// <returns>Family Group</returns>
-        public static Group SaveNewPerson ( Person person, RockContext rockContext, int? campusId = null, bool savePersonAttributes = false )
+        public static Group SaveNewPerson( Person person, RockContext rockContext, int? campusId = null, bool savePersonAttributes = false )
         {
             // Create/Save Known Relationship Group
             var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
@@ -864,19 +980,19 @@ namespace Rock.Model
         #region User Preferences
 
         /// <summary>
-        /// Saves a <see cref="Rock.Model.Person">Person's</see> user preference setting by key.
+        /// Saves a <see cref="Rock.Model.Person">Person's</see> user preference setting by key and SavesChanges()
         /// </summary>
         /// <param name="person">The <see cref="Rock.Model.Person"/> who the preference value belongs to.</param>
         /// <param name="key">A <see cref="System.String"/> representing the key (name) of the preference setting.</param>
         /// <param name="value">The value.</param>
         public static void SaveUserPreference( Person person, string key, string value )
         {
-            int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
+            int? personEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
             using ( var rockContext = new RockContext() )
             {
                 var attributeService = new Model.AttributeService( rockContext );
-                var attribute = attributeService.Get( PersonEntityTypeId, string.Empty, string.Empty, key );
+                var attribute = attributeService.Get( personEntityTypeId, string.Empty, string.Empty, key );
 
                 if ( attribute == null )
                 {
@@ -885,7 +1001,7 @@ namespace Rock.Model
 
                     attribute = new Model.Attribute();
                     attribute.IsSystem = false;
-                    attribute.EntityTypeId = PersonEntityTypeId;
+                    attribute.EntityTypeId = personEntityTypeId;
                     attribute.EntityTypeQualifierColumn = string.Empty;
                     attribute.EntityTypeQualifierValue = string.Empty;
                     attribute.Key = key;
@@ -922,6 +1038,7 @@ namespace Rock.Model
                         attributeValue.EntityId = person.Id;
                         attributeValueService.Add( attributeValue );
                     }
+
                     attributeValue.Value = value;
                 }
 
@@ -937,12 +1054,12 @@ namespace Rock.Model
         /// <returns>A list of <see cref="System.String"/> containing the values associated with the user's preference setting.</returns>
         public static string GetUserPreference( Person person, string key )
         {
-            int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
+            int? personEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
             using ( var rockContext = new Rock.Data.RockContext() )
             {
                 var attributeService = new Model.AttributeService( rockContext );
-                var attribute = attributeService.Get( PersonEntityTypeId, string.Empty, string.Empty, key );
+                var attribute = attributeService.Get( personEntityTypeId, string.Empty, string.Empty, key );
 
                 if ( attribute != null )
                 {
@@ -959,13 +1076,42 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Deletes a <see cref="Rock.Model.Person">Person's</see> user preference setting by key and SavesChanges()
+        /// </summary>
+        /// <param name="person">The <see cref="Rock.Model.Person"/> who the preference value belongs to.</param>
+        /// <param name="key">A <see cref="System.String"/> representing the key (name) of the preference setting.</param>
+        public static void DeleteUserPreference( Person person, string key )
+        {
+            int? personEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var attributeService = new Model.AttributeService( rockContext );
+                var attribute = attributeService.Get( personEntityTypeId, string.Empty, string.Empty, key );
+
+                if ( attribute != null )
+                {
+                    var attributeValueService = new Model.AttributeValueService( rockContext );
+                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id );
+                    if ( attributeValue != null )
+                    {
+                        attributeValueService.Delete( attributeValue );
+                    }
+
+                    attributeService.Delete( attribute );
+                    rockContext.SaveChanges();
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns all of the user preference settings for a <see cref="Rock.Model.Person"/>.
         /// </summary>
         /// <param name="person">The <see cref="Rock.Model.Person"/> to retrieve the user preference settings for.</param>
         /// <returns>A dictionary containing all of the <see cref="Rock.Model.Person">Person's</see> user preference settings.</returns>
         public static Dictionary<string, string> GetUserPreferences( Person person )
         {
-            int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
+            int? personEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
             var values = new Dictionary<string, string>();
 
@@ -973,7 +1119,7 @@ namespace Rock.Model
             {
                 foreach ( var attributeValue in new Model.AttributeValueService( rockContext ).Queryable()
                     .Where( v =>
-                        v.Attribute.EntityTypeId == PersonEntityTypeId &&
+                        v.Attribute.EntityTypeId == personEntityTypeId &&
                         ( v.Attribute.EntityTypeQualifierColumn == null || v.Attribute.EntityTypeQualifierColumn == string.Empty ) &&
                         ( v.Attribute.EntityTypeQualifierValue == null || v.Attribute.EntityTypeQualifierValue == string.Empty ) &&
                         v.EntityId == person.Id ) )
@@ -986,6 +1132,5 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 }

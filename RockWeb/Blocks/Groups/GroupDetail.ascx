@@ -22,11 +22,12 @@
 
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
+                        <Rock:HighlightLabel ID="hlIsPrivate" runat="server" LabelType="Default" Text="Private" />
                         <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                         <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
                     </div>
                 </div>
-
+                
                 <div class="panel-body">
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                     <Rock:NotificationBox ID="nbRoleLimitWarning" runat="server" NotificationBoxType="Warning" Heading="Role Limit Warning" />
@@ -44,6 +45,7 @@
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                                <Rock:RockCheckBox ID="cbIsPublic" runat="server" Text="Public" />
                             </div>
                         </div>
 
@@ -316,13 +318,17 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Launch Workflow" Required="true" ValidationGroup="Trigger"
-                            Help="The workflow type to launch." />
+                        <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Start Workflow" Required="true" ValidationGroup="Trigger"
+                            Help="The workflow type to start." />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="When" Required="true" ValidationGroup="Trigger" AutoPostBack="true" OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" />
-                        <Rock:RockDropDownList ID="ddlTriggerMemberStatus" runat="server" Label="With Member Status of" ValidationGroup="Trigger" />
-                        <Rock:RockDropDownList ID="ddlTriggerMemberRole" runat="server" Label="With Member Role of" ValidationGroup="Trigger" DataTextField="Name" DataValueField="Guid" />
+                        <Rock:RockDropDownList ID="ddlTriggerFromStatus" runat="server" Label="From Status of" ValidationGroup="Trigger" />
+                        <Rock:RockDropDownList ID="ddlTriggerToStatus" runat="server" Label="To Status of" ValidationGroup="Trigger" />
+                        <Rock:RockDropDownList ID="ddlTriggerFromRole" runat="server" Label="From Role of" ValidationGroup="Trigger" DataTextField="Name" DataValueField="Guid" />
+                        <Rock:RockDropDownList ID="ddlTriggerToRole" runat="server" Label="To Role of" ValidationGroup="Trigger" DataTextField="Name" DataValueField="Guid" />
+                        <Rock:RockCheckBox ID="cbTriggerFirstTime" runat="server" Label="First Time" Text="Yes" ValidationGroup="Trigger" 
+                            Help="Select this option if workflow should only be started when person attends the group for the first time. Leave this option unselected if the workflow should be started whenever a person attends the group."/>
                     </div>
                 </div>
             </Content>

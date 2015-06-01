@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {
@@ -35,7 +36,7 @@ namespace Rock.CheckIn
         /// The type of the group.
         /// </value>
         [DataMember]
-        public GroupType GroupType { get; set; }
+        public GroupTypeCache GroupType { get; set; }
 
         /// <summary>
         /// Next time that a location/group/schedule will be active for
@@ -68,14 +69,23 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="KioskGroupType"/> class.
+        /// </summary>
+        /// <param name="groupTypeid">The group typeid.</param>
+        public KioskGroupType( int groupTypeid )
+            : base()
+        {
+            GroupType = GroupTypeCache.Read( groupTypeid );
+            KioskGroups = new List<KioskGroup>();
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="KioskGroupType" /> class.
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
         public KioskGroupType( GroupType groupType )
-            : base()
+            : this( groupType != null ? groupType.Id : 0 )
         {
-            GroupType = groupType.Clone( false );
-            KioskGroups = new List<KioskGroup>();
         }
 
         /// <summary>

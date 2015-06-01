@@ -2156,6 +2156,24 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Deletes a user preference value for the specified key
+        /// </summary>
+        /// <param name="key">A <see cref="System.String"/> representing the name of the key.</param>
+        public void DeleteUserPreference( string key )
+        {
+            var sessionValues = SessionUserPreferences();
+            if ( sessionValues.ContainsKey( key ) )
+            {
+                sessionValues.Remove( key );
+            }
+
+            if ( CurrentPerson != null )
+            {
+                PersonService.DeleteUserPreference( CurrentPerson, key );
+            }
+        }
+
+        /// <summary>
         /// Returns the current user's preferences, if they have previously been loaded into the session, they
         /// will be retrieved from there, otherwise they will be retrieved from the database, added to session and 
         /// then returned

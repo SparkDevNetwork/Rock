@@ -78,7 +78,6 @@ namespace RockWeb.Blocks.Reporting
             base.OnInit( e );
 
             gReport.GridRebind += gReport_GridRebind;
-            gReport.RowDataBound += gReport_RowDataBound;
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Report.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Report ) ).Id;
 
@@ -232,55 +231,6 @@ namespace RockWeb.Blocks.Reporting
                 phReportFields.Controls.Remove( panelWidget );
                 var reportFieldInfo = ReportFieldsDictionary.First( a => a.Guid == reportFieldGuid );
                 ReportFieldsDictionary.Remove( reportFieldInfo );
-            }
-        }
-
-        /// <summary>
-        /// Handles the RowDataBound event of the gReport control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        protected void gReport_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
-            if ( e.Row.RowType == DataControlRowType.DataRow )
-            {
-                try
-                {
-                    // Format the attribute values based on their field type
-                    for ( int i = 0; i < gReport.Columns.Count; i++ )
-                    {
-                        var boundField = gReport.Columns[i] as BoundField;
-
-                        // AttributeFields are named in format "Attribute_{attributeId}_{columnIndex}". We need the attributeId portion
-                        if ( boundField != null && boundField.DataField.StartsWith( "Attribute_" ) )
-                        {
-                            if ( boundField is BoolField )
-                            {
-                                // let BoolFields take care of themselves
-                            }
-                            else
-                            {
-                                string[] nameParts = boundField.DataField.Split( '_' );
-                                if ( nameParts.Count() > 1 )
-                                {
-                                    string attributeIdPortion = nameParts[1];
-                                    int attributeID = attributeIdPortion.AsInteger();
-                                    if ( attributeID > 0 )
-                                    {
-                                        AttributeCache attr = AttributeCache.Read( attributeID );
-                                        var cell = e.Row.Cells[i];
-                                        string cellValue = HttpUtility.HtmlDecode( cell.Text ).Trim();
-                                        cell.Text = attr.FieldType.Field.FormatValue( cell, cellValue, attr.QualifierValues, true );
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    // intentionally ignore any errors and just let the original cell value be displayed
-                }
             }
         }
 
@@ -582,7 +532,7 @@ namespace RockWeb.Blocks.Reporting
             if ( entityTypeId.HasValue )
             {
                 Type entityType = EntityTypeCache.Read( entityTypeId.Value, rockContext ).GetEntityType();
-                var entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
+                var entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType, true, false );
                 ddlFields.Items.Clear();
 
                 var listItems = new List<ListItem>();
@@ -607,7 +557,7 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else
                     {
-                        listItem.Attributes["optiongroup"] = "Other";
+                        listItem.Attributes["optiongroup"] = string.Format( "{0} Fields", entityType.Name );
                     }
 
                     if ( entityField.FieldKind == FieldKind.Attribute && entityField.AttributeGuid.HasValue )
@@ -828,6 +778,7 @@ namespace RockWeb.Blocks.Reporting
             else
             {
                 lReadOnlyTitle.Text = report.Name.FormatAsHtmlTitle();
+                lActionTitle.Text = report.Name.FormatAsHtmlTitle();
             }
 
             LoadDropDowns();

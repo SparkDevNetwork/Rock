@@ -1,4 +1,13 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AbilityLevelSelect.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.AbilityLevelSelect" %>
+
+<script type="text/javascript">
+    Sys.Application.add_load(function () {
+        $('a.btn-checkin-select').click(function () {
+            $(this).siblings().attr('onclick', 'return false;');
+        });
+    });
+</script>
+
 <asp:UpdatePanel ID="upContent" runat="server">
 <ContentTemplate>
 

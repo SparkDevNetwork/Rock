@@ -60,6 +60,7 @@ namespace RockWeb.Blocks.Finance
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             gfBatchFilter.ApplyFilterClick += gfBatchFilter_ApplyFilterClick;
+            gfBatchFilter.ClearFilterClick += gfBatchFilter_ClearFilterClick;
             gfBatchFilter.DisplayFilterValue += gfBatchFilter_DisplayFilterValue;
 
             gBatchList.DataKeyNames = new string[] { "Id" };
@@ -79,6 +80,17 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Handles the ClearFilterClick event of the gfBatchFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gfBatchFilter_ClearFilterClick( object sender, EventArgs e )
+        {
+            gfBatchFilter.DeleteUserPreferences();
+            BindFilter();
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -92,7 +104,14 @@ namespace RockWeb.Blocks.Finance
                 BindFilter();
                 BindGrid();
             }
+        }
 
+        /// <summary>
+        /// Registers the java script for grid actions.
+        /// NOTE: This needs to be done after the BindGrid
+        /// </summary>
+        private void RegisterJavaScriptForGridActions()
+        {
             string scriptFormat = @"
     $('#{0}').change(function( e ){{
         var count = $(""#{1} input[id$='_cbSelect_0']:checked"").length;
@@ -140,6 +159,13 @@ namespace RockWeb.Blocks.Finance
         {
             switch ( e.Key )
             {
+                case "Row Limit": 
+                    {                    
+                        // row limit filter was removed, so hide it just in case
+                        e.Value = null;
+                        break;
+                    }
+
                 case "Date Range":
                     {
                         e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
@@ -186,7 +212,6 @@ namespace RockWeb.Blocks.Finance
         protected void gfBatchFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             gfBatchFilter.SaveUserPreference( "Date Range", drpBatchDate.DelimitedValues );
-            gfBatchFilter.SaveUserPreference( "Row Limit", nbRowLimit.Text );
             gfBatchFilter.SaveUserPreference( "Title", tbTitle.Text );
             if ( tbAccountingCode.Visible )
             {
@@ -380,8 +405,6 @@ namespace RockWeb.Blocks.Finance
 
             ddlStatus.SetValue( statusFilter );
 
-            nbRowLimit.Text = gfBatchFilter.GetUserPreference( "Row Limit" );
-
             var campusi = CampusCache.All();
             campCampus.Campuses = campusi;
             campCampus.Visible = campusi.Any();
@@ -410,16 +433,11 @@ namespace RockWeb.Blocks.Finance
                     UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue )
                 } );
 
-            // Row Limit
-            int? rowLimit = gfBatchFilter.GetUserPreference( "Row Limit" ).AsIntegerOrNull();
-            if ( rowLimit.HasValue )
-            {
-                batchRowQry = batchRowQry.Take( rowLimit.Value );
-            }
-
-            gBatchList.DataSource = batchRowQry.ToList();
+            gBatchList.SetLinqDataSource( batchRowQry.AsNoTracking() );
             gBatchList.EntityTypeId = EntityTypeCache.Read<Rock.Model.FinancialBatch>().Id;
             gBatchList.DataBind();
+
+            RegisterJavaScriptForGridActions();
 
             var qryTransactionDetails = qry.SelectMany( a => a.Transactions ).SelectMany( a => a.TransactionDetails );
             var accountSummaryQry = qryTransactionDetails.GroupBy( a => a.Account ).Select( a => new
