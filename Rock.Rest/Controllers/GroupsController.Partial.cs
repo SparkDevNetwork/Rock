@@ -202,14 +202,15 @@ namespace Rock.Rest.Controllers
                                                                             .ThenBy(m => m.Person.Gender)
                                                                             .FirstOrDefault()
                                                                             .Person.PhoneNumbers.OrderBy( p => p.NumberTypeValue.Order).FirstOrDefault()
-                                                        }).ToList();
+                                                        })
+                                                        .ToList();
 
                 foreach ( var family in families) {
                     familyResults.Add( family );
                 }
             }
 
-            return familyResults.AsQueryable(); 
+            return familyResults.DistinctBy(f => f.Id).AsQueryable(); 
         }
 
         /// <summary>

@@ -134,7 +134,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute values.
         /// </value>
-        public ConcurrentDictionary<string, string> AttributeValues { get; set; }
+        private ConcurrentDictionary<string, string> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets or sets the attribute values formatted.
@@ -142,7 +142,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute values formatted.
         /// </value>
-        public ConcurrentDictionary<string, string> AttributeValuesFormatted { get; set; }
+        private ConcurrentDictionary<string, string> AttributeValuesFormatted { get; set; }
 
         #endregion
 
