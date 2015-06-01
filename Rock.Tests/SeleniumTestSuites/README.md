@@ -97,3 +97,7 @@ are less fragile than the ones than the Selenium IDE chooses.
  * Selecting a complex `<select>` via CSS that has an unpredictable middle section of the id:
     
 	`css=select[id^='ctl00_main_ctl33_ctl01_ctl06_fg'][id$='_BackgroundCheckDate_dtPicker']`
+
+ * If you need to send an Enter key press use:
+
+    `${KEY_ENTER}`
