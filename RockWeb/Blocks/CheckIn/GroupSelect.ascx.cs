@@ -159,7 +159,7 @@ namespace RockWeb.Blocks.CheckIn
                         .SelectMany( t => t.Groups.Where( g => g.Selected ) 
                             .SelectMany( g => g.Locations.Where( l => !l.ExcludedByFilter ) ) ) ) )
                 .Count() <= 0,
-                "<ul><li>Sorry, based on your selection, there are currently not any available locations that can be checked into.</li></ul>" );
+                "<p>Sorry, based on your selection, there are currently not any available locations that can be checked into.</p>" );
         }
     }
 }

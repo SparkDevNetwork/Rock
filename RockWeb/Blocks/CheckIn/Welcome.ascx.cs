@@ -156,7 +156,7 @@ if ($ActiveWhen.text() != '')
             }
             else
             {
-                string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
+                string errorMsg = "<p>" + errors.AsDelimited( "<br/>" ) + "</p>";
                 maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
             }
         }

@@ -39,7 +39,7 @@ namespace Rock.Web.UI.Controls
             this.IconCssClass = "fa fa-users";
             base.OnInit( e );
         }
-        
+
         /// <summary>
         /// Sets the value.
         /// </summary>
@@ -49,14 +49,10 @@ namespace Rock.Web.UI.Controls
             if ( group != null )
             {
                 ItemId = group.Id.ToString();
-                
-                string parentGroupIds = string.Empty;
-                var parentGroup = group.ParentGroup;
-                while ( parentGroup != null )
-                {
-                    parentGroupIds = parentGroup.Id + "," + parentGroupIds;
-                    parentGroup = parentGroup.ParentGroup;
-                }
+
+                var parentIds = GetGroupAncestorsIdList( group.ParentGroup );
+
+                var parentGroupIds = parentIds.AsDelimited( "," );
 
                 InitialItemParentIds = parentGroupIds.TrimEnd( new[] { ',' } );
                 ItemName = group.Name;
@@ -66,6 +62,42 @@ namespace Rock.Web.UI.Controls
                 ItemId = Constants.None.IdValue;
                 ItemName = Constants.None.TextHtml;
             }
+        }
+
+        /// <summary>
+        /// Returns a list of the ancestor Groups of the specified Group.
+        /// If the ParentGroup property of the Group is not populated, it is assumed to be a top-level node.
+        /// </summary>
+        /// <param name="group"></param>
+        /// <param name="ancestorGroupIds"></param>
+        /// <returns></returns>
+        private List<int> GetGroupAncestorsIdList( Group group, List<int> ancestorGroupIds = null )
+        {
+            if ( ancestorGroupIds == null )
+            {
+                ancestorGroupIds = new List<int>();
+            }
+
+            if ( group == null )
+            {
+                return ancestorGroupIds;
+            }
+
+            // If we have encountered this node previously in our tree walk, there is a recursive loop in the tree.
+            // Add an invalid Id to indicate that a problem was encountered, and exit.
+            if ( ancestorGroupIds.Contains( group.Id ) )
+            {
+                ancestorGroupIds.Add( -1 );
+
+                return ancestorGroupIds;
+            }
+
+            // Create or add this node to the history stack for this tree walk.
+            ancestorGroupIds.Add( group.Id );
+
+            ancestorGroupIds = this.GetGroupAncestorsIdList( group.ParentGroup, ancestorGroupIds );
+
+            return ancestorGroupIds;
         }
 
         /// <summary>

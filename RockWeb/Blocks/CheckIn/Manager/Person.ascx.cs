@@ -169,13 +169,29 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     string photoTag = Rock.Model.Person.GetPhotoImageTag( person, 120, 120 );
                     if ( person.PhotoId.HasValue )
                     {
-                        lPhoto.Text = string.Format( "<a href='{0}'>{1}</a>", person.PhotoUrl, photoTag );
+                        lPhoto.Text = string.Format( "<div class='photoframe'><a href='{0}'>{1}</a></div>", person.PhotoUrl, photoTag );
                     }
                     else
                     {
                         lPhoto.Text = photoTag;
                     }
 
+
+                    lGender.Text = person.Gender != Gender.Unknown ? person.Gender.ConvertToString() : "";
+                    
+                    if ( person.BirthDate.HasValue )
+                    {
+                        string ageText = ( person.BirthYear.HasValue && person.BirthYear != DateTime.MinValue.Year ) ?
+                            string.Format( "{0} yrs old ", person.BirthDate.Value.Age() ) : string.Empty;
+                        lAge.Text = string.Format( "{0} <small>({1})</small><br/>", ageText, person.BirthDate.Value.ToShortDateString() );
+                    }
+                    else
+                    {
+                        lAge.Text = string.Empty;
+                    }
+
+                    lGrade.Text = person.GradeFormatted;
+                    
                     lEmail.Visible = !string.IsNullOrWhiteSpace( person.Email );
                     lEmail.Text = person.GetEmailTag( ResolveRockUrl( "/" ), "btn btn-default", "<i class='fa fa-envelope'></i>" );
 

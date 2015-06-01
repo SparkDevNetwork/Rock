@@ -263,6 +263,14 @@ namespace Rock.Model
                         if ( selectComponent != null )
                         {
                             dynamicFields.Add( string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ), selectComponent.ColumnFieldType );
+                            var customSortProperties = selectComponent.SortProperties(reportField.Value.Selection);
+                            if (customSortProperties != null)
+                            {
+                                foreach ( var customSortProperty in customSortProperties.Split( ',' ) )
+                                {
+                                    dynamicFields.Add( string.Format( "Sort_{0}_{1}", customSortProperty, reportField.Key ), typeof( string ) );
+                                }
+                            }
                         }
                     }
 
@@ -295,6 +303,15 @@ namespace Rock.Model
                         if ( selectComponent != null )
                         {
                             bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), selectComponent.GetExpression( reportDbContext, idExpression, reportField.Value.Selection ?? string.Empty ) ) );
+
+                            var customSortProperties = selectComponent.SortProperties( reportField.Value.Selection );
+                            if ( customSortProperties != null )
+                            {
+                                foreach ( var customSortProperty in customSortProperties.Split( ',' ) )
+                                {
+                                    bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "sort_{0}_{1}", customSortProperty, reportField.Key ) ), Expression.Property( paramExpression, customSortProperty ) ) );
+                                }
+                            }
                         }
                     }
 

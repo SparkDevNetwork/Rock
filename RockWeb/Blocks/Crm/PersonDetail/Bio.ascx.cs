@@ -188,13 +188,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             "<small>({0} {1})</small>",
                             Person.HasGraduated.Value ? "Graduated " : "Graduates ",
                             Person.GraduationYear.Value );
-
-                        string grade = Person.GradeFormatted;
-                        if ( grade != string.Empty )
-                        {
-                            lGrade.Text = string.Format( "{0}", grade );
-                        }
                     }
+
+                    lGrade.Text = Person.GradeFormatted;
 
                     lMaritalStatus.Text = Person.MaritalStatusValueId.DefinedValue();
                     if ( Person.AnniversaryDate.HasValue )
