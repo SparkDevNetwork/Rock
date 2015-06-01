@@ -3,7 +3,7 @@
 
   {% if eventCount == 0 %}
   <div class="panel panel-default">
-    <div class="margin-all-md"> No Events Available To List</div>
+    <div class="margin-all-md"> There are no events in this time frame.</div>
   </div>
   {% endif %}
 
