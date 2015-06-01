@@ -41,6 +41,7 @@
                                     <Rock:RockBoundField DataField="Calendar" HeaderText="Calendars" HtmlEncode="false" />
                                     <Rock:RockBoundField DataField="Audience" HeaderText="Audiences" HtmlEncode="false" />
                                     <Rock:RockBoundField DataField="Active" HeaderText="Status" HtmlEncode="false" />
+                                    <Rock:DeleteField OnClick="DeleteEventCalendarItem_Click"/>
                                 </Columns>
                             </Rock:Grid>
                         </div>
