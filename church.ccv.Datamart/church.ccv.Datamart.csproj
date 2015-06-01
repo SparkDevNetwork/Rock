@@ -42,6 +42,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -61,8 +62,8 @@
     <Compile Include="Model\DatamartNearestGroup.cs" />
     <Compile Include="Model\DatamartPerson.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Reporting\DataSelect\Person\StartingPointDateSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\NeighborhoodLeaderSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\StartingPointDateSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\NeighborhoodPastorSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\NeighborhoodSelect.cs" />
   </ItemGroup>

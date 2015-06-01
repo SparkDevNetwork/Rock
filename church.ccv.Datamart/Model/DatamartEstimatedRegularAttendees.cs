@@ -61,6 +61,12 @@ namespace church.ccv.Datamart.Model
         [DataMember]
         public DateTime? LastAttended { get; set; }
 
+        /// <summary>
+        /// Gets or sets the times gave last6 weeks.
+        /// </summary>
+        /// <value>
+        /// The times gave last6 weeks.
+        /// </value>
         [DataMember]
         public int? TimesGaveLast6Weeks { get; set; }
 

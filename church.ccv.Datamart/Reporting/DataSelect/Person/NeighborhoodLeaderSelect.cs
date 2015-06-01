@@ -12,10 +12,10 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Select the date that the Person attended Starting Point" )]
+    [Description( "Select the Neighborhood Leader of the Person" )]
     [Export( typeof( DataSelectComponent ) )]
-    [ExportMetadata( "ComponentName", "Select Person's Starting Point Date" )]
-    public class StartingPointDateSelect : DataSelectComponent
+    [ExportMetadata( "ComponentName", "Select Person's Neighborhood Leader" )]
+    public class NeighborhoodLeaderSelect : DataSelectComponent
     {
         /// <summary>
         /// Gets the name of the entity type. Filter should be an empty string
@@ -42,7 +42,7 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
         {
             get
             {
-                return "Starting Point Date";
+                return "Neighborhood Leader";
             }
         }
 
@@ -54,7 +54,7 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
         /// </value>
         public override Type ColumnFieldType
         {
-            get { return typeof( DateTime? ); }
+            get { return typeof( string ); }
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
         {
             get
             {
-                return "Starting Point Date";
+                return "Neighborhood Leader";
             }
         }
 
@@ -81,7 +81,7 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Starting Point Date";
+            return "Neighborhood Leader";
         }
 
         /// <summary>
@@ -93,14 +93,17 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
         /// <returns></returns>
         public override System.Linq.Expressions.Expression GetExpression( Rock.Data.RockContext context, System.Linq.Expressions.MemberExpression entityIdProperty, string selection )
         {
+            var datamartNeighborhoodsService = new Service<DatamartNeighborhoods>( context );
             var datamartPersonService = new Service<DatamartPerson>( context );
             var personService = new PersonService( context );
+
+            var qryDatamartNeighborhoods = datamartNeighborhoodsService.Queryable();
             var qryDatamartPerson = datamartPersonService.Queryable();
             var qryPerson = personService.Queryable();
 
             var qryResult = qryPerson
                 .Select( p => qryDatamartPerson.Where( d => d.PersonId == p.Id )
-                  .Select( s => s.StartingPointDate ).FirstOrDefault() );
+                  .Select( s => qryDatamartNeighborhoods.Where( n => n.NeighborhoodId == s.NeighborhoodId ).Select( ss => ss.NeighborhoodLeaderName ).FirstOrDefault() ).FirstOrDefault() );
 
             var resultExpresssion = SelectExpressionExtractor.Extract<Rock.Model.Person>( qryResult, entityIdProperty, "p" );
 
