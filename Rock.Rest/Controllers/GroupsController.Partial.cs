@@ -254,26 +254,29 @@ namespace Rock.Rest.Controllers
 
                 foreach ( var family in families )
                 {
-                    GuestFamily guestFamily = new GuestFamily();
-                    guestFamily.Id = family.Id;
-                    guestFamily.Guid = family.Guid;
-                    guestFamily.Name = family.Name;
-
-                    guestFamily.FamilyMembers = new List<GuestFamilyMember>();
-                    foreach ( var familyMember in family.Members )
+                    if ( !guestFamilies.Select(f => f.Id).Contains(family.Id) )
                     {
-                        GuestFamilyMember guestFamilyMember = new GuestFamilyMember();
-                        guestFamilyMember.Id = familyMember.PersonId;
-                        guestFamilyMember.Guid = familyMember.Person.Guid;
-                        guestFamilyMember.FirstName = familyMember.Person.FirstName;
-                        guestFamilyMember.LastName = familyMember.Person.LastName;
-                        guestFamilyMember.PhotoUrl = familyMember.Person.PhotoUrl;
-                        guestFamilyMember.CanCheckin = familyMember.PersonId == guestPersonId;
+                        GuestFamily guestFamily = new GuestFamily();
+                        guestFamily.Id = family.Id;
+                        guestFamily.Guid = family.Guid;
+                        guestFamily.Name = family.Name;
 
-                        guestFamily.FamilyMembers.Add(guestFamilyMember);
+                        guestFamily.FamilyMembers = new List<GuestFamilyMember>();
+                        foreach ( var familyMember in family.Members )
+                        {
+                            GuestFamilyMember guestFamilyMember = new GuestFamilyMember();
+                            guestFamilyMember.Id = familyMember.PersonId;
+                            guestFamilyMember.Guid = familyMember.Person.Guid;
+                            guestFamilyMember.FirstName = familyMember.Person.FirstName;
+                            guestFamilyMember.LastName = familyMember.Person.LastName;
+                            guestFamilyMember.PhotoUrl = familyMember.Person.PhotoUrl;
+                            guestFamilyMember.CanCheckin = guests.Contains(familyMember.PersonId);
+
+                            guestFamily.FamilyMembers.Add(guestFamilyMember);
+                        }
+
+                        guestFamilies.Add(guestFamily);
                     }
-
-                    guestFamilies.Add(guestFamily);
                 }
             }
 
