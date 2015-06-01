@@ -38,6 +38,13 @@ namespace Rock.Reporting.DataSelect.Group
     {
         #region Properties
 
+        /// <summary>
+        /// Gets the name of the entity type. Filter should be an empty string
+        /// if it applies to all entities
+        /// </summary>
+        /// <value>
+        /// The name of the entity type.
+        /// </value>
         public override string AppliesToEntityType
         {
             get
@@ -46,6 +53,12 @@ namespace Rock.Reporting.DataSelect.Group
             }
         }
 
+        /// <summary>
+        /// Gets the section that this will appear in in the Field Selector
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
         public override string Section
         {
             get
@@ -54,6 +67,12 @@ namespace Rock.Reporting.DataSelect.Group
             }
         }
 
+        /// <summary>
+        /// The PropertyName of the property in the anonymous class returned by the SelectExpression
+        /// </summary>
+        /// <value>
+        /// The name of the column property.
+        /// </value>
         public override string ColumnPropertyName
         {
             get
@@ -62,11 +81,23 @@ namespace Rock.Reporting.DataSelect.Group
             }
         }
 
+        /// <summary>
+        /// Gets the type of the column field.
+        /// </summary>
+        /// <value>
+        /// The type of the column field.
+        /// </value>
         public override Type ColumnFieldType
         {
             get { return typeof( decimal? ); }
         }
 
+        /// <summary>
+        /// Gets the default column header text.
+        /// </summary>
+        /// <value>
+        /// The default column header text.
+        /// </value>
         public override string ColumnHeaderText
         {
             get
@@ -79,11 +110,31 @@ namespace Rock.Reporting.DataSelect.Group
 
         #region Methods
 
+        /// <summary>
+        /// Gets the title.
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        /// <value>
+        /// The title.
+        /// </value>
         public override string GetTitle( Type entityType )
         {
             return "Participation Rate";
         }
 
+        /// <summary>
+        /// Gets the expression.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="entityIdProperty">The entity identifier property.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">
+        /// Filter issue(s): One of the filters contains a circular reference to the Data View itself.
+        /// or
+        /// Filter issue(s):  + errorMessages.AsDelimited( ;  )
+        /// </exception>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
             var settings = new ParticipationRateSelectSettings(selection);
@@ -180,6 +231,11 @@ namespace Rock.Reporting.DataSelect.Group
             return selectExpression;
         }
 
+        /// <summary>
+        /// Creates the child controls.
+        /// </summary>
+        /// <param name="parentControl"></param>
+        /// <returns></returns>
         public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
         {
             // Define Control: Person Data View Picker
@@ -205,6 +261,12 @@ namespace Rock.Reporting.DataSelect.Group
             return new System.Web.UI.Control[] { ddlDataView, ddlFormat };
         }
 
+        /// <summary>
+        /// Gets the selection.
+        /// This is typically a string that contains the values selected with the Controls
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
         {
             var ddlDataView = (DataViewPicker)controls[0];
@@ -218,6 +280,11 @@ namespace Rock.Reporting.DataSelect.Group
             return settings.ToSelectionString();
         }
 
+        /// <summary>
+        /// Sets the selection.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="selection">The selection.</param>
         public override void SetSelection( System.Web.UI.Control[] controls, string selection )
         {
             var settings = new ParticipationRateSelectSettings( selection );
