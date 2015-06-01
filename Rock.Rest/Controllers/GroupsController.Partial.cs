@@ -214,6 +214,73 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Gets the guests (known relationship of can check-in) for given family.
+        /// </summary>
+        /// <param name="groupId">Group id of the family.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route("api/Groups/GetGuestsForFamily/{groupId}")]
+        public IQueryable<GuestFamily> GetGuestsForFamily(int groupId)
+        {
+            Guid knownRelationshipGuid = new Guid(Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS);
+            Guid knownRelationshipOwner = new Guid(Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER);
+            Guid knownRelationshipCanCheckin = new Guid(Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN);
+            
+            RockContext rockContext = new RockContext();
+            GroupMemberService groupMemberService = new GroupMemberService(rockContext);
+            PersonService personService = new PersonService(rockContext);
+
+            var familyMembers = groupMemberService.Queryable()
+                                    .Where(f => f.GroupId == groupId)
+                                    .Select(f => f.PersonId);
+            
+            var familyMembersKnownRelationshipGroups = new GroupMemberService(rockContext).Queryable()
+                                    .Where(g => g.Group.GroupType.Guid == knownRelationshipGuid 
+                                                    && g.GroupRole.Guid == knownRelationshipOwner 
+                                                    && familyMembers.Contains(g.PersonId))
+                                    .Select(m => m.GroupId);
+
+            var guests = groupMemberService.Queryable()
+                                    .Where(g => g.GroupRole.Guid == knownRelationshipCanCheckin 
+                                                    && familyMembersKnownRelationshipGroups.Contains(g.GroupId))
+                                    .Select(g => g.PersonId)
+                                    .Distinct();
+
+            var guestFamilies = new List<GuestFamily>();
+            foreach ( var guestPersonId in guests )
+            {
+                var families = personService.GetFamilies(guestPersonId).Include("Members.Person");
+
+                foreach ( var family in families )
+                {
+                    GuestFamily guestFamily = new GuestFamily();
+                    guestFamily.Id = family.Id;
+                    guestFamily.Guid = family.Guid;
+                    guestFamily.Name = family.Name;
+
+                    guestFamily.FamilyMembers = new List<GuestFamilyMember>();
+                    foreach ( var familyMember in family.Members )
+                    {
+                        GuestFamilyMember guestFamilyMember = new GuestFamilyMember();
+                        guestFamilyMember.Id = familyMember.PersonId;
+                        guestFamilyMember.Guid = familyMember.Person.Guid;
+                        guestFamilyMember.FirstName = familyMember.Person.FirstName;
+                        guestFamilyMember.LastName = familyMember.Person.LastName;
+                        guestFamilyMember.PhotoUrl = familyMember.Person.PhotoUrl;
+                        guestFamilyMember.CanCheckin = familyMember.PersonId == guestPersonId;
+
+                        guestFamily.FamilyMembers.Add(guestFamilyMember);
+                    }
+
+                    guestFamilies.Add(guestFamily);
+                }
+            }
+
+            return guestFamilies.AsQueryable();
+        }
+
+        /// <summary>
         /// Gets a group by location.
         /// </summary>
         /// <param name="geofenceGroupTypeId">The geofence group type identifier.</param>
@@ -660,6 +727,45 @@ namespace Rock.Rest.Controllers
             {
                 throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
+        }
+
+
+        /// <summary>
+        ///
+        /// </summary>
+        public class GuestFamily
+        {
+            /// <summary>
+            /// Gets or sets the id.
+            /// </summary>
+            /// <value>
+            /// The id.
+            /// </value>
+            public int Id { get; set; }
+
+            public string Name { get; set; }
+
+            public Guid Guid { get; set; }
+
+            public List<GuestFamilyMember> FamilyMembers { get; set; }
+
+        }
+
+        public class GuestFamilyMember
+        {
+            public int Id { get; set; }
+
+            public int PersonAliasId { get; set; }
+
+            public Guid Guid { get; set; }
+
+            public string FirstName { get; set; }
+
+            public string LastName { get; set; }
+
+            public string PhotoUrl { get; set; }
+
+            public bool CanCheckin { get; set; }
         }
 
         /// <summary>
