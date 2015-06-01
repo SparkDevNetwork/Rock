@@ -416,10 +416,6 @@ namespace RockWeb.Blocks.Finance
 
                 // Resolve the text field merge fields
                 var configValues = new Dictionary<string, object>();
-                Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
-                    .Where( v => v.Key.StartsWith( "Organization", StringComparison.CurrentCultureIgnoreCase ) )
-                    .ToList()
-                    .ForEach( v => configValues.Add( v.Key, v.Value ) );
                 phConfirmationHeader.Controls.Add( new LiteralControl( GetAttributeValue( "ConfirmationHeader" ).ResolveMergeFields( configValues ) ) );
                 phConfirmationFooter.Controls.Add( new LiteralControl( GetAttributeValue( "ConfirmationFooter" ).ResolveMergeFields( configValues ) ) );
                 phSuccessHeader.Controls.Add( new LiteralControl( GetAttributeValue( "SuccessHeader" ).ResolveMergeFields( configValues ) ) );

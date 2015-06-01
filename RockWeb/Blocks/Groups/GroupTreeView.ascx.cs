@@ -187,7 +187,14 @@ namespace RockWeb.Blocks.Groups
 
                     if ( group != null )
                     {
-                        parentIdList.Insert( 0, group.Id.ToString() );
+                        if ( !parentIdList.Contains( group.Id.ToString() ) )
+                            parentIdList.Insert( 0, group.Id.ToString() );
+                        else
+                        {
+                            // The parent list already contains this node, so we have encountered a recursive loop.
+                            // Stop here and make the current node the root of the tree.
+                            group = null;
+                        }
                     }
                 }
 

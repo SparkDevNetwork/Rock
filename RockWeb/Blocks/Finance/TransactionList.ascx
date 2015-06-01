@@ -18,8 +18,6 @@
                     <div class="grid grid-panel">
                         <Rock:GridFilter ID="gfTransactions" runat="server">
                             <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" />
-                            <Rock:NumberBox ID="nbRowLimit" runat="server" CssClass="input-width-sm" NumberType="Integer" Required="false" Label="Resulting Row Limit" MinimumValue="0" MaxLength="9"
-                                Help="Limits the number of rows returned in the grid. Leave blank to show all rows." />
                             <Rock:NumberRangeEditor ID="nreAmount" runat="server" Label="Amount Range" NumberType="Double" />
                             <Rock:RockTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code"></Rock:RockTextBox>
                             <Rock:RockDropDownList ID="ddlAccount" runat="server" Label="Account" />

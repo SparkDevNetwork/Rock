@@ -90,8 +90,8 @@ namespace RockWeb.Blocks.CheckIn
                 else
                 {
                     string errorMsg = ( tbPhone.Text.Length > maxLength )
-                        ? string.Format( "<ul><li>Please enter no more than {0} numbers</li></ul>", maxLength )
-                        : string.Format( "<ul><li>Please enter at least {0} numbers</li></ul>", minLength );
+                        ? string.Format( "<p>Please enter no more than {0} numbers</p>", maxLength )
+                        : string.Format( "<p>Please enter at least {0} numbers</p>", minLength );
 
                     maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
                 }
@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.CheckIn
 
         protected void ProcessSelection()
         {
-            ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.Count <= 0 , "<ul><li>There are not any families with the selected phone number</li></ul>" );
+            ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.Count <= 0 , "<p>There are not any families with the selected phone number</p>" );
         }
 
         protected void lbBack_Click( object sender, EventArgs e )

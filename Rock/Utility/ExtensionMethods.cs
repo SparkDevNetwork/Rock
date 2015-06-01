@@ -2561,6 +2561,28 @@ namespace Rock
         }
 
         /// <summary>
+        /// Distincts the by.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the source.</typeparam>
+        /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <param name="source">The source.</param>
+        /// <param name="keySelector">The key selector.</param>
+        /// <returns></returns>
+        /// http://stackoverflow.com/questions/489258/linq-distinct-on-a-particular-property
+        public static IEnumerable<TSource> DistinctBy<TSource, TKey>
+            (this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+        {
+            HashSet<TKey> seenKeys = new HashSet<TKey>();
+            foreach (TSource element in source)
+            {
+                if (seenKeys.Add(keySelector(element)))
+                {
+                    yield return element;
+                }
+            }
+        }
+
+        /// <summary>
         /// Orders the list by the name of a property in descending order.
         /// </summary>
         /// <typeparam name="T"></typeparam>

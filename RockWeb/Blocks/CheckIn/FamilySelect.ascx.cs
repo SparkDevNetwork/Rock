@@ -142,7 +142,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( !ProcessSelection( maWarning, () => 
                 CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ),
-                "<ul><li>Sorry, no one in your family is eligible to check-in at this location.</li></ul>" ) )            
+                "<p>Sorry, no one in your family is eligible to check-in at this location.</p>" ) )            
             {
                 ClearSelection();
             }

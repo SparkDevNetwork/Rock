@@ -21,8 +21,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Rock.Data;
+using Rock.Reporting.DataFilter;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Model
 {
@@ -98,6 +98,34 @@ namespace Rock.Model
 
             return null;
         }
-       
+
+        /// <summary>
+        /// Determines whether the specified Data View forms part of a filter.
+        /// </summary>
+        /// <param name="dataViewId">The unique identifier of a Data View.</param>
+        /// <param name="filter">The filter.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified Data View forms part of the conditions for the specified filter.
+        /// </returns>
+        public bool IsViewInFilter( int dataViewId, DataViewFilter filter )
+        {
+            var dataViewFilterEntityId = new EntityTypeService( (RockContext)this.Context ).Get( typeof( OtherDataViewFilter ), false, null ).Id;
+
+            return IsViewInFilter( dataViewId, filter, dataViewFilterEntityId );
+        }
+
+        private bool IsViewInFilter( int dataViewId, DataViewFilter filter, int dataViewFilterEntityId )
+        {
+            if ( filter.EntityTypeId == dataViewFilterEntityId )
+            {
+                var filterDataViewId = filter.Selection.AsIntegerOrNull();
+                if ( filterDataViewId == dataViewId )
+                {
+                    return true;
+                }
+            }
+
+            return filter.ChildFilters.Any( childFilter => IsViewInFilter( dataViewId, childFilter, dataViewFilterEntityId ) );
+        }
     }
 }
