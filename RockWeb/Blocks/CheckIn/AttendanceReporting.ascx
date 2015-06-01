@@ -8,6 +8,7 @@
                 <h1 class="panel-title"><i class="fa fa-check-square-o"></i>Attendance Analysis</h1>
 
                 <div class="panel-labels">
+                    <asp:Button ID="btnCheckinDetails" runat="server" CssClass="btn btn-default btn-sm" OnClick="btnCheckinDetails_Click" Text="Check-in Detail" />
                     <a href="#" onclick="$('.js-slidingdaterange-help').slideToggle()">
                         <i class='fa fa-question-circle'></i>
                     </a>
@@ -184,10 +185,6 @@
                                             </asp:Panel>
                                         </p>
                                     </Rock:RockControlWrapper>
-
-                                    <div class="actions margin-b-md">
-                                        <asp:LinkButton ID="btnApplyAttendeesFilter" runat="server" Visible="false" CssClass="btn btn-primary" Text="Apply" ToolTip="Update the Attendees grid" OnClick="btnApplyAttendeesFilter_Click" />
-                                    </div>
 
                                 </div>
                             </div>

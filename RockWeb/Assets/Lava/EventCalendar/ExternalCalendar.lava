@@ -1,0 +1,67 @@
+<div class="row">
+  {% assign eventCount = Events | Size %}
+
+  {% if eventCount == 0 %}
+  <div class="panel panel-default">
+    <div class="margin-all-md"> There are no events in this time frame.</div>
+  </div>
+  {% endif %}
+
+  {% for event in Events %}
+  <div class="panel panel-default">
+    <div class="panel-heading clearfix">
+      <h2 class="panel-title pull-left">
+        {{ event.Event.Name }}
+      </h2>
+      <div class="panel-heading pull-right">
+        {% if event.DetailPage != null %}
+        <a href="{{ event.DetailPage }}">
+          <i> View page -> </i>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="col-md-1">
+        <div class="row">
+          <b>Date</b>
+        </div>
+        <div class="row">
+          {{ event.Date }}
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="row">
+          <b>Time</b>
+        </div>
+        <div class="row">
+          {{ event.Time}}
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="row">
+          <b>Location</b>
+        </div>
+        <div class="row">
+          {{ event.Location}}
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="row">
+          <b>Description</b>
+        </div>
+        <div class="row">
+          {{event.Description}}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<script type="text/javascript">
+
+  $( document ).ready(function() {
+  $('.js-group-item').tooltip();
+  });
+
+</script>

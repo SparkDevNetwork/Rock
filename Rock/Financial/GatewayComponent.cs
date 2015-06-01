@@ -124,8 +124,13 @@ namespace Rock.Financial
         /// <returns></returns>
         protected string GetAttributeValue( FinancialGateway financialGateway, string key )
         {
+            if ( financialGateway.AttributeValues == null )
+            {
+                financialGateway.LoadAttributes();
+            }
+
             var values = financialGateway.AttributeValues;
-            if ( values.ContainsKey( key ) )
+            if ( values != null && values.ContainsKey( key ) )
             {
                 var keyValues = values[key];
                 if ( keyValues != null )

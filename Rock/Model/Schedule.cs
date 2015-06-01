@@ -234,6 +234,31 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the start time of day.
+        /// </summary>
+        /// <value>
+        /// The start time of day.
+        /// </value>
+        public virtual TimeSpan StartTimeOfDay
+        {
+            get
+            {
+                DDay.iCal.Event calendarEvent = this.GetCalenderEvent();
+                if ( calendarEvent != null && calendarEvent.DTStart != null )
+                {
+                    return calendarEvent.DTStart.TimeOfDay;
+                }
+
+                if ( WeeklyTimeOfDay.HasValue )
+                {
+                    return WeeklyTimeOfDay.Value;
+                }
+
+                return new TimeSpan();
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Category"/> that this Schedule belongs to.
         /// </summary>
         /// <value>
@@ -631,20 +656,20 @@ namespace Rock.Model
     public class ScheduleOccurrence
     {
         /// <summary>
-        /// Gets or sets the logical occurrence start date time.
+        /// Gets or sets the logical occurrence date of the occurrence
         /// </summary>
         /// <value>
-        /// The occurrence start date time.
+        /// The occurrence date.
         /// </value>
-        public DateTime StartDateTime { get; set; }
+        public DateTime Date { get; set; }
 
         /// <summary>
-        /// Gets or sets the logical occurrence end date time.
+        /// Gets or sets the logical start date/time ( only used for ordering )
         /// </summary>
         /// <value>
-        /// The occurrence end date time.
+        /// The start date time.
         /// </value>
-        public DateTime EndDateTime { get; set; }
+        public TimeSpan StartTime { get; set; }
 
         /// <summary>
         /// Gets or sets the schedule identifier.
@@ -679,6 +704,38 @@ namespace Rock.Model
         public string LocationName { get; set; }
 
         /// <summary>
+        /// Gets or sets the location path.
+        /// </summary>
+        /// <value>
+        /// The location path.
+        /// </value>
+        public string LocationPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total count.
+        /// </summary>
+        /// <value>
+        /// The total count.
+        /// </value>
+        public int TotalCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the did attend count.
+        /// </summary>
+        /// <value>
+        /// The did attend count.
+        /// </value>
+        public int DidAttendCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the did not occur count.
+        /// </summary>
+        /// <value>
+        /// The did not occur count.
+        /// </value>
+        public int DidNotOccurCount { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether attendance has been entered for this occurrence.
         /// </summary>
         /// <value>
@@ -688,7 +745,7 @@ namespace Rock.Model
         {
             get
             {
-                return Attendance != null && Attendance.Any( a => a.DidAttend.HasValue );
+                return DidAttendCount > 0;
             }
         }
 
@@ -705,38 +762,7 @@ namespace Rock.Model
         {
             get
             {
-                return Attendance != null &&
-                    !Attendance.Where( a => a.DidAttend.HasValue ).Any() &&
-                    Attendance.Where( a => a.DidNotOccur.HasValue ).Any();
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the attendance records associated with this occurrence
-        /// </summary>
-        /// <value>
-        /// The attendance.
-        /// </value>
-        public List<Attendance> Attendance { get; set; }
-
-        /// <summary>
-        /// Gets the number of people attended.
-        /// </summary>
-        /// <value>
-        /// The attended.
-        /// </value>
-        public int NumberAttended
-        {
-            get
-            {
-                return Attendance
-                    .Where( a =>
-                        a.PersonAlias != null &&
-                        a.DidAttend.HasValue &&
-                        a.DidAttend.Value )
-                    .Select( a => a.PersonAlias.PersonId )
-                    .Distinct()
-                    .Count();
+                return DidAttendCount <= 0 && DidNotOccurCount > 0;
             }
         }
 
@@ -750,33 +776,9 @@ namespace Rock.Model
         {
             get
             {
-                var people = new Dictionary<int, bool>();
-                foreach ( var person in Attendance
-                    .Where( a =>
-                        a.PersonAlias != null &&
-                        a.DidAttend.HasValue )
-                    .Select( a => new
-                    {
-                        PersonId = a.PersonAlias.PersonId,
-                        DidAttend = a.DidAttend.Value
-                    } )
-                    .Distinct() )
+                if ( TotalCount > 0 )
                 {
-                    if ( person.DidAttend )
-                    {
-                        people.AddOrReplace( person.PersonId, true );
-                    }
-                    else
-                    {
-                        people.AddOrIgnore( person.PersonId, false );
-                    }
-                }
-
-                int attended = people.Where( p => p.Value ).Count();
-                int total = people.Count();
-                if ( total > 0 )
-                {
-                    return (double)( attended ) / (double)total;
+                    return (double)( DidAttendCount ) / (double)TotalCount;
                 }
                 else
                 {
@@ -786,40 +788,25 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ScheduleOccurrence"/> class.
+        /// Initializes a new instance of the <see cref="ScheduleOccurrence" /> class.
         /// </summary>
-        /// <param name="occurrence">The occurrence.</param>
+        /// <param name="date">The date.</param>
+        /// <param name="startTime">The start time.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="scheduleName">Name of the schedule.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="locationName">Name of the location.</param>
-        public ScheduleOccurrence( DDay.iCal.Occurrence occurrence, int? scheduleId = null, string scheduleName = "", int? locationId = null, string locationName = "" )
+        /// <param name="locationPath">The location path.</param>
+        /// ,
+        public ScheduleOccurrence( DateTime date, TimeSpan startTime, int? scheduleId = null, string scheduleName = "", int? locationId = null, string locationName = "", string locationPath = "" )
         {
-            StartDateTime = occurrence.Period.StartTime.Value;
-            EndDateTime = occurrence.Period.EndTime.Value;
+            Date = date;
+            StartTime = startTime;
             ScheduleId = scheduleId;
             ScheduleName = scheduleName;
             LocationId = locationId;
             LocationName = locationName;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ScheduleOccurrence"/> class.
-        /// </summary>
-        /// <param name="startDateTime">The start date time.</param>
-        /// <param name="endDateTime">The end date time.</param>
-        /// <param name="scheduleId">The schedule identifier.</param>
-        /// <param name="scheduleName">Name of the schedule.</param>
-        /// <param name="locationId">The location identifier.</param>
-        /// <param name="locationName">Name of the location.</param>
-        public ScheduleOccurrence( DateTime startDateTime, DateTime endDateTime, int? scheduleId = null, string scheduleName = "", int? locationId = null, string locationName = "" )
-        {
-            StartDateTime = startDateTime;
-            EndDateTime = endDateTime;
-            ScheduleId = scheduleId;
-            ScheduleName = scheduleName;
-            LocationId = locationId;
-            LocationName = locationName;
+            LocationPath = locationPath;
         }
     }
 

@@ -63,7 +63,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Ases the lazy.
+        /// Gets an item as a Lazy type
         /// </summary>
         /// <typeparam name="TT">The type of the t.</typeparam>
         /// <param name="item">The item.</param>
@@ -74,7 +74,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Ases the lazy.
+        /// Gets an integer as a Lazy integer
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns></returns>

@@ -7,11 +7,14 @@
 
         <div class="row">
             <div class="col-sm-3">
-                <div class="photoframe">
-                    <asp:Literal ID="lPhoto" runat="server" />
-                </div>
+                <asp:Literal ID="lPhoto" runat="server" />
             </div>
             <div class="col-sm-9">
+                <ul class="list-unstyled">
+                    <li><asp:Literal ID="lGender" runat="server" /></li>
+                    <li><asp:Literal ID="lAge" runat="server" /></li>
+                    <li><asp:Literal ID="lGrade" runat="server" /></li>
+                </ul>
                 <Rock:RockControlWrapper ID="rcwPhone" runat="server" Label="Phone(s)">
                     <ul class="list-unstyled list-horizontal">
                         <asp:Repeater ID="rptrPhones" runat="server">
@@ -39,12 +42,21 @@
         <Rock:RockControlWrapper ID="rcwCheckinHistory" runat="server" Label="Checkin History">
             <Rock:Grid ID="gHistory" runat="server" DisplayType="Light" AllowPaging="false" CssClass="table-condensed">
                 <Columns>
-                    <Rock:RockBoundField DataField="Date" HeaderText="Date" DataFormatString="{0:MM/dd/yy}" />
-                    <Rock:RockBoundField DataField="Group" HeaderText="Group"  />
-                    <Rock:RockBoundField DataField="Location" HeaderText="Location" HtmlEncode="false" />
-                    <Rock:RockTemplateField HeaderText="Schedule">
+                    <Rock:RockTemplateField HeaderText="When">
                         <ItemTemplate>
-                            <%# Eval("Schedule") %> <asp:Literal id="lActive" runat="server"></asp:Literal>
+                            <%# ((DateTime)Eval("Date")).ToShortDateString() %><br />
+                            <%# Eval("Schedule") %>
+                        </ItemTemplate>
+                    </Rock:RockTemplateField>
+                    <Rock:RockTemplateField HeaderText="Where">
+                        <ItemTemplate>
+                            <%# Eval("Location") %><br />
+                            <%# Eval("Group") %>
+                        </ItemTemplate>
+                    </Rock:RockTemplateField>
+                    <Rock:RockTemplateField>
+                        <ItemTemplate>
+                            <asp:Literal id="lActive" runat="server"></asp:Literal>
                         </ItemTemplate>
                     </Rock:RockTemplateField>
                 </Columns>

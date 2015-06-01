@@ -17,15 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Rock.Model;
 
 namespace Rock.Data
 {
     /// <summary>
-    /// Interface for all code-first entitites
+    /// Interface for all code-first entities
     /// </summary>
     public interface IEntity
     {

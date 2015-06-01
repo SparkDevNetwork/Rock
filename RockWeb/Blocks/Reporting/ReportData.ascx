@@ -18,10 +18,12 @@
                         </h1>
                     </div>
                     <div class="panel-body">
+                        <Rock:NotificationBox ID="nbFiltersError" runat="server" NotificationBoxType="Danger" Visible="false" />
                         <asp:PlaceHolder ID="phFilters" runat="server" />
 
                         <div class="actions margin-t-md">
                             <asp:LinkButton ID="btnFilter" runat="server" AccessKey="m" Text="Filter" CssClass="btn btn-primary btn-sm" OnClick="btnFilter_Click" />
+                            <asp:LinkButton ID="btnFilterSetDefault" runat="server" Text="Set Default" ToolTip="Set the filter to its default values" CssClass="btn btn-link btn-sm pull-right" OnClick="btnFilterSetDefault_Click" />
                         </div>
                     </div>
                 </div>

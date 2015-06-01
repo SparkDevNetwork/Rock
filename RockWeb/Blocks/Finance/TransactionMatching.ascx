@@ -82,13 +82,12 @@
                                     </asp:Panel>
                                 </div>
                             </div>
-
                             
                             <Rock:NotificationBox ID="nbSaveError" runat="server" NotificationBoxType="Danger" Dismissable="true" Text="Warning. Unable to save..." />
                             <Rock:RockControlWrapper ID="rcwAccountSplit" runat="server" Label="Account Split" Help="Enter the amount that should be allocated to each account. The total must match the amount shown on the transaction image">
                                 <asp:Repeater ID="rptAccounts" runat="server">
                                     <ItemTemplate>
-                                        <Rock:CurrencyBox ID="cbAccountAmount" runat="server" Label='<%#Eval( "Name" )%>' data-account-id='<%#Eval("Id")%>' CssClass="js-account-amount" onkeypress="javascript:handleAmountBoxKeyPress(event.keyCode)" onkeyup="javascript:handleAmountBoxKeyUp(event.keyCode)" />
+                                        <Rock:CurrencyBox ID="cbAccountAmount" runat="server" Label='<%#Eval( "Name" )%>' data-account-id='<%#Eval("Id")%>' CssClass="js-account-amount" onkeydown="javascript:return handleAmountBoxKeyPress(this, event.keyCode);" onkeyup="javascript:handleAmountBoxKeyUp(event.keyCode)" />
                                     </ItemTemplate>
                                 </asp:Repeater>
                             </Rock:RockControlWrapper>
@@ -142,12 +141,36 @@
             })
 
             // handle onkeypress for the account amount input boxes
-            function handleAmountBoxKeyPress(keyCode)
+            function handleAmountBoxKeyPress(element, keyCode)
             {
                 // if Enter was pressed when in one of the Amount boxes, click the Next button.
                 if (keyCode == 13)
                 {
                     $('#<%=btnNext.ClientID%>')[0].click();
+                    return false;
+                }
+                else if (keyCode == 40) {
+                    // pressing the down arrow goes to the next input or to the Next button
+                    var clientId = element.getAttribute('id');
+                    // find the "next" textbox
+                    var textbox = $('#'+clientId).parent().parent().next().find('input');
+                    if (textbox.length != 0)
+                    {
+                        textbox.focus();
+                    }
+                    else
+                    {
+                        $('#<%=btnNext.ClientID%>').focus();
+                    }
+                }
+                else if (keyCode == 38) {
+                    // pressing the up arrow goes to the previous input
+                    var clientId = element.getAttribute('id');
+                    // find the "previous" textbox
+                    var textbox = $('#' + clientId).parent().parent().prev().find('input');
+                    if (textbox.length != 0) {
+                        textbox.focus();
+                    }
                 }
             }
 

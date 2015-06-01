@@ -78,6 +78,9 @@ namespace RockWeb.Blocks.Administration
             // Clear the static object that contains all auth rules (so that it will be refreshed)
             Rock.Security.Authorization.Flush();
 
+            // Flush the static entity attributes cache
+            Rock.Web.Cache.AttributeCache.FlushEntityAttributes();
+
             // Check for any unregistered entity types, field types, and block types
             string webAppPath = Server.MapPath("~");
             EntityTypeService.RegisterEntityTypes( webAppPath );

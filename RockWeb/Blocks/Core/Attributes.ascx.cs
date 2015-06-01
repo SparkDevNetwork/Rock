@@ -308,6 +308,8 @@ namespace RockWeb.Blocks.Core
                 rockContext.SaveChanges();
             }
 
+            AttributeCache.FlushEntityAttributes();
+
             BindGrid();
         }
 
@@ -434,6 +436,8 @@ namespace RockWeb.Blocks.Core
             {
                 return;
             }
+
+            AttributeCache.FlushEntityAttributes();
 
             HideDialog();
 

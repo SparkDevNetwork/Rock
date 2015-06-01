@@ -296,6 +296,30 @@ namespace Rock.Model
         public int? GivingGroupId { get; set; }
 
         /// <summary>
+        /// Gets the giver identifier.
+        /// </summary>
+        /// <value>
+        /// The giver identifier.
+        /// </value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        public string GivingId
+        {
+            get
+            {
+                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database
+                return GivingGroupId.HasValue ?
+                    string.Format( "G{0}", GivingGroupId.Value ) :
+                    string.Format( "P{0}", Id );
+            }
+
+            private set
+            {
+                // don't do anthing here since EF uses this for loading 
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the Person's email address.
         /// </summary>
         /// <value>

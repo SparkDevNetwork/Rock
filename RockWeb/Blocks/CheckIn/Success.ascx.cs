@@ -47,8 +47,8 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnInit( e );
 
-            RockPage.AddScriptLink( this.Page, "~/Scripts/CheckinClient/cordova-2.4.0.js", false );
-            RockPage.AddScriptLink( this.Page, "~/Scripts/CheckinClient/ZebraPrint.js", false );
+            RockPage.AddScriptLink( "~/Scripts/CheckinClient/cordova-2.4.0.js", false );
+            RockPage.AddScriptLink( "~/Scripts/CheckinClient/ZebraPrint.js" );
 
             RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
@@ -209,7 +209,6 @@ namespace RockWeb.Blocks.CheckIn
                         foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
                         {
                             groupType.Selected = false;
-                            groupType.Groups = new List<CheckInGroup>();
                         }
                     }
                 }

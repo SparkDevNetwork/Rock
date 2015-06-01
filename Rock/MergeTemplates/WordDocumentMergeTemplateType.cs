@@ -33,9 +33,25 @@ namespace Rock.MergeTemplates
     /// </summary>
     [System.ComponentModel.Description( "A Word Document merge template" )]
     [Export( typeof( MergeTemplateType ) )]
-    [ExportMetadata( "ComponentName", "Word Document" )]
+    [ExportMetadata( "ComponentName", "Word" )]
     public class WordDocumentMergeTemplateType : MergeTemplateType
     {
+        /// <summary>
+        /// Gets the supported file extensions
+        /// Returns NULL if the file extension doesn't matter or doesn't apply
+        /// Rock will use this to warn the user if the file extension isn't supported
+        /// </summary>
+        /// <value>
+        /// The supported file extensions.
+        /// </value>
+        public override IEnumerable<string> SupportedFileExtensions
+        {
+            get
+            {
+                return new string[] { "docx" };
+            }
+        }
+
         /// <summary>
         /// Gets or sets the exceptions.
         /// </summary>
@@ -98,6 +114,27 @@ namespace Rock.MergeTemplates
                                     }
                                 } );
 
+                XElement lastLavaNode = simplifiedDocX.DescendantNodes().OfType<XElement>().LastOrDefault( a => lavaRegEx.IsMatch( a.Value ) );
+
+                // ensure there is a { Next } indicator after the last lava node in the template
+                if (lastLavaNode != null)
+                {
+                    var nextRecordMatch = nextRecordRegEx.Match( lastLavaNode.Value );
+                    if ( nextRecordMatch == null || !nextRecordMatch.Success )
+                    {
+                        // if the last lava node doesn't have a { next }, append to the end
+                        lastLavaNode.Value += " {% next %} ";
+                    }
+                    else
+                    {
+                        if ( !lastLavaNode.Value.EndsWith( nextRecordMatch.Value ) )
+                        {
+                            // if the last lava node does have a { next }, but there is stuff after it, add it (just in case)
+                            lastLavaNode.Value += " {% next %} ";
+                        }
+                    }
+                }
+
                 simplifiedDoc.MainDocumentPart.PutXDocument();
 
                 sourceTemplateStream.Seek( 0, SeekOrigin.Begin );
@@ -145,13 +182,6 @@ namespace Rock.MergeTemplates
                             allSameParent = allSameParent ?? nextIndicatorNodes.Count > 1 && nextIndicatorNodes.Select( a => a.Parent ).Distinct().Count() == 1;
 
                             List<XContainer> recordContainerNodes = new List<XContainer>();
-                            if ( !nextIndicatorNodes.Any() )
-                            {
-                                // if there aren't any Next indicators, create one (which means the entire template doc is a record)
-                                var addedNode = XElement.Parse( new Paragraph( new Run( new Text( " {% next %} " ) ) ).OuterXml );
-                                tempMergeTemplateBodyNode.Add( addedNode );
-                                nextIndicatorNodes.Add( addedNode );
-                            }
 
                             foreach ( var nextIndicatorNodeParent in nextIndicatorNodes.Select( a => a.Parent ).Where( a => a != null ) )
                             {
@@ -200,18 +230,9 @@ namespace Rock.MergeTemplates
                                 }
                                 else
                                 {
-                                    List<string> xmlChunks = new List<string>();
-
-                                    if ( allSameParent.Value )
-                                    {
-                                        // if all the nextRecord nodes have the same parent, just split the XML for each record and reassemble it when done
-                                        xmlChunks.AddRange( this.nextRecordRegEx.Split( recordContainerNodeXml ) );
-                                    }
-                                    else
-                                    {
-                                        string xmlChunk = nextRecordRegEx.Replace( recordContainerNodeXml, string.Empty );
-                                        xmlChunks.Add( xmlChunk );
-                                    }
+                                    //// just in case they have shared parent node, or if there is trailing {{ next }} after the last lava 
+                                    //// on the page, split the XML for each record and reassemble it when done
+                                    List<string> xmlChunks = this.nextRecordRegEx.Split( recordContainerNodeXml ).ToList();
 
                                     string mergedXml = string.Empty;
 
