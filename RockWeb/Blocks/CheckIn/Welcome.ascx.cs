@@ -20,21 +20,21 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [DisplayName("Welcome")]
-    [Category("Check-in")]
-    [Description("Welcome screen for check-in.")]
+    [DisplayName( "Welcome" )]
+    [Category( "Check-in" )]
+    [Description( "Welcome screen for check-in." )]
     [LinkedPage( "Family Select Page" )]
     [IntegerField( "Refresh Interval", "How often (seconds) should page automatically query server for new Check-in data", false, 10 )]
-    [BooleanField("Enable Override", "Allows the override link to be used on the configuration page.", true)]
+    [BooleanField( "Enable Override", "Allows the override link to be used on the configuration page.", true )]
     [BooleanField( "Enable Manager", "Allows the manager link to be placed on the page.", true )]
     public partial class Welcome : CheckInBlock
     {
@@ -111,6 +111,9 @@ namespace RockWeb.Blocks.CheckIn
             string script = string.Format( @"
 
 var timeoutSeconds = $('.js-refresh-timer-seconds').val();
+if (timeout) {{
+    window.clearTimeout(timeout);
+}}
 var timeout = window.setTimeout(refreshKiosk, timeoutSeconds * 1000);
 
 var $ActiveWhen = $('.active-when');
@@ -139,7 +142,7 @@ if ($ActiveWhen.text() != '')
     }});
 }}
 
-", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ));
+", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "RefreshScript", script, true );
         }
 
@@ -171,6 +174,8 @@ if ($ActiveWhen.text() != '')
             pnlNotActiveYet.Visible = false;
             pnlClosed.Visible = false;
             pnlActive.Visible = false;
+            pnlManagerLogin.Visible = false;
+            pnlManager.Visible = false;
 
             lblActiveWhen.Text = string.Empty;
 
@@ -225,28 +230,85 @@ if ($ActiveWhen.text() != '')
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnManager_Click( object sender, EventArgs e )
         {
-            pnlWelcome.Visible = false;
-            pnlManager.Visible = true;
-            
+            // just set Display to none instead of Visible = False so we don't mess up the timers, postbacks, etc
+            pnlWelcome.Style[HtmlTextWriterStyle.Display] = "none";
+            pnlManager.Visible = false;
+            pnlManagerLogin.Visible = true;
+
             // set manager timer to 10 minutes
             hfRefreshTimerSeconds.Value = "600";
         }
-        
+
         protected void rLocations_ItemCommand( object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e )
         {
 
         }
-        
+
         protected void btnBack_Click( object sender, EventArgs e )
         {
             RefreshView();
-            pnlWelcome.Visible = true;
+            pnlWelcome.Style[HtmlTextWriterStyle.Display] = "block";
             pnlManager.Visible = false;
         }
-        
+
         protected void btnScheduleLocations_Click( object sender, EventArgs e )
         {
 
         }
-}
+
+        /// <summary>
+        /// Handles the Click event of the lbLogin control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbLogin_Click( object sender, EventArgs e )
+        {
+            var pinAuth = AuthenticationContainer.GetComponent( typeof( Rock.Security.Authentication.PINAuthentication ).FullName );
+            var rockContext = new Rock.Data.RockContext();
+            var userLoginService = new UserLoginService( rockContext );
+            var userLogin = userLoginService.GetByUserName( tbPIN.Text );
+            if ( userLogin != null && userLogin.EntityTypeId.HasValue )
+            {
+                // make sure this is a PIN auth user login
+                var userLoginEntityType = EntityTypeCache.Read( userLogin.EntityTypeId.Value );
+                if ( userLoginEntityType != null && userLoginEntityType.Id == pinAuth.EntityType.Id )
+                {
+                    if ( pinAuth != null && pinAuth.IsActive )
+                    {
+                        // should always return true, but just in case
+                        if ( pinAuth.Authenticate( userLogin, null ) )
+                        {
+                            if ( !( userLogin.IsConfirmed ?? true ) )
+                            {
+                                maWarning.Show( "Sorry, account needs to be confirmed.", Rock.Web.UI.Controls.ModalAlertType.Warning );
+                            }
+                            else if ( ( userLogin.IsLockedOut ?? false ) )
+                            {
+                                maWarning.Show( "Sorry, account is locked-out.", Rock.Web.UI.Controls.ModalAlertType.Warning );
+                            }
+                            else
+                            {
+                                pnlManagerLogin.Visible = false;
+                                pnlManager.Visible = true;
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            maWarning.Show( "Sorry, we couldn't find an account matching that PIN.", Rock.Web.UI.Controls.ModalAlertType.Warning );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbCancel_Click( object sender, EventArgs e )
+        {
+            btnBack_Click( sender, e );
+        }
+    }
 }
