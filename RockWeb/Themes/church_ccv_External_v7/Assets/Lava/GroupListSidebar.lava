@@ -1,4 +1,12 @@
-{% unless Groups == empty %}
+{% assign groupLeaderCount = 0 %}
+{% for group in Groups %}
+  {% comment %}if user is a NH Group Leader or NH Area leader{% endcomment %}
+  {% if group.IsLeader or group.Role == "Neighborhood Leader" %}
+    {% assign groupLeaderCount = groupLeaderCount | Plus: 1 %}
+  {% endif %}
+{% endfor %}
+
+{% unless Groups == empty or groupLeaderCount == 0 %}
 
   {% capture _panelTitle %}{{ panelTitle | Default: "Groups" }}{% endcapture%}
 
@@ -7,17 +15,13 @@
 
     <ul class="list-group list-group-panel">
       {% for group in Groups %}
-
-      {% capture isLeaderIcon %}
-      {% if group.IsLeader %}
-      <i class='fa fa-asterisk'></i>
-      {% endif %}
-      {% endcapture %}
-      <li class="list-group-item">
-        <a href="{{ LinkedPages.DetailPage }}?GroupId={{group.Group.Id}}" class="js-group-item" data-toggle="tooltip" data-placement="top" title="{{ group.GroupType }}">
-          {{ group.Group.Name }} <small>({{ group.Role }}{{ isLeaderIcon }})</small>
-        </a>
-      </li>
+        {% if group.IsLeader or group.Role == "Neighborhood Leader" %}
+          <li class="list-group-item">
+            <a href="{{ LinkedPages.DetailPage }}?GroupId={{group.Group.Id}}" class="js-group-item" data-toggle="tooltip" data-placement="top" title="{{ group.GroupType }}">
+              {{ group.Group.Name }} <small>({{ group.Role }})</small>
+            </a>
+          </li>
+        {% endif %}
       {% endfor %}
     </ul>
 
