@@ -66,11 +66,9 @@ namespace Rock.Workflow.Action
 
                 if ( groupGuid.HasValue )
                 {
-                    var groupLeader = new GroupService(rockContext).Queryable().AsNoTracking()
-                                       .Where(g => g.Guid == groupGuid)
-                                       .SelectMany(g => g.Members)
-                                       .Where(m => m.GroupRole.IsLeader)
-                                       .FirstOrDefault();
+                    var groupLeader = new GroupMemberService(rockContext).Queryable().AsNoTracking()
+                                       .Where(g => g.Group.Guid == groupGuid && g.GroupRole.IsLeader)
+                                       .Select(g => g.Person).FirstOrDefault();
 
                     if ( groupLeader != null )
                     {
@@ -84,11 +82,11 @@ namespace Rock.Workflow.Action
                                 // If this is a person type attribute
                                 if ( personAttribute.FieldTypeId == FieldTypeCache.Read(SystemGuid.FieldType.PERSON.AsGuid(), rockContext).Id )
                                 {
-                                    SetWorkflowAttributeValue(action, leaderGuid, groupLeader.Person.PrimaryAlias.Guid.ToString());
+                                    SetWorkflowAttributeValue(action, leaderGuid, groupLeader.PrimaryAlias.Guid.ToString());
                                 }
                                 else if ( personAttribute.FieldTypeId == FieldTypeCache.Read(SystemGuid.FieldType.TEXT.AsGuid(), rockContext).Id )
                                 {
-                                    SetWorkflowAttributeValue(action, leaderGuid, groupLeader.Person.FullName);
+                                    SetWorkflowAttributeValue(action, leaderGuid, groupLeader.FullName);
                                 }
                             }
                         }
