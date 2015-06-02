@@ -1,4 +1,4 @@
-@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800);
 /*
    Rock's Core CSS
 
@@ -5185,10 +5185,6 @@ main {
   margin-left: auto;
   margin-right: auto;
 }
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
 h1,
 h2,
 h3,
@@ -5202,6 +5198,18 @@ h6,
 .h5,
 .h6 {
   text-transform: uppercase;
+}
+.lead {
+  font-family: "DINWebCondensed", sans-serif;
+  font-size: 20px;
+  line-height: 1.3;
+  margin-bottom: 20px;
+  font-weight: 300;
+}
+@media (min-width: 768px) {
+  .lead {
+    font-size: 23px;
+  }
 }
 .underline {
   border-bottom: 1px solid #eeeeee;
@@ -5220,6 +5228,14 @@ h6,
 }
 .text-faded.text-inverse {
   color: rgba(255, 255, 255, 0.5);
+}
+.text-aa {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.text-noaa {
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
 }
 .list-2col-wrapper {
   -moz-column-count: 2;
@@ -5260,6 +5276,8 @@ h6,
   font-family: "DINWebCondensed", sans-serif;
   font-size: 18px;
   line-height: 25px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 .masthead-upper {
   background-color: #1d1d1d;
@@ -5528,6 +5546,8 @@ h6,
   color: #fff;
   padding-top: 30px;
   padding-bottom: 30px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio: 2), only screen and (-o-min-device-pixel-ratio: 2/1), only screen and (min-device-pixel-ratio: 2), only screen and (min-resolution: 192dpi), only screen and (min-resolution: 2dppx) {
   .mainfooter {
@@ -5658,18 +5678,34 @@ h6,
 }
 .bigblock-graydark {
   background-color: #333333;
-  color: #fff;
 }
 .bigblock-graydarker {
   background-color: #222222;
-  color: #fff;
 }
 .bigblock-graydarker .page-header {
   border-color: #333333;
 }
 .bigblock-red {
   background-color: #7a1315;
+}
+.bigblock-orange {
+  background-color: #ff5000;
+}
+.bigblock-inverse,
+.bigblock-graydark,
+.bigblock-graydarker,
+.bigblock-red,
+.bigblock-orange {
   color: #fff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.bigblock-inverse .lead,
+.bigblock-graydark .lead,
+.bigblock-graydarker .lead,
+.bigblock-red .lead,
+.bigblock-orange .lead {
+  font-weight: 400;
 }
 .bigblock-stacking {
   margin-bottom: 0;
@@ -5933,6 +5969,8 @@ h6,
   font-weight: 800;
 }
 .slide-control {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   margin-top: -1px;
 }
 .slide-control ul {

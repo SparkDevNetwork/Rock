@@ -8,14 +8,19 @@
 // Bootstrap/default overrides
 // -------------------------
 
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
 h1, h2, h3, h4, h5, h6,
 .h1, .h2, .h3, .h4, .h5, .h6 {
-    text-transform: uppercase;
+  text-transform: uppercase;
+}
+
+.lead {
+  .din(floor(@headings-font-size-base * 1.15), 1.3);
+  margin-bottom: @line-height-computed;
+  font-weight: 300;
+
+  @media (min-width: @screen-sm-min) {
+    font-size: floor(@headings-font-size-base * 1.3);
+  }
 }
 
 
@@ -43,6 +48,9 @@ h1, h2, h3, h4, h5, h6,
     color: fade(#fff, 50%);
   }
 }
+
+.text-aa { .text-aa(); }
+.text-noaa { .text-noaa(); }
 
 
 // Lists (used on the watch page)

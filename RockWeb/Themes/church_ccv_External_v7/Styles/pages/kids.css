@@ -1,0 +1,84 @@
+@media (min-width: 768px) {
+  .kids-header .container,
+  .kids-points {
+    padding-top: 30px;
+    padding-bottom: 30px;
+  }
+}
+@media (min-width: 992px) {
+  .kids-header .container,
+  .kids-points {
+    padding-top: 60px;
+    padding-bottom: 60px;
+  }
+}
+@media (min-width: 1200px) {
+  .kids-header .container,
+  .kids-points {
+    padding-top: 120px;
+    padding-bottom: 120px;
+  }
+}
+@media (min-width: 1560px) {
+  .kids-header .container,
+  .kids-points {
+    padding-top: 180px;
+    padding-bottom: 180px;
+  }
+}
+.kids-about p.lead {
+  font-size: 23px;
+}
+@media (min-width: 768px) {
+  .kids-about p.lead {
+    font-size: 31px;
+  }
+}
+@media (min-width: 992px) {
+  .kids-about p.lead {
+    margin-bottom: 20px;
+    margin-top: 40px;
+  }
+}
+@media (min-width: 992px) {
+  .kids-about p {
+    margin-bottom: 40px;
+  }
+}
+@media (min-width: 1200px) {
+  .kids-about p {
+    margin-bottom: 60px;
+  }
+}
+.kids-header {
+  position: relative;
+  -webkit-transition: background 3s;
+  -o-transition: background 3s;
+  transition: background 3s;
+}
+.bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: url('https://s3.amazonaws.com/media.ccvonline.com/external_site_v7/kids/bg/5.jpg') center center no-repeat;
+  background-size: cover;
+  opacity: 0;
+  z-index: -1;
+  -webkit-transition: opacity 3s;
+  -o-transition: opacity 3s;
+  transition: opacity 3s;
+}
+.bg.in {
+  opacity: 1;
+}
+.bg:before {
+  content: ' ';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(40, 40, 40, 0.7);
+}

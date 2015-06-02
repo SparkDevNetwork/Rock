@@ -14,6 +14,7 @@
   font-size: @font-size+2px; // compensate for DIN size difference
   line-height: @line-height;
   border-radius: @border-radius;
+  .text-aa();
 }
 
 
@@ -25,4 +26,14 @@
   font-family: @headings-font-family;
   font-size: @size;
   line-height: @lineheight;
+}
+
+.text-aa() {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.text-noaa() {
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
 }

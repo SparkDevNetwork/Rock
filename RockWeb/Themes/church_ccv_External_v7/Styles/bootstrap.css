@@ -4521,6 +4521,8 @@ select[multiple].input-lg {
   font-size: 16px;
   line-height: 1.42857143;
   border-radius: 4px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -4842,6 +4844,8 @@ fieldset[disabled] .btn-link:focus {
   font-size: 20px;
   line-height: 1.33;
   border-radius: 6px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 .btn-sm,
 .btn-group-sm > .btn {
@@ -4851,6 +4855,8 @@ fieldset[disabled] .btn-link:focus {
   font-size: 14px;
   line-height: 1.5;
   border-radius: 3px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 .btn-xs,
 .btn-group-xs > .btn {
@@ -4860,6 +4866,8 @@ fieldset[disabled] .btn-link:focus {
   font-size: 14px;
   line-height: 1.5;
   border-radius: 3px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 .btn-block {
   display: block;
@@ -8036,6 +8044,10 @@ button.close {
 }
 .panel-title {
   font-size: 21px;
+}
+.panel-primary .panel-title {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 .btn,
 .input-group-addon {

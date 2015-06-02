@@ -23,12 +23,12 @@
 
 .bigblock-graydark {
   background-color: @gray-dark;
-  color: #fff;
+  &:extend(.bigblock-inverse all);
 }
 
 .bigblock-graydarker {
   background-color: @gray-darker;
-  color: #fff;
+  &:extend(.bigblock-inverse all);
 }
   .bigblock-graydarker .page-header {
     border-color: @gray-dark;
@@ -36,7 +36,21 @@
 
 .bigblock-red {
   background-color: @brand-primary;
+  &:extend(.bigblock-inverse all);
+}
+
+.bigblock-orange {
+  background-color: @kids-orange;
+  &:extend(.bigblock-inverse all);
+}
+
+
+.bigblock-inverse {
   color: #fff;
+  .text-aa();
+  .lead {
+    font-weight: 400;
+  }
 }
 
 

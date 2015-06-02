@@ -1,0 +1,105 @@
+
+
+//
+// KIDS PAGE
+// --------------------------------------------------
+
+
+// Imports
+// -------------------------
+@import "../../../../Styles/Bootstrap/variables.less";
+@import "../../../../Styles/Bootstrap/mixins.less";
+@import "../../../../Styles/_rock-variables.less";
+
+@import "../_variables";
+@import "../_mixins";
+
+@xs: ~"(min-width: @{screen-xs-min})";
+@sm: ~"(min-width: @{screen-sm-min})";
+@md: ~"(min-width: @{screen-md-min})";
+@lg: ~"(min-width: @{screen-lg-min})";
+
+
+// Custom
+// -------------------------
+
+.kids-header .container,
+.kids-points {
+  @media @sm {
+    padding-top: @grid-gutter-width;
+    padding-bottom: @grid-gutter-width;
+  }
+  @media @md {
+    padding-top: @grid-gutter-width * 2;
+    padding-bottom: @grid-gutter-width * 2;
+  }
+  @media @lg {
+    padding-top: @grid-gutter-width * 4;
+    padding-bottom: @grid-gutter-width * 4;
+  }
+  @media @xl {
+    padding-top: @grid-gutter-width * 6;
+    padding-bottom: @grid-gutter-width * 6;
+  }
+}
+
+.kids-about p {
+  &.lead {
+    font-size: floor(@headings-font-size-base * 1.3);
+    @media (min-width: @screen-sm-min) {
+      font-size: floor(@headings-font-size-base * 1.75);;
+    }
+    @media @md {
+      margin-bottom: @line-height-computed;
+      margin-top: @line-height-computed*2;
+    }
+  }
+  @media @md {
+    margin-bottom: @line-height-computed*2;
+  }
+  @media @lg {
+    margin-bottom: @line-height-computed*3;
+  }
+}
+
+.kids-about,
+.kids-preregister,
+.kids-points,
+.kids-specialneeds {
+  h2 {
+    // font-size: @font-size-h1;
+    // margin-bottom: @line-height-computed;
+  }
+}
+
+.kids-header {
+  position: relative;
+  .transition(background 3s);
+}
+
+.bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: url('https://s3.amazonaws.com/media.ccvonline.com/external_site_v7/kids/bg/5.jpg') center center no-repeat;
+  background-size: cover;
+  opacity: 0;
+  z-index: -1;
+  .transition(opacity 3s);
+
+  &.in {
+    opacity: 1;
+  }
+
+  &:before {
+    content: ' ';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(40, 40, 40, 0.7);
+  }
+}

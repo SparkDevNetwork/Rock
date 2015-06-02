@@ -12,6 +12,7 @@
 @import "../../../../Styles/_rock-variables.less";
 
 @import "../_variables";
+@import "../_mixins";
 
 @xs: ~"(min-width: @{screen-xs-min})";
 @sm: ~"(min-width: @{screen-sm-min})";
@@ -25,6 +26,7 @@
 .students-header {}
 
 .students-about {
+  .text-aa();
   padding: @grid-gutter-width;
   background: #e2231a;
   background-size: 55%;
@@ -33,6 +35,7 @@
 
   p {
     margin-bottom: 0;
+    font-weight: 400;
   }
 
   @media @sm {
