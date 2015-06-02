@@ -1524,9 +1524,9 @@ namespace Rock.Web.UI.Controls
 
                             bool isDefinedValue = ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) );
 
-                            string value = this.GetExportValue( prop, propValue, isDefinedValue );
-
-                            worksheet.Cells[rowCounter, columnCounter].Value = value.ConvertBrToCrLf();
+                            var cell = worksheet.Cells[rowCounter, columnCounter];
+                            string value = this.GetExportValue( prop, propValue, isDefinedValue, cell );
+                            cell.Value = value.ConvertBrToCrLf();
 
                             // format background color for alternating rows
                             if ( rowCounter % 2 == 1 )
@@ -1683,7 +1683,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="propValue"></param>
         /// <param name="isDefinedValueField"></param>
         /// <returns></returns>
-        private string GetExportValue( PropertyInfo prop, object propValue, bool isDefinedValueField )
+        private string GetExportValue( PropertyInfo prop, object propValue, bool isDefinedValueField, ExcelRange cell )
         {
             // Get the formatted value string for export.
             string value = string.Empty;
@@ -1765,7 +1765,28 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    value = propValue.ToString();
+                    // Is the value a single link field? (such as a PersonLinkSelect field)
+                    if ( propValue.ToString().Split( new string[] { "<a href=" }, StringSplitOptions.None ).Length - 1 == 1 )
+                    {
+                        try
+                        {
+                            System.Xml.XmlDocument htmlSnippet = new System.Xml.XmlDocument();
+                            htmlSnippet.Load( new StringReader( propValue.ToString() ) );
+                            // Select the hyperlink tag
+                            var aNode = htmlSnippet.GetElementsByTagName( "a" ).Item( 0 );
+                            string url = string.Format( "{0}{1}", this.RockBlock().RootPath, aNode.Attributes["href"].Value );
+                            cell.Hyperlink = new Uri( url );
+                            value = aNode.InnerText;
+                        }
+                        catch ( System.Xml.XmlException )
+                        {
+                            value = propValue.ToString();
+                        }
+                    }
+                    else
+                    {
+                        value = propValue.ToString();
+                    }
                 }
             }
 
