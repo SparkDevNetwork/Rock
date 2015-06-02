@@ -45,7 +45,7 @@ REQUIRED VARIABLES
             </span>
             <hr class="margin-v-md">
             <div class="message-list list-2col-wrapper">
-              <ol class="list-flush margin-b-none">
+              <ol class="list-flush margin-b-none js-reverselist">
                 <li class="margin-b-sm">
                   <a href="{{ messageDetailPage }}?MessageId={{ r.MessageId }}">{{ r.MessageTitle }}</a>
                 </li>
@@ -71,7 +71,7 @@ REQUIRED VARIABLES
             </span>
             <hr class="margin-v-md">
             <div class="message-list list-2col-wrapper">
-              <ol class="list-flush margin-b-none">
+              <ol class="list-flush margin-b-none js-reverselist">
                 <li class="margin-b-sm">
                   <a href="{{ messageDetailPage }}?MessageId={{ r.MessageId }}">{{ r.MessageTitle }}</a>
                 </li>
@@ -148,6 +148,12 @@ REQUIRED VARIABLES
 </div>
 
 <script>
+
+  $('.js-reverselist').each(function(){
+    var $list = $(this);
+    $list.append($list.children('li').get().reverse());
+  });
+
   // Keep popover open when hovering on popover, not trigger
   // Modified from http://jsfiddle.net/WojtekKruszewski/Zf3m7/22/
   // Requires a hide delay on the popover
