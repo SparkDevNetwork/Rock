@@ -10,9 +10,9 @@ namespace church.ccv.Datamart.Model
     /// <summary>
     /// 
     /// </summary>
-    [Table( "_church_ccv_Datamart_Neighborhoods" )]
+    [Table( "_church_ccv_Datamart_Neighborhood" )]
     [DataContract]
-    public partial class DatamartNeighborhoods : Rock.Data.Entity<DatamartNeighborhoods>
+    public partial class DatamartNeighborhood : Rock.Data.Entity<DatamartNeighborhood>
     {
         /// <summary>
         /// Gets or sets the neighborhood identifier (Group.Id)
@@ -153,13 +153,13 @@ namespace church.ccv.Datamart.Model
         public decimal AdultMembersInGroupsPercentage { get; set; }
 
         /// <summary>
-        /// Gets or sets the adult attendees.
+        /// Gets or sets the adult attendee count.
         /// </summary>
         /// <value>
-        /// The adult attendees.
+        /// The adult attendee count.
         /// </value>
         [DataMember]
-        public int? AdultAttendees { get; set; }
+        public int? AdultAttendeeCount { get; set; }
 
         /// <summary>
         /// Gets or sets the adult attendees in groups.

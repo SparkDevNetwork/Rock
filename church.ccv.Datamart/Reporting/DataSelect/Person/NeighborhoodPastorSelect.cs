@@ -93,7 +93,7 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
         /// <returns></returns>
         public override System.Linq.Expressions.Expression GetExpression( Rock.Data.RockContext context, System.Linq.Expressions.MemberExpression entityIdProperty, string selection )
         {
-            var datamartNeighborhoodsService = new Service<DatamartNeighborhoods>( context );
+            var datamartNeighborhoodsService = new Service<DatamartNeighborhood>( context );
             var datamartPersonService = new Service<DatamartPerson>( context );
             var personService = new PersonService( context );
 

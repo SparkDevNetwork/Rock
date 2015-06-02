@@ -391,8 +391,7 @@ namespace church.ccv.Datamart.Model
         /// The is head of household.
         /// </value>
         [DataMember]
-        [MaxLength( 5 )]
-        public string IsHeadOfHousehold { get; set; }
+        public bool IsHeadOfHousehold { get; set; }
 
         /// <summary>
         /// Gets or sets the address.
@@ -481,8 +480,7 @@ namespace church.ccv.Datamart.Model
         /// The is baptized.
         /// </value>
         [DataMember]
-        [MaxLength( 5 )]
-        public string IsBaptized { get; set; }
+        public bool IsBaptized { get; set; }
 
         /// <summary>
         /// Gets or sets the baptism date.

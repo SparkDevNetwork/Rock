@@ -2,7 +2,10 @@
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Web.UI.WebControls;
 using church.ccv.Datamart.Model;
+using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -15,6 +18,8 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
     [Description( "Select the Neighborhood of the Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Neighborhood" )]
+
+    [BooleanField( "Show As Link", "", true, "CustomSetting" )]
     public class NeighborhoodSelect : DataSelectComponent
     {
         /// <summary>
@@ -85,6 +90,19 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
         }
 
         /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
+        {
+            var result = new BoundField();
+            result.HtmlEncode = false;
+            return result;
+        }
+
+        /// <summary>
         /// Gets the expression.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -93,7 +111,8 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
         /// <returns></returns>
         public override System.Linq.Expressions.Expression GetExpression( Rock.Data.RockContext context, System.Linq.Expressions.MemberExpression entityIdProperty, string selection )
         {
-            var datamartNeighborhoodsService = new Service<DatamartNeighborhoods>( context );
+            bool showAsLink = this.GetAttributeValueFromSelection( "ShowAsLink", selection ).AsBooleanOrNull() ?? false;
+            var datamartNeighborhoodsService = new Service<DatamartNeighborhood>( context );
             var datamartPersonService = new Service<DatamartPerson>( context );
             var personService = new PersonService( context );
 
@@ -101,11 +120,27 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
             var qryDatamartPerson = datamartPersonService.Queryable();
             var qryPerson = personService.Queryable();
 
-            var qryResult = qryPerson
-                .Select( p => qryDatamartPerson.Where( d => d.PersonId == p.Id )
-                  .Select( s => qryDatamartNeighborhoods.Where( n => n.NeighborhoodId == s.NeighborhoodId ).Select( ss => ss.NeighborhoodName ).FirstOrDefault() ).FirstOrDefault() );
+            IQueryable<string> groupLinkQuery;
 
-            var resultExpresssion = SelectExpressionExtractor.Extract<Rock.Model.Person>( qryResult, entityIdProperty, "p" );
+            string baseGroupUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/Group/" );
+
+            if ( showAsLink )
+            {
+                // include Neighboorhood name as a comment so that sorting works
+                groupLinkQuery = qryPerson
+                    .Select( p => qryDatamartPerson.Where( d => d.PersonId == p.Id )
+                        .Select( s => qryDatamartNeighborhoods.Where( n => n.NeighborhoodId == s.NeighborhoodId )
+                            .Select( ss => "<!-- " + ss.NeighborhoodName + "--><a href='" + baseGroupUrl + ss.NeighborhoodId.ToString() + "'>" + ss.NeighborhoodName + "</a>"  ).FirstOrDefault() ).FirstOrDefault() );
+            }
+            else
+            {
+                groupLinkQuery = qryPerson
+                    .Select( p => qryDatamartPerson.Where( d => d.PersonId == p.Id )
+                        .Select( s => qryDatamartNeighborhoods.Where( n => n.NeighborhoodId == s.NeighborhoodId )
+                            .Select( ss => ss.NeighborhoodName ).FirstOrDefault() ).FirstOrDefault() );        
+            }
+
+            var resultExpresssion = SelectExpressionExtractor.Extract<Rock.Model.Person>( groupLinkQuery, entityIdProperty, "p" );
 
             return resultExpresssion;
         }

@@ -11,7 +11,9 @@ namespace church.ccv.Datamart.Data
     {
         #region Models
 
-        public DbSet<DatamartEstimatedRegularAttendees> DatamartEstimatedRegularAttendees { get; set; }
+        public DbSet<DatamartERA> DatamartERAs { get; set; }
+
+        public DbSet<DatamartEraLoss> DatamartEraLosses { get; set; }
 
         public DbSet<DatamartFamily> DatamartFamilies { get; set; }
 
@@ -19,7 +21,7 @@ namespace church.ccv.Datamart.Data
 
         public DbSet<DatamartPerson> DatamartPeople { get; set; }
 
-        public DbSet<DatamartNeighborhoods> DatamartNeighborhoods { get; set; }
+        public DbSet<DatamartNeighborhood> DatamartNeighborhoods { get; set; }
 
         #endregion
 

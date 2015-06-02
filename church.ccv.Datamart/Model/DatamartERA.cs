@@ -10,9 +10,9 @@ namespace church.ccv.Datamart.Model
     /// <summary>
     /// 
     /// </summary>
-    [Table( "_church_ccv_Datamart_EstimatedRegularAttendees" )]
+    [Table( "_church_ccv_Datamart_ERA" )]
     [DataContract]
-    public partial class DatamartEstimatedRegularAttendees : Rock.Data.Entity<DatamartEstimatedRegularAttendees>
+    public partial class DatamartERA : Rock.Data.Entity<DatamartERA>
     {
         #region Entity Properties
 

@@ -51,16 +51,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\DatamartContext.cs" />
-    <Compile Include="Model\CodeGenerated\DatamartEstimatedRegularAttendeesService.cs" />
-    <Compile Include="Model\CodeGenerated\DatamartFamilyService.cs" />
-    <Compile Include="Model\CodeGenerated\DatamartNearestGroupService.cs" />
-    <Compile Include="Model\CodeGenerated\DatamartNeighborhoodsService.cs" />
-    <Compile Include="Model\CodeGenerated\DatamartPersonService.cs" />
-    <Compile Include="Model\DatamartNeighborhoods.cs" />
-    <Compile Include="Model\DatamartEstimatedRegularAttendees.cs" />
+    <Compile Include="Migrations\001_RebuildTables.cs" />
+    <Compile Include="Migrations\MigrationSQL.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MigrationSQL.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Model\DatamartNeighborhood.cs" />
+    <Compile Include="Model\DatamartERA.cs" />
     <Compile Include="Model\DatamartFamily.cs" />
     <Compile Include="Model\DatamartNearestGroup.cs" />
     <Compile Include="Model\DatamartPerson.cs" />
+    <Compile Include="Model\DatamartEraLoss.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reporting\DataSelect\Person\NeighborhoodLeaderSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\StartingPointDateSelect.cs" />
@@ -72,7 +74,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Migrations\" />
+    <EmbeddedResource Include="Migrations\MigrationSQL.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>MigrationSQL.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
@@ -83,6 +88,27 @@
       <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
       <Name>Rock</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Migrations\001_RebuildTables_Rebuild_church_ccv_Datamart_ERALoss.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Migrations\001_RebuildTables_Rebuild_church_ccv_Datamart_EstimatedRegularAttendees.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Migrations\001_RebuildTables_Rebuild_church_ccv_Datamart_Family.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Migrations\001_RebuildTables_Rebuild_church_ccv_Datamart_NearestGroup.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Migrations\001_RebuildTables_Rebuild_church_ccv_Datamart_Neighborhood.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Migrations\001_RebuildTables_Rebuild_church_ccv_Datamart_Person.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Model\CodeGenerated\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
