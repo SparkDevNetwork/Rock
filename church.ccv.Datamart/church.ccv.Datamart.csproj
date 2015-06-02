@@ -57,6 +57,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MigrationSQL.resx</DependentUpon>
     </Compile>
+    <Compile Include="Model\CodeGenerated\DatamartEraLossService.cs" />
+    <Compile Include="Model\CodeGenerated\DatamartERAService.cs" />
+    <Compile Include="Model\CodeGenerated\DatamartFamilyService.cs" />
+    <Compile Include="Model\CodeGenerated\DatamartNearestGroupService.cs" />
+    <Compile Include="Model\CodeGenerated\DatamartNeighborhoodService.cs" />
+    <Compile Include="Model\CodeGenerated\DatamartPersonService.cs" />
     <Compile Include="Model\DatamartNeighborhood.cs" />
     <Compile Include="Model\DatamartERA.cs" />
     <Compile Include="Model\DatamartFamily.cs" />
@@ -107,9 +113,7 @@
   <ItemGroup>
     <None Include="Migrations\001_RebuildTables_Rebuild_church_ccv_Datamart_Person.sql" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Model\CodeGenerated\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
