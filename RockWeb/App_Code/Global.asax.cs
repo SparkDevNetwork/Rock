@@ -414,7 +414,7 @@ namespace RockWeb
             Database.SetInitializer<Rock.Data.RockContext>( null );
 
             var fileInfo = new FileInfo( Server.MapPath( "~/App_Data/Run.Migration" ) );
-            if ( true )//fileInfo.Exists )
+            if ( fileInfo.Exists )
             {
                 // get the pendingmigrations sorted by name (in the order that they run), then run to the latest migration
                 var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
