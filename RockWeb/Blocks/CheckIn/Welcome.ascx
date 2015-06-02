@@ -1,11 +1,8 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Welcome.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Welcome" %>
 
-
 <asp:HyperLink runat="server" href="../../Themes/CheckinAdventureKids/Styles/checkin-theme.css" rel="stylesheet" Visible="false" />
 
 <asp:UpdatePanel ID="upContent" runat="server">
-
-
 
     <ContentTemplate>
         <style>
@@ -16,10 +13,36 @@
             }
         </style>
 
+        <script>
+
+            Sys.Application.add_load(function () {
+                $('.tenkey a.digit').click(function () {
+                    $phoneNumber = $("input[id$='tbPIN']");
+                    $phoneNumber.val($phoneNumber.val() + $(this).html());
+                });
+                $('.tenkey a.back').click(function () {
+                    $phoneNumber = $("input[id$='tbPIN']");
+                    $phoneNumber.val($phoneNumber.val().slice(0, -1));
+                });
+                $('.tenkey a.clear').click(function () {
+                    $phoneNumber = $("input[id$='tbPIN']");
+                    $phoneNumber.val('');
+                });
+
+                // set focus to the input unless on a touch device
+                var isTouchDevice = 'ontouchstart' in document.documentElement;
+                if (!isTouchDevice) {
+                    if ($('.checkin-phone-entry').length) {
+                        $('.checkin-phone-entry').focus();
+                    }
+                }
+            });
+
+        </script>
+
         <asp:PlaceHolder ID="phScript" runat="server"></asp:PlaceHolder>
 
         <Rock:HiddenFieldWithClass ID="hfRefreshTimerSeconds" runat="server" CssClass="js-refresh-timer-seconds" />
-
 
         <asp:Panel ID="pnlWelcome" runat="server">
 
@@ -135,6 +158,55 @@
                 </div>
             </div>
 
+        </asp:Panel>
+
+        <%-- Panel for checkin manager login --%>
+        <asp:Panel ID="pnlManagerLogin" runat="server" Visible="false">
+
+            <div class="checkin-header">
+                <h1>Manager Login</h1>
+            </div>
+
+            <div class="checkin-body">
+                <div class="row">
+                    <div class="col-md-12 margin-b-lg">
+
+                        <div class="checkin-search-body">
+                            <Rock:RockTextBox ID="tbPIN" MaxLength="10" CssClass="checkin-phone-entry" runat="server" Label="PIN" />
+
+                            <div class="tenkey checkin-phone-keypad">
+                                <div>
+                                    <a href="#" class="btn btn-default btn-lg digit">1</a>
+                                    <a href="#" class="btn btn-default btn-lg digit">2</a>
+                                    <a href="#" class="btn btn-default btn-lg digit">3</a>
+                                </div>
+                                <div>
+                                    <a href="#" class="btn btn-default btn-lg digit">4</a>
+                                    <a href="#" class="btn btn-default btn-lg digit">5</a>
+                                    <a href="#" class="btn btn-default btn-lg digit">6</a>
+                                </div>
+                                <div>
+                                    <a href="#" class="btn btn-default btn-lg digit">7</a>
+                                    <a href="#" class="btn btn-default btn-lg digit">8</a>
+                                    <a href="#" class="btn btn-default btn-lg digit">9</a>
+                                </div>
+                                <div>
+                                    <a href="#" class="btn btn-default btn-lg command back">Back</a>
+                                    <a href="#" class="btn btn-default btn-lg digit">0</a>
+                                    <a href="#" class="btn btn-default btn-lg command clear">Clear</a>
+                                </div>
+                            </div>
+
+                            <div class="checkin-actions">
+                                <asp:LinkButton ID="lbLogin" runat="server" OnClick="lbLogin_Click" CssClass="btn btn-primary">Login</asp:LinkButton>
+                                
+                            </div>
+
+                            <asp:LinkButton ID="lbCancel" runat="server" OnClick="lbCancel_Click" CssClass="btn btn-default">Cancel</asp:LinkButton>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </asp:Panel>
 
     </ContentTemplate>
