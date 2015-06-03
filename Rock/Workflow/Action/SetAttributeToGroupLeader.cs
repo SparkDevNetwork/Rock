@@ -91,8 +91,14 @@ namespace Rock.Workflow.Action
                             }
                         }
                     }
+                }
+                else
+                {
+                    errorMessages.Add("The group could not be found!");
                 }                
             }
+
+            errorMessages.ForEach(m => action.AddLogEntry(m, true));
 
             return true;
         }
