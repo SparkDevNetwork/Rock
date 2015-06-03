@@ -470,6 +470,8 @@ namespace RockWeb.Blocks.Security
         /// <param name="attributeId">The attribute id.</param>
         protected void ShowEdit( int userLoginId )
         {
+            tbPassword.ClearPassword();
+            tbPasswordConfirm.ClearPassword();
             UserLogin userLogin = null;
             ppPerson.Visible = false;
 
@@ -517,10 +519,6 @@ namespace RockWeb.Blocks.Security
             tbPasswordConfirm.Enabled = false;
             tbPassword.Required = false;
             tbPasswordConfirm.Required = false;
-
-            // This is to clear any previous password that is usually taken from the RockTextBox's RenderBaseControl function.
-            tbPassword.Text = String.Empty;
-            tbPasswordConfirm.Text = String.Empty;
 
             var entityType = EntityTypeCache.Read( compProvider.SelectedValue.AsGuid() );
             if ( entityType != null )
