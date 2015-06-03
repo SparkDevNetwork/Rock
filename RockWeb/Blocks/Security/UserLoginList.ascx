@@ -60,7 +60,7 @@
             <Content>
 
                 <asp:HiddenField ID="hfIdValue" runat="server" />
-
+                <asp:ValidationSummary ID="valUserLoginSummary" runat="server" ValidationGroup="Login"  CssClass="alert alert-danger" HeaderText="Please correct the following"/>
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
                 <div class="row">
                     <div class="col-md-6">
@@ -71,12 +71,12 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbUserName" runat="server" SourceTypeName="Rock.Model.UserLogin, Rock" PropertyName="UserName" />
+                        <Rock:DataTextBox ID="tbUserName" runat="server" SourceTypeName="Rock.Model.UserLogin, Rock" PropertyName="UserName" ValidationGroup="Login" />
                         <Rock:RockCheckBox ID="cbIsConfirmed" runat="server" Label="Confirmed" Text="Yes" Help="Has the user confirmed this login?" />
                         <Rock:RockCheckBox ID="cbIsLockedOut" runat="server" Label="Locked Out" Text="Yes" Help="Has the user been locked out of using this login?" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:ComponentPicker ID="compProvider" runat="server" Label="Authentication Provider" ContainerType="Rock.Security.AuthenticationContainer, Rock" Required="true" AutoPostBack="true" />
+                        <Rock:ComponentPicker ID="compProvider" runat="server" Label="Authentication Provider" ContainerType="Rock.Security.AuthenticationContainer, Rock" Required="true" AutoPostBack="true" ValidationGroup="Login" />
                         <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" TextMode="Password" Enabled="false"></Rock:RockTextBox>
                         <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirm" TextMode="Password" Enabled="false"></Rock:RockTextBox>
                     </div>
