@@ -31,7 +31,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "NoteType" )]
     [DataContract]
-    public partial class NoteType : Model<NoteType>
+    public partial class NoteType : Model<NoteType>, IOrdered
     {
 
         #region Entity Properties
@@ -58,27 +58,6 @@ namespace Rock.Model
         public int EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name of the NoteType. This property is required.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing the Name of the NoteType.
-        /// </value>
-        [Required]
-        [MaxLength( 100 )]
-        [DataMember( IsRequired = true )]
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Id of the Sources Type <see cref="Rock.Model.DefinedType" /> that defines the sources that can be used
-        /// for <see cref="Rock.Model.Note">Notes</see> of this NoteType.
-        /// </summary>
-        /// <value>
-        /// The sources defined type id.
-        /// </value>
-        [DataMember]
-        public int? SourcesTypeId { get; set; }
-
-        /// <summary>
         /// Gets or sets the name of the qualifier column/property on the <see cref="Rock.Model.EntityType"/> that this NoteType applies to. If this is not 
         /// provided, the note type can be used on all entities of the provided <see cref="Rock.Model.EntityType"/>.
         /// </summary>
@@ -100,18 +79,58 @@ namespace Rock.Model
         [DataMember]
         public string EntityTypeQualifierValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Name of the NoteType. This property is required.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the Name of the NoteType.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the type is user selectable.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [user selectable]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool UserSelectable { get; set; }
+
+        /// <summary>
+        /// Gets or sets an optional CSS class to include for the note
+        /// </summary>
+        /// <value>
+        /// The CSS class.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string CssClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of an icon CSS class. 
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the name of an icon CSS class
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string IconCssClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [DataMember]
+        public int Order { get; set; }
+
         #endregion
 
         #region Virtual Properties
-
-        /// <summary>
-        /// Gets or sets the Sources <see cref="Rock.Model.DefinedType"/> that contain the sources that are applicable to this NoteType.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Model.DefinedValue"/> that contains the sources that are applicable to this NoteType.
-        /// </value>
-        [DataMember]
-        public virtual DefinedType Sources { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the entities that <see cref="Rock.Model.Note">Notes</see> of this NoteType 
@@ -154,7 +173,6 @@ namespace Rock.Model
         public NoteTypeConfiguration()
         {
             this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.Sources ).WithMany().HasForeignKey( p => p.SourcesTypeId ).WillCascadeOnDelete( false );
         }
     }
 

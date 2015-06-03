@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -44,12 +45,85 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
-        /// Gets or sets the note type identifier.
+        /// Gets or sets the available note types.
         /// </summary>
-        public int? NoteTypeId
+        /// <value>
+        /// The available note types.
+        /// </value>
+        public List<NoteTypeCache> NoteTypes
         {
-            get { return ViewState["NoteTypeId"] as int?; }
-            set { ViewState["NoteTypeId"] = value; }
+            get 
+            {
+                return GetNoteTypes( "NoteTypes" );
+            }
+            set 
+            {
+                ViewState["AvailableNoteTypes"] = value.Select( t => t.Id ).ToList();
+
+                if ( value != null && value.Any() )
+                {
+                    var currentPerson = GetCurrentPerson();
+                    
+                    var viewableNoteTypes = new List<NoteTypeCache>();
+                    var editableNoteTypes = new List<NoteTypeCache>();
+
+                    foreach ( var noteType in value )
+                    {
+                        if ( noteType.IsAuthorized( Security.Authorization.VIEW, currentPerson ) )
+                        {
+                            viewableNoteTypes.Add( noteType );
+                        }
+                        if ( noteType.IsAuthorized( Security.Authorization.EDIT, currentPerson ) )
+                        {
+                            editableNoteTypes.Add( noteType );
+                        }
+                    }
+
+                    ViewableNoteTypes = viewableNoteTypes;
+                    EditableNoteTypes = editableNoteTypes;
+                }
+            }
+        }
+
+        private List<NoteTypeCache> ViewableNoteTypes
+        {
+            get
+            {
+                return GetNoteTypes( "ViewableNoteTypes" );
+            }
+            set
+            {
+                ViewState["ViewableNoteTypes"] = value.Select( t => t.Id ).ToList();
+            }
+        }
+
+        private List<NoteTypeCache> EditableNoteTypes
+        {
+            get
+            {
+                EnsureChildControls();
+                return _noteNew.NoteTypes;
+            }
+            set
+            {
+                EnsureChildControls();
+                _noteNew.NoteTypes = value;
+            }
+        }
+
+        private List<NoteTypeCache> GetNoteTypes( string viewStateKey )
+        {
+            var noteTypes = new List<NoteTypeCache>();
+            var noteTypeIds = ViewState[viewStateKey] as List<int> ?? new List<int>();
+            foreach ( var noteTypeId in noteTypeIds )
+            {
+                var noteType = NoteTypeCache.Read( noteTypeId );
+                if ( noteType != null )
+                {
+                    noteTypes.Add( noteType );
+                }
+            }
+            return noteTypes;
         }
 
         /// <summary>
@@ -284,18 +358,18 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Gets or sets the default source type value identifier.
         /// </summary>
-        public int? DefaultSourceTypeValueId
+        public int? DefaultNoteTypeId
         {
             get
             {
                 EnsureChildControls();
-                return _noteNew.SourceTypeValueId;
+                return _noteNew.NoteTypeId;
             }
 
             set
             {
                 EnsureChildControls();
-                _noteNew.SourceTypeValueId = value;
+                _noteNew.NoteTypeId = value;
             }
         }
 
@@ -435,7 +509,9 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                bool canAdd = AddAllowed && ( AllowAnonymousEntry || GetCurrentPerson() != null );
+                bool canAdd = AddAllowed && 
+                    EditableNoteTypes.Any() && 
+                    ( AllowAnonymousEntry || GetCurrentPerson() != null );
 
                 string cssClass = "panel panel-note" + 
                     (this.DisplayType == NoteDisplayType.Light ? " panel-note-light" : "");
@@ -608,6 +684,7 @@ namespace Rock.Web.UI.Controls
         public void RebuildNotes( bool setSelection )
         {
             ClearNotes();
+            ShowMoreOption = false;
 
             int? currentPersonId = null;
             var currentPerson = GetCurrentPerson();
@@ -625,20 +702,16 @@ namespace Rock.Web.UI.Controls
                 _noteNew.CreatedByName = string.Empty;
             }
 
-            _noteNew.NoteTypeId = NoteTypeId;
             _noteNew.EntityId = EntityId;
 
-            if ( NoteTypeId.HasValue && EntityId.HasValue )
+            if ( ViewableNoteTypes != null && ViewableNoteTypes.Any() && EntityId.HasValue )
             {
-                ShowMoreOption = false;
-
-                int i = 0;
-
                 using ( var rockContext = new RockContext() )
                 {
+                    var viewableNoteTypeIds = ViewableNoteTypes.Select( t => t.Id ).ToList();
                     var qry = new NoteService( rockContext ).Queryable( "CreatedByPersonAlias.Person" )
                         .Where( n =>
-                            n.NoteTypeId == NoteTypeId.Value &&
+                            viewableNoteTypeIds.Contains( n.NoteTypeId ) &&
                             n.EntityId == EntityId.Value );
 
                     if ( SortDirection == ListSortDirection.Descending )
@@ -656,6 +729,7 @@ namespace Rock.Web.UI.Controls
 
                     NoteCount = notes.Count();
 
+                    int i = 0;
                     foreach ( var note in notes )
                     {
                         if ( SortDirection == ListSortDirection.Descending && i >= DisplayCount )
@@ -667,10 +741,11 @@ namespace Rock.Web.UI.Controls
                         if ( note.IsAuthorized( Authorization.VIEW, currentPerson ) )
                         {
                             var noteEditor = new NoteControl();
+                            noteEditor.NoteTypes = EditableNoteTypes;
                             noteEditor.ID = string.Format( "note_{0}", note.Guid.ToString().Replace( "-", "_" ) );
                             noteEditor.Note = note;
                             noteEditor.IsPrivate = note.IsPrivate( Authorization.VIEW, currentPerson );
-                            noteEditor.CanEdit = note.IsAuthorized( Authorization.EDIT, currentPerson );
+                            noteEditor.CanEdit = note.IsAuthorized( Authorization.ADMINISTRATE, currentPerson );
                             noteEditor.SaveButtonClick += note_Updated;
                             noteEditor.DeleteButtonClick += note_Updated;
                             Controls.Add( noteEditor );

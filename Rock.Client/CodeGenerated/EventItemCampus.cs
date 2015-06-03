@@ -81,6 +81,9 @@ namespace Rock.Client
         public EventItem EventItem { get; set; }
 
         /// <summary />
+        public ICollection<EventItemSchedule> EventItemSchedules { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

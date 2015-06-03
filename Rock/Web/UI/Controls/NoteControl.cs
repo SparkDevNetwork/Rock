@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -35,6 +37,7 @@ namespace Rock.Web.UI.Controls
 
         #region Fields
 
+        private DropDownList _ddlNoteType;
         private RockTextBox _tbNote;
         private CheckBox _cbAlert;
         private CheckBox _cbPrivate;
@@ -61,7 +64,6 @@ namespace Rock.Web.UI.Controls
                 this.NoteId = value.Id;
                 this.NoteTypeId = value.NoteTypeId;
                 this.EntityId = value.EntityId;
-                this.SourceTypeValueId = value.SourceTypeValueId;
                 this.Caption = value.Caption;
 
                 if (value.CreatedByPersonAlias != null && value.CreatedByPersonAlias.Person != null)
@@ -80,6 +82,34 @@ namespace Rock.Web.UI.Controls
                 this.CreatedDateTime = value.CreatedDateTime;
                 this.Text = value.Text;
                 this.IsAlert = value.IsAlert.HasValue && value.IsAlert.Value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the note types.
+        /// </summary>
+        /// <value>
+        /// The note types.
+        /// </value>
+        public List<NoteTypeCache> NoteTypes
+        {
+            get
+            {
+                var noteTypes = new List<NoteTypeCache>();
+                var noteTypeIds = ViewState["NoteTypes"] as List<int> ?? new List<int>();
+                foreach ( var noteTypeId in noteTypeIds )
+                {
+                    var noteType = NoteTypeCache.Read( noteTypeId );
+                    if ( noteType != null )
+                    {
+                        noteTypes.Add( noteType );
+                    }
+                }
+                return noteTypes;
+            }
+            set
+            {
+                ViewState["NoteTypes"] = value.Select( t => t.Id ).ToList();
             }
         }
 
@@ -117,18 +147,6 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["EntityId"] as int?; }
             set { ViewState["EntityId"] = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the source type value id.
-        /// </summary>
-        /// <value>
-        /// The source type value id.
-        /// </value>
-        public int? SourceTypeValueId
-        {
-            get { return ViewState["SourceTypeValueId"] as int?; }
-            set { ViewState["SourceTypeValueId"] = value; }
         }
 
         /// <summary>
@@ -346,7 +364,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether person icon should used instead of icon representing the source.
+        /// Gets or sets a value indicating whether person icon should used instead of icon representing the note type.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [use person icon]; otherwise, <c>false</c>.
@@ -375,19 +393,33 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        private string CSSClass
+        {
+            get
+            {
+                if ( NoteTypeId.HasValue )
+                {
+                    var noteType = NoteTypeCache.Read( NoteTypeId.Value );
+                    if ( noteType != null )
+                    {
+                        return noteType.CssClass;
+                    }
+                }
+
+                return string.Empty;
+            }
+        }
+
         private string IconClass
         {
             get
             {
-                if ( SourceTypeValueId.HasValue )
+                if ( NoteTypeId.HasValue )
                 {
-                    var SourceType = DefinedValueCache.Read( SourceTypeValueId.Value );
-                    if ( SourceType != null &&
-                    SourceType.AttributeValues != null &&
-                    SourceType.AttributeValues.ContainsKey( "IconClass" ) &&
-                    SourceType.AttributeValues["IconClass"] != null )
+                    var noteType = NoteTypeCache.Read( NoteTypeId.Value );
+                    if ( noteType != null )
                     {
-                        return SourceType.AttributeValues["IconClass"].Value;
+                        return noteType.IconCssClass;
                     }
                 }
 
@@ -396,22 +428,6 @@ namespace Rock.Web.UI.Controls
 
         }
 
-        private string NoteTypeName
-        {
-            get
-            {
-                if ( SourceTypeValueId.HasValue )
-                {
-                    var SourceType = DefinedValueCache.Read( SourceTypeValueId.Value );
-                    if ( SourceType != null  )
-                    {
-                        return SourceType.Value;
-                    }
-                }
-
-                return string.Empty;
-            }
-        }
 
         #endregion
 
@@ -422,6 +438,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public NoteControl()
         {
+            _ddlNoteType = new DropDownList();
             _tbNote = new RockTextBox();
             _tbNote.Placeholder = "Write a note...";
             _cbAlert = new CheckBox();
@@ -466,6 +483,13 @@ namespace Rock.Web.UI.Controls
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
+
+            _ddlNoteType.ID = this.ID + "_ddlNoteType";
+            _ddlNoteType.DataValueField = "Id";
+            _ddlNoteType.DataTextField = "Name";
+            _ddlNoteType.DataSource = NoteTypes;
+            _ddlNoteType.DataBind();
+            Controls.Add( _ddlNoteType );
 
             _tbNote.ID = this.ID + "_tbNewNote";
             _tbNote.TextMode = TextBoxMode.MultiLine;
@@ -516,9 +540,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            if ( NoteTypeName != string.Empty )
+            if ( CSSClass != string.Empty )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "note note-" + NoteTypeName.ToLower().Replace( " ", "" ) );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "note " + CSSClass );
             }
             else
             {
@@ -550,6 +574,16 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute(HtmlTextWriterAttribute.Class, "noteentry-control");
             writer.RenderBeginTag(HtmlTextWriterTag.Div);
             
+            if ( NoteTypes.Any() )
+            {
+                if ( NoteTypeId.HasValue )
+                {
+                    _ddlNoteType.SetValue( NoteTypeId.Value );
+                }
+                _ddlNoteType.Visible = NoteTypes.Count > 1;
+                _ddlNoteType.RenderControl( writer );
+            }
+
             _tbNote.RenderControl( writer );
             writer.RenderEndTag();
 
@@ -716,6 +750,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSaveNote_Click( object sender, EventArgs e )
         {
+            if ( _ddlNoteType.Visible )
+            {
+                NoteTypeId = _ddlNoteType.SelectedValueAsInt() ?? 0;
+            }
+
             var rockPage = this.Page as RockPage;
             if (rockPage != null && NoteTypeId.HasValue)
             {
@@ -738,12 +777,11 @@ namespace Rock.Web.UI.Controls
 
                     note = new Note();
                     note.IsSystem = false;
-                    note.NoteTypeId = NoteTypeId.Value;
                     note.EntityId = EntityId;
-                    note.SourceTypeValueId = SourceTypeValueId;
                     service.Add( note );
                 }
 
+                note.NoteTypeId = NoteTypeId.Value;
                 note.Caption = IsPrivate ? "You - Personal Note" : string.Empty;
                 note.Text = Text;
                 note.IsAlert = IsAlert;
@@ -757,7 +795,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( newNote )
                 {
-                    note.AllowPerson( Authorization.EDIT, currentPerson );
+                    note.AllowPerson( Authorization.ADMINISTRATE, currentPerson );
                 }
 
                 if ( IsPrivate && !note.IsPrivate( Authorization.VIEW, currentPerson ) )

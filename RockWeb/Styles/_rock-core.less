@@ -344,6 +344,43 @@ a.help {
     }
 }
 
+.panel-analytics {
+    .panel-body {
+        padding-top: 0;
+        padding-bottom: 0;
+
+        & > .row > [class*="col-"]:first-child {
+            padding-top: 15px;
+            padding-bottom: 15px;
+
+        }
+
+        .col-md-9 {
+            margin-right: -2px;
+        }
+
+        .grid.grid-panel {
+            margin-bottom: 0;
+        }
+
+        @media @md {
+            .row {
+                margin-left: -16px;
+            }
+        }
+    }
+
+    .filter-options {
+        background-color: @gray-lighter;
+    }
+
+    .analysis-types {
+        padding: 15px 0;
+        background-color: @gray-lighter;
+        margin-bottom: 15px;
+    }
+}
+
 // .panel-note {}  see _block-specific.less
 
 // extensions for buttons    ->   .button-variant(@color; @background; @border) {}

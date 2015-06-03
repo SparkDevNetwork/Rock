@@ -1812,33 +1812,36 @@ namespace RockWeb.Blocks.Examples
             var service = new NoteTypeService( rockContext );
             var noteType = service.Get( _personEntityTypeId, noteTypeName );
 
-            // Find the person's alias
-            int? createdByPersonAliasId = null;
-            if ( byPersonGuid != null )
+            if ( noteType != null )
             {
-                createdByPersonAliasId = _personCache[byPersonGuid.AsGuid()].PrimaryAliasId;
+
+                // Find the person's alias
+                int? createdByPersonAliasId = null;
+                if ( byPersonGuid != null )
+                {
+                    createdByPersonAliasId = _personCache[byPersonGuid.AsGuid()].PrimaryAliasId;
+                }
+
+                var noteService = new NoteService( rockContext );
+                var note = new Note()
+                {
+                    IsSystem = false,
+                    NoteTypeId = noteType.Id,
+                    EntityId = personId,
+                    Caption = string.Empty,
+                    CreatedByPersonAliasId = createdByPersonAliasId,
+                    Text = noteText,
+                    CreatedDateTime = string.IsNullOrWhiteSpace( noteDate ) ? RockDateTime.Now : DateTime.Parse( noteDate, new CultureInfo( "en-US" ) )
+                };
+
+                noteService.Add( note );
+
+                if ( isPrivate.AsBoolean() )
+                {
+                    rockContext.SaveChanges( disablePrePostProcessing: true );
+                    note.MakePrivate( Rock.Security.Authorization.VIEW, _personCache[byPersonGuid.AsGuid()], rockContext );
+                }
             }
-
-            var noteService = new NoteService( rockContext );
-            var note = new Note()
-            {
-                IsSystem = false,
-                NoteTypeId = noteType.Id,
-                EntityId = personId,
-                Caption = string.Empty,
-                CreatedByPersonAliasId = createdByPersonAliasId,
-                Text = noteText,
-                CreatedDateTime = string.IsNullOrWhiteSpace( noteDate ) ? RockDateTime.Now : DateTime.Parse( noteDate, new CultureInfo( "en-US" ) )
-            };
-
-            noteService.Add( note );
-
-            if ( isPrivate.AsBoolean() )
-            {
-                rockContext.SaveChanges( disablePrePostProcessing: true );
-                note.MakePrivate( Rock.Security.Authorization.VIEW, _personCache[byPersonGuid.AsGuid()], rockContext );
-            }
-
         }
 
         /// <summary>
