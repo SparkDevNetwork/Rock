@@ -67,6 +67,7 @@ namespace RockWeb.Blocks.Security
 
                 // Hide the person name column
                 gUserLogins.Columns[1].Visible = false;
+                ppPerson.Visible = false;
             }
 
             _canEdit = IsUserAuthorized( Authorization.EDIT );
@@ -75,7 +76,7 @@ namespace RockWeb.Blocks.Security
             gfSettings.DisplayFilterValue += gfSettings_DisplayFilterValue;
 
             gUserLogins.DataKeyNames = new string[] { "Id" };
-            gUserLogins.Actions.ShowAdd = _personId.HasValue && _canEdit;
+            gUserLogins.Actions.ShowAdd = _canEdit;
             gUserLogins.Actions.AddClick += gUserLogins_Add;
             gUserLogins.IsDeleteEnabled = _canEdit;
             gUserLogins.GridRebind += gUserLogins_GridRebind;
@@ -267,10 +268,14 @@ namespace RockWeb.Blocks.Security
                     {
                         userLogin.PersonId = _personId;
                     }
+                    else if ( ppPerson.PersonId.HasValue )
+                    {
+                        userLogin.PersonId = ppPerson.PersonId.Value;
+                    }
                     else
                     {
                         nbErrorMessage.Title = "Invalid Situation";
-                        nbErrorMessage.Text = "The person you are editing has no person Id.";
+                        nbErrorMessage.Text = "No person selected, or the person you are editing has no person Id.";
                         nbErrorMessage.Visible = true;
                         return;
                     }
@@ -445,17 +450,17 @@ namespace RockWeb.Blocks.Security
             gUserLogins.EntityTypeId = EntityTypeCache.Read<UserLogin>().Id;
             gUserLogins.DataSource = qry.Sort( sortProperty )
                 .Select( l => new
-                    {
-                        Id = l.Id,
-                        UserName = l.UserName,
-                        PersonId = l.PersonId,
-                        PersonName = l.Person.LastName + ", " + l.Person.NickName,
-                        ProviderName = l.EntityType.FriendlyName,
-                        CreatedDateTime = l.CreatedDateTime,
-                        LastLoginDateTime = l.LastLoginDateTime,
-                        IsConfirmed = l.IsConfirmed,
-                        IsLockedOut = l.IsLockedOut
-                    } ).ToList();
+                {
+                    Id = l.Id,
+                    UserName = l.UserName,
+                    PersonId = l.PersonId,
+                    PersonName = l.Person.LastName + ", " + l.Person.NickName,
+                    ProviderName = l.EntityType.FriendlyName,
+                    CreatedDateTime = l.CreatedDateTime,
+                    LastLoginDateTime = l.LastLoginDateTime,
+                    IsConfirmed = l.IsConfirmed,
+                    IsLockedOut = l.IsLockedOut
+                } ).ToList();
             gUserLogins.DataBind();
         }
 
@@ -466,9 +471,21 @@ namespace RockWeb.Blocks.Security
         protected void ShowEdit( int userLoginId )
         {
             UserLogin userLogin = null;
+            ppPerson.Visible = false;
+
             if ( userLoginId > 0 )
             {
                 userLogin = new UserLoginService( new RockContext() ).Get( userLoginId );
+                ppPerson.PersonId = userLogin.PersonId;
+            }
+            else
+            {
+                // Shows the person picker when adding a new login outside of a person context
+                ppPerson.SetValue( null );
+                if ( !_personId.HasValue )
+                {
+                    ppPerson.Visible = true;
+                }
             }
 
             if ( userLogin == null )
@@ -500,6 +517,10 @@ namespace RockWeb.Blocks.Security
             tbPasswordConfirm.Enabled = false;
             tbPassword.Required = false;
             tbPasswordConfirm.Required = false;
+
+            // This is to clear any previous password that is usually taken from the RockTextBox's RenderBaseControl function.
+            tbPassword.Text = String.Empty;
+            tbPasswordConfirm.Text = String.Empty;
 
             var entityType = EntityTypeCache.Read( compProvider.SelectedValue.AsGuid() );
             if ( entityType != null )
