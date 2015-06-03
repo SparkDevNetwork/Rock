@@ -157,6 +157,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the checkbox tooltip
+        /// </summary>
+        /// <value>
+        /// The checkbox tooltip
+        /// </value>
+        public string Tooltip
+        {
+            get
+            {
+                return ViewState["Tooltip"] as string;
+            }
+
+            set
+            {
+                ViewState["Tooltip"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the index of the column.
         /// </summary>
         /// <value>
@@ -295,6 +314,7 @@ namespace Rock.Web.UI.Controls
 
                     cb.ID = "cbSelect_" + ColumnIndex.ToString();
                     cb.DataBinding += cb_DataBinding;
+                    cell.ToolTip = selectField.Tooltip;
                     cell.Controls.Add( cb );
                 }
             }
