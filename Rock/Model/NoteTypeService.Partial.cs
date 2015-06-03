@@ -26,37 +26,19 @@ namespace Rock.Model
     public partial class NoteTypeService : Service<NoteType>
     {
         /// <summary>
-        /// Gets the first <see cref="Rock.Model.NoteType" /> by Name and EntityType
+        /// Gets the specified entity type identifier.
         /// </summary>
-        /// <param name="entityTypeId">A <see cref="System.Int32" /> representing the Id of the <see cref="Rock.Model.EntityType" /> to search for.</param>
-        /// <param name="name">A <see cref="System.String" /> representing the Name of the</param>
-        /// <param name="create">if set to <c>true</c> [create].</param>
-        /// <returns>
-        /// The first <see cref="Rock.Model.NoteType" /> matching the provided values. If a match is not found, this value will be null.
-        /// </returns>
-        public NoteType Get( int entityTypeId, string name, bool create = true )
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <returns></returns>
+        public IQueryable<NoteType> Get( int entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue )
         {
-            var noteType = Queryable().FirstOrDefault( n => n.EntityTypeId == entityTypeId && n.Name == name );
-            if (noteType == null && create )
-            {
-                noteType = new NoteType();
-                noteType.IsSystem = false;
-                noteType.EntityTypeId = entityTypeId;
-                noteType.EntityTypeQualifierColumn = string.Empty;
-                noteType.EntityTypeQualifierValue = string.Empty;
-                noteType.Name = name;
-
-                // Create a new context/service so that save does not affect calling method's context
-                var rockContext = new RockContext();
-                var noteTypeService = new NoteTypeService( rockContext );
-                noteTypeService.Add( noteType );
-                rockContext.SaveChanges();
-
-                // requery using calling context
-                noteType = Get( noteType.Id );
-            }
-
-            return noteType;
+            return Queryable()
+                .Where( n =>
+                    n.EntityTypeId == entityTypeId &&
+                    ( n.EntityTypeQualifierColumn ?? "" ) == ( entityTypeQualifierColumn ?? "" ) &&
+                    ( n.EntityTypeQualifierValue ?? "" ) == ( entityTypeQualifierValue ?? "" ) );
         }
 
     }

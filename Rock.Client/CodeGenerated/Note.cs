@@ -50,9 +50,6 @@ namespace Rock.Client
         public int NoteTypeId { get; set; }
 
         /// <summary />
-        public int? SourceTypeValueId { get; set; }
-
-        /// <summary />
         public string Text { get; set; }
 
         /// <summary />
@@ -70,9 +67,6 @@ namespace Rock.Client
     {
         /// <summary />
         public NoteType NoteType { get; set; }
-
-        /// <summary />
-        public DefinedValue SourceType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

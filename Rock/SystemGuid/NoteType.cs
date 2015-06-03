@@ -24,20 +24,24 @@ namespace Rock.SystemGuid
     public class NoteType
     {
         /// <summary>
-        /// The types of notes on the person profile
+        /// Person note
         /// </summary>
-        public const string PERSON_TIMELINE = "7E53487C-D650-4D85-97E2-350EB8332763";
+        public const string PERSON_TIMELINE_NOTE = "66A1B9D7-7EFA-40F3-9415-E54437977D60";
 
         /// <summary>
-        /// The types of notes associated to a prayer request
+        /// Generic prayer comment note type
         /// </summary>
         public const string PRAYER_COMMENT = "0EBABD75-0890-4756-A9EE-62626282BB5D";
 
         /// <summary>
-        /// The types of notes associated to a workflow
+        /// Generic workflow note type
         /// </summary>
         public const string WORKFLOW_NOTE = "A6CE445C-3B49-4401-82E6-312BF7946A6B";
 
+        /// <summary>
+        /// Generic scheduled transaction note type
+        /// </summary>
+        public const string SCHEDULED_TRANSACTION_NOTE = "360CFFE2-7FE3-4B0B-85A7-BFDACC9AF588";
 
     }
 }

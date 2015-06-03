@@ -229,15 +229,6 @@ namespace Rock.SystemGuid
 
         #endregion
 
-        #region Note Type
-
-        /// <summary>
-        /// Manually entered note.
-        /// </summary>
-        public const string NOTE_TYPE_MANUAL_NOTE = "4318E9AC-B669-4AF7-AF88-EF580FC43C6A";
-
-        #endregion
-
         #region Metrics
 
         /// <summary>
@@ -408,18 +399,5 @@ namespace Rock.SystemGuid
 
         #endregion
 
-        #region Workflow Note Type
-
-        /// <summary>
-        /// A user-entered workflow note
-        /// </summary>
-        public const string WORKFLOW_NOTE_TYPE_USER_NOTE = "534489FB-E239-4C51-8F5D-9ECF85E9CDE2";
-
-        /// <summary>
-        /// A system-entered workflow note
-        /// </summary>
-        public const string WORKFLOW_NOTE_TYPE_SYSTEM_NOTE = "414E9F98-4709-4895-AEBA-E41773BB7EB8";
-
-        #endregion
     }
 }
