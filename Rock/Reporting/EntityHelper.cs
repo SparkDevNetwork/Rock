@@ -130,7 +130,8 @@ namespace Rock.Reporting
                     {
                         entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.INTEGER.AsGuid() );
 
-                        var definedValueAttribute = property.GetCustomAttributes( typeof( Rock.Data.DefinedValueAttribute ), true ).FirstOrDefault();
+                        var definedValueAttribute = property.GetCustomAttribute<Rock.Data.DefinedValueAttribute>();
+                        var fieldTypeAttribute = property.GetCustomAttribute<Rock.Data.FieldTypeAttribute>();
                         if ( definedValueAttribute != null )
                         {
                             // Defined Value Properties
@@ -143,6 +144,18 @@ namespace Rock.Reporting
                                 {
                                     entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.DEFINED_VALUE.AsGuid() );
                                     entityField.FieldConfig.Add( "definedtype", new Field.ConfigurationValue( definedType.Id.ToString() ) );
+                                }
+                            }
+                        }
+                        else if ( fieldTypeAttribute != null )
+                        {
+                            var fieldTypeCache = FieldTypeCache.Read( fieldTypeAttribute.FieldTypeGuid );
+                            if ( fieldTypeCache != null && fieldTypeCache.Field != null )
+                            {
+                                if ( fieldTypeCache.Field.HasFilterControl() )
+                                {
+                                    entityField.Title = fieldTypeCache.Name;
+                                    entityField.FieldType = fieldTypeCache;
                                 }
                             }
                         }
@@ -224,7 +237,7 @@ namespace Rock.Reporting
 
             // Make sure that the attributes field type actually renders a filter control if limitToFilterableAttributes
             var fieldType = FieldTypeCache.Read( attribute.FieldTypeId );
-            if ( fieldType != null && ( !limitToFilterableAttributes || fieldType.Field.FilterControl( attribute.QualifierValues, propName, true ) != null ) )
+            if ( fieldType != null && ( !limitToFilterableAttributes || fieldType.Field.HasFilterControl() ) )
             {
                 var entityField = new EntityField( propName, FieldKind.Attribute, typeof( string ), attribute.Guid, fieldType );
                 entityField.Title = attribute.Name.SplitCase();

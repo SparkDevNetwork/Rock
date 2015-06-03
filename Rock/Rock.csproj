@@ -219,6 +219,7 @@
     <Compile Include="Constants\SystemSettingKeys.cs" />
     <Compile Include="Data\BoundFieldTypeAttribute.cs" />
     <Compile Include="Chart\IChartData.cs" />
+    <Compile Include="Data\FieldTypeAttribute.cs" />
     <Compile Include="Data\IgnoreLiquid.cs" />
     <Compile Include="Data\IRockEntity.cs" />
     <Compile Include="Data\RockClientIncludeAttribute.cs" />
