@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Prayer
                 var noteType = NoteTypeCache.Read( NoteTypeId.Value );
                 if ( noteType != null )
                 {
-                    notesComments.AvailableNoteTypes = new List<NoteTypeCache> { noteType };
+                    notesComments.NoteTypes = new List<NoteTypeCache> { noteType };
                 }
             }
 
