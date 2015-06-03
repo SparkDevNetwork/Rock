@@ -910,7 +910,9 @@ namespace RockWeb.Blocks.Examples
                 Group group = new Group()
                 {
                     Guid = guid,
-                    Name = elemGroup.Attribute( "name" ).Value.Trim()
+                    Name = elemGroup.Attribute( "name" ).Value.Trim(),
+                    IsActive = true,
+                    IsPublic = true
                 };
 
                 // skip any where there is no group type given -- they are invalid entries.
