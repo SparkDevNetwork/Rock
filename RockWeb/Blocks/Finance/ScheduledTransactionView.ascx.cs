@@ -313,23 +313,25 @@ namespace RockWeb.Blocks.Finance
                 gAccountsView.DataSource = txn.ScheduledTransactionDetails.ToList();
                 gAccountsView.DataBind();
 
-                var rockContext = new RockContext();
-                var noteType = new NoteTypeService( rockContext ).Get( txn.TypeId, "Note" );
-                rptrNotes.DataSource = new NoteService( rockContext ).Get( noteType.Id, txn.Id )
-                    .Where( n => n.CreatedDateTime.HasValue )
-                    .OrderBy( n => n.CreatedDateTime )
-                    .ToList()
-                    .Select( n => new
-                    {
-                        n.Caption,
-                        Text = n.Text.ConvertCrLfToHtmlBr(),
-                        Person = ( n.CreatedByPersonAlias != null && n.CreatedByPersonAlias.Person != null ) ? n.CreatedByPersonAlias.Person.FullName : "",
-                        Date = n.CreatedDateTime.HasValue ? n.CreatedDateTime.Value.ToShortDateString() : "",
-                        Time = n.CreatedDateTime.HasValue ? n.CreatedDateTime.Value.ToShortTimeString() : ""
-                    } )
-                    .ToList();
-                rptrNotes.DataBind();
-
+                var noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
+                if ( noteType != null )
+                {
+                    var rockContext = new RockContext();
+                    rptrNotes.DataSource = new NoteService( rockContext ).Get( noteType.Id, txn.Id )
+                        .Where( n => n.CreatedDateTime.HasValue )
+                        .OrderBy( n => n.CreatedDateTime )
+                        .ToList()
+                        .Select( n => new
+                        {
+                            n.Caption,
+                            Text = n.Text.ConvertCrLfToHtmlBr(),
+                            Person = ( n.CreatedByPersonAlias != null && n.CreatedByPersonAlias.Person != null ) ? n.CreatedByPersonAlias.Person.FullName : "",
+                            Date = n.CreatedDateTime.HasValue ? n.CreatedDateTime.Value.ToShortDateString() : "",
+                            Time = n.CreatedDateTime.HasValue ? n.CreatedDateTime.Value.ToShortTimeString() : ""
+                        } )
+                        .ToList();
+                    rptrNotes.DataBind();
+                }
                 lbCancelSchedule.Visible = txn.IsActive;
                 lbReactivateSchedule.Visible = !txn.IsActive;
             }

@@ -51,12 +51,6 @@ namespace Rock.Model
         public bool CanDelete( DefinedType item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<NoteType>( Context ).Queryable().Any( a => a.SourcesTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedType.FriendlyTypeName, NoteType.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }

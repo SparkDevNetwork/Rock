@@ -326,21 +326,40 @@ h4, .h4 {
 }
 
 .updateprogress-status {
-  left: 45%;
-  padding: 30px 20px;
+  left: 50%;
+  padding: 15px 10px;
   border-radius: 120px;
   box-shadow: 5px 5px 12px 3px rgba(0,0,0,0.1);
+  margin-left: -30px;
 
   .spinner {
-    width: 80px;
-    height: 60px;
+    width: 40px;
+    height: 30px;
 
     > div {
       background-color: #fff;
-      width: 10px;
+      width: 5px;
     }
   }
 }
+
+@media @md {
+    .updateprogress-status {
+      padding: 30px 20px;
+      margin-left: -60px;
+
+      .spinner {
+        width: 80px;
+        height: 60px;
+
+        > div {
+          width: 10px;
+        }
+      }
+    }
+}
+
+
 
 .list-as-blocks {
 

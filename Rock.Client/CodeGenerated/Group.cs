@@ -56,6 +56,9 @@ namespace Rock.Client
         public bool IsActive { get; set; }
 
         /// <summary />
+        public bool IsPublic { get; set; }
+
+        /// <summary />
         public bool IsSecurityRole { get; set; }
 
         /// <summary />

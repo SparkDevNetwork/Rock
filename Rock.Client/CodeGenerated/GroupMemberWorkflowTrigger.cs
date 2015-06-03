@@ -47,6 +47,9 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
         public int /* GroupMemberWorkflowTriggerType*/ TriggerType { get; set; }
 
         /// <summary />

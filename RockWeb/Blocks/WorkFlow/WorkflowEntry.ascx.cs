@@ -244,8 +244,9 @@ namespace RockWeb.Blocks.WorkFlow
             // Set the note type if this is first request
             if ( !Page.IsPostBack )
             {
-                var noteType = new NoteTypeService( _rockContext ).Get( Rock.SystemGuid.NoteType.WORKFLOW_NOTE.AsGuid() );
-                ncWorkflowNotes.NoteTypeId = noteType.Id;
+                var entityType = EntityTypeCache.Read( typeof( Rock.Model.Workflow ) );
+                var noteTypes = NoteTypeCache.GetByEntity( entityType.Id, string.Empty, string.Empty );
+                ncWorkflowNotes.NoteTypes = noteTypes;
             }
 
             if ( _workflowType == null )

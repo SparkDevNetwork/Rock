@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string CssClass { get; set; }
+
+        /// <summary />
         public int EntityTypeId { get; set; }
 
         /// <summary />
@@ -44,13 +47,19 @@ namespace Rock.Client
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary />
+        public string IconCssClass { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
         public string Name { get; set; }
 
         /// <summary />
-        public int? SourcesTypeId { get; set; }
+        public int Order { get; set; }
+
+        /// <summary />
+        public bool UserSelectable { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -67,9 +76,6 @@ namespace Rock.Client
     {
         /// <summary />
         public EntityType EntityType { get; set; }
-
-        /// <summary />
-        public DefinedType Sources { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
