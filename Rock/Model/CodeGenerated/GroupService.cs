@@ -125,6 +125,7 @@ namespace Rock.Model
             target.ExitSystemEmailId = source.ExitSystemEmailId;
             target.GroupTypeId = source.GroupTypeId;
             target.IsActive = source.IsActive;
+            target.IsPublic = source.IsPublic;
             target.IsSecurityRole = source.IsSecurityRole;
             target.IsSystem = source.IsSystem;
             target.MustMeetRequirementsToAddMember = source.MustMeetRequirementsToAddMember;

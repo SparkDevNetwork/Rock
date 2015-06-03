@@ -98,7 +98,15 @@ namespace RockWeb.Blocks.Prayer
                 lbFlag.Visible = _enableCommunityFlagging;
             }
 
-            notesComments.NoteTypeId = NoteTypeId;
+            if ( NoteTypeId.HasValue )
+            {
+                var noteType = NoteTypeCache.Read( NoteTypeId.Value );
+                if ( noteType != null )
+                {
+                    notesComments.AvailableNoteTypes = new List<NoteTypeCache> { noteType };
+                }
+            }
+
             notesComments.EntityId = CurrentPrayerRequestId;
 
             if ( lbNext.Visible )

@@ -21,12 +21,12 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Prayer
@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Prayer
     {
         #region Private BlockType Attributes
         private IEntity contextEntity = null;
-        private NoteType noteType;
+        private NoteTypeCache noteType;
         private Note prayerComment = null;
         private bool useTheAfterPH = false;
         private static readonly string PrayerCommentKeyParameter = "noteId";
@@ -161,15 +161,6 @@ namespace RockWeb.Blocks.Prayer
             note.EntityId = contextEntity.Id;
             note.Text = tbNewNote.Text;
 
-            if ( noteType.Sources != null )
-            {
-                var source = noteType.Sources.DefinedValues.FirstOrDefault();
-                if ( source != null )
-                {
-                    note.SourceTypeValueId = source.Id;
-                }
-            }
-
             service.Add( note );
             rockContext.SaveChanges();
 
@@ -181,9 +172,7 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         private void GetNoteType()
         {
-            var rockContext = new RockContext();
-            var service = new NoteTypeService( rockContext );
-            noteType = service.Get( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() );
+            noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() );
         }
 
         /// <summary>

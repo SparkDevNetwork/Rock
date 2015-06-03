@@ -1810,35 +1810,42 @@ namespace RockWeb.Blocks.Examples
         private void AddNote( int personId, string noteTypeName, string noteText, string noteDate, string byPersonGuid, string isPrivate, RockContext rockContext )
         {
             var service = new NoteTypeService( rockContext );
-            var noteType = service.Get( _personEntityTypeId, noteTypeName );
+            var noteType = service.Queryable()
+                .Where( t => 
+                    t.EntityTypeId == _personEntityTypeId &&
+                    t.Name == noteTypeName )
+                .FirstOrDefault();
 
-            // Find the person's alias
-            int? createdByPersonAliasId = null;
-            if ( byPersonGuid != null )
+            if ( noteType != null )
             {
-                createdByPersonAliasId = _personCache[byPersonGuid.AsGuid()].PrimaryAliasId;
+
+                // Find the person's alias
+                int? createdByPersonAliasId = null;
+                if ( byPersonGuid != null )
+                {
+                    createdByPersonAliasId = _personCache[byPersonGuid.AsGuid()].PrimaryAliasId;
+                }
+
+                var noteService = new NoteService( rockContext );
+                var note = new Note()
+                {
+                    IsSystem = false,
+                    NoteTypeId = noteType.Id,
+                    EntityId = personId,
+                    Caption = string.Empty,
+                    CreatedByPersonAliasId = createdByPersonAliasId,
+                    Text = noteText,
+                    CreatedDateTime = string.IsNullOrWhiteSpace( noteDate ) ? RockDateTime.Now : DateTime.Parse( noteDate, new CultureInfo( "en-US" ) )
+                };
+
+                noteService.Add( note );
+
+                if ( isPrivate.AsBoolean() )
+                {
+                    rockContext.SaveChanges( disablePrePostProcessing: true );
+                    note.MakePrivate( Rock.Security.Authorization.VIEW, _personCache[byPersonGuid.AsGuid()], rockContext );
+                }
             }
-
-            var noteService = new NoteService( rockContext );
-            var note = new Note()
-            {
-                IsSystem = false,
-                NoteTypeId = noteType.Id,
-                EntityId = personId,
-                Caption = string.Empty,
-                CreatedByPersonAliasId = createdByPersonAliasId,
-                Text = noteText,
-                CreatedDateTime = string.IsNullOrWhiteSpace( noteDate ) ? RockDateTime.Now : DateTime.Parse( noteDate, new CultureInfo( "en-US" ) )
-            };
-
-            noteService.Add( note );
-
-            if ( isPrivate.AsBoolean() )
-            {
-                rockContext.SaveChanges( disablePrePostProcessing: true );
-                note.MakePrivate( Rock.Security.Authorization.VIEW, _personCache[byPersonGuid.AsGuid()], rockContext );
-            }
-
         }
 
         /// <summary>

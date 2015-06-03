@@ -88,12 +88,15 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this NoteType target, NoteType source )
         {
             target.Id = source.Id;
+            target.CssClass = source.CssClass;
             target.EntityTypeId = source.EntityTypeId;
             target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            target.IconCssClass = source.IconCssClass;
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;
-            target.SourcesTypeId = source.SourcesTypeId;
+            target.Order = source.Order;
+            target.UserSelectable = source.UserSelectable;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
