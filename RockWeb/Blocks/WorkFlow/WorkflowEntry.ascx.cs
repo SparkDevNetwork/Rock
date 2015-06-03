@@ -246,7 +246,7 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 var entityType = EntityTypeCache.Read( typeof( Rock.Model.Workflow ) );
                 var noteTypes = NoteTypeCache.GetByEntity( entityType.Id, string.Empty, string.Empty );
-                ncWorkflowNotes.AvailableNoteTypes = noteTypes;
+                ncWorkflowNotes.NoteTypes = noteTypes;
             }
 
             if ( _workflowType == null )
