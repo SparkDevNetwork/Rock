@@ -1810,11 +1810,7 @@ namespace RockWeb.Blocks.Examples
         private void AddNote( int personId, string noteTypeName, string noteText, string noteDate, string byPersonGuid, string isPrivate, RockContext rockContext )
         {
             var service = new NoteTypeService( rockContext );
-            var noteType = service.Queryable()
-                .Where( t => 
-                    t.EntityTypeId == _personEntityTypeId &&
-                    t.Name == noteTypeName )
-                .FirstOrDefault();
+            var noteType = service.Get( _personEntityTypeId, noteTypeName );
 
             if ( noteType != null )
             {
