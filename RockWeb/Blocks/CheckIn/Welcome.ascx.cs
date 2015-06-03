@@ -20,9 +20,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -59,6 +61,8 @@ namespace RockWeb.Blocks.CheckIn
 
         protected override void OnLoad( EventArgs e )
         {
+            base.OnLoad( e );
+
             if ( !Page.IsPostBack && CurrentCheckInState != null )
             {
                 string script = string.Format( @"
@@ -82,15 +86,24 @@ namespace RockWeb.Blocks.CheckIn
                 // enable override
                 btnManager.Visible = GetAttributeValue( "EnableManager" ).AsBoolean();
                 btnOverride.Visible = GetAttributeValue( "EnableOverride" ).AsBoolean();
-
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbRefresh control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRefresh_Click( object sender, EventArgs e )
         {
             RefreshView();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnOverride control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnOverride_Click( object sender, EventArgs e )
         {
             var queryParams = new Dictionary<string, string>();
@@ -98,11 +111,19 @@ namespace RockWeb.Blocks.CheckIn
             NavigateToNextPage( queryParams );
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbSearch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSearch_Click( object sender, EventArgs e )
         {
             NavigateToNextPage();
         }
 
+        /// <summary>
+        /// Registers the script.
+        /// </summary>
         private void RegisterScript()
         {
             // Note: the OnExpiry property of the countdown jquery plugin seems to add a new callback
@@ -147,6 +168,11 @@ if ($ActiveWhen.text() != '')
         }
 
         // TODO: Add support for scanner
+        /// <summary>
+        /// Somes the scanner search.
+        /// </summary>
+        /// <param name="searchType">Type of the search.</param>
+        /// <param name="searchValue">The search value.</param>
         private void SomeScannerSearch( DefinedValueCache searchType, string searchValue )
         {
             CurrentCheckInState.CheckIn.UserEnteredSearch = false;
@@ -167,6 +193,9 @@ if ($ActiveWhen.text() != '')
             }
         }
 
+        /// <summary>
+        /// Refreshes the view.
+        /// </summary>
         private void RefreshView()
         {
             hfRefreshTimerSeconds.Value = GetAttributeValue( "RefreshInterval" );
@@ -230,30 +259,44 @@ if ($ActiveWhen.text() != '')
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnManager_Click( object sender, EventArgs e )
         {
-            // just set Display to none instead of Visible = False so we don't mess up the timers, postbacks, etc
-            pnlWelcome.Style[HtmlTextWriterStyle.Display] = "none";
+            pnlNotActive.Visible = false;
+            pnlNotActiveYet.Visible = false;
+            pnlClosed.Visible = false;
+            pnlActive.Visible = false;
             pnlManager.Visible = false;
+
+            tbPIN.Text = string.Empty;
             pnlManagerLogin.Visible = true;
 
             // set manager timer to 10 minutes
             hfRefreshTimerSeconds.Value = "600";
+
+
+            //DEBUG!
+            ShowManagementDetails();
+
         }
 
-        protected void rLocations_ItemCommand( object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e )
-        {
-
-        }
-
+        /// <summary>
+        /// Handles the Click event of the btnBack control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnBack_Click( object sender, EventArgs e )
         {
             RefreshView();
-            pnlWelcome.Style[HtmlTextWriterStyle.Display] = "block";
+
             pnlManager.Visible = false;
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnScheduleLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnScheduleLocations_Click( object sender, EventArgs e )
         {
-
+            //TODO
         }
 
         /// <summary>
@@ -288,8 +331,7 @@ if ($ActiveWhen.text() != '')
                             }
                             else
                             {
-                                pnlManagerLogin.Visible = false;
-                                pnlManager.Visible = true;
+                                ShowManagementDetails();
                                 return;
                             }
                         }
@@ -301,6 +343,83 @@ if ($ActiveWhen.text() != '')
             maWarning.Show( "Sorry, we couldn't find an account matching that PIN.", Rock.Web.UI.Controls.ModalAlertType.Warning );
         }
 
+        /// <summary>
+        /// Shows the management details.
+        /// </summary>
+        private void ShowManagementDetails()
+        {
+            pnlManagerLogin.Visible = false;
+            pnlManager.Visible = true;
+            BindManagerLocationsGrid();
+        }
+
+        /// <summary>
+        /// Binds the manager locations grid.
+        /// </summary>
+        private void BindManagerLocationsGrid()
+        {
+            var rockContext = new RockContext();
+            if ( this.CurrentKioskId.HasValue )
+            {
+                var qry = new LocationService( rockContext ).GetByDevice( this.CurrentKioskId.Value );
+                var selectQry = qry.Select( a => new
+                {
+                    LocationId = a.Id,
+                    Name = a.Name,
+                    a.IsActive
+                } );
+
+                rLocations.DataSource = selectQry.ToList();
+                rLocations.DataBind();
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemCommand event of the rLocations control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterCommandEventArgs"/> instance containing the event data.</param>
+        protected void rLocations_ItemCommand( object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e )
+        {
+            //TODO
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rLocations_ItemDataBound( object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e )
+        {
+            object locationDataItem = e.Item.DataItem;
+            if ( locationDataItem != null )
+            {
+                var lbOpen = e.Item.FindControl( "lbOpen" ) as LinkButton;
+                var lbClose = e.Item.FindControl( "lbClose" ) as LinkButton;
+                var isActive = (bool)locationDataItem.GetPropertyValue( "IsActive" );
+
+                if ( isActive )
+                {
+                    lbOpen.AddCssClass( "btn-success" );
+                    lbOpen.AddCssClass( "active" );
+                    lbClose.RemoveCssClass( "btn-danger" );
+                }
+                else
+                {
+                    lbOpen.RemoveCssClass( "btn-success" );
+                    lbOpen.RemoveCssClass( "active" );
+                    lbClose.AddCssClass( "btn-danger" );
+                    lbOpen.RemoveCssClass( "active" );
+                }
+
+                var lLocationName = e.Item.FindControl( "lLocationName" ) as Literal;
+                lLocationName.Text = locationDataItem.GetPropertyValue( "Name" ) as string;
+
+                var lLocationCount = e.Item.FindControl( "lLocationCount" ) as Literal;
+                lLocationCount.Text = KioskLocationAttendance.Read( (int)locationDataItem.GetPropertyValue( "LocationId" ) ).CurrentCount.ToString();
+            }
+        }
+       
         /// <summary>
         /// Handles the Click event of the lbCancel control.
         /// </summary>
