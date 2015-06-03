@@ -5617,6 +5617,8 @@ h6,
   text-transform: inherit;
 }
 .announcement-list {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   padding-top: 30px;
 }
 .announcement-list .announcement {
