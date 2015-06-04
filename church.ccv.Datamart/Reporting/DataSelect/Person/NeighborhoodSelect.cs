@@ -130,19 +130,21 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
                 groupLinkQuery = qryPerson
                     .Select( p => qryDatamartPerson.Where( d => d.PersonId == p.Id )
                         .Select( s => qryDatamartNeighborhoods.Where( n => n.NeighborhoodId == s.NeighborhoodId )
-                            .Select( ss => "<!-- " + ss.NeighborhoodName + "--><a href='" + baseGroupUrl + ss.NeighborhoodId.ToString() + "'>" + ss.NeighborhoodName + "</a>"  ).FirstOrDefault() ).FirstOrDefault() );
+                            .Select( ss => "<!-- " + ss.NeighborhoodName + "--><a href='" + baseGroupUrl + ss.NeighborhoodId.ToString() + "'>" + ss.NeighborhoodName + "</a>" )
+                            .FirstOrDefault() ).FirstOrDefault() );
             }
             else
             {
                 groupLinkQuery = qryPerson
                     .Select( p => qryDatamartPerson.Where( d => d.PersonId == p.Id )
                         .Select( s => qryDatamartNeighborhoods.Where( n => n.NeighborhoodId == s.NeighborhoodId )
-                            .Select( ss => ss.NeighborhoodName ).FirstOrDefault() ).FirstOrDefault() );        
+                            .Select( a => a.NeighborhoodName )
+                            .FirstOrDefault() ).FirstOrDefault() );
             }
 
-            var resultExpresssion = SelectExpressionExtractor.Extract<Rock.Model.Person>( groupLinkQuery, entityIdProperty, "p" );
+            var resultExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( groupLinkQuery, entityIdProperty, "p" );
 
-            return resultExpresssion;
+            return resultExpression;
         }
     }
 }

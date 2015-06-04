@@ -2,7 +2,10 @@
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Web.UI.WebControls;
 using church.ccv.Datamart.Model;
+using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -15,6 +18,8 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
     [Description( "Select the Neighborhood Leader of the Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Neighborhood Leader" )]
+
+    [BooleanField( "Show As Link", "", true, "CustomSetting" )]
     public class NeighborhoodLeaderSelect : DataSelectComponent
     {
         /// <summary>
@@ -85,6 +90,19 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
         }
 
         /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
+        {
+            var result = new BoundField();
+            result.HtmlEncode = false;
+            return result;
+        }
+
+        /// <summary>
         /// Gets the expression.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -93,6 +111,7 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
         /// <returns></returns>
         public override System.Linq.Expressions.Expression GetExpression( Rock.Data.RockContext context, System.Linq.Expressions.MemberExpression entityIdProperty, string selection )
         {
+            bool showAsLink = this.GetAttributeValueFromSelection( "ShowAsLink", selection ).AsBooleanOrNull() ?? false;
             var datamartNeighborhoodsService = new Service<DatamartNeighborhood>( context );
             var datamartPersonService = new Service<DatamartPerson>( context );
             var personService = new PersonService( context );
@@ -101,13 +120,31 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
             var qryDatamartPerson = datamartPersonService.Queryable();
             var qryPerson = personService.Queryable();
 
-            var qryResult = qryPerson
-                .Select( p => qryDatamartPerson.Where( d => d.PersonId == p.Id )
-                  .Select( s => qryDatamartNeighborhoods.Where( n => n.NeighborhoodId == s.NeighborhoodId ).Select( ss => ss.NeighborhoodLeaderName ).FirstOrDefault() ).FirstOrDefault() );
+            string basePersonUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/Person/" );
 
-            var resultExpresssion = SelectExpressionExtractor.Extract<Rock.Model.Person>( qryResult, entityIdProperty, "p" );
+            IQueryable<string> qryResult;
 
-            return resultExpresssion;
+            if ( showAsLink )
+            {
+                // include NeighboorhoodLeaderName as a comment so that sorting works
+                qryResult = qryPerson
+                    .Select( p => qryDatamartPerson.Where( d => d.PersonId == p.Id )
+                      .Select( s => qryDatamartNeighborhoods.Where( n => n.NeighborhoodId == s.NeighborhoodId )
+                          .Select( a => "<!-- " + a.NeighborhoodLeaderName + "--><a href='" + basePersonUrl + a.NeighborhoodLeaderId.ToString() + "'>" + a.NeighborhoodLeaderName + "</a>" )
+                          .FirstOrDefault() ).FirstOrDefault() );
+            }
+            else
+            {
+                qryResult = qryPerson
+                    .Select( p => qryDatamartPerson.Where( d => d.PersonId == p.Id )
+                      .Select( s => qryDatamartNeighborhoods.Where( n => n.NeighborhoodId == s.NeighborhoodId )
+                          .Select( ss => ss.NeighborhoodLeaderName )
+                          .FirstOrDefault() ).FirstOrDefault() );
+            }
+
+            var resultExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( qryResult, entityIdProperty, "p" );
+
+            return resultExpression;
         }
     }
 }

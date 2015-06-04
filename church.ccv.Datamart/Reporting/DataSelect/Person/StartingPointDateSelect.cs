@@ -98,15 +98,13 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
             var qryDatamartPerson = datamartPersonService.Queryable();
             var qryPerson = personService.Queryable();
 
-            string basePersonUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/Person/" );
-
             var qryResult = qryPerson
                 .Select( p => qryDatamartPerson.Where( d => d.PersonId == p.Id )
                   .Select( s => s.StartingPointDate ).FirstOrDefault() );
 
-            var resultExpresssion = SelectExpressionExtractor.Extract<Rock.Model.Person>( qryResult, entityIdProperty, "p" );
+            var resultExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( qryResult, entityIdProperty, "p" );
 
-            return resultExpresssion;
+            return resultExpression;
         }
     }
 }
