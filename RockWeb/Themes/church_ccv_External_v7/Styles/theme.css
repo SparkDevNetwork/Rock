@@ -5586,6 +5586,9 @@ h6,
 .mainfooter a {
   color: inherit;
 }
+.mainfooter hr {
+  border-top-color: #333333;
+}
 .footernav {
   text-transform: uppercase;
   letter-spacing: .75px;
