@@ -69,30 +69,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
-            string script = @"
-// activity animation
-$('.filter-item > header').click(function () {
-    $(this).siblings('.panel-body').slideToggle();
-    $(this).children('div.pull-left').children('div').slideToggle();
-
-    $expanded = $(this).children('input.filter-expanded');
-    $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
-
-    $('a.filter-view-state > i', this).toggleClass('fa-chevron-down');
-    $('a.filter-view-state > i', this).toggleClass('fa-chevron-up');
-});
-
-// fix so that the Remove button will fire its event, but not the parent event 
-$('.filter-item a.btn-danger').click(function (event) {
-    event.stopImmediatePropagation();
-});
-
-$('.filter-item-select').click(function (event) {
-    event.stopImmediatePropagation();
-});
-
-";
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "FilterFieldEditorScript", script, true );
+            ReportingHelper.RegisterJavascriptInclude( this );
         }
 
         /// <summary>
