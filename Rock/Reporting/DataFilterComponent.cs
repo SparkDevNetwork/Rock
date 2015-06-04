@@ -219,21 +219,7 @@ namespace Rock.Reporting
         /// </value>
         public void RegisterFilterCompareChangeScript( FilterField filterControl )
         {
-            string filterComparescript = @"
-            $('.js-filter-compare').change( function () {
-        var $fieldCriteriaRow = $(this).closest('.field-criteria');
-        var compareValue = $(this).val();
-        var isNullCompare = (compareValue == 32 || compareValue == 64);
-        if (isNullCompare) {
-            $fieldCriteriaRow.find('.js-filter-control').hide();
-        }
-        else {
-            $fieldCriteriaRow.find('.js-filter-control').show();
-        }
-    });
-";
-            // only need this script once per page
-            ScriptManager.RegisterStartupScript( filterControl.Page, filterControl.Page.GetType(), "js-filter-compare-change-script", filterComparescript, true );
+            ReportingHelper.RegisterJavascriptInclude( filterControl );
         }
 
         #endregion

@@ -386,5 +386,14 @@ namespace Rock.Reporting
 
             return filter;
         }
+
+        /// <summary>
+        /// Registers the javascript include needed for reporting client controls
+        /// </summary>
+        /// <param name="rockBlock">The rock block.</param>
+        public static void RegisterJavascriptInclude( FilterField filterField )
+        {
+            ScriptManager.RegisterClientScriptInclude( filterField, filterField.GetType(), "reporting-include", filterField.RockBlock().RockPage.ResolveRockUrl( "~/Scripts/Rock/reportingInclude.js", true ) );
+        }
     }
 }
