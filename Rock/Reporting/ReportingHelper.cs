@@ -298,7 +298,7 @@ namespace Rock.Reporting
 
                 if ( errors.Any() )
                 {
-                    errorMessage = "INFO: There was a problem with one or more of the report's data components...<br/><br/> " + errors.AsDelimited( "<br/>" );
+                    errorMessage = "WARNING: There was a problem with one or more of the report's data components...<br/><br/> " + errors.AsDelimited( "<br/>" );
                 }
             }
         }
