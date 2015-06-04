@@ -91,6 +91,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the CampusId of the <see cref="Rock.Model.Campus"/> that this batch is associated with.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
         public int? CampusId { get; set; }
 
         /// <summary>

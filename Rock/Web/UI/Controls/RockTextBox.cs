@@ -411,6 +411,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Clears the password.
+        /// </summary>
+        public void ClearPassword()
+        {
+            Password = string.Empty;
+            this.Text = string.Empty;
+            ViewState["Password"] = null;
+        }
+
+        /// <summary>
         /// Gets or sets the text content of the <see cref="T:System.Web.UI.WebControls.TextBox" /> control.
         /// </summary>
         /// <returns>The text displayed in the <see cref="T:System.Web.UI.WebControls.TextBox" /> control. The default is an empty string ("").</returns>
