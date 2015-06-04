@@ -12,7 +12,7 @@ namespace church.ccv.Hr.Model
     /// </summary>
     [Table( "_church_ccv_Hr_TimeCardDay" )]
     [DataContract]
-    public class TimeCardDay : Model<TimeCardDay>
+    public class TimeCardDay : Model<TimeCardDay>, Rock.Data.IRockEntity
     {
         #region Entity Properties
 

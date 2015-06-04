@@ -10,7 +10,7 @@ namespace church.ccv.Hr.Model
     /// </summary>
     [Table( "_church_ccv_Hr_TimeCardPayPeriod" )]
     [DataContract]
-    public class TimeCardPayPeriod : Model<TimeCardPayPeriod>
+    public class TimeCardPayPeriod : Model<TimeCardPayPeriod>, Rock.Data.IRockEntity
     {
         #region Entity Properties
 
