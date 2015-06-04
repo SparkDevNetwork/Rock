@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Reporting
     [TextField( "Report", "The report to use for this block", false, "", "CustomSetting" )]
     [TextField( "SelectedDataFieldGuids", "The DataFilters to present to the user", false, "", "CustomSetting" )]
     [TextField( "ConfigurableDataFieldGuids", "Of the DataFilters that are presented to the user, which are configurable vs just a checkbox", false, "", "CustomSetting" )]
+    [TextField( "TogglableDataFieldGuids", "The configurable datafilters that include a checkbox that can disable/enable the filter", false, "", "CustomSetting" )]
     public partial class ReportData : RockBlockCustomSettings
     {
         /// <summary>
@@ -121,14 +122,14 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ResultsIconCssClass" ) ) )
             {
-                lResultsIconCssClass.Text = String.Format( "<i class='{0}'></i>", GetAttributeValue( "ResultsIconCssClass" ) );
+                lResultsIconCssClass.Text = string.Format( "<i class='{0}'></i>", GetAttributeValue( "ResultsIconCssClass" ) );
             }
 
             lFilterTitle.Text = GetAttributeValue( "FilterTitle" );
 
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "FilterIconCssClass" ) ) )
             {
-                lFilterIconCssClass.Text = String.Format( "<i class='{0}'></i>", GetAttributeValue( "FilterIconCssClass" ) );
+                lFilterIconCssClass.Text = string.Format( "<i class='{0}'></i>", GetAttributeValue( "FilterIconCssClass" ) );
             }
 
             BindReportGrid();
@@ -162,14 +163,17 @@ namespace RockWeb.Blocks.Reporting
                 var selectCols = grdDataFilters.Columns.OfType<SelectField>().ToArray();
                 var selectedDataFieldGuids = selectCols[0].SelectedKeys.OfType<Guid>();
                 var configurableDataFieldGuids = selectCols[1].SelectedKeys.OfType<Guid>();
+                var togglableDataFieldGuids = selectCols[2].SelectedKeys.OfType<Guid>();
 
                 this.SetAttributeValue( "SelectedDataFieldGuids", selectedDataFieldGuids.Select( a => a.ToString() ).ToList().AsDelimited( "|" ) );
                 this.SetAttributeValue( "ConfigurableDataFieldGuids", configurableDataFieldGuids.Select( a => a.ToString() ).ToList().AsDelimited( "|" ) );
+                this.SetAttributeValue( "TogglableDataFieldGuids", togglableDataFieldGuids.Select( a => a.ToString() ).ToList().AsDelimited( "|" ) );
             }
             else
             {
                 this.SetAttributeValue( "SelectedDataFieldGuids", null );
                 this.SetAttributeValue( "ConfigurableDataFieldGuids", null );
+                this.SetAttributeValue( "TogglableDataFieldGuids", null );
             }
 
             mdConfigure.Hide();
@@ -217,6 +221,7 @@ namespace RockWeb.Blocks.Reporting
                 var reportGuid = this.GetAttributeValue( "Report" ).AsGuidOrNull();
                 var selectedDataFieldGuids = ( this.GetAttributeValue( "SelectedDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
                 var configurableDataFieldGuids = ( this.GetAttributeValue( "ConfigurableDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
+                var togglableDataFieldGuids = ( this.GetAttributeValue( "TogglableDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
                 Report report = null;
                 if ( reportGuid.HasValue )
                 {
@@ -244,6 +249,7 @@ namespace RockWeb.Blocks.Reporting
                                 setSelection,
                                 selectedDataFieldGuids,
                                 configurableDataFieldGuids,
+                                togglableDataFieldGuids,
                                 rockContext );
                         }
                     }
@@ -252,7 +258,7 @@ namespace RockWeb.Blocks.Reporting
                     pnlFilter.Visible = phFilters.ControlsOfTypeRecursive<FilterField>().Any( a => a.Visible );
                 }
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
                 this.LogException( ex );
                 nbFiltersError.Text = "An error occurred trying to load the filters. Click on 'Set Default' to try again with the default filter.";
@@ -289,6 +295,7 @@ namespace RockWeb.Blocks.Reporting
             bool setSelection,
             List<Guid> selectedDataFieldGuids,
             List<Guid> configurableDataFieldGuids,
+            List<Guid> togglableDataFieldGuids,
             RockContext rockContext )
         {
             var filteredEntityTypeName = EntityTypeCache.Read( reportEntityType ).Name;
@@ -298,6 +305,7 @@ namespace RockWeb.Blocks.Reporting
 
                 bool filterIsVisible = selectedDataFieldGuids.Contains( filter.Guid );
                 bool filterIsConfigurable = configurableDataFieldGuids.Contains( filter.Guid );
+                bool showCheckbox = togglableDataFieldGuids.Contains( filter.Guid ) || !filterIsConfigurable;
                 filterControl.Visible = filterIsVisible;
                 parentControl.Controls.Add( filterControl );
                 filterControl.DataViewFilterGuid = filter.Guid;
@@ -317,7 +325,7 @@ namespace RockWeb.Blocks.Reporting
 
                 filterControl.Expanded = true;
                 filterControl.HideFilterTypePicker = true;
-                filterControl.ShowCheckbox = filterIsVisible && !filterIsConfigurable;
+                filterControl.ShowCheckbox = filterIsVisible && showCheckbox;
 
                 var reportEntityTypeCache = EntityTypeCache.Read( reportEntityType );
                 var reportEntityTypeModel = reportEntityTypeCache.GetEntityType();
@@ -330,7 +338,6 @@ namespace RockWeb.Blocks.Reporting
                     bool? checkedUserPreference = null;
                     if ( setSelection && filterIsVisible && filterIsConfigurable )
                     {
-
                         selectionUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Selection", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) );
                     }
                     else if ( setSelection && filterIsVisible && !filterIsConfigurable )
@@ -361,7 +368,7 @@ namespace RockWeb.Blocks.Reporting
                             {
                                 filterControl.Selection = propertyFilter.UpdateSelectionFromUserPreferenceSelection( filterControl.Selection, selectionUserPreference );
                             }
-                            
+
                             filterControl.Selection = propertyFilter.UpdateSelectionFromPageParameters( filterControl.Selection, this );
                         }
                     }
@@ -402,7 +409,7 @@ namespace RockWeb.Blocks.Reporting
 
                 foreach ( var childFilter in filter.ChildFilters )
                 {
-                    CreateFilterControl( groupControl, childFilter, reportEntityType, setSelection, selectedDataFieldGuids, configurableDataFieldGuids, rockContext );
+                    CreateFilterControl( groupControl, childFilter, reportEntityType, setSelection, selectedDataFieldGuids, configurableDataFieldGuids, togglableDataFieldGuids, rockContext );
                 }
             }
         }
@@ -486,10 +493,10 @@ namespace RockWeb.Blocks.Reporting
                 nbConfigurationWarning.Text = "A report needs to be configured in block settings";
                 pnlView.Visible = false;
             }
-            else if (report.DataView == null)
+            else if ( report.DataView == null )
             {
                 nbConfigurationWarning.Visible = true;
-                nbConfigurationWarning.Text = string.Format( "The {0} report does not have a dataview", report) ;
+                nbConfigurationWarning.Text = string.Format( "The {0} report does not have a dataview", report );
                 pnlView.Visible = false;
             }
             else
@@ -545,6 +552,7 @@ namespace RockWeb.Blocks.Reporting
             {
                 var selectedDataFieldGuids = ( this.GetAttributeValue( "SelectedDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
                 var configurableDataFieldGuids = ( this.GetAttributeValue( "ConfigurableDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
+                var togglableDataFieldGuids = ( this.GetAttributeValue( "TogglableDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
 
                 var filters = new List<FilterInfo>();
                 GetFilterListRecursive( filters, report.DataView.DataViewFilter, report.EntityType );
@@ -565,7 +573,8 @@ namespace RockWeb.Blocks.Reporting
                         a.Title,
                         a.Summary,
                         ShowAsFilter = selectAll || selectedDataFieldGuids.Contains( a.Guid ),
-                        IsConfigurable = selectAll || configurableDataFieldGuids.Contains( a.Guid )
+                        IsConfigurable = selectAll || configurableDataFieldGuids.Contains( a.Guid ),
+                        IsTogglable = selectAll || togglableDataFieldGuids.Contains( a.Guid )
                     } );
 
                     grdDataFilters.DataBind();
@@ -669,7 +678,6 @@ namespace RockWeb.Blocks.Reporting
             {
                 filterList.Add( new FilterInfo { Guid = filter.Guid, IsGroupFilter = true } );
             }
-
 
             foreach ( var childFilter in filter.ChildFilters )
             {

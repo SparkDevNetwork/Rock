@@ -313,6 +313,15 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return true;
+        }
+
+        /// <summary>
         /// Gets the filter compare value.
         /// </summary>
         /// <param name="control">The control.</param>
@@ -429,7 +438,17 @@ namespace Rock.Field.Types
             {
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
 
-                ConstantExpression constantExpression = Expression.Constant( Enum.Parse( propertyType, selectedValues[0] ) );
+                object constantValue;
+                if ( propertyType.IsEnum )
+                {
+                   constantValue = Enum.Parse( propertyType, selectedValues[0] );
+                }
+                else
+                {
+                    constantValue = selectedValues[0] as string;
+                }
+
+                 ConstantExpression constantExpression = Expression.Constant( constantValue );
                 Expression comparison = Expression.Equal( propertyExpression, constantExpression );
 
                 foreach ( string selectedValue in selectedValues.Skip( 1 ) )

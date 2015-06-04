@@ -227,6 +227,7 @@
     <Compile Include="Constants\SystemSettingKeys.cs" />
     <Compile Include="Data\BoundFieldTypeAttribute.cs" />
     <Compile Include="Chart\IChartData.cs" />
+    <Compile Include="Data\FieldTypeAttribute.cs" />
     <Compile Include="Data\IgnoreLiquid.cs" />
     <Compile Include="Data\IRockEntity.cs" />
     <Compile Include="Data\RockClientIncludeAttribute.cs" />
@@ -950,6 +951,7 @@
     <Compile Include="Workflow\Action\SendSms.cs" />
     <Compile Include="Workflow\Action\PersonTagAdd.cs" />
     <Compile Include="Workflow\Action\SetAttributeToGroupLeader.cs" />
+    <Compile Include="Workflow\Action\PostAttendanceToGroup.cs" />
     <Compile Include="Workflow\Action\SetGroupMemberAttribute.cs" />
     <Compile Include="Workflow\Action\SetPersonAttribute.cs" />
     <Compile Include="Workflow\Action\SetAttributeToInitiator.cs" />

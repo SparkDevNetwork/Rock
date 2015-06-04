@@ -81,6 +81,7 @@ namespace Rock.Model
         /// </value>
         [HideFromReporting]
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
         public int? CampusId { get; set; }
 
         /// <summary>
