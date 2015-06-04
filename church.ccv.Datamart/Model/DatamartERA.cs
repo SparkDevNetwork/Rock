@@ -12,7 +12,7 @@ namespace church.ccv.Datamart.Model
     /// </summary>
     [Table( "_church_ccv_Datamart_ERA" )]
     [DataContract]
-    public partial class DatamartERA : Rock.Data.Entity<DatamartERA>
+    public partial class DatamartERA : Rock.Data.Entity<DatamartERA>, Rock.Data.IRockEntity
     {
         #region Entity Properties
 

@@ -12,7 +12,7 @@ namespace church.ccv.Datamart.Model
     /// </summary>
     [Table( "_church_ccv_Datamart_Neighborhood" )]
     [DataContract]
-    public partial class DatamartNeighborhood : Rock.Data.Entity<DatamartNeighborhood>
+    public partial class DatamartNeighborhood : Rock.Data.Entity<DatamartNeighborhood>, Rock.Data.IRockEntity
     {
         /// <summary>
         /// Gets or sets the neighborhood identifier (Group.Id)

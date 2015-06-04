@@ -12,7 +12,7 @@ namespace church.ccv.Datamart.Model
     /// </summary>
     [Table( "_church_ccv_Datamart_Person" )]
     [DataContract]
-    public partial class DatamartPerson : Rock.Data.Entity<DatamartPerson>
+    public partial class DatamartPerson : Rock.Data.Entity<DatamartPerson>, Rock.Data.IRockEntity
     {
         #region Entity Properties
 
@@ -129,6 +129,7 @@ namespace church.ccv.Datamart.Model
         /// </value>
         [DataMember]
         [MaxLength( 10 )]
+        [Rock.Data.FieldType( Rock.SystemGuid.FieldType.SINGLE_SELECT, "values", "Male,Female" )]
         public string Gender { get; set; }
 
         /// <summary>
@@ -139,6 +140,7 @@ namespace church.ccv.Datamart.Model
         /// </value>
         [DataMember]
         [MaxLength( 15 )]
+        [Rock.Data.FieldType( Rock.SystemGuid.FieldType.SINGLE_SELECT, "values", "Married,Single" )]
         public string MaritalStatus { get; set; }
 
         /// <summary>
@@ -149,6 +151,7 @@ namespace church.ccv.Datamart.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [Rock.Data.FieldType( Rock.SystemGuid.FieldType.SINGLE_SELECT, "values", "Adult,Child" )]
         public string FamilyRole { get; set; }
 
         /// <summary>
@@ -159,7 +162,8 @@ namespace church.ccv.Datamart.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
-        public string Campus { get; set; }
+        [Column( "Campus" )]
+        public string CampusName { get; set; }
 
         /// <summary>
         /// Gets or sets the campus identifier.
@@ -168,6 +172,7 @@ namespace church.ccv.Datamart.Model
         /// The campus identifier.
         /// </value>
         [DataMember]
+        [Rock.Data.FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
         public int? CampusId { get; set; }
 
         /// <summary>
@@ -178,7 +183,12 @@ namespace church.ccv.Datamart.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
-        public string ConnectionStatus { get; set; }
+        [Column( "ConnectionStatus" )]
+        public string ConnectionStatusName { get; set; }
+
+        [DataMember]
+        [Rock.Data.DefinedValue( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS )]
+        public int? ConnectionStatusValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the anniversary date.
@@ -335,7 +345,6 @@ namespace church.ccv.Datamart.Model
         /// The serving areas.
         /// </value>
         [DataMember]
-        [MaxLength( 350 )]
         public string ServingAreas { get; set; }
 
         /// <summary>
@@ -501,94 +510,85 @@ namespace church.ccv.Datamart.Model
         public DateTime? LastContributionDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the C2015 contrib.
+        /// Gets or sets the giving2015.
         /// </summary>
         /// <value>
-        /// The C2015 contrib.
+        /// The giving2015.
         /// </value>
         [DataMember]
-        [Column( "2015Contrib" )]
-        public decimal? Contrib2015 { get; set; }
+        public decimal? Giving2015 { get; set; }
 
         /// <summary>
-        /// Gets or sets the C2014 contrib.
+        /// Gets or sets the giving2014.
         /// </summary>
         /// <value>
-        /// The C2014 contrib.
+        /// The giving2014.
         /// </value>
         [DataMember]
-        [Column( "2014Contrib" )]
-        public decimal? Contrib2014 { get; set; }
+        public decimal? Giving2014 { get; set; }
 
         /// <summary>
-        /// Gets or sets the C2013 contrib.
+        /// Gets or sets the giving2013.
         /// </summary>
         /// <value>
-        /// The C2013 contrib.
+        /// The giving2013.
         /// </value>
         [DataMember]
-        [Column( "2013Contrib" )]
-        public decimal? Contrib2013 { get; set; }
+        public decimal? Giving2013 { get; set; }
 
         /// <summary>
-        /// Gets or sets the C2012 contrib.
+        /// Gets or sets the giving2012.
         /// </summary>
         /// <value>
-        /// The C2012 contrib.
+        /// The giving2012.
         /// </value>
         [DataMember]
-        [Column( "2012Contrib" )]
-        public decimal? Contrib2012 { get; set; }
+        public decimal? Giving2012 { get; set; }
 
         /// <summary>
-        /// Gets or sets the C2011 contrib.
+        /// Gets or sets the giving2011.
         /// </summary>
         /// <value>
-        /// The C2011 contrib.
+        /// The giving2011.
         /// </value>
         [DataMember]
-        [Column( "2011Contrib" )]
-        public decimal? Contrib2011 { get; set; }
+        public decimal? Giving2011 { get; set; }
 
         /// <summary>
-        /// Gets or sets the C2010 contrib.
+        /// Gets or sets the giving2010.
         /// </summary>
         /// <value>
-        /// The C2010 contrib.
+        /// The giving2010.
         /// </value>
         [DataMember]
-        [Column( "2010Contrib" )]
-        public decimal? Contrib2010 { get; set; }
+        public decimal? Giving2010 { get; set; }
 
         /// <summary>
-        /// Gets or sets the 2009 contrib.
+        /// Gets or sets the giving2009.
         /// </summary>
         /// <value>
-        /// The 2009 contrib.
+        /// The giving2009.
         /// </value>
         [DataMember]
-        [Column( "2009Contrib" )]
-        public decimal? Contrib2009 { get; set; }
+        public decimal? Giving2009 { get; set; }
 
         /// <summary>
-        /// Gets or sets the 2008 contrib.
+        /// Gets or sets the giving2008.
         /// </summary>
         /// <value>
-        /// The 2008 contrib.
+        /// The giving2008.
         /// </value>
         [DataMember]
-        [Column( "2008Contrib" )]
-        public decimal? Contrib2008 { get; set; }
+        public decimal? Giving2008 { get; set; }
 
         /// <summary>
-        /// Gets or sets the 2007 contrib.
+        /// Gets or sets the giving2007.
         /// </summary>
         /// <value>
-        /// The 2007 contrib.
+        /// The giving2007.
         /// </value>
         [DataMember]
-        [Column( "2007Contrib" )]
-        public decimal? Contrib2007 { get; set; }
+        public decimal? Giving2007 { get; set; }
 
         /// <summary>
         /// Gets or sets the geo point.

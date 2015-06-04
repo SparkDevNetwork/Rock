@@ -10,7 +10,7 @@ namespace church.ccv.Datamart.Model
     /// </summary>
     [Table( "_church_ccv_Datamart_NearestGroup" )]
     [DataContract]
-    public partial class DatamartNearestGroup : Rock.Data.Entity<DatamartNearestGroup>
+    public partial class DatamartNearestGroup : Rock.Data.Entity<DatamartNearestGroup>, Rock.Data.IRockEntity
     {
         /// <summary>
         /// Gets or sets the family location identifier.

@@ -6,7 +6,7 @@ namespace church.ccv.Datamart.Model
 {
     [Table( "_church_ccv_Datamart_EraLoss" )]
     [DataContract]
-    public partial class DatamartEraLoss : Rock.Data.Entity<DatamartEraLoss>
+    public partial class DatamartEraLoss : Rock.Data.Entity<DatamartEraLoss>, Rock.Data.IRockEntity
     {
         #region Entity Properties
 
