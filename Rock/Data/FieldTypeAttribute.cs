@@ -33,12 +33,32 @@ namespace Rock.Data
         public Guid FieldTypeGuid { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FieldTypeAttribute"/> class.
+        /// Gets or sets the configuration key.
+        /// </summary>
+        /// <value>
+        /// The configuration key.
+        /// </value>
+        public string ConfigurationKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration value.
+        /// </summary>
+        /// <value>
+        /// The configuration value.
+        /// </value>
+        public string ConfigurationValue { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FieldTypeAttribute" /> class.
         /// </summary>
         /// <param name="fieldTypeGuid">The field type unique identifier.</param>
-        public FieldTypeAttribute( string fieldTypeGuid )
+        /// <param name="configKey">The configuration key.</param>
+        /// <param name="configValue">The configuration value.</param>
+        public FieldTypeAttribute( string fieldTypeGuid, string configKey = null, string configValue = null )
         {
             FieldTypeGuid = new Guid( fieldTypeGuid );
+            ConfigurationKey = configKey;
+            ConfigurationValue = configValue;
         }
     }
 }
