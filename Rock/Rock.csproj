@@ -139,6 +139,7 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\NoteTypeFieldAttribute.cs" />
     <Compile Include="Attribute\FinancialGatewayFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
     <Compile Include="Attribute\CurrencyFieldAttribute.cs" />
@@ -218,7 +219,9 @@
     <Compile Include="Constants\SystemSettingKeys.cs" />
     <Compile Include="Data\BoundFieldTypeAttribute.cs" />
     <Compile Include="Chart\IChartData.cs" />
+    <Compile Include="Data\FieldTypeAttribute.cs" />
     <Compile Include="Data\IgnoreLiquid.cs" />
+    <Compile Include="Data\IRockEntity.cs" />
     <Compile Include="Data\RockClientIncludeAttribute.cs" />
     <Compile Include="Data\LavaIncludeAttribute.cs" />
     <Compile Include="Data\LavaIgnoreAttribute.cs" />
@@ -230,6 +233,8 @@
     <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
+    <Compile Include="Field\Types\NoteTypesFieldType.cs" />
+    <Compile Include="Field\Types\NoteTypeFieldType.cs" />
     <Compile Include="Model\CodeGenerated\EventCalendarItemService.cs" />
     <Compile Include="Model\CodeGenerated\EventCalendarService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemAudienceService.cs" />
@@ -408,6 +413,7 @@
     <Compile Include="Utility\RockSemanticVersion.cs" />
     <Compile Include="Utility\SimpleModeJsonConverter.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
+    <Compile Include="Web\Cache\NoteTypeCache.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
     <Compile Include="Web\UI\Controls\Grid\BoolFromArrayField.cs" />
     <Compile Include="Web\UI\Controls\Grid\RockLiteralField.cs" />
@@ -936,6 +942,9 @@
     <Compile Include="Workflow\Action\PersonTagRemove.cs" />
     <Compile Include="Workflow\Action\SendSms.cs" />
     <Compile Include="Workflow\Action\PersonTagAdd.cs" />
+    <Compile Include="Workflow\Action\SetAttributeToGroupLeader.cs" />
+    <Compile Include="Workflow\Action\PostAttendanceToGroup.cs" />
+    <Compile Include="Workflow\Action\SetGroupMemberAttribute.cs" />
     <Compile Include="Workflow\Action\SetPersonAttribute.cs" />
     <Compile Include="Workflow\Action\SetAttributeToInitiator.cs" />
     <Compile Include="Workflow\Action\SetAttributeToCurrentPerson.cs" />

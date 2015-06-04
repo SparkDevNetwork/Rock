@@ -53,7 +53,7 @@ namespace Rock.Reporting.DataFilter
         {
             string selectedEntityField = ddlEntityField.SelectedValue;
 
-            writer.AddAttribute( "class", "row js-filter-row" );
+            writer.AddAttribute( "class", "row js-filter-row filter-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             bool entityFieldPickerIsHidden = ddlEntityField.Style[HtmlTextWriterStyle.Display] == "none";
@@ -68,10 +68,19 @@ namespace Rock.Reporting.DataFilter
             }
             else if ( ddlEntityField.SelectedItem != null )
             {
-                writer.AddAttribute( "class", "data-view-filter-field-label" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( ddlEntityField.SelectedItem.Text );
-                writer.RenderEndTag();
+                if ( filterControl.ShowCheckbox )
+                {
+                    // special case when a filter is a entity field filter: render the checkbox here instead of in FilterField.cs
+                    filterControl.cbIncludeFilter.Text = ddlEntityField.SelectedItem.Text;
+                    filterControl.cbIncludeFilter.RenderControl( writer );
+                }
+                else
+                {
+                    writer.AddAttribute( "class", "data-view-filter-field-label" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                    writer.Write( ddlEntityField.SelectedItem.Text );
+                    writer.RenderEndTag();
+                }
             }
             writer.RenderEndTag();
 

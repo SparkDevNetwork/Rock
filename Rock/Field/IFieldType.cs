@@ -139,6 +139,12 @@ namespace Rock.Field
         Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required );
 
         /// <summary>
+        /// Determines whether this filter type has a FilterControl
+        /// </summary>
+        /// <returns></returns>
+        Boolean HasFilterControl();
+
+        /// <summary>
         /// Gets the filter values.
         /// </summary>
         /// <param name="filterControl">The filter control.</param>

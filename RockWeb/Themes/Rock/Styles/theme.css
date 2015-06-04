@@ -750,6 +750,8 @@ Copyright (c) 2012 Dan Eden*/
   30. Paneled List Group - extends the bootstrap list group to behave in a panel
   31. Sliding Date Range
   32. Photo Round
+
+  xx. Misc
 */
 .picker {
   position: relative;
@@ -3992,9 +3994,6 @@ iframe.email-body {
     margin-left: -16px;
   }
 }
-.attendance-reporting .filter-options {
-  background-color: #efefef;
-}
 .attendance-reporting .analysis-types {
   padding: 15px 0;
   background-color: #efefef;
@@ -4857,6 +4856,33 @@ a.help {
 .panel-block .panel-body .grid.grid-panel .table-bordered > tfoot > tr > td {
   border: 0px;
 }
+.panel-analytics .panel-body {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.panel-analytics .panel-body > .row > [class*="col-"]:first-child {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+.panel-analytics .panel-body .col-md-9 {
+  margin-right: -2px;
+}
+.panel-analytics .panel-body .grid.grid-panel {
+  margin-bottom: 0;
+}
+@media (min-width: 992px) {
+  .panel-analytics .panel-body .row {
+    margin-left: -16px;
+  }
+}
+.panel-analytics .filter-options {
+  background-color: #efefef;
+}
+.panel-analytics .analysis-types {
+  padding: 15px 0;
+  background-color: #efefef;
+  margin-bottom: 15px;
+}
 .btn.aspNetDisabled {
   cursor: not-allowed;
   pointer-events: none;
@@ -5514,18 +5540,32 @@ h4,
   border: 1px solid #4c6f7c;
 }
 .updateprogress-status {
-  left: 45%;
-  padding: 30px 20px;
+  left: 50%;
+  padding: 15px 10px;
   border-radius: 120px;
   box-shadow: 5px 5px 12px 3px rgba(0, 0, 0, 0.1);
+  margin-left: -30px;
 }
 .updateprogress-status .spinner {
-  width: 80px;
-  height: 60px;
+  width: 40px;
+  height: 30px;
 }
 .updateprogress-status .spinner > div {
   background-color: #fff;
-  width: 10px;
+  width: 5px;
+}
+@media (min-width: 992px) {
+  .updateprogress-status {
+    padding: 30px 20px;
+    margin-left: -60px;
+  }
+  .updateprogress-status .spinner {
+    width: 80px;
+    height: 60px;
+  }
+  .updateprogress-status .spinner > div {
+    width: 10px;
+  }
 }
 .list-as-blocks ul li a {
   -webkit-transition: background-color 200ms linear;
@@ -5947,3 +5987,4 @@ body.navbar-side-close #content-wrapper {
 .title .first-word {
   font-weight: 900;
 }
+/*#endregion */

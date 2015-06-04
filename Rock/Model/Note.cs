@@ -65,15 +65,6 @@ namespace Rock.Model
         public int? EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the SourceType <see cref="Rock.Model.DefinedValue"/>. This shows how/where the note was created.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the Source Type <see cref="Rock.Model.DefinedValue"/>.
-        /// </value>
-        [DataMember]
-        public int? SourceTypeValueId { get; set; }
-
-        /// <summary>
         /// Gets or sets the caption
         /// </summary>
         /// <value>
@@ -113,15 +104,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual NoteType NoteType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the source of the note.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Model.DefinedValue"/> representing the source of the note.
-        /// </value>
-        [DataMember]
-        public virtual DefinedValue SourceType { get; set; }
 
         /// <summary>
         /// Gets the parent security authority of this Note. Where security is inherited from.
@@ -169,7 +151,6 @@ namespace Rock.Model
         public NoteConfiguration()
         {
             this.HasRequired( p => p.NoteType ).WithMany().HasForeignKey( p => p.NoteTypeId ).WillCascadeOnDelete( true );
-            this.HasOptional( p => p.SourceType ).WithMany().HasForeignKey( p => p.SourceTypeValueId ).WillCascadeOnDelete( false );
         }
     }
 

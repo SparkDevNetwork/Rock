@@ -296,10 +296,6 @@ namespace RockWeb.Blocks.Calendar
             if ( _eventCalendar != null )
             {
                 cblAudience.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() ) );
-                //TODO: Fix this.
-                cblAudience.Items.RemoveAt( 0 );
-                cblAudience.Items.RemoveAt( 0 );
-                cblAudience.Items.RemoveAt( 0 );
                 cblCampus.DataSource = CampusCache.All();
                 cblCampus.DataBind();
             }
@@ -396,7 +392,6 @@ namespace RockWeb.Blocks.Calendar
                 {
                     qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => audiences.Contains( c.DefinedValueId ) ) ).ToList();
                 }
-
                 // Filter by Status
                 if ( cbActive.Checked )
                 {
