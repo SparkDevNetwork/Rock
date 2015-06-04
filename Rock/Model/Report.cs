@@ -302,15 +302,22 @@ namespace Rock.Model
                         DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.Value.DataSelectComponentEntityType.Name );
                         if ( selectComponent != null )
                         {
-                            bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), selectComponent.GetExpression( reportDbContext, idExpression, reportField.Value.Selection ?? string.Empty ) ) );
-
-                            var customSortProperties = selectComponent.SortProperties( reportField.Value.Selection );
-                            if ( customSortProperties != null )
+                            try
                             {
-                                foreach ( var customSortProperty in customSortProperties.Split( ',' ) )
+                                bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), selectComponent.GetExpression( reportDbContext, idExpression, reportField.Value.Selection ?? string.Empty ) ) );
+
+                                var customSortProperties = selectComponent.SortProperties( reportField.Value.Selection );
+                                if ( customSortProperties != null )
                                 {
-                                    bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "sort_{0}_{1}", customSortProperty, reportField.Key ) ), Expression.Property( paramExpression, customSortProperty ) ) );
+                                    foreach ( var customSortProperty in customSortProperties.Split( ',' ) )
+                                    {
+                                        bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "sort_{0}_{1}", customSortProperty, reportField.Key ) ), Expression.Property( paramExpression, customSortProperty ) ) );
+                                    }
                                 }
+                            }
+                            catch ( Exception ex )
+                            {
+                                throw new Exception( string.Format( "Exception in {0}", selectComponent ), ex );
                             }
                         }
                     }
