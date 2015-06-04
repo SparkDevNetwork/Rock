@@ -230,6 +230,11 @@
                     <a id="PersonPicker"></a>
                     <div runat="server" class="r-example">
                         <Rock:PersonPicker ID="ppExample" runat="server" Label="Rock:PersonPicker" />
+                    </div>                    
+                    
+                    <a id="PersonAndBusinessPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:PersonPicker ID="ppBusinessExample" runat="server" Label="Rock:PersonPicker including businesses" IncludeBusinesses="true" />
                     </div>
 
                     <a id="AccountPicker"></a>
