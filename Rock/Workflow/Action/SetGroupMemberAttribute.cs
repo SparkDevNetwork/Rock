@@ -40,7 +40,7 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.GroupFieldType" })]
 
     [WorkflowAttribute("Person", "The attribute to set to the person in the group.", true, "", "", 1, null,
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" })]
+        new string[] { "Rock.Field.Types.PersonFieldType" })]
 
     [TextField("Group Member Attribute Key", "The attribute key to use for the group member attribute.", true, "", "", 2)]
 
