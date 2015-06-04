@@ -1,0 +1,14 @@
+.block-instance.transaction-entry {
+  margin-left: -2px;
+  margin-right: -2px;
+}
+body {
+  max-width: 768px;
+  margin-left: auto;
+  margin-right: auto;
+  overflow-x: hidden;
+}
+.actions {
+  margin-left: 15px;
+  margin-right: 15px;
+}

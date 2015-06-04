@@ -1,3 +1,50 @@
+
+
+//
+// MASTHEAD
+// --------------------------------------------------
+
+
+// Mobile Pages Masthead (mobile give, etc)
+// -------------------------
+
+.mobhead {
+  margin-bottom: @line-height-computed;
+  margin-left: -2px;
+  margin-right: -2px;
+  .text-aa();
+}
+  .mobhead-inner {
+    // .clearfix();
+    background: @brand-primary;
+    color: #fff;
+    overflow: hidden;
+  }
+    .mobhead .logo {
+      display: block;
+      float: left;
+      background: url(../assets/logo.svg) left center;
+      height: 50px;
+      width: 120px;
+      margin-left: -@grid-gutter-width;
+      // @media @xs {
+      //   width: 235px;
+      //   margin-left: -@grid-gutter-width/2;
+      // }
+    }
+    .mobhead-title {
+      margin-top: 0;
+      margin-bottom: 0;
+      float: right;
+      font-size: 20px;
+      line-height: 50px;
+      margin-right: @grid-gutter-width/2;
+    }
+
+
+// Main Masthead
+// -------------------------
+
 .masthead {
   margin-bottom: @grid-gutter-width;
   .din();

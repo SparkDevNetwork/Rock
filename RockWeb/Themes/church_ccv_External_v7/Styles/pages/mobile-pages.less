@@ -1,0 +1,41 @@
+
+
+//
+// MOBILE PAGES (mobile app giving, mobile site giving)
+// --------------------------------------------------
+
+
+// Imports
+// -------------------------
+@import "../../../../Styles/Bootstrap/variables.less";
+@import "../../../../Styles/Bootstrap/mixins.less";
+@import "../../../../Styles/_rock-variables.less";
+
+@import "../_variables";
+@import "../_mixins";
+
+@xs: ~"(min-width: @{screen-xs-min})";
+@sm: ~"(min-width: @{screen-sm-min})";
+@md: ~"(min-width: @{screen-md-min})";
+@lg: ~"(min-width: @{screen-lg-min})";
+
+
+// Custom
+// -------------------------
+
+.block-instance.transaction-entry {
+  margin-left: -2px;
+  margin-right: -2px;
+}
+
+body {
+  max-width: 768px;
+  margin-left: auto;
+  margin-right: auto;
+  overflow-x: hidden;
+}
+
+.actions {
+  margin-left: @grid-gutter-width/2;
+  margin-right: @grid-gutter-width/2;
+}
