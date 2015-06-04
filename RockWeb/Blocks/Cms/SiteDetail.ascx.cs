@@ -37,9 +37,9 @@ namespace RockWeb.Blocks.Cms
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName("Site Detail")]
-    [Category("CMS")]
-    [Description("Displays the details of a specific site.")]
+    [DisplayName( "Site Detail" )]
+    [Category( "CMS" )]
+    [Description( "Displays the details of a specific site." )]
     public partial class SiteDetail : RockBlock, IDetailBlock
     {
 
@@ -98,26 +98,63 @@ namespace RockWeb.Blocks.Cms
             ShowEditDetails( site );
         }
 
+
         /// <summary>
-        /// Handles the Click event of the btnDelete control.
+        /// Handles the Click event of the btnDeleteCancel control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnDelete_Click( object sender, EventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDeleteCancel_Click( object sender, EventArgs e )
+        {
+            btnDelete.Visible = true;
+            btnEdit.Visible = true;
+            pnlDeleteConfirm.Visible = false;
+        }
+
+
+        /// <summary>
+        /// Handles the Click event of the btnDeleteConfirm control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDeleteConfirm_Click( object sender, EventArgs e )
         {
             bool canDelete = false;
 
             var rockContext = new RockContext();
             SiteService siteService = new SiteService( rockContext );
             Site site = siteService.Get( int.Parse( hfSiteId.Value ) );
+            LayoutService layoutService = new LayoutService( rockContext );
+            PageService pageService = new PageService( rockContext );
+
             if ( site != null )
             {
+                var sitePages = new List<int> {
+                    site.DefaultPageId ?? -1,
+                    site.LoginPageId ?? -1,
+                    site.RegistrationPageId ?? -1, 
+                    site.PageNotFoundPageId ?? -1
+                };
+
+                var pageQry = pageService.Queryable( "Layout" )
+                    .Where( t =>
+                        t.Layout.SiteId == site.Id ||
+                        sitePages.Contains( t.Id ) );
+
+                pageService.DeleteRange( pageQry );
+
+                var layoutQry = layoutService.Queryable()
+                    .Where( l =>
+                        l.SiteId == site.Id );
+                layoutService.DeleteRange( layoutQry );
+                rockContext.SaveChanges( true );
+
                 string errorMessage;
                 canDelete = siteService.CanDelete( site, out errorMessage, includeSecondLvl: true );
                 if ( !canDelete )
                 {
                     mdDeleteWarning.Show( errorMessage, ModalAlertType.Alert );
-                    return; 
+                    return;
                 }
 
                 siteService.Delete( site );
@@ -128,6 +165,17 @@ namespace RockWeb.Blocks.Cms
             }
 
             NavigateToParentPage();
+        }
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            btnDelete.Visible = false;
+            btnEdit.Visible = false;
+            pnlDeleteConfirm.Visible = true;
         }
 
         /// <summary>
@@ -289,7 +337,7 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 // Cancelling on edit, return to details
-                var site = new SiteService(new RockContext()).Get( int.Parse( hfSiteId.Value ) );
+                var site = new SiteService( new RockContext() ).Get( int.Parse( hfSiteId.Value ) );
                 ShowReadonlyDetails( site );
             }
         }
@@ -304,7 +352,7 @@ namespace RockWeb.Blocks.Cms
         private void LoadDropDowns()
         {
             ddlTheme.Items.Clear();
-            DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( ResolveRockUrl("~~") ) );
+            DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( ResolveRockUrl( "~~" ) ) );
             foreach ( var themeDir in di.Parent.EnumerateDirectories().OrderBy( a => a.Name ) )
             {
                 ddlTheme.Items.Add( new ListItem( themeDir.Name, themeDir.Name ) );
@@ -326,7 +374,7 @@ namespace RockWeb.Blocks.Cms
                 site = new SiteService( new RockContext() ).Get( siteId );
             }
 
-            if (site == null)
+            if ( site == null )
             {
                 site = new Site { Id = 0 };
                 site.SiteDomains = new List<SiteDomain>();
@@ -381,7 +429,7 @@ namespace RockWeb.Blocks.Cms
             if ( site.Id == 0 )
             {
                 nbDefaultPageNotice.Visible = true;
-                lReadOnlyTitle.Text = ActionTitle.Add(Rock.Model.Site.FriendlyTypeName).FormatAsHtmlTitle();
+                lReadOnlyTitle.Text = ActionTitle.Add( Rock.Model.Site.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
@@ -438,13 +486,13 @@ namespace RockWeb.Blocks.Cms
                 ppRegistrationPage.SetValue( site.RegistrationPage );
             }
 
-            if (site.PageNotFoundPageRoute != null)
+            if ( site.PageNotFoundPageRoute != null )
             {
-                ppPageNotFoundPage.SetValue(site.PageNotFoundPageRoute);
+                ppPageNotFoundPage.SetValue( site.PageNotFoundPageRoute );
             }
             else
             {
-                ppPageNotFoundPage.SetValue(site.PageNotFoundPage);
+                ppPageNotFoundPage.SetValue( site.PageNotFoundPage );
             }
 
             tbErrorPage.Text = site.ErrorPage;
@@ -469,7 +517,7 @@ namespace RockWeb.Blocks.Cms
             lSiteDescription.Text = site.Description;
 
             DescriptionList descriptionList = new DescriptionList();
-            descriptionList.Add( "Domain(s)", site.SiteDomains.Select( d=> d.Domain ).ToList().AsDelimited(", "));
+            descriptionList.Add( "Domain(s)", site.SiteDomains.Select( d => d.Domain ).ToList().AsDelimited( ", " ) );
             descriptionList.Add( "Theme", site.Theme );
             descriptionList.Add( "Default Page", site.DefaultPageRoute );
             lblMainDetails.Text = descriptionList.Html;
