@@ -1,0 +1,120 @@
+﻿
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_kiosk-core.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_print.less";
+
+@import "_din";
+
+.din-regular();
+.din-bold();
+.din-black();
+
+// Custom
+// -------------------------
+
+body {
+  display: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6,
+.btn {
+  text-transform: uppercase;
+  font-weight: 900;
+}
+
+.btn {
+  border: none;
+}
+
+@ccv-btn-color: #fff;
+
+.btn-default {
+  background: @gray-dark;
+  // border: 3px solid @ccv-btn-color;
+  color: @ccv-btn-color;
+  &:hover,
+  &:active {
+    color: lighten(@ccv-btn-color, 100%);
+    background: lighten(@body-bg, 20%);
+  }
+}
+
+.btn-kiosk-lg {
+  border-radius: @border-radius-large;
+}
+
+.input-group-addon {
+  font-weight: 900;
+}
+
+header.main {
+  overflow: hidden;
+  // +5px is to compensate for line height of h1 - want the logo to match
+  margin: @grid-gutter-width+5px 0 @grid-gutter-width/2;
+}
+.logo {
+  display: block;
+  float: left;
+  background: url(../assets/logo.svg) no-repeat left center;
+  background-size: 100%;
+  height: 100px;
+  width: 470px;
+  margin-left: -@grid-gutter-width;
+  @media @sm {
+    margin-left: -@grid-gutter-width/2;
+  }
+}
+
+.campus-context-setter---device {
+  margin-left: @grid-gutter-width/2;
+  margin-bottom: @grid-gutter-width;
+  @media @sm {
+    margin-left: @grid-gutter-width;
+  }
+}
+
+main {
+  display: block;
+}
+
+.input-group.input-width-md {
+  width: 100%;
+}
+
+header {
+  .clearfix(); /* needed to ensure correct height calculation in jQuery for scroll panel */
+}
+
+footer {
+  .clearfix(); /* needed to ensure correct height calculation in jQuery for scroll panel */
+  position: absolute;
+  bottom: 0;
+  margin-bottom: 24px;
+}
+
+.form-control {
+  font-size: 32px;
+  height: 64px;
+  font-weight: @font-weight-bold;
+}
+
+.swipe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: 0 auto;
+  margin-top: -196px;
+  margin-left: -230px;
+  text-align: center;
+}
+
+.swipe-cards {
+  font-size: 24px;
+  margin-bottom: 24px;
+}

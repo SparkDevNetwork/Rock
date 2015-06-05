@@ -1,0 +1,50 @@
+<div class="alert alert-success">
+
+	{% if GaveAnonymous == 'False' %}
+		<strong>
+      {{ FirstNames }}, thank you for your contribution.
+
+      {% if {{ReceiptEmailed == 'True'}} %}
+      A receipt has been emailed to {{ ReceiptEmail | ObfuscateEmail }}.
+      {% endif %}
+
+      {% else %}
+      Thank you for your contribution.
+      {% endif %}
+    </strong>
+</div>
+
+<div class="panel panel-default">
+	<div class="panel-body">
+		<h4>Gift Details</h4>
+    
+    <p>
+      <strong>Confirmation Number:</strong> {{ TransactionCode }}
+    </p>
+		<table class="table">
+      <thead>
+        <tr>
+				  <th>Account</th>
+				  <th>Amount</th>
+			  </tr>
+      </thead>
+
+      <tbody>
+			{% for amount in Amounts %}
+				<tr>
+					<td>{{ amount.AccountName }}</td>
+					<td>{{ 'Global' | Attribute:'CurrencySymbol' }} {{ amount.Amount }}</td>
+				</tr>
+			{% endfor %}
+      </tbody>
+
+      <tfoot>
+			  <tr>
+				  <td></td>
+				  <td style="border-top: 1px solid #000">{{ 'Global' | Attribute:'CurrencySymbol' }} {{ TotalAmount }}</td>
+			  </tr>
+      </tfoot>
+
+		</table>
+	</div>
+</div>
