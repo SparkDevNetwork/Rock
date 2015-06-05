@@ -124,14 +124,16 @@ namespace Rock.Model
                     if ( gateway.ReactivateScheduledPayment( scheduledTransaction, out errorMessages ) )
                     {
                         var noteTypeService = new NoteTypeService( (RockContext)this.Context );
-                        var noteType = noteTypeService.Get( scheduledTransaction.TypeId, "Note" );
-
-                        var noteService = new NoteService( (RockContext)this.Context );
-                        var note = new Note();
-                        note.NoteTypeId = noteType.Id;
-                        note.EntityId = scheduledTransaction.Id;
-                        note.Caption = "Reactivated Transaction";
-                        noteService.Add( note );
+                        var noteType = noteTypeService.Get( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
+                        if ( noteType != null )
+                        {
+                            var noteService = new NoteService( (RockContext)this.Context );
+                            var note = new Note();
+                            note.NoteTypeId = noteType.Id;
+                            note.EntityId = scheduledTransaction.Id;
+                            note.Caption = "Reactivated Transaction";
+                            noteService.Add( note );
+                        }
 
                         return true;
                     }
@@ -169,14 +171,16 @@ namespace Rock.Model
                     if ( gateway.CancelScheduledPayment( scheduledTransaction, out errorMessages ) )
                     {
                         var noteTypeService = new NoteTypeService( (RockContext)this.Context );
-                        var noteType = noteTypeService.Get( scheduledTransaction.TypeId, "Note" );
-
-                        var noteService = new NoteService( (RockContext)this.Context );
-                        var note = new Note();
-                        note.NoteTypeId = noteType.Id;
-                        note.EntityId = scheduledTransaction.Id;
-                        note.Caption = "Cancelled Transaction";
-                        noteService.Add( note );
+                        var noteType = noteTypeService.Get( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
+                        if ( noteType != null )
+                        {
+                            var noteService = new NoteService( (RockContext)this.Context );
+                            var note = new Note();
+                            note.NoteTypeId = noteType.Id;
+                            note.EntityId = scheduledTransaction.Id;
+                            note.Caption = "Cancelled Transaction";
+                            noteService.Add( note );
+                        }
 
                         return true;
                     }

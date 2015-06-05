@@ -53,7 +53,7 @@ namespace Rock.Reporting.DataFilter
         {
             string selectedEntityField = ddlEntityField.SelectedValue;
 
-            writer.AddAttribute( "class", "row js-filter-row" );
+            writer.AddAttribute( "class", "row js-filter-row filter-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             bool entityFieldPickerIsHidden = ddlEntityField.Style[HtmlTextWriterStyle.Display] == "none";
@@ -68,10 +68,19 @@ namespace Rock.Reporting.DataFilter
             }
             else if ( ddlEntityField.SelectedItem != null )
             {
-                writer.AddAttribute( "class", "data-view-filter-field-label" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( ddlEntityField.SelectedItem.Text );
-                writer.RenderEndTag();
+                if ( filterControl.ShowCheckbox )
+                {
+                    // special case when a filter is a entity field filter: render the checkbox here instead of in FilterField.cs
+                    filterControl.cbIncludeFilter.Text = ddlEntityField.SelectedItem.Text;
+                    filterControl.cbIncludeFilter.RenderControl( writer );
+                }
+                else
+                {
+                    writer.AddAttribute( "class", "data-view-filter-field-label" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                    writer.Write( ddlEntityField.SelectedItem.Text );
+                    writer.RenderEndTag();
+                }
             }
             writer.RenderEndTag();
 
@@ -149,16 +158,6 @@ namespace Rock.Reporting.DataFilter
             string script = string.Format( scriptFormat, entityType.Name, sb.ToString() );
             ScriptManager.RegisterStartupScript( filterControl, typeof( FilterField ), entityType.Name + "-property-selection", script, true );
 
-            script = @"
-    $('select.entity-property-selection').change(function(){
-        var $parentRow = $(this).closest('.js-filter-row');
-        $parentRow.find('div.field-criteria').hide();
-        $parentRow.find('div.field-criteria').eq($(this).find(':selected').index()).show();
-    });";
-
-            // only need this script once per page
-            ScriptManager.RegisterStartupScript( filterControl.Page, filterControl.Page.GetType(), "entity-property-selection-change-script", script, true );
-
             RegisterFilterCompareChangeScript( filterControl );
         }
 
@@ -188,7 +187,6 @@ namespace Rock.Reporting.DataFilter
                             entityField.FieldType.Field.SetFilterValues( control, entityField.FieldConfig, FixDelimination( values.Skip( 1 ).ToList() ) );
                         }
                     }
-
                 }
             }
         }

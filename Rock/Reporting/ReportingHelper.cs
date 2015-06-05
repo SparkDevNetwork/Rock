@@ -298,7 +298,7 @@ namespace Rock.Reporting
 
                 if ( errors.Any() )
                 {
-                    errorMessage = "INFO: There was a problem with one or more of the report's data components...<br/><br/> " + errors.AsDelimited( "<br/>" );
+                    errorMessage = "WARNING: There was a problem with one or more of the report's data components...<br/><br/> " + errors.AsDelimited( "<br/>" );
                 }
             }
         }
@@ -385,6 +385,15 @@ namespace Rock.Reporting
             }
 
             return filter;
+        }
+
+        /// <summary>
+        /// Registers the javascript include needed for reporting client controls
+        /// </summary>
+        /// <param name="rockBlock">The rock block.</param>
+        public static void RegisterJavascriptInclude( FilterField filterField )
+        {
+            ScriptManager.RegisterClientScriptInclude( filterField, filterField.GetType(), "reporting-include", filterField.RockBlock().RockPage.ResolveRockUrl( "~/Scripts/Rock/reportingInclude.js", true ) );
         }
     }
 }
