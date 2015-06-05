@@ -33,7 +33,7 @@ namespace RockWeb.Blocks.CheckIn
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName( "Scedule Builder" )]
+    [DisplayName( "Schedule Builder" )]
     [Category( "Check-in" )]
     [Description( "Helps to build schedules to be used for checkin." )]
     public partial class CheckinScheduleBuilder : RockBlock
