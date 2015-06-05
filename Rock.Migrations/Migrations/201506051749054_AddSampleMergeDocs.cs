@@ -33,6 +33,11 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateCategory("CD1DB988-6891-4B0F-8D1B-B0A311A3BC3E", "Samples", "fa fa-file-text-o", "Sample merge documents.", "CAA86576-901B-C4A6-4F62-70EB0A2B32A8", 0);
             Sql(RockMigration.MigrationSQL._201506051749054_AddSampleMergeDocs);
 
+
+            // make the self-service kiosk non-system
+            Sql(@"UPDATE [Site] 
+	SET [IsSystem] = 0
+	WHERE [Guid] = '05E96F7B-B75E-4987-825A-B6F51F8D9CAA'");
         }
         
         /// <summary>
