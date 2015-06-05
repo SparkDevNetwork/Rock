@@ -121,4 +121,7 @@
   <data name="_201311251734059_CreateDatabase_PopulateData" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Version 0.0 (Pre Beta)\Version 0.0.2\201311251734059_CreateDatabase_PopulateData.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201506051749054_AddSampleMergeDocs" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506051749054_AddSampleMergeDocs.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>
