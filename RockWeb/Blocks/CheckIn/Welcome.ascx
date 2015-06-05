@@ -154,9 +154,9 @@
                             <ItemTemplate>
                                 <div class="controls">
                                     <div class="btn-group">
-                                        <asp:LinkButton runat="server" ID="lbOpen" CssClass="btn btn-default btn-lg btn-success" Text="Open" />
-                                        <asp:LinkButton runat="server" ID="lbClose" CssClass="btn btn-default btn-lg " Text="Close" />
-
+                                        <asp:LinkButton runat="server" ID="lbOpen" CssClass="btn btn-default btn-lg btn-success" Text="Open" CommandName="Open" CommandArgument='<%# DataBinder.Eval(Container.DataItem, "LocationId") %>'/>
+                                        <asp:LinkButton runat="server" ID="lbClose" CssClass="btn btn-default btn-lg" Text="Close" CommandName="Close" CommandArgument='<%# DataBinder.Eval(Container.DataItem, "LocationId") %>'/>
+                                        
                                     </div>
                                     <label class="checkin-manager-location-label">
                                         <asp:Literal ID="lLocationName" runat="server" />

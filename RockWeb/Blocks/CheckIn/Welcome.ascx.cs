@@ -361,8 +361,8 @@ if ($ActiveWhen.text() != '')
             var rockContext = new RockContext();
             if ( this.CurrentKioskId.HasValue )
             {
-                var qry = new LocationService( rockContext ).GetByDevice( this.CurrentKioskId.Value );
-                var selectQry = qry.Select( a => new
+                var kioskLocations = this.Locations.Select( a => a.Location );
+                var selectQry = kioskLocations.Select( a => new
                 {
                     LocationId = a.Id,
                     Name = a.Name,
@@ -381,7 +381,34 @@ if ($ActiveWhen.text() != '')
         /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rLocations_ItemCommand( object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e )
         {
-            //TODO
+            int? locationId = ( e.CommandArgument as string ).AsIntegerOrNull();
+
+            if ( locationId.HasValue )
+            {
+                var rockContext = new RockContext();
+                var location = new LocationService( rockContext ).Get( locationId.Value );
+                if ( location != null )
+                {
+                    if ( e.CommandName == "Open" && !location.IsActive )
+                    {
+                        location.IsActive = true;
+                        rockContext.SaveChanges();
+                    }
+                    else if ( e.CommandName == "Close" && location.IsActive )
+                    {
+                        location.IsActive = false;
+                        rockContext.SaveChanges();
+                    }
+
+                    // update the IsActive of the cached location for the current kiosk
+                    foreach (var cachedLocation in this.Locations.Where( a => a.Location.Id == location.Id ))
+                    {
+                        cachedLocation.Location.IsActive = location.IsActive;
+                    }
+                }
+
+                BindManagerLocationsGrid();
+            }
         }
 
         /// <summary>
@@ -419,7 +446,7 @@ if ($ActiveWhen.text() != '')
                 lLocationCount.Text = KioskLocationAttendance.Read( (int)locationDataItem.GetPropertyValue( "LocationId" ) ).CurrentCount.ToString();
             }
         }
-       
+
         /// <summary>
         /// Handles the Click event of the lbCancel control.
         /// </summary>

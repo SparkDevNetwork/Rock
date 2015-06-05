@@ -111,6 +111,17 @@ namespace Rock.CheckIn
             return FilteredGroupTypes( configuredGroupTypes ).SelectMany( t => t.KioskGroups ).Any( g => g.KioskLocations.Any( l => l.Location.IsActive ) );
         }
 
+        /// <summary>
+        /// returns the locations for this Kiosk for the configured group types
+        /// </summary>
+        /// <param name="configuredGroupTypes">The configured group types.</param>
+        /// <returns></returns>
+        public IEnumerable<KioskLocation> Locations( List<int> configuredGroupTypes )
+        {
+            var result = FilteredGroupTypes( configuredGroupTypes ).SelectMany( t => t.KioskGroups ).SelectMany( g => g.KioskLocations );
+            return result;
+        }
+
         #region Static Methods
 
         /// <summary>
