@@ -98,6 +98,20 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Returns the locations for this Kiosk for the configured group types
+        /// </summary>
+        /// <value>
+        /// The locations.
+        /// </value>
+        protected IEnumerable<KioskLocation> Locations
+        {
+            get
+            {
+                return CurrentCheckInState.Kiosk.Locations( CurrentGroupTypeIds );
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether page was navigated to by user selecting Back.
         /// </summary>
         /// <value>
