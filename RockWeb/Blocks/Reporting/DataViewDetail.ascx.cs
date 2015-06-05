@@ -494,7 +494,15 @@ $(document).ready(function() {
 
             if ( dataView.DataViewFilter != null && dataView.EntityTypeId.HasValue )
             {
-                descriptionListFilters.Add( "Filter", dataView.DataViewFilter.ToString( EntityTypeCache.Read( dataView.EntityTypeId.Value ).GetEntityType() ) );
+                var entityTypeCache = EntityTypeCache.Read( dataView.EntityTypeId.Value );
+                if ( entityTypeCache != null )
+                {
+                    var entityTypeType = entityTypeCache.GetEntityType();
+                    if ( entityTypeType != null )
+                    {
+                        descriptionListFilters.Add( "Filter", dataView.DataViewFilter.ToString( entityTypeType ) );
+                    }
+                }
             }
 
             lFilters.Text = descriptionListFilters.Html;
@@ -527,7 +535,11 @@ $(document).ready(function() {
 
                 if ( dataView.EntityTypeId.HasValue )
                 {
-                    gReport.RowItemText = EntityTypeCache.Read( dataView.EntityTypeId.Value, rockContext ).FriendlyName;
+                    var entityTypeCache = EntityTypeCache.Read( dataView.EntityTypeId.Value, rockContext );
+                    if (entityTypeCache != null)
+                    {
+                        gReport.RowItemText = entityTypeCache.FriendlyName;
+                    }
                 }
 
                 gReport.Visible = true;

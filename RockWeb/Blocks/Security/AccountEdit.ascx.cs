@@ -119,6 +119,9 @@ namespace RockWeb.Blocks.Security
                     History.EvaluateChange( changes, "First Name", person.FirstName, tbFirstName.Text );
                     person.FirstName = tbFirstName.Text;
 
+                    History.EvaluateChange(changes, "Nick Name", person.NickName, tbNickName.Text);
+                    person.NickName = tbNickName.Text;
+
                     History.EvaluateChange( changes, "Last Name", person.LastName, tbLastName.Text );
                     person.LastName = tbLastName.Text;
 
@@ -298,6 +301,7 @@ namespace RockWeb.Blocks.Security
                 imgPhoto.NoPictureUrl = Person.GetPhotoUrl( null, person.Age, person.Gender );
                 ddlTitle.SelectedValue = person.TitleValueId.HasValue ? person.TitleValueId.Value.ToString() : string.Empty;
                 tbFirstName.Text = person.FirstName;
+                tbNickName.Text = person.NickName;
                 tbLastName.Text = person.LastName;
                 ddlSuffix.SelectedValue = person.SuffixValueId.HasValue ? person.SuffixValueId.Value.ToString() : string.Empty;
                 bpBirthDay.SelectedDate = person.BirthDate;

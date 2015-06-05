@@ -37,7 +37,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Person Note Add" )]
 
     [WorkflowAttribute("Person", "Workflow attribute that contains the person to add the note to.", true, "", "", 0, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [DefinedValueField("504BE755-2919-4738-952F-3EDF8B0F561A", "Source Type", "The note source type to use. If none is provided the default will be used.", false, false, "", "", 1)]
+    [NoteTypeField("Note Type", "The type of note to add.", false, "Rock.Model.Person", "", "", true, Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE, "", 1 )]
     [TextField( "Caption", "The title/caption of the note. If none is provided then the author's name will be displayed. <span class='tip tip-lava'></span>", false, "", "", 2 )]
     [MemoField("Text", "The body of the note. <span class='tip tip-lava'></span>", true, "", "", 3)]
     [WorkflowAttribute("Author", "Workflow attribute that contains the person to use as the author of the note. While not required it is recommended.", false, "", "", 4, null, new string[] { "Rock.Field.Types.PersonFieldType" })]
@@ -61,16 +61,19 @@ namespace Rock.Workflow.Action
             {
                 var mergeFields = GetMergeFields(action);
                 
-                var timeLineNoteType = new NoteTypeService(rockContext).Get(Rock.SystemGuid.NoteType.PERSON_TIMELINE.AsGuid());
                 NoteService noteService = new NoteService(rockContext);
 
                 Note note = new Note();
-                note.NoteType = timeLineNoteType;
                 note.EntityId = person.Id;
-                note.SourceTypeValueId = DefinedValueCache.Read(GetAttributeValue(action, "SourceType")).Id;
                 note.Caption = GetAttributeValue( action, "Caption" ).ResolveMergeFields(mergeFields);
                 note.IsAlert = GetAttributeValue(action, "Alert").AsBoolean();
                 note.Text = GetAttributeValue(action, "Text").ResolveMergeFields(mergeFields); ;
+
+                var noteType = NoteTypeCache.Read( GetAttributeValue( action, "NoteType" ).AsGuid() );
+                if ( noteType != null )
+                {
+                    note.NoteTypeId = noteType.Id;
+                }
 
                 // get author
                 var author = GetPersonAliasFromActionAttribute("Author", rockContext, action, errorMessages);

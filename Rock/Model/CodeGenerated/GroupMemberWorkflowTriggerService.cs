@@ -92,6 +92,7 @@ namespace Rock.Model
             target.GroupTypeId = source.GroupTypeId;
             target.IsActive = source.IsActive;
             target.Name = source.Name;
+            target.Order = source.Order;
             target.TriggerType = source.TriggerType;
             target.TypeQualifier = source.TypeQualifier;
             target.WorkflowName = source.WorkflowName;

@@ -76,9 +76,16 @@ namespace Rock.Reporting
 
                     EntityField entityField = new EntityField( property.Name, FieldKind.Property, property );
                     entityField.IsPreviewable = property.GetCustomAttributes( typeof( PreviewableAttribute ), true ).Any();
+                    var fieldTypeAttribute = property.GetCustomAttribute<Rock.Data.FieldTypeAttribute>();
+
+                    // check if we can set it from the fieldTypeAttribute
+                    if ( ( fieldTypeAttribute != null ) && SetEntityFieldFromFieldTypeAttribute( entityField, fieldTypeAttribute ) )
+                    {
+                        // intentially blank, entity field is already setup
+                    }
 
                     // Enum Properties
-                    if ( property.PropertyType.IsEnum )
+                    else if ( property.PropertyType.IsEnum )
                     {
                         entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.SINGLE_SELECT.AsGuid() );
 
@@ -130,7 +137,7 @@ namespace Rock.Reporting
                     {
                         entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.INTEGER.AsGuid() );
 
-                        var definedValueAttribute = property.GetCustomAttributes( typeof( Rock.Data.DefinedValueAttribute ), true ).FirstOrDefault();
+                        var definedValueAttribute = property.GetCustomAttribute<Rock.Data.DefinedValueAttribute>();
                         if ( definedValueAttribute != null )
                         {
                             // Defined Value Properties
@@ -205,6 +212,40 @@ namespace Rock.Reporting
         }
 
         /// <summary>
+        /// Sets the entity field from field type attribute.
+        /// </summary>
+        /// <param name="entityField">The entity field.</param>
+        /// <param name="fieldTypeAttribute">The field type attribute.</param>
+        /// <returns></returns>
+        private static bool SetEntityFieldFromFieldTypeAttribute( EntityField entityField, FieldTypeAttribute fieldTypeAttribute )
+        {
+            if ( fieldTypeAttribute != null )
+            {
+                var fieldTypeCache = FieldTypeCache.Read( fieldTypeAttribute.FieldTypeGuid );
+                if ( fieldTypeCache != null && fieldTypeCache.Field != null )
+                {
+                    if ( fieldTypeCache.Field.HasFilterControl() )
+                    {
+                        if ( entityField.Title.EndsWith( " Id" ) )
+                        {
+                            entityField.Title = entityField.Title.ReplaceLastOccurrence( " Id", string.Empty );
+                        }
+
+                        entityField.FieldType = fieldTypeCache;
+                        if ( fieldTypeAttribute.ConfigurationKey != null && fieldTypeAttribute.ConfigurationValue != null )
+                        {
+                            entityField.FieldConfig.Add( fieldTypeAttribute.ConfigurationKey, new ConfigurationValue( fieldTypeAttribute.ConfigurationValue ) );
+                        }
+
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Adds the entity field for attribute.
         /// </summary>
         /// <param name="entityFields">The entity fields.</param>
@@ -224,7 +265,7 @@ namespace Rock.Reporting
 
             // Make sure that the attributes field type actually renders a filter control if limitToFilterableAttributes
             var fieldType = FieldTypeCache.Read( attribute.FieldTypeId );
-            if ( fieldType != null && ( !limitToFilterableAttributes || fieldType.Field.FilterControl( attribute.QualifierValues, propName, true ) != null ) )
+            if ( fieldType != null && ( !limitToFilterableAttributes || fieldType.Field.HasFilterControl() ) )
             {
                 var entityField = new EntityField( propName, FieldKind.Attribute, typeof( string ), attribute.Guid, fieldType );
                 entityField.Title = attribute.Name.SplitCase();

@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( EventItemCampus item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<EventItemSchedule>( Context ).Queryable().Any( a => a.EventItemCampusId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EventItemCampus.FriendlyTypeName, EventItemSchedule.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

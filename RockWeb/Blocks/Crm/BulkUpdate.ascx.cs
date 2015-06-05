@@ -997,8 +997,7 @@ namespace RockWeb.Blocks.Crm
                     bool isAlert = cbIsAlert.Checked;
                     bool isPrivate = cbIsPrivate.Checked;
 
-                    var noteTypeService = new NoteTypeService( rockContext );
-                    var noteType = noteTypeService.Get( Rock.SystemGuid.NoteType.PERSON_TIMELINE.AsGuid() );
+                    var noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE.AsGuid() );
                     if ( noteType != null )
                     {
                         var notes = new List<Note>();
@@ -1012,7 +1011,7 @@ namespace RockWeb.Blocks.Crm
                             note.Caption = isPrivate ? "You - Personal Note" : string.Empty;
                             note.Text = tbNote.Text;
                             note.IsAlert = cbIsAlert.Checked;
-                            note.NoteType = noteType;
+                            note.NoteTypeId = noteType.Id;
                             notes.Add( note );
                             noteService.Add( note );
                         }

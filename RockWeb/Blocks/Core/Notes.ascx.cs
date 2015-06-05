@@ -19,11 +19,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -37,7 +37,6 @@ namespace RockWeb.Blocks.Core
     [Description( "Context aware block for adding notes to an entity." )]
 
     [ContextAware]
-    [TextField( "Note Type", "The note type name associated with the context entity to use (If it doesn't exist it will be created).", false, "Notes", "", 0 )]
     [TextField( "Heading", "The text to display as the heading.  If left blank, the Note Type name will be used.", false, "", "", 1 )]
     [TextField( "Heading Icon CSS Class", "The css class name to use for the heading icon. ", false, "fa fa-calendar", "", 2, "HeadingIcon" )]
     [TextField( "Note Term", "The term to use for note (i.e. 'Note', 'Comment').", false, "Note", "", 3 )]
@@ -71,16 +70,11 @@ namespace RockWeb.Blocks.Core
 
                 using ( var rockContext = new RockContext() )
                 {
-                    var service = new NoteTypeService( rockContext );
-                    var noteType = service.Get( contextEntity.TypeId, noteTypeName );
+                    var noteTypes = NoteTypeCache.GetByEntity( contextEntity.TypeId, string.Empty, string.Empty );
 
-                    notesTimeline.NoteTypeId = noteType.Id;
                     notesTimeline.EntityId = contextEntity.Id;
+                    notesTimeline.NoteTypes = noteTypes;
                     notesTimeline.Title = GetAttributeValue( "Heading" );
-                    if ( string.IsNullOrWhiteSpace( notesTimeline.Title ) )
-                    {
-                        notesTimeline.Title = noteType.Name;
-                    }
                     notesTimeline.TitleIconCssClass = GetAttributeValue( "HeadingIcon" );
                     notesTimeline.Term = GetAttributeValue( "NoteTerm" );
                     notesTimeline.DisplayType = GetAttributeValue( "DisplayType" ) == "Light" ? NoteDisplayType.Light : NoteDisplayType.Full;

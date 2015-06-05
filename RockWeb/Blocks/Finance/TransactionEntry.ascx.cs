@@ -1539,17 +1539,17 @@ namespace RockWeb.Blocks.Finance
                         rockContext.SaveChanges();
 
                         // Add a note about the change
-                        var noteTypeService = new NoteTypeService( rockContext );
-                        var noteType = noteTypeService.Get( scheduledTransaction.TypeId, "Note" );
-
-                        var noteService = new NoteService( rockContext );
-                        var note = new Note();
-                        note.NoteTypeId = noteType.Id;
-                        note.EntityId = scheduledTransaction.Id;
-                        note.Caption = "Created Transaction";
-                        note.Text = changeSummary.ToString();
-                        noteService.Add( note );
-
+                        var noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
+                        if ( noteType != null )
+                        {
+                            var noteService = new NoteService( rockContext );
+                            var note = new Note();
+                            note.NoteTypeId = noteType.Id;
+                            note.EntityId = scheduledTransaction.Id;
+                            note.Caption = "Created Transaction";
+                            note.Text = changeSummary.ToString();
+                            noteService.Add( note );
+                        }
                         rockContext.SaveChanges();
 
                         ScheduleId = scheduledTransaction.GatewayScheduleId;

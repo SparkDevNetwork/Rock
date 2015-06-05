@@ -442,7 +442,7 @@ namespace Rock.Web.UI.Controls
             {
 
                 writer.AddAttribute(HtmlTextWriterAttribute.Id, this.ClientID );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-control-group js-datetime-picker-container" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-control-group js-datetime-picker-container " + this.CssClass );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 if ( IsCurrentTimeOffset )
