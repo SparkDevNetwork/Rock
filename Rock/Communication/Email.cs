@@ -17,10 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Web;
-
 using Humanizer;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -98,7 +97,8 @@ namespace Rock.Communication
             }
         }
 
-        public static void Send(string fromEmail, string subject, List<string> recipients, string message, string appRoot = "", string themeRoot = "")
+
+        public static void Send(string fromEmail, string subject, List<string> recipients, string message, string appRoot = "", string themeRoot = "", List<Attachment> attachments = null)
         {
             try
             {
@@ -115,7 +115,7 @@ namespace Rock.Communication
                             {
                                 try
                                 {
-                                    transport.Send(recipients, fromEmail, subject, message, appRoot, themeRoot);
+                                    transport.Send(recipients, fromEmail, subject, message, appRoot, themeRoot, attachments);
                                 }
                                 catch ( Exception ex1 )
                                 {
