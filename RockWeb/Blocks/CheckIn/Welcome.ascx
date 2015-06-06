@@ -127,7 +127,7 @@
         <%-- Panel for active checkin --%>
         <asp:Panel ID="pnlActive" runat="server">
 
-            <asp:LinkButton runat="server" ID="btnManager" CssClass="btn-checkin-configuration" OnClick="btnManager_Click"><i class="fa fa-cog fa-4x"></i></asp:LinkButton>
+            
 
             <div class="checkin-body">
                 <div class="checkin-scroll-panel">
@@ -140,6 +140,8 @@
             </div>
 
         </asp:Panel>
+
+        <asp:LinkButton runat="server" ID="btnManager" CssClass="btn-checkin-configuration" OnClick="btnManager_Click"><i class="fa fa-cog fa-4x"></i></asp:LinkButton>
 
         <%-- Panel for checkin manager --%>
         <asp:Panel ID="pnlManager" runat="server" Visible="false">
@@ -179,8 +181,6 @@
                 <asp:LinkButton ID="btnOverride" runat="server" CssClass="btn btn-default btn-large btn-block btn-checkin-select" Text="Override" OnClick="btnOverride_Click" />
                 <asp:LinkButton ID="btnScheduleLocations" runat="server" CssClass="btn btn-default btn-large btn-block btn-checkin-select" Text="Schedule Locations" OnClick="btnScheduleLocations_Click" />
                 <asp:LinkButton ID="btnBack" runat="server" CssClass="btn btn-default btn-large btn-block btn-checkin-select" Text="Back" OnClick="btnBack_Click" />
-            </div>
-
             </div>
 
         </asp:Panel>

@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Welcome screen for check-in." )]
     [LinkedPage( "Family Select Page" )]
+    [LinkedPage( "Scheduled Locations Page" )]
     [IntegerField( "Refresh Interval", "How often (seconds) should page automatically query server for new Check-in data", false, 10 )]
     [BooleanField( "Enable Override", "Allows the override link to be used on the configuration page.", true )]
     [BooleanField( "Enable Manager", "Allows the manager link to be placed on the page.", true )]
@@ -205,6 +206,7 @@ if ($ActiveWhen.text() != '')
             pnlActive.Visible = false;
             pnlManagerLogin.Visible = false;
             pnlManager.Visible = false;
+            btnManager.Visible = true;
 
             lblActiveWhen.Text = string.Empty;
 
@@ -296,7 +298,7 @@ if ($ActiveWhen.text() != '')
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnScheduleLocations_Click( object sender, EventArgs e )
         {
-            //TODO
+            NavigateToLinkedPage( "ScheduledLocationsPage" );
         }
 
         /// <summary>
@@ -350,6 +352,7 @@ if ($ActiveWhen.text() != '')
         {
             pnlManagerLogin.Visible = false;
             pnlManager.Visible = true;
+            btnManager.Visible = false;
             BindManagerLocationsGrid();
         }
 
