@@ -42,10 +42,10 @@
                         </Rock:RockControlWrapper>
 
                         <Rock:NumberRangeEditor ID="nreAmount" runat="server" NumberType="Currency" Label="Total Amount" />
+                        <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by DataView" AutoPostBack="true" OnSelectedIndexChanged="dvpDataView_SelectedIndexChanged" />
                         <Rock:RockCheckBoxList ID="cblCurrencyTypes" runat="server" Label="Currency Types" RepeatDirection="Vertical" />
                         <Rock:RockCheckBoxList ID="cblTransactionSource" runat="server" Label="Transaction Source" RepeatDirection="Vertical" />
-                        <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Account Campus" RepeatDirection="Vertical" />
-                        <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by DataView" AutoPostBack="true" OnSelectedIndexChanged="dvpDataView_SelectedIndexChanged" />
+                        <asp:PlaceHolder ID="phAccounts" runat="server" />
 
                     </div>
                     <div class="col-md-9">
@@ -182,7 +182,7 @@
                             <Rock:Grid ID="gGiversGifts" runat="server" AllowSorting="true" RowItemText="Attendee" ExportGridAsWYSIWYG="true">
                                 <Columns>
                                     <Rock:SelectField />
-                                    <Rock:PersonField DataField="Person" HeaderText="Name" SortExpression="Person.LastName, Person.NickName" />
+                                    <Rock:RockBoundField DataField="PersonName" HeaderText="Name" SortExpression="PersonName" />
                                     <Rock:CurrencyField DataField="TotalAmount" HeaderText="Total Amount" SortExpression="TotalAmount" />
                                     <Rock:DateField DataField="VeryFirstTxnDate" HeaderText="First Transaction" SortExpression="VeryFirstTxnDate" />
                                     <Rock:DateField DataField="FirstTxnDate" HeaderText="First Transaction in Date Range" SortExpression="FirstTxnDate" />
@@ -244,6 +244,14 @@
                 // Attendees Filter
                 $('.js-givers-all, .js-givers-by-first-time, .js-givers-by-pattern').on('click', function (e) {
                     showFilterByOptions();
+                });
+
+                // Set checkbox labels to toggle child checkboxes when clicked
+                $('div.rock-check-box-list').find('label').prop('data-selected', false);
+                $('div.rock-check-box-list').find('label').on('click', function (e) {
+                    var selected = $(this).prop('data-selected')
+                    $(this).siblings().find('input:checkbox').prop('checked', !selected);
+                    $(this).prop('data-selected', !selected);
                 });
 
                 showFilterByOptions();
