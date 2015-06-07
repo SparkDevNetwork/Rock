@@ -42,12 +42,12 @@ namespace Rock.Model
         /// <param name="maxAmount">The maximum amount.</param>
         /// <param name="currencyTypeIds">The currency type ids.</param>
         /// <param name="sourceTypeIds">The source type ids.</param>
-        /// <param name="campusIds">The campus ids.</param>
+        /// <param name="accountIds">The account ids.</param>
         /// <param name="dataViewId">The data view identifier.</param>
         /// <returns></returns>
         public IEnumerable<IChartData> GetChartData(
             ChartGroupBy groupBy, TransactionGraphBy graphBy, DateTime? start, DateTime? end, decimal? minAmount, decimal? maxAmount,
-            List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> campusIds, int? dataViewId )
+            List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> accountIds, int? dataViewId )
         {
             var qry = Queryable().AsNoTracking()
                 .Where( t =>
@@ -84,7 +84,7 @@ namespace Rock.Model
 
             var distictCurrencyTypeIds = currencyTypeIds.Where( i => i != 0 ).Distinct().ToList();
             var distictSourceTypeIds = sourceTypeIds.Where( i => i != 0 ).Distinct().ToList();
-            var distictCampusIds = campusIds.Where( i => i != 0 ).Distinct().ToList();
+            var distictAccountIds = accountIds.Where( i => i != 0 ).Distinct().ToList();
 
             if ( distictCurrencyTypeIds.Any() )
             {
@@ -102,13 +102,11 @@ namespace Rock.Model
                         distictSourceTypeIds.Contains( t.Transaction.SourceTypeValueId.Value ) );
             }
 
-            if ( distictCampusIds.Any() )
+            if ( distictAccountIds.Any() )
             {
                 qry = qry
                     .Where( t => 
-                        t.Account != null &&
-                        t.Account.CampusId.HasValue &&
-                        distictCampusIds.Contains( t.Account.CampusId.Value ) );
+                        distictAccountIds.Contains( t.AccountId ) );
             }
 
             if ( dataViewId.HasValue )
