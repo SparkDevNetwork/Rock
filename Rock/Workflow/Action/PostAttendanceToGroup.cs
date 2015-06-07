@@ -145,7 +145,69 @@ namespace Rock.Workflow.Action
             // set attribute
             if ( groupGuid.HasValue && person != null && attendanceDateTime != DateTime.MinValue )
             {
-                
+                var group = new GroupService(rockContext).Queryable("GroupType.DefaultGroupRole")
+                                            .Where(g => g.Guid == groupGuid)
+                                            .FirstOrDefault();
+                if ( group != null )
+                {
+                    GroupMemberService groupMemberService = new GroupMemberService(rockContext);
+
+                    // get group member
+                    var groupMember = groupMemberService.Queryable()
+                                            .Where(m => m.Group.Guid == groupGuid
+                                                && m.PersonId == person.Id)
+                                            .FirstOrDefault();
+                    if ( groupMember == null )
+                    {
+                        if ( addToGroup )
+                        {
+
+
+                            if ( group != null )
+                            {
+                                groupMember = new GroupMember();
+                                groupMember.GroupId = group.Id;
+                                groupMember.PersonId = person.Id;
+                                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                                groupMember.GroupRole = group.GroupType.DefaultGroupRole;
+                                groupMemberService.Add(groupMember);
+                                rockContext.SaveChanges();
+                            }
+                        }
+                        else
+                        {
+                            action.AddLogEntry(string.Format("{0} was not a member of the group {1} and the action was not configured to add them.", person.FullName, group.Name));
+                            return true;
+                        }
+                    }
+
+                    AttendanceService attendanceService = new AttendanceService(rockContext);
+
+                    Attendance attendance = new Attendance();
+                    attendance.GroupId = group.Id;
+                    attendance.PersonAliasId = person.PrimaryAliasId;
+                    attendance.StartDateTime = attendanceDateTime;
+                    attendance.DidAttend = true;
+
+                    if ( locationGuid != Guid.Empty )
+                    {
+                        var location = new LocationService(rockContext).Queryable().AsNoTracking()
+                                            .Where(l => l.Guid == locationGuid)
+                                            .FirstOrDefault();
+
+                        if ( location != null )
+                        {
+                            attendance.LocationId = location.Id;
+                        }
+                    }
+
+                    attendanceService.Add(attendance);
+                    rockContext.SaveChanges();
+                }
+                else
+                {
+                    errorMessages.Add(string.Format("Could not find group matching the guid ''.", groupGuid));
+                }
             }
 
             errorMessages.ForEach( m => action.AddLogEntry( m, true ) );
