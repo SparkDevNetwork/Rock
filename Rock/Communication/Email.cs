@@ -17,10 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Web;
-
 using Humanizer;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -98,6 +97,53 @@ namespace Rock.Communication
             }
         }
 
+
+        public static void Send(string fromEmail, string subject, List<string> recipients, string message, string appRoot = "", string themeRoot = "", List<Attachment> attachments = null)
+        {
+            try
+            {
+                if ( recipients != null && recipients.Any() )
+                {
+                    var mediumEntity = EntityTypeCache.Read(Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid());
+                    if ( mediumEntity != null )
+                    {
+                        var medium = MediumContainer.GetComponent(mediumEntity.Name);
+                        if ( medium != null && medium.IsActive )
+                        {
+                            var transport = medium.Transport;
+                            if ( transport != null && transport.IsActive )
+                            {
+                                try
+                                {
+                                    transport.Send(recipients, fromEmail, subject, message, appRoot, themeRoot, attachments);
+                                }
+                                catch ( Exception ex1 )
+                                {
+                                    throw new Exception(string.Format("Error sending System Email ({0}).", subject), ex1);
+                                }
+                            }
+                            else
+                            {
+                                throw new Exception(string.Format("Error sending System Email: The '{0}' medium does not have a valid transport, or the transport is not active.", mediumEntity.FriendlyName));
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception(string.Format("Error sending System Email: The '{0}' medium does not exist, or is not active (type: {1}).", mediumEntity.FriendlyName, mediumEntity.Name));
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("Error sending System Email: Could not read Email Medium Entity Type");
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException(ex, HttpContext.Current);
+            }
+        }
+
         /// <summary>
         /// Processes the bounce.
         /// </summary>
@@ -157,41 +203,7 @@ namespace Rock.Communication
                         .ToList();
                 }
 
-                if ( recipients != null && recipients.Any() )
-                {
-                    var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
-                    if ( mediumEntity != null )
-                    {
-                        var medium = MediumContainer.GetComponent( mediumEntity.Name );
-                        if ( medium != null && medium.IsActive )
-                        {
-                            var transport = medium.Transport;
-                            if ( transport != null && transport.IsActive )
-                            {
-                                try
-                                {
-                                    transport.Send( recipients, null, subject, message, appRoot, themeRoot );
-                                }
-                                catch ( Exception ex1 )
-                                {
-                                    throw new Exception( string.Format( "Error sending System Email ({0}).", subject ), ex1 );
-                                }
-                            }
-                            else
-                            {
-                                throw new Exception( string.Format( "Error sending System Email: The '{0}' medium does not have a valid transport, or the transport is not active.", mediumEntity.FriendlyName ) );
-                            }
-                        }
-                        else
-                        {
-                            throw new Exception( string.Format( "Error sending System Email: The '{0}' medium does not exist, or is not active (type: {1}).", mediumEntity.FriendlyName, mediumEntity.Name ) );
-                        }
-                    }
-                    else
-                    {
-                        throw new Exception( "Error sending System Email: Could not read Email Medium Entity Type" );
-                    }
-                }
+                Email.Send(GlobalAttributesCache.Value("OrganizationEmail"), subject, recipients, message, appRoot, themeRoot);
             }
             catch ( Exception ex )
             {

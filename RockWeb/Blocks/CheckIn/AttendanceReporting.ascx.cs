@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.CheckIn
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked" )]
     [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true )]
     [GroupTypeField( "Check-in Type", required: false, key: "GroupTypeTemplate", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
-    [LinkedPage("Check-in Detail Page", "Page that shows the user details for the check-in data.", false)]
+    [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false )]
     public partial class AttendanceReporting : RockBlock
     {
         #region Fields
@@ -79,7 +79,7 @@ namespace RockWeb.Blocks.CheckIn
             _rockContext = new RockContext();
 
             // show / hide the checkin details page
-            btnCheckinDetails.Visible = !string.IsNullOrWhiteSpace( GetAttributeValue("Check-inDetailPage") );
+            btnCheckinDetails.Visible = !string.IsNullOrWhiteSpace( GetAttributeValue( "Check-inDetailPage" ) );
         }
 
         /// <summary>
@@ -1014,6 +1014,10 @@ function(item) {
                 }
             }
 
+            // only include current and previous dates
+            var currentDateTime = RockDateTime.Now;
+            result = result.Where( a => a <= currentDateTime.Date ).ToList();
+
             return result;
         }
 
@@ -1375,5 +1379,5 @@ function(item) {
                 NavigateToLinkedPage( "Check-inDetailPage", queryParams );
             }
         }
-}
+    }
 }

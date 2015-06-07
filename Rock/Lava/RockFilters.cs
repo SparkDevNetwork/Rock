@@ -1353,6 +1353,28 @@ namespace Rock.Lava
             return null;
         }
 
+        /// <summary>
+        /// Converts a lava property to a key value pair
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Dictionary<string, object> PropertyToKeyValue(object input)
+        {
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            var type = input.GetType();
+
+            if ( type == typeof(KeyValuePair<string,object>) )
+            {
+                var key = type.GetProperty("Key");
+                var value = type.GetProperty("Value");
+
+                result.Add("Key", key.GetValue(input, null).ToString());
+                result.Add("Value", value.GetValue(input, null));
+            }
+
+            return result;
+        }
+
         #endregion
 
         #region Array Filters

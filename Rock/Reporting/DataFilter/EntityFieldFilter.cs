@@ -158,16 +158,6 @@ namespace Rock.Reporting.DataFilter
             string script = string.Format( scriptFormat, entityType.Name, sb.ToString() );
             ScriptManager.RegisterStartupScript( filterControl, typeof( FilterField ), entityType.Name + "-property-selection", script, true );
 
-            script = @"
-    $('select.entity-property-selection').change(function(){
-        var $parentRow = $(this).closest('.js-filter-row');
-        $parentRow.find('div.field-criteria').hide();
-        $parentRow.find('div.field-criteria').eq($(this).find(':selected').index()).show();
-    });";
-
-            // only need this script once per page
-            ScriptManager.RegisterStartupScript( filterControl.Page, filterControl.Page.GetType(), "entity-property-selection-change-script", script, true );
-
             RegisterFilterCompareChangeScript( filterControl );
         }
 
@@ -197,7 +187,6 @@ namespace Rock.Reporting.DataFilter
                             entityField.FieldType.Field.SetFilterValues( control, entityField.FieldConfig, FixDelimination( values.Skip( 1 ).ToList() ) );
                         }
                     }
-
                 }
             }
         }
