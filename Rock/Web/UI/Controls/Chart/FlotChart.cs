@@ -435,6 +435,7 @@ namespace Rock.Web.UI.Controls
             RockPage.AddScriptLink( this.Page, "~/Scripts/flot/jquery.flot.time.js" );
             RockPage.AddScriptLink( this.Page, "~/Scripts/flot/jquery.flot.resize.js" );
             RockPage.AddScriptLink( this.Page, "~/Scripts/flot/jquery.flot.pie.js" );
+            RockPage.AddScriptLink( this.Page, "~/Scripts/flot/jquery.flot.categories.js" );
 
             EnsureChildControls();
         }
@@ -543,6 +544,12 @@ namespace Rock.Web.UI.Controls
                 scriptFormat += @"
                 Rock.controls.charts.plotPieChartData(chartData, chartOptions, plotSelector);
                 
+";
+            }
+            else if ( this.GetType() == typeof( BarChart ) )
+            {
+                scriptFormat += @"
+                Rock.controls.charts.plotBarChartData(chartData, chartOptions, plotSelector);
 ";
             }
             else
