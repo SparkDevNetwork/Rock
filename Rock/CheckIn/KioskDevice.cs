@@ -269,7 +269,7 @@ namespace Rock.CheckIn
                     .Select( l => l.Id ) )
                 {
                     campusId = campusLocations
-                        .Where( c => c.Value == location.Id )
+                        .Where( c => c.Value == parentLocationId )
                         .Select( c => c.Key )
                         .FirstOrDefault();
                     if ( campusId != 0 )
