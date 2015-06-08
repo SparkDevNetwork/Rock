@@ -165,6 +165,14 @@
     <Compile Include="Migrations\201506021134294_NoteTypeReDo.Designer.cs">
       <DependentUpon>201506021134294_NoteTypeReDo.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201506051725071_CalendarPagesAndRegistrationConfig.cs" />
+    <Compile Include="Migrations\201506051725071_CalendarPagesAndRegistrationConfig.Designer.cs">
+      <DependentUpon>201506051725071_CalendarPagesAndRegistrationConfig.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201506051749054_AddSampleMergeDocs.cs" />
+    <Compile Include="Migrations\201506051749054_AddSampleMergeDocs.Designer.cs">
+      <DependentUpon>201506051749054_AddSampleMergeDocs.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.cs" />
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.Designer.cs">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
@@ -1703,6 +1711,12 @@
     <EmbeddedResource Include="Migrations\201506021134294_NoteTypeReDo.resx">
       <DependentUpon>201506021134294_NoteTypeReDo.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201506051725071_CalendarPagesAndRegistrationConfig.resx">
+      <DependentUpon>201506051725071_CalendarPagesAndRegistrationConfig.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201506051749054_AddSampleMergeDocs.resx">
+      <DependentUpon>201506051749054_AddSampleMergeDocs.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
     </EmbeddedResource>
@@ -2784,6 +2798,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\new  1.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Migrations\201506051749054_AddSampleMergeDocs.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -769,7 +769,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         void _ddlFieldType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            Qualifiers = new Dictionary<string, ConfigurationValue>();
+            // When someone changes the field type, we clear the default value since it's no longer relevant.
             DefaultValue = string.Empty;
         }
 

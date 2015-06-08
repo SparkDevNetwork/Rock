@@ -35,6 +35,12 @@ namespace Rock.CheckIn
     [TextField( "Workflow Activity", "The name of the workflow activity to run on selection.", false, "" )]
     public abstract class CheckInBlock : RockBlock
     {
+
+        /// <summary>
+        /// The current theme.
+        /// </summary>
+        protected string CurrentTheme { get; set; }
+
         /// <summary>
         /// The current kiosk id
         /// </summary>
@@ -207,6 +213,11 @@ namespace Rock.CheckIn
         /// </summary>
         protected void SaveState()
         {
+            if ( !string.IsNullOrWhiteSpace( CurrentTheme))
+            {
+                Session["CheckInTheme"] = CurrentTheme;
+            }
+
             if ( CurrentKioskId.HasValue )
             {
                 Session["CheckInKioskId"] = CurrentKioskId.Value;
@@ -358,6 +369,11 @@ namespace Rock.CheckIn
 
         private void GetState()
         {
+            if ( Session["CurrentTheme"] != null )
+            {
+                CurrentTheme = Session["CurrentTheme"].ToString();
+            }
+
             if ( Session["CheckInKioskId"] != null )
             {
                 CurrentKioskId = (int)Session["CheckInKioskId"];
