@@ -235,6 +235,16 @@
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
     <Compile Include="Field\Types\NoteTypesFieldType.cs" />
     <Compile Include="Field\Types\NoteTypeFieldType.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionActivityTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionOpportunityCampusService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionOpportunityGroupService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionOpportunityService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionRequestActivityService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionRequestService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionRequestWorkflowService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionStatusService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionWorkflowService.cs" />
     <Compile Include="Model\CodeGenerated\EventCalendarItemService.cs" />
     <Compile Include="Model\CodeGenerated\EventCalendarService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemAudienceService.cs" />
@@ -288,6 +298,24 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\BenevolenceResult.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\ConnectionRequest.cs" />
+    <Compile Include="Model\ConnectionOpportunityGroup.cs" />
+    <Compile Include="Model\ConnectionOpportunityCampus.cs" />
+    <Compile Include="Model\ConnectionActivityType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\ConnectionRequestActivity.cs" />
+    <Compile Include="Model\ConnectionStatus.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\ConnectionOpportunity.cs" />
+    <Compile Include="Model\ConnectionType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\ConnectionRequestWorkflow.cs" />
+    <Compile Include="Model\ConnectionWorkflow.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\EventItemAudience.cs" />
