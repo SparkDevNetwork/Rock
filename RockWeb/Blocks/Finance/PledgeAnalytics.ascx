@@ -27,17 +27,17 @@
 
                             <Rock:NumberRangeEditor ID="nreAmountGiven" runat="server" Label="Amount Given" />
 
-                            <Rock:RockRadioButtonList ID="rblInclude" runat="server" Label="Include">
-                                <asp:ListItem id="liEveryoneWithPledge" Text="Everyone with a pledge" Value="0" />
-                                <asp:ListItem id="liEveryoneWithAGift" Text="Everyone with a gift" Value="1" />
-                                <asp:ListItem id="liEveryoneWithAGiftOrPledge" Text="Everyone with a gift or pledge" Value="2" />
+                            <Rock:RockRadioButtonList ID="rblInclude" runat="server" Label="Show" AutoPostBack="True" OnSelectedIndexChanged="rblInclude_SelectedIndexChanged">
+                                <asp:ListItem id="liEveryoneWithPledge" Text="Those with pledges" Value="0" Selected="True" />
+                                <asp:ListItem id="liEveryoneWithAGift" Text="Those with gifts" Value="1" />
+                                <asp:ListItem id="liEveryoneWithAGiftOrPledge" Text="Those with gifts or pledges" Value="2" />
                             </Rock:RockRadioButtonList>
                         </div>
                         <div class="col-md-9">
                             <div class="row analysis-types">
                                 <div class="col-md-12">
                                     <div class="actions text-right">
-                                        <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary" ToolTip="Update the chart"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
+                                        <asp:LinkButton ID="btnApply" runat="server" OnClick="btnApply_Click" CssClass="btn btn-primary" ToolTip="Update the chart"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
                                     </div>
                                 </div>
                             </div>
