@@ -54,7 +54,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// The optional checkbox which can be used to disable/enable the filter for the current run of the report
         /// </summary>
-        protected CheckBox cbIncludeFilter;
+        public CheckBox cbIncludeFilter;
 
         /// <summary>
         /// The filter controls
@@ -69,30 +69,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
-            string script = @"
-// activity animation
-$('.filter-item > header').click(function () {
-    $(this).siblings('.panel-body').slideToggle();
-    $(this).children('div.pull-left').children('div').slideToggle();
-
-    $expanded = $(this).children('input.filter-expanded');
-    $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
-
-    $('a.filter-view-state > i', this).toggleClass('fa-chevron-down');
-    $('a.filter-view-state > i', this).toggleClass('fa-chevron-up');
-});
-
-// fix so that the Remove button will fire its event, but not the parent event 
-$('.filter-item a.btn-danger').click(function (event) {
-    event.stopImmediatePropagation();
-});
-
-$('.filter-item-select').click(function (event) {
-    event.stopImmediatePropagation();
-});
-
-";
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "FilterFieldEditorScript", script, true );
+            ReportingHelper.RegisterJavascriptInclude( this );
         }
 
         /// <summary>
@@ -581,8 +558,13 @@ $('.filter-item-select').click(function (event) {
 
             if ( ShowCheckbox )
             {
-                cbIncludeFilter.Text = this.Label;
-                cbIncludeFilter.RenderControl( writer );
+                //// EntityFieldFilter renders the checkbox itself (see EntityFieldFilter.cs), 
+                //// so only render the checkbox if we are hiding filter criteria and it isn't an entity field filter
+                if ( !( component is Rock.Reporting.DataFilter.EntityFieldFilter ) || HideFilterCriteria)
+                {
+                    cbIncludeFilter.Text = this.Label;
+                    cbIncludeFilter.RenderControl( writer );
+                }
             }
             else if ( !string.IsNullOrWhiteSpace( this.Label ) )
             {

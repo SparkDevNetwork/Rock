@@ -144,6 +144,9 @@ namespace Rock.Client
         public DefinedValue ConnectionStatusValue { get; set; }
 
         /// <summary />
+        public string GivingId { get; set; }
+
+        /// <summary />
         public DefinedValue MaritalStatusValue { get; set; }
 
         /// <summary />

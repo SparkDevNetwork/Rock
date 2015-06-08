@@ -88,6 +88,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<EventItemAudience>( Context ).Queryable().Any( a => a.DefinedValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, EventItemAudience.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<FinancialAccount>( Context ).Queryable().Any( a => a.AccountTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialAccount.FriendlyTypeName );
@@ -181,12 +187,6 @@ namespace Rock.Model
             if ( new Service<Metric>( Context ).Queryable().Any( a => a.SourceValueTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Metric.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<Note>( Context ).Queryable().Any( a => a.SourceTypeValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Note.FriendlyTypeName );
                 return false;
             }  
  
