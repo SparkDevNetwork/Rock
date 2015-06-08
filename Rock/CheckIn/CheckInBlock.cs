@@ -109,12 +109,9 @@ namespace Rock.CheckIn
         /// <value>
         /// The locations.
         /// </value>
-        protected IEnumerable<KioskLocation> Locations
+        protected IEnumerable<Location> GetGroupTypesLocations( RockContext rockContext )
         {
-            get
-            {
-                return CurrentCheckInState.Kiosk.Locations( CurrentGroupTypeIds );
-            }
+            return CurrentCheckInState.Kiosk.Locations( CurrentGroupTypeIds, rockContext );
         }
 
         /// <summary>

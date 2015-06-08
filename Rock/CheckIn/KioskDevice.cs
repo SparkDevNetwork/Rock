@@ -116,9 +116,39 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="configuredGroupTypes">The configured group types.</param>
         /// <returns></returns>
-        public IEnumerable<KioskLocation> Locations( List<int> configuredGroupTypes )
+        public IEnumerable<Location> Locations( List<int> configuredGroupTypes, RockContext rockContext )
         {
-            var result = FilteredGroupTypes( configuredGroupTypes ).SelectMany( t => t.KioskGroups ).SelectMany( g => g.KioskLocations );
+            var result = new List<Rock.Model.Location>();
+
+            Rock.Model.Device currentDevice = new DeviceService( rockContext ).Get(this.Device.Id);
+
+            // first, get all the possible locations for this device including child locations
+            var allLocations = new List<int>();
+            foreach ( Rock.Model.Location location in currentDevice.Locations )
+            {
+                // add the location to the locations for this device
+                allLocations.Add( location.Id );
+
+                // Get all the child locations also
+                new LocationService( rockContext )
+                    .GetAllDescendents( location.Id )
+                    .Select( l => l.Id )
+                    .ToList()
+                    .ForEach( l => allLocations.Add( l ) );
+            }
+
+            // now, narrow it down to only locations that are active group locations for the configured group types
+            foreach ( var groupLocation in new GroupLocationService( rockContext ).GetActiveByLocations( allLocations ) )
+            {
+                if ( configuredGroupTypes.Contains( groupLocation.Group.GroupTypeId ) )
+                {
+                    if ( !result.Any( a => a.Id == groupLocation.LocationId ) )
+                    {
+                        result.Add( groupLocation.Location );
+                    }
+                }
+            }
+
             return result;
         }
 

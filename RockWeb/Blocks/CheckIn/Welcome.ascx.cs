@@ -341,7 +341,6 @@ if ($ActiveWhen.text() != '')
                 }
             }
 
-
             maWarning.Show( "Sorry, we couldn't find an account matching that PIN.", Rock.Web.UI.Controls.ModalAlertType.Warning );
         }
 
@@ -364,8 +363,8 @@ if ($ActiveWhen.text() != '')
             var rockContext = new RockContext();
             if ( this.CurrentKioskId.HasValue )
             {
-                var kioskLocations = this.Locations.Select( a => a.Location );
-                var selectQry = kioskLocations.Select( a => new
+                var groupTypesLocations = this.GetGroupTypesLocations( rockContext );
+                var selectQry = groupTypesLocations.Select( a => new
                 {
                     LocationId = a.Id,
                     Name = a.Name,
@@ -403,10 +402,10 @@ if ($ActiveWhen.text() != '')
                         rockContext.SaveChanges();
                     }
 
-                    // update the IsActive of the cached location for the current kiosk
-                    foreach (var cachedLocation in this.Locations.Where( a => a.Location.Id == location.Id ))
+                    // flush the current kiosk ( the kiosk only caches groups, etc for active locations, so we need to flush anytime a location is opened/closed )
+                    if ( this.CurrentKioskId.HasValue )
                     {
-                        cachedLocation.Location.IsActive = location.IsActive;
+                        KioskDevice.Flush( this.CurrentKioskId.Value );
                     }
                 }
 
