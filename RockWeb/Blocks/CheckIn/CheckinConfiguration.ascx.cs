@@ -906,6 +906,7 @@ namespace RockWeb.Blocks.CheckIn
 
                     rockContext.SaveChanges();
 
+                    int labelOrder = 0;
                     foreach ( var checkinLabelAttributeInfo in GroupTypeCheckinLabelAttributesState[groupTypeUI.Guid] )
                     {
                         var attribute = new Rock.Model.Attribute();
@@ -918,6 +919,7 @@ namespace RockWeb.Blocks.CheckIn
                         attribute.DefaultValue = checkinLabelAttributeInfo.BinaryFileGuid.ToString();
                         attribute.Key = checkinLabelAttributeInfo.AttributeKey;
                         attribute.Name = checkinLabelAttributeInfo.FileName;
+                        attribute.Order = labelOrder++;
 
                         if ( !attribute.IsValid )
                         {
