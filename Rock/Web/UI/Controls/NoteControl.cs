@@ -485,6 +485,7 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
 
             _ddlNoteType.ID = this.ID + "_ddlNoteType";
+            _ddlNoteType.CssClass = "form-control input-sm input-width-lg noteentry-notetype";
             _ddlNoteType.DataValueField = "Id";
             _ddlNoteType.DataTextField = "Name";
             _ddlNoteType.DataSource = NoteTypes;

@@ -2905,6 +2905,9 @@ tr.row-highlight td {
 .panel-noteentry .panel-body .noteentry-control {
   overflow: hidden;
 }
+.panel-noteentry .panel-body .noteentry-notetype {
+  margin-bottom: 4px;
+}
 .panel-noteentry .panel-body img {
   float: left;
   margin: 0 12px 0 4px;

@@ -512,6 +512,7 @@ namespace Rock.Communication.Transport
             }
         }
 
+
         /// <summary>
         /// Sends the specified recipients.
         /// </summary>
@@ -521,7 +522,22 @@ namespace Rock.Communication.Transport
         /// <param name="body">The body.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
-        public override void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null)
+        public override void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null)
+        {
+            Send(recipients, from, subject, body, appRoot, themeRoot, null);
+        }
+
+        /// <summary>
+        /// Sends the specified recipients.
+        /// </summary>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="from">From.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="body">The body.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <param name="attachments">Attachments.</param>
+        public override void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null)
         {
             try
             {
@@ -567,6 +583,15 @@ namespace Rock.Communication.Transport
                     message.Subject = msgSubject;
                     message.Body = msgBody;       
                     
+                    // add attachments
+                    if ( attachments != null )
+                    {
+                        foreach ( var attachment in attachments )
+                        {
+                            message.Attachments.Add(attachment);
+                        }
+                    }
+
                     using ( var smtpClient = GetSmtpClient() )
                     {
                         smtpClient.Send( message );

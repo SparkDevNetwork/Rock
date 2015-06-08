@@ -86,7 +86,12 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        public GroupMemberStatus GroupMemberStatus { get; set; }
+        public GroupMemberStatus GroupMemberStatus
+        {
+            get { return _groupMemberStatus; }
+            set { _groupMemberStatus = value; }
+        }
+        private GroupMemberStatus _groupMemberStatus = GroupMemberStatus.Active;
 
         /// <summary>
         /// Gets or sets the number of additional guests that member will be bring to group.  Only applies when group has the 'AllowGuests' flag set to true.
