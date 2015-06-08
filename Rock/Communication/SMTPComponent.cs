@@ -536,6 +536,7 @@ namespace Rock.Communication.Transport
         /// <param name="body">The body.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
+        /// <param name="attachments">Attachments.</param>
         public override void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null)
         {
             try
