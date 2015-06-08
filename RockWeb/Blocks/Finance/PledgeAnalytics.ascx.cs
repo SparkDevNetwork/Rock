@@ -185,8 +185,18 @@ namespace RockWeb.Blocks.Finance
                         PledgeTotal = p.Sum( t => t.TotalAmount)
                     } );
 
+            /*
+            var givingQry = new FinancialTransactionDetailService(_rockContext).Queryable().AsNoTracking()
+                                    .Where(t => t.AccountId == accountId)
+                                    .GroupBy(t => t.Transaction.AuthorizedPersonAlias.Person.GivingId)
+                                    .Select(t => new {
+                                                       GivingId = t.Key,
+                                                       TotalAmount = t.Sum(a => a.Amount),
+                                                       GiftCount = t.Count()
+                                                     });
 
-
+            var something = pledgeSummary.Join( givingQry, p=> p.GivingId, g => g.GivingId, (p,g) => new {p.GivingId, p.AccountId, p.AccountName, p.PledgeTotal, g.TotalAmount, g.GiftCount})
+            */
             // filter pledge range
             if ( nrePledgeAmount.Visible && nrePledgeAmount.LowerValue.HasValue )
             {
