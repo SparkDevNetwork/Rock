@@ -121,9 +121,11 @@ namespace RockWeb.Plugins.church_ccv.Era
         private void BindGrid()
         {
             DatamartContext datamartContext = new DatamartContext();
-            //DatamartEstimatedRegularAttendeesService dtmtEraService = new DatamartEstimatedRegularAttendeesService(datamartContext);
+            //DatamartERAService eraService = new DatamartERAService(datamartContext);
+           // DatamartEraLoss
 
-            // sample query to display a few people
+            //DatamartEraLossService lossService = new DatamartEraLossService(datamartContext);
+
             //var qry = dtmtEraService.Queryable().Where( d => d.Los)
 
             //gList.DataSource = qry.ToList();
