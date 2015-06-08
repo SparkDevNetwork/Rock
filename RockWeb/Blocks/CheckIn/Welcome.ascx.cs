@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.CheckIn
             }}
         }});
     </script>
-", RockPage.Site.Theme, CurrentKioskId, CurrentGroupTypeIds.AsDelimited( "," ) );
+", CurrentTheme, CurrentKioskId, CurrentGroupTypeIds.AsDelimited( "," ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
 
                 CurrentWorkflow = null;
