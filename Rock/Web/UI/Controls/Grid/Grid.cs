@@ -1679,9 +1679,10 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Formats a raw value from the Grid DataSource so that it is suitable for export to an Excel Worksheet.
         /// </summary>
-        /// <param name="prop"></param>
-        /// <param name="propValue"></param>
-        /// <param name="isDefinedValueField"></param>
+        /// <param name="prop">The property.</param>
+        /// <param name="propValue">The property value.</param>
+        /// <param name="isDefinedValueField">if set to <c>true</c> [is defined value field].</param>
+        /// <param name="cell">The cell.</param>
         /// <returns></returns>
         private string GetExportValue( PropertyInfo prop, object propValue, bool isDefinedValueField, ExcelRange cell )
         {
