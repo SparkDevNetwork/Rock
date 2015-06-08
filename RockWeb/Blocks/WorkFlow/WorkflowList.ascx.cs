@@ -520,14 +520,26 @@ namespace RockWeb.Blocks.WorkFlow
             statusField.DataField = "Status";
             statusField.SortExpression = "Status";
             statusField.HeaderText = "Status";
+            statusField.DataFormatString = "<span class='label label-info'>{0}</span>";
             statusField.HtmlEncode = false;
 
-            var stateField = new BoundField();
+            var stateField = new CallbackField();
             gWorkflows.Columns.Add( stateField );
-            stateField.DataField = "State";
+            stateField.DataField = "IsCompleted";
             stateField.SortExpression = "CompletedDateTime";
             stateField.HeaderText = "State";
             stateField.HtmlEncode = false;
+            stateField.OnFormatDataValue += ( sender, e ) =>
+            {
+                if ( (bool)e.DataValue )
+                {
+                    e.FormattedValue = "<span class='label label-default'>Completed</span>";
+                }
+                else
+                {
+                    e.FormattedValue = "<span class='label label-success'>Active</span>";
+                }
+            };
 
             var manageField = new EditField();
             gWorkflows.Columns.Add( manageField );
@@ -636,7 +648,7 @@ namespace RockWeb.Blocks.WorkFlow
                     }
                 }
 
-                List<Workflow> workflows = null;
+                IQueryable<Workflow> workflows = null;
 
                 var sortProperty = gWorkflows.SortProperty;
                 if ( sortProperty != null )
@@ -647,43 +659,48 @@ namespace RockWeb.Blocks.WorkFlow
                         {
                             workflows = qry
                                 .OrderBy( w => w.InitiatorPersonAlias.Person.LastName )
-                                .ThenBy( w => w.InitiatorPersonAlias.Person.NickName )
-                                .ToList();
+                                .ThenBy( w => w.InitiatorPersonAlias.Person.NickName );
                         }
                         else
                         {
                             workflows = qry
                                 .OrderByDescending( w => w.InitiatorPersonAlias.Person.LastName )
-                                .ThenByDescending( w => w.InitiatorPersonAlias.Person.NickName )
-                                .ToList();
+                                .ThenByDescending( w => w.InitiatorPersonAlias.Person.NickName );
                         }
                     }
                     else
                     {
-                        workflows = qry.Sort( sortProperty ).ToList();
+                        workflows = qry.Sort( sortProperty );
                     }
                 }
                 else
                 {
-                    workflows = qry.OrderByDescending( s => s.CreatedDateTime ).ToList();
+                    workflows = qry.OrderByDescending( s => s.CreatedDateTime );
                 }
 
                 // Since we're not binding to actual workflow list, but are using AttributeField columns,
                 // we need to save the workflows into the grid's object list
-                gWorkflows.ObjectList = new Dictionary<string, object>();
-                workflows.ForEach( w => gWorkflows.ObjectList.Add( w.Id.ToString(), w ) );
+                var workflowObjectQry = workflows;
+                if ( gWorkflows.AllowPaging )
+                {
+                    workflowObjectQry = workflowObjectQry.Skip( gWorkflows.PageIndex * gWorkflows.PageSize ).Take( gWorkflows.PageSize );
+                }
+
+                gWorkflows.ObjectList = workflowObjectQry.ToList().ToDictionary( k => k.Id.ToString(), v => v as object );
 
                 gWorkflows.EntityTypeId = EntityTypeCache.Read<Workflow>().Id;
-                gWorkflows.DataSource = workflows.Select( w => new
+                var qryGrid = workflows.Select( w => new
                 {
                     w.Id,
                     w.Name,
-                    Initiator = ( w.InitiatorPersonAlias != null ? w.InitiatorPersonAlias.Person.FullName : "" ),
-                    Activities = w.ActiveActivities.Select( a => a.ActivityType.Name ).ToList().AsDelimited( "<br/>" ),
+                    Initiator = w.InitiatorPersonAlias.Person,
+                    Activities = w.Activities.Where( a => a.ActivatedDateTime.HasValue && !a.CompletedDateTime.HasValue ).OrderBy( a => a.ActivityType.Order ).Select( a => a.ActivityType.Name ),
                     w.CreatedDateTime,
-                    Status = string.Format( "<span class='label label-info'>{0}</span>", w.Status ),
-                    State = ( w.CompletedDateTime.HasValue ? "<span class='label label-default'>Completed</span>" : "<span class='label label-success'>Active</span>" )
-                } ).ToList();
+                    Status = w.Status,
+                    IsCompleted = w.CompletedDateTime.HasValue
+                } );
+
+                gWorkflows.SetLinqDataSource( qryGrid );
                 gWorkflows.DataBind();
             }
             else

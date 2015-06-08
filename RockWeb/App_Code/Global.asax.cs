@@ -118,6 +118,8 @@ namespace RockWeb
                     {
                         try
                         {
+                            // default Initializer is CreateDatabaseIfNotExists, so set it to NULL so that nothing happens if there isn't a database yet
+                            Database.SetInitializer<Rock.Data.RockContext>( null );
                             new AttributeService( rockContext ).Get( 0 );
                             System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
                         }
@@ -408,37 +410,27 @@ namespace RockWeb
         {
             bool result = false;
 
+            // default Initializer is CreateDatabaseIfNotExists, so set it to NULL so it doesn't try to do anything special
+            Database.SetInitializer<Rock.Data.RockContext>( null );
+
             var fileInfo = new FileInfo( Server.MapPath( "~/App_Data/Run.Migration" ) );
             if ( fileInfo.Exists )
             {
-                Database.SetInitializer( new MigrateDatabaseToLatestVersion<Rock.Data.RockContext, Rock.Migrations.Configuration>() );
-
-                // explictly check if the database exists, and force create it if doesn't exist
-                if ( !rockContext.Database.Exists() )
+                // get the pendingmigrations sorted by name (in the order that they run), then run to the latest migration
+                var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
+                var pendingMigrations = migrator.GetPendingMigrations().OrderBy(a => a);
+                if ( pendingMigrations.Any() )
                 {
-                    // If database did not exist, initialize a database (which runs existing Rock migrations)
-                    rockContext.Database.Initialize( true );
+                    LogMessage( APP_LOG_FILENAME, "Migrating Database..." );
+                    
+                    var lastMigration = pendingMigrations.Last();
+                    
+                    // NOTE: we need to specify the last migration vs null so it won't detect/complain about pending changes
+                    migrator.Update( lastMigration );
                     result = true;
-                }
-                else
-                {
-                    // If database does exist, run any pending Rock migrations
-                    var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
-                    if ( migrator.GetPendingMigrations().Any() )
-                    {
-                        LogMessage( APP_LOG_FILENAME, "Migrating Database..." );
-
-                        migrator.Update();
-                        result = true;
-                    }
                 }
 
                 fileInfo.Delete();
-            }
-            else
-            {
-                // default Initializer is CreateDatabaseIfNotExists, but we don't want that to happen if automigrate is false, so set it to NULL so that nothing happens
-                Database.SetInitializer<Rock.Data.RockContext>( null );
             }
 
             return result;

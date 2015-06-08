@@ -238,6 +238,22 @@ namespace Rock.Field
             return row;
         }
 
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool HasFilterControl()
+        {
+            try
+            {
+                var filterControl = FilterControl( new Dictionary<string, ConfigurationValue>(), "", true );
+                return filterControl != null;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         /// <summary>
         /// Gets the filter compare control.

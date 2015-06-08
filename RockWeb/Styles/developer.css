@@ -9,37 +9,6 @@
     */
 
 
-/*
-    NA - This is used to style a checkboxlist grouping as seen (in the DefaultValues
-        of the DefinedValue editor) when editing something like the AbilityLevel person
-        attribute and changing it to 'allow multiple values'.  Added around 2/1/2013
-
-    JME - Not sure we need this with the new theme. Let me know if you see any
-          area that is in need of this still.
-
-.checkboxlist-group {
-    width: 196px;
-    padding: 6px 11px 0px 11px;
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
-    border-radius: 4px;
-    background-color: white;
-    border: 1px solid #cccccc;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-    -webkit-transition: border linear .2s, box-shadow linear .2s;
-    -moz-transition: border linear .2s, box-shadow linear .2s;
-    -o-transition: border linear .2s, box-shadow linear .2s;
-    transition: border linear .2s, box-shadow linear .2s;
-}*/
-
-
-
-
-
-
-
 /*CSF - right align the "Clear Exceptions" link on the Exceptions List Page*/
 .clearExceptionsLink
 {
@@ -173,7 +142,9 @@ div.toggle-container {   /* ???? JME */
   vertical-align: super;
 }
 
-/* DT 2015-05-25 Giving Analysis Block ( copied from the .attendance-reporting css settings ) */
+/* 
+    JE 2015-6-6 Mode the CSS for these types of blocks reusable, I edited the giving analysis block to use the new styles so let me know if there is an issue
+    DT 2015-05-25 Giving Analysis Block ( copied from the .attendance-reporting css settings ) 
 .giving-analysis .panel-body {
   padding-top: 0;
   padding-bottom: 0;
@@ -194,4 +165,4 @@ div.toggle-container {   /* ???? JME */
   padding: 15px 0;
   background-color: #efefef;
   margin-bottom: 24px;
-}
+}*/

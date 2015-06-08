@@ -93,7 +93,6 @@ namespace Rock.Model
             target.IsAlert = source.IsAlert;
             target.IsSystem = source.IsSystem;
             target.NoteTypeId = source.NoteTypeId;
-            target.SourceTypeValueId = source.SourceTypeValueId;
             target.Text = source.Text;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

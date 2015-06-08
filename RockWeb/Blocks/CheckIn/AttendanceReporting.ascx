@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <div class="panel panel-block">
+        <div class="panel panel-block panel-analytics">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-check-square-o"></i>Attendance Analysis</h1>
 

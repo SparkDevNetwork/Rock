@@ -50,6 +50,7 @@ namespace Rock.Model
         /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that the EventItemCampus is associated with.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
         public int? CampusId { get; set; }
 
         /// <summary>
@@ -174,7 +175,7 @@ namespace Rock.Model
         public EventItemCampusConfiguration()
         {
             this.HasRequired( p => p.EventItem ).WithMany( p => p.EventItemCampuses ).HasForeignKey( p => p.EventItemId ).WillCascadeOnDelete( false );
-            this.HasRequired( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.ContactPersonAlias ).WithMany().HasForeignKey( p => p.ContactPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
