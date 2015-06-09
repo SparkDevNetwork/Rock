@@ -607,6 +607,10 @@ namespace Rock.Communication.Transport
                     recipients.ForEach( r => message.To.Add( r ) );
 
                     message.Subject = msgSubject;
+
+                    // strip out any unsubscribe links since we don't know the person
+                    msgBody = Regex.Replace( msgBody, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+
                     message.Body = msgBody;       
                     
                     // add attachments
