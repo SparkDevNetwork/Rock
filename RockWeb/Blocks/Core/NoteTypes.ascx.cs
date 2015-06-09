@@ -178,8 +178,13 @@ namespace RockWeb.Blocks.Core
                     string errorMessage = string.Empty;
                     if ( service.CanDelete( noteType, out errorMessage ) )
                     {
+                        int id = noteType.Id;
+
                         service.Delete( noteType );
                         rockContext.SaveChanges();
+
+                        NoteTypeCache.Flush( id );
+                        NoteTypeCache.FlushEntityNoteTypes();
                     }
                     else
                     {
@@ -221,11 +226,13 @@ namespace RockWeb.Blocks.Core
         protected void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
             var rockContext = new RockContext();
-            var noteTypes = GetNoteTypes( rockContext );
+            var noteTypes = GetNoteTypes( rockContext ).ToList();
             if ( noteTypes != null )
             {
-                new NoteTypeService( rockContext ).Reorder( noteTypes.ToList(), e.OldIndex, e.NewIndex );
+                new NoteTypeService( rockContext ).Reorder( noteTypes, e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
+
+                noteTypes.ForEach( t => NoteTypeCache.Flush( t.Id ) );
             }
 
             BindGrid();

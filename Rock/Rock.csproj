@@ -147,6 +147,7 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\IHasAttributesWrapper.cs" />
     <Compile Include="Attribute\NoteTypeFieldAttribute.cs" />
     <Compile Include="Attribute\FinancialGatewayFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
