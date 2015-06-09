@@ -86,7 +86,12 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        public GroupMemberStatus GroupMemberStatus { get; set; }
+        public GroupMemberStatus GroupMemberStatus
+        {
+            get { return _groupMemberStatus; }
+            set { _groupMemberStatus = value; }
+        }
+        private GroupMemberStatus _groupMemberStatus = GroupMemberStatus.Active;
 
         /// <summary>
         /// Gets or sets the number of additional guests that member will be bring to group.  Only applies when group has the 'AllowGuests' flag set to true.
@@ -105,6 +110,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? DateTimeAdded { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is notified.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is notified; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsNotified { get; set; }
 
         #endregion
 

@@ -113,7 +113,15 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         ddlTheme.Items.Add( new ListItem( themeDir.Name, themeDir.Name.ToLower() ) );
                     }
-                    ddlTheme.SetValue( RockPage.Site.Theme.ToLower() );
+
+                    if ( !string.IsNullOrWhiteSpace( CurrentTheme ) )
+                    {
+                        ddlTheme.SetValue( CurrentTheme );
+                    }
+                    else
+                    {
+                        ddlTheme.SetValue( RockPage.Site.Theme.ToLower() );
+                    }
 
                     Guid kioskDeviceType = Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid();
                     ddlKiosk.Items.Clear();
@@ -231,6 +239,7 @@ namespace RockWeb.Blocks.CheckIn
                 !hfTheme.Value.Equals( ddlTheme.SelectedValue, StringComparison.OrdinalIgnoreCase ) &&
                 Directory.Exists( Path.Combine( this.Page.Request.MapPath( ResolveRockUrl( "~~" ) ), hfTheme.Value ) ) )
             {
+                CurrentTheme = hfTheme.Value;
                 RedirectToNewTheme( hfTheme.Value );
             }
             else
@@ -364,6 +373,7 @@ namespace RockWeb.Blocks.CheckIn
 
         protected void ddlTheme_SelectedIndexChanged( object sender, EventArgs e )
         {
+            CurrentTheme = ddlTheme.SelectedValue;
             RedirectToNewTheme( ddlTheme.SelectedValue );
         }
 
@@ -385,6 +395,7 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             ClearMobileCookie();
+            CurrentTheme = ddlTheme.SelectedValue;
             CurrentKioskId = Int32.Parse( ddlKiosk.SelectedValue );
             CurrentGroupTypeIds = groupTypeIds;
             CurrentCheckInState = null;

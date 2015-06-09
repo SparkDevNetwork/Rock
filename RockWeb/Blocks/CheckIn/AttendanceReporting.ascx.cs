@@ -110,6 +110,10 @@ namespace RockWeb.Blocks.CheckIn
             var chartStyleDefinedValueGuid = this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull();
 
             lcAttendance.Options.SetChartStyle( chartStyleDefinedValueGuid );
+            bcAttendance.Options.SetChartStyle( chartStyleDefinedValueGuid );
+            bcAttendance.Options.xaxis = new AxisOptions { mode = AxisMode.categories, tickLength = 0 };
+            bcAttendance.Options.series.bars.barWidth = 0.6;
+            bcAttendance.Options.series.bars.align = "center";
 
             if ( !Page.IsPostBack )
             {
@@ -239,7 +243,13 @@ namespace RockWeb.Blocks.CheckIn
                 lcAttendance.ChartClick += lcAttendance_ChartClick;
             }
 
-            var dataSourceUrl = "~/api/Attendances/GetChartData";
+            bcAttendance.ShowTooltip = true;
+            if ( this.DetailPageGuid.HasValue )
+            {
+                bcAttendance.ChartClick += lcAttendance_ChartClick;
+            }
+
+            var lineChartDataSourceUrl = "~/api/Attendances/GetChartData";
             var dataSourceParams = new Dictionary<string, object>();
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
 
@@ -264,7 +274,7 @@ namespace RockWeb.Blocks.CheckIn
 function(item) {
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
     var dateText = 'Weekend of <br />' + itemDate.toLocaleDateString();
-    var seriesLabel = item.series.label;
+    var seriesLabel = item.series.label || ( item.series.labels ? item.series.labels[item.dataIndex] : null );
     var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal || '-';
     return dateText + '<br />' + seriesLabel + ': ' + pointValue;
 }
@@ -281,7 +291,7 @@ function(item) {
     var month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
     var dateText = month_names[itemDate.getMonth()] + ' ' + itemDate.getFullYear();
-    var seriesLabel = item.series.label;
+    var seriesLabel = item.series.label || ( item.series.labels ? item.series.labels[item.dataIndex] : null );
     var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal || '-';
     return dateText + '<br />' + seriesLabel + ': ' + pointValue;
 }
@@ -297,7 +307,7 @@ function(item) {
 function(item) {
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
     var dateText = itemDate.getFullYear();
-    var seriesLabel = item.series.label;
+    var seriesLabel = item.series.label || ( item.series.labels ? item.series.labels[item.dataIndex] : null );
     var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal || '-';
     return dateText + '<br />' + seriesLabel + ': ' + pointValue;
 }
@@ -334,7 +344,7 @@ function(item) {
 
             SaveSettingsToUserPreferences();
 
-            dataSourceUrl += "?" + dataSourceParams.Select( s => string.Format( "{0}={1}", s.Key, s.Value ) ).ToList().AsDelimited( "&" );
+            lineChartDataSourceUrl += "?" + dataSourceParams.Select( s => string.Format( "{0}={1}", s.Key, s.Value ) ).ToList().AsDelimited( "&" );
 
             // if no Campuses or Groups are selected show a warning since no data will show up
             nbCampusesWarning.Visible = false;
@@ -352,11 +362,18 @@ function(item) {
                 return;
             }
 
-            lcAttendance.DataSourceUrl = this.ResolveUrl( dataSourceUrl );
+            lcAttendance.DataSourceUrl = this.ResolveUrl( lineChartDataSourceUrl );
+            bcAttendance.TooltipFormatter = lcAttendance.TooltipFormatter;
+            bcAttendance.DataSourceUrl = this.ResolveUrl( lineChartDataSourceUrl );
+
+            var chartData = this.GetAttendanceChartData();
+            var singleDateTime = chartData.GroupBy(a => a.DateTimeStamp).Count() == 1;
+            bcAttendance.Visible = singleDateTime;
+            lcAttendance.Visible = !singleDateTime;
 
             if ( pnlChartAttendanceGrid.Visible )
             {
-                BindChartAttendanceGrid();
+                BindChartAttendanceGrid( chartData );
             }
 
             if ( pnlShowByAttendees.Visible )
@@ -555,20 +572,18 @@ function(item) {
         /// </summary>
         private void BindChartAttendanceGrid()
         {
-            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
+            var chartData = GetAttendanceChartData();
 
-            string groupIds = GetSelectedGroupIds().AsDelimited( "," );
-            string campusIds = cpCampuses.SelectedCampusIds.AsDelimited( "," );
+            BindChartAttendanceGrid( chartData );
+        }
 
+        /// <summary>
+        /// Binds the chart attendance grid.
+        /// </summary>
+        /// <param name="chartData">The chart data.</param>
+        private void BindChartAttendanceGrid( IEnumerable<Rock.Chart.IChartData> chartData )
+        {
             SortProperty sortProperty = gChartAttendance.SortProperty;
-
-            var chartData = new AttendanceService( _rockContext ).GetChartData(
-                hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week,
-                hfGraphBy.Value.ConvertToEnumOrNull<AttendanceGraphBy>() ?? AttendanceGraphBy.Total,
-                dateRange.Start,
-                dateRange.End,
-                groupIds,
-                campusIds );
 
             if ( sortProperty != null )
             {
@@ -580,6 +595,27 @@ function(item) {
             }
 
             gChartAttendance.DataBind();
+        }
+
+        /// <summary>
+        /// Gets the chart data.
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerable<Rock.Chart.IChartData> GetAttendanceChartData()
+        {
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
+
+            string groupIds = GetSelectedGroupIds().AsDelimited( "," );
+            string campusIds = cpCampuses.SelectedCampusIds.AsDelimited( "," );
+
+            var chartData = new AttendanceService( _rockContext ).GetChartData(
+                hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week,
+                hfGraphBy.Value.ConvertToEnumOrNull<AttendanceGraphBy>() ?? AttendanceGraphBy.Total,
+                dateRange.Start,
+                dateRange.End,
+                groupIds,
+                campusIds );
+            return chartData;
         }
 
         private List<DateTime> _possibleAttendances = null;

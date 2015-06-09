@@ -90,7 +90,25 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string GetClientFormatSelection( Type entityType )
         {
-            return @"'Age ' + $('select', $content).find(':selected').text() + ( $('input', $content).filter(':visible').length ?  (' \'' +  $('input', $content).filter(':visible').val()  + '\'') : '' ) ";
+            return @"
+function() {
+    var result = 'Age';
+    var compareTypeText = $('.js-filter-compare :selected', $content).text();
+    if ( $('.js-filter-control', $content).is(':visible') ) {
+        var compareValueSingle = $('.js-filter-control', $content).val()    
+        result += ' ' + compareTypeText + ' ' + (compareValueSingle || '');
+    }
+    else if ( $('.js-filter-control-between', $content).is(':visible') ) {
+        var compareValueBetween = $('.js-filter-control-between .js-number-range-lower', $content).filter(':visible').val() + ' and ' + $('.js-filter-control-between .js-number-range-upper', $content).filter(':visible').val()
+        result += ' ' + compareTypeText + ' ' + compareValueBetween;
+    }
+    else {
+        result += ' ' + compareTypeText;
+    }
+
+    return result;
+}
+";
         }
 
         /// <summary>
@@ -113,6 +131,10 @@ namespace Rock.Reporting.DataFilter.Person
                 {
                     return string.Format( "Age {0}", comparisonType.ConvertToString() );
                 }
+                else if (comparisonType == ComparisonType.Between)
+                {
+                    return string.Format( "Age {0} {1}", comparisonType.ConvertToString(), values[2].Replace(",", " and ") );
+                }
                 else
                 {
                     return string.Format( "Age {0} '{1}'", comparisonType.ConvertToString(), values[1] );
@@ -132,19 +154,26 @@ namespace Rock.Reporting.DataFilter.Person
         {
             var controls = new List<Control>();
 
-            var ddlIntegerCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypes );
-            ddlIntegerCompare.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+            var ddlIntegerCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypes | ComparisonType.Between );
+            ddlIntegerCompare.ID = string.Format( "{0}_{1}", filterControl.ID, "ddlIntegerCompare" );
             ddlIntegerCompare.AddCssClass( "js-filter-compare" );
             filterControl.Controls.Add( ddlIntegerCompare );
             controls.Add( ddlIntegerCompare );
 
             var numberBox = new NumberBox();
-            numberBox.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+            numberBox.ID = string.Format( "{0}_{1}", filterControl.ID, "numberBox" );
             numberBox.AddCssClass( "js-filter-control" );
             filterControl.Controls.Add( numberBox );
             controls.Add( numberBox );
 
             numberBox.FieldName = "Age";
+
+            var numberRangeEditor = new Rock.Web.UI.Controls.NumberRangeEditor();
+            numberRangeEditor.ID = string.Format( "{0}_{1}", filterControl.ID, "numberRangeEditor" );
+            numberRangeEditor.RangeLabel = "and";
+            numberRangeEditor.AddCssClass( "js-filter-control-between" );
+            filterControl.Controls.Add( numberRangeEditor );
+            controls.Add( numberRangeEditor );
 
             return controls.ToArray();
         }
@@ -160,7 +189,8 @@ namespace Rock.Reporting.DataFilter.Person
         {
             DropDownList ddlCompare = controls[0] as DropDownList;
             NumberBox nbValue = controls[1] as NumberBox;
-            
+            NumberRangeEditor numberRangeEditor = controls[2] as NumberRangeEditor;
+
             writer.AddAttribute( "class", "row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( "class", "col-md-4" );
@@ -168,12 +198,12 @@ namespace Rock.Reporting.DataFilter.Person
             ddlCompare.RenderControl( writer );
             writer.RenderEndTag();
 
-            ComparisonType comparisonType = (ComparisonType)( ddlCompare.SelectedValue.AsInteger() );
-            nbValue.Style[HtmlTextWriterStyle.Display] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : string.Empty;
-
             writer.AddAttribute( "class", "col-md-8" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             nbValue.RenderControl( writer );
+            numberRangeEditor.RenderControl( writer );
+
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
@@ -191,8 +221,9 @@ namespace Rock.Reporting.DataFilter.Person
         {
             DropDownList ddlCompare = controls[0] as DropDownList;
             NumberBox nbValue = controls[1] as NumberBox;
+            NumberRangeEditor numberRangeEditor = controls[2] as NumberRangeEditor;
 
-            return string.Format( "{0}|{1}", ddlCompare.SelectedValue, nbValue.Text );
+            return string.Format( "{0}|{1}|{2}", ddlCompare.SelectedValue, nbValue.Text, numberRangeEditor.DelimitedValues );
         }
 
         /// <summary>
@@ -207,11 +238,16 @@ namespace Rock.Reporting.DataFilter.Person
 
             DropDownList ddlCompare = controls[0] as DropDownList;
             NumberBox nbValue = controls[1] as NumberBox;
+            NumberRangeEditor numberRangeEditor = controls[2] as NumberRangeEditor;
 
-            if ( values.Length == 2 )
+            if ( values.Length >= 2 )
             {
                 ddlCompare.SelectedValue = values[0];
                 nbValue.Text = values[1];
+                if ( values.Length >= 3 )
+                {
+                    numberRangeEditor.DelimitedValues = values[2];
+                }
             }
         }
 
@@ -232,21 +268,44 @@ namespace Rock.Reporting.DataFilter.Person
 
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
             int? ageValue = values[1].AsIntegerOrNull();
+
             var rockContext = (RockContext)serviceInstance.Context;
 
             var personAgeQuery = new PersonService( rockContext ).Queryable();
             MemberExpression idExpression = Expression.Property( parameterExpression, "Id" );
             Expression ageSelect = new Rock.Reporting.DataSelect.Person.AgeSelect().GetExpression( rockContext, idExpression, "" );
-            var personAgeEqualQuery = personAgeQuery.Where(
-                      p => (p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
-                            ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1
-                            : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )) 
-                        == ageValue );
-            
-            BinaryExpression compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( personAgeEqualQuery, parameterExpression, "p" ) as BinaryExpression;
-            BinaryExpression result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, null );
 
-            return result;
+            if ( values.Length >= 3 && comparisonType == ComparisonType.Between )
+            {
+                var numberRangeEditor = new NumberRangeEditor();
+                numberRangeEditor.DelimitedValues = values[2];
+
+                decimal ageValueStart = numberRangeEditor.LowerValue ?? 0;
+                decimal ageValueEnd = numberRangeEditor.UpperValue ?? decimal.MaxValue;
+                var personAgeBetweenQuery = personAgeQuery.Where(
+                  p => ( ( p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
+                        ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1
+                        : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) )
+                    >= ageValueStart ) && ( ( p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
+                        ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1
+                        : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) )
+                    <= ageValueEnd ) );
+
+                BinaryExpression result = FilterExpressionExtractor.Extract<Rock.Model.Person>( personAgeBetweenQuery, parameterExpression, "p" ) as BinaryExpression;
+                return result;
+            }
+            else
+            {
+                var personAgeEqualQuery = personAgeQuery.Where(
+                          p => ( p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
+                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1
+                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) )
+                            == ageValue );
+
+                BinaryExpression compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( personAgeEqualQuery, parameterExpression, "p" ) as BinaryExpression;
+                BinaryExpression result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, null );
+                return result;
+            }
         }
 
         #endregion
