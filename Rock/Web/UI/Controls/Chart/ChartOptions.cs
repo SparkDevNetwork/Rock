@@ -397,6 +397,14 @@ function (val, axis) {
         public dynamic tickSize { get; set; }
 
         /// <summary>
+        /// Gets or sets the length of the tick.
+        /// </summary>
+        /// <value>
+        /// The length of the tick.
+        /// </value>
+        public dynamic tickLength { get; set; }
+
+        /// <summary>
         /// Gets or sets the minimum size of the tick.
         /// null or double (number of ticks) or double[] (specific minTickSize per tick).
         /// for time mode, "tickSize" and "minTickSize" are in the form "[value, unit]" where unit is one of "second", "minute", "hour", "day", "month" and "year". ex: [3, "month"]
@@ -443,7 +451,12 @@ function (val, axis) {
         /// <summary>
         /// The time
         /// </summary>
-        time
+        time,
+
+        /// <summary>
+        /// The categories (text)
+        /// </summary>
+        categories
     }
 
     /// <summary>

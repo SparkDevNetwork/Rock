@@ -68,6 +68,9 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
+                var homePhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+                var cellPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "table table-familycontactinfo" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Table );
 
@@ -80,12 +83,12 @@ namespace Rock.Web.UI.Controls
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Style, "width:20%" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
-                writer.Write( "Home Phone" );
+                writer.Write( homePhone != null ? homePhone.Value.EndsWith( "Phone" ) ? homePhone.Value : homePhone.Value + " Phone" : "Home Phone" );
                 writer.RenderEndTag();
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Style, "width:20%" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
-                writer.Write( "Cell Phone" );
+                writer.Write( cellPhone != null ? cellPhone.Value.EndsWith( "Phone" ) ? cellPhone.Value : cellPhone.Value + " Phone" : "Cell Phone" );
                 writer.RenderEndTag();
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Style, "width:40%" );

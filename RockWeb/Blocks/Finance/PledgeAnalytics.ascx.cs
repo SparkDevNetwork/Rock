@@ -82,6 +82,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( !Page.IsPostBack )
             {
+                LoadSettingsFromUserPreferences();
                 BindGrid();
             }
         }
@@ -112,6 +113,27 @@ namespace RockWeb.Blocks.Finance
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnApply control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnApply_Click(object sender, EventArgs e)
+        {
+            SaveSettingsToUserPreferences();
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the rblInclude control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rblInclude_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ShowHideFilters();
+        }
+
         #endregion
 
         #region Methods
@@ -121,10 +143,32 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
-            
+            int accountId = -1;
+            int.TryParse(apAccount.SelectedValue, out accountId);
+
+
             var pledgeService = new FinancialPledgeService(_rockContext);
 
-            var qry = pledgeService.Queryable().AsNoTracking();
+            var qry = pledgeService.Queryable().AsNoTracking()
+                            .Where(p => p.AccountId == accountId);
+
+            // apply pledge date range
+            if ( drpDateRange.LowerValue.HasValue && drpDateRange.UpperValue.HasValue )
+            {
+                qry = qry.Where(p => ( p.StartDate <= drpDateRange.LowerValue.Value && p.EndDate >= drpDateRange.LowerValue.Value ) || ( p.StartDate <= drpDateRange.UpperValue.Value && p.EndDate >= drpDateRange.UpperValue.Value ));
+            }
+            else
+            {
+                if ( drpDateRange.LowerValue.HasValue )
+                {
+                    qry = qry.Where(p => p.StartDate <= drpDateRange.LowerValue.Value && p.EndDate >= drpDateRange.LowerValue.Value);
+                }
+
+                if ( drpDateRange.UpperValue.HasValue )
+                {
+                    qry = qry.Where(p => p.StartDate <= drpDateRange.UpperValue.Value && p.EndDate >= drpDateRange.UpperValue.Value);
+                }
+            }
 
             var pledgeSummary = qry
                     .GroupBy( p => new 
@@ -141,11 +185,114 @@ namespace RockWeb.Blocks.Finance
                         PledgeTotal = p.Sum( t => t.TotalAmount)
                     } );
 
+            
+            var givingQry = new FinancialTransactionDetailService(_rockContext).Queryable().AsNoTracking()
+                                    .Where(t => t.AccountId == accountId)
+                                    .GroupBy(t => t.Transaction.AuthorizedPersonAlias.Person.GivingId)
+                                    .Select(t => new {
+                                                       GivingId = t.Key,
+                                                       TotalGivingAmount = t.Sum(a => a.Amount),
+                                                       GiftCount = t.Count()
+                                                     });
 
-            gList.DataSource = pledgeSummary.ToList();
+            var resultsQry = pledgeSummary.GroupJoin(
+                                                givingQry,
+                                                p => p.GivingId,
+                                                c => c.GivingId,
+                                                ( p, c ) => new { p, c }
+                                                )
+                                                .SelectMany( x => x.c.DefaultIfEmpty(), ( g, u ) => new { g.p, u } )
+                                                .Select( res => new { res.p.GivingId, res.p.AccountId, res.p.AccountName, res.p.PledgeTotal, TotalGivingAmount = ( res.u.TotalGivingAmount != null ? res.u.TotalGivingAmount : 0 ), GivingCount = ( res.u.GiftCount != null ? res.u.GiftCount : 0 ) } );
+                                                            
+            // filter pledge range
+            if ( nrePledgeAmount.Visible && nrePledgeAmount.LowerValue.HasValue )
+            {
+                resultsQry = resultsQry.Where( p => p.PledgeTotal >= nrePledgeAmount.LowerValue.Value );
+            }
+
+            if ( nrePledgeAmount.Visible && nrePledgeAmount.UpperValue.HasValue )
+            {
+                resultsQry = resultsQry.Where( p => p.PledgeTotal <= nrePledgeAmount.UpperValue.Value );
+            }
+
+
+            gList.DataSource = resultsQry.ToList();
             gList.DataBind();
         }
 
+        /// <summary>
+        /// Saves the attendance reporting settings to user preferences.
+        /// </summary>
+        private void SaveSettingsToUserPreferences()
+        {
+            string keyPrefix = string.Format("pledge-analytics-{0}-", this.BlockId);
+
+            this.SetUserPreference(keyPrefix + "apAccount", apAccount.SelectedValue);
+
+            this.SetUserPreference(keyPrefix + "drpDateRange", drpDateRange.DelimitedValues);
+
+            this.SetUserPreference(keyPrefix + "nrePledgeAmount", nrePledgeAmount.DelimitedValues);
+            this.SetUserPreference(keyPrefix + "nrePercentComplete", nrePercentComplete.DelimitedValues);
+            this.SetUserPreference(keyPrefix + "nreAmountGiven", nreAmountGiven.DelimitedValues);
+
+            this.SetUserPreference(keyPrefix + "Include", rblInclude.SelectedValue);
+        }
+
+        /// <summary>
+        /// Loads the attendance reporting settings from user preferences.
+        /// </summary>
+        private void LoadSettingsFromUserPreferences()
+        {
+            string keyPrefix = string.Format("pledge-analytics-{0}-", this.BlockId);
+
+
+            string accountSetting = this.GetUserPreference(keyPrefix + "apAccount");
+            if ( !string.IsNullOrWhiteSpace(accountSetting) )
+            {
+                apAccount.SetValue(Int32.Parse(accountSetting));
+            }
+            
+            
+            drpDateRange.DelimitedValues = this.GetUserPreference(keyPrefix + "drpDateRange");
+
+            nrePledgeAmount.DelimitedValues = this.GetUserPreference(keyPrefix + "nrePledgeAmount");
+            nrePercentComplete.DelimitedValues = this.GetUserPreference(keyPrefix + "nrePercentComplete");
+            nreAmountGiven.DelimitedValues = this.GetUserPreference(keyPrefix + "nreAmountGiven");
+
+            string includeSetting = this.GetUserPreference(keyPrefix + "Include");
+            if ( !string.IsNullOrWhiteSpace(includeSetting) )
+            {
+                rblInclude.SetValue(Int32.Parse(includeSetting));
+            }
+            
+            ShowHideFilters();
+        }
+
+        /// <summary>
+        /// Shows the hide filters.
+        /// </summary>
+        private void ShowHideFilters()
+        {
+            
+
+            int includeOption = 0;
+
+            int.TryParse(rblInclude.SelectedValue, out includeOption);
+
+            if ( includeOption == 0 )
+            {
+                nrePercentComplete.Visible = true;
+                nreAmountGiven.Visible = true;
+            }
+            else
+            {
+                nrePercentComplete.Visible = false;
+                nreAmountGiven.Visible = false;
+            }
+        }
+
         #endregion
-    }
+
+        
+}
 }
