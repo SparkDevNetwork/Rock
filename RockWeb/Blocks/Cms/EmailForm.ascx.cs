@@ -114,6 +114,11 @@ namespace RockWeb.Blocks.Cms
             {
                 ShowForm();
                 pnlEmailForm.Visible = true;
+
+                if ( !string.IsNullOrWhiteSpace(GetAttributeValue("SubmitButtonText")) )
+                {
+                    btnSubmit.Text = GetAttributeValue("SubmitButtonText");
+                }
             }
         }
 
@@ -218,7 +223,7 @@ namespace RockWeb.Blocks.Cms
                 string message = GetAttributeValue("MessageBody").ResolveMergeFields(mergeFields);
                 string fromEmail = GetAttributeValue("FromEmail");
                 string subject = GetAttributeValue("Subject");
-                Email.Send(fromEmail, subject, recipients, message, ResolveRockUrl( "~/"), ResolveRockUrl( "~~/"));
+                Email.Send(fromEmail, subject, recipients, message, ResolveRockUrl( "~/"), ResolveRockUrl( "~~/"), attachments);
 
                 // set response
                 if ( !string.IsNullOrWhiteSpace(GetAttributeValue("ResponsePage")) )

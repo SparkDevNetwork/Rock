@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+
+using Rock.Attribute;
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -25,7 +27,7 @@ namespace Rock.CheckIn
     /// A person option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInPerson : Lava.ILiquidizable
+    public class CheckInPerson : Lava.ILiquidizable, IHasAttributesWrapper
     {
         /// <summary>
         /// Gets or sets the person.
@@ -210,6 +212,14 @@ namespace Rock.CheckIn
             {
                 return Person.ContainsKey( key );
             }
+        }
+
+        /// <summary>
+        /// Gets the property that has attributes.
+        /// </summary>
+        public IHasAttributes HasAttributesEntity
+        {
+            get { return Person; }
         }
     }
 }
