@@ -184,16 +184,6 @@ namespace Rock.Model
                 } ).ToList();
             }
 
-            var resultsBySeries = result.GroupBy( a => a.SeriesId );
-            foreach ( var resultBySeries in resultsBySeries.ToList() )
-            {
-                if ( resultBySeries.Count() == 1 )
-                {
-                    var dummyZeroDate = startDate ?? DateTime.MinValue;
-                    result.Insert( 0, new SummaryData { DateTime = dummyZeroDate, DateTimeStamp = dummyZeroDate.ToJavascriptMilliseconds(), SeriesId = resultBySeries.First().SeriesId, YValue = 0 } );
-                }
-            }
-
             return result;
         }
 

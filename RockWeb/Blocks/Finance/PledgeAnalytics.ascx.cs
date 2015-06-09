@@ -185,21 +185,38 @@ namespace RockWeb.Blocks.Finance
                         PledgeTotal = p.Sum( t => t.TotalAmount)
                     } );
 
+            
+            var givingQry = new FinancialTransactionDetailService(_rockContext).Queryable().AsNoTracking()
+                                    .Where(t => t.AccountId == accountId)
+                                    .GroupBy(t => t.Transaction.AuthorizedPersonAlias.Person.GivingId)
+                                    .Select(t => new {
+                                                       GivingId = t.Key,
+                                                       TotalGivingAmount = t.Sum(a => a.Amount),
+                                                       GiftCount = t.Count()
+                                                     });
 
-
+            var resultsQry = pledgeSummary.GroupJoin(
+                                                givingQry,
+                                                p => p.GivingId,
+                                                c => c.GivingId,
+                                                ( p, c ) => new { p, c }
+                                                )
+                                                .SelectMany( x => x.c.DefaultIfEmpty(), ( g, u ) => new { g.p, u } )
+                                                .Select( res => new { res.p.GivingId, res.p.AccountId, res.p.AccountName, res.p.PledgeTotal, TotalGivingAmount = ( res.u.TotalGivingAmount != null ? res.u.TotalGivingAmount : 0 ), GivingCount = ( res.u.GiftCount != null ? res.u.GiftCount : 0 ) } );
+                                                            
             // filter pledge range
             if ( nrePledgeAmount.Visible && nrePledgeAmount.LowerValue.HasValue )
             {
-                pledgeSummary = pledgeSummary.Where(p => p.PledgeTotal >= nrePledgeAmount.LowerValue.Value);
+                resultsQry = resultsQry.Where( p => p.PledgeTotal >= nrePledgeAmount.LowerValue.Value );
             }
 
             if ( nrePledgeAmount.Visible && nrePledgeAmount.UpperValue.HasValue )
             {
-                pledgeSummary = pledgeSummary.Where(p => p.PledgeTotal <= nrePledgeAmount.UpperValue.Value);
+                resultsQry = resultsQry.Where( p => p.PledgeTotal <= nrePledgeAmount.UpperValue.Value );
             }
 
 
-            gList.DataSource = pledgeSummary.ToList();
+            gList.DataSource = resultsQry.ToList();
             gList.DataBind();
         }
 

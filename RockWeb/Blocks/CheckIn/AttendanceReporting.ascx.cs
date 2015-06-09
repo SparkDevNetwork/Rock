@@ -49,12 +49,6 @@ namespace RockWeb.Blocks.CheckIn
 
         private RockContext _rockContext = null;
 
-        private List<DateTime> _possibleAttendances = null;
-        private Dictionary<int, string> _scheduleNameLookup = null;
-
-        private List<Guid> ProcessedGroupTypeIds = new List<Guid>();
-        private List<Guid> ProcessedGroupIds = new List<Guid>();
-
         #endregion
 
         #region Base Control Methods
@@ -110,15 +104,16 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnLoad( e );
 
-            ProcessedGroupTypeIds = new List<Guid>();
-            ProcessedGroupIds = new List<Guid>();
-
             // GroupTypesUI dynamically creates controls, so we need to rebuild it on every OnLoad()
             BuildGroupTypesUI();
 
             var chartStyleDefinedValueGuid = this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull();
 
             lcAttendance.Options.SetChartStyle( chartStyleDefinedValueGuid );
+            bcAttendance.Options.SetChartStyle( chartStyleDefinedValueGuid );
+            bcAttendance.Options.xaxis = new AxisOptions { mode = AxisMode.categories, tickLength = 0 };
+            bcAttendance.Options.series.bars.barWidth = 0.6;
+            bcAttendance.Options.series.bars.align = "center";
 
             if ( !Page.IsPostBack )
             {
@@ -248,7 +243,13 @@ namespace RockWeb.Blocks.CheckIn
                 lcAttendance.ChartClick += lcAttendance_ChartClick;
             }
 
-            var dataSourceUrl = "~/api/Attendances/GetChartData";
+            bcAttendance.ShowTooltip = true;
+            if ( this.DetailPageGuid.HasValue )
+            {
+                bcAttendance.ChartClick += lcAttendance_ChartClick;
+            }
+
+            var lineChartDataSourceUrl = "~/api/Attendances/GetChartData";
             var dataSourceParams = new Dictionary<string, object>();
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
 
@@ -273,7 +274,7 @@ namespace RockWeb.Blocks.CheckIn
 function(item) {
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
     var dateText = 'Weekend of <br />' + itemDate.toLocaleDateString();
-    var seriesLabel = item.series.label;
+    var seriesLabel = item.series.label || ( item.series.labels ? item.series.labels[item.dataIndex] : null );
     var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal || '-';
     return dateText + '<br />' + seriesLabel + ': ' + pointValue;
 }
@@ -290,7 +291,7 @@ function(item) {
     var month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
     var dateText = month_names[itemDate.getMonth()] + ' ' + itemDate.getFullYear();
-    var seriesLabel = item.series.label;
+    var seriesLabel = item.series.label || ( item.series.labels ? item.series.labels[item.dataIndex] : null );
     var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal || '-';
     return dateText + '<br />' + seriesLabel + ': ' + pointValue;
 }
@@ -306,7 +307,7 @@ function(item) {
 function(item) {
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
     var dateText = itemDate.getFullYear();
-    var seriesLabel = item.series.label;
+    var seriesLabel = item.series.label || ( item.series.labels ? item.series.labels[item.dataIndex] : null );
     var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal || '-';
     return dateText + '<br />' + seriesLabel + ': ' + pointValue;
 }
@@ -343,7 +344,7 @@ function(item) {
 
             SaveSettingsToUserPreferences();
 
-            dataSourceUrl += "?" + dataSourceParams.Select( s => string.Format( "{0}={1}", s.Key, s.Value ) ).ToList().AsDelimited( "&" );
+            lineChartDataSourceUrl += "?" + dataSourceParams.Select( s => string.Format( "{0}={1}", s.Key, s.Value ) ).ToList().AsDelimited( "&" );
 
             // if no Campuses or Groups are selected show a warning since no data will show up
             nbCampusesWarning.Visible = false;
@@ -361,11 +362,18 @@ function(item) {
                 return;
             }
 
-            lcAttendance.DataSourceUrl = this.ResolveUrl( dataSourceUrl );
+            lcAttendance.DataSourceUrl = this.ResolveUrl( lineChartDataSourceUrl );
+            bcAttendance.TooltipFormatter = lcAttendance.TooltipFormatter;
+            bcAttendance.DataSourceUrl = this.ResolveUrl( lineChartDataSourceUrl );
+
+            var chartData = this.GetAttendanceChartData();
+            var singleDateTime = chartData.GroupBy(a => a.DateTimeStamp).Count() == 1;
+            bcAttendance.Visible = singleDateTime;
+            lcAttendance.Visible = !singleDateTime;
 
             if ( pnlChartAttendanceGrid.Visible )
             {
-                BindChartAttendanceGrid();
+                BindChartAttendanceGrid( chartData );
             }
 
             if ( pnlShowByAttendees.Visible )
@@ -564,20 +572,18 @@ function(item) {
         /// </summary>
         private void BindChartAttendanceGrid()
         {
-            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
+            var chartData = GetAttendanceChartData();
 
-            string groupIds = GetSelectedGroupIds().AsDelimited( "," );
-            string campusIds = cpCampuses.SelectedCampusIds.AsDelimited( "," );
+            BindChartAttendanceGrid( chartData );
+        }
 
+        /// <summary>
+        /// Binds the chart attendance grid.
+        /// </summary>
+        /// <param name="chartData">The chart data.</param>
+        private void BindChartAttendanceGrid( IEnumerable<Rock.Chart.IChartData> chartData )
+        {
             SortProperty sortProperty = gChartAttendance.SortProperty;
-
-            var chartData = new AttendanceService( _rockContext ).GetChartData(
-                hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week,
-                hfGraphBy.Value.ConvertToEnumOrNull<AttendanceGraphBy>() ?? AttendanceGraphBy.Total,
-                dateRange.Start,
-                dateRange.End,
-                groupIds,
-                campusIds );
 
             if ( sortProperty != null )
             {
@@ -590,6 +596,30 @@ function(item) {
 
             gChartAttendance.DataBind();
         }
+
+        /// <summary>
+        /// Gets the chart data.
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerable<Rock.Chart.IChartData> GetAttendanceChartData()
+        {
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
+
+            string groupIds = GetSelectedGroupIds().AsDelimited( "," );
+            string campusIds = cpCampuses.SelectedCampusIds.AsDelimited( "," );
+
+            var chartData = new AttendanceService( _rockContext ).GetChartData(
+                hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week,
+                hfGraphBy.Value.ConvertToEnumOrNull<AttendanceGraphBy>() ?? AttendanceGraphBy.Total,
+                dateRange.Start,
+                dateRange.End,
+                groupIds,
+                campusIds );
+            return chartData;
+        }
+
+        private List<DateTime> _possibleAttendances = null;
+        private Dictionary<int, string> _scheduleNameLookup = null;
 
         /// <summary>
         /// Binds the attendees grid.
@@ -1148,53 +1178,59 @@ function(item) {
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
         /// <param name="pnlGroupTypes">The PNL group types.</param>
-        private void AddGroupTypeControls( GroupType groupType, HtmlGenericContainer liGroupTypeItem )
+        private void AddGroupTypeControls( GroupType groupType, HtmlGenericContainer liGroupTypeItem, List<int> addedGroupTypes = null )
         {
-            ProcessedGroupTypeIds.Add( groupType.Guid );
-
-            if ( groupType.Groups.Any() )
+            if ( addedGroupTypes == null )
             {
-                bool showGroupAncestry = GetAttributeValue( "ShowGroupAncestry" ).AsBoolean( true );
+                addedGroupTypes = new List<int>();
+            }
 
-                var groupService = new GroupService( _rockContext );
+            if ( !addedGroupTypes.Contains( groupType.Id ) )
+            {
+                addedGroupTypes.Add( groupType.Id );
 
-                var cblGroupTypeGroups = new RockCheckBoxList { ID = "cblGroupTypeGroups" + groupType.Id };
-
-                cblGroupTypeGroups.Label = groupType.Name;
-                cblGroupTypeGroups.Items.Clear();
-
-                var allGroupIds = groupType.Groups.Select( g => g.Id ).ToList();
-                foreach ( var group in groupType.Groups
-                    .Where( g => !g.ParentGroupId.HasValue ||
-                        !allGroupIds.Contains( g.ParentGroupId.Value ) )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name )
-                    .ToList() )
+                if ( groupType.Groups.Any() )
                 {
-                    AddGroupControls( group, cblGroupTypeGroups, groupService, showGroupAncestry );
+                    bool showGroupAncestry = GetAttributeValue( "ShowGroupAncestry" ).AsBoolean( true );
+
+                    var groupService = new GroupService( _rockContext );
+
+                    var cblGroupTypeGroups = new RockCheckBoxList { ID = "cblGroupTypeGroups" + groupType.Id };
+
+                    cblGroupTypeGroups.Label = groupType.Name;
+                    cblGroupTypeGroups.Items.Clear();
+
+                    foreach ( var group in groupType.Groups
+                        .Where( g => !g.ParentGroupId.HasValue )
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.Name )
+                        .ToList() )
+                    {
+                        AddGroupControls( group, cblGroupTypeGroups, groupService, showGroupAncestry );
+                    }
+
+                    liGroupTypeItem.Controls.Add( cblGroupTypeGroups );
+                }
+                else
+                {
+                    if ( groupType.ChildGroupTypes.Any() )
+                    {
+                        liGroupTypeItem.Controls.Add( new Label { Text = groupType.Name, ID = "lbl" + groupType.Name } );
+                    }
                 }
 
-                liGroupTypeItem.Controls.Add( cblGroupTypeGroups );
-            }
-            else
-            {
                 if ( groupType.ChildGroupTypes.Any() )
                 {
-                    liGroupTypeItem.Controls.Add( new Label { Text = groupType.Name, ID = "lbl" + groupType.Name } );
-                }
-            }
+                    var ulGroupTypeList = new HtmlGenericContainer( "ul", "rocktree-children" );
 
-            if ( groupType.ChildGroupTypes.Any() )
-            {
-                var ulGroupTypeList = new HtmlGenericContainer( "ul", "rocktree-children" );
-
-                liGroupTypeItem.Controls.Add( ulGroupTypeList );
-                foreach ( var childGroupType in groupType.ChildGroupTypes.Where( a => !ProcessedGroupTypeIds.Contains( a.Guid ) ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
-                {
-                    var liChildGroupTypeItem = new HtmlGenericContainer( "li", "rocktree-item rocktree-folder" );
-                    liChildGroupTypeItem.ID = "liGroupTypeItem" + childGroupType.Id;
-                    ulGroupTypeList.Controls.Add( liChildGroupTypeItem );
-                    AddGroupTypeControls( childGroupType, liChildGroupTypeItem );
+                    liGroupTypeItem.Controls.Add( ulGroupTypeList );
+                    foreach ( var childGroupType in groupType.ChildGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+                    {
+                        var liChildGroupTypeItem = new HtmlGenericContainer( "li", "rocktree-item rocktree-folder" );
+                        liChildGroupTypeItem.ID = "liGroupTypeItem" + childGroupType.Id;
+                        ulGroupTypeList.Controls.Add( liChildGroupTypeItem );
+                        AddGroupTypeControls( childGroupType, liChildGroupTypeItem, addedGroupTypes );
+                    }
                 }
             }
         }
@@ -1208,8 +1244,6 @@ function(item) {
         /// <param name="showGroupAncestry">if set to <c>true</c> [show group ancestry].</param>
         private void AddGroupControls( Group group, RockCheckBoxList checkBoxList, GroupService service, bool showGroupAncestry )
         {
-            ProcessedGroupIds.Add( group.Guid );
-
             // Only show groups that actually have a schedule
             if ( group != null )
             {
@@ -1222,8 +1256,6 @@ function(item) {
                 if ( group.Groups != null )
                 {
                     foreach ( var childGroup in group.Groups
-                        .Where( a => !ProcessedGroupIds.Contains( a.Guid ) &&
-                            a.GroupTypeId == group.GroupTypeId )
                         .OrderBy( a => a.Order )
                         .ThenBy( a => a.Name )
                         .ToList() )

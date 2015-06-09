@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Examples
 
     [TextField( "XML Document URL", "The URL for the input sample data XML document.", false, "http://storage.rockrms.com/sampledata/sampledata.xml", "", 1 )]
     [BooleanField( "Fabricate Attendance", "If true, then fake attendance data will be fabricated (if the right parameters are in the xml)", true, "", 2 )]
-    [BooleanField( "Enable Stopwatch", "If true, a stopwatch will be used to time each of the major operations.", false, "", 3 )]
+    [BooleanField( "Enable Stopwatch", "If true, a stopwatch will be used to time each of the major operations.", true, "", 3 )]
     public partial class SampleData : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -541,6 +541,7 @@ namespace RockWeb.Blocks.Examples
                                       Type = n.Attribute( "type" ).Value,
                                       Text = n.Attribute( "text" ).Value,
                                       IsPrivate = n.Attribute( "isPrivate" ) != null ? n.Attribute( "isPrivate" ).Value : "false",
+                                      IsAlert = n.Attribute( "isAlert" ) != null ? n.Attribute( "isAlert" ).Value : "false",
                                       ByPersonGuid = n.Attribute( "byGuid" ) != null ? n.Attribute( "byGuid" ).Value : null,
                                       Date = n.Attribute( "date" ) != null ? n.Attribute( "date" ).Value : null
                                   };
@@ -548,7 +549,7 @@ namespace RockWeb.Blocks.Examples
 	        foreach ( var r in peopleWithNotes )
 	        {
                 int personId = _peopleDictionary[ r.PersonGuid.AsGuid() ];
-                AddNote( personId, r.Type, r.Text, r.Date, r.ByPersonGuid, r.IsPrivate, rockContext );
+                AddNote( personId, r.Type, r.Text, r.Date, r.ByPersonGuid, r.IsPrivate, r.IsAlert, rockContext );
 	        }
         }
 
@@ -1809,7 +1810,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="noteDate">(optional) The date the note was created</param>
         /// <param name="byPersonGuid">(optional) The guid of the person who created the note</param>
         /// <param name="rockContext"></param>
-        private void AddNote( int personId, string noteTypeName, string noteText, string noteDate, string byPersonGuid, string isPrivate, RockContext rockContext )
+        private void AddNote( int personId, string noteTypeName, string noteText, string noteDate, string byPersonGuid, string isPrivate, string isAlert, RockContext rockContext )
         {
             var service = new NoteTypeService( rockContext );
             var noteType = service.Get( _personEntityTypeId, noteTypeName );
@@ -1833,6 +1834,7 @@ namespace RockWeb.Blocks.Examples
                     Caption = string.Empty,
                     CreatedByPersonAliasId = createdByPersonAliasId,
                     Text = noteText,
+                    IsAlert = isAlert.AsBoolean(),
                     CreatedDateTime = string.IsNullOrWhiteSpace( noteDate ) ? RockDateTime.Now : DateTime.Parse( noteDate, new CultureInfo( "en-US" ) )
                 };
 
