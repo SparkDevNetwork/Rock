@@ -222,8 +222,10 @@ namespace RockWeb.Blocks.Cms
                 List<string> recipients = GetAttributeValue("RecipientEmail").Split(',').ToList();
                 string message = GetAttributeValue("MessageBody").ResolveMergeFields(mergeFields);
                 string fromEmail = GetAttributeValue("FromEmail");
+                string fromName = GetAttributeValue( "FromName" );
                 string subject = GetAttributeValue("Subject");
-                Email.Send(fromEmail, subject, recipients, message, ResolveRockUrl( "~/"), ResolveRockUrl( "~~/"), attachments);
+                
+                Email.Send(fromEmail, fromName, subject, recipients, message, ResolveRockUrl( "~/"), ResolveRockUrl( "~~/"), attachments);
 
                 // set response
                 if ( !string.IsNullOrWhiteSpace(GetAttributeValue("ResponsePage")) )

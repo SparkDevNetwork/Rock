@@ -524,7 +524,7 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         public override void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null)
         {
-            Send(recipients, from, subject, body, appRoot, themeRoot, null);
+            Send(recipients, from, string.Empty, subject, body, appRoot, themeRoot, null);
         }
 
         /// <summary>
@@ -537,7 +537,23 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">Attachments.</param>
-        public override void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null)
+        public override void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
+        {
+            Send( recipients, from, string.Empty, subject, body, appRoot, themeRoot, attachments );
+        }
+
+
+        /// <summary>
+        /// Sends the specified recipients.
+        /// </summary>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="from">From.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="body">The body.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <param name="attachments">Attachments.</param>
+        public override void Send(List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null)
         {
             try
             {
@@ -571,7 +587,17 @@ namespace Rock.Communication.Transport
                     }
 
                     MailMessage message = new MailMessage();
-                    message.From = new MailAddress( msgFrom );
+                    
+                    // set from 
+                    if ( !string.IsNullOrWhiteSpace( fromName ) )
+                    {
+                        message.From = new MailAddress( msgFrom, fromName );
+                    }
+                    else
+                    {
+                        message.From = new MailAddress( msgFrom );
+                    }
+
                     CheckSafeSender( message, globalAttributes );
 
                     message.IsBodyHtml = true;
