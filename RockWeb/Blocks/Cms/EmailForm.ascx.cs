@@ -47,9 +47,71 @@ namespace RockWeb.Blocks.Cms
     [TextField("Subject", "The subject line for the email.", true, "", "", 1)]
     [EmailField("From Email", "The email address to use for the from.", true, "", "", 2)]
     [TextField("From Name", "The name to use for the from address.", true, "", "", 3)]
-    [CodeEditorField("HTML Form", "The HTML for the form the user will complete. <span class='tip tip-lava'></span>", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, false, "", "", 5)]
-    [CodeEditorField("Message Body", "The email message body. <span class='tip tip-lava'></span>", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, false, "", "", 5)]  
-    [CodeEditorField("Response Message", "The message the user will see when they submit the form if no response page if provided.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "","",6)]
+    [CodeEditorField( "HTML Form", "The HTML for the form the user will complete. <span class='tip tip-lava'></span>", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, false, @"{% if CurentUser %}
+    {{ CurrentPerson.NickName }}, could you please complete the form below.
+{% else %}
+    Please complete the form below.
+{% endif %}
+
+<div class=""form-group"">
+    <label for=""firstname"">First Name</label>
+    {% if CurrentPerson %}
+        <p>{{ CurrentPerson.NickName }}</p>
+        <input type=""hidden"" id=""firstname"" name=""FirstName"" value=""{{ CurrentPerson.NickName }}"" />
+    {% else %}
+        <input class=""form-control"" id=""firstname"" name=""FirstName"" placeholder=""First Name"" required />
+    {% endif %}
+</div>
+
+<div class=""form-group"">
+    <label for=""lastname"">Last Name</label>
+    
+    {% if CurrentPerson %}
+        <p>{{ CurrentPerson.LastName }}</p>
+        <input type=""hidden"" id=""lastname"" name=""LastName"" value=""{{ CurrentPerson.LastName }}"" />
+    {% else %}
+        <input class=""form-control"" id=""lastname"" name=""LastName"" placeholder=""Last Name"" required />
+    {% endif %}
+</div>
+
+<div class=""form-group"">
+    <label for=""email"">Email</label>
+    {% if CurrentPerson %}
+        <input class=""form-control"" id=""email"" name=""Email"" value=""{{ CurrentPerson.Email }}"" placeholder=""Email"" required />
+    {% else %}
+        <input class=""form-control"" id=""email"" name=""Email"" placeholder=""Email"" required />
+    {% endif %}
+</div>
+
+<div class=""form-group"">
+    <label for=""email"">Message</label>
+    <textarea id=""message"" rows=""4"" class=""form-control"" name=""Message"" placeholder=""Message"" required></textarea>
+</div>
+
+<div class=""form-group"">
+    <label for=""email"">Attachment</label>
+    <input type=""file"" id=""attachment"" name=""attachment"" /> <br />
+    <input type=""file"" id=""attachment2"" name=""attachment2"" />
+</div>
+", "", 5 )]
+    [CodeEditorField( "Message Body", "The email message body. <span class='tip tip-lava'></span>", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, false, @"{{ GlobalAttribute.EmailHeader }}
+
+<p>
+    A email form has been submitted. Please find the information below:
+</p>
+
+{% for field in FormFields %}
+    {% assign fieldParts = field | PropertyToKeyValue %}
+
+    <strong>{{ fieldParts.Key | Humanize | Capitalize }}</strong>: {{ fieldParts.Value }} <br/>
+{% endfor %}
+
+<p>&nbsp;</p>
+
+{{ GlobalAttribute.EmailFooter }}", "", 5 )]  
+    [CodeEditorField("Response Message", "The message the user will see when they submit the form if no response page if provided.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"<div class=""alert alert-info"">
+    Thank you for your response. We appreciate your feedback!
+</div>","",6)]
     [LinkedPage("Response Page", "The page the use will be taken to after submitting the form. Use the 'Response Message' field if you just need a simple message.", false, "", "", 7)]
     [TextField("Submit Button Text", "The text to display for the submit button.", true, "Submit", "", 8)]
     [BooleanField("Enable Debug", "Shows the fields available to merge in lava.", false, "", 9)]
@@ -118,6 +180,16 @@ namespace RockWeb.Blocks.Cms
                 if ( !string.IsNullOrWhiteSpace(GetAttributeValue("SubmitButtonText")) )
                 {
                     btnSubmit.Text = GetAttributeValue("SubmitButtonText");
+                }
+
+                if ( string.IsNullOrWhiteSpace( GetAttributeValue( "RecipientEmail" ) ) )
+                {
+                    lError.Text = "<div class='alert alert-warning'>A recipient has not been provided for this form.</div>";
+                }
+
+                if ( string.IsNullOrWhiteSpace( GetAttributeValue( "Subject" ) ) )
+                {
+                    lError.Text += "<div class='alert alert-warning'>A subject has not been provided for this form.</div>";
                 }
             }
         }
