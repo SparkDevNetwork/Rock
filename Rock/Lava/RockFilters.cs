@@ -377,6 +377,21 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Trims the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string Trim( object input )
+        {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+
+            return input.ToString().Trim();
+        }
+
+        /// <summary>
         /// Remove the first occurrence of a substring - this is a Rock version on this filter which takes any object
         /// </summary>
         /// <param name="input"></param>
@@ -821,18 +836,30 @@ namespace Rock.Lava
             }
 
             // If input is an object that has attributes, find it's attribute value
-            else if ( input is IHasAttributes)
-            {
-                var item = (IHasAttributes)input;
-                if ( item.Attributes == null)
+            else
+            { 
+                IHasAttributes item = null;
+                if ( input is IHasAttributes)
                 {
-                    item.LoadAttributes( rockContext );
+                    item = (IHasAttributes)input;
+                }
+                else if ( input is IHasAttributesWrapper )  
+                {
+                    item = ((IHasAttributesWrapper)input).HasAttributesEntity;
                 }
 
-                if ( item.Attributes.ContainsKey(attributeKey))
+                if ( item != null )
                 {
-                    attribute = item.Attributes[attributeKey];
-                    rawValue = item.AttributeValues[attributeKey].Value;
+                    if ( item.Attributes == null )
+                    {
+                        item.LoadAttributes( rockContext );
+                    }
+
+                    if ( item.Attributes.ContainsKey( attributeKey ) )
+                    {
+                        attribute = item.Attributes[attributeKey];
+                        rawValue = item.AttributeValues[attributeKey].Value;
+                    }
                 }
             }
 

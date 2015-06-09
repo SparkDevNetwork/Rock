@@ -214,6 +214,7 @@ namespace Rock.Reporting
 
         /// <summary>
         /// Registers Javascript to hide/show .js-filter-control child elements of a .js-filter-compare dropdown
+        /// see RockWeb\Scripts\Rock\reportingInclude.js
         /// </summary>
         /// <value>
         /// </value>

@@ -275,10 +275,12 @@ namespace Rock.Web.UI.Controls
             Controls.Add(_cbIsMessagingEnabled);
             Controls.Add(_ebEmail);
 
-            _pnbHomePhone.Placeholder = "Home Phone";
+            var homePhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+            _pnbHomePhone.Placeholder = homePhone != null ? homePhone.Value.EndsWith("Phone") ? homePhone.Value : homePhone.Value + " Phone" : "Home Phone";
             _pnbHomePhone.Required = false;
 
-            _pnbCellPhone.Placeholder = "Cell Phone";
+            var cellPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+            _pnbCellPhone.Placeholder = cellPhone != null ? cellPhone.Value.EndsWith( "Phone" ) ? cellPhone.Value : cellPhone.Value + " Phone" : "Cell Phone";
             _pnbCellPhone.Required = false;
 
             _cbIsMessagingEnabled.Checked = true;

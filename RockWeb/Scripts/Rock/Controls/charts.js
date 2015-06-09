@@ -170,6 +170,32 @@
             },
 
             ///
+            /// handles putting chart data into a bar chart
+            ///
+            plotBarChartData: function (chartData, chartOptions, plotSelector) {
+                var barData = [];
+                var seriesLabels = [];
+
+                // populate the chartMeasurePoints data array with data from the REST result for pie data
+                for (var i = 0; i < chartData.length; i++) {
+
+                    var seriesCategory = chartData[i].SeriesId;
+                    barData.push([seriesCategory, chartData[i].YValue])
+                    seriesLabels.push(chartData[i].SeriesId);
+                }
+
+                if (barData.length > 0) {
+                    // plot the bar chart
+                    chartOptions.series.chartData = chartData;
+                    chartOptions.series.labels = seriesLabels;
+                    $.plot(plotSelector, [barData], chartOptions);
+                }
+                else {
+                    $(plotSelector).html('<div class="alert alert-info">No Data Found</div>');
+                }
+            },
+
+            ///
             /// attaches a bootstrap style tooltip to the 'plothover' of a chart
             ///
             bindTooltip: function (plotContainerId, tooltipFormatter) {
@@ -195,16 +221,18 @@
                             tooltipText = tooltipFormatter(item);
                         }
                         else {
-                            if (item.series.chartData[item.dataIndex].DateTimeStamp) {
-                                tooltipText = new Date(item.series.chartData[item.dataIndex].DateTimeStamp).toLocaleDateString();
-                            };
+                            if (item.series.chartData) {
+                                if (item.series.chartData[item.dataIndex].DateTimeStamp) {
+                                    tooltipText = new Date(item.series.chartData[item.dataIndex].DateTimeStamp).toLocaleDateString();
+                                };
 
-                            if (item.series.chartData[item.dataIndex].StartDateTimeStamp) {
-                                tooltipText = new Date(item.series.chartData[item.dataIndex].StartDateTimeStamp).toLocaleDateString();
-                            }
+                                if (item.series.chartData[item.dataIndex].StartDateTimeStamp) {
+                                    tooltipText = new Date(item.series.chartData[item.dataIndex].StartDateTimeStamp).toLocaleDateString();
+                                }
 
-                            if (item.series.chartData[item.dataIndex].EndDateTimeStamp) {
-                                tooltipText += " to " + new Date(item.series.chartData[item.dataIndex].EndDateTimeStamp).toLocaleDateString();
+                                if (item.series.chartData[item.dataIndex].EndDateTimeStamp) {
+                                    tooltipText += " to " + new Date(item.series.chartData[item.dataIndex].EndDateTimeStamp).toLocaleDateString();
+                                }
                             }
 
                             if (tooltipText) {
@@ -215,12 +243,14 @@
                                 tooltipText += item.series.label;
                             }
 
-                            var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal || '';
+                            if (item.series.chartData) {
+                                var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal || '';
 
-                            tooltipText += ': ' + pointValue;
+                                tooltipText += ': ' + pointValue;
 
-                            if (item.series.chartData[item.dataIndex].Note) {
-                                tooltipText += '<br />' + item.series.chartData[item.dataIndex].Note;
+                                if (item.series.chartData[item.dataIndex].Note) {
+                                    tooltipText += '<br />' + item.series.chartData[item.dataIndex].Note;
+                                }
                             }
                         }
 
