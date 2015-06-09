@@ -617,6 +617,15 @@ namespace church.ccv.Datamart.Model
         [DataMember]
         public double? Longitude { get; set; }
 
+        /// <summary>
+        /// Gets or sets the last attended date.
+        /// </summary>
+        /// <value>
+        /// The last attended date.
+        /// </value>
+        [DataMember]
+        public DateTime? LastAttendedDate { get; set; }
+
         #endregion
     }
 }
