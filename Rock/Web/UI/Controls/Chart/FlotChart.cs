@@ -43,8 +43,7 @@ namespace Rock.Web.UI.Controls
         }
 
         #region Controls
-
-        private HiddenField _hfMetricId;
+        
         private HiddenFieldWithClass _hfRestUrl;
         private HiddenFieldWithClass _hfRestUrlParams;
         private HiddenFieldWithClass _hfSeriesNameUrl;
@@ -55,48 +54,10 @@ namespace Rock.Web.UI.Controls
         private Panel _pnlChartPlaceholder;
         private HelpBlock _hbChartOptions;
 
+        // if this chart is used for a metric
+        private HiddenField _hfMetricId;
+
         #endregion
-
-        /// <summary>
-        /// Gets or sets the metric identifier.
-        /// </summary>
-        /// <value>
-        /// The metric identifier.
-        /// </value>
-        public int? MetricId
-        {
-            get
-            {
-                EnsureChildControls();
-                return _hfMetricId.Value.AsIntegerOrNull();
-            }
-
-            set
-            {
-                EnsureChildControls();
-                _hfMetricId.Value = value.ToString();
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the MetricValueType (Goal or Measure)
-        /// Leave null for both
-        /// </summary>
-        /// <value>
-        /// The type of the metric value.
-        /// </value>
-        public MetricValueType? MetricValueType
-        {
-            get
-            {
-                return ViewState["MetricValueType"] as MetricValueType?;
-            }
-
-            set
-            {
-                ViewState["MetricValueType"] = value;
-            }
-        }
 
         /// <summary>
         /// Gets or sets the start date.
@@ -296,6 +257,52 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        #region Metric based chart
+
+        /// <summary>
+        /// Gets or sets the metric identifier (optional)
+        /// NOTE: Set this if the chart data comes from Metrics
+        /// </summary>
+        /// <value>
+        /// The metric identifier.
+        /// </value>
+        public int? MetricId
+        {
+            get
+            {
+                EnsureChildControls();
+                return _hfMetricId.Value.AsIntegerOrNull();
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _hfMetricId.Value = value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// If this chart is for Metrics, gets or sets the MetricValueType (Goal or Measure)
+        /// Leave null for both
+        /// </summary>
+        /// <value>
+        /// The type of the metric value.
+        /// </value>
+        public MetricValueType? MetricValueType
+        {
+            get
+            {
+                return ViewState["MetricValueType"] as MetricValueType?;
+            }
+
+            set
+            {
+                ViewState["MetricValueType"] = value;
+            }
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets or sets the options.
         /// Defaults to a default set of options
@@ -411,8 +418,6 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        
-
         /// <summary>
         /// Occurs when [chart click].
         /// </summary>
@@ -430,6 +435,7 @@ namespace Rock.Web.UI.Controls
             RockPage.AddScriptLink( this.Page, "~/Scripts/flot/jquery.flot.time.js" );
             RockPage.AddScriptLink( this.Page, "~/Scripts/flot/jquery.flot.resize.js" );
             RockPage.AddScriptLink( this.Page, "~/Scripts/flot/jquery.flot.pie.js" );
+            RockPage.AddScriptLink( this.Page, "~/Scripts/flot/jquery.flot.categories.js" );
 
             EnsureChildControls();
         }
@@ -487,7 +493,6 @@ namespace Rock.Web.UI.Controls
                     // only include MetricValueId when CombineValues is false
                     if ( !this.CombineValues )
                     {
-
                         chartClickArgs.MetricValueId = param[1].AsIntegerOrNull();
                     }
                 }
@@ -505,52 +510,11 @@ namespace Rock.Web.UI.Controls
         protected virtual void RegisterJavaScript()
         {
             var metric = new Rock.Model.MetricService( new Rock.Data.RockContext() ).Get( this.MetricId ?? 0 );
-            if ( string.IsNullOrWhiteSpace( this.XAxisLabel ) && metric != null )
-            {
-                // if XAxisLabel hasn't been set, and this is a metric, automatically set it to the metric.XAxisLabel
-                this.XAxisLabel = metric.XAxisLabel;
-            }
-
-            if ( string.IsNullOrWhiteSpace( this.YAxisLabel ) && metric != null )
-            {
-                // if YAxisLabel hasn't been set, and this is a metric, automatically set it to the metric.YAxisLabel
-                this.YAxisLabel = metric.YAxisLabel;
-            }
 
             // setup Rest URL parameters
-            if ( this.MetricId.HasValue )
+            if ( metric != null )
             {
-                _hfRestUrlParams.Value = string.Format( "{0}", this.MetricId );
-
-                List<string> filterParams = new List<string>();
-                List<string> qryParams = new List<string>();
-                if ( this.StartDate.HasValue )
-                {
-                    filterParams.Add( string.Format( "MetricValueDateTime ge DateTime'{0}'", this.StartDate.Value.ToString( "o" ) ) );
-                }
-
-                if ( this.EndDate.HasValue )
-                {
-                    filterParams.Add( string.Format( "MetricValueDateTime lt DateTime'{0}'", this.EndDate.Value.ToString( "o" ) ) );
-                }
-
-                if ( this.MetricValueType.HasValue )
-                {
-                    // MetricValueType is an enum, which isn't quite supported for $filters as of Web Api 2.1, so pass it as a regular rest param instead of as part of the odata $filter
-                    qryParams.Add( string.Format( "metricValueType={0}", this.MetricValueType ) );
-                }
-
-                if ( this.EntityId.HasValue )
-                {
-                    filterParams.Add( string.Format( "(EntityId eq {0} or EntityId eq null)", this.EntityId ) );
-                }
-
-                if ( filterParams.Count > 0 )
-                {
-                    qryParams.Add( "$filter=" + filterParams.AsDelimited( " and " ) );
-                }
-
-                _hfRestUrlParams.Value += "?" + qryParams.AsDelimited( "&" );
+                RegisterJavaScriptForMetric( metric );
             }
             else
             {
@@ -580,6 +544,12 @@ namespace Rock.Web.UI.Controls
                 scriptFormat += @"
                 Rock.controls.charts.plotPieChartData(chartData, chartOptions, plotSelector);
                 
+";
+            }
+            else if ( this.GetType() == typeof( BarChart ) )
+            {
+                scriptFormat += @"
+                Rock.controls.charts.plotBarChartData(chartData, chartOptions, plotSelector);
 ";
             }
             else
@@ -612,11 +582,12 @@ namespace Rock.Web.UI.Controls
             if ( this.MetricId.HasValue )
             {
                 seriesNameUrl = seriesNameUrl ?? "~/api/MetricValues/GetSeriesName/";
+                seriesNameUrl = this.ResolveUrl( seriesNameUrl.EnsureTrailingForwardslash() + this.MetricId + "/" );
             }
 
             if ( !string.IsNullOrWhiteSpace( seriesNameUrl ) )
             {
-                _hfSeriesNameUrl.Value = this.ResolveUrl( seriesNameUrl.EnsureTrailingForwardslash() + this.MetricId + "/" );
+                _hfSeriesNameUrl.Value = seriesNameUrl;
             }
             else
             {
@@ -636,6 +607,61 @@ namespace Rock.Web.UI.Controls
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "flot-chart-script_" + this.ClientID, script, true );
         }
+
+        #region Charting a Metric
+
+        /// <summary>
+        /// Registers the java script for metric.
+        /// </summary>
+        /// <param name="metric">The metric.</param>
+        private void RegisterJavaScriptForMetric( Metric metric )
+        {
+            if ( string.IsNullOrWhiteSpace( this.XAxisLabel ) )
+            {
+                // if XAxisLabel hasn't been set, and this is a metric, automatically set it to the metric.XAxisLabel
+                this.XAxisLabel = metric.XAxisLabel;
+            }
+
+            if ( string.IsNullOrWhiteSpace( this.YAxisLabel ) )
+            {
+                // if YAxisLabel hasn't been set, and this is a metric, automatically set it to the metric.YAxisLabel
+                this.YAxisLabel = metric.YAxisLabel;
+            }
+
+            _hfRestUrlParams.Value = string.Format( "{0}", this.MetricId );
+
+            List<string> filterParams = new List<string>();
+            List<string> qryParams = new List<string>();
+            if ( this.StartDate.HasValue )
+            {
+                filterParams.Add( string.Format( "MetricValueDateTime ge DateTime'{0}'", this.StartDate.Value.ToString( "o" ) ) );
+            }
+
+            if ( this.EndDate.HasValue )
+            {
+                filterParams.Add( string.Format( "MetricValueDateTime lt DateTime'{0}'", this.EndDate.Value.ToString( "o" ) ) );
+            }
+
+            if ( this.MetricValueType.HasValue )
+            {
+                // MetricValueType is an enum, which isn't quite supported for $filters as of Web Api 2.1, so pass it as a regular rest param instead of as part of the odata $filter
+                qryParams.Add( string.Format( "metricValueType={0}", this.MetricValueType ) );
+            }
+
+            if ( this.EntityId.HasValue )
+            {
+                filterParams.Add( string.Format( "(EntityId eq {0} or EntityId eq null)", this.EntityId ) );
+            }
+
+            if ( filterParams.Count > 0 )
+            {
+                qryParams.Add( "$filter=" + filterParams.AsDelimited( " and " ) );
+            }
+
+            _hfRestUrlParams.Value += "?" + qryParams.AsDelimited( "&" );
+        }
+
+        #endregion
 
         /// <summary>
         /// Gets the chart click script.

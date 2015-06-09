@@ -47,6 +47,8 @@
                                         <Rock:RockBoundField DataField="GivingId" HeaderText="GivingId" SortExpression="GivingId" />
                                         <Rock:RockBoundField DataField="PledgeTotal" HeaderText="Pledge Total" SortExpression="PledgeTotal" />
                                         <Rock:RockBoundField DataField="AccountName" HeaderText="Account" SortExpression="AccountName" />
+                                        <Rock:RockBoundField DataField="TotalGivingAmount" HeaderText="Total Giving Amount" SortExpression="TotalGivingAmount" />
+                                        <Rock:RockBoundField DataField="GivingCount" HeaderText="Giving Count" SortExpression="GivingCount" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>
