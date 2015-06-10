@@ -35,25 +35,32 @@
         <script>
 
             Sys.Application.add_load(function () {
-                $('.tenkey a.digit').click(function () {
-                    $phoneNumber = $("input[id$='tbPIN']");
-                    $phoneNumber.val($phoneNumber.val() + $(this).html());
-                });
-                $('.tenkey a.back').click(function () {
-                    $phoneNumber = $("input[id$='tbPIN']");
-                    $phoneNumber.val($phoneNumber.val().slice(0, -1));
-                });
-                $('.tenkey a.clear').click(function () {
-                    $phoneNumber = $("input[id$='tbPIN']");
-                    $phoneNumber.val('');
-                });
+                if ($('.js-manager-login').is(':visible')) {
+                    $('.tenkey a.digit').click(function () {
+                        $phoneNumber = $("input[id$='tbPIN']");
+                        $phoneNumber.val($phoneNumber.val() + $(this).html());
+                    });
+                    $('.tenkey a.back').click(function () {
+                        $phoneNumber = $("input[id$='tbPIN']");
+                        $phoneNumber.val($phoneNumber.val().slice(0, -1));
+                    });
+                    $('.tenkey a.clear').click(function () {
+                        $phoneNumber = $("input[id$='tbPIN']");
+                        $phoneNumber.val('');
+                    });
 
-                // set focus to the input unless on a touch device
-                var isTouchDevice = 'ontouchstart' in document.documentElement;
-                if (!isTouchDevice) {
-                    if ($('.checkin-phone-entry').length) {
-                        $('.checkin-phone-entry').focus();
+                    // set focus to the input unless on a touch device
+                    var isTouchDevice = 'ontouchstart' in document.documentElement;
+                    if (!isTouchDevice) {
+                        if ($('.checkin-phone-entry').length) {
+                            $('.checkin-phone-entry').focus();
+                        }
                     }
+                }
+                else
+                {
+                    // set focus to body if the manager login (ten-key) isn't visible, to fix buttons not working after showing the ten-key panel
+                    $('body').focus();
                 }
             });
 
@@ -186,18 +193,18 @@
         </asp:Panel>
 
         <%-- Panel for checkin manager login --%>
-        <asp:Panel ID="pnlManagerLogin" runat="server" Visible="false">
+        <asp:Panel ID="pnlManagerLogin" CssClass="js-manager-login" runat="server" Visible="false">
 
             <div class="checkin-header">
                 <h1>Manager Login</h1>
             </div>
 
             <div class="checkin-body">
-                <div class="row">
-                    <div class="col-md-12 margin-b-lg">
 
+                <div class="checkin-scroll-panel">
+                    <div class="scroller">
                         <div class="checkin-search-body">
-                            <Rock:RockTextBox ID="tbPIN" MaxLength="10" CssClass="checkin-phone-entry" runat="server" Label="PIN" />
+                            <Rock:RockTextBox ID="tbPIN" CssClass="checkin-phone-entry" runat="server" Label="PIN" />
 
                             <div class="tenkey checkin-phone-keypad">
                                 <div>
@@ -226,7 +233,7 @@
                                 <asp:LinkButton ID="lbLogin" runat="server" OnClick="lbLogin_Click" CssClass="btn btn-primary">Login</asp:LinkButton>
                             </div>
 
-                            <asp:LinkButton ID="lbCancel" runat="server" OnClick="lbCancel_Click" CssClass="btn btn-default">Cancel</asp:LinkButton>
+                            <asp:LinkButton ID="lbCancel" runat="server" CausesValidation="false" OnClick="lbCancel_Click" CssClass="btn btn-default">Cancel</asp:LinkButton>
                         </div>
                     </div>
                 </div>
