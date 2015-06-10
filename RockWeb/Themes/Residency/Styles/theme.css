@@ -750,6 +750,8 @@ Copyright (c) 2012 Dan Eden*/
   30. Paneled List Group - extends the bootstrap list group to behave in a panel
   31. Sliding Date Range
   32. Photo Round
+
+  xx. Misc
 */
 .picker {
   position: relative;
@@ -2668,7 +2670,7 @@ tr.row-highlight td {
 
     1. SQL Command - block to query database directly
     2. Data Views - block for creating data views
-
+    3. Dynamic Report - block for making reports dynamically updated
 */
 .sql-comand .panel {
   margin-bottom: 24px;
@@ -2709,6 +2711,9 @@ tr.row-highlight td {
   .filter-item div[class*='col'] {
     margin-bottom: 0;
   }
+}
+.filter-row {
+  margin-bottom: 12px;
 }
 /*
     Used to manage styles for specific blocks.
@@ -2902,6 +2907,9 @@ tr.row-highlight td {
 }
 .panel-noteentry .panel-body .noteentry-control {
   overflow: hidden;
+}
+.panel-noteentry .panel-body .noteentry-notetype {
+  margin-bottom: 4px;
 }
 .panel-noteentry .panel-body img {
   float: left;
@@ -3992,9 +4000,6 @@ iframe.email-body {
     margin-left: -16px;
   }
 }
-.attendance-reporting .filter-options {
-  background-color: #eeeeee;
-}
 .attendance-reporting .analysis-types {
   padding: 15px 0;
   background-color: #eeeeee;
@@ -4856,6 +4861,33 @@ a.help {
 }
 .panel-block .panel-body .grid.grid-panel .table-bordered > tfoot > tr > td {
   border: 0px;
+}
+.panel-analytics .panel-body {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.panel-analytics .panel-body > .row > [class*="col-"]:first-child {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+.panel-analytics .panel-body .col-md-9 {
+  margin-right: -2px;
+}
+.panel-analytics .panel-body .grid.grid-panel {
+  margin-bottom: 0;
+}
+@media (min-width: 992px) {
+  .panel-analytics .panel-body .row {
+    margin-left: -16px;
+  }
+}
+.panel-analytics .filter-options {
+  background-color: #eeeeee;
+}
+.panel-analytics .analysis-types {
+  padding: 15px 0;
+  background-color: #eeeeee;
+  margin-bottom: 15px;
 }
 .btn.aspNetDisabled {
   cursor: not-allowed;
