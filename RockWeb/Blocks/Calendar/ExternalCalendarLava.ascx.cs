@@ -313,6 +313,7 @@ namespace RockWeb.Blocks.Calendar
 
             mergeFields.Add( "Events", events );
             mergeFields.Add( "CurrentPerson", CurrentPerson );
+            mergeFields.Add( "TimeFrame", CurrentViewMode );
 
             var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
             globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
