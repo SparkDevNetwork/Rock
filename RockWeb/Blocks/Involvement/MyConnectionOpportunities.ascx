@@ -1,0 +1,55 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MyConnectionOpportunities.ascx.cs" Inherits="RockWeb.Blocks.Involvement.MyConnectionOpportunities" %>
+
+<asp:UpdatePanel ID="upnlContent" runat="server">
+    <ContentTemplate>
+
+        <div class="panel panel-block">
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-gears"></i> My ConnectionRequests</h1>
+
+                <div class="pull-right">
+                    <asp:LinkButton ID="lbConnectionTypes" runat="server" CssClass=" pull-right" OnClick="lbConnectionTypes_Click" CausesValidation="false"><i class="fa fa-gear"></i></asp:LinkButton>
+                </div>
+
+            </div>
+            <div class="panel-body">
+
+                <div class="list-as-blocks margin-t-lg clearfix">
+                    <ul class="list-unstyled">
+                        <asp:Repeater ID="rptConnectionOpportunities" runat="server">
+                            <ItemTemplate>
+                                <li class='<%# Eval("Class") %>'>
+                                    <asp:LinkButton ID="lbConnectionOpportunity" runat="server" CommandArgument='<%# Eval("ConnectionOpportunity.Id") %>' CommandName="Display">
+                                        <i class='<%# Eval("ConnectionOpportunity.IconCssClass") %>'></i>
+                                        <h3><%# Eval("ConnectionOpportunity.Name") %> </h3>
+                                        <div class="notification">
+                                            <span class="label label-danger"><%# ((int)Eval("Count")).ToString("#,###,###") %></span>
+                                        </div>
+                                    </asp:LinkButton>
+                                </li>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </ul>
+                </div>
+
+                <h4><asp:Literal ID="lConnectionRequest" runat="server"></asp:Literal></h4>
+                <div class="grid">
+                    <Rock:Grid ID="gConnectionRequests" runat="server" OnRowSelected="gConnectionRequests_Edit" >
+                        <Columns>
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="Status" HeaderText="Status" SortExpression="Status" />
+                            <Rock:RockBoundField DataField="ActiveActivityNames" HeaderText="Active Activities" HtmlEncode="false" />
+                        </Columns>
+                    </Rock:Grid>
+                </div>
+
+            </div>
+        </div>
+        <script>
+            $(".my-workflows .list-as-blocks li").on("click", function () {
+                $(".my-workflows .list-as-blocks li").removeClass('active');
+                $(this).addClass('active');
+            });
+        </script>
+    </ContentTemplate>
+</asp:UpdatePanel>

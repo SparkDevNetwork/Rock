@@ -85,13 +85,13 @@ namespace Rock.Model
         private ICollection<ConnectionWorkflow> _connectionWorkflows;
 
         [DataMember]
-        public virtual ICollection<ConnectionActivityType> ConnectionActions
+        public virtual ICollection<ConnectionActivityType> ConnectionActivityTypes
         {
-            get { return _connectionActions; }
-            set { _connectionActions = value; }
+            get { return _connectionActivityTypes; }
+            set { _connectionActivityTypes = value; }
         }
 
-        private ICollection<ConnectionActivityType> _connectionActions;
+        private ICollection<ConnectionActivityType> _connectionActivityTypes;
 
         [DataMember]
         public virtual ICollection<ConnectionOpportunity> ConnectionOpportunities
