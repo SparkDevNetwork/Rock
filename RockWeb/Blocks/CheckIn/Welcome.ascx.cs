@@ -202,6 +202,7 @@ if ($ActiveWhen.text() != '')
             pnlNotActiveYet.Visible = false;
             pnlClosed.Visible = false;
             pnlActive.Visible = false;
+            ManagerLoggedIn = false;
             pnlManagerLogin.Visible = false;
             pnlManager.Visible = false;
             btnManager.Visible = GetAttributeValue( "EnableManager" ).AsBoolean();
@@ -260,6 +261,7 @@ if ($ActiveWhen.text() != '')
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnManager_Click( object sender, EventArgs e )
         {
+            ManagerLoggedIn = false;
             pnlNotActive.Visible = false;
             pnlNotActiveYet.Visible = false;
             pnlClosed.Visible = false;
@@ -281,7 +283,7 @@ if ($ActiveWhen.text() != '')
         protected void btnBack_Click( object sender, EventArgs e )
         {
             RefreshView();
-
+            ManagerLoggedIn = false;
             pnlManager.Visible = false;
         }
 
@@ -302,6 +304,7 @@ if ($ActiveWhen.text() != '')
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbLogin_Click( object sender, EventArgs e )
         {
+            ManagerLoggedIn = false;
             var pinAuth = AuthenticationContainer.GetComponent( typeof( Rock.Security.Authentication.PINAuthentication ).FullName );
             var rockContext = new Rock.Data.RockContext();
             var userLoginService = new UserLoginService( rockContext );
@@ -327,6 +330,7 @@ if ($ActiveWhen.text() != '')
                             }
                             else
                             {
+                                ManagerLoggedIn = true;
                                 ShowManagementDetails();
                                 return;
                             }
@@ -334,7 +338,7 @@ if ($ActiveWhen.text() != '')
                     }
                 }
             }
-
+            
             maWarning.Show( "Sorry, we couldn't find an account matching that PIN.", Rock.Web.UI.Controls.ModalAlertType.Warning );
         }
 
@@ -423,16 +427,17 @@ if ($ActiveWhen.text() != '')
 
                 if ( isActive )
                 {
+                    lbClose.RemoveCssClass( "btn-danger" );
+                    lbClose.RemoveCssClass( "active" );
                     lbOpen.AddCssClass( "btn-success" );
                     lbOpen.AddCssClass( "active" );
-                    lbClose.RemoveCssClass( "btn-danger" );
                 }
                 else
                 {
                     lbOpen.RemoveCssClass( "btn-success" );
                     lbOpen.RemoveCssClass( "active" );
                     lbClose.AddCssClass( "btn-danger" );
-                    lbOpen.RemoveCssClass( "active" );
+                    lbClose.AddCssClass( "active" );
                 }
 
                 var lLocationName = e.Item.FindControl( "lLocationName" ) as Literal;

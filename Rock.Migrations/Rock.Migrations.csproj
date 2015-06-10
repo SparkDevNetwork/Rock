@@ -181,6 +181,10 @@
     <Compile Include="Migrations\201506101334446_GivingLeaderId.Designer.cs">
       <DependentUpon>201506101334446_GivingLeaderId.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201506101814103_CheckinWelcomeManager.cs" />
+    <Compile Include="Migrations\201506101814103_CheckinWelcomeManager.Designer.cs">
+      <DependentUpon>201506101814103_CheckinWelcomeManager.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.cs" />
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.Designer.cs">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
@@ -1730,6 +1734,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201506101334446_GivingLeaderId.resx">
       <DependentUpon>201506101334446_GivingLeaderId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201506101814103_CheckinWelcomeManager.resx">
+      <DependentUpon>201506101814103_CheckinWelcomeManager.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>

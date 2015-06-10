@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.CheckIn
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName( "Check-in Scheduler (Kiosk)" )]
+    [DisplayName( "Check-in Scheduled Locations" )]
     [Category( "Check-in" )]
     [Description( "Helps to enable/disable schedules associated with the configured group types at a kiosk" )]
     public partial class CheckinScheduledLocations : Rock.CheckIn.CheckInBlock
@@ -66,7 +66,14 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( !Page.IsPostBack )
             {
-                BindGrid();
+                if (this.ManagerLoggedIn)
+                {
+                    BindGrid();
+                }
+                else
+                {
+                    NavigateToHomePage();
+                }
             }
 
             base.OnLoad( e );
@@ -309,6 +316,8 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
             }
+
+            NavigateToHomePage();
         }
 
         #endregion
