@@ -2672,7 +2672,7 @@ tr.row-highlight td {
 
     1. SQL Command - block to query database directly
     2. Data Views - block for creating data views
-
+    3. Dynamic Report - block for making reports dynamically updated
 */
 .sql-comand .panel {
   margin-bottom: 24px;
@@ -2713,6 +2713,9 @@ tr.row-highlight td {
   .filter-item div[class*='col'] {
     margin-bottom: 0;
   }
+}
+.filter-row {
+  margin-bottom: 12px;
 }
 /*
     Used to manage styles for specific blocks.
