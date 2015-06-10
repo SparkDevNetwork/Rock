@@ -63,7 +63,7 @@
                             </div>
                         </div>
 
-                        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Warning" />
 
                         <div class="actions">
                             <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
@@ -82,7 +82,7 @@
                 </div>
                 <div class="panel-body">
                     
-
+                    <Rock:NotificationBox ID="nbGridError" runat="server" NotificationBoxType="Warning" />
                     <div class="grid grid-panel">
                         <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
                     </div>
@@ -93,6 +93,7 @@
 
             <Rock:ModalDialog ID="modalPreview" runat="server" Title="Preview (top 15 rows )" ValidationGroup="Preview">
                 <Content>
+                    <Rock:NotificationBox ID="nbPreviewError" runat="server" NotificationBoxType="Warning" />
                     <div class="grid"><Rock:Grid ID="gPreview" runat="server" AllowSorting="true" EmptyDataText="No Results" ShowActionRow="false" DisplayType="Light" /></div>
                 </Content>
             </Rock:ModalDialog>

@@ -195,14 +195,15 @@ namespace RockWeb.Blocks.Finance
                                                        GiftCount = t.Count()
                                                      });
 
-            var resultsQry = pledgeSummary.GroupJoin(
-                                                givingQry,
-                                                p => p.GivingId,
-                                                c => c.GivingId,
-                                                ( p, c ) => new { p, c }
-                                                )
-                                                .SelectMany( x => x.c.DefaultIfEmpty(), ( g, u ) => new { g.p, u } )
-                                                .Select( res => new { res.p.GivingId, res.p.AccountId, res.p.AccountName, res.p.PledgeTotal, TotalGivingAmount = ( res.u.TotalGivingAmount != null ? res.u.TotalGivingAmount : 0 ), GivingCount = ( res.u.GiftCount != null ? res.u.GiftCount : 0 ) } );
+            var resultsQry = pledgeSummary
+                                .GroupJoin(
+                                    givingQry,
+                                    p => p.GivingId,
+                                    c => c.GivingId,
+                                    ( p, c ) => new { p, c }
+                                    )
+                                .SelectMany( x => x.c.DefaultIfEmpty(), ( g, u ) => new { g.p, u } )
+                                .Select( res => new { res.p.GivingId, res.p.AccountId, res.p.AccountName, res.p.PledgeTotal, TotalGivingAmount = ( res.u.TotalGivingAmount != null ? res.u.TotalGivingAmount : 0 ), GivingCount = ( res.u.GiftCount != null ? res.u.GiftCount : 0 ) } );
                                                             
             // filter pledge range
             if ( nrePledgeAmount.Visible && nrePledgeAmount.LowerValue.HasValue )
