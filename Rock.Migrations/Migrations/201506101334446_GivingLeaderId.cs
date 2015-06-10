@@ -73,8 +73,8 @@ BEGIN
 	RETURN COALESCE( @GivingLeaderPersonId, @PersonId )
 
 END
-" );            
-            
+" );
+
             Sql( @"
 ALTER TABLE PERSON ADD [GivingLeaderId] as (
 	[dbo].[ufnFinancial_GetGivingLeader] ( [Id], [GivingGroupId] )
@@ -108,7 +108,7 @@ ALTER TABLE PERSON ADD [GivingLeaderId] as (
             RockMigrationHelper.DeleteBlockType( "48E4225F-8948-4FB0-8F00-1B43D3D9B3C3" ); // Giving Analysis
             RockMigrationHelper.DeletePage( "D34B3916-1ABD-4F16-B820-5AAAA761F77F" ); //  Page: Giving Analytics, Layout: Full Width, Site: Rock RMS
 
-            DropColumn("dbo.Person", "GivingLeaderId");
+            DropColumn( "dbo.Person", "GivingLeaderId" );
         }
     }
 }
