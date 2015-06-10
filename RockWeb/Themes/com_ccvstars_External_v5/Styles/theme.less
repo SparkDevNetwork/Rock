@@ -1,0 +1,294 @@
+﻿
+
+//
+// CCV STARS THEME
+// --------------------------------------------------
+
+
+// Imports
+// -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_rock-variables.less";
+
+@import "_variables";
+@import "_print";
+
+@import "_masque";
+
+@red: #9d261d;
+
+
+// Custom
+// -------------------------
+
+img {
+  .img-responsive;
+}
+
+h1.page-header:empty {
+  display: none;
+}
+
+.breadcrumb {
+  margin-bottom: @grid-gutter-width;
+}
+
+.masthead {}
+  .masthead .logo {
+    min-height: 75px;
+    // // min-width: 220px;
+    background: url('../assets/logo.svg') no-repeat left center;
+    display: block;
+    // margin: @grid-gutter-width/4 0;
+    @media @xs {
+      min-height: 100px;
+      margin: @grid-gutter-width/4 0;
+    }
+    @media @sm {
+      margin: @grid-gutter-width/2 0;
+    }
+    &.bigger {
+      min-height: 100px;
+      @media @sm {
+        min-height: 207px;
+      }
+    }
+  }
+  .masthead .tagline {
+    @media @sm {
+      margin-top: @grid-gutter-width*2.5;
+    }
+    @media @md {
+      margin-top: @grid-gutter-width*3;
+    }
+    @media @lg {
+      margin-top: @grid-gutter-width*3.5;
+    }
+  }
+
+.main-feature {
+  background: @red;
+  color: #fff;
+  overflow: auto;
+}
+
+.sub-feature {
+  background: @gray-dark;
+  color: #fff;
+  padding: @grid-gutter-width 0;
+  a {
+    color: inherit;
+  }
+  .nav-pills {
+    font-size: 1.5em;
+    a:hover {
+      background: @gray;
+    }
+    li:first-child {
+      float: right;
+      a {
+        background: @gray-lighter;
+        color: @gray-dark;
+        &:hover {
+          background: @gray-light;
+        }
+      }
+    }
+  }
+}
+
+h2 {
+  font-family: "masqueregular", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@module-spacing: @grid-gutter-width/2;
+
+.module {
+  background: #fff;
+  color: @gray-dark;
+  border-radius: @border-radius-large;
+  margin-bottom: @module-spacing;
+  @media @md {
+    margin-bottom: @module-spacing*2;
+  }
+}
+  .module-red {
+    background: @red;
+    color: #fff;
+  }
+    .module-red .nav-pills {
+      li {
+        margin-bottom: @grid-gutter-width/4;
+        &:last-child {
+          margin-bottom: 0;
+        }
+        a {
+          font-weight: bold;
+          background: #fff;
+          color: @text-color;
+          &:hover {
+            .box-shadow(0 0px 10px rgba(255,255,255,1));
+          }
+        }
+      }
+    }
+  .module-with-footer {
+    .border-bottom-radius(@border-radius-large + 10px);
+  }
+  .module-body {
+    padding: @module-spacing;
+  }
+    .module-title {
+      margin-top: 0;
+    }
+  .module-mid,
+  .module-footer {
+    padding: @module-spacing/2 @module-spacing;
+    // padding: @module-spacing;
+  }
+  .module-mid {
+    // background: @state-success-bg;
+    // color: @state-success-text;
+    // background: @gray-lighter;
+    &:not(.alert-success):not(.alert-warning):not(.alert-danger) {
+      background: @gray-lighter;
+    }
+  }
+  .module-footer {
+    padding: @module-spacing;
+    background: @gray-darker;
+    color: @gray-light;
+    .border-bottom-radius(@border-radius-large);
+    a {
+      color: @gray-lighter;
+    }
+  }
+
+.biglist {
+  padding-left: @grid-gutter-width/4;
+  list-style: none;
+  margin-bottom: @line-height-computed;
+
+  > li {
+    font-size: @font-size-h3;
+    line-height: @headings-line-height;
+    font-weight: 300;
+    margin-bottom: (@line-height-computed / 2);
+  }
+}
+  .biglist a {
+    color: @text-color;
+  }
+    .biglist .text-muted {
+      color: lighten(@gray-light, 20%);
+    }
+
+@font-face {
+  font-family: 'STARS-Icon-Font-v1';
+  src:url('../assets/fonts/STARS-Icon-Font-v1.eot');
+  src:url('../assets/fonts/STARS-Icon-Font-v1.eot?#iefix') format('embedded-opentype'),
+    url('../../assets/fonts/STARS-Icon-Font-v1.woff') format('woff'),
+    url('../assets/fonts/STARS-Icon-Font-v1.ttf') format('truetype'),
+    url('../assets/fonts/STARS-Icon-Font-v1.svg#STARS-Icon-Font-v1') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.icon-soccerball { &:before       { content: "\e000"; } }
+.icon-football { &:before         { content: "\e001"; } }
+.icon-basketball-hoop { &:before  { content: "\e003"; } }
+.icon-star { &:before             { content: "\e002"; } }
+.icon-play { &:before             { content: "\e004"; } }
+.icon-facebook { &:before         { content: "\e005"; } }
+.icon-twitter { &:before          { content: "\e006"; } }
+
+.sports {
+  &:before {
+    font-family: 'STARS-Icon-Font-v1';
+    content: attr(data-icon);
+    speak: none;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    font-style: normal;
+    display: inline-block;
+    width: 1.25em;
+  }
+}
+
+.sports.soccer:before { content: "\e000"; }
+.sports.football:before { content: "\e001"; }
+.sports.exceptional:before { content: "\e002"; }
+.sports.basketball:before { content: "\e003"; }
+
+.sports {
+  &.soccer { color: #000; }
+  &.football {
+    color: #804000;
+    &:before {
+      margin-left: -.35em;
+      margin-right: .35em;
+    }
+  }
+  &.basketball {
+    color: #999;
+  }
+  &.exceptional {
+    color: @red;
+  }
+}
+
+.about-video {
+  max-width: 700px;
+  .box-shadow(0 10px 40px rgba(0,0,0,.25));
+  margin: @grid-gutter-width auto;
+  @media @md {
+    margin: @grid-gutter-width*2 auto;
+  }
+  @media @lg {
+    margin: @grid-gutter-width*3 auto;
+  }
+}
+
+.nav-big {
+  font-size: 2em;
+}
+
+.mainfooter {
+  color: #aaa;
+  a { color: inherit; }
+  svg g { fill: #aaa; }
+}
+.mainfooter-dark {
+  background: @gray-dark;
+  padding: @grid-gutter-width/2 0;
+  color: #aaa;
+  a { color: inherit; }
+  svg g { fill: #aaa; }
+}
+
+
+// Bootstrap Overrides
+// -------------------------
+
+.panel.panel-block {
+  border: 0;
+  box-shadow: none;
+
+  & > .panel-heading {
+    display: none;
+  }
+
+  & > .panel-body {
+    padding: 0;
+
+    .grid.grid-panel {
+      margin: 0;
+    }
+  }
+}

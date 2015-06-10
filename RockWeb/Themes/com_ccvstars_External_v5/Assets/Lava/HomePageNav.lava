@@ -1,0 +1,16 @@
+{% comment %}
+
+{% assign pageMenuClasses = "nav nav-pills"  %}
+
+{% endcomment %}
+
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+  <ul class="{{ pageMenuClasses | Default: 'biglist' }}">
+
+    {% for childPage in Page.Pages %}
+      <li>
+        <i class="{{ childPage.IconCssClass }}"></i> <a href="{{ childPage.Url }}">{% if childPage.IconCssClass != "" %}{% endif %}{{ childPage.Title }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}

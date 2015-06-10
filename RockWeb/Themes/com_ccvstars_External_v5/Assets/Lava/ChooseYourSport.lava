@@ -1,0 +1,63 @@
+<h2 class="margin-v-lg">Choose Your Sport</h2>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="module module-with-footer">
+      <div class="module-body">
+        <h3 class="module-title">Peoria Campus</h3>
+        <ul class="biglist">
+          <li><i class="sports soccer"></i> <a href="#">Recreational Soccer <small class="text-muted">(United)</small></a></li>
+          <li><i class="sports soccer"></i> <a href="#">Club Soccer <small class="text-muted">(Integra)</small></a></li>
+          <li><i class="sports football"></i> <a href="#">Football</a></li>
+          <li><i class="sports basketball"></i> <a href="#">Basketball</a></li>
+          <li><i class="sports exceptional"></i> <a href="#">Exceptional STARS <small class="text-muted">(Special Needs)</small></a></li>
+        </ul>
+      </div>
+      <div class="module-mid alert-success">
+        <strong>Field Status:</strong>
+      </div>
+      <div class="module-footer">
+        Address
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="module module-with-footer">
+      <div class="module-body">
+        <h3 class="module-title">Surprise Campus</h3>
+      </div>
+      <div class="module-mid alert-danger">
+        <strong>Field Status:</strong>
+      </div>
+      <div class="module-footer">
+        Address
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="module module-with-footer">
+      <div class="module-body">
+        <h3 class="module-title">Avondale Campus</h3>
+      </div>
+      <div class="module-mid">
+        <strong>Field Status:</strong>
+      </div>
+      <div class="module-footer">
+        Address
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="module module-with-footer">
+      <div class="module-body">
+        <h3 class="module-title">East Valley Campus</h3>
+      </div>
+      <div class="module-mid">
+        <strong>Field Status:</strong>
+      </div>
+      <div class="module-footer">
+        Address
+      </div>
+    </div>
+  </div>
+</div>

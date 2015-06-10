@@ -1,0 +1,19 @@
+{% comment %}
+
+
+REQUIRED VARIABLES
+==================
+
+{% assign loginPage        = "/page/908" %}
+
+
+{% endcomment %}
+
+{% capture currentPage %}/page/{{ CurrentPage.Id }}{% endcapture %}
+{% assign currentPageEscaped = currentPage | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%252f' %}
+
+{% if CurrentPerson %}
+  <div><a class="small" href="{{ currentPage }}?logout=true">Logout</a></div>
+{% else %}
+  <div><a class="small" href="{{ loginPage }}?returnurl={{ currentPageEscaped }}&logout=true">Login</a></div>
+{% endif %}
