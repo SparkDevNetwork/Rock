@@ -182,10 +182,12 @@
                             <Rock:Grid ID="gGiversGifts" runat="server" AllowSorting="true" RowItemText="Attendee" ExportGridAsWYSIWYG="true">
                                 <Columns>
                                     <Rock:SelectField />
-                                    <Rock:RockBoundField DataField="PersonName" HeaderText="Name" SortExpression="PersonName" />
-                                    <Rock:CurrencyField DataField="TotalAmount" HeaderText="Total Amount" SortExpression="TotalAmount" />
-                                    <Rock:DateField DataField="VeryFirstTxnDate" HeaderText="First Transaction" SortExpression="VeryFirstTxnDate" />
-                                    <Rock:DateField DataField="FirstTxnDate" HeaderText="First Transaction in Date Range" SortExpression="FirstTxnDate" />
+                                    <asp:TemplateField HeaderText="Person" SortExpression="LastName,NickName">
+                                        <ItemTemplate><%# Eval("NickName") %> <%# Eval("LastName") %></ItemTemplate>
+                                    </asp:TemplateField>
+                                    <Rock:DateField DataField="FirstEverGift" HeaderText="First Ever Gift" SortExpression="FirstEverGift" />
+                                    <Rock:DateField DataField="FirstGift" HeaderText="First Gift" SortExpression="FirstGift" />
+                                    <Rock:CurrencyField DataField="Total" HeaderText="Total Amount" SortExpression="Total" />
                                 </Columns>
                             </Rock:Grid>
 
