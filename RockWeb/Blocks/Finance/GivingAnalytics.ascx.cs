@@ -50,7 +50,6 @@ namespace RockWeb.Blocks.Finance
 
         #endregion
 
-
         #region Properties
 
         /// <summary>
@@ -677,135 +676,33 @@ function(item) {
             var transactionService = new FinancialTransactionDetailService( _rockContext );
             var personService = new PersonService( _rockContext );
 
-            // Giving Group IDs from dataview
-            IQueryable<string> amountGivingIds = null;
-            IQueryable<string> dataViewGivingIds = null;
-
-            // Base Transaction Detail query
-            var qry = transactionService
-                .Queryable( "Account,Transaction.AuthorizedPersonAlias.Person" ).AsNoTracking()
-                .Where( t =>
-                    t.Account != null &&
-                    t.Account.IsTaxDeductible &&
-                    t.Transaction != null &&
-                    t.Transaction.TransactionDateTime.HasValue &&
-                    t.Transaction.AuthorizedPersonAlias != null &&
-                    t.Transaction.AuthorizedPersonAlias.Person != null );
-
-            // Get the first time dates
-            var firstGiftDates = qry
-                .GroupBy( t => t.Transaction.AuthorizedPersonAlias.Person.GivingId )
-                .Select( g => new
-                {
-                    GivingId = g.Key,
-                    FirstGift = g.Min( t => t.Transaction.TransactionDateTime.Value )
-                } );
-
             // Date Range Filter
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
             var start = dateRange.Start;
             var end = dateRange.End;
-            if ( start.HasValue )
-            {
-                qry = qry.Where( t => t.Transaction.TransactionDateTime >= start.Value );
-            }
 
-            if ( end.HasValue )
-            {
-                qry = qry.Where( t => t.Transaction.TransactionDateTime < end.Value );
-            }
-
-            // Amount Range Filter
             var minAmount = nreAmount.LowerValue;
             var maxAmount = nreAmount.UpperValue;
-            if ( minAmount.HasValue || maxAmount.HasValue )
-            {
-                amountGivingIds = qry
-                    .GroupBy( d => d.Transaction.AuthorizedPersonAlias.Person.GivingId )
-                    .Select( d => new { d.Key, Total = d.Sum( t => t.Amount ) } )
-                    .Where( s =>
-                        ( !minAmount.HasValue || s.Total >= minAmount.Value ) &&
-                        ( !maxAmount.HasValue || s.Total <= maxAmount.Value ) )
-                    .Select( s => s.Key );
-            }
-
-            // Data View Filter
-            var dataViewId = dvpDataView.SelectedValueAsInt();
-            if ( dataViewId.HasValue )
-            {
-                var dataView = new DataViewService( _rockContext ).Get( dataViewId.Value );
-                if ( dataView != null )
-                {
-                    var errorMessages = new List<string>();
-                    ParameterExpression paramExpression = personService.ParameterExpression;
-                    Expression whereExpression = dataView.GetExpression( personService, paramExpression, out errorMessages );
-
-                    SortProperty sortProperty = null;
-                    dataViewGivingIds = personService
-                        .Queryable().AsNoTracking()
-                        .Where( paramExpression, whereExpression, sortProperty )
-                        .Select( p => p.GivingId );
-                }
-            }
-
-            IQueryable<FinancialTransactionDetail> qry = qry;
-
-            // Currency Type Filter
+            
             var currencyTypeIds = new List<int>();
             cblCurrencyTypes.SelectedValues.ForEach( i => currencyTypeIds.Add( i.AsInteger() ) );
-            var distictCurrencyTypeIds = currencyTypeIds.Where( i => i != 0 ).Distinct().ToList();
-            if ( distictCurrencyTypeIds.Any() )
-            {
-                qry = qry
-                    .Where( t =>
-                        t.Transaction.CurrencyTypeValueId.HasValue &&
-                        distictCurrencyTypeIds.Contains( t.Transaction.CurrencyTypeValueId.Value ) );
-            }
-
-            // Source Type Filter
+            
             var sourceTypeIds = new List<int>();
             cblTransactionSource.SelectedValues.ForEach( i => sourceTypeIds.Add( i.AsInteger() ) );
-            var distictSourceTypeIds = sourceTypeIds.Where( i => i != 0 ).Distinct().ToList();
-            if ( distictSourceTypeIds.Any() )
-            {
-                qry = qry
-                    .Where( t =>
-                        t.Transaction.SourceTypeValueId.HasValue &&
-                        distictSourceTypeIds.Contains( t.Transaction.SourceTypeValueId.Value ) );
-            }
-
-            // Account Id Filter
+            
             var accountIds = new List<int>();
             foreach ( var cblAccounts in phAccounts.Controls.OfType<RockCheckBoxList>() )
             {
                 accountIds.AddRange( cblAccounts.SelectedValuesAsInt );
             }
-            var distictAccountIds = accountIds.Where( i => i != 0 ).Distinct().ToList();
-            if ( distictAccountIds.Any() )
-            {
-                qry = qry
-                    .Where( t =>
-                        distictAccountIds.Contains( t.AccountId ) );
-            }
 
-            // If an amount range criteria was selected, limit transaction list to those people that match amount criteria
-            if ( amountGivingIds != null )
-            {
-                qry = qry
-                    .Where( t =>
-                        amountGivingIds.Contains( t.Transaction.AuthorizedPersonAlias.Person.GivingId ) );
-            }
+            var dataViewId = dvpDataView.SelectedValueAsInt();
 
-            // If a dataview was selected, limit transaction list to those included in dataview
-            if ( dataViewGivingIds != null )
-            {
-                qry = qry
-                    .Where( t => 
-                        dataViewGivingIds.Contains( t.Transaction.AuthorizedPersonAlias.Person.GivingId ));
-            }
+            var qry = transactionService.GetGifts( start, end, minAmount, maxAmount, currencyTypeIds, sourceTypeIds, accountIds, dataViewId );
 
-            // Get the first gift dates for transactions included in results
-            var firstGiftDatesInResult = qry
+            // First gift qry
+            var firstGiftDatesQry = transactionService
+                .GetGifts()
                 .GroupBy( t => t.Transaction.AuthorizedPersonAlias.Person.GivingId )
                 .Select( g => new
                 {
@@ -816,122 +713,203 @@ function(item) {
             // If only including people where first gift is inluded in results
             if ( radFirstTime.Checked )
             {
-                var firstGivers = firstGiftDatesInResult
-                    .Join( firstGiftDates, r => r.GivingId, a => a.GivingId, ( r, a ) => new
-                    {
-                        r.GivingId,
-                        ResultFirstGift = r.FirstGift,
-                        AnyFirstGift = a.FirstGift
-                    } )
-                    .Where( r =>
-                        r.ResultFirstGift != null &&
-                        r.AnyFirstGift != null &&
-                        r.ResultFirstGift == r.AnyFirstGift )
-                    .Select( r => r.GivingId );
+                var minDate = start ?? DateTime.MinValue;
+                var maxDate = end ?? DateTime.MaxValue;
 
-                matchingTxns = matchingTxns
+                var firstGiftInDateQry = firstGiftDatesQry
+                    .Where( f =>
+                        f.FirstGift >= minDate &&
+                        f.FirstGift < maxDate )
+                    .Select( f => f.GivingId );
+
+                qry = qry
                     .Where( t =>
-                        firstGivers.Contains( t.Transaction.AuthorizedPersonAlias.Person.GivingId ) )
-                    .ToList();
+                        firstGiftInDateQry.Contains( t.Transaction.AuthorizedPersonAlias.Person.GivingId ) );
             }
 
-            // Get all the giving group ids to report on
-            var reportGivingIds = new List<string>();
-            if ( radAllGivers.Checked && dataViewGivingIds != null && rblDataViewAction.SelectedValue == "All" )
-            {
-                // If the filter is for 'all givers' and a dataview was selected and all the results of dataview 
-                // was requested, then the giving groups should include all from the dataview
-                reportGivingIds = dataViewGivingIds;
-            }
-            else
-            {
-                // otherwise it's simply the distinct giving group ids from the query
-                reportGivingIds = matchingTxns
-                    .Select( t => t.Transaction.AuthorizedPersonAlias.Person.GivingId )
-                    .Distinct()
-                    .ToList();
-            }
-
-            // Get a summary of GivingPersonId/Account
-            var accountSummary = matchingTxns
+            // Get a summary of GivingId
+            var givingIdSummary = qry
                 .GroupBy( d => new
                 {
-                    GivingId = d.Transaction.AuthorizedPersonAlias.Person.GivingId,
-                    AccountId = d.AccountId,
-                    AccountName = d.Account.Name
+                    GivingId = d.Transaction.AuthorizedPersonAlias.Person.GivingId
                 } )
                 .Select( d => new
                 {
                     GivingId = d.Key.GivingId,
-                    AccountId = d.Key.AccountId,
-                    AccountName = d.Key.AccountName,
-                    AccountAmount = d.Sum( t => t.Amount ),
+                    TotalAmount = d.Sum( t => t.Amount ),
                     FirstTransactionDateTime = d.Min( t => t.Transaction.TransactionDateTime.Value ),
-                    LastTransactionDateTime = d.Max( t => t.Transaction.TransactionDateTime.Value )
-                } )
-                .ToList();
+                    LastTransactionDateTime = d.Max( t => t.Transaction.TransactionDateTime.Value ),
+                    PersonId = 0
+                } );
 
-            // Get a summary of GivingPersonId
-            var totalSummary = accountSummary
-                .GroupBy( d => d.GivingId )
-                .Select( d => new
+            // Join to the first ever gift dates
+            var totalSummary =  givingIdSummary
+                .Join( firstGiftDatesQry, s => s.GivingId, f => f.GivingId, ( s, f ) => new
                 {
-                    GivingId = d.Key,
-                    TotalAmount = d.Sum( t => t.AccountAmount ),
-                    FirstTransactionDateTime = d.Min( t => t.FirstTransactionDateTime ),
-                    LastTransactionDateTime = d.Max( t => t.LastTransactionDateTime ),
-                } )
-                .ToList();
+                    GivingId = s.GivingId,
+                    FirstEverGift = f.FirstGift,
+                    FirstGift = s.FirstTransactionDateTime,
+                    LastGift = s.LastTransactionDateTime,
+                    Total = s.TotalAmount
+                } );
 
-            var personQry = new PersonService( _rockContext )
-                .Queryable().AsNoTracking()
-                .Where( p => reportGivingIds.Contains( p.GivingId ) )
-                .Select( p => new
-                {
-                    p.Id,
-                    p.GivingId,
-                    p.NickName,
-                    p.LastName
-                } )
-                .ToList()
-                .Join( firstGiftDates, p => p.GivingId, s => s.GivingId, ( p, s ) => new
-                {
-                    p.Id,
-                    p.NickName,
-                    p.LastName,
-                    PersonName = p.NickName + ' ' + p.LastName,
-                    GivingId = p.GivingId,
-                    VeryFirstTxnDate = s.FirstGift
-                } )
-                .Join( totalSummary, p => p.GivingId, s => s.GivingId, ( p, s ) => new
-                {
-                    p.Id,
-                    p.NickName,
-                    p.LastName,
-                    p.PersonName,
-                    p.GivingId,
-                    VeryFirstTxnDate = p.VeryFirstTxnDate,
-                    TotalAmount = s.TotalAmount,
-                    FirstTxnDate = s.FirstTransactionDateTime,
-                    LastTxnDate = s.LastTransactionDateTime
-                } )
-                .AsQueryable();
+            // Queryable that will eventially be bound to grid
+            IQueryable<GridResult> personQry = null;
 
-            SortProperty sortProperty = gGiversGifts.SortProperty;
-            if ( sortProperty != null )
+            // If viewing just the 'Givers' join to the list of giving leaders so that only they are included
+            GiversViewBy viewBy = hfViewBy.Value.ConvertToEnumOrNull<GiversViewBy>() ?? GiversViewBy.Giver;
+            if ( viewBy == GiversViewBy.Giver )
             {
-                personQry = personQry.Sort( sortProperty );
+                var givingLeaders = personService.GetAllGivingLeaders().AsNoTracking();
+                personQry = totalSummary
+                    .Join( givingLeaders, s => s.GivingId, p => p.GivingId, ( s, p ) => new GridResult
+                    {
+                        Id = p.Id,
+                        Guid = p.Guid,
+                        NickName = p.NickName,
+                        LastName = p.LastName,
+                        GivingId = p.GivingId,
+                        FirstEverGift = s.FirstEverGift,
+                        FirstGift = s.FirstGift,
+                        LastGift = s.LastGift,
+                        Total = s.Total
+                    } );
             }
             else
             {
-                personQry = personQry.OrderBy( a => a.LastName ).ThenBy( a => a.NickName );
+                // Otherwise we need to join to all the family members for each of the unique giving ids
+                var personXrefQry = personService.GetAllPersonFamilyGivingXref();
+                var personXref2Qry = personService.GetAllPersonFamilyGivingXref();
+                
+                // Join once to get the family ids
+                var xrefQry = totalSummary
+                    .Join( personXrefQry, s => s.GivingId, x => x.GivingId, ( s, x ) => new
+                    {
+                        s.GivingId,
+                        s.FirstEverGift,
+                        s.FirstGift,
+                        s.LastGift,
+                        s.Total,
+                        x.FamilyGroupId
+                    } );
+
+                // Join again to get all the family members
+                var familyQry = xrefQry
+                    .Join( personXref2Qry, x => x.FamilyGroupId, f => f.FamilyGroupId, ( x, f ) => new
+                    {
+                        x.GivingId,
+                        x.FirstEverGift,
+                        x.FirstGift,
+                        x.LastGift,
+                        x.Total,
+                        x.FamilyGroupId,
+                        f.PersonId,
+                        f.FamilyRoleId
+                    } );
+
+                // Get the family group type
+                var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+
+                // If viewing just the adults, limit query to those with adult role in family
+                if ( viewBy == GiversViewBy.Adults && familyGroupType != null )
+                {
+                    int adultRoleId = familyGroupType
+                        .Roles.Where( r =>
+                            r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) )
+                        .Select( r => r.Id )
+                        .FirstOrDefault();
+
+                    familyQry = familyQry
+                        .Where( f => f.FamilyRoleId == adultRoleId );
+                }
+
+                // If viewing just the children, limit query to those with child role in family
+                if ( viewBy == GiversViewBy.Children && familyGroupType != null )
+                {
+                    int childRoleId = familyGroupType
+                        .Roles.Where( r =>
+                            r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) )
+                        .Select( r => r.Id )
+                        .FirstOrDefault();
+
+                    familyQry = familyQry
+                        .Where( f => f.FamilyRoleId == childRoleId );
+                }
+
+                // Limit qry to distinct givingid/personid combination and then group on person id
+                var distinctQry = familyQry
+                    .Select( f => new
+                    {
+                        f.GivingId,
+                        f.FirstEverGift,
+                        f.FirstGift,
+                        f.LastGift,
+                        f.Total,
+                        f.PersonId
+                    } )
+                    .Distinct()
+                    .GroupBy( f => f.PersonId )
+                    .Select( g => new
+                    {
+                        PersonId = g.Key,
+                        FirstEverGift = g.Min( f => f.FirstEverGift ),
+                        FirstGift = g.Min( f => f.FirstGift ),
+                        LastGift = g.Max( f => f.LastGift ),
+                        Total = g.Sum( f => f.Total )
+                    } );
+                
+
+                // Now join to the actual people ( and group results by person )
+                var people = personService.Queryable().AsNoTracking();
+                personQry = distinctQry
+                    .Join( people, d => d.PersonId, p => p.Id, ( d, p ) => new GridResult
+                    {
+                        Id = p.Id,
+                        Guid = p.Guid,
+                        NickName = p.NickName,
+                        LastName = p.LastName,
+                        GivingId = "",
+                        FirstEverGift = d.FirstEverGift,
+                        FirstGift = d.FirstGift,
+                        LastGift = d.LastGift,
+                        Total = d.Total
+                    } );
             }
 
-            gGiversGifts.SetLinqDataSource (personQry );
-            gGiversGifts.DataBind();
+            // If we have a person query
+            if ( personQry != null )
+            {
+                // Sort it
+                SortProperty sortProperty = gGiversGifts.SortProperty;
+                if ( sortProperty != null )
+                {
+                    personQry = personQry.Sort( sortProperty );
+                }
+                else
+                {
+                    personQry = personQry.OrderBy( a => a.LastName ).ThenBy( a => a.NickName );
+                }
+
+                // And bind it
+                gGiversGifts.SetLinqDataSource( personQry );
+                gGiversGifts.DataBind();
+            }
         }
 
         #endregion
+
+        public class GridResult
+        {
+            public int Id { get; set; }
+            public Guid Guid { get; set; }
+            public string NickName { get; set; }
+            public string LastName { get; set; }
+            public string GivingId {  get; set;}
+            public DateTime FirstEverGift { get; set; }
+            public DateTime FirstGift { get; set; }
+            public DateTime LastGift { get; set; }
+            public decimal Total { get; set; }
+        }
 
         #region Enums
 
