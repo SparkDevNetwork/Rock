@@ -1,6 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Welcome.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Welcome" %>
 
 <asp:UpdatePanel ID="upContent" runat="server">
+    <Triggers>
+        <%-- make sure lbLogin and lbCancel causes a full postback due to an issue with buttons not firing in IE after clicking the login button --%>
+        <asp:PostBackTrigger ControlID="lbLogin" />
+        <asp:PostBackTrigger ControlID="lbCancel" />
+    </Triggers>
 
     <ContentTemplate>
         <style>

@@ -104,6 +104,28 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [manager logged in].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [manager logged in]; otherwise, <c>false</c>.
+        /// </value>
+        protected bool ManagerLoggedIn
+        {
+            get
+            {
+                return this.CurrentCheckInState != null && this.CurrentCheckInState.ManagerLoggedIn;
+            }
+
+            set
+            {
+                if (this.CurrentCheckInState != null)
+                {
+                    this.CurrentCheckInState.ManagerLoggedIn = value;
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns the locations for this Kiosk for the configured group types
         /// </summary>
         /// <value>
