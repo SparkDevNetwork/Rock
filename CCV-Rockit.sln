@@ -2,11 +2,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb(3)", "http://localhost:50345", "{22348267-9BDF-4B5E-BB6E-37B5FA770224}"
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb(2)", "http://localhost:50345", "{22348267-9BDF-4B5E-BB6E-37B5FA770224}"
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "true"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5.1"
-		ProjectReferences = "{496ec024-71ed-4ad1-b677-2a3fa60ccd05}|church.ccv.SampleProject.dll;{a5b47749-d8b2-4223-822b-26208bce34f4}|church.ccv.CommandCenter.dll;{10702916-bb67-4be9-a507-e1f8932bd05f}|church.ccv.Authentication.dll;{629a186e-1ed2-49bc-95d4-76d65950ae73}|church.ccv.Residency.dll;{8f8c2a79-24f4-4157-8b99-45f75fa85799}|Rock.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;{CB9372CD-9C1D-47AB-92D8-702D4D68324F}|DotLiquid.dll;{f9f3319c-19d7-43a8-bc3a-4781b0b3f281}|church.ccv.Hr.dll;{8280012c-bb74-46ab-baa7-8a4004570829}|church.ccv.Datamart.dll;"
+		ProjectReferences = "{496ec024-71ed-4ad1-b677-2a3fa60ccd05}|church.ccv.SampleProject.dll;{a5b47749-d8b2-4223-822b-26208bce34f4}|church.ccv.CommandCenter.dll;{10702916-bb67-4be9-a507-e1f8932bd05f}|church.ccv.Authentication.dll;{629a186e-1ed2-49bc-95d4-76d65950ae73}|church.ccv.Residency.dll;{8f8c2a79-24f4-4157-8b99-45f75fa85799}|Rock.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;{CB9372CD-9C1D-47AB-92D8-702D4D68324F}|DotLiquid.dll;{f9f3319c-19d7-43a8-bc3a-4781b0b3f281}|church.ccv.Hr.dll;{8280012c-bb74-46ab-baa7-8a4004570829}|church.ccv.Datamart.dll;{9199bfe3-3c75-486b-afa0-d043da822afa}|church.ccv.Utility.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_50345"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_50345\"
@@ -41,6 +41,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Hr", "church.ccv.Hr\church.ccv.Hr.csproj", "{F9F3319C-19D7-43A8-BC3A-4781B0B3F281}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Datamart", "church.ccv.Datamart\church.ccv.Datamart.csproj", "{8280012C-BB74-46AB-BAA7-8A4004570829}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Utility", "church.ccv.Utility\church.ccv.Utility.csproj", "{9199BFE3-3C75-486B-AFA0-D043DA822AFA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -88,6 +90,10 @@ Global
 		{8280012C-BB74-46AB-BAA7-8A4004570829}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8280012C-BB74-46AB-BAA7-8A4004570829}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8280012C-BB74-46AB-BAA7-8A4004570829}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9199BFE3-3C75-486B-AFA0-D043DA822AFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9199BFE3-3C75-486B-AFA0-D043DA822AFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9199BFE3-3C75-486B-AFA0-D043DA822AFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9199BFE3-3C75-486B-AFA0-D043DA822AFA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

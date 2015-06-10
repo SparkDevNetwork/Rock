@@ -1,0 +1,11 @@
+#file types
+*.user
+
+#specific files
+StyleCop.Cache
+
+#specific folders
+[Oo]bj/
+[Dd]ebug*/
+[Rr]elease*/
+
