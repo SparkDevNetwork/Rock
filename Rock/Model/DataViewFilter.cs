@@ -452,7 +452,12 @@ namespace Rock.Model
         /// <summary>
         /// Ends with
         /// </summary>
-        EndsWith = 0x800
+        EndsWith = 0x800,
+
+        /// <summary>
+        /// Between
+        /// </summary>
+        Between = 0x1000,
 
     }
 
