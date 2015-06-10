@@ -377,6 +377,21 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Trims the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string Trim( object input )
+        {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+
+            return input.ToString().Trim();
+        }
+
+        /// <summary>
         /// Remove the first occurrence of a substring - this is a Rock version on this filter which takes any object
         /// </summary>
         /// <param name="input"></param>

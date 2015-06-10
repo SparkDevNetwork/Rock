@@ -108,10 +108,26 @@ namespace Rock.Communication
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">The attachments.</param>
+        public static void Send(string fromEmail, string subject, List<string> recipients, string message, string appRoot = "", string themeRoot = "", List<Attachment> attachments = null)
+        {
+            Send( fromEmail, string.Empty, subject, recipients, message, appRoot, themeRoot, attachments );
+        }
+
+
+        /// <summary>
+        /// Sends the specified from email.
+        /// </summary>
+        /// <param name="fromEmail">From email.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <param name="attachments">The attachments.</param>
         /// <exception cref="System.Exception">
         /// Error sending System Email: Could not read Email Medium Entity Type
         /// </exception>
-        public static void Send(string fromEmail, string subject, List<string> recipients, string message, string appRoot = "", string themeRoot = "", List<Attachment> attachments = null)
+        public static void Send(string fromEmail, string fromName, string subject, List<string> recipients, string message, string appRoot = "", string themeRoot = "", List<Attachment> attachments = null)
         {
             try
             {
@@ -128,7 +144,14 @@ namespace Rock.Communication
                             {
                                 try
                                 {
-                                    transport.Send(recipients, fromEmail, subject, message, appRoot, themeRoot, attachments);
+                                    if ( string.IsNullOrWhiteSpace( fromName ) )
+                                    {
+                                        transport.Send( recipients, fromEmail, subject, message, appRoot, themeRoot, attachments );
+                                    }
+                                    else
+                                    {
+                                        transport.Send( recipients, fromEmail, fromName, subject, message, appRoot, themeRoot, attachments );
+                                    }
                                 }
                                 catch ( Exception ex1 )
                                 {

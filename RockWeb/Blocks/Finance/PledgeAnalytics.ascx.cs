@@ -146,8 +146,8 @@ namespace RockWeb.Blocks.Finance
             int accountId = -1;
             int.TryParse(apAccount.SelectedValue, out accountId);
 
-
             var pledgeService = new FinancialPledgeService(_rockContext);
+            var personService = new PersonService( _rockContext );
 
             var qry = pledgeService.Queryable().AsNoTracking()
                             .Where(p => p.AccountId == accountId);
@@ -195,14 +195,23 @@ namespace RockWeb.Blocks.Finance
                                                        GiftCount = t.Count()
                                                      });
 
-            var resultsQry = pledgeSummary.GroupJoin(
-                                                givingQry,
-                                                p => p.GivingId,
-                                                c => c.GivingId,
-                                                ( p, c ) => new { p, c }
-                                                )
-                                                .SelectMany( x => x.c.DefaultIfEmpty(), ( g, u ) => new { g.p, u } )
-                                                .Select( res => new { res.p.GivingId, res.p.AccountId, res.p.AccountName, res.p.PledgeTotal, TotalGivingAmount = ( res.u.TotalGivingAmount != null ? res.u.TotalGivingAmount : 0 ), GivingCount = ( res.u.GiftCount != null ? res.u.GiftCount : 0 ) } );
+            var resultsQry = pledgeSummary
+                                .GroupJoin(
+                                    givingQry,
+                                    p => p.GivingId,
+                                    c => c.GivingId,
+                                    ( p, c ) => new { p, c }
+                                    )
+                                .SelectMany( x => x.c.DefaultIfEmpty(), ( g, u ) => new { g.p, u } )
+                                .Select( res => new 
+                                { 
+                                    res.p.GivingId, 
+                                    res.p.AccountId, 
+                                    res.p.AccountName, 
+                                    res.p.PledgeTotal, 
+                                    TotalGivingAmount = ( res.u.TotalGivingAmount != null ? res.u.TotalGivingAmount : 0 ), 
+                                    GivingCount = ( res.u.GiftCount != null ? res.u.GiftCount : 0 ) 
+                                } );
                                                             
             // filter pledge range
             if ( nrePledgeAmount.Visible && nrePledgeAmount.LowerValue.HasValue )
@@ -215,8 +224,35 @@ namespace RockWeb.Blocks.Finance
                 resultsQry = resultsQry.Where( p => p.PledgeTotal <= nrePledgeAmount.UpperValue.Value );
             }
 
+            // Join to the giving leader
+            var givingLeaders = personService.GetAllGivingLeaders().AsNoTracking();
+            var personQry = resultsQry
+                .Join( givingLeaders, r => r.GivingId, p => p.GivingId, ( r, p ) => new 
+                {
+                    p.Id,
+                    p.Guid,
+                    p.NickName,
+                    p.LastName,
+                    r.GivingId,
+                    r.AccountId,
+                    r.AccountName,
+                    r.PledgeTotal,
+                    r.TotalGivingAmount,
+                    r.GivingCount
+                } );
 
-            gList.DataSource = resultsQry.ToList();
+            // Sort it
+            SortProperty sortProperty = gList.SortProperty;
+            if ( sortProperty != null )
+            {
+                personQry = personQry.Sort( sortProperty );
+            }
+            else
+            {
+                personQry = personQry.OrderBy( a => a.LastName ).ThenBy( a => a.NickName );
+            }
+
+            gList.SetLinqDataSource( personQry );
             gList.DataBind();
         }
 
