@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.CheckIn
                                                     {
                                                         if ( !string.IsNullOrWhiteSpace( mergeField.Value ) )
                                                         {
-                                                            printContent = Regex.Replace( printContent, string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ), mergeField.Value );
+                                                            printContent = Regex.Replace( printContent, string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ), ZebraFormatString( mergeField.Value ) );
                                                         }
                                                         else
                                                         {
@@ -189,6 +189,18 @@ namespace RockWeb.Blocks.CheckIn
         protected void lbDone_Click( object sender, EventArgs e )
         {
             NavigateToHomePage();
+        }
+
+        private string ZebraFormatString( string input, bool isJson = false )
+        {
+            if ( isJson )
+            {
+                return input.Replace( "é", @"\\82" );  // fix acute e
+            }
+            else
+            {
+                return input.Replace( "é", @"\82" );  // fix acute e
+            }
         }
 
         /// <summary>
@@ -271,7 +283,7 @@ namespace RockWeb.Blocks.CheckIn
 			    }}
             );
 	    }}
-", jsonObject );
+", ZebraFormatString( jsonObject, true ) );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "addLabelScript", script, true );
         }
 

@@ -889,14 +889,23 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Sets a user preference for the current user with the specified key and value.
+        /// Sets a user preference for the current user with the specified key and value, and optionally save value to database
         /// </summary>
-        /// <param name="key">A <see cref="System.String"/> that represents the key value that identifies the 
+        /// <param name="key">A <see cref="System.String" /> that represents the key value that identifies the
         /// user preference.</param>
-        /// <param name="value">A <see cref="System.String"/> that represents the value of the user preference.</param>
-        public void SetUserPreference( string key, string value )
+        /// <param name="value">A <see cref="System.String" /> that represents the value of the user preference.</param>
+        /// <param name="saveValue">if set to <c>true</c> [save value].</param>
+        public void SetUserPreference( string key, string value, bool saveValue = true )
         {
-            RockPage.SetUserPreference( key, value );
+            RockPage.SetUserPreference( key, value, saveValue );
+        }
+
+        /// <summary>
+        /// Saves the user preferences.
+        /// </summary>
+        public void SaveUserPreferences()
+        {
+            RockPage.SaveUserPreferences();
         }
 
         /// <summary>

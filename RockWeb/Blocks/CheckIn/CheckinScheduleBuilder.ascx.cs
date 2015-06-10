@@ -331,8 +331,11 @@ namespace RockWeb.Blocks.CheckIn
             int parentLocationId = pkrParentLocation.SelectedValueAsInt() ?? Rock.Constants.All.Id;
             if ( parentLocationId != Rock.Constants.All.Id )
             {
-                var descendantLocationIds = locationService.GetAllDescendents( parentLocationId ).Select( a => a.Id );
-                qryList = qryList.Where( a => descendantLocationIds.Contains( a.Location.Id ) ).ToList();
+                var currentAndDescendantLocationIds = new List<int>();
+                currentAndDescendantLocationIds.Add( parentLocationId );
+                currentAndDescendantLocationIds.AddRange( locationService.GetAllDescendents( parentLocationId ).Select( a => a.Id ) );
+                
+                qryList = qryList.Where( a => currentAndDescendantLocationIds.Contains( a.Location.Id ) ).ToList();
             }
 
             // put stuff in a datatable so we can dynamically have columns for each Schedule
@@ -507,6 +510,24 @@ namespace RockWeb.Blocks.CheckIn
                         {
                             cell.Attributes["title"] = schedule.ToString();
                         }
+                    }
+                }
+            }
+            else
+            {
+                if (e.Row.DataItem != null)
+                {
+                    var dataRow = e.Row.DataItem as System.Data.DataRowView;
+                    Literal lGroupName = e.Row.FindControl( "lGroupName" ) as Literal;
+                    if ( lGroupName != null )
+                    {
+                        lGroupName.Text = string.Format( "{0}<br /><small>{1}</small>", dataRow["GroupName"] as string, dataRow["GroupPath"] as string );
+                    }
+
+                    Literal lLocationName = e.Row.FindControl( "lLocationName" ) as Literal;
+                    if ( lLocationName != null )
+                    {
+                        lLocationName.Text = string.Format( "{0}<br /><small>{1}</small>", dataRow["LocationName"] as string, dataRow["LocationPath"] as string );
                     }
                 }
             }
