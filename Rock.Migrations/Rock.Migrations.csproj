@@ -173,10 +173,6 @@
     <Compile Include="Migrations\201506051749054_AddSampleMergeDocs.Designer.cs">
       <DependentUpon>201506051749054_AddSampleMergeDocs.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506101153051_GivingLeaderId.cs" />
-    <Compile Include="Migrations\201506101153051_GivingLeaderId.Designer.cs">
-      <DependentUpon>201506101153051_GivingLeaderId.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.cs" />
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.Designer.cs">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
@@ -1720,9 +1716,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201506051749054_AddSampleMergeDocs.resx">
       <DependentUpon>201506051749054_AddSampleMergeDocs.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506101153051_GivingLeaderId.resx">
-      <DependentUpon>201506101153051_GivingLeaderId.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
