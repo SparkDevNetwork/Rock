@@ -36,11 +36,11 @@ namespace Rock.Web.UI.Controls
         /// <returns>
         /// The field value converted to the format specified by <see cref="P:System.Web.UI.WebControls.BoundField.DataFormatString" />.
         /// </returns>
-        protected override string FormatDataValue(object dataValue, bool encode)
+        protected override string FormatDataValue( object dataValue, bool encode )
         {
             if ( OnFormatDataValue != null )
             {
-                CallbackEventArgs args = new CallbackEventArgs { DataValue = dataValue};
+                CallbackEventArgs args = new CallbackEventArgs { DataValue = dataValue, CallbackField = this };
                 OnFormatDataValue( this, args );
                 return args.FormattedValue;
             }
@@ -76,6 +76,14 @@ namespace Rock.Web.UI.Controls
             /// The formatted value.
             /// </value>
             public string FormattedValue { get; set; }
+
+            /// <summary>
+            /// Gets or sets the callback field.
+            /// </summary>
+            /// <value>
+            /// The callback field.
+            /// </value>
+            public CallbackField CallbackField { get; set; }
         }
     }
 }
