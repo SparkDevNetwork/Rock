@@ -84,9 +84,7 @@ namespace RockWeb.Blocks.CheckIn
                 SaveState();
                 RefreshView();
 
-                // enable override
-                btnManager.Visible = GetAttributeValue( "EnableManager" ).AsBoolean();
-                btnOverride.Visible = GetAttributeValue( "EnableOverride" ).AsBoolean();
+                
             }
         }
 
@@ -206,7 +204,8 @@ if ($ActiveWhen.text() != '')
             pnlActive.Visible = false;
             pnlManagerLogin.Visible = false;
             pnlManager.Visible = false;
-            btnManager.Visible = true;
+            btnManager.Visible = GetAttributeValue( "EnableManager" ).AsBoolean();
+            btnOverride.Visible = GetAttributeValue( "EnableOverride" ).AsBoolean();
 
             lblActiveWhen.Text = string.Empty;
 
@@ -272,11 +271,6 @@ if ($ActiveWhen.text() != '')
 
             // set manager timer to 10 minutes
             hfRefreshTimerSeconds.Value = "600";
-
-
-            //DEBUG!
-            ShowManagementDetails();
-
         }
 
         /// <summary>
