@@ -5196,11 +5196,11 @@ h1.page-header:empty {
     margin: 15px 0;
   }
 }
-.masthead .logo.bigger {
+.big-logo .logo {
   min-height: 100px;
 }
 @media (min-width: 768px) {
-  .masthead .logo.bigger {
+  .big-logo .logo {
     min-height: 207px;
   }
 }

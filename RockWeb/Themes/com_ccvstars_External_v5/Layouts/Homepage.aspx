@@ -2,12 +2,12 @@
 
 <asp:Content ID="ctHeader" ContentPlaceHolderID="header" runat="server">
     <!-- Page Header -->
-    <header class="masthead">
+    <header class="masthead big-logo">
         <div class="container">
 
             <div class="row">
                 <div class="col-sm-6">
-                    <a href="/" class="logo bigger"><span class="sr-only">CCV Stars</span></a>
+                    <Rock:Zone Name="Logo" runat="server" />
                 </div>
                 <div class="col-sm-6">
                     <Rock:Zone Name="Header" runat="server" />
