@@ -89,19 +89,25 @@ namespace Rock.Migrations
 
     -- Set the system notes to have the correct Guid and be selectable
     DECLARE @EntityTypeId int
-    DECLARE @NoteTypeId int
+    DECLARE @NoteTypeGuid uniqueidentifier
     SET @EntityTypeId  = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Person' )
 	IF @EntityTypeId IS NOT NULL
 	BEGIN
-		Set @NoteTypeId = ( SELECT TOP 1 [ID] FROM [NoteType] WHERE [EntityTypeId] = @EntityTypeId ORDER BY [Order] )
-		IF @NoteTypeId IS NOT NULL
+		Set @NoteTypeGuid = ( SELECT TOP 1 [Guid] FROM [NoteType] WHERE [EntityTypeId] = @EntityTypeId ORDER BY [Order] )
+		IF @NoteTypeGuid IS NOT NULL
 		BEGIN
+			UPDATE AV SET [Value] = '66a1b9d7-7efa-40f3-9415-e54437977d60'
+			FROM [AttributeValue] AV
+			INNER JOIN [Attribute] A ON A.[Id] = AV.[AttributeId]
+			WHERE A.[Key] = 'NoteType'
+			AND AV.[Value] = CAST(@NoteTypeGuid AS varchar(40))
+
 			UPDATE [NoteType] SET
 				[Guid] = '66A1B9D7-7EFA-40F3-9415-E54437977D60',
 				[IsSystem] = 1,
 				[UserSelectable] = 1,
                 [IconCssClass] = 'fa fa-comment'
-			WHERE [Id] = @NoteTypeId
+			WHERE [Guid] = @NoteTypeGuid
 		END
 		ELSE
 		BEGIN
@@ -113,15 +119,21 @@ namespace Rock.Migrations
     SET @EntityTypeId = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.PrayerRequest' )    
 	IF @EntityTypeId IS NOT NULL
 	BEGIN
-		SET @NoteTypeId = ( SELECT TOP 1 [ID] FROM [NoteType] WHERE [EntityTypeId] = @EntityTypeId ORDER BY [Order] )
-		IF @NoteTypeId IS NOT NULL
+		SET @NoteTypeGuid = ( SELECT TOP 1 [Guid] FROM [NoteType] WHERE [EntityTypeId] = @EntityTypeId ORDER BY [Order] )
+		IF @NoteTypeGuid IS NOT NULL
 		BEGIN
+			UPDATE AV SET [Value] = '0ebabd75-0890-4756-a9ee-62626282bb5d'
+			FROM [AttributeValue] AV
+			INNER JOIN [Attribute] A ON A.[Id] = AV.[AttributeId]
+			WHERE A.[Key] = 'NoteType'
+			AND AV.[Value] = CAST(@NoteTypeGuid AS varchar(40))
+
 			UPDATE [NoteType] SET
 				[Guid] = '0EBABD75-0890-4756-A9EE-62626282BB5D',
 				[IsSystem] = 1,
 				[UserSelectable] = 1,
                 [IconCssClass] = 'fa fa-comment'
-			WHERE [Id] = @NoteTypeId
+			WHERE [Guid] = @NoteTypeGuid
 		END
 		ELSE
 		BEGIN
@@ -133,15 +145,21 @@ namespace Rock.Migrations
     SET @EntityTypeId = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Workflow' )
 	IF @EntityTypeId IS NOT NULL
 	BEGIN
-		SET @NoteTypeId = ( SELECT TOP 1 [ID] FROM [NoteType] WHERE [EntityTypeId] = @EntityTypeId ORDER BY [Order] )
-		IF @NoteTypeId IS NOT NULL
+		SET @NoteTypeGuid = ( SELECT TOP 1 [Guid] FROM [NoteType] WHERE [EntityTypeId] = @EntityTypeId ORDER BY [Order] )
+		IF @NoteTypeGuid IS NOT NULL
 		BEGIN
+			UPDATE AV SET [Value] = 'a6ce445c-3b49-4401-82e6-312bf7946a6b'
+			FROM [AttributeValue] AV
+			INNER JOIN [Attribute] A ON A.[Id] = AV.[AttributeId]
+			WHERE A.[Key] = 'NoteType'
+			AND AV.[Value] = CAST(@NoteTypeGuid AS varchar(40))
+
 			UPDATE [NoteType] SET
 				[Guid] = 'A6CE445C-3B49-4401-82E6-312BF7946A6B',
 				[IsSystem] = 1,
 				[UserSelectable] = 1,
                 [IconCssClass] = 'fa fa-comment'
-			WHERE [Id] = @NoteTypeId
+			WHERE [Guid] = @NoteTypeGuid
 		END
 		ELSE
 		BEGIN
@@ -153,15 +171,21 @@ namespace Rock.Migrations
     SET @EntityTypeId = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.FinancialScheduledTransaction' )
 	IF @EntityTypeId IS NOT NULL
 	BEGIN
-		SET @NoteTypeId = ( SELECT TOP 1 [ID] FROM [NoteType] WHERE [EntityTypeId] = @EntityTypeId ORDER BY [Order] )
-		IF @NoteTypeId IS NOT NULL
+		SET @NoteTypeGuid = ( SELECT TOP 1 [Guid] FROM [NoteType] WHERE [EntityTypeId] = @EntityTypeId ORDER BY [Order] )
+		IF @NoteTypeGuid IS NOT NULL
 		BEGIN
+			UPDATE AV SET [Value] = '360cffe2-7fe3-4b0b-85a7-bfdacc9af588'
+			FROM [AttributeValue] AV
+			INNER JOIN [Attribute] A ON A.[Id] = AV.[AttributeId]
+			WHERE A.[Key] = 'NoteType'
+			AND AV.[Value] = CAST(@NoteTypeGuid AS varchar(40))
+
 			UPDATE [NoteType] SET
 				[Guid] = '360CFFE2-7FE3-4B0B-85A7-BFDACC9AF588',
 				[IsSystem] = 1,
 				[UserSelectable] = 1,
                 [IconCssClass] = 'fa fa-comment'
-			WHERE [Id] = @NoteTypeId
+			WHERE [Guid] = @NoteTypeGuid
 		END
 		ELSE
 		BEGIN

@@ -164,7 +164,7 @@ $('.checkin-group > .panel-body').on('validation-error', function() {
                 {
                     // rowIndex is determined by the numeric suffix of the control id after the Grid, subtract 2 (one for the header, and another to convert from 0 to 1 based index)
                     int rowIndex = subTargetList.First().AsNumeric().AsInteger() - 2;
-                    RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.Locations[rowIndex].LocationId );
+                    RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.Locations.OrderBy( l => l.FullNamePath ).ToList()[rowIndex].LocationId );
                     DeleteLocation_Click( this, rowEventArgs );
                 }
             }
@@ -581,7 +581,7 @@ $('.checkin-group > .panel-body').on('validation-error', function() {
 
             // Locations grid
             writer.WriteLine( "<h3>Locations</h3>" );
-            _gLocations.DataSource = this.Locations;
+            _gLocations.DataSource = this.Locations.OrderBy( l => l.FullNamePath ).ToList();
             _gLocations.DataBind();
             _gLocations.RenderControl( writer );
 

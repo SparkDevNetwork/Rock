@@ -95,34 +95,31 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                var noteTypes = new List<NoteTypeCache>();
-                var noteTypeIds = ViewState["NoteTypes"] as List<int> ?? new List<int>();
-                foreach ( var noteTypeId in noteTypeIds )
+                EnsureChildControls();
+                var result = new List<NoteTypeCache>();
+                foreach( ListItem li in _ddlNoteType.Items )
                 {
-                    var noteType = NoteTypeCache.Read( noteTypeId );
-                    if ( noteType != null )
+                    int? id = li.Value.AsIntegerOrNull();
+                    if ( id.HasValue )
                     {
-                        noteTypes.Add( noteType );
+                        var noteType = NoteTypeCache.Read( id.Value );
+                        {
+                            if ( noteType != null )
+                            {
+                                result.Add( noteType);
+                            }
+                        }
                     }
                 }
-                return noteTypes;
+                return result;
             }
             set
             {
-                ViewState["NoteTypes"] = value.Select( t => t.Id ).ToList();
+                EnsureChildControls();
+                _ddlNoteType.DataSource = value;
+                _ddlNoteType.DataBind();
+                _ddlNoteType.Visible = value.Count() > 1;
             }
-        }
-
-        /// <summary>
-        /// Gets or sets the note id.
-        /// </summary>
-        /// <value>
-        /// The note id.
-        /// </value>
-        public int? NoteId
-        {
-            get { return ViewState["NoteId"] as int?; }
-            set { ViewState["NoteId"] = value; }
         }
 
         /// <summary>
@@ -133,8 +130,35 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public int? NoteTypeId
         {
-            get { return ViewState["NoteTypeId"] as int?; }
-            set { ViewState["NoteTypeId"] = value; }
+            get 
+            {
+                EnsureChildControls();
+                return _ddlNoteType.SelectedValueAsInt();
+            }
+            set 
+            {
+                EnsureChildControls();
+                if ( value.HasValue )
+                {
+                    _ddlNoteType.SetValue( value.ToString() );
+                }
+                else
+                {
+                    _ddlNoteType.SelectedIndex = -1;
+                }
+            }
+        }        
+        
+        /// <summary>
+        /// Gets or sets the note id.
+        /// </summary>
+        /// <value>
+        /// The note id.
+        /// </value>
+        public int? NoteId
+        {
+            get { return ViewState["NoteId"] as int?; }
+            set { ViewState["NoteId"] = value; }
         }
 
         /// <summary>
@@ -488,8 +512,6 @@ namespace Rock.Web.UI.Controls
             _ddlNoteType.CssClass = "form-control input-sm input-width-lg noteentry-notetype";
             _ddlNoteType.DataValueField = "Id";
             _ddlNoteType.DataTextField = "Name";
-            _ddlNoteType.DataSource = NoteTypes;
-            _ddlNoteType.DataBind();
             Controls.Add( _ddlNoteType );
 
             _tbNote.ID = this.ID + "_tbNewNote";
@@ -574,17 +596,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute(HtmlTextWriterAttribute.Class, "noteentry-control");
             writer.RenderBeginTag(HtmlTextWriterTag.Div);
-            
-            if ( NoteTypes.Any() )
-            {
-                if ( NoteTypeId.HasValue )
-                {
-                    _ddlNoteType.SetValue( NoteTypeId.Value );
-                }
-                _ddlNoteType.Visible = NoteTypes.Count > 1;
-                _ddlNoteType.RenderControl( writer );
-            }
-
+            _ddlNoteType.RenderControl( writer );
             _tbNote.RenderControl( writer );
             writer.RenderEndTag();
 

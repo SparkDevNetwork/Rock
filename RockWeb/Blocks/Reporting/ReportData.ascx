@@ -19,7 +19,10 @@
                     </div>
                     <div class="panel-body">
                         <Rock:NotificationBox ID="nbFiltersError" runat="server" NotificationBoxType="Danger" Visible="false" />
-                        <asp:PlaceHolder ID="phFilters" runat="server" />
+                        
+                        <div class="filter-list">
+                            <asp:PlaceHolder ID="phFilters" runat="server" />
+                        </div>
 
                         <div class="actions margin-t-md">
                             <asp:LinkButton ID="btnFilter" runat="server" AccessKey="m" Text="Filter" CssClass="btn btn-primary btn-sm" OnClick="btnFilter_Click" />

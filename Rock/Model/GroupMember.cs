@@ -111,6 +111,16 @@ namespace Rock.Model
         [DataMember]
         public DateTime? DateTimeAdded { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is notified.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is notified; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsNotified { get; set; }
+
         #endregion
 
         #region Virtual Properties

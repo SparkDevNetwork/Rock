@@ -3,6 +3,8 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
+        <asp:Literal ID="lError" runat="server" />
+
         <asp:Panel ID="pnlEmailForm" runat="server" CssClass="emailform">
             <asp:Literal ID="lEmailForm" runat="server" />
 
