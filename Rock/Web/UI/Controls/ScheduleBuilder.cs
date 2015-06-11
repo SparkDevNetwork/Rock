@@ -847,7 +847,7 @@ END:VCALENDAR
                     cbControl.Checked = false;
                 }
 
-                StringReader stringReader = new StringReader( value ?? iCalendarContentEmptyEvent );
+                StringReader stringReader = new StringReader( string.IsNullOrWhiteSpace(value) ? iCalendarContentEmptyEvent : value);
                 var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
                 DDay.iCal.Event calendarEvent = null;
                 DDay.iCal.iCalendar calendar = null;
