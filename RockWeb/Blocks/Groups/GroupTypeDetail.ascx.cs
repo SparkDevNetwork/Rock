@@ -1314,7 +1314,11 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            GroupTypeRolesState.RemoveEntity( groupTypeRoleState.Guid );
+            if ( groupTypeRoleState != null )
+            {
+                GroupTypeRolesState.RemoveEntity( groupTypeRoleState.Guid );
+            }
+
             GroupTypeRolesState.Add( groupTypeRole );
 
             BindGroupTypeRolesGrid();

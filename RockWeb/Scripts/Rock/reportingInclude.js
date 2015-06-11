@@ -5,11 +5,18 @@
             var $fieldCriteriaRow = $(filterCompareControl).closest('.field-criteria');
             var compareValue = $(filterCompareControl).val();
             var isNullCompare = (compareValue == 32 || compareValue == 64);
+            var isBetweenCompare = (compareValue == 4096);
             if (isNullCompare) {
                 $fieldCriteriaRow.find('.js-filter-control').hide();
+                $fieldCriteriaRow.find('.js-filter-control-between').hide();
+            }
+            else if (isBetweenCompare) {
+                $fieldCriteriaRow.find('.js-filter-control').hide();
+                $fieldCriteriaRow.find('.js-filter-control-between').show();
             }
             else {
                 $fieldCriteriaRow.find('.js-filter-control').show();
+                $fieldCriteriaRow.find('.js-filter-control-between').hide();
             }
         }
 

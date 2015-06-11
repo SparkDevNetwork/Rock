@@ -16,9 +16,12 @@
 //
 using System;
 using System.Linq;
+
 using Newtonsoft.Json;
+
 using Rock.Model;
 using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -36,14 +39,10 @@ namespace Rock.Web.UI.Controls
             ChartStyle chartStyle = null;
             if ( chartStyleDefinedValueGuid.HasValue )
             {
-                using ( var rockContext = new Rock.Data.RockContext() )
+                var definedValue = DefinedValueCache.Read( chartStyleDefinedValueGuid.Value );
+                if ( definedValue != null )
                 {
-                    var definedValue = new DefinedValueService( rockContext ).Get( chartStyleDefinedValueGuid.Value );
-                    if ( definedValue != null )
-                    {
-                        definedValue.LoadAttributes( rockContext );
-                        chartStyle = ChartStyle.CreateFromJson( definedValue.Value, definedValue.GetAttributeValue( "ChartStyle" ) );
-                    }
+                    chartStyle = ChartStyle.CreateFromJson( definedValue.Value, definedValue.GetAttributeValue( "ChartStyle" ) );
                 }
             }
 
