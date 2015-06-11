@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.CheckIn
     /// <summary>
     /// Shows a graph of attendance statistics which can be configured for specific groups, date range, etc.
     /// </summary>
-    [DisplayName( "Attendance Analysis" )]
+    [DisplayName( "Attendance Analytics" )]
     [Category( "Check-in" )]
     [Description( "Shows a graph of attendance statistics which can be configured for specific groups, date range, etc." )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.CheckIn
     [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true )]
     [GroupTypeField( "Check-in Type", required: false, key: "GroupTypeTemplate", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
     [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false )]
-    public partial class AttendanceReporting : RockBlock
+    public partial class AttendanceAnalytics : RockBlock
     {
         #region Fields
 
