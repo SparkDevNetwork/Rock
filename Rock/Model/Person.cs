@@ -882,7 +882,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        public int DaysUntilBirthday { get; set; }
+        public int? DaysUntilBirthday { get; set; }
 
         /// <summary>
         /// Sets the birth date, which will set the BirthMonth, BirthDay, and BirthYear values
