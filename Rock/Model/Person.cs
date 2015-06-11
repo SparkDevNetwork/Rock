@@ -872,6 +872,19 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets or sets the number of days until their next birthday. This is a computed column and can be used
+        /// in LinqToSql queries, but there is no in-memory calculation. Avoid using property outside
+        /// a linq query
+        /// NOTE: If their birthday is Feb 29, and this isn't a leap year, it'll treat Feb 28th as their birthday when doing this calculation
+        /// </summary>
+        /// <value>
+        /// The the number of days until their next birthday
+        /// </value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        public int DaysUntilBirthday { get; set; }
+
+        /// <summary>
         /// Sets the birth date, which will set the BirthMonth, BirthDay, and BirthYear values
         /// </summary>
         /// <param name="value">The value.</param>
