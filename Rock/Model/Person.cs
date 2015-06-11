@@ -320,6 +320,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets or sets the giving leader identifier. This is a computed column and can be used
+        /// in LinqToSql queries, but there is no in-memory calculation. Avoid using property outside
+        /// a linq query
+        /// </summary>
+        /// <value>
+        /// The giving leader identifier.
+        /// </value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        public int GivingLeaderId { get; set; }
+   
+        /// <summary>
         /// Gets or sets the Person's email address.
         /// </summary>
         /// <value>

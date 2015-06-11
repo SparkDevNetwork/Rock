@@ -79,10 +79,10 @@ namespace Rock.Jobs
             }
 
             var activeStatusGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid();
-            
+
             // only include alive people that have record status of Active
             var personQry = personService.Queryable( false, false ).Where( a => a.RecordStatusValue.Guid == activeStatusGuid && a.IsDeceased == false );
-            var ageRange = ( dataMap.GetString( "AgeRange" ) ?? string.Empty ).Split( ',' ); 
+            var ageRange = ( dataMap.GetString( "AgeRange" ) ?? string.Empty ).Split( ',' );
             if ( ageRange.Length == 2 )
             {
                 int? minimumAge = ageRange[0].AsIntegerOrNull();
@@ -103,8 +103,8 @@ namespace Rock.Jobs
                 personQry = personQry.Where( a => connectionStatusGuids.Contains( a.ConnectionStatusValue.Guid ) );
             }
 
-            // only include people that have an email address
-            personQry = personQry.Where( a => ( a.Email != null ) && ( a.Email != "" ) );
+            // only include people that have an email address and want an email
+            personQry = personQry.Where( a => ( a.Email != null ) && ( a.Email != "" ) && ( a.EmailPreference == EmailPreference.EmailAllowed ) );
 
             var recipients = new List<RecipientData>();
 

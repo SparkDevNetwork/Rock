@@ -44,7 +44,9 @@
                             <div class="grid grid-panel">
                                 <Rock:Grid ID="gList" runat="server" AllowSorting="true">
                                     <Columns>
-                                        <Rock:RockBoundField DataField="GivingId" HeaderText="GivingId" SortExpression="GivingId" />
+                                        <asp:TemplateField HeaderText="Person" SortExpression="LastName,NickName">
+                                            <ItemTemplate><%# Eval("NickName") %> <%# Eval("LastName") %></ItemTemplate>
+                                        </asp:TemplateField>
                                         <Rock:RockBoundField DataField="PledgeTotal" HeaderText="Pledge Total" SortExpression="PledgeTotal" />
                                         <Rock:RockBoundField DataField="AccountName" HeaderText="Account" SortExpression="AccountName" />
                                         <Rock:RockBoundField DataField="TotalGivingAmount" HeaderText="Total Giving Amount" SortExpression="TotalGivingAmount" />

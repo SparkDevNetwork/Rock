@@ -169,6 +169,48 @@ namespace Rock.Model
 
             return authorized;
         }
+
+        /// <summary>
+        /// Determines whether the specified action is authorized but instead of traversing child 
+        /// filters (an expensive query), a list of all filters can be passed in and this will be 
+        /// checked instead ( See DataViewPicker.LoadDropDownItems() for example of use ).
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="allEntityFilters">All entity filters.</param>
+        /// <returns></returns>
+        public bool IsAuthorized( string action, Person person, List<DataViewFilter> allEntityFilters )
+        {
+            // First check if user is authorized for model
+            bool authorized = base.IsAuthorized( action, person );
+
+            // If viewing, make sure user is authorized to view the component that filter is using
+            // and all the child models/components
+            if ( authorized && string.Compare( action, Authorization.VIEW, true ) == 0 )
+            {
+                if ( EntityType != null )
+                {
+                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityType.Name );
+                    if ( filterComponent != null )
+                    {
+                        authorized = filterComponent.IsAuthorized( action, person );
+                    }
+                }
+
+                if ( authorized )
+                {
+                    foreach ( var childFilter in allEntityFilters.Where( f => f.ParentId == Id ) )
+                    {
+                        if ( !childFilter.IsAuthorized( action, person, allEntityFilters ) )
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return authorized;
+        }
         
         /// <summary>
         /// Gets the Linq expression for the DataViewFilter.
@@ -410,7 +452,12 @@ namespace Rock.Model
         /// <summary>
         /// Ends with
         /// </summary>
-        EndsWith = 0x800
+        EndsWith = 0x800,
+
+        /// <summary>
+        /// Between
+        /// </summary>
+        Between = 0x1000,
 
     }
 
