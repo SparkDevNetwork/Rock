@@ -18,21 +18,25 @@ WHERE g.ParentGroupId = {{ GroupId }}
 REQUIRED VARIABLES
 ==================
 
-{% assign detailPageId = "/page/503" %}
+{% assign detailPage = "/page/490" %}
+{% assign communityListPage = "/page/564" %}
 
 
 {% endcomment %}
 
 
 
+{% capture pageTitle %}{{ table1.rows.first.Name }} Area Toolbox{% endcapture %}
+{{ pageTitle | SetPageTitle }}
+
 {{ table1.rows.first.Name | SetPageTitle }}
 
-{% unless rows == empty or detailPageId == empty %}
+{% unless rows == empty or detailPage == empty %}
 
   <div class="row">
     {% for g in table2.rows %}
-      <div class="col-md-4 col-sm-6">
-        <a class="thumbnail padding-b-none" href="{{ detailPageId }}?GroupId={{ g.id }}">
+      <div class="col-md-4 col-xs-6">
+        <a class="thumbnail padding-b-none" href="{{ detailPage }}?GroupId={{ g.id }}">
           <img src="https://maps.googleapis.com/maps/api/staticmap?zoom=13&amp;size=260x160&amp;markers=scale:2%7Cicon:http://bit.ly/1npXPPc%7C{{ g.Lat }},{{ g.Long }}&amp;sensor=false&amp;style=feature:all%7Csaturation:-100&amp;scale=2" alt="Map of Group Location">
           <div class="caption">
             <h3 class="panel-title">{{ g.Name }} &nbsp;<i class="fa fa-caret-right"></i></h5>
@@ -41,6 +45,10 @@ REQUIRED VARIABLES
       </div>
     {% endfor %}
   </div>
+
+  <hr>
+
+  <a href="{{ communityListPage }}?NeighborhoodId={{ PageParameter.GroupId }}" class="btn btn-default"><i class="fa fa-filter"></i> Community List</a>
 
 {% endunless %}
 
