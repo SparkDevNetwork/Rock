@@ -31,6 +31,7 @@ namespace church.ccv.Hr.Model
 
             timeCard.TimeCardStatus = TimeCardStatus.Approved;
             timeCard.ApprovedByPersonAliasId = rockPage.CurrentPersonAliasId;
+            timeCard.ApprovedDateTime = RockDateTime.Now;
             var hrContext = this.Context as HrContext;
 
             var timeCardHistoryService = new TimeCardHistoryService( hrContext );

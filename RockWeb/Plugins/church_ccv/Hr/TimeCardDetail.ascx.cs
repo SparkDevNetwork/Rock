@@ -649,6 +649,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
             timeCard.TimeCardStatus = TimeCardStatus.Submitted;
             timeCard.SubmittedToPersonAliasId = submitToPersonAlias.Id;
+            timeCard.SubmittedDateTime = RockDateTime.Now;
             var timeCardHistoryService = new TimeCardHistoryService( hrContext );
             var timeCardHistory = new TimeCardHistory();
             timeCardHistory.TimeCardId = timeCard.Id;
