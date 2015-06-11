@@ -79,6 +79,7 @@ namespace church.ccv.Utility
                 Guid childRoleGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD );
                 Guid homePhoneGuid = new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
                 Guid mobilePhoneGuid = new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                Guid homeAddressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
 
                 // get workflow type id
                 var workflowType = new WorkflowTypeService( rockContext ).Get( workflowTypeGuid );
@@ -109,7 +110,7 @@ namespace church.ccv.Utility
                                      .Where( w => w.WorkflowTypeId == workflowType.Id)
                                      .Select( w => w.InitiatorPersonAlias.Person.Id);
 
-                var families = new GroupService( rockContext ).Queryable( "Members, Members.GroupRole, Members.Person, Members.Person.PhoneNumbers, Campus" ).AsNoTracking()
+                var families = new GroupService( rockContext ).Queryable( "Members, Members.GroupRole, Members.Person, Members.Person.PhoneNumbers, Campus, GroupLocations.Location" ).AsNoTracking()
                                     .Where(g =>
                                             g.GroupTypeId == familyGroupTypeId &&
                                             g.Members.Any(m => visitorIds.Contains(m.PersonId)) &&
@@ -124,78 +125,99 @@ namespace church.ccv.Utility
                                             .FirstOrDefault()
                                             .Person;
                     
-                    // only create workflow is the head of house age is not know or it's greater than the min age
+                    // only create workflow is the head of house age is not known or it's greater than the min age
                     if ( !headOfHouse.Age.HasValue || headOfHouse.Age > minAgeHeadOfHouse )
                     {
-                        // get first visit
-                        var familyMemberPersonIds = family.Members.Select( m => m.PersonId ).ToList();
-                        var firstVisitDates = new AttributeValueService( rockContext ).Queryable().AsNoTracking()
-                                                .Where( a =>
-                                                    a.Attribute.Key == attributeKey &&
-                                                    a.AttributeId == firstVisitAttributeId &&
-                                                    familyMemberPersonIds.Contains( a.EntityId.Value ) )
-                                                .OrderByDescending( a => a.ValueAsDateTime )
-                                                .ToList();
+                        // don't create a workflow if there is no contact info
+                        int addressCount = family.GroupLocations.Count();
+                        string homePhone = family.Members
+                                                .OrderBy( m => m.GroupRole.Order)
+                                                .ThenBy( m => m.Person.Gender)
+                                                .SelectMany( m => m.Person.PhoneNumbers )
+                                                .Where( p => p.NumberTypeValue.Guid == homePhoneGuid )
+                                                .Select( p => p.NumberFormatted)
+                                                .FirstOrDefault();
+                        string mobilePhone = family.Members
+                                                .OrderBy( m => m.GroupRole.Order )
+                                                .ThenBy( m => m.Person.Gender )
+                                                .SelectMany( m => m.Person.PhoneNumbers )
+                                                .Where( p => p.NumberTypeValue.Guid == mobilePhoneGuid )
+                                                .Select( p => p.NumberFormatted )
+                                                .FirstOrDefault();
 
-                        // don't create a workflow if anyone in the family has an earlier first visit
-                        if ( !(firstVisitDates.OrderBy( d => d.ValueAsDateTime ).Select( d => d.ValueAsDateTime ).First() < backDate) )
+                        if ( addressCount > 0 || !string.IsNullOrWhiteSpace( homePhone ) || !string.IsNullOrWhiteSpace( mobilePhone ) )
                         {
-                            var adults = family.Members
-                                            .Where( m => m.GroupRole.Guid == adultRoleGuid );
+                            // get first visit
+                            var familyMemberPersonIds = family.Members.Select( m => m.PersonId ).ToList();
+                            var firstVisitDates = new AttributeValueService( rockContext ).Queryable().AsNoTracking()
+                                                    .Where( a =>
+                                                        a.Attribute.Key == attributeKey &&
+                                                        a.AttributeId == firstVisitAttributeId &&
+                                                        familyMemberPersonIds.Contains( a.EntityId.Value ) )
+                                                    .OrderByDescending( a => a.ValueAsDateTime )
+                                                    .ToList();
 
-                            var children = family.Members
-                                            .Where( m => m.GroupRole.Guid == childRoleGuid );
-
-                            // create new workflow
-                            var visitorWorkflow = Rock.Model.Workflow.Activate( workflowType, family.Name );
-                            visitorWorkflow.InitiatorPersonAliasId = headOfHouse.PrimaryAliasId;
-
-                            // set attribute values
-                            visitorWorkflow.SetAttributeValue( "HeadOfHouse", headOfHouse.PrimaryAlias.Guid.ToString() );
-                            visitorWorkflow.SetAttributeValue( "Family", family.ToString() );
-                            visitorWorkflow.SetAttributeValue( "FirstVisitDate", firstVisitDates.OrderByDescending( d => d.ValueAsDateTime ).Select( d => d.ValueAsDateTime ).FirstOrDefault().ToString() );
-                            visitorWorkflow.SetAttributeValue( "Campus", family.Campus.Name );
-                            visitorWorkflow.SetAttributeValue( "Children", BuildPersonList( children.Select( m => m.Person ).ToList() ) );
-                            visitorWorkflow.SetAttributeValue( "Adults", BuildPersonList( adults.Select( m => m.Person ).ToList() ) );
-
-                            if ( headOfHouse.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == homePhoneGuid ).Count() > 0 )
+                            // don't create a workflow if anyone in the family has an earlier first visit
+                            if ( !( firstVisitDates.OrderBy( d => d.ValueAsDateTime ).Select( d => d.ValueAsDateTime ).First() < backDate ) )
                             {
-                                visitorWorkflow.SetAttributeValue( "HomePhone", headOfHouse.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == homePhoneGuid ).Select( p => p.NumberFormatted ).FirstOrDefault() );
-                            }
+                                var adults = family.Members
+                                                .Where( m => m.GroupRole.Guid == adultRoleGuid );
 
-                            if ( headOfHouse.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == mobilePhoneGuid ).Count() > 0 )
-                            {
-                                visitorWorkflow.SetAttributeValue( "MobilePhone", headOfHouse.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == mobilePhoneGuid ).Select( p => p.NumberFormatted ).FirstOrDefault() );
-                            }
+                                var children = family.Members
+                                                .Where( m => m.GroupRole.Guid == childRoleGuid );
 
-                            // get neighborhood info
-                            if ( geofenceGroupType != Guid.Empty )
-                            {
-                                var neighborhoods = new GroupService( rockContext ).GetGeofencingGroups( headOfHouse.Id, geofenceGroupType ).AsNoTracking();
+                                // create new workflow
+                                var visitorWorkflow = Rock.Model.Workflow.Activate( workflowType, family.Name );
+                                visitorWorkflow.InitiatorPersonAliasId = headOfHouse.PrimaryAliasId;
 
-                                if ( neighborhoods != null && neighborhoods.Count() > 0 )
-                                {
-                                    var neighborhood = neighborhoods.FirstOrDefault();
-                                    visitorWorkflow.SetAttributeValue( "Neighborhood", neighborhood.Name );
+                                // set attribute values
+                                visitorWorkflow.SetAttributeValue( "HeadOfHouse", headOfHouse.PrimaryAlias.Guid.ToString() );
+                                visitorWorkflow.SetAttributeValue( "Family", family.ToString() );
+                                visitorWorkflow.SetAttributeValue( "FirstVisitDate", firstVisitDates.OrderByDescending( d => d.ValueAsDateTime ).Select( d => d.ValueAsDateTime ).FirstOrDefault().ToString() );
+                                visitorWorkflow.SetAttributeValue( "Campus", family.Campus.Name );
+                                visitorWorkflow.SetAttributeValue( "Children", BuildPersonList( children.Select( m => m.Person ).ToList() ) );
+                                visitorWorkflow.SetAttributeValue( "Adults", BuildPersonList( adults.Select( m => m.Person ).ToList() ) );
+                                visitorWorkflow.SetAttributeValue( "HomePhone", homePhone );
+                                visitorWorkflow.SetAttributeValue( "MobilePhone", mobilePhone );
+                                
+                                var homeAddressGuid = family.GroupLocations
+                                        .Where( l => l.Location.LocationTypeValue.Guid == homeAddressTypeGuid)
+                                        .Select( l => l.Location.Guid)
+                                        .FirstOrDefault();
 
-                                    var neighborhoodPastor = groupMemberService.Queryable().AsNoTracking()
-                                                    .Where( m =>
-                                                        m.GroupId == neighborhood.Id &&
-                                                        m.GroupRole.IsLeader )
-                                                    .Select( m => m.Person ).FirstOrDefault();
-
-                                    visitorWorkflow.SetAttributeValue( "NeighborhoodPastor", neighborhoodPastor.PrimaryAlias.Guid.ToString() );
+                                if (homeAddressGuid != null) {
+                                    visitorWorkflow.SetAttributeValue( "HomeAddress", homeAddressGuid.ToString());
                                 }
+
+                                // get neighborhood info
+                                if ( geofenceGroupType != Guid.Empty )
+                                {
+                                    var neighborhoods = new GroupService( rockContext ).GetGeofencingGroups( headOfHouse.Id, geofenceGroupType ).AsNoTracking();
+
+                                    if ( neighborhoods != null && neighborhoods.Count() > 0 )
+                                    {
+                                        var neighborhood = neighborhoods.FirstOrDefault();
+                                        visitorWorkflow.SetAttributeValue( "Neighborhood", neighborhood.Name );
+
+                                        var neighborhoodPastor = groupMemberService.Queryable().AsNoTracking()
+                                                        .Where( m =>
+                                                            m.GroupId == neighborhood.Id &&
+                                                            m.GroupRole.IsLeader )
+                                                        .Select( m => m.Person ).FirstOrDefault();
+
+                                        visitorWorkflow.SetAttributeValue( "NeighborhoodPastor", neighborhoodPastor.PrimaryAlias.Guid.ToString() );
+                                    }
+                                }
+
+                                var workflowService = new Rock.Model.WorkflowService( rockContext );
+                                workflowService.Add( visitorWorkflow );
+
+                                rockContext.WrapTransaction( () =>
+                                {
+                                    rockContext.SaveChanges();
+                                    visitorWorkflow.SaveAttributeValues( rockContext );
+                                } );
                             }
-
-                            var workflowService = new Rock.Model.WorkflowService( rockContext );
-                            workflowService.Add( visitorWorkflow );
-
-                            rockContext.WrapTransaction( () =>
-                            {
-                                rockContext.SaveChanges();
-                                visitorWorkflow.SaveAttributeValues( rockContext );
-                            } );
                         }
                     }
                 }
