@@ -110,32 +110,33 @@ namespace church.ccv.Utility
                                      .Where( w => w.WorkflowTypeId == workflowType.Id)
                                      .Select( w => w.InitiatorPersonAlias.Person.Id);
 
-                var families = new GroupService( rockContext ).Queryable( "Members, Members.GroupRole, Members.Person, Members.Person.PhoneNumbers, Campus, GroupLocations.Location" ).AsNoTracking()
-                                    .Where(g =>
+                var families = new GroupService( rockContext ).Queryable().AsNoTracking()
+                                    .Where( g =>
                                             g.GroupTypeId == familyGroupTypeId &&
-                                            g.Members.Any(m => visitorIds.Contains(m.PersonId)) &&
-                                            !g.Members.Any(m => workflowInitiators.Contains(m.PersonId)))
-                                    .ToList();
+                                            g.Members.Any( m => visitorIds.Contains( m.PersonId ) ) &&
+                                            !g.Members.Any( m => workflowInitiators.Contains( m.PersonId ) ) );
 
-                foreach ( var family in families )
+                foreach ( var family in families.ToList() )
                 {
                     var headOfHouse = family.Members
                                             .OrderBy( m => m.GroupRole.Order )
                                             .ThenBy( m => m.Person.Gender  )
                                             .FirstOrDefault()
                                             .Person;
-                    
+
+                    var headOfHouseAliasIds = headOfHouse.Aliases.Select( a => a.Id ).ToList();
+
                     // only create workflow is the head of house age is not known or it's greater than the min age
                     if ( !headOfHouse.Age.HasValue || headOfHouse.Age > minAgeHeadOfHouse )
                     {
                         // don't create a workflow if there is no contact info
                         int addressCount = family.GroupLocations.Count();
                         string homePhone = family.Members
-                                                .OrderBy( m => m.GroupRole.Order)
-                                                .ThenBy( m => m.Person.Gender)
+                                                .OrderBy( m => m.GroupRole.Order )
+                                                .ThenBy( m => m.Person.Gender )
                                                 .SelectMany( m => m.Person.PhoneNumbers )
                                                 .Where( p => p.NumberTypeValue.Guid == homePhoneGuid )
-                                                .Select( p => p.NumberFormatted)
+                                                .Select( p => p.NumberFormatted )
                                                 .FirstOrDefault();
                         string mobilePhone = family.Members
                                                 .OrderBy( m => m.GroupRole.Order )
@@ -179,14 +180,15 @@ namespace church.ccv.Utility
                                 visitorWorkflow.SetAttributeValue( "Adults", BuildPersonList( adults.Select( m => m.Person ).ToList() ) );
                                 visitorWorkflow.SetAttributeValue( "HomePhone", homePhone );
                                 visitorWorkflow.SetAttributeValue( "MobilePhone", mobilePhone );
-                                
+
                                 var homeAddressGuid = family.GroupLocations
-                                        .Where( l => l.Location.LocationTypeValue.Guid == homeAddressTypeGuid)
-                                        .Select( l => l.Location.Guid)
+                                        .Where( l => l.Location != null && l.Location.LocationTypeValue != null && l.Location.LocationTypeValue.Guid == homeAddressTypeGuid )
+                                        .Select( l => l.Location.Guid )
                                         .FirstOrDefault();
 
-                                if (homeAddressGuid != null) {
-                                    visitorWorkflow.SetAttributeValue( "HomeAddress", homeAddressGuid.ToString());
+                                if ( homeAddressGuid != null )
+                                {
+                                    visitorWorkflow.SetAttributeValue( "HomeAddress", homeAddressGuid.ToString() );
                                 }
 
                                 // get neighborhood info
@@ -220,6 +222,7 @@ namespace church.ccv.Utility
                             }
                         }
                     }
+                    
                 }
             }
             
