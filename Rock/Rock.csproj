@@ -946,6 +946,7 @@
     <Compile Include="Workflow\Action\PersonTagAdd.cs" />
     <Compile Include="Workflow\Action\SetAttributeToGroupLeader.cs" />
     <Compile Include="Workflow\Action\PostAttendanceToGroup.cs" />
+    <Compile Include="Workflow\Action\SetAttributeToRandomGroupMember.cs" />
     <Compile Include="Workflow\Action\SetGroupMemberAttribute.cs" />
     <Compile Include="Workflow\Action\SetPersonAttribute.cs" />
     <Compile Include="Workflow\Action\SetAttributeToInitiator.cs" />
