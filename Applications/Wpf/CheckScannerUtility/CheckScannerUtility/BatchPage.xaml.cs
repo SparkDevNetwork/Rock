@@ -209,7 +209,6 @@ namespace Rock.Apps.CheckScannerUtility
         private void rangerScanner_TransportNewState( object sender, AxRANGERLib._DRangerEvents_TransportNewStateEvent e )
         {
             mnuConnect.IsEnabled = false;
-            btnScan.Visibility = Visibility.Hidden;
             ScanningPage.btnSave.Visibility = Visibility.Visible;
             ScanningPage.btnCancel.Visibility = Visibility.Visible;
 
@@ -221,7 +220,6 @@ namespace Rock.Apps.CheckScannerUtility
                 case XportStates.TransportReadyToFeed:
                     statusColor = Colors.LimeGreen;
                     btnScan.Content = "Scan";
-                    btnScan.Visibility = Visibility.Visible;
                     break;
                 case XportStates.TransportShutDown:
                     statusColor = Colors.Red;
@@ -230,7 +228,6 @@ namespace Rock.Apps.CheckScannerUtility
                 case XportStates.TransportFeeding:
                     statusColor = Colors.Blue;
                     btnScan.Content = "Stop";
-                    btnScan.Visibility = Visibility.Visible;
                     break;
                 case XportStates.TransportStartingUp:
                     statusColor = Colors.Yellow;
@@ -383,9 +380,9 @@ namespace Rock.Apps.CheckScannerUtility
                         while ( accountNumberDigitPosition >= 0 )
                         {
                             char accountNumberDigit = remainingMicr[accountNumberDigitPosition];
-                            if ( char.IsNumber( accountNumberDigit ) || accountNumberDigit.Equals( '!' ) )
+                            if ( char.IsNumber( accountNumberDigit ) || accountNumberDigit.Equals( '!' ) || accountNumberDigit.Equals(' '))
                             {
-                                accountNumber = accountNumberDigit + accountNumber;
+                                accountNumber = accountNumberDigit + accountNumber.Trim();
                             }
                             else
                             {
@@ -409,7 +406,7 @@ namespace Rock.Apps.CheckScannerUtility
                     scannedDoc.AccountNumber = accountNumber;
                     scannedDoc.CheckNumber = checkNumber;
 
-                    if ( routingNumber.Length != 9 || string.IsNullOrEmpty( accountNumber ) || checkMicr.Contains('!') || string.IsNullOrEmpty(checkNumber) )
+                    if ( routingNumber.Length != 9 || string.IsNullOrEmpty( accountNumber ) || checkMicr.Contains( '!' ) || string.IsNullOrEmpty( checkNumber ) )
                     {
                         scannedDoc.BadMicr = true;
                         rangerScanner.StopFeeding();
@@ -735,7 +732,7 @@ namespace Rock.Apps.CheckScannerUtility
                 if ( scannedDocInfo.IsCheck )
                 {
                     financialTransaction.TransactionCode = scannedDocInfo.CheckNumber;
-                    
+
                     FinancialTransactionScannedCheck financialTransactionScannedCheck = new FinancialTransactionScannedCheck();
 
                     // Rock server will encrypt CheckMicrPlainText to this since we can't have the DataEncryptionKey in a RestClient
@@ -884,13 +881,11 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 statusColor = Colors.LimeGreen;
                 status = "Connected";
-                btnScan.Visibility = Visibility.Visible;
             }
             else
             {
                 statusColor = Colors.Red;
                 status = "Disconnected";
-                btnScan.Visibility = Visibility.Hidden;
             }
 
             this.shapeStatus.ToolTip = status;
@@ -1032,9 +1027,19 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnScan_Click( object sender, RoutedEventArgs e )
         {
-            // set the checkforDuplicateClient to null to ensure we have a fresh connection (just in case they changed the url, or if the connection died for some other reason)
-            checkforDuplicateClient = null;
-            this.NavigationService.Navigate( this.ScanningPromptPage );
+            var rockConfig = RockConfig.Load();
+            // make sure we can connect (
+            // NOTE: If ranger is powered down after the app starts, it might report that is is connected.  We'll catch that later when they actually start scanning
+            if ( ConnectToScanner() )
+            {
+                // set the checkforDuplicateClient to null to ensure we have a fresh connection (just in case they changed the url, or if the connection died for some other reason)
+                checkforDuplicateClient = null;
+                this.NavigationService.Navigate( this.ScanningPromptPage );
+            }
+            else
+            {
+                MessageBox.Show( string.Format( "Unable to connect to {0} scanner. Verify that the scanner is turned on and plugged in", rockConfig.ScannerInterfaceType.ConvertToString().SplitCase() ) );
+            }
         }
 
         /// <summary>
