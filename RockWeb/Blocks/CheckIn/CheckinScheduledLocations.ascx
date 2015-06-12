@@ -26,22 +26,24 @@
             <div class="checkin-scroll-panel scheduled-locations-scroll-panel">
                 <div class="scroller">
 
-                    <Rock:Grid ID="gGroupLocationSchedule" runat="server" AllowSorting="true" AllowPaging="false" DisplayType="Light" ShowHeader="true">
-                        <Columns>
-                            <Rock:RockTemplateField HeaderText="Group" SortExpression="Group.Name">
-                                <ItemTemplate>
-                                    <%#Eval("GroupName")%><br />
-                                    <small><%#Eval("GroupPath")%></small>
-                                </ItemTemplate>
-                            </Rock:RockTemplateField>
-                            <Rock:RockTemplateField HeaderText="Location" SortExpression="Location.Name">
-                                <ItemTemplate>
-                                    <%#Eval("LocationName")%><br />
-                                    <small><%#Eval("LocationPath")%></small>
-                                </ItemTemplate>
-                            </Rock:RockTemplateField>
-                        </Columns>
-                    </Rock:Grid>
+                    <div class="kioskmanager-schedules">
+                        <Rock:Grid ID="gGroupLocationSchedule" runat="server" AllowSorting="true" AllowPaging="false" DisplayType="Light" ShowHeader="true">
+                            <Columns>
+                                <Rock:RockTemplateField HeaderText="Group" SortExpression="Group.Name">
+                                    <ItemTemplate>
+                                        <%#Eval("GroupName")%><br />
+                                        <small><%#Eval("GroupPath")%></small>
+                                    </ItemTemplate>
+                                </Rock:RockTemplateField>
+                                <Rock:RockTemplateField HeaderText="Location" SortExpression="Location.Name">
+                                    <ItemTemplate>
+                                        <%#Eval("LocationName")%><br />
+                                        <small><%#Eval("LocationPath")%></small>
+                                    </ItemTemplate>
+                                </Rock:RockTemplateField>
+                            </Columns>
+                        </Rock:Grid>
+                    </div>
                 </div>
             </div>
         </div>
