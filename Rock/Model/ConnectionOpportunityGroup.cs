@@ -37,12 +37,12 @@ namespace Rock.Model
         #region Entity Properties
 
         [Required]
-        [DataMember]
-        public int? ConnectionOpportunityId { get; set; }
+        [DataMember( IsRequired = true )]
+        public int ConnectionOpportunityId { get; set; }
 
         [Required]
         [DataMember]
-        public int? GroupId { get; set; }
+        public int GroupId { get; set; }
 
         #endregion
 
@@ -69,7 +69,7 @@ namespace Rock.Model
         /// </summary>
         public ConnectionOpportunityGroupConfiguration()
         {
-            this.HasRequired( p => p.ConnectionOpportunity ).WithMany().HasForeignKey( p => p.ConnectionOpportunityId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.ConnectionOpportunity ).WithMany( p => p.ConnectionOpportunityGroups ).HasForeignKey( p => p.ConnectionOpportunityId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( false );
         }
     }

@@ -388,7 +388,10 @@ namespace RockWeb.Blocks.Involvement
         {
             ConnectionActivityType connectionActivityType = new ConnectionActivityType();
             connectionActivityType.Name = tbConnectionActivityTypeName.Text;
-
+            if ( !connectionActivityType.IsValid )
+            {
+                return;
+            }
             if ( ConnectionActivityTypesState.Any( a => a.Guid.Equals( connectionActivityType.Guid ) ) )
             {
                 ConnectionActivityTypesState.RemoveEntity( connectionActivityType.Guid );
@@ -458,8 +461,13 @@ namespace RockWeb.Blocks.Involvement
                 connectionWorkflow.WorkflowType = new WorkflowTypeService( new RockContext() ).Get( ddlWorkflowType.SelectedValueAsId().Value );
             }
             catch { }
+            connectionWorkflow.WorkflowTypeId = ddlWorkflowType.SelectedValueAsId().Value;
             connectionWorkflow.TriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
-
+            connectionWorkflow.ConnectionTypeId = 0;
+            if ( !connectionWorkflow.IsValid )
+            {
+                return;
+            }
             if ( ConnectionWorkflowsState.Any( a => a.Guid.Equals( connectionWorkflow.Guid ) ) )
             {
                 ConnectionWorkflowsState.RemoveEntity( connectionWorkflow.Guid );
@@ -515,14 +523,7 @@ namespace RockWeb.Blocks.Involvement
                 {
                     ddlWorkflowType.SelectedValue = connectionWorkflow.WorkflowTypeId.ToString();
                 }
-                if ( connectionWorkflow.TriggerType == null )
-                {
-                    ddlTriggerType.SelectedValue = "0";
-                }
-                else
-                {
-                    ddlTriggerType.SelectedValue = connectionWorkflow.TriggerType.ToString();
-                }
+                ddlTriggerType.SelectedValue = connectionWorkflow.TriggerType.ConvertToString();
 
                 hfAddConnectionWorkflowGuid.Value = connectionWorkflowGuid.ToString();
                 ShowDialog( "ConnectionWorkflows", true );
@@ -554,7 +555,7 @@ namespace RockWeb.Blocks.Involvement
                 c.Id,
                 c.Guid,
                 WorkflowType = c.WorkflowType.Name,
-                Trigger = c.TriggerType.ToString()
+                Trigger = c.TriggerType.ConvertToString()
             } ).ToList();
             gConnectionWorkflows.DataBind();
         }
@@ -565,7 +566,7 @@ namespace RockWeb.Blocks.Involvement
             {
                 if ( connectionWorkflowList.Any() )
                 {
-                    connectionWorkflowList.OrderBy( c => c.WorkflowType.Name ).ThenBy( c => c.TriggerType.ToString() ).ToList();
+                    connectionWorkflowList.OrderBy( c => c.WorkflowType.Name ).ThenBy( c => c.TriggerType.ConvertToString() ).ToList();
                 }
             }
         }
@@ -1030,7 +1031,17 @@ namespace RockWeb.Blocks.Involvement
         {
             gConnectionTypeAttributes.AddCssClass( "attribute-grid" );
             SetAttributeListOrder( ConnectionTypeAttributesState );
-            gConnectionTypeAttributes.DataSource = ConnectionTypeAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            gConnectionTypeAttributes.DataSource = ConnectionTypeAttributesState
+                .Select( a => new
+                {
+                    a.Id,
+                    a.Guid,
+                    Name = a.Name,
+                    FieldType = a.FieldType != null ? a.FieldType.ToString() : FieldTypeCache.GetName(a.FieldTypeId),
+                    AllowSearch = a.AllowSearch,
+                    Order = a.Order
+                } )
+                .OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             gConnectionTypeAttributes.DataBind();
         }
 

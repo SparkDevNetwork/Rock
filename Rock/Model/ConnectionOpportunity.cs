@@ -54,12 +54,12 @@ namespace Rock.Model
         public int? PhotoId { get; set; }
 
         [Required]
-        [DataMember]
-        public int? ConnectionTypeId { get; set; }
+        [DataMember( IsRequired = true )]
+        public int ConnectionTypeId { get; set; }
 
         [Required]
         [DataMember]
-        public int? GroupTypeId { get; set; }
+        public int GroupTypeId { get; set; }
 
         [DataMember]
         public int? ConnectorGroupId { get; set; }
@@ -103,7 +103,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<ConnectionOpportunityGroup> ConnectionOpportunityGroups
         {
-            get { return _connectionOpportunityGroups; }
+            get { return _connectionOpportunityGroups ?? ( _connectionOpportunityGroups = new Collection<ConnectionOpportunityGroup>() ); }
             set { _connectionOpportunityGroups = value; }
         }
 
@@ -112,7 +112,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<ConnectionWorkflow> ConnectionWorkflows
         {
-            get { return _connectionWorkflows; }
+            get { return _connectionWorkflows ?? ( _connectionWorkflows = new Collection<ConnectionWorkflow>() ); }
             set { _connectionWorkflows = value; }
         }
 
@@ -121,7 +121,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<ConnectionRequest> ConnectionRequests
         {
-            get { return _connectionRequests; }
+            get { return _connectionRequests ?? ( _connectionRequests = new Collection<ConnectionRequest>() ); }
             set { _connectionRequests = value; }
         }
 
@@ -130,7 +130,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<ConnectionOpportunityCampus> ConnectionOpportunityCampuses
         {
-            get { return _connectionOpportunityCampuses; }
+            get { return _connectionOpportunityCampuses ?? ( _connectionOpportunityCampuses = new Collection<ConnectionOpportunityCampus>() ); }
             set { _connectionOpportunityCampuses = value; }
         }
 
@@ -154,6 +154,7 @@ namespace Rock.Model
             this.HasOptional( p => p.GroupMemberRole ).WithMany().HasForeignKey( p => p.GroupMemberRoleId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ConnectorGroup ).WithMany().HasForeignKey( p => p.ConnectorGroupId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.GroupType ).WithMany().HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.ConnectionType ).WithMany( p => p.ConnectionOpportunities ).HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( false );
         }
     }
 

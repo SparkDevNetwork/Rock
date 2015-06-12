@@ -37,16 +37,16 @@ namespace Rock.Model
         #region Entity Properties
 
         [Required]
-        [DataMember]
-        public int? ConnectionRequestId { get; set; }
+        [DataMember( IsRequired = true )]
+        public int ConnectionRequestId { get; set; }
 
         [Required]
         [DataMember]
-        public int? ConnectionActivityTypeId { get; set; }
+        public int ConnectionActivityTypeId { get; set; }
 
         [Required]
         [DataMember]
-        public int? ConnectorPersonAliasId { get; set; }
+        public int ConnectorPersonAliasId { get; set; }
 
         [Required]
         [DataMember]
@@ -87,7 +87,7 @@ namespace Rock.Model
         public ConnectionRequestActivityConfiguration()
         {
             this.HasRequired( p => p.ConnectorPersonAlias ).WithMany().HasForeignKey( p => p.ConnectorPersonAliasId ).WillCascadeOnDelete( false );
-            this.HasRequired( p => p.ConnectionRequest ).WithMany().HasForeignKey( p => p.ConnectionRequestId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.ConnectionRequest ).WithMany( p => p.ConnectionRequestActivities ).HasForeignKey( p => p.ConnectionRequestId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.ConnectionActivityType ).WithMany().HasForeignKey( p => p.ConnectionActivityTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.ConnectionOpportunity ).WithMany().HasForeignKey( p => p.ConnectionOpportunityId ).WillCascadeOnDelete( false );
         }

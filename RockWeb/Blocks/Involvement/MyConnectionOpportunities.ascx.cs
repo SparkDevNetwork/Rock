@@ -141,6 +141,7 @@ namespace RockWeb.Blocks.Involvement
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rptConnectionOpportunities_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
+            pnlGrid.Visible = true;
             int? connectionOpportunityId = e.CommandArgument.ToString().AsIntegerOrNull();
             if ( connectionOpportunityId.HasValue )
             {
@@ -164,7 +165,7 @@ namespace RockWeb.Blocks.Involvement
                 qryParam.Add( "ConnectionRequestId", connectionRequest.Id.ToString() );
 
                 qryParam.Add( "ConnectionOpportunityId", connectionRequest.ConnectionOpportunityId.ToString() );
-                NavigateToLinkedPage( "EntryPage", qryParam );
+                NavigateToLinkedPage( "DetailPage", qryParam );
 
             }
         }
@@ -191,17 +192,23 @@ namespace RockWeb.Blocks.Involvement
             int personId = CurrentPerson != null ? CurrentPerson.Id : 0;
 
             // Get all of the connectionOpportunities
-            var allConnectionOpportunities = new ConnectionOpportunityService( rockContext ).Queryable( "ActivityTypes" )
+            var allConnectionOpportunities = new ConnectionOpportunityService( rockContext ).Queryable( "ConnectionOpportunityCampuses" )
                 .OrderBy( w => w.Name )
                 .ToList();
 
-            // Get the authorized activities in all connectionOpportunities
-            var authorizedActivityTypes = AuthorizedActivityTypes( allConnectionOpportunities );
-
-            // Get the connectionOpportunities that contain authorized activity types
+            // Get the Ids of the groups the user is in
+            var userGroupIds = CurrentPerson.Members.Select( m => m.GroupId ).ToList();
+            GroupService groupService = new GroupService( rockContext );
+            var involvementAdminGroupId = groupService.Get( Rock.SystemGuid.Group.GROUP_INVOLVEMENT_ADMINISTRATORS.AsGuid() ).Id;
+            var rockAdminGroupId = groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).Id;
+            // Get the connectionOpportunities that have connector groups the user is in.
             var connectionOpportunityIds = allConnectionOpportunities
-                //.Where( w => w.ActivityTypes.Any( a => authorizedActivityTypes.Contains( a.Id ) ) )
-                .Select( w => w.Id )
+                .Where( o =>
+                    ( o.ConnectorGroupId.HasValue && userGroupIds.Contains( o.ConnectorGroupId.Value ) )
+                    || o.ConnectionOpportunityCampuses.Any( c => userGroupIds.Contains( c.ConnectorGroupId.Value ) )
+                    || userGroupIds.Contains( involvementAdminGroupId )
+                    || userGroupIds.Contains( rockAdminGroupId ) )//TODO Redo Roles
+                .Select( o => o.Id )//
                 .Distinct()
                 .ToList();
 
@@ -210,47 +217,14 @@ namespace RockWeb.Blocks.Involvement
 
             List<ConnectionRequest> connectionRequests = null;
 
-            if ( RoleFilter.HasValue && RoleFilter.Value )
-            {
-                connectionRequests = new ConnectionRequestService( rockContext ).Queryable()
-                    //.Where( w =>
-                    //    w.ActivatedDateTime.HasValue &&
-                    //    !w.CompletedDateTime.HasValue &&
-                    //    w.InitiatorPersonAlias.PersonId == personId )
-                    .ToList();
+            connectionRequests = new ConnectionRequestService( rockContext ).Queryable()
+                .Where( r =>
+                    connectionOpportunityIds.Contains( r.ConnectionOpportunityId )
+                    ) //TODO Status
+                .ToList();
 
-                connectionOpportunityIds.ForEach( id =>
-                    connectionOpportunityCounts.Add( id, connectionRequests.Where( w => w.ConnectionOpportunityId == id ).Count() ) );
-            }
-            else
-            {
-
-                // Get all the active forms for any of the authorized activities
-                //var activeForms = new ConnectionRequestActionService( rockContext ).Queryable( "ActionType.ActivityType.ConnectionOpportunity, Activity.ConnectionRequest" )
-                //    .Where( a =>
-                //        a.ActionType.ConnectionRequestFormId.HasValue &&
-                //        !a.CompletedDateTime.HasValue &&
-                //        a.Activity.ActivatedDateTime.HasValue &&
-                //        !a.Activity.CompletedDateTime.HasValue &&
-                //        a.Activity.ConnectionRequest.ActivatedDateTime.HasValue &&
-                //        !a.Activity.ConnectionRequest.CompletedDateTime.HasValue &&
-                //        authorizedActivityTypes.Contains( a.ActionType.ActivityTypeId ) &&
-                //        (
-                //            ( a.Activity.AssignedPersonAlias != null && a.Activity.AssignedPersonAlias.PersonId == personId ) ||
-                //            ( a.Activity.AssignedGroup != null && a.Activity.AssignedGroup.Members.Any( m => m.PersonId == personId ) )
-                //        )
-                //    )
-                //    .ToList();
-
-                // Get any connectionOpportunities that have authorized activites and get the form count
-                //connectionOpportunityIds.ForEach( w =>
-                //    connectionOpportunityCounts.Add( w, activeForms.Where( a => a.Activity.ConnectionRequest.ConnectionOpportunityId == w ).Count() ) );
-
-                //connectionRequests = activeForms
-                //    .Select( a => a.Activity.ConnectionRequest )
-                //    .Distinct()
-                //    .ToList();
-            }
+            connectionOpportunityIds.ForEach( id =>
+                connectionOpportunityCounts.Add( id, connectionRequests.Where( w => w.ConnectionOpportunityId == id ).Count() ) );
 
             var displayedTypes = new List<ConnectionOpportunity>();
             foreach ( var connectionOpportunity in allConnectionOpportunities.Where( w => connectionOpportunityCounts.Keys.Contains( w.Id ) ) )
@@ -274,11 +248,11 @@ namespace RockWeb.Blocks.Involvement
 
             // Create a query to return connectionRequest type, the count of active action forms, and the selected class
             var qry = displayedTypes
-                .Select( w => new
+                .Select( o => new
                 {
-                    ConnectionOpportunity = w,
-                    Count = connectionOpportunityCounts[w.Id],
-                    Class = ( SelectedConnectionOpportunityId.HasValue && SelectedConnectionOpportunityId.Value == w.Id ) ? "active" : ""
+                    ConnectionOpportunity = o,
+                    Count = connectionOpportunityCounts[o.Id],
+                    Class = ( SelectedConnectionOpportunityId.HasValue && SelectedConnectionOpportunityId.Value == o.Id ) ? "active" : ""
                 } );
 
             rptConnectionOpportunities.DataSource = qry.ToList();
@@ -298,11 +272,25 @@ namespace RockWeb.Blocks.Involvement
             {
                 AddAttributeColumns( selectedConnectionOpportunity );
 
-                gConnectionRequests.DataSource = connectionRequests.Where( w => w.ConnectionOpportunityId == selectedConnectionOpportunity.Id ).ToList();
+                gConnectionRequests.DataSource = connectionRequests
+                    .Where( w => w.ConnectionOpportunityId == selectedConnectionOpportunity.Id )
+                    .Select( r => new
+                    {
+                        r.Id,
+                        r.Guid,
+                        Name = r.PersonAlias.Person.FullName,
+                        Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
+                        Status = r.ConnectionStatus.Name,
+                        Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
+                        Activities = r.ConnectionRequestActivities.Select( a => a.ConnectionActivityType.Name ).ToList().AsDelimited( "</br>" ),
+                        State = r.ConnectionState.ToString() == "Active" ? "<span class='label label-success'>Active</span>" : "<span class='label label-campus'>" + r.ConnectionState.ToString() + "</span>"
+
+                    } )
+                    .ToList();
                 gConnectionRequests.DataBind();
                 gConnectionRequests.Visible = true;
 
-                lConnectionRequest.Text = connectionRequests.Where( w => w.ConnectionOpportunityId == selectedConnectionOpportunity.Id ).Select( w => w.ConnectionOpportunity.Name ).FirstOrDefault() + " ConnectionRequests";
+                lConnectionRequest.Text = connectionRequests.Where( w => w.ConnectionOpportunityId == selectedConnectionOpportunity.Id ).Select( w => w.ConnectionOpportunity.Name ).FirstOrDefault() + " Connection Requests";
 
             }
             else
@@ -310,27 +298,6 @@ namespace RockWeb.Blocks.Involvement
                 gConnectionRequests.Visible = false;
             }
 
-        }
-
-        private List<int> AuthorizedActivityTypes( List<ConnectionOpportunity> allConnectionOpportunities )
-        {
-            var authorizedActivityTypes = new List<int>();
-
-            foreach ( var connectionOpportunity in allConnectionOpportunities )
-            {
-                if ( ( connectionOpportunity.IsActive ) && connectionOpportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                {
-                    //foreach ( var activityType in connectionOpportunity.ActivityTypes.Where( a => a.ActionTypes.Any( f => f.ConnectionRequestFormId.HasValue ) ) )
-                    //{
-                    //    if ( ( activityType.IsActive ?? true ) && activityType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                    //    {
-                    //        authorizedActivityTypes.Add( activityType.Id );
-                    //    }
-                    //}
-                }
-            }
-
-            return authorizedActivityTypes;
         }
 
         protected void AddAttributeColumns( ConnectionOpportunity connectionOpportunity )

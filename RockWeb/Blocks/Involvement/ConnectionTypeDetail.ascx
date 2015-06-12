@@ -48,7 +48,7 @@
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="Name" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbActive" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="IsActive" Label="Active" />
+                            <Rock:RockCheckBox ID="cbActive" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="IsActive" Label="Active" Checked="true" Text="Yes" />
                         </div>
                     </div>
 
@@ -96,7 +96,7 @@
 
                     <Rock:PanelWidget ID="wpConnectionWorkflow" runat="server" Title="Workflows">
                         <div class="grid">
-                            <Rock:Grid ID="gConnectionWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location">
+                            <Rock:Grid ID="gConnectionWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Workflow">
                                 <Columns>
                                     <Rock:RockBoundField DataField="WorkflowType" HeaderText="Workflow Type" />
                                     <Rock:RockBoundField DataField="Trigger" HeaderText="Trigger" />
