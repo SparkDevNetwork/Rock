@@ -179,17 +179,7 @@
 
                             <Rock:NotificationBox ID="nbGiversError" runat="server" NotificationBoxType="Danger" Dismissable="true" Visible="false" />
 
-                            <Rock:Grid ID="gGiversGifts" runat="server" AllowSorting="true" RowItemText="Attendee" ExportGridAsWYSIWYG="true">
-                                <Columns>
-                                    <Rock:SelectField />
-                                    <asp:TemplateField HeaderText="Person" SortExpression="LastName,NickName">
-                                        <ItemTemplate><%# Eval("NickName") %> <%# Eval("LastName") %></ItemTemplate>
-                                    </asp:TemplateField>
-                                    <Rock:DateField DataField="FirstEverGift" HeaderText="First Ever Gift" SortExpression="FirstEverGift" />
-                                    <Rock:DateField DataField="FirstGift" HeaderText="First Gift" SortExpression="FirstGift" />
-                                    <Rock:CurrencyField DataField="Total" HeaderText="Total Amount" SortExpression="Total" />
-                                </Columns>
-                            </Rock:Grid>
+                            <Rock:Grid ID="gGiversGifts" runat="server" AllowSorting="true" RowItemText="Attendee" ExportGridAsWYSIWYG="true" />
 
                         </asp:Panel>
                     </div>
