@@ -69,7 +69,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<ConnectionStatus> ConnectionStatuses
         {
-            get { return _connectionStatuses; }
+            get { return _connectionStatuses ?? ( _connectionStatuses = new Collection<ConnectionStatus>() ); }
             set { _connectionStatuses = value; }
         }
 
@@ -78,7 +78,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<ConnectionWorkflow> ConnectionWorkflows
         {
-            get { return _connectionWorkflows; }
+            get { return _connectionWorkflows ?? ( _connectionWorkflows = new Collection<ConnectionWorkflow>() ); }
             set { _connectionWorkflows = value; }
         }
 
@@ -87,7 +87,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<ConnectionActivityType> ConnectionActivityTypes
         {
-            get { return _connectionActivityTypes; }
+            get { return _connectionActivityTypes ?? ( _connectionActivityTypes = new Collection<ConnectionActivityType>() ); }
             set { _connectionActivityTypes = value; }
         }
 
@@ -96,7 +96,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<ConnectionOpportunity> ConnectionOpportunities
         {
-            get { return _connectionOpportunities; }
+            get { return _connectionOpportunities ?? ( _connectionOpportunities = new Collection<ConnectionOpportunity>() ); }
             set { _connectionOpportunities = value; }
         }
 

@@ -45,7 +45,6 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public string Description { get; set; }
 
-        [DataMember]
         public int? ConnectionTypeId { get; set; }
 
         [DataMember]
@@ -79,7 +78,7 @@ namespace Rock.Model
         /// </summary>
         public ConnectionStatusConfiguration()
         {
-            this.HasOptional( p => p.ConnectionType ).WithMany().HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ConnectionType ).WithMany( p => p.ConnectionStatuses ).HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( false );
         }
     }
 

@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Involvement
     {
         #region Private Variables
 
-        private EventCalendar _eventCalendar = null;
+        private ConnectionType _connectionType = null;
         private bool _canView = false;
 
         #endregion
@@ -77,41 +77,41 @@ namespace RockWeb.Blocks.Involvement
         {
             base.OnInit( e );
 
-            // if this block has a specific EventCalendarId set, use that, otherwise, determine it from the PageParameters
-            Guid eventCalendarGuid = GetAttributeValue( "EventCalendar" ).AsGuid();
-            int eventCalendarId = 0;
+            // if this block has a specific ConnectionTypeId set, use that, otherwise, determine it from the PageParameters
+            Guid connectionTypeGuid = GetAttributeValue( "ConnectionType" ).AsGuid();
+            int connectionTypeId = 0;
 
-            if ( eventCalendarGuid == Guid.Empty )
+            if ( connectionTypeGuid == Guid.Empty )
             {
-                eventCalendarId = PageParameter( "EventCalendarId" ).AsInteger();
+                connectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
             }
 
-            if ( !( eventCalendarId == 0 && eventCalendarGuid == Guid.Empty ) )
+            if ( !( connectionTypeId == 0 && connectionTypeGuid == Guid.Empty ) )
             {
-                string key = string.Format( "EventCalendar:{0}", eventCalendarId );
-                _eventCalendar = RockPage.GetSharedItem( key ) as EventCalendar;
-                if ( _eventCalendar == null )
+                string key = string.Format( "ConnectionType:{0}", connectionTypeId );
+                _connectionType = RockPage.GetSharedItem( key ) as ConnectionType;
+                if ( _connectionType == null )
                 {
-                    _eventCalendar = new EventCalendarService( new RockContext() ).Queryable()
-                        .Where( g => g.Id == eventCalendarId || g.Guid == eventCalendarGuid )
+                    _connectionType = new ConnectionTypeService( new RockContext() ).Queryable()
+                        .Where( g => g.Id == connectionTypeId || g.Guid == connectionTypeGuid )
                         .FirstOrDefault();
-                    RockPage.SaveSharedItem( key, _eventCalendar );
+                    RockPage.SaveSharedItem( key, _connectionType );
                 }
 
-                if ( _eventCalendar != null && _eventCalendar.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                if ( _connectionType != null && _connectionType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     _canView = true;
 
                     rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
-                    gEventCalendarItems.DataKeyNames = new string[] { "Id" };
-                    gEventCalendarItems.Actions.AddClick += gEventCalendarItems_AddClick;
-                    gEventCalendarItems.GridRebind += gEventCalendarItems_GridRebind;
-                    gEventCalendarItems.ExportFilename = _eventCalendar.Name;
+                    gConnectionOpportunities.DataKeyNames = new string[] { "Id" };
+                    gConnectionOpportunities.Actions.AddClick += gConnectionOpportunities_AddClick;
+                    gConnectionOpportunities.GridRebind += gConnectionOpportunities_GridRebind;
+                    gConnectionOpportunities.ExportFilename = _connectionType.Name;
 
-                    // make sure they have Auth to edit the block OR edit to the EventCalendar
-                    bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _eventCalendar.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
-                    gEventCalendarItems.Actions.ShowAdd = canEditBlock;
-                    gEventCalendarItems.IsDeleteEnabled = canEditBlock;
+                    // make sure they have Auth to edit the block OR edit to the ConnectionType
+                    bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _connectionType.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
+                    gConnectionOpportunities.Actions.ShowAdd = canEditBlock;
+                    gConnectionOpportunities.IsDeleteEnabled = canEditBlock;
                 }
             }
         }
@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Involvement
                 if ( _canView )
                 {
                     SetFilter();
-                    BindEventCalendarItemsGrid();
+                    BindConnectionOpportunitiesGrid();
                 }
             }
         }
@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Involvement
 
         #endregion
 
-        #region EventCalendarItems Grid
+        #region ConnectionOpportunities Grid
 
         /// <summary>
         /// Handles the ApplyFilterClick event of the rFilter control.
@@ -159,12 +159,9 @@ namespace RockWeb.Blocks.Involvement
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Campus" ), "Campus", cblCampus.SelectedValues.AsDelimited( ";" ) );
-            rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Date Range" ), "Date Range", drpDate.DelimitedValues );
-            rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Audience" ), "Audience", cblAudience.SelectedValues.AsDelimited( ";" ) );
-            rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Status" ), "Status", cbActive.Checked.ToTrueFalse() );
+            rFilter.SaveUserPreference( MakeKeyUniqueToConnectionType( "Status" ), "Status", cbActive.Checked.ToTrueFalse() );
 
-            BindEventCalendarItemsGrid();
+            BindConnectionOpportunitiesGrid();
         }
 
         /// <summary>
@@ -176,7 +173,7 @@ namespace RockWeb.Blocks.Involvement
         {
             if ( AvailableAttributes != null )
             {
-                var attribute = AvailableAttributes.FirstOrDefault( a => MakeKeyUniqueToEventCalendar( a.Key ) == e.Key );
+                var attribute = AvailableAttributes.FirstOrDefault( a => MakeKeyUniqueToConnectionType( a.Key ) == e.Key );
                 if ( attribute != null )
                 {
                     try
@@ -188,20 +185,7 @@ namespace RockWeb.Blocks.Involvement
                     catch { }
                 }
             }
-
-            if ( e.Key == MakeKeyUniqueToEventCalendar( "Campus" ) )
-            {
-                e.Value = ResolveValues( e.Value, cblCampus );
-            }
-            else if ( e.Key == MakeKeyUniqueToEventCalendar( "Date Range" ) )
-            {
-                e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
-            }
-            else if ( e.Key == MakeKeyUniqueToEventCalendar( "Audience" ) )
-            {
-                e.Value = ResolveValues( e.Value, cblAudience );
-            }
-            else if ( e.Key == MakeKeyUniqueToEventCalendar( "Status" ) )
+            else if ( e.Key == MakeKeyUniqueToConnectionType( "Status" ) )
             {
                 if ( e.Value == "False" )
                 {
@@ -219,67 +203,67 @@ namespace RockWeb.Blocks.Involvement
         }
 
         /// <summary>
-        /// Handles the Click event of the DeleteEventCalendarItem control.
+        /// Handles the Click event of the DeleteConnectionOpportunity control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
-        protected void DeleteEventCalendarItem_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        protected void DeleteConnectionOpportunity_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             RockContext rockContext = new RockContext();
-            EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
-            EventCalendarItem eventCalendarItem = eventCalendarItemService.Get( e.RowKeyId );
-            if ( eventCalendarItem != null )
+            ConnectionOpportunityService connectionTypeItemService = new ConnectionOpportunityService( rockContext );
+            ConnectionOpportunity connectionTypeItem = connectionTypeItemService.Get( e.RowKeyId );
+            if ( connectionTypeItem != null )
             {
                 string errorMessage;
-                if ( !eventCalendarItemService.CanDelete( eventCalendarItem, out errorMessage ) )
+                if ( !connectionTypeItemService.CanDelete( connectionTypeItem, out errorMessage ) )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                     return;
                 }
 
-                int eventCalendarId = eventCalendarItem.EventCalendarId;
+                int connectionTypeId = connectionTypeItem.ConnectionTypeId;
 
-                eventCalendarItemService.Delete( eventCalendarItem );
+                connectionTypeItemService.Delete( connectionTypeItem );
                 rockContext.SaveChanges();
             }
 
-            BindEventCalendarItemsGrid();
+            BindConnectionOpportunitiesGrid();
         }
 
         /// <summary>
-        /// Handles the AddClick event of the gEventCalendarItems control.
+        /// Handles the AddClick event of the gConnectionOpportunities control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        protected void gEventCalendarItems_AddClick( object sender, EventArgs e )
+        protected void gConnectionOpportunities_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "EventItemId", 0, "EventCalendarId", _eventCalendar.Id );
+            NavigateToLinkedPage( "DetailPage", "ConnectionOpportunityId", 0, "ConnectionTypeId", _connectionType.Id );
         }
 
         /// <summary>
-        /// Handles the Edit event of the gEventCalendarItems control.
+        /// Handles the Edit event of the gConnectionOpportunities control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gEventCalendarItems_Edit( object sender, RowEventArgs e )
+        protected void gConnectionOpportunities_Edit( object sender, RowEventArgs e )
         {
-            bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _eventCalendar.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
+            bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _connectionType.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
             if ( canEditBlock )
             {
-                NavigateToLinkedPage( "DetailPage", "EventItemId", new EventCalendarItemService( new RockContext() ).Get( e.RowKeyId ).EventItemId, "EventCalendarId", _eventCalendar.Id );
+                NavigateToLinkedPage( "DetailPage", "ConnectionOpportunityId", new ConnectionOpportunityService( new RockContext() ).Get( e.RowKeyId ).Id, "ConnectionTypeId", _connectionType.Id );
             }
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gEventCalendarItems control.
+        /// Handles the GridRebind event of the gConnectionOpportunities control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        protected void gEventCalendarItems_GridRebind( object sender, EventArgs e )
+        protected void gConnectionOpportunities_GridRebind( object sender, EventArgs e )
         {
-            BindEventCalendarItemsGrid();
+            BindConnectionOpportunitiesGrid();
         }
 
         #endregion
@@ -290,28 +274,8 @@ namespace RockWeb.Blocks.Involvement
         /// Binds the filter.
         /// </summary>
         private void SetFilter()
-        {
-            drpDate.DelimitedValues = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Date Range" ) );
-
-            if ( _eventCalendar != null )
-            {
-                cblAudience.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() ) );
-                cblCampus.DataSource = CampusCache.All();
-                cblCampus.DataBind();
-            }
-
-            string campusValue = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Campus" ) );
-            if ( !string.IsNullOrWhiteSpace( campusValue ) )
-            {
-                cblCampus.SetValues( campusValue.Split( ';' ).ToList() );
-            }
-            string audienceValue = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Audience" ) );
-            if ( !string.IsNullOrWhiteSpace( audienceValue ) )
-            {
-                cblAudience.SetValues( audienceValue.Split( ';' ).ToList() );
-            }
-
-            string statusValue = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Status" ) );
+        {      
+            string statusValue = rFilter.GetUserPreference( MakeKeyUniqueToConnectionType( "Status" ) );
             if ( !string.IsNullOrWhiteSpace( statusValue ) )
             {
                 cbActive.Checked = statusValue.AsBoolean();
@@ -321,107 +285,50 @@ namespace RockWeb.Blocks.Involvement
         /// <summary>
         /// Binds the event calendar items grid.
         /// </summary>
-        protected void BindEventCalendarItemsGrid()
+        protected void BindConnectionOpportunitiesGrid()
         {
-            if ( _eventCalendar != null )
+            if ( _connectionType != null )
             {
-                pnlEventCalendarItems.Visible = true;
+                pnlConnectionOpportunities.Visible = true;
 
                 rFilter.Visible = true;
-                gEventCalendarItems.Visible = true;
+                gConnectionOpportunities.Visible = true;
 
                 var rockContext = new RockContext();
 
                 // The reason why we ToList() everything is so that we're using LINQ to Object rather than LINQ to Entity, enabling us to use object methods such as GetEarliestStartDate()
-                EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
-                var qry = eventCalendarItemService.Queryable( "EventItem, EventCalendar, EventItem.EventItemCampuses, EventItem.EventItemAudiences, EventItem.EventItemCampuses.EventItemSchedules" )
-                    .Where( m => m.EventCalendarId == _eventCalendar.Id ).ToList();
+                ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
+                var qry = connectionOpportunityService.Queryable( )
+                    .Where( o => o.ConnectionTypeId == _connectionType.Id ).ToList();
 
-                // Filter by Campus
-                List<int> campusIds = cblCampus.SelectedValuesAsInt;
-                if ( campusIds.Count > 0 )
-                {
-                    qry = qry.Where( i => i.EventItem.EventItemCampuses.Any( c => c.CampusId.HasValue && campusIds.Contains( c.CampusId.Value ) ) ).ToList();
-                }
-
-                // Filter by Date Range
-                var drp = new DateRangePicker();
-                drp.DelimitedValues = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Date Range" ) );
-                DateTime minusOneMonth = DateTime.Now.AddDays( -30 );
-                DateTime plusOneMonth = DateTime.Now.AddDays( 30 );
-                if ( drp.LowerValue.HasValue && drp.UpperValue.HasValue )
-                {
-                    qry = qry.Where( i =>
-                        i.EventItem.GetEarliestStartDate().HasValue
-                        && i.EventItem.GetEarliestStartDate() > drp.LowerValue.Value
-                        && i.EventItem.GetEarliestStartDate() < drp.UpperValue.Value
-                        ).ToList();
-                }
-                else
-                {
-                    if ( !drp.LowerValue.HasValue && !drp.UpperValue.HasValue )
-                    {
-                        qry = qry.Where( i =>
-                            (
-                            i.EventItem.GetEarliestStartDate() > minusOneMonth
-                            && i.EventItem.GetEarliestStartDate() < plusOneMonth
-                            )
-                            || !i.EventItem.GetEarliestStartDate().HasValue ).ToList();
-                    }
-                    if ( drp.LowerValue.HasValue )
-                    {
-                        qry = qry.Where( i =>
-                            i.EventItem.GetEarliestStartDate().HasValue
-                            && i.EventItem.GetEarliestStartDate() > drp.LowerValue.Value
-                            && i.EventItem.GetEarliestStartDate() < plusOneMonth
-                            ).ToList();
-                    }
-                    if ( drp.UpperValue.HasValue )
-                    {
-                        qry = qry.Where( i =>
-                            i.EventItem.GetEarliestStartDate().HasValue
-                            && i.EventItem.GetEarliestStartDate() > minusOneMonth
-                            && i.EventItem.GetEarliestStartDate() < drp.UpperValue.Value
-                            ).ToList();
-                    }
-                }
-
-                // Filter by Audience
-                List<int> audiences = cblAudience.SelectedValuesAsInt;
-                if ( audiences.Any() )
-                {
-                    qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => audiences.Contains( c.DefinedValueId ) ) ).ToList();
-                }
                 // Filter by Status
                 if ( cbActive.Checked )
                 {
-                    qry = qry.Where( i => i.EventItem.IsActive.HasValue && i.EventItem.IsActive.HasValue ).ToList();
+                    qry = qry.Where( o => o.IsActive).ToList();
                 }
 
-                List<EventCalendarItem> eventCalendarItems = null;
-                eventCalendarItems = qry.OrderByDescending( a => a.EventItem.GetEarliestStartDate() ).ToList();
+                List<ConnectionOpportunity> connectionOpportunities = null;
+                connectionOpportunities = qry.OrderByDescending( a => a.Name ).ToList();
 
-                gEventCalendarItems.ObjectList = new Dictionary<string, object>();
-                eventCalendarItems.ForEach( m => gEventCalendarItems.ObjectList.Add( m.Id.ToString(), m ) );
-                gEventCalendarItems.EntityTypeId = EntityTypeCache.Read( "Rock.Model.EventCalendarItem" ).Id;
+                gConnectionOpportunities.ObjectList = new Dictionary<string, object>();
+                connectionOpportunities.ForEach( m => gConnectionOpportunities.ObjectList.Add( m.Id.ToString(), m ) );
+                gConnectionOpportunities.EntityTypeId = EntityTypeCache.Read( "Rock.Model.ConnectionOpportunity" ).Id;
 
-                gEventCalendarItems.DataSource = eventCalendarItems.Select( m => new
+                gConnectionOpportunities.DataSource = connectionOpportunities.Select( o => new
                 {
-                    m.Id,
-                    m.Guid,
-                    Date = m.EventItem.GetEarliestStartDate().HasValue ? m.EventItem.GetEarliestStartDate().Value.ToShortDateString() : "N/A",
-                    Name = m.EventItem.Name,
-                    Campus = m.EventItem.EventItemCampuses.ToList().Select( c => c.Campus != null ? c.Campus.Name : "All Campuses" ).ToList().AsDelimited( "<br>" ),
-                    Calendar = m.EventItem.EventCalendarItems.ToList().Select( i => i.EventCalendar.Name ).ToList().AsDelimited( "<br>" ),
-                    Audience = m.EventItem.EventItemAudiences.ToList().Select( i => i.DefinedValue.Value ).ToList().AsDelimited( "<br>" ),
-                    Active = m.EventItem.IsActive.Value ? "<span class='label label-success'>Active</span>" : "<span class='label label-campus'>Inactive</span>"
+                    o.Id,
+                    o.Guid,
+                    Name = o.Name,
+                    GroupType = o.GroupType.Name,
+                    Active = o.IsActive ? "<span class='label label-success'>Active</span>" : "<span class='label label-campus'>Inactive</span>"
+
                 } ).ToList();
 
-                gEventCalendarItems.DataBind();
+                gConnectionOpportunities.DataBind();
             }
             else
             {
-                pnlEventCalendarItems.Visible = false;
+                pnlConnectionOpportunities.Visible = false;
             }
         }
 
@@ -452,11 +359,11 @@ namespace RockWeb.Blocks.Involvement
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        private string MakeKeyUniqueToEventCalendar( string key )
+        private string MakeKeyUniqueToConnectionType( string key )
         {
-            if ( _eventCalendar != null )
+            if ( _connectionType != null )
             {
-                return string.Format( "{0}-{1}", _eventCalendar.Id, key );
+                return string.Format( "{0}-{1}", _connectionType.Id, key );
             }
             return key;
         }

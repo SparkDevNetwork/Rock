@@ -5,7 +5,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-gears"></i> My ConnectionRequests</h1>
+                <h1 class="panel-title"><i class="fa fa-gears"></i>My Connection Requests</h1>
 
                 <div class="pull-right">
                     <asp:LinkButton ID="lbConnectionTypes" runat="server" CssClass=" pull-right" OnClick="lbConnectionTypes_Click" CausesValidation="false"><i class="fa fa-gear"></i></asp:LinkButton>
@@ -32,19 +32,29 @@
                     </ul>
                 </div>
 
-                <h4><asp:Literal ID="lConnectionRequest" runat="server"></asp:Literal></h4>
+                <h4>
+            </div>
+        </div>
+        <asp:Panel ID="pnlGrid" runat="server" CssClass="panel panel-block" Visible="false">
+            <div class="panel-heading">
+                <asp:Literal ID="lConnectionRequest" runat="server"></asp:Literal></h4>
+            </div>
+            <div class="panel-body">
+
                 <div class="grid">
-                    <Rock:Grid ID="gConnectionRequests" runat="server" OnRowSelected="gConnectionRequests_Edit" >
+                    <Rock:Grid ID="gConnectionRequests" runat="server" OnRowSelected="gConnectionRequests_Edit">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <Rock:RockBoundField DataField="Status" HeaderText="Status" SortExpression="Status" />
-                            <Rock:RockBoundField DataField="ActiveActivityNames" HeaderText="Active Activities" HtmlEncode="false" />
+                            <Rock:RockBoundField DataField="Group" HeaderText="Group" SortExpression="Group" />
+                            <Rock:RockBoundField DataField="Status" HeaderText="Status" />
+                            <Rock:RockBoundField DataField="Connector" HeaderText="Connector" />
+                            <Rock:RockBoundField DataField="Activities" HeaderText="Activities" HtmlEncode="false" />
+                            <Rock:RockBoundField DataField="State" HeaderText="State" HtmlEncode="false" />
                         </Columns>
                     </Rock:Grid>
                 </div>
-
             </div>
-        </div>
+        </asp:Panel>
         <script>
             $(".my-workflows .list-as-blocks li").on("click", function () {
                 $(".my-workflows .list-as-blocks li").removeClass('active');

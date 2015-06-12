@@ -37,16 +37,16 @@ namespace Rock.Model
         #region Entity Properties
 
         [Required]
-        [DataMember]
-        public int? ConnectionRequestId { get; set; }
+        [DataMember( IsRequired = true )]
+        public int ConnectionRequestId { get; set; }
 
         [Required]
         [DataMember]
-        public int? ConnectionWorkflowId { get; set; }
+        public int ConnectionWorkflowId { get; set; }
 
         [Required]
         [DataMember]
-        public int? WorkflowId { get; set; }
+        public int WorkflowId { get; set; }
 
         [DataMember]
         public ConnectionWorkflowTriggerType TriggerType { get; set; }
@@ -83,7 +83,7 @@ namespace Rock.Model
         public ConnectionRequestWorkflowConfiguration()
         {
             this.HasRequired( p => p.ConnectionWorkflow ).WithMany().HasForeignKey( p => p.ConnectionWorkflowId ).WillCascadeOnDelete( false );
-            this.HasRequired( p => p.ConnectionRequest ).WithMany().HasForeignKey( p => p.ConnectionRequestId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.ConnectionRequest ).WithMany( p => p.ConnectionRequestWorkflows ).HasForeignKey( p => p.ConnectionRequestId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.Workflow ).WithMany().HasForeignKey( p => p.WorkflowId ).WillCascadeOnDelete( false );
         }
     }

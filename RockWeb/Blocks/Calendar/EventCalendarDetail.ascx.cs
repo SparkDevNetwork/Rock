@@ -701,7 +701,17 @@ namespace RockWeb.Blocks.Calendar
         {
             gEventCalendarAttributes.AddCssClass( "attribute-grid" );
             SetAttributeListOrder( EventCalendarAttributesState );
-            gEventCalendarAttributes.DataSource = EventCalendarAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            gEventCalendarAttributes.DataSource = EventCalendarAttributesState
+                .Select( a => new
+                {
+                    a.Id,
+                    a.Guid,
+                    Name = a.Name,
+                    FieldType = a.FieldType != null ? a.FieldType.ToString() : FieldTypeCache.GetName(a.FieldTypeId),
+                    AllowSearch = a.AllowSearch,
+                    Order = a.Order
+                } )
+                .OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             gEventCalendarAttributes.DataBind();
         }
 
