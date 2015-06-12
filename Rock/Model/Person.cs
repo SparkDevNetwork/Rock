@@ -483,23 +483,9 @@ namespace Rock.Model
         {
             get
             {
-                var fullName = new StringBuilder();
-
-                fullName.AppendFormat( "{0} {1}", NickName, LastName );
-
                 // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so 
                 // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
-                if ( SuffixValueId.HasValue )
-                {
-                    var suffix = DefinedValueCache.Read( SuffixValueId.Value );
-                    if ( suffix != null )
-                    {
-                        fullName.AppendFormat( " {0}", suffix.Value );
-                    }
-                }
-
-                return fullName.ToString();
-
+                return FormatFullName( NickName, LastName, SuffixValueId );
             }
 
             private set { }
@@ -1654,6 +1640,51 @@ namespace Rock.Model
                     rockContext.SaveChanges();
                 }
             }
+        }
+
+
+        /// <summary>
+        /// Formats the full name.
+        /// </summary>
+        /// <param name="nickName">The nick name.</param>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="suffix">The suffix.</param>
+        /// <returns></returns>
+        public static string FormatFullName( string nickName, string lastName, string suffix )
+        {
+            var fullName = new StringBuilder();
+
+            fullName.AppendFormat( "{0} {1}", nickName, lastName );
+
+            
+            if ( !string.IsNullOrWhiteSpace(suffix))
+            {
+                fullName.AppendFormat( " {0}", suffix );
+            }
+
+            return fullName.ToString();
+        }
+
+        /// <summary>
+        /// Formats the full name.
+        /// </summary>
+        /// <param name="nickName">The nick name.</param>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="suffixValueId">The suffix value identifier.</param>
+        /// <returns></returns>
+        public static string FormatFullName( string nickName, string lastName, int? suffixValueId) {
+            
+           
+            if ( suffixValueId.HasValue )
+            {
+                var suffix = DefinedValueCache.Read( suffixValueId.Value );
+                if ( suffix != null )
+                {
+                    return FormatFullName( nickName, lastName, suffix.Value );
+                }
+            }
+
+            return FormatFullName( nickName, lastName, string.Empty );
         }
 
         #endregion
