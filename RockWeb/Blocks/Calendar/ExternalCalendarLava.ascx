@@ -4,15 +4,15 @@
     <ContentTemplate>
         <div class="row">
             <div class="col-md-3">
-                    <div id="calendar">
+                    <div class="calendarWrapper">
                         <asp:Calendar ID="calEventCalendar" runat="server" DayNameFormat="FirstLetter" SelectionMode="Day" BorderColor="#999999"
-                            TitleStyle-BackColor="#e5e5e5" NextPrevStyle-ForeColor="#333333" FirstDayOfWeek="Sunday" Width="100%" CssClass="calendar" OnSelectionChanged="calEventCalendar_SelectionChanged" OnDayRender="calEventCalendar_DayRender">
+                            TitleStyle-BackColor="#ffffff" NextPrevStyle-ForeColor="#333333" FirstDayOfWeek="Sunday" Width="100%" CssClass="calendar" OnSelectionChanged="calEventCalendar_SelectionChanged" OnDayRender="calEventCalendar_DayRender">
                             <DayStyle CssClass="calendar-day" />
                             <TodayDayStyle CssClass="calendar-today" />
                             <SelectedDayStyle CssClass="calendar-selected" />
-                            <OtherMonthDayStyle CssClass="calendar-last-month" ForeColor="#999999" />
+                            <OtherMonthDayStyle CssClass="calendar-last-month" />
                             <DayHeaderStyle CssClass="calendar-day-header" />
-                            <NextPrevStyle CssClass="calendar-next-prev" ForeColor="#777777" />
+                            <NextPrevStyle CssClass="calendar-next-prev" />
                             <TitleStyle CssClass="calendar-title" />
                         </asp:Calendar>
                     </div>
