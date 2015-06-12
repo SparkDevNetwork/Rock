@@ -22,14 +22,15 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class PersonDaysUntilBirthday : Rock.Migrations.RockMigration
+    public partial class FinacialAnalyticsProcs : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            Sql( MigrationSQL._201506112030400_PersonDaysUntilBirthday, true );
+            Sql( MigrationSQL._201506121300596_FinacialAnalyticsProcs_1 );
+            Sql( MigrationSQL._201506121300596_FinacialAnalyticsProcs_2 );
         }
         
         /// <summary>
@@ -37,7 +38,12 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            
+            Sql( @"
+    DROP PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+" );
+            Sql( @"
+    DROP PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery]
+" );
         }
     }
 }
