@@ -25,14 +25,6 @@ namespace Rock.Apps.CheckScannerUtility
     public class ScannedDocInfo
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ScannedDocInfo"/> class.
-        /// </summary>
-        public ScannedDocInfo()
-        {
-            Uploaded = false;
-        }
-
-        /// <summary>
         /// Gets or sets the front image.
         /// </summary>
         /// <value>
@@ -93,12 +85,12 @@ namespace Rock.Apps.CheckScannerUtility
         public Rock.Model.DefinedValue SourceTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="ScannedDocInfo"/> is uploaded.
+        /// Gets or sets a value indicating whether this <see cref="ScannedDocInfo"/> should be uploaded
         /// </summary>
         /// <value>
-        ///   <c>true</c> if uploaded; otherwise, <c>false</c>.
+        ///   <c>true</c> if upload; otherwise, <c>false</c>.
         /// </value>
-        public bool Uploaded { get; set; }
+        public bool Upload { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction identifier.
