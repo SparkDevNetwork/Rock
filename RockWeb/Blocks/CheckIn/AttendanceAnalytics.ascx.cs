@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -69,6 +69,8 @@ namespace RockWeb.Blocks.CheckIn
             gAttendeesAttendance.GridRebind += gAttendeesAttendance_GridRebind;
 
             gAttendeesAttendance.EntityTypeId = EntityTypeCache.Read<Rock.Model.Person>().Id;
+
+            dvpDataView.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
 
             _rockContext = new RockContext();
 
@@ -321,6 +323,12 @@ function(item) {
             lPatternXFor.Text = string.Format( " {0} for the selected date range", groupByTextPlural );
             lPatternAndMissedXBetween.Text = string.Format( " {0} between", groupByTextPlural );
 
+            var selectedDataViewId = dvpDataView.SelectedValue.AsIntegerOrNull();
+            if ( selectedDataViewId.HasValue )
+            {
+                dataSourceParams.AddOrReplace( "dataViewId", selectedDataViewId.Value.ToString() );
+            }
+
             dataSourceParams.AddOrReplace( "groupBy", hfGroupBy.Value.AsInteger() );
 
             dataSourceParams.AddOrReplace( "graphBy", hfGraphBy.Value.AsInteger() );
@@ -389,20 +397,20 @@ function(item) {
         {
             string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
 
-            this.SetUserPreference( keyPrefix + "TemplateGroupTypeId", ddlCheckinType.SelectedGroupTypeId.ToString() );
+            this.SetUserPreference( keyPrefix + "TemplateGroupTypeId", ddlCheckinType.SelectedGroupTypeId.ToString(), false );
 
-            this.SetUserPreference( keyPrefix + "SlidingDateRange", drpSlidingDateRange.DelimitedValues );
-            this.SetUserPreference( keyPrefix + "GroupBy", hfGroupBy.Value );
-            this.SetUserPreference( keyPrefix + "GraphBy", hfGraphBy.Value );
-            this.SetUserPreference( keyPrefix + "CampusIds", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
+            this.SetUserPreference( keyPrefix + "SlidingDateRange", drpSlidingDateRange.DelimitedValues, false );
+            this.SetUserPreference( keyPrefix + "GroupBy", hfGroupBy.Value, false );
+            this.SetUserPreference( keyPrefix + "GraphBy", hfGraphBy.Value, false );
+            this.SetUserPreference( keyPrefix + "CampusIds", cpCampuses.SelectedCampusIds.AsDelimited( "," ), false );
+            this.SetUserPreference( keyPrefix + "DataView", dvpDataView.SelectedValue, false );
 
             var selectedGroupIds = GetSelectedGroupIds();
+            this.SetUserPreference( keyPrefix + "GroupIds", selectedGroupIds.AsDelimited( "," ), false );
 
-            this.SetUserPreference( keyPrefix + "GroupIds", selectedGroupIds.AsDelimited( "," ) );
+            this.SetUserPreference( keyPrefix + "ShowBy", hfShowBy.Value, false );
 
-            this.SetUserPreference( keyPrefix + "ShowBy", hfShowBy.Value );
-
-            this.SetUserPreference( keyPrefix + "ViewBy", hfViewBy.Value );
+            this.SetUserPreference( keyPrefix + "ViewBy", hfViewBy.Value, false );
 
             AttendeesFilterBy attendeesFilterBy;
             if ( radByVisit.Checked )
@@ -417,10 +425,11 @@ function(item) {
             {
                 attendeesFilterBy = AttendeesFilterBy.All;
             }
+            this.SetUserPreference( keyPrefix + "AttendeesFilterByType", attendeesFilterBy.ConvertToInt().ToString(), false );
+            this.SetUserPreference( keyPrefix + "AttendeesFilterByVisit", ddlNthVisit.SelectedValue, false );
+            this.SetUserPreference( keyPrefix + "AttendeesFilterByPattern", string.Format( "{0}|{1}|{2}|{3}", tbPatternXTimes.Text, cbPatternAndMissed.Checked, tbPatternMissedXTimes.Text, drpPatternDateRange.DelimitedValues ), false );
 
-            this.SetUserPreference( keyPrefix + "AttendeesFilterByType", attendeesFilterBy.ConvertToInt().ToString() );
-            this.SetUserPreference( keyPrefix + "AttendeesFilterByVisit", ddlNthVisit.SelectedValue );
-            this.SetUserPreference( keyPrefix + "AttendeesFilterByPattern", string.Format( "{0}|{1}|{2}|{3}", tbPatternXTimes.Text, cbPatternAndMissed.Checked, tbPatternMissedXTimes.Text, drpPatternDateRange.DelimitedValues ) );
+            this.SaveUserPreferences( keyPrefix );
         }
 
         /// <summary>
@@ -460,6 +469,8 @@ function(item) {
             {
                 drpSlidingDateRange.DelimitedValues = slidingDateRangeSettings;
             }
+
+            dvpDataView.SetValue( this.GetUserPreference( keyPrefix + "DataView" ) );
 
             hfGroupBy.Value = this.GetUserPreference( keyPrefix + "GroupBy" );
             hfGraphBy.Value = this.GetUserPreference( keyPrefix + "GraphBy" );
@@ -614,7 +625,8 @@ function(item) {
                 dateRange.Start,
                 dateRange.End,
                 groupIds,
-                campusIds );
+                campusIds,
+                dvpDataView.SelectedValueAsInt() );
             return chartData;
         }
 
@@ -777,8 +789,31 @@ function(item) {
                 }
             }
 
+            var personService = new PersonService( rockContext );
+
+            // Filter by dataview
+            var dataViewId = dvpDataView.SelectedValueAsInt();
+            if ( dataViewId.HasValue )
+            {
+                var dataView = new DataViewService( _rockContext ).Get( dataViewId.Value );
+                if ( dataView != null )
+                {
+                    var errorMessages = new List<string>();
+                    ParameterExpression paramExpression = personService.ParameterExpression;
+                    Expression whereExpression = dataView.GetExpression( personService, paramExpression, out errorMessages );
+
+                    SortProperty sort = null;
+                    var dataViewPersonIdQry = personService
+                        .Queryable().AsNoTracking()
+                        .Where( paramExpression, whereExpression, sort )
+                        .Select( p => p.Id );
+
+                    qryByPersonWithSummary = qryByPersonWithSummary.Where( a => dataViewPersonIdQry.Contains( a.PersonId ) );
+                }
+            }
+
             // declare the qryResult that we'll use in case they didn't choose IncludeParents (and the Anonymous Type will also work if we do include parents)
-            var qryPerson = new PersonService( rockContext ).Queryable();
+            var qryPerson = personService.Queryable();
 
             var qryResult = qryByPersonWithSummary.Join(
                     qryPerson,

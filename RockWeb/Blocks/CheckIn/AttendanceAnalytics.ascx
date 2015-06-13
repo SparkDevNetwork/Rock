@@ -62,6 +62,8 @@
 
                         </ul>
 
+                        <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by DataView" />
+
                     </div>
                     <div class="col-md-9">
 

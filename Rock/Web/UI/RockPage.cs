@@ -2159,11 +2159,18 @@ namespace Rock.Web.UI
         /// <summary>
         /// Saves the user preferences.
         /// </summary>
-        public void SaveUserPreferences()
+        /// <param name="keyPrefix">The key prefix.</param>
+        public void SaveUserPreferences( string keyPrefix )
         {
             if ( CurrentPerson != null )
             {
-                PersonService.SaveUserPreferences( CurrentPerson, SessionUserPreferences() );
+                var values = new Dictionary<string, string>();
+                SessionUserPreferences()
+                    .Where( p => p.Key.StartsWith( keyPrefix ) )
+                    .ToList()
+                    .ForEach( kv => values.Add( kv.Key, kv.Value ) );
+
+                PersonService.SaveUserPreferences( CurrentPerson, values );
             }
         }
 
