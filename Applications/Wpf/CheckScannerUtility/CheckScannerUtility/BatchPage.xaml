@@ -208,12 +208,6 @@
                                    Style="{StaticResource labelStyleDd}"
                                    Content="Home Campus" />
 
-                            <Label x:Name="lblUploadProgress"
-                                   Grid.Row="4"
-                                   Grid.ColumnSpan="2"
-                                   HorizontalAlignment="Center"
-                                   Style="{StaticResource labelStyleAlertInfo}"
-                                   Content="Upload Status" />
                             <Button Style="{StaticResource buttonStylePrimary}"
                                     Grid.Row="4"
                                     Grid.Column="0"
@@ -325,7 +319,6 @@
                     </Border>
                 </StackPanel>
 
-
                 <Label Content="Scanned Items"
                        Style="{StaticResource labelStyleGridTitle}"
                        Grid.Row="1" />
@@ -350,7 +343,8 @@
                           ColumnWidth="SizeToHeader"
                           Style="{StaticResource gridStyle}"
                           ScrollViewer.VerticalScrollBarVisibility="Visible"
-                          ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+                          ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                          LoadingRow="grdBatchItems_LoadingRow" >
                     <DataGrid.ItemContainerStyle>
                         <Style TargetType="{x:Type DataGridRow}">
                             <EventSetter Event="Control.MouseDoubleClick"
@@ -360,14 +354,14 @@
 
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="SCANNED DATE/TIME"
-                                            Binding="{Binding FinancialTransaction.CreatedDateTime}"
+                                            Binding="{Binding CreatedDateTime}"
                                             HeaderStyle="{StaticResource gridHeaderStyleDateTime}"
                                             CellStyle="{StaticResource gridCellStyleDateTime}"
                                             CanUserResize="False"
                                             CanUserSort="False" />
 
                         <DataGridTextColumn Header="TYPE"
-                                            Binding="{Binding FinancialTransaction.CurrencyTypeValue}"
+                                            Binding="{Binding CurrencyTypeValue}"
                                             HeaderStyle="{StaticResource gridHeaderStyle}"
                                             CellStyle="{StaticResource gridCellStyle}"
                                             Width="*"
@@ -375,7 +369,7 @@
                                             CanUserSort="False" />
 
                         <DataGridTextColumn Header="CHECK NUMBER"
-                                            Binding="{Binding CheckNumber}"
+                                            Binding="{Binding TransactionCode}"
                                             HeaderStyle="{StaticResource gridHeaderStyle}"
                                             CellStyle="{StaticResource gridCellStyle}"
                                             Width="*"

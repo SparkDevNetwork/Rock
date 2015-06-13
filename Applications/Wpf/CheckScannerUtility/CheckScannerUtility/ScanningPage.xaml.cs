@@ -52,9 +52,16 @@ namespace Rock.Apps.CheckScannerUtility
         public ScanningPage( BatchPage value )
         {
             InitializeComponent();
-            this.ScannedDocInfoHistory = new List<ScannedDocInfo>();
             this.batchPage = value;
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [continue feeding].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [continue feeding]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ContinueFeeding { get; set; }
 
         /// <summary>
         /// Handles the Click event of the btnStartStop control (only applies to Ranger scanners)
@@ -67,10 +74,12 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 if ( ScanButtonText.IsStartScan( btnStartStop.Content as string ) )
                 {
+                    ContinueFeeding = true;
                     StartScanningRanger();
                 }
                 else
                 {
+                    ContinueFeeding = false;
                     batchPage.rangerScanner.StopFeeding();
                 }
             }
@@ -81,31 +90,55 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         public void StartScanningRanger()
         {
-            if ( batchPage.ScannerFeederType.Equals( FeederType.SingleItem ) )
+            if ( ContinueFeeding )
             {
-                batchPage.rangerScanner.StartFeeding( FeedSource.FeedSourceManualDrop, FeedItemCount.FeedOne );
-            }
-            else
-            {
-                batchPage.rangerScanner.StartFeeding( FeedSource.FeedSourceMainHopper, FeedItemCount.FeedContinuously );
+                if ( batchPage.ScannerFeederType.Equals( FeederType.SingleItem ) )
+                {
+                    batchPage.rangerScanner.StartFeeding( FeedSource.FeedSourceManualDrop, FeedItemCount.FeedOne );
+                }
+                else
+                {
+                    batchPage.rangerScanner.StartFeeding( FeedSource.FeedSourceMainHopper, FeedItemCount.FeedOne );
+                }
             }
         }
 
         /// <summary>
-        /// Gets or sets the current scanned document information.
+        /// Prompts to upload a scanned item that has issues
         /// </summary>
-        /// <value>
-        /// The current scanned document information.
-        /// </value>
-        private ScannedDocInfo CurrentScannedDocInfo { get; set; }
+        /// <param name="scannedDoc">The scanned document.</param>
+        /// <returns></returns>
+        public bool PromptToUploadBadScan( ScannedDocInfo scannedDoc )
+        {
+            var uploadBadScan = false;
+            if ( scannedDoc.BadMicr )
+            {
+                if ( MessageBox.Show( "Unable to read MICR. Upload and continue?", "Check Scan", MessageBoxButton.YesNo ) == MessageBoxResult.Yes )
+                {
+                    uploadBadScan = true;
+                }
+                else
+                {
+                    uploadBadScan = false;
+                    return false;
+                }
+            }
 
-        /// <summary>
-        /// Gets or sets the scanned document information history.
-        /// </summary>
-        /// <value>
-        /// The scanned document information history.
-        /// </value>
-        private List<ScannedDocInfo> ScannedDocInfoHistory { get; set; }
+            if ( scannedDoc.Duplicate )
+            {
+                if ( MessageBox.Show( "Duplicate check detected. Upload and continue?", "Check Scan", MessageBoxButton.YesNo ) == MessageBoxResult.Yes )
+                {
+                    uploadBadScan = true;
+                }
+                else
+                {
+                    uploadBadScan = false;
+                    return false;
+                }
+            }
+
+            return uploadBadScan;
+        }
 
         /// <summary>
         /// Shows the exception.
@@ -124,22 +157,8 @@ namespace Rock.Apps.CheckScannerUtility
         public void ShowScannedDocStatus( ScannedDocInfo scannedDocInfo )
         {
             lblExceptions.Visibility = Visibility.Collapsed;
-            CurrentScannedDocInfo = scannedDocInfo;
-            if ( !ScannedDocInfoHistory.Contains( scannedDocInfo ) )
-            {
-                ScannedDocInfoHistory.Add( scannedDocInfo );
-            }
             
-            if ( ScannedDocInfoHistory.Count > 1 )
-            {
-                gScannedChecksNavigation.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                gScannedChecksNavigation.Visibility = Visibility.Collapsed;
-            }
-
-            NavigateTo( ScannedDocInfoHistory.Count - 1 );
+            DisplayScannedDocInfo( scannedDocInfo );
 
             ExpectingMagTekBackScan = false;
 
@@ -241,27 +260,6 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 lblScanCheckWarningDuplicate.Visibility = Visibility.Collapsed;
             }
-
-            btnDeleteItem.Visibility = Visibility.Visible;
-
-            if ( ScannedDocInfoHistory.Any( a => a.IsCheck && ( a.BadMicr || a.Duplicate ) ) )
-            {
-                lblSomeBadScans.Visibility = Visibility.Visible;
-                lblScanInstructions.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                lblSomeBadScans.Visibility = Visibility.Collapsed;
-                lblScanInstructions.Visibility = Visibility.Visible;
-            }
-        }
-
-        /// <summary>
-        /// Clears the scanned document history.
-        /// </summary>
-        public void ClearScannedDocHistory()
-        {
-            ScannedDocInfoHistory.Clear();
         }
 
         /// <summary>
@@ -281,14 +279,6 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnCancel_Click( object sender, RoutedEventArgs e )
         {
-            // cancelled the scanned checks, so rebuild the batchPage.ScannedDocList to only include the ones that have already been uploaded
-            var uploadedScans = batchPage.ScannedDocList.Where( a => a.Uploaded ).ToList();
-            batchPage.ScannedDocList = new System.Collections.Concurrent.ConcurrentQueue<ScannedDocInfo>();
-            foreach ( var scannedDoc in uploadedScans )
-            {
-                batchPage.ScannedDocList.Enqueue( scannedDoc );
-            }
-
             this.NavigationService.Navigate( batchPage );
         }
 
@@ -333,16 +323,11 @@ namespace Rock.Apps.CheckScannerUtility
                 lblBack.Visibility = Visibility.Hidden;
             }
 
-            this.ClearScannedDocHistory();
-            lblSomeBadScans.Visibility = Visibility.Collapsed;
             ExpectingMagTekBackScan = false;
 
             ScannedDocInfo sampleDocInfo = new ScannedDocInfo();
             sampleDocInfo.CurrencyTypeValue = batchPage.CurrencyValueList.FirstOrDefault( a => a.Guid == RockConfig.Load().SourceTypeValueGuid.AsGuid() );
             DisplayScannedDocInfo( sampleDocInfo );
-
-            gScannedChecksNavigation.Visibility = Visibility.Collapsed;
-            btnDeleteItem.Visibility = Visibility.Collapsed;
 
             UpdateScanInstructions();
         }
@@ -360,61 +345,6 @@ namespace Rock.Apps.CheckScannerUtility
             else
             {
                 lblScanInstructions.Content = string.Format( "INFO: Insert {0} into the scanner to continue.", scanningChecks ? "a check" : "an item" );
-            }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnPrev control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void btnPrev_Click( object sender, RoutedEventArgs e )
-        {
-            if ( CurrentScannedDocInfo != null )
-            {
-                int navIndex = ScannedDocInfoHistory.IndexOf( CurrentScannedDocInfo ) - 1;
-                NavigateTo( navIndex );
-            }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnNext control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void btnNext_Click( object sender, RoutedEventArgs e )
-        {
-            if ( CurrentScannedDocInfo != null )
-            {
-                int navIndex = ScannedDocInfoHistory.IndexOf( CurrentScannedDocInfo ) + 1;
-                NavigateTo( navIndex );
-            }
-        }
-
-        /// <summary>
-        /// Navigates to.
-        /// </summary>
-        /// <param name="navIndex">Index of the nav.</param>
-        private void NavigateTo( int navIndex )
-        {
-            if ( navIndex >= 0 && navIndex < ScannedDocInfoHistory.Count )
-            {
-                CurrentScannedDocInfo = ScannedDocInfoHistory[navIndex];
-                DisplayScannedDocInfo( CurrentScannedDocInfo );
-            }
-            else
-            {
-                CurrentScannedDocInfo = null;
-            }
-
-            if ( !ScannedDocInfoHistory.Any() )
-            {
-                ShowStartupPage();
-            }
-            else
-            {
-                btnPrev.IsEnabled = CurrentScannedDocInfo != ScannedDocInfoHistory.First();
-                btnNext.IsEnabled = CurrentScannedDocInfo != ScannedDocInfoHistory.Last();
             }
         }
 
@@ -451,32 +381,6 @@ namespace Rock.Apps.CheckScannerUtility
 
             this.shapeStatus.ToolTip = statusText;
             this.shapeStatus.Fill = new System.Windows.Media.SolidColorBrush( statusColor );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnDeleteItem control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void btnDeleteItem_Click( object sender, RoutedEventArgs e )
-        {
-            int index = this.ScannedDocInfoHistory.IndexOf( this.CurrentScannedDocInfo );
-            this.ScannedDocInfoHistory.Remove( this.CurrentScannedDocInfo );
-            
-            // rebuild the main batchlist, but without the item we deleted
-            var currentItems = this.batchPage.ScannedDocList.ToList();
-            this.batchPage.ScannedDocList = new System.Collections.Concurrent.ConcurrentQueue<ScannedDocInfo>();
-            foreach (var item in currentItems)
-            {
-                if (item != this.CurrentScannedDocInfo)
-                {
-                    this.batchPage.ScannedDocList.Enqueue( item );
-                }
-            }
-
-            // if we weren't already on the first item, navigate to the prior item, otherwise, navigate to the 'new' first item in the list
-            int newIndex = index == 0 ? 0 : index - 1;
-            this.NavigateTo( newIndex );
         }
     }
 }

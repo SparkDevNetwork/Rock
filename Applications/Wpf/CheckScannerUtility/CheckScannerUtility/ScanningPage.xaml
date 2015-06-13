@@ -101,15 +101,6 @@
                        Margin="8"
                        VerticalAlignment="Bottom"
                        Style="{StaticResource labelStyleCaption}">Back</Label>
-                <Button Name="btnDeleteItem"
-                        Grid.Column="1"
-                        Content="Delete Item"
-                        Style="{StaticResource buttonStyleMini}"
-                        Margin="8"
-                        HorizontalAlignment="Right"
-                        Click="btnDeleteItem_Click"
-                        />
-                        
                 <Image Grid.Column="0"
                    Grid.Row="1"
                    Name="imgFront"
@@ -142,34 +133,6 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Grid Grid.Row="0" Grid.ColumnSpan="2" Name="gScannedChecksNavigation">
-                <Button Name="btnPrev"
-                
-                HorizontalAlignment="Left"
-                Style="{StaticResource buttonStyle}"
-                Margin="8,8,8,8"
-                Click="btnPrev_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <Label Style="{StaticResource labelStyleIconLeft}"
-                       Content="&#xf053;" />
-                        <Label Style="{StaticResource labelStyleButtonText}"
-                       Content="Prev" />
-                    </StackPanel>
-                </Button>
-                <Button Name="btnNext"
-                HorizontalAlignment="Right"
-                Style="{StaticResource buttonStyle}"
-                Margin="8,8,8,8"
-                Click="btnNext_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <Label Style="{StaticResource labelStyleButtonText}"
-                       Content="Next" />
-                        <Label Style="{StaticResource labelStyleIconRight}"
-                       Content="&#xf054;" />
-                    </StackPanel>
-                </Button>
-            </Grid>
-
             <Label Name="lblScanInstructions"
                    Style="{StaticResource labelStyleAlertInfo}"
                    Content="INFO:  ---"
@@ -186,20 +149,12 @@
                    Grid.ColumnSpan="2"
                    Visibility="Collapsed">
             </Label>
-            <Label Name="lblSomeBadScans"
-                   Style="{StaticResource labelStyleAlert}"
-                   Content="WARNING: One or more check scans have issues. Review the scanned checks before continuing. You might need to rescan some checks."
-                   Grid.Row="2"
-                   Grid.Column="0"
-                   Grid.ColumnSpan="2">
-            </Label>
-
             <Button Grid.Row="3"
                     Grid.Column="0"
                     Margin="8"
                     x:Name="btnStartStop"
                     Style="{StaticResource buttonStyleAction}"
-                    Content="Start/Stop/Scan Check"
+                    Content="Start/Stop"
                     HorizontalAlignment="Left"
                     Click="btnStartStop_Click" />
             <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" FlowDirection="RightToLeft">

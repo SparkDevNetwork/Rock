@@ -315,9 +315,9 @@ namespace Rock.Net
         /// <typeparam name="T"></typeparam>
         /// <param name="postPath">The post path.</param>
         /// <param name="data">The data.</param>
-        public void PostData<T>( string postPath, T data )
+        public string PostData<T>( string postPath, T data )
         {
-            PostPutData( postPath, data, HttpMethod.Post );
+            return PostPutData( postPath, data, HttpMethod.Post );
         }
 
         /// <summary>
@@ -326,21 +326,22 @@ namespace Rock.Net
         /// <typeparam name="T"></typeparam>
         /// <param name="postPath">The post path.</param>
         /// <param name="data">The data.</param>
-        public void PutData<T>( string postPath, T data )
+        public string PutData<T>( string postPath, T data )
         {
-            PostPutData( postPath, data, HttpMethod.Put );
+            return PostPutData( postPath, data, HttpMethod.Put );
         }
 
         /// <summary>
-        /// Posts or Puts the data depending on httpMethod
+        /// Posts or Puts the data depending on httpMethod returning result as a string (if there is a result)
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="postPath">The post path.</param>
         /// <param name="data">The data.</param>
         /// <param name="httpMethod">The HTTP method.</param>
         /// <exception cref="Rock.Net.HttpErrorException"></exception>
-        private void PostPutData<T>( string postPath, T data, HttpMethod httpMethod )
+        private string PostPutData<T>( string postPath, T data, HttpMethod httpMethod )
         {
+            string contentResult = null;
             Uri requestUri = new Uri( rockBaseUri, postPath );
 
             HttpClient httpClient = new HttpClient( new HttpClientHandler { CookieContainer = this.CookieContainer } );
@@ -361,7 +362,7 @@ namespace Rock.Net
 
                     postTask.Result.Content.ReadAsStringAsync().ContinueWith( c =>
                     {
-                        var contentResult = c.Result;
+                        contentResult = c.Result;
                     } ).Wait();
 
                     httpMessage = postTask.Result;
@@ -405,6 +406,8 @@ namespace Rock.Net
             {
                 httpMessage.EnsureSuccessStatusCode();
             }
+
+            return contentResult;
         }
 
         /// <summary>
