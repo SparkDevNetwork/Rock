@@ -193,6 +193,10 @@
     <Compile Include="Migrations\201506112030400_PersonDaysUntilBirthday.Designer.cs">
       <DependentUpon>201506112030400_PersonDaysUntilBirthday.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201506121300596_FinacialAnalyticsProcs.cs" />
+    <Compile Include="Migrations\201506121300596_FinacialAnalyticsProcs.Designer.cs">
+      <DependentUpon>201506121300596_FinacialAnalyticsProcs.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\201506130028565_AttributeValueAsDateTimeIndex.cs" />
     <Compile Include="Migrations\201506130028565_AttributeValueAsDateTimeIndex.Designer.cs">
       <DependentUpon>201506130028565_AttributeValueAsDateTimeIndex.cs</DependentUpon>
@@ -1756,6 +1760,9 @@
     <EmbeddedResource Include="Migrations\201506112030400_PersonDaysUntilBirthday.resx">
       <DependentUpon>201506112030400_PersonDaysUntilBirthday.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201506121300596_FinacialAnalyticsProcs.resx">
+      <DependentUpon>201506121300596_FinacialAnalyticsProcs.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201506130028565_AttributeValueAsDateTimeIndex.resx">
       <DependentUpon>201506130028565_AttributeValueAsDateTimeIndex.cs</DependentUpon>
     </EmbeddedResource>
@@ -2844,6 +2851,8 @@
   <ItemGroup>
     <Content Include="Migrations\201506051749054_AddSampleMergeDocs.sql" />
     <Content Include="Migrations\201506112030400_PersonDaysUntilBirthday.sql" />
+    <Content Include="Migrations\201506121300596_FinacialAnalyticsProcs_1.sql" />
+    <Content Include="Migrations\201506121300596_FinacialAnalyticsProcs_2.sql" />
     <Content Include="Migrations\201506130028565_AttributeValueAsDateTimeIndex_Create.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
