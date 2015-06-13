@@ -29,8 +29,8 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            Sql( MigrationSQL._201506121300596_FinacialAnalyticsProcs_1 );
-            Sql( MigrationSQL._201506121300596_FinacialAnalyticsProcs_2 );
+            Sql( MigrationSQL._201506121300596_FinancialAnalyticsProcs_1 );
+            Sql( MigrationSQL._201506121300596_FinancialAnalyticsProcs_2 );
         }
         
         /// <summary>

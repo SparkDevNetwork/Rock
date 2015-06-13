@@ -142,9 +142,9 @@ namespace Rock.Migrations.Migrations {
         ///	, @MaxAmountGiven decimal(18,2) = NULL
         ///	, @Include [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string _201506121300596_FinacialAnalyticsProcs_1 {
+        public static string _201506121300596_FinancialAnalyticsProcs_1 {
             get {
-                return ResourceManager.GetString("_201506121300596_FinacialAnalyticsProcs_1", resourceCulture);
+                return ResourceManager.GetString("_201506121300596_FinancialAnalyticsProcs_1", resourceCulture);
             }
         }
         
@@ -166,14 +166,33 @@ namespace Rock.Migrations.Migrations {
         ///	, @SourceTypeIds varchar(max) = NULL
         ///	, @ViewBy varchar(1) = &apos;G&apos;		-- G = Giving Leader, A = Adults, C = Children, F = Famil [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string _201506121300596_FinacialAnalyticsProcs_2 {
+        public static string _201506121300596_FinancialAnalyticsProcs_2 {
             get {
-                return ResourceManager.GetString("_201506121300596_FinacialAnalyticsProcs_2", resourceCulture);
+                return ResourceManager.GetString("_201506121300596_FinancialAnalyticsProcs_2", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to ALTER TABLE AttributeValue
+        ///
+        ///DROP COLUMN ValueAsNumeric
+        ///
+        ///ALTER TABLE AttributeValue
+        ///
+        ///DROP COLUMN ValueAsDateTime
+        ///
+        ///ALTER TABLE AttributeValue ADD [ValueAsNumeric] AS (
+        ///    CASE 
+        ///        WHEN len([value]) &lt; (100)
+        ///            AND isnumeric([value]) = (1)
+        ///            AND NOT [value] LIKE &apos;%[^0-9.]%&apos;
+        ///            AND NOT [value] LIKE &apos;%[.]%&apos;
+        ///            THEN TRY_CONVERT([numeric](38, 10), [value])
+        ///        END
+        ///    ) persisted
+        ///
+        ///ALTER TABLE AttributeValue ADD [ValueAsDateTime] AS ( 
+        ///    CASE WHEN i [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201506130028565_AttributeValueAsDateTimeIndex_Create {
             get {
