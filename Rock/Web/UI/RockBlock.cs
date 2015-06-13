@@ -903,9 +903,10 @@ namespace Rock.Web.UI
         /// <summary>
         /// Saves the user preferences.
         /// </summary>
-        public void SaveUserPreferences()
+        /// <param name="keyPrefix">The key prefix.</param>
+        public void SaveUserPreferences( string keyPrefix )
         {
-            RockPage.SaveUserPreferences();
+            RockPage.SaveUserPreferences( keyPrefix );
         }
 
         /// <summary>
