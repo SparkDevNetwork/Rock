@@ -70,6 +70,10 @@ namespace Rock.Migrations
             // Add/Update PageContext for Page:Audit Log, Entity: Rock.Model.FinancialBatch, Parameter: BatchId
             RockMigrationHelper.UpdatePageContext( "CBE0C5ED-744E-4392-A9D4-0DC57AF11D33", "Rock.Model.FinancialBatch", "BatchId", "307639F5-824A-453C-8650-B393DEC506F1" );
 
+            // PIN Auth Enable
+            RockMigrationHelper.UpdateEntityType( "Rock.Security.Authentication.PINAuthentication", "PIN Authentication", "Rock.Security.Authentication.PINAuthentication, Rock, Version=1.3.4.0, Culture=neutral, PublicKeyToken=null", false, true, "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE" );
+            RockMigrationHelper.AddEntityAttribute( "Rock.Security.Authentication.PINAuthentication", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "", "", "Active", "", "Should Service be used?", 0, "True", "F8926E80-1CD1-4DFD-AC1F-28B5DC75B207" );
+            RockMigrationHelper.AddAttributeValue( "F8926E80-1CD1-4DFD-AC1F-28B5DC75B207", 0, "True", "F422DAF8-E84F-4678-B179-DD4EF83E2585" );
         }
         
         /// <summary>
