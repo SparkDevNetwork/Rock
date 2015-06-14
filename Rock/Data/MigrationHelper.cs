@@ -751,6 +751,7 @@ namespace Rock.Data
         /// <param name="description">The description.</param>
         /// <param name="guid">The unique identifier.</param>
         /// <param name="order">The order.</param>
+        /// <param name="parentCategoryGuid">The parent category unique identifier.</param>
         public void UpdateCategory( string entityTypeGuid, string name, string iconCssClass, string description, string guid, int order = 0, string parentCategoryGuid = "" )
         {
             StringBuilder sql = new StringBuilder();
