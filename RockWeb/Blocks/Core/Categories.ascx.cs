@@ -222,9 +222,12 @@ namespace RockWeb.Blocks.Core
                 string errorMessage = string.Empty;
                 if ( service.CanDelete( category, out errorMessage ) )
                 {
+                    int categoryId = category.Id;
 
                     service.Delete( category );
                     rockContext.SaveChanges();
+
+                    CategoryCache.Flush( categoryId );
                 }
                 else
                 {
@@ -262,8 +265,13 @@ namespace RockWeb.Blocks.Core
             var categories = GetCategories( rockContext );
             if ( categories != null )
             {
-                new CategoryService( rockContext ).Reorder( categories.ToList(), e.OldIndex, e.NewIndex );
+                var changedIds = new CategoryService( rockContext ).Reorder( categories.ToList(), e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
+
+                foreach ( int id in changedIds )
+                {
+                    CategoryCache.Flush( id );
+                }
             }
 
             BindGrid();
@@ -331,6 +339,8 @@ namespace RockWeb.Blocks.Core
                     rockContext.SaveChanges();
                     category.SaveAttributeValues( rockContext );
                 } );
+
+                CategoryCache.Flush( category.Id );
 
                 hfIdValue.Value = string.Empty;
                 mdDetails.Hide();

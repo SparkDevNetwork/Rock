@@ -81,21 +81,15 @@ namespace Rock.Model
                 qry = qry.Where( t => t.Transaction.TransactionDateTime < end.Value );
             }
 
-            // Amount Range Filter
-            if ( minAmount.HasValue || maxAmount.HasValue )
+            // Account Id Filter
+            var distictAccountIds = accountIds.Where( i => i != 0 ).Distinct().ToList();
+            if ( distictAccountIds.Any() )
             {
-                var givingIdQry = qry
-                    .GroupBy( d => d.Transaction.AuthorizedPersonAlias.Person.GivingId )
-                    .Select( d => new { d.Key, Total = d.Sum( t => t.Amount ) } )
-                    .Where( s =>
-                        ( !minAmount.HasValue || s.Total >= minAmount.Value ) &&
-                        ( !maxAmount.HasValue || s.Total <= maxAmount.Value ) )
-                    .Select( s => s.Key );
-
                 qry = qry
-                    .Where( d =>
-                        givingIdQry.Contains( d.Transaction.AuthorizedPersonAlias.Person.GivingId ) );
+                    .Where( t =>
+                        distictAccountIds.Contains( t.AccountId ) );
             }
+
 
             // Currency Type Filter
             var distictCurrencyTypeIds = currencyTypeIds.Where( i => i != 0 ).Distinct().ToList();
@@ -117,15 +111,22 @@ namespace Rock.Model
                         distictSourceTypeIds.Contains( t.Transaction.SourceTypeValueId.Value ) );
             }
 
-            // Account Id Filter
-            var distictAccountIds = accountIds.Where( i => i != 0 ).Distinct().ToList();
-            if ( distictAccountIds.Any() )
+            // Amount Range Filter
+            if ( minAmount.HasValue || maxAmount.HasValue )
             {
-                qry = qry
-                    .Where( t =>
-                        distictAccountIds.Contains( t.AccountId ) );
-            }
+                var givingIdQry = qry
+                    .GroupBy( d => d.Transaction.AuthorizedPersonAlias.Person.GivingId )
+                    .Select( d => new { d.Key, Total = d.Sum( t => t.Amount ) } )
+                    .Where( s =>
+                        ( !minAmount.HasValue || s.Total >= minAmount.Value ) &&
+                        ( !maxAmount.HasValue || s.Total <= maxAmount.Value ) )
+                    .Select( s => s.Key );
 
+                qry = qry
+                    .Where( d =>
+                        givingIdQry.Contains( d.Transaction.AuthorizedPersonAlias.Person.GivingId ) );
+            }
+            
             // Data View Filter
             if ( dataViewId.HasValue )
             {
