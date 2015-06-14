@@ -124,4 +124,16 @@
   <data name="_201506051749054_AddSampleMergeDocs" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201506051749054_AddSampleMergeDocs.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201506112030400_PersonDaysUntilBirthday" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506112030400_PersonDaysUntilBirthday.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201506121300596_FinancialAnalyticsProcs_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506121300596_financialanalyticsprocs_1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201506121300596_FinancialAnalyticsProcs_2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506121300596_financialanalyticsprocs_2.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201506130028565_AttributeValueAsDateTimeIndex_Create" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506130028565_attributevalueasdatetimeindex_create.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>
