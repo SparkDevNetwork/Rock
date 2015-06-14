@@ -751,39 +751,60 @@ namespace Rock.Data
         /// <param name="description">The description.</param>
         /// <param name="guid">The unique identifier.</param>
         /// <param name="order">The order.</param>
-        public void UpdateCategory( string entityTypeGuid, string name, string iconCssClass, string description, string guid, int order = 0 )
+        public void UpdateCategory( string entityTypeGuid, string name, string iconCssClass, string description, string guid, int order = 0, string parentCategoryGuid = "" )
         {
-            Migration.Sql( string.Format( @"
+            StringBuilder sql = new StringBuilder();
+            
+            sql.AppendFormat( @"
 
-                DECLARE @EntityTypeId int
-                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{0}')
+                DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{0}')
 
+                DECLARE @ParentCategoryId int 
+", entityTypeGuid );
+
+            var parentGuid = parentCategoryGuid.AsGuidOrNull();
+            if (parentGuid.HasValue )
+            {
+                sql.AppendFormat( @"
+                SET @ParentCategoryId = ( SELECT [Id] FROM [Category] WHERE [Guid] = '{0}' )
+", parentGuid.Value );
+            }
+            else
+            {
+                sql.Append( @"
+                SET @ParentCategoryId = NULL
+");
+            }
+
+            sql.AppendFormat( @"
                 IF EXISTS (
                     SELECT [Id]
                     FROM [Category]
-                    WHERE [Guid] = '{4}' )
+                    WHERE [Guid] = '{3}' )
                 BEGIN
                     UPDATE [Category] SET
                         [EntityTypeId] = @EntityTypeId,
-                        [Name] = '{1}',
-                        [IconCssClass] = '{2}',
-                        [Description] = '{3}',
-                        [Order] = {5}
-                    WHERE [Guid] = '{4}'
+                        [Name] = '{0}',
+                        [IconCssClass] = '{1}',
+                        [Description] = '{2}',
+                        [Order] = {4},
+                        [ParentCategoryId] = @ParentCategoryId
+                    WHERE [Guid] = '{3}'
                 END
                 ELSE
                 BEGIN
-                    INSERT INTO [Category] ( [IsSystem],[EntityTypeId],[Name],[IconCssClass],[Description],[Order],[Guid] )
-                    VALUES( 1,@EntityTypeId,'{1}','{2}','{3}',{5},'{4}' )
+                    INSERT INTO [Category] ( [IsSystem],[EntityTypeId],[Name],[IconCssClass],[Description],[Order],[Guid],[ParentCategoryId] )
+                    VALUES( 1,@EntityTypeId,'{0}','{1}','{2}',{4},'{3}',@ParentCategoryId )
                 END
 ",
-                    entityTypeGuid,
                     name,
                     iconCssClass,
                     description.Replace( "'", "''" ),
                     guid,
-                    order )
+                    order
             );
+
+             Migration.Sql( sql.ToString() );
         }
 
         /// <summary>
