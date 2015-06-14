@@ -7981,6 +7981,7 @@ button.close {
   4. Components
   5. Specific Page Styles
   6. Scroll container
+  7. Kiosk Manager
 
 */
 h1,
@@ -8244,6 +8245,67 @@ input.checkin-phone-entry {
   right: 1px;
   overflow: hidden;
 }
+.kioskmanager-activate {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  opacity: .5;
+  color: #ffffff;
+}
+.kioskmanager-activate:hover {
+  color: #ffffff;
+}
+.kioskmanager-locations {
+  max-width: 75%;
+}
+.kioskmanager-location {
+  margin: 0 60px 0 0;
+  padding: 16px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  position: relative;
+}
+.kioskmanager-location:before,
+.kioskmanager-location:after {
+  content: " ";
+  display: table;
+}
+.kioskmanager-location:after {
+  clear: both;
+}
+.kioskmanager-location:before,
+.kioskmanager-location:after {
+  content: " ";
+  display: table;
+}
+.kioskmanager-location:after {
+  clear: both;
+}
+.kioskmanager-location .kioskmanager-location-toggle {
+  float: left;
+  margin-top: 4px;
+}
+.kioskmanager-location .kioskmanager-location-label {
+  font-weight: 600;
+  font-size: 36px;
+  padding-left: 8px;
+  float: left;
+}
+.kioskmanager-location .kioskmanager-location-count {
+  font-weight: 600;
+  font-size: 24px;
+  position: absolute;
+  right: 12px;
+  margin-top: 12px;
+}
+.kioskmanager-actions {
+  position: absolute;
+  bottom: 0px;
+  left: 75%;
+}
+/*.kioskmanager-schedules {
+
+}*/
 /*!
  * Bootstrap Modal
  *

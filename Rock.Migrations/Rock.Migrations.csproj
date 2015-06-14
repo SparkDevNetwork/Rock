@@ -185,6 +185,27 @@
     <Compile Include="Migrations\201506101814103_CheckinWelcomeManager.Designer.cs">
       <DependentUpon>201506101814103_CheckinWelcomeManager.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201506111550188_PledgeAnalytics.cs" />
+    <Compile Include="Migrations\201506111550188_PledgeAnalytics.Designer.cs">
+      <DependentUpon>201506111550188_PledgeAnalytics.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201506112030400_PersonDaysUntilBirthday.cs" />
+    <Compile Include="Migrations\201506112030400_PersonDaysUntilBirthday.Designer.cs">
+      <DependentUpon>201506112030400_PersonDaysUntilBirthday.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201506121300596_FinancialAnalyticsProcs.cs" />
+    <Compile Include="Migrations\201506121300596_FinancialAnalyticsProcs.Designer.cs">
+      <DependentUpon>201506121300596_FinancialAnalyticsProcs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201506130028565_AttributeValueAsDateTimeIndex.cs" />
+    <Compile Include="Migrations\201506130028565_AttributeValueAsDateTimeIndex.Designer.cs">
+      <DependentUpon>201506130028565_AttributeValueAsDateTimeIndex.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RockMigrationSQL.resx</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.cs" />
     <Compile Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.Designer.cs">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
@@ -1618,11 +1639,6 @@
       <DependentUpon>201504080019568_FixNullAddress.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>RockMigrationSQL.resx</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
@@ -1737,6 +1753,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201506101814103_CheckinWelcomeManager.resx">
       <DependentUpon>201506101814103_CheckinWelcomeManager.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201506111550188_PledgeAnalytics.resx">
+      <DependentUpon>201506111550188_PledgeAnalytics.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201506112030400_PersonDaysUntilBirthday.resx">
+      <DependentUpon>201506112030400_PersonDaysUntilBirthday.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201506121300596_FinancialAnalyticsProcs.resx">
+      <DependentUpon>201506121300596_FinancialAnalyticsProcs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201506130028565_AttributeValueAsDateTimeIndex.resx">
+      <DependentUpon>201506130028565_AttributeValueAsDateTimeIndex.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
@@ -2822,6 +2850,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Migrations\201506051749054_AddSampleMergeDocs.sql" />
+    <Content Include="Migrations\201506112030400_PersonDaysUntilBirthday.sql" />
+    <Content Include="Migrations\201506121300596_FinancialAnalyticsProcs_1.sql" />
+    <Content Include="Migrations\201506121300596_FinancialAnalyticsProcs_2.sql" />
+    <Content Include="Migrations\201506130028565_AttributeValueAsDateTimeIndex_Create.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

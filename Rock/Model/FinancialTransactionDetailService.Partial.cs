@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
@@ -240,6 +241,75 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the gifts.
+        /// </summary>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="minAmount">The minimum amount.</param>
+        /// <param name="maxAmount">The maximum amount.</param>
+        /// <param name="accountIds">The account ids.</param>
+        /// <param name="currencyTypeIds">The currency type ids.</param>
+        /// <param name="sourceTypeIds">The source type ids.</param>
+        /// <param name="dataViewId">The data view identifier.</param>
+        /// <param name="giversViewBy">The givers view by.</param>
+        /// <returns></returns>
+        public static DataSet GetGivingAnalytics(
+            DateTime? start, DateTime? end, decimal? minAmount, decimal? maxAmount,
+            List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, int? dataViewId, GiversViewBy giversViewBy )
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            if ( start.HasValue )
+            {
+                parameters.Add( "StartDate", start.Value );
+            }
+
+            if ( end.HasValue )
+            {
+                parameters.Add( "EndDate", end.Value );
+            }
+
+            if ( minAmount.HasValue )
+            {
+                parameters.Add( "MinAmount", minAmount.Value );
+            }
+
+            if ( maxAmount.HasValue )
+            {
+                parameters.Add( "MaxAmount", maxAmount.Value );
+            }
+
+            if ( accountIds != null && accountIds.Any() )
+            {
+                parameters.Add( "AccountIds", accountIds.AsDelimited(",") );
+            }
+
+            if ( currencyTypeIds != null && currencyTypeIds.Any() )
+            {
+                parameters.Add( "CurrencyTypeIds", currencyTypeIds.AsDelimited(",") );
+            }
+
+            if ( sourceTypeIds != null && sourceTypeIds.Any() )
+            {
+                parameters.Add( "SourceTypeIds", sourceTypeIds.AsDelimited(",") );
+            }
+
+            string viewBy = "G";
+            switch ( giversViewBy )
+            {
+                case GiversViewBy.Giver: viewBy = "G"; break;
+                case GiversViewBy.Adults: viewBy = "A"; break;
+                case GiversViewBy.Children: viewBy = "C"; break;
+                case GiversViewBy.Family: viewBy = "F"; break;
+            }
+            parameters.Add( "ViewBy", viewBy );
+
+            var result = DbService.GetDataSet( "spFinance_GivingAnalyticsQuery", System.Data.CommandType.StoredProcedure, parameters, 180 );
+
+            return result;
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         public class FinancialTransactionDetailWithSummaryDateTime
@@ -260,6 +330,33 @@ namespace Rock.Model
             /// </value>
             public FinancialTransactionDetail FinancialTransactionDetail { get; set;}
         }
+
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum GiversViewBy
+    {
+        /// <summary>
+        /// The giver
+        /// </summary>
+        Giver = 0,
+
+        /// <summary>
+        /// The adults
+        /// </summary>
+        Adults = 1,
+
+        /// <summary>
+        /// The children
+        /// </summary>
+        Children = 2,
+
+        /// <summary>
+        /// The family
+        /// </summary>
+        Family = 3,
     }
 
     /// <summary>

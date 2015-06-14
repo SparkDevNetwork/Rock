@@ -339,6 +339,7 @@
     <Compile Include="Model\EntitySet.cs" />
     <Compile Include="Model\EntitySetItem.cs" />
     <Compile Include="Model\FinancialTransactionDetailService.Partial.cs" />
+    <Compile Include="Model\FinancialPledgeService.Partial.cs" />
     <Compile Include="Model\GroupMemberRequirement.cs" />
     <Compile Include="Model\GroupRequirement.cs" />
     <Compile Include="Model\GroupRequirementType.cs" />
@@ -953,6 +954,7 @@
     <Compile Include="Workflow\Action\PersonTagAdd.cs" />
     <Compile Include="Workflow\Action\SetAttributeToGroupLeader.cs" />
     <Compile Include="Workflow\Action\PostAttendanceToGroup.cs" />
+    <Compile Include="Workflow\Action\SetAttributeToRandomGroupMember.cs" />
     <Compile Include="Workflow\Action\SetGroupMemberAttribute.cs" />
     <Compile Include="Workflow\Action\SetPersonAttribute.cs" />
     <Compile Include="Workflow\Action\SetAttributeToInitiator.cs" />
