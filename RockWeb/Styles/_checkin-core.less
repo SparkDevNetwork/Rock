@@ -154,33 +154,6 @@ body {
   margin-top: 6px;
 }
 
-
-// checkin counts
-
-.checkin-count h3,
-.checkin-count li
-{
-  color: @text-color;
-}
-
-.checkin-count-locations,
-.checkin-count-groups,
-.checkin-count-schedules
-{
-  list-style: none;
-}
-
-.checkin-count-locations > li
-{
-  float: left;
-}
-
-.checkin-counts ul li
-{
-  float: left;
-  margin-right: 24px;
-}
-
 .checkin-actions {
 
   a {
@@ -439,6 +412,34 @@ input.checkin-phone-entry
                 left: 75%;
             }
 
-/*.kioskmanager-schedules {
+.kioskmanager-counts {
+    .kioskmanager-count-locations {
 
-}*/
+    }
+
+    .kioskmanager-count h3,
+    .kioskmanager-count li
+    {
+        color: @text-color;
+    }
+
+    .kioskmanager-count-locations,
+    .kioskmanager-count-groups,
+    .kioskmanager-count-schedules
+    {
+        list-style: none;
+        padding: 0;
+    }
+
+    .kioskmanager-count-locations > li
+    {
+        float: left;
+        margin-right: 12px;
+    }
+
+    .kioskmanager-counts ul li
+    {
+        float: left;
+        margin-right: 24px;
+    }
+}
