@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Core
                         var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
                         var currentCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
-                        if ( currentCampus.Id != campus.Id )
+                        if ( currentCampus == null || currentCampus.Id != campus.Id )
                         {
                             bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
                             RockPage.SetContextCookie( campus, pageScope, true );
