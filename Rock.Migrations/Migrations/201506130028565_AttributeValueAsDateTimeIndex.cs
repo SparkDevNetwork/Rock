@@ -29,7 +29,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            Sql( MigrationSQL._201506130028565_AttributeValueAsDateTimeIndex_Create, true );
+            //Sql( MigrationSQL._201506130028565_AttributeValueAsDateTimeIndex_Create );
         }
         
         /// <summary>

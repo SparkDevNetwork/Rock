@@ -86,6 +86,7 @@ namespace Rock.Model
         /// <param name="endDate">The end date.</param>
         /// <param name="groupIds">The group ids.</param>
         /// <param name="campusIds">The campus ids.</param>
+        /// <param name="dataViewId">The data view identifier.</param>
         /// <returns></returns>
         public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy = ChartGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null, int? dataViewId = null )
         {

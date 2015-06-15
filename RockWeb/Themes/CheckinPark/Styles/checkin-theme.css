@@ -8072,22 +8072,6 @@ body {
   margin-bottom: 12px;
   margin-top: 6px;
 }
-.checkin-count h3,
-.checkin-count li {
-  color: #ffffff;
-}
-.checkin-count-locations,
-.checkin-count-groups,
-.checkin-count-schedules {
-  list-style: none;
-}
-.checkin-count-locations > li {
-  float: left;
-}
-.checkin-counts ul li {
-  float: left;
-  margin-right: 24px;
-}
 .checkin-actions a {
   font-size: 22px;
   font-weight: 700;
@@ -8304,9 +8288,24 @@ input.checkin-phone-entry {
   bottom: 0px;
   left: 75%;
 }
-/*.kioskmanager-schedules {
-
-}*/
+.kioskmanager-counts .kioskmanager-count h3,
+.kioskmanager-counts .kioskmanager-count li {
+  color: #ffffff;
+}
+.kioskmanager-counts .kioskmanager-count-locations,
+.kioskmanager-counts .kioskmanager-count-groups,
+.kioskmanager-counts .kioskmanager-count-schedules {
+  list-style: none;
+  padding: 0;
+}
+.kioskmanager-counts .kioskmanager-count-locations > li {
+  float: left;
+  margin-right: 12px;
+}
+.kioskmanager-counts .kioskmanager-counts ul li {
+  float: left;
+  margin-right: 24px;
+}
 /*!
  * Bootstrap Modal
  *
