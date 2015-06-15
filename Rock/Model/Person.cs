@@ -320,6 +320,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets or sets the giving leader identifier. This is a computed column and can be used
+        /// in LinqToSql queries, but there is no in-memory calculation. Avoid using property outside
+        /// a linq query
+        /// </summary>
+        /// <value>
+        /// The giving leader identifier.
+        /// </value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        public int GivingLeaderId { get; set; }
+   
+        /// <summary>
         /// Gets or sets the Person's email address.
         /// </summary>
         /// <value>
@@ -471,23 +483,9 @@ namespace Rock.Model
         {
             get
             {
-                var fullName = new StringBuilder();
-
-                fullName.AppendFormat( "{0} {1}", NickName, LastName );
-
                 // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so 
                 // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
-                if ( SuffixValueId.HasValue )
-                {
-                    var suffix = DefinedValueCache.Read( SuffixValueId.Value );
-                    if ( suffix != null )
-                    {
-                        fullName.AppendFormat( " {0}", suffix.Value );
-                    }
-                }
-
-                return fullName.ToString();
-
+                return FormatFullName( NickName, LastName, SuffixValueId );
             }
 
             private set { }
@@ -858,6 +856,19 @@ namespace Rock.Model
                 // don't do anthing here since EF uses this for loading the Birthdate From the database. Use SetBirthDate to set the birthdate
             }
         }
+
+        /// <summary>
+        /// Gets or sets the number of days until their next birthday. This is a computed column and can be used
+        /// in LinqToSql queries, but there is no in-memory calculation. Avoid using property outside
+        /// a linq query
+        /// NOTE: If their birthday is Feb 29, and this isn't a leap year, it'll treat Feb 28th as their birthday when doing this calculation
+        /// </summary>
+        /// <value>
+        /// The the number of days until their next birthday
+        /// </value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        public int? DaysUntilBirthday { get; set; }
 
         /// <summary>
         /// Sets the birth date, which will set the BirthMonth, BirthDay, and BirthYear values
@@ -1629,6 +1640,51 @@ namespace Rock.Model
                     rockContext.SaveChanges();
                 }
             }
+        }
+
+
+        /// <summary>
+        /// Formats the full name.
+        /// </summary>
+        /// <param name="nickName">The nick name.</param>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="suffix">The suffix.</param>
+        /// <returns></returns>
+        public static string FormatFullName( string nickName, string lastName, string suffix )
+        {
+            var fullName = new StringBuilder();
+
+            fullName.AppendFormat( "{0} {1}", nickName, lastName );
+
+            
+            if ( !string.IsNullOrWhiteSpace(suffix))
+            {
+                fullName.AppendFormat( " {0}", suffix );
+            }
+
+            return fullName.ToString();
+        }
+
+        /// <summary>
+        /// Formats the full name.
+        /// </summary>
+        /// <param name="nickName">The nick name.</param>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="suffixValueId">The suffix value identifier.</param>
+        /// <returns></returns>
+        public static string FormatFullName( string nickName, string lastName, int? suffixValueId) {
+            
+           
+            if ( suffixValueId.HasValue )
+            {
+                var suffix = DefinedValueCache.Read( suffixValueId.Value );
+                if ( suffix != null )
+                {
+                    return FormatFullName( nickName, lastName, suffix.Value );
+                }
+            }
+
+            return FormatFullName( nickName, lastName, string.Empty );
         }
 
         #endregion

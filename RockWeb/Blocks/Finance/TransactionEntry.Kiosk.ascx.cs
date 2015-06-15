@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Web.UI;
@@ -346,7 +347,7 @@ namespace RockWeb.Blocks.Finance
         // Swipe Panel Events
         //
 
-        private void ProcessSwipe(string swipeData) 
+        private void ProcessSwipe( string swipeData )
         {
             try
             {
@@ -416,20 +417,50 @@ namespace RockWeb.Blocks.Finance
 
                         if ( transaction != null )
                         {
+                            var txnChanges = new List<string>();
+                            txnChanges.Add( "Created Transaction (from kiosk)" );
+
                             _transactionCode = transaction.TransactionCode;
-                            transaction.TransactionDateTime = RockDateTime.Now;
+                            History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
+
+                            var personName = new PersonAliasService( rockContext )
+                                .Queryable().AsNoTracking()
+                                .Where( a => a.Id == this.SelectedGivingUnit.PersonAliasId )
+                                .Select( a => a.Person.NickName + " " + a.Person.LastName )
+                                .FirstOrDefault();
+
                             transaction.AuthorizedPersonAliasId = this.SelectedGivingUnit.PersonAliasId;
+                            History.EvaluateChange( txnChanges, "Person", string.Empty, personName );
+
+                            transaction.TransactionDateTime = RockDateTime.Now;
+                            History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );
+
                             transaction.FinancialGatewayId = financialGateway.Id;
-                            transaction.TransactionTypeValueId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) ).Id;
+                            History.EvaluateChange( txnChanges, "Gateway", string.Empty, financialGateway.Name );
+
+                            var txnType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
+                            transaction.TransactionTypeValueId = txnType.Id;
+                            History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
+
                             transaction.CurrencyTypeValueId = swipeInfo.CurrencyTypeValue.Id;
+                            History.EvaluateChange( txnChanges, "Currency Type", string.Empty, swipeInfo.CurrencyTypeValue.Value );
+
+                            if ( swipeInfo.CreditCardTypeValue != null )
+                            {
+                                transaction.CreditCardTypeValueId = swipeInfo.CreditCardTypeValue.Id;
+                                History.EvaluateChange( txnChanges, "Credit Card Type", string.Empty, swipeInfo.CreditCardTypeValue.Value );
+                            }
 
                             Guid sourceGuid = Guid.Empty;
                             if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
                             {
-                                transaction.SourceTypeValueId = DefinedValueCache.Read( sourceGuid ).Id;
+                                var source = DefinedValueCache.Read( sourceGuid );
+                                if ( source != null )
+                                {
+                                    transaction.SourceTypeValueId = source.Id;
+                                    History.EvaluateChange( txnChanges, "Source", string.Empty, source.Value );
+                                }
                             }
-
-                            //transaction.CreditCardTypeValueId = swipeInfo.CreditCardTypeValue.Id;
 
                             foreach ( var accountAmount in this.Amounts.Where( a => a.Value > 0 ) )
                             {
@@ -437,6 +468,11 @@ namespace RockWeb.Blocks.Finance
                                 transactionDetail.Amount = accountAmount.Value;
                                 transactionDetail.AccountId = accountAmount.Key;
                                 transaction.TransactionDetails.Add( transactionDetail );
+                                var account = new FinancialAccountService( rockContext ).Get( accountAmount.Key );
+                                if ( account != null )
+                                {
+                                    History.EvaluateChange( txnChanges, account.Name, 0.0M.ToString( "C2" ), transactionDetail.Amount.ToString( "C2" ) );
+                                }
                             }
 
                             var batchService = new FinancialBatchService( rockContext );
@@ -449,11 +485,47 @@ namespace RockWeb.Blocks.Finance
                                 transaction.TransactionDateTime.Value,
                                 financialGateway.GetBatchTimeOffset() );
 
-                            batch.ControlAmount += transaction.TotalAmount;
+                            var batchChanges = new List<string>();
+
+                            if ( batch.Id == 0 )
+                            {
+                                batchChanges.Add( "Generated the batch" );
+                                History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
+                                History.EvaluateChange( batchChanges, "Status", null, batch.Status );
+                                History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
+                                History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+                            }
+
+                            decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
+                            History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.ToString( "C2" ), newControlAmount.ToString( "C2" ) );
+                            batch.ControlAmount = newControlAmount;
 
                             transaction.BatchId = batch.Id;
                             batch.Transactions.Add( transaction );
-                            rockContext.SaveChanges();
+
+                            rockContext.WrapTransaction( () =>
+                            {
+
+                                rockContext.SaveChanges();
+                                HistoryService.SaveChanges(
+                                    rockContext,
+                                    typeof( FinancialBatch ),
+                                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                                    batch.Id,
+                                    batchChanges
+                                );
+
+                                HistoryService.SaveChanges(
+                                    rockContext,
+                                    typeof( FinancialBatch ),
+                                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                                    batch.Id,
+                                    txnChanges,
+                                    personName,
+                                    typeof( FinancialTransaction ),
+                                    transaction.Id
+                                );
+                            } );
 
                             // send receipt in one is configured and not giving anonymously
                             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ReceiptEmail" ) ) && ( this.AnonymousGiverPersonAliasId != this.SelectedGivingUnit.PersonAliasId ) )
@@ -482,7 +554,7 @@ namespace RockWeb.Blocks.Finance
             {
                 lSwipeErrors.Text = String.Format( "<div class='alert alert-danger'>An error occurred while process this transaction. Message: {0}</div>", ex.Message );
             }
-            
+
         }
 
         private void SendReceipt()

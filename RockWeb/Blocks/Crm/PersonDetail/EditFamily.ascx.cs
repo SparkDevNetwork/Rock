@@ -469,19 +469,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                             var familyRoleIds = familyRoles.Select( r => r.Id ).ToList();
 
-                            var existingFamilyRoles = new GroupMemberService( rockContext ).Queryable( "GroupRole" )
+                            var existingFamilyMembers = new GroupMemberService( rockContext ).Queryable( "GroupRole" )
                                 .Where( m => m.PersonId == person.Id && familyRoleIds.Contains( m.GroupRoleId ) )
                                 .OrderBy( m => m.GroupRole.Order )
                                 .ToList();
 
-                            var existingRole = existingFamilyRoles.Select( m => m.GroupRole ).FirstOrDefault();
+                            var existingRole = existingFamilyMembers.Select( m => m.GroupRole ).FirstOrDefault();
                             if ( existingRole != null )
                             {
                                 familyMember.RoleGuid = existingRole.Guid;
                                 familyMember.RoleName = existingRole.Name;
                             }
 
-                            familyMember.ExistingFamilyMember = existingFamilyRoles.Any( r => r.GroupId == _family.Id );
+                            familyMember.ExistingFamilyMember = existingFamilyMembers.Any( r => r.GroupId == _family.Id );
                             familyMember.RemoveFromOtherFamilies = cbRemoveOtherFamilies.Checked;
 
                             FamilyMembers.Add( familyMember );

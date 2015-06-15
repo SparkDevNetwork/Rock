@@ -19,7 +19,7 @@ using System;
 namespace Rock.SystemGuid
 {
     /// <summary>
-    /// System file types.  
+    /// System file types.
     /// </summary>
     public class Category
     {
@@ -55,6 +55,16 @@ namespace Rock.SystemGuid
         /// History of person activity
         /// </summary>
         public const string HISTORY_PERSON_ACTIVITY = "0836845E-5ED8-4ABE-8787-3B61EF2F0FA5";
+
+        /// <summary>
+        /// History of changes to batches
+        /// </summary>
+        public const string HISTORY_FINANCIAL_BATCH = "AF6A8CFF-F24F-4AA8-B126-94B6903961C0";
+
+        /// <summary>
+        /// History of changes to transaction and/or transaction details
+        /// </summary>
+        public const string HISTORY_FINANCIAL_TRANSACTION = "477EE3BE-C68F-48BD-B218-FAFC99AF56B3";
 
         #endregion
 
@@ -98,5 +108,6 @@ namespace Rock.SystemGuid
         public const string PERSONAL_MERGE_TEMPLATE = "A9F2F544-660B-4176-ACAD-88898416A66E";
         
         #endregion
+
     }
 }

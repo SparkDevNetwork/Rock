@@ -89,15 +89,23 @@ namespace Rock.Web.UI.Controls
             {
                 ItemId = category.Id.ToString();
 
-                string parentCategoryIds = string.Empty;
+                var parentCategoryIds = new List<string>();
                 var parentCategory = category.ParentCategory;
                 while ( parentCategory != null )
                 {
-                    parentCategoryIds = parentCategory.Id + "," + parentCategoryIds;
+                    if ( !parentCategoryIds.Contains( parentCategory.Id.ToString() ) )
+                    {
+                        parentCategoryIds.Insert( 0, parentCategory.Id.ToString() );
+                    }
+                    else
+                    {
+                        // infinite recursion
+                        break;
+                    }
                     parentCategory = parentCategory.ParentCategory;
                 }
 
-                InitialItemParentIds = parentCategoryIds.TrimEnd( new char[] { ',' } );
+                InitialItemParentIds = parentCategoryIds.AsDelimited( "," );
                 ItemName = category.Name;
             }
             else

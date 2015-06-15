@@ -56,6 +56,7 @@ namespace RockWeb.Blocks.Calendar
         #endregion
 
         #region Properties
+        protected List<EventCalendarItem> _filteredEvents = null;
 
         /// <summary>
         /// Gets or sets the accounts that are available for user to add to the list.
@@ -158,11 +159,22 @@ namespace RockWeb.Blocks.Calendar
         protected void calEventCalendar_DayRender( object sender, DayRenderEventArgs e )
         {
             DateTime day = e.Day.Date;
-            if ( day == calEventCalendar.SelectedDate )
+            if ( day == Rock.RockDateTime.Today )
+            {
+                e.Cell.AddCssClass( "calendar-today" );
+            }
+            else if ( day == calEventCalendar.SelectedDate )
             {
                 e.Cell.Style.Add( "font-weight", "bold" );
                 e.Cell.AddCssClass( "alert-success" );
             }
+            if ( _filteredEvents != null && 
+                 _filteredEvents.Any( i => i.EventItem.GetEarliestStartDate() == day.Date ) )
+            {
+                e.Cell.Style.Add( "font-weight", "bold" );
+                e.Cell.AddCssClass( "alert-info" );
+            }
+           
             if ( CurrentViewMode == "Week" )
             {
                 if ( day.StartOfWeek( DayOfWeek.Sunday ) == calEventCalendar.SelectedDate.StartOfWeek( DayOfWeek.Sunday ) )
@@ -216,6 +228,7 @@ namespace RockWeb.Blocks.Calendar
             cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
         }
+
         private void DisplayCalendarItemList()
         {
             cblCampus.Visible = GetAttributeValue( "ShowCampusFilter" ).AsBoolean();
@@ -248,6 +261,8 @@ namespace RockWeb.Blocks.Calendar
             {
                 qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => categories.Contains( c.DefinedValueId ) ) ).ToList();
             }
+
+            _filteredEvents = qry;
             // Filter by date
 
             //Daterange filter
@@ -313,6 +328,7 @@ namespace RockWeb.Blocks.Calendar
 
             mergeFields.Add( "Events", events );
             mergeFields.Add( "CurrentPerson", CurrentPerson );
+            mergeFields.Add( "TimeFrame", CurrentViewMode );
 
             var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
             globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
