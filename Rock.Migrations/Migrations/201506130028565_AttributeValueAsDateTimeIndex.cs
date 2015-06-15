@@ -29,7 +29,9 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            //Sql( MigrationSQL._201506130028565_AttributeValueAsDateTimeIndex_Create );
+            Sql( MigrationSQL._201506130028565_AttributeValueAsDateTimeIndex_CreateColumns );
+            Sql( MigrationSQL._201506130028565_AttributeValueAsDateTimeIndex_CreateTrigger );
+            Sql( MigrationSQL._201506130028565_AttributeValueAsDateTimeIndex_UpdateValues );
         }
         
         /// <summary>
@@ -37,6 +39,10 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            // just enough to let you down and back up
+            Sql( "DROP INDEX IX_ValueAsNumeric on AttributeValue" );
+            Sql( "DROP INDEX IX_ValueAsDateTime on AttributeValue" );
+            Sql( "DROP TRIGGER [dbo].[tgrAttributeValue_InsertUpdate]" );
         }
     }
 }
