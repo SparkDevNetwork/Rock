@@ -2853,9 +2853,6 @@
     <None Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase_PopulateData.sql" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\new  1.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Migrations\201506051749054_AddSampleMergeDocs.sql" />
     <Content Include="Migrations\201506112030400_PersonDaysUntilBirthday.sql" />
     <Content Include="Migrations\201506121300596_FinancialAnalyticsProcs_1.sql" />
