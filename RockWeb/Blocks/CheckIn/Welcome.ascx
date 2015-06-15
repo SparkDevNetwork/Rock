@@ -216,7 +216,7 @@
                     <asp:LinkButton ID="lbCancel" runat="server" CausesValidation="false" OnClick="lbCancel_Click" CssClass="btn btn-default">Cancel</asp:LinkButton>
                 </div>
 
-                <div class="checkin-count">		
+                <div class="kioskmanager-counts">		
                     <h3>Current Counts</h3>		
                     <asp:PlaceHolder ID="phCounts" runat="server"></asp:PlaceHolder>		
                 </div>
