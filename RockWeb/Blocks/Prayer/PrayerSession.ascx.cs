@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Prayer
             pnlChooseCategories.Visible = false;
 
             string settingPrefix = string.Format( "prayer-categories-{0}-", this.BlockId );
-            SaveUserPreferences( settingPrefix );
+            SavePreferences( settingPrefix );
 
             SetAndDisplayPrayerRequests( cblCategories );
         }
@@ -343,7 +343,7 @@ namespace RockWeb.Blocks.Prayer
         /// Saves the users selected prayer categories for use during the next prayer session.
         /// </summary>
         /// <param name="settingPrefix"></param>
-        private void SaveUserPreferences( string settingPrefix )
+        private void SavePreferences( string settingPrefix )
         {
             var previouslyCheckedIds = this.GetUserPreference( settingPrefix ).SplitDelimitedValues();
 

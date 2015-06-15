@@ -115,6 +115,7 @@ namespace Rock.CheckIn
         /// returns the locations for this Kiosk for the configured group types
         /// </summary>
         /// <param name="configuredGroupTypes">The configured group types.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public IEnumerable<Location> Locations( List<int> configuredGroupTypes, RockContext rockContext )
         {

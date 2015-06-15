@@ -212,6 +212,11 @@ namespace Rock.Model
 
             var batches = new List<FinancialBatch>();
             var batchSummary = new Dictionary<Guid, List<Payment>>();
+            var initialControlAmounts = new Dictionary<Guid, decimal>();
+
+            var allBatchChanges = new Dictionary<Guid, List<string>>();
+            var allTxnChanges = new Dictionary<Guid, List<string>>();
+            var txnPersonNames = new Dictionary<Guid, string>();
 
             using ( var rockContext = new RockContext() )
             {
@@ -220,7 +225,7 @@ namespace Rock.Model
                 var batchService = new FinancialBatchService( rockContext );
                 var scheduledTxnService = new FinancialScheduledTransactionService( rockContext );
 
-                var contributionTxnTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+                var contributionTxnType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
 
                 var defaultAccount = accountService.Queryable()
                     .Where( a =>
@@ -231,6 +236,9 @@ namespace Rock.Model
                         )
                     .OrderBy( a => a.Order )
                     .FirstOrDefault();
+
+                var batchTxnChanges = new Dictionary<Guid, List<string>>();
+                var batchBatchChanges = new Dictionary<Guid, List<string>>();
 
                 foreach ( var payment in payments.Where( p => p.Amount > 0.0M ) )
                 {
@@ -244,13 +252,31 @@ namespace Rock.Model
                         {
                             scheduledTransaction.IsActive = payment.ScheduleActive;
 
+                            var txnChanges = new List<string>();
+
                             var transaction = new FinancialTransaction();
+
+                            transaction.Guid = Guid.NewGuid();
+                            allTxnChanges.Add( transaction.Guid, txnChanges );
+                            txnChanges.Add( "Created Transaction (Downloaded from Gateway)" );
+
                             transaction.TransactionCode = payment.TransactionCode;
+                            History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
+
                             transaction.TransactionDateTime = payment.TransactionDateTime;
+                            History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );
+
                             transaction.ScheduledTransactionId = scheduledTransaction.Id;
+
                             transaction.AuthorizedPersonAliasId = scheduledTransaction.AuthorizedPersonAliasId;
+                            History.EvaluateChange( txnChanges, "Person", string.Empty, scheduledTransaction.AuthorizedPersonAlias.Person.FullName );
+                            txnPersonNames.Add( transaction.Guid, scheduledTransaction.AuthorizedPersonAlias.Person.FullName );
+
                             transaction.FinancialGatewayId = gateway.Id;
-                            transaction.TransactionTypeValueId = contributionTxnTypeId;
+                            History.EvaluateChange( txnChanges, "Gateway", string.Empty, gateway.Name );
+
+                            transaction.TransactionTypeValueId = contributionTxnType.Id;
+                            History.EvaluateChange( txnChanges, "Type", string.Empty, contributionTxnType.Value );
 
                             var currencyTypeValue = payment.CurrencyTypeValue;
                             if ( currencyTypeValue == null && scheduledTransaction.CurrencyTypeValueId.HasValue )
@@ -260,6 +286,7 @@ namespace Rock.Model
                             if ( currencyTypeValue != null )
                             {
                                 transaction.CurrencyTypeValueId = currencyTypeValue.Id;
+                                History.EvaluateChange( txnChanges, "Currency Type", string.Empty, currencyTypeValue.Value );
                             }
 
                             var creditCardTypevalue = payment.CreditCardTypeValue;
@@ -270,6 +297,7 @@ namespace Rock.Model
                             if ( creditCardTypevalue != null )
                             {
                                 transaction.CreditCardTypeValueId = creditCardTypevalue.Id;
+                                History.EvaluateChange( txnChanges, "Credit Card Type", string.Empty, creditCardTypevalue.Value );
                             }
 
                             //transaction.SourceTypeValueId = DefinedValueCache.Read( sourceGuid ).Id;
@@ -300,6 +328,9 @@ namespace Rock.Model
 
                                 transaction.TransactionDetails.Add( transactionDetail );
 
+                                History.EvaluateChange( txnChanges, detail.Account.Name, 0.0M.ToString( "C2" ), transactionDetail.Amount.ToString( "C2" ) );
+                                History.EvaluateChange( txnChanges, "Summary", string.Empty, transactionDetail.Summary );
+
                                 if ( remainingAmount <= 0.0M )
                                 {
                                     // If there's no amount left, break out of details
@@ -326,6 +357,8 @@ namespace Rock.Model
                                     transactionDetail.Summary = "Note: Extra amount was applied to this account.";
                                 }
 
+                                History.EvaluateChange( txnChanges, defaultAccount.Name, 0.0M.ToString( "C2" ), transactionDetail.Amount.ToString( "C2" ) );
+                                History.EvaluateChange( txnChanges, "Summary", string.Empty, transactionDetail.Summary );
                             }
 
                             // Get the batch 
@@ -337,7 +370,13 @@ namespace Rock.Model
                                 gateway.GetBatchTimeOffset(),
                                 batches );
 
+                            var batchChanges = new List<string>();
+                            if ( batch.Id != 0 )
+                            {
+                                initialControlAmounts.AddOrIgnore( batch.Guid, batch.ControlAmount );
+                            }
                             batch.ControlAmount += transaction.TotalAmount;
+
                             batch.Transactions.Add( transaction );
 
                             // Add summary
@@ -360,7 +399,60 @@ namespace Rock.Model
                     }
                 }
 
-                rockContext.SaveChanges();
+                foreach ( var batch in batches )
+                {
+                    var batchChanges = new List<string>();
+                    allBatchChanges.Add( batch.Guid, batchChanges );
+
+                    if ( batch.Id == 0 )
+                    {
+                        batchChanges.Add( "Generated the batch" );
+                        History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
+                        History.EvaluateChange( batchChanges, "Status", null, batch.Status );
+                        History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
+                        History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+                    }
+
+                    if ( initialControlAmounts.ContainsKey( batch.Guid ) )
+                    {
+                        History.EvaluateChange( batchChanges, "Control Amount", initialControlAmounts[batch.Guid].ToString( "C2" ), batch.ControlAmount.ToString( "C2" ) );
+                    }
+                }
+
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+
+                    foreach ( var batch in batches )
+                    {
+                        HistoryService.SaveChanges(
+                            rockContext,
+                            typeof( FinancialBatch ),
+                            Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                            batch.Id,
+                            allBatchChanges[batch.Guid]
+                        );
+
+                        foreach ( var transaction in batch.Transactions )
+                        {
+                            if ( allTxnChanges.ContainsKey( transaction.Guid ) )
+                            {
+                                HistoryService.SaveChanges(
+                                    rockContext,
+                                    typeof( FinancialBatch ),
+                                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                                    batch.Id,
+                                    allTxnChanges[transaction.Guid],
+                                    txnPersonNames[transaction.Guid],
+                                    typeof( FinancialTransaction ),
+                                    transaction.Id
+                                );
+                            }
+                        }
+                    }
+
+                    rockContext.SaveChanges();
+                } );
             }
              
             StringBuilder sb = new StringBuilder();

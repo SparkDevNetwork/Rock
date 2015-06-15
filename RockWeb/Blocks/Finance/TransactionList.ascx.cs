@@ -444,7 +444,27 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
+                if ( transaction.BatchId.HasValue )
+                {
+                    string caption = ( transaction.AuthorizedPersonAlias != null && transaction.AuthorizedPersonAlias.Person != null ) ?
+                        transaction.AuthorizedPersonAlias.Person.FullName :
+                        string.Format( "Transaction: {0}", transaction.Id );
+
+                    HistoryService.SaveChanges(
+                        rockContext,
+                        typeof( FinancialBatch ),
+                        Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                        transaction.BatchId.Value,
+                        new List<string> { "Deleted transaction" },
+                        caption,
+                        typeof( FinancialTransaction ),
+                        transaction.Id,
+                        false
+                    );
+                }
+
                 transactionService.Delete( transaction );
+
                 rockContext.SaveChanges();
 
                 RockPage.UpdateBlocks( "~/Blocks/Finance/BatchDetail.ascx" );
@@ -474,19 +494,80 @@ namespace RockWeb.Blocks.Finance
                         var newBatch = batchService.Get( _ddlMove.SelectedValue.AsInteger() );
                         var oldBatch = batchService.Get( _batch.Id );
 
-                        if ( newBatch != null && newBatch.Status == BatchStatus.Open )
+                        if ( oldBatch != null && newBatch != null && newBatch.Status == BatchStatus.Open )
                         {
                             var txnService = new FinancialTransactionService( rockContext );
-                            var txnsToUpdate = txnService.Queryable()
+                            var txnsToUpdate = txnService.Queryable( "AuthorizedPersonAlias.Person" )
                                 .Where( t => txnsSelected.Contains( t.Id ) )
                                 .ToList();
 
+                            decimal oldBatchControlAmount = oldBatch.ControlAmount;
+                            decimal newBatchControlAmount = newBatch.ControlAmount;
+
                             foreach ( var txn in txnsToUpdate )
                             {
+                                string caption = ( txn.AuthorizedPersonAlias != null && txn.AuthorizedPersonAlias.Person != null ) ?
+                                    txn.AuthorizedPersonAlias.Person.FullName :
+                                    string.Format( "Transaction: {0}", txn.Id );
+
+                                var changes = new List<string>();
+                                History.EvaluateChange( changes, "Batch", 
+                                    string.Format( "{0} (Id:{1})", oldBatch.Name, oldBatch.Id ), 
+                                    string.Format( "{0} (Id:{1})", newBatch.Name, newBatch.Id ) );
+
+                                HistoryService.SaveChanges(
+                                    rockContext,
+                                    typeof( FinancialBatch ),
+                                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                                    oldBatch.Id,
+                                    changes,
+                                    caption,
+                                    typeof( FinancialTransaction ),
+                                    txn.Id,
+                                    false
+                                );
+
+                                HistoryService.SaveChanges(
+                                    rockContext,
+                                    typeof( FinancialBatch ),
+                                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                                    newBatch.Id,
+                                    changes,
+                                    caption,
+                                    typeof( FinancialTransaction ),
+                                    txn.Id, false
+                                );
+
                                 txn.BatchId = newBatch.Id;
-                                oldBatch.ControlAmount -= txn.TotalAmount;
-                                newBatch.ControlAmount += txn.TotalAmount;
+                                oldBatchControlAmount -= txn.TotalAmount;
+                                newBatchControlAmount += txn.TotalAmount;
                             }
+
+                            var oldBatchChanges = new List<string>();
+                            History.EvaluateChange( oldBatchChanges, "Control Amount", oldBatch.ControlAmount.ToString( "C2" ), oldBatchControlAmount.ToString( "C2" ) );
+                            oldBatch.ControlAmount = oldBatchControlAmount;
+
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( FinancialBatch ),
+                                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                                oldBatch.Id,
+                                oldBatchChanges,
+                                false
+                            );
+
+                            var newBatchChanges = new List<string>();
+                            History.EvaluateChange( newBatchChanges, "Control Amount", newBatch.ControlAmount.ToString( "C2" ), newBatchControlAmount.ToString( "C2" ) );
+                            newBatch.ControlAmount = newBatchControlAmount;
+
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( FinancialBatch ),
+                                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                                newBatch.Id,
+                                newBatchChanges,
+                                false
+                            );
 
                             rockContext.SaveChanges();
 
