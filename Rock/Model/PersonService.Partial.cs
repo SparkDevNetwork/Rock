@@ -518,6 +518,161 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the adults.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<Person> GetAllAdults()
+        {
+            int familyGroupTypeId = 0;
+            int adultRoleId = 0;
+
+            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            if ( familyGroupType != null )
+            {
+                familyGroupTypeId = familyGroupType.Id;
+                adultRoleId = familyGroupType.Roles
+                    .Where( r =>
+                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) )
+                    .Select( r => r.Id )
+                    .FirstOrDefault();
+            }
+
+            var groupMemberService = new GroupMemberService( (RockContext)this.Context );
+            return groupMemberService
+                .Queryable()
+                .Where( m =>
+                    m.Group.GroupTypeId == familyGroupTypeId &&
+                    m.GroupRoleId == adultRoleId )
+                .Select( m => m.Person );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class PersonFamilyGivingXref
+        {
+            /// <summary>
+            /// Gets or sets the person identifier.
+            /// </summary>
+            /// <value>
+            /// The person identifier.
+            /// </value>
+            public int PersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the giving identifier.
+            /// </summary>
+            /// <value>
+            /// The giving identifier.
+            /// </value>
+            public string GivingId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the family group identifier.
+            /// </summary>
+            /// <value>
+            /// The family group identifier.
+            /// </value>
+            public int FamilyGroupId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the family role identifier.
+            /// </summary>
+            /// <value>
+            /// The family role identifier.
+            /// </value>
+            public int FamilyRoleId { get; set; }
+        }
+
+        /// <summary>
+        /// Gets all person family giving xref.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<PersonFamilyGivingXref> GetAllPersonFamilyGivingXref()
+        {
+            int familyGroupTypeId = 0;
+            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            if ( familyGroupType != null )
+            {
+                familyGroupTypeId = familyGroupType.Id;
+            }
+
+            var groupMemberService = new GroupMemberService( (RockContext)this.Context );
+            return groupMemberService
+                .Queryable()
+                .Where( m => m.Group.GroupTypeId == familyGroupTypeId )
+                .Select( m => new PersonFamilyGivingXref {
+                    PersonId = m.PersonId,
+                    GivingId = m.Person.GivingId,
+                    FamilyGroupId = m.GroupId,
+                    FamilyRoleId = m.GroupRoleId
+                });
+        }
+
+        /// <summary>
+        /// Gets the children.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<Person> GetAllChildren()
+        {
+            int familyGroupTypeId = 0;
+            int childRoleId = 0;
+
+            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            if ( familyGroupType != null )
+            {
+                familyGroupTypeId = familyGroupType.Id;
+                childRoleId = familyGroupType.Roles
+                    .Where( r =>
+                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) )
+                    .Select( r => r.Id )
+                    .FirstOrDefault();
+            }
+
+            var groupMemberService = new GroupMemberService( (RockContext)this.Context );
+            return groupMemberService
+                .Queryable()
+                .Where( m =>
+                    m.Group.GroupTypeId == familyGroupTypeId &&
+                    m.GroupRoleId == childRoleId )
+                .Select( m => m.Person );
+        }
+
+        /// <summary>
+        /// Gets the head of households.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<Person> GetAllHeadOfHouseholds()
+        {
+            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            var groupMemberService = new GroupMemberService( (RockContext)this.Context );
+            return groupMemberService
+                .Queryable()
+                .Where( m => 
+                    m.Group.GroupTypeId == groupTypeFamilyId )
+                .GroupBy( m =>
+                    m.GroupId,
+                    ( key, g ) => g
+                        .OrderBy( m => m.GroupRole.Order )
+                        .ThenBy( m => m.Person.Gender )
+                        .ThenBy( m => m.Person.BirthYear )
+                        .ThenBy( m => m.Person.BirthMonth )
+                        .ThenBy( m => m.Person.BirthDay )
+                        .FirstOrDefault() )
+                .Select( m => m.Person );
+        }
+
+        /// <summary>
+        /// Gets the giving leaders.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<Person> GetAllGivingLeaders()
+        {
+            return Queryable()
+                .Where( p => p.Id == p.GivingLeaderId );
+        }        
+
+        /// <summary>
         /// Returns a collection of <see cref="Rock.Model.Person" /> entities containing the family members of the provided person.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
@@ -1043,6 +1198,129 @@ namespace Rock.Model
                 }
 
                 rockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// Saves the user preferences.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="preferences">The preferences.</param>
+        public static void SaveUserPreferences( Person person, Dictionary<string, string> preferences )
+        {
+            if ( preferences != null )
+            {
+                int? personEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var attributeService = new Model.AttributeService( rockContext );
+                    var attributes = attributeService
+                        .Get( personEntityTypeId, string.Empty, string.Empty )
+                        .Where( a => preferences.Keys.Contains( a.Key ) )
+                        .ToList();
+
+                    bool wasUpdated = false;
+                    foreach ( var attributeKeyValue in preferences )
+                    {
+                        var attribute = attributes.FirstOrDefault( a => a.Key == attributeKeyValue.Key );
+
+                        if ( attribute == null )
+                        {
+                            var fieldTypeService = new Model.FieldTypeService( rockContext );
+                            var fieldType = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() );
+
+                            attribute = new Model.Attribute();
+                            attribute.IsSystem = false;
+                            attribute.EntityTypeId = personEntityTypeId;
+                            attribute.EntityTypeQualifierColumn = string.Empty;
+                            attribute.EntityTypeQualifierValue = string.Empty;
+                            attribute.Key = attributeKeyValue.Key;
+                            attribute.Name = attributeKeyValue.Key;
+                            attribute.IconCssClass = string.Empty;
+                            attribute.DefaultValue = string.Empty;
+                            attribute.IsMultiValue = false;
+                            attribute.IsRequired = false;
+                            attribute.Description = string.Empty;
+                            attribute.FieldTypeId = fieldType.Id;
+                            attribute.Order = 0;
+
+                            attributeService.Add( attribute );
+
+                            wasUpdated = true;
+                        }
+                    }
+
+                    if ( wasUpdated )
+                    {
+                        // Save any new attributes
+                        rockContext.SaveChanges();
+
+                        // Requery attributes ( so they all have ids )
+                        attributes = attributeService
+                            .Get( personEntityTypeId, string.Empty, string.Empty )
+                            .Where( a => preferences.Keys.Contains( a.Key ) )
+                            .ToList();
+                    }
+
+                    var attributeIds = attributes.Select( a => a.Id ).ToList();
+
+                    var attributeValueService = new Model.AttributeValueService( rockContext );
+                    var attributeValues = attributeValueService.Queryable( "Attribute" )
+                        .Where( v =>
+                            attributeIds.Contains( v.AttributeId ) &&
+                            v.EntityId.HasValue &&
+                            v.EntityId.Value == person.Id )
+                        .ToList();
+
+                    wasUpdated = false;
+                    foreach ( var attributeKeyValue in preferences )
+                    {
+                        if ( string.IsNullOrWhiteSpace( attributeKeyValue.Value ) )
+                        {
+                            foreach ( var attributeValue in attributeValues
+                                .Where( v => 
+                                    v.Attribute != null &&
+                                    v.Attribute.Key == attributeKeyValue.Key )
+                                .ToList() )
+                            {
+                                attributeValueService.Delete( attributeValue );
+                                attributeValues.Remove( attributeValue );
+                                wasUpdated = true;
+                            }
+                        }
+                        else
+                        {
+                            var attributeValue = attributeValues
+                                .Where( v => 
+                                    v.Attribute != null &&
+                                    v.Attribute.Key == attributeKeyValue.Key )
+                                .FirstOrDefault();
+
+                            if ( attributeValue == null )
+                            {
+                                var attribute = attributes
+                                    .Where( a => a.Key == attributeKeyValue.Key )
+                                    .FirstOrDefault();
+                                if ( attribute != null )
+                                {
+                                    attributeValue = new Model.AttributeValue();
+                                    attributeValue.AttributeId = attribute.Id;
+                                    attributeValue.EntityId = person.Id;
+                                    attributeValueService.Add( attributeValue );
+                                }
+                            }
+
+                            wasUpdated = wasUpdated || ( attributeValue.Value != attributeKeyValue.Value );
+                            attributeValue.Value = attributeKeyValue.Value;
+                        }
+                    }
+
+                    if ( wasUpdated )
+                    {
+                        rockContext.SaveChanges();
+                    }
+                }
             }
         }
 

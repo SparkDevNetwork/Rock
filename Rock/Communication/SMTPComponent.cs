@@ -548,6 +548,7 @@ namespace Rock.Communication.Transport
         /// </summary>
         /// <param name="recipients">The recipients.</param>
         /// <param name="from">From.</param>
+        /// <param name="fromName">From name.</param>
         /// <param name="subject">The subject.</param>
         /// <param name="body">The body.</param>
         /// <param name="appRoot">The application root.</param>

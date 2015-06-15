@@ -2133,11 +2133,12 @@ namespace Rock.Web.UI
 
         /// <summary>
         /// Sets a user preference value for the specified key. If the key already exists, the value will be updated,
-        /// if it is a new key it will be added.
+        /// if it is a new key it will be added. Value is then optionally saved to database.
         /// </summary>
-        /// <param name="key">A <see cref="System.String"/> representing the name of the key.</param>
-        /// <param name="value">A <see cref="System.String"/> representing the preference value.</param>
-        public void SetUserPreference( string key, string value )
+        /// <param name="key">A <see cref="System.String" /> representing the name of the key.</param>
+        /// <param name="value">A <see cref="System.String" /> representing the preference value.</param>
+        /// <param name="saveValue">if set to <c>true</c> [save value].</param>
+        public void SetUserPreference( string key, string value, bool saveValue = true )
         {
             var sessionValues = SessionUserPreferences();
             if ( sessionValues.ContainsKey( key ) )
@@ -2149,9 +2150,27 @@ namespace Rock.Web.UI
                 sessionValues.Add( key, value );
             }
 
-            if ( CurrentPerson != null )
+            if ( saveValue && CurrentPerson != null )
             {
                 PersonService.SaveUserPreference( CurrentPerson, key, value );
+            }
+        }
+
+        /// <summary>
+        /// Saves the user preferences.
+        /// </summary>
+        /// <param name="keyPrefix">The key prefix.</param>
+        public void SaveUserPreferences( string keyPrefix )
+        {
+            if ( CurrentPerson != null )
+            {
+                var values = new Dictionary<string, string>();
+                SessionUserPreferences()
+                    .Where( p => p.Key.StartsWith( keyPrefix ) )
+                    .ToList()
+                    .ForEach( kv => values.Add( kv.Key, kv.Value ) );
+
+                PersonService.SaveUserPreferences( CurrentPerson, values );
             }
         }
 

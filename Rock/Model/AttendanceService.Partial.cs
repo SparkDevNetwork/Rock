@@ -19,8 +19,10 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
+using System.Linq.Expressions;
 
 using Rock.Chart;
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -84,10 +86,15 @@ namespace Rock.Model
         /// <param name="endDate">The end date.</param>
         /// <param name="groupIds">The group ids.</param>
         /// <param name="campusIds">The campus ids.</param>
+        /// <param name="dataViewId">The data view identifier.</param>
         /// <returns></returns>
-        public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy = ChartGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null )
+        public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy = ChartGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null, int? dataViewId = null )
         {
-            var qryAttendance = Queryable().AsNoTracking().Where( a => a.DidAttend.HasValue && a.DidAttend.Value );
+            var qryAttendance = Queryable().AsNoTracking()
+                .Where( a => 
+                    a.DidAttend.HasValue && 
+                    a.DidAttend.Value &&
+                    a.PersonAlias != null );
 
             if ( startDate.HasValue )
             {
@@ -97,6 +104,29 @@ namespace Rock.Model
             if ( endDate.HasValue )
             {
                 qryAttendance = qryAttendance.Where( a => a.StartDateTime < endDate.Value );
+            }
+
+            if ( dataViewId.HasValue )
+            {
+                var rockContext = (RockContext)this.Context;
+
+                var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
+                if ( dataView != null )
+                {
+                    var personService = new PersonService( rockContext );
+
+                    var errorMessages = new List<string>();
+                    ParameterExpression paramExpression = personService.ParameterExpression;
+                    Expression whereExpression = dataView.GetExpression( personService, paramExpression, out errorMessages );
+
+                    Rock.Web.UI.Controls.SortProperty sort = null;
+                    var dataViewPersonIdQry = personService
+                        .Queryable().AsNoTracking()
+                        .Where( paramExpression, whereExpression, sort )
+                        .Select( p => p.Id );
+
+                    qryAttendance = qryAttendance.Where( a => dataViewPersonIdQry.Contains( a.PersonAlias.PersonId ) );
+                }
             }
 
             if ( !string.IsNullOrWhiteSpace( groupIds ) )

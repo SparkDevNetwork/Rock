@@ -1,14 +1,14 @@
-<div class="row">
+
   {% assign eventCount = Events | Size %}
 
   {% if eventCount == 0 %}
-  <div class="panel panel-default">
+  <div class="panel panel-default margin-t-md">
     <div class="margin-all-md"> There are no events in this time frame.</div>
   </div>
   {% endif %}
 
   {% for event in Events %}
-  <div class="panel panel-default">
+  <div class="panel panel-default margin-t-md">
     <div class="panel-heading clearfix">
       <h2 class="panel-title pull-left">
         {{ event.Event.Name }}
@@ -57,7 +57,7 @@
     </div>
   </div>
   {% endfor %}
-</div>
+
 <script type="text/javascript">
 
   $( document ).ready(function() {

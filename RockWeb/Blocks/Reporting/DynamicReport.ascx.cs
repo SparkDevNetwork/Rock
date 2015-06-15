@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Reporting
     [TextField( "SelectedDataFieldGuids", "The DataFilters to present to the user", false, "", "CustomSetting" )]
     [TextField( "ConfigurableDataFieldGuids", "Of the DataFilters that are presented to the user, which are configurable vs just a checkbox", false, "", "CustomSetting" )]
     [TextField( "TogglableDataFieldGuids", "The configurable datafilters that include a checkbox that can disable/enable the filter", false, "", "CustomSetting" )]
-    public partial class ReportData : RockBlockCustomSettings
+    public partial class DynamicReport : RockBlockCustomSettings
     {
         /// <summary>
         /// Gets the settings tool tip.

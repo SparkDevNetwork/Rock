@@ -16,12 +16,15 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
+using System.Linq.Expressions;
 
 using Rock.Chart;
 using Rock.Data;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Model
 {
@@ -30,6 +33,129 @@ namespace Rock.Model
     /// </summary>
     public partial class FinancialTransactionDetailService 
     {
+
+        /// <summary>
+        /// Gets the gifts.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<FinancialTransactionDetail> GetGifts()
+        {
+            return Queryable().AsNoTracking()
+                .Where( t =>
+                    t.Account != null &&
+                    t.Account.IsTaxDeductible &&
+                    t.Transaction != null &&
+                    t.Transaction.TransactionDateTime.HasValue &&
+                    t.Transaction.AuthorizedPersonAlias != null &&
+                    t.Transaction.AuthorizedPersonAlias.Person != null );
+        }
+
+        /// <summary>
+        /// Gets financial transaction details based on selected filter values.
+        /// </summary>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="minAmount">The minimum amount.</param>
+        /// <param name="maxAmount">The maximum amount.</param>
+        /// <param name="currencyTypeIds">The currency type ids.</param>
+        /// <param name="sourceTypeIds">The source type ids.</param>
+        /// <param name="accountIds">The account ids.</param>
+        /// <param name="dataViewId">The data view identifier.</param>
+        /// <returns></returns>
+        public IQueryable<FinancialTransactionDetail> GetGifts(
+            DateTime? start, DateTime? end, decimal? minAmount, decimal? maxAmount,
+            List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> accountIds, int? dataViewId )
+        {
+            // Base Transaction Detail query
+            var qry = GetGifts();
+
+            // Start Date Filter
+            if ( start.HasValue )
+            {
+                qry = qry.Where( t => t.Transaction.TransactionDateTime >= start.Value );
+            }
+
+            // End Date Filter
+            if ( end.HasValue )
+            {
+                qry = qry.Where( t => t.Transaction.TransactionDateTime < end.Value );
+            }
+
+            // Account Id Filter
+            var distictAccountIds = accountIds.Where( i => i != 0 ).Distinct().ToList();
+            if ( distictAccountIds.Any() )
+            {
+                qry = qry
+                    .Where( t =>
+                        distictAccountIds.Contains( t.AccountId ) );
+            }
+
+
+            // Currency Type Filter
+            var distictCurrencyTypeIds = currencyTypeIds.Where( i => i != 0 ).Distinct().ToList();
+            if ( distictCurrencyTypeIds.Any() )
+            {
+                qry = qry
+                    .Where( t =>
+                        t.Transaction.CurrencyTypeValueId.HasValue &&
+                        distictCurrencyTypeIds.Contains( t.Transaction.CurrencyTypeValueId.Value ) );
+            }
+
+            // Source Type Filter
+            var distictSourceTypeIds = sourceTypeIds.Where( i => i != 0 ).Distinct().ToList();
+            if ( distictSourceTypeIds.Any() )
+            {
+                qry = qry
+                    .Where( t =>
+                        t.Transaction.SourceTypeValueId.HasValue &&
+                        distictSourceTypeIds.Contains( t.Transaction.SourceTypeValueId.Value ) );
+            }
+
+            // Amount Range Filter
+            if ( minAmount.HasValue || maxAmount.HasValue )
+            {
+                var givingIdQry = qry
+                    .GroupBy( d => d.Transaction.AuthorizedPersonAlias.Person.GivingId )
+                    .Select( d => new { d.Key, Total = d.Sum( t => t.Amount ) } )
+                    .Where( s =>
+                        ( !minAmount.HasValue || s.Total >= minAmount.Value ) &&
+                        ( !maxAmount.HasValue || s.Total <= maxAmount.Value ) )
+                    .Select( s => s.Key );
+
+                qry = qry
+                    .Where( d =>
+                        givingIdQry.Contains( d.Transaction.AuthorizedPersonAlias.Person.GivingId ) );
+            }
+            
+            // Data View Filter
+            if ( dataViewId.HasValue )
+            {
+                var rockContext = (RockContext)this.Context;
+                if ( rockContext != null )
+                {
+                    var personService = new PersonService( rockContext );
+                    var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
+                    if ( dataView != null )
+                    {
+                        var errorMessages = new List<string>();
+                        ParameterExpression paramExpression = personService.ParameterExpression;
+                        Expression whereExpression = dataView.GetExpression( personService, paramExpression, out errorMessages );
+
+                        SortProperty sortProperty = null;
+                        var dataViewGivingIdQry = personService
+                            .Queryable().AsNoTracking()
+                            .Where( paramExpression, whereExpression, sortProperty )
+                            .Select( p => p.GivingId );
+
+                        qry = qry
+                            .Where( t =>
+                                dataViewGivingIdQry.Contains( t.Transaction.AuthorizedPersonAlias.Person.GivingId ) );
+                    }
+                }
+            }
+
+            return qry;
+        }
 
         /// <summary>
         /// Gets the chart data.
@@ -42,91 +168,14 @@ namespace Rock.Model
         /// <param name="maxAmount">The maximum amount.</param>
         /// <param name="currencyTypeIds">The currency type ids.</param>
         /// <param name="sourceTypeIds">The source type ids.</param>
-        /// <param name="campusIds">The campus ids.</param>
+        /// <param name="accountIds">The account ids.</param>
         /// <param name="dataViewId">The data view identifier.</param>
         /// <returns></returns>
         public IEnumerable<IChartData> GetChartData(
             ChartGroupBy groupBy, TransactionGraphBy graphBy, DateTime? start, DateTime? end, decimal? minAmount, decimal? maxAmount,
-            List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> campusIds, int? dataViewId )
+            List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> accountIds, int? dataViewId )
         {
-            var qry = Queryable().AsNoTracking()
-                .Where( t =>
-                    t.Transaction != null &&
-                    t.Transaction.TransactionDateTime.HasValue &&
-                    t.Transaction.AuthorizedPersonAlias != null &&
-                    t.Transaction.AuthorizedPersonAlias.Person != null );
-
-            if ( start.HasValue )
-            {
-                qry = qry.Where( t => t.Transaction.TransactionDateTime >= start.Value );
-            }
-
-            if ( end.HasValue )
-            {
-                qry = qry.Where( t => t.Transaction.TransactionDateTime < end.Value );
-            }
-
-            if ( minAmount.HasValue || maxAmount.HasValue )
-            {
-                var givingIds = qry
-                    .GroupBy( d => d.Transaction.AuthorizedPersonAlias.Person.GivingId )
-                    .Select( d => new { d.Key, Total = d.Sum( t => t.Amount ) } )
-                    .Where( s =>
-                        ( !minAmount.HasValue || s.Total >= minAmount.Value ) &&
-                        ( !maxAmount.HasValue || s.Total <= maxAmount.Value ) )
-                    .Select( s => s.Key )
-                    .ToList();
-
-                qry = qry
-                    .Where( d =>
-                        givingIds.Contains( d.Transaction.AuthorizedPersonAlias.Person.GivingId ) );
-            }
-
-            var distictCurrencyTypeIds = currencyTypeIds.Where( i => i != 0 ).Distinct().ToList();
-            var distictSourceTypeIds = sourceTypeIds.Where( i => i != 0 ).Distinct().ToList();
-            var distictCampusIds = campusIds.Where( i => i != 0 ).Distinct().ToList();
-
-            if ( distictCurrencyTypeIds.Any() )
-            {
-                qry = qry
-                    .Where( t => 
-                        t.Transaction.CurrencyTypeValueId.HasValue && 
-                        distictCurrencyTypeIds.Contains( t.Transaction.CurrencyTypeValueId.Value ) );
-            }
-
-            if ( distictSourceTypeIds.Any() )
-            {
-                qry = qry
-                    .Where( t =>
-                        t.Transaction.SourceTypeValueId.HasValue &&
-                        distictSourceTypeIds.Contains( t.Transaction.SourceTypeValueId.Value ) );
-            }
-
-            if ( distictCampusIds.Any() )
-            {
-                qry = qry
-                    .Where( t => 
-                        t.Account != null &&
-                        t.Account.CampusId.HasValue &&
-                        distictCampusIds.Contains( t.Account.CampusId.Value ) );
-            }
-
-            if ( dataViewId.HasValue )
-            {
-                var rockContext = (RockContext)this.Context;
-                var personIds = new DataViewService( rockContext ).GetIds( dataViewId.Value );
-                var givingIds = new PersonService( rockContext ).Queryable().AsNoTracking()
-                    .Where( p => personIds.Contains( p.Id ) )
-                    .Select( p => p.GivingId )
-                    .ToList();
-
-                if ( personIds != null )
-                {
-                    qry = qry
-                        .Where( t =>
-                            givingIds.Contains( t.Transaction.AuthorizedPersonAlias.Person.GivingId ) );
-                }
-            }
+            var qry = GetGifts( start, end, minAmount, maxAmount, currencyTypeIds, sourceTypeIds, accountIds, dataViewId );
 
             var qryWithSummaryDateTime = qry.GetFinancialTransactionDetailWithSummaryDateTime( groupBy );
 
@@ -193,6 +242,75 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the gifts.
+        /// </summary>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="minAmount">The minimum amount.</param>
+        /// <param name="maxAmount">The maximum amount.</param>
+        /// <param name="accountIds">The account ids.</param>
+        /// <param name="currencyTypeIds">The currency type ids.</param>
+        /// <param name="sourceTypeIds">The source type ids.</param>
+        /// <param name="dataViewId">The data view identifier.</param>
+        /// <param name="giversViewBy">The givers view by.</param>
+        /// <returns></returns>
+        public static DataSet GetGivingAnalytics(
+            DateTime? start, DateTime? end, decimal? minAmount, decimal? maxAmount,
+            List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, int? dataViewId, GiversViewBy giversViewBy )
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            if ( start.HasValue )
+            {
+                parameters.Add( "StartDate", start.Value );
+            }
+
+            if ( end.HasValue )
+            {
+                parameters.Add( "EndDate", end.Value );
+            }
+
+            if ( minAmount.HasValue )
+            {
+                parameters.Add( "MinAmount", minAmount.Value );
+            }
+
+            if ( maxAmount.HasValue )
+            {
+                parameters.Add( "MaxAmount", maxAmount.Value );
+            }
+
+            if ( accountIds != null && accountIds.Any() )
+            {
+                parameters.Add( "AccountIds", accountIds.AsDelimited(",") );
+            }
+
+            if ( currencyTypeIds != null && currencyTypeIds.Any() )
+            {
+                parameters.Add( "CurrencyTypeIds", currencyTypeIds.AsDelimited(",") );
+            }
+
+            if ( sourceTypeIds != null && sourceTypeIds.Any() )
+            {
+                parameters.Add( "SourceTypeIds", sourceTypeIds.AsDelimited(",") );
+            }
+
+            string viewBy = "G";
+            switch ( giversViewBy )
+            {
+                case GiversViewBy.Giver: viewBy = "G"; break;
+                case GiversViewBy.Adults: viewBy = "A"; break;
+                case GiversViewBy.Children: viewBy = "C"; break;
+                case GiversViewBy.Family: viewBy = "F"; break;
+            }
+            parameters.Add( "ViewBy", viewBy );
+
+            var result = DbService.GetDataSet( "spFinance_GivingAnalyticsQuery", System.Data.CommandType.StoredProcedure, parameters, 180 );
+
+            return result;
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         public class FinancialTransactionDetailWithSummaryDateTime
@@ -213,6 +331,33 @@ namespace Rock.Model
             /// </value>
             public FinancialTransactionDetail FinancialTransactionDetail { get; set;}
         }
+
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum GiversViewBy
+    {
+        /// <summary>
+        /// The giver
+        /// </summary>
+        Giver = 0,
+
+        /// <summary>
+        /// The adults
+        /// </summary>
+        Adults = 1,
+
+        /// <summary>
+        /// The children
+        /// </summary>
+        Children = 2,
+
+        /// <summary>
+        /// The family
+        /// </summary>
+        Family = 3,
     }
 
     /// <summary>

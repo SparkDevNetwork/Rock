@@ -41,14 +41,14 @@ namespace Rock.Rest.Controllers
         /// <param name="maxAmount">The maximum amount.</param>
         /// <param name="currencyTypeIds">The currency type ids.</param>
         /// <param name="sourceTypeIds">The source type ids.</param>
-        /// <param name="campusIds">The campus ids.</param>
+        /// <param name="accountIds">The account ids.</param>
         /// <param name="dataViewId">The data view identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialTransactionDetails/GetChartData" )]
         public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy = ChartGroupBy.Week, TransactionGraphBy graphBy = TransactionGraphBy.Total, 
             DateTime? startDate = null, DateTime? endDate = null, decimal? minAmount = null, decimal? maxAmount = null, 
-            string currencyTypeIds = null, string sourceTypeIds = null, string campusIds = null, int? dataViewId = null )
+            string currencyTypeIds = null, string sourceTypeIds = null, string accountIds = null, int? dataViewId = null )
         {
             var numericCurrencyTypeIds = new List<int>();
             if ( currencyTypeIds != null )
@@ -62,15 +62,15 @@ namespace Rock.Rest.Controllers
                 sourceTypeIds.Split( ',' ).ToList().ForEach( i => numericSourceTypeIds.Add( i.AsInteger() ) );
             }
 
-            var numericCampusIds = new List<int>();
-            if ( campusIds != null )
+            var numericAccountIds = new List<int>();
+            if ( accountIds != null )
             {
-                campusIds.Split( ',' ).ToList().ForEach( i => numericCampusIds.Add( i.AsInteger() ) );
+                accountIds.Split( ',' ).ToList().ForEach( i => numericAccountIds.Add( i.AsInteger() ) );
             }
 
             return new FinancialTransactionDetailService( new RockContext() ).GetChartData(
                 groupBy, graphBy, startDate, endDate, minAmount, maxAmount, numericCurrencyTypeIds, 
-                numericSourceTypeIds, numericCampusIds, dataViewId );
+                numericSourceTypeIds, numericAccountIds, dataViewId );
         }
 
     }
