@@ -707,6 +707,7 @@ $(document).ready(function() {
             FilterGroup groupControl = sender as FilterGroup;
             FilterField filterField = new FilterField();
             filterField.DataViewFilterGuid = Guid.NewGuid();
+            filterField.DeleteClick += filterControl_DeleteClick;
             groupControl.Controls.Add( filterField );
             filterField.ID = string.Format( "ff_{0}", filterField.DataViewFilterGuid.ToString( "N" ) );
             filterField.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;

@@ -137,13 +137,14 @@ namespace RockWeb.Blocks.Cms
             }
 
             sb.AppendFormat(
-                "<li data-expanded='{4}' data-model='Page' data-id='p{0}'><span><i class=\"fa fa-file-o\">&nbsp;</i> <a href='{1}'>{2}</a><span class='js-auth-roles hidden'>{5}</span></span>{3}", 
+                "<li data-expanded='{4}' data-model='Page' data-id='p{0}'><span><i class=\"fa fa-file-o\">&nbsp;</i>{6}<a href='{1}'>{2}</a><span class='js-auth-roles hidden'>{5}</span></span>{3}", 
                 page.Id, 
                 new PageReference( page.Id ).BuildUrl(), 
                 isSelected ? "<strong>" + page.InternalName + "</strong>" : page.InternalName, 
                 Environment.NewLine, 
                 isExpanded.ToString().ToLower(),
-                authHtml);
+                authHtml, 
+                CreatePageConfigIcon(page));
 
             if ( page.Pages.Any() || page.Blocks.Any() )
             {
@@ -176,9 +177,23 @@ namespace RockWeb.Blocks.Cms
         {
             var blockPropertyUrl = ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", block.Id ) );
 
-            return string.Format( 
-                "<i class=\"fa fa-th-large\">&nbsp;</i> <a href=\"javascript: Rock.controls.modal.show($(this), '{0}')\" title=\"Block Properties\"><i class=\"fa fa-cog\"></i>&nbsp;</a>",
+            return string.Format(
+                "<i class=\"fa fa-th-large\">&nbsp;</i> <a class='btn-minimal' href=\"javascript: Rock.controls.modal.show($(this), '{0}')\" title=\"Block Properties\"><i class=\"fa fa-cog\"></i>&nbsp;</a>",
                 blockPropertyUrl );
+        }
+
+        /// <summary>
+        /// Creates the page configuration icon.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <returns></returns>
+        protected string CreatePageConfigIcon ( Page page)
+        {
+            var pagePropertyUrl = ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", page.Id ) );
+
+            return string.Format(
+                "&nbsp;<span class='btn-minimal' onclick=\"javascript: Rock.controls.modal.show($(this), '{0}'); event.stopImmediatePropagation();\" title=\"Page Properties\"><i class=\"fa fa-cog\"></i>&nbsp;</span>",
+                pagePropertyUrl );
         }
     }
 }

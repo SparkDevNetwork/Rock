@@ -239,7 +239,15 @@ namespace RockWeb.Blocks.Core
                         category = category.ParentCategory;
                         if ( category != null )
                         {
-                            parentIdList.Insert( 0, category.Id.ToString() );
+                            if ( !parentIdList.Contains( category.Id.ToString() ) )
+                            {
+                                parentIdList.Insert( 0, category.Id.ToString() );
+                            }
+                            else
+                            {
+                                // infinite recursion
+                                break;
+                            }
                         }
 
                     }

@@ -1279,16 +1279,22 @@ namespace Rock.Model
                         if ( string.IsNullOrWhiteSpace( attributeKeyValue.Value ) )
                         {
                             foreach ( var attributeValue in attributeValues
-                                .Where( v => v.Attribute.Key == attributeKeyValue.Key ) )
+                                .Where( v => 
+                                    v.Attribute != null &&
+                                    v.Attribute.Key == attributeKeyValue.Key )
+                                .ToList() )
                             {
                                 attributeValueService.Delete( attributeValue );
+                                attributeValues.Remove( attributeValue );
                                 wasUpdated = true;
                             }
                         }
                         else
                         {
                             var attributeValue = attributeValues
-                                .Where( v => v.Attribute.Key == attributeKeyValue.Key )
+                                .Where( v => 
+                                    v.Attribute != null &&
+                                    v.Attribute.Key == attributeKeyValue.Key )
                                 .FirstOrDefault();
 
                             if ( attributeValue == null )

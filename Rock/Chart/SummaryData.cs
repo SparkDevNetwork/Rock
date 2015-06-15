@@ -16,6 +16,8 @@
 //
 using System;
 
+using Rock.Data;
+
 namespace Rock.Chart
 {
     /// <summary>
@@ -37,6 +39,7 @@ namespace Rock.Chart
         /// <value>
         /// The date time.
         /// </value>
+        [Previewable]
         public DateTime DateTime { get; set; }
 
         /// <summary>
@@ -45,6 +48,7 @@ namespace Rock.Chart
         /// <value>
         /// The y value.
         /// </value>
+        [Previewable]
         public decimal? YValue { get; set; }
 
         /// <summary>
@@ -53,6 +57,7 @@ namespace Rock.Chart
         /// <value>
         /// The series identifier.
         /// </value>
+        [Previewable]
         public string SeriesId { get; set; }
     }
 }

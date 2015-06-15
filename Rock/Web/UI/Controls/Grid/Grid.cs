@@ -1327,6 +1327,8 @@ namespace Rock.Web.UI.Controls
             int rowCounter = 4;
             int columnCounter = 1;
 
+            var gridDataFields = this.Columns.OfType<BoundField>().ToList();
+
             if ( this.DataSourceAsDataTable != null )
             {
                 DataTable data = this.DataSourceAsDataTable;
@@ -1334,7 +1336,8 @@ namespace Rock.Web.UI.Controls
                 // print headings
                 foreach ( DataColumn column in data.Columns )
                 {
-                    worksheet.Cells[3, columnCounter].Value = column.ColumnName.SplitCase();
+                    var gridField = gridDataFields.FirstOrDefault( a => a.DataField == column.ColumnName );
+                    worksheet.Cells[3, columnCounter].Value = gridField != null ? gridField.HeaderText : column.ColumnName.SplitCase();
                     columnCounter++;
                 }
 
@@ -1443,8 +1446,6 @@ namespace Rock.Web.UI.Controls
                     IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
                     IList<PropertyInfo> props = new List<PropertyInfo>();
 
-                    var gridDataFields = this.Columns.OfType<BoundField>().ToList();
-
                     // Inspect the collection of Fields that appear in the Grid and add the corresponding data item properties to the set of fields to be exported.
                     // The fields are exported in the same order as they appear in the Grid.
                     var orderedProps = new SortedDictionary<int, PropertyInfo>();
@@ -1452,14 +1453,18 @@ namespace Rock.Web.UI.Controls
                     foreach ( PropertyInfo prop in allprops )
                     {
                         // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
-                        if ( prop.GetGetMethod().IsVirtual )
+                        if ( prop.GetGetMethod().IsVirtual &&
+                            prop.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() == 0 )
+                        {
                             continue;
+                        }
 
                         // Find a matching field in the Grid and add it to the list of exported properties.
                         var gridField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
-
                         if ( gridField == null )
+                        {
                             continue;
+                        }
 
                         int fieldIndex = gridDataFields.IndexOf( gridField );
 
