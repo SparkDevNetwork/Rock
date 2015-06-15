@@ -2860,7 +2860,9 @@
     <Content Include="Migrations\201506112030400_PersonDaysUntilBirthday.sql" />
     <Content Include="Migrations\201506121300596_FinancialAnalyticsProcs_1.sql" />
     <Content Include="Migrations\201506121300596_FinancialAnalyticsProcs_2.sql" />
-    <Content Include="Migrations\201506130028565_AttributeValueAsDateTimeIndex_Create.sql" />
+    <Content Include="Migrations\201506130028565_AttributeValueAsDateTimeIndex_CreateColumns.sql" />
+    <Content Include="Migrations\201506130028565_AttributeValueAsDateTimeIndex_UpdateValues.sql" />
+    <Content Include="Migrations\201506130028565_AttributeValueAsDateTimeIndex_CreateTrigger.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
