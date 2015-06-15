@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Core
 
                 using ( var rockContext = new RockContext() )
                 {
-                    var noteTypes = NoteTypeCache.GetByEntity( contextEntity.TypeId, string.Empty, string.Empty );
+                    var noteTypes = NoteTypeCache.GetByEntity( contextEntity.TypeId, string.Empty, string.Empty, true );
 
                     notesTimeline.EntityId = contextEntity.Id;
                     notesTimeline.NoteTypes = noteTypes;

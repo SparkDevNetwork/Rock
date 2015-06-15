@@ -73,7 +73,7 @@ namespace Rock.Web.UI.Controls
                         {
                             viewableNoteTypes.Add( noteType );
                         }
-                        if ( noteType.IsAuthorized( Security.Authorization.EDIT, currentPerson ) )
+                        if ( noteType.UserSelectable && noteType.IsAuthorized( Security.Authorization.EDIT, currentPerson ) )
                         {
                             editableNoteTypes.Add( noteType );
                         }
@@ -745,7 +745,7 @@ namespace Rock.Web.UI.Controls
                             noteEditor.ID = string.Format( "note_{0}", note.Guid.ToString().Replace( "-", "_" ) );
                             noteEditor.Note = note;
                             noteEditor.IsPrivate = note.IsPrivate( Authorization.VIEW, currentPerson );
-                            noteEditor.CanEdit = note.IsAuthorized( Authorization.ADMINISTRATE, currentPerson );
+                            noteEditor.CanEdit = NoteTypeCache.Read( note.NoteTypeId ).UserSelectable && note.IsAuthorized( Authorization.ADMINISTRATE, currentPerson );
                             noteEditor.SaveButtonClick += note_Updated;
                             noteEditor.DeleteButtonClick += note_Updated;
                             Controls.Add( noteEditor );
