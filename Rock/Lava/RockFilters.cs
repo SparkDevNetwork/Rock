@@ -1438,6 +1438,76 @@ namespace Rock.Lava
             return inputList;
         }
 
+        /// <summary>
+        /// Wheres the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="filterKey">The filter key.</param>
+        /// <param name="filterValue">The filter value.</param>
+        /// <returns></returns>
+        public static object Where( object input, string filterKey, object filterValue )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            if ( input is IEnumerable )
+            {
+                var result = new List<object>();
+                
+                foreach ( var value in ( (IEnumerable)input ) )
+                {
+                    if ( value is ILiquidizable )
+                    {
+                        var liquidObject = value as ILiquidizable;
+                        if (liquidObject.ContainsKey(filterKey) && liquidObject[filterKey].Equals(filterValue)) {
+                            result.Add(liquidObject);
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            return input;
+        }
+
+        /// <summary>
+        /// Selects the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="selectKey">The select key.</param>
+        /// <returns></returns>
+        public static object Select( object input, string selectKey )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            if ( input is IEnumerable )
+            {
+                var result = new List<object>();
+
+                foreach ( var value in ( (IEnumerable)input ) )
+                {
+                    if ( value is ILiquidizable )
+                    {
+                        var liquidObject = value as ILiquidizable;
+                        if ( liquidObject.ContainsKey( selectKey ) )
+                        {
+                            result.Add( liquidObject );
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            return input;
+        }
+
         #endregion
     }
 }
