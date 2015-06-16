@@ -181,10 +181,9 @@ namespace Rock.Reporting.DataSelect.Person
                 locationTypeList.Items.Add( new ListItem( value.Value, value.Guid.ToString() ) );
             }
 
-            locationTypeList.Items.Insert( 0, Rock.Constants.None.ListItem );
-
             locationTypeList.ID = parentControl.ID + "_grouplocationType";
             locationTypeList.Label = "Address Type";
+            locationTypeList.SelectedIndex = 0;
             parentControl.Controls.Add( locationTypeList );
 
             RockRadioButtonList addressPartRadioButtonList = new RockRadioButtonList();
