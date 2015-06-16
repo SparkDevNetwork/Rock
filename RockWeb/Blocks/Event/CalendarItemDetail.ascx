@@ -36,48 +36,33 @@
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.EventItem, Rock" PropertyName="Name" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                                <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-12">
-                                <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.EventItem, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                            </div>
-                        </div>
+                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.EventItem, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
 
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="grid">
-                                    <Rock:Grid ID="gEventItemAudiences" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Audience">
-                                        <Columns>
-                                            <Rock:RockBoundField DataField="Audience" HeaderText="Audiences" />
-                                            <Rock:DeleteField OnClick="gEventItemAudiences_Delete" />
-                                        </Columns>
-                                    </Rock:Grid>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
+                                <Rock:RockCheckBoxList ID="cblEventCalendars" runat="server" Label="Calendars" OnSelectedIndexChanged="cblEventCalendars_SelectedIndexChanged" AutoPostBack="true" DataValueField="Id" DataTextField="Name" RepeatDirection="Horizontal" />
+                                <Rock:RockControlWrapper ID="rcwAudiences" runat="server" Label="Audiences">
+                                    <div class="grid">
+                                        <Rock:Grid ID="gEventItemAudiences" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Audience" ShowHeader="false">
+                                            <Columns>
+                                                <Rock:RockBoundField DataField="Audience" />
+                                                <Rock:DeleteField OnClick="gEventItemAudiences_Delete" />
+                                            </Columns>
+                                        </Rock:Grid>
+                                    </div>
+                                </Rock:RockControlWrapper>
                                 <Rock:RockTextBox ID="tbDetailUrl" runat="server" Label="Detail URL" />
                             </div>
                             <div class="col-md-6">
+                                <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />
-                            </div>
-                            <div class="col-md-6">
-                                <Rock:RockCheckBoxList ID="cblEventCalendars" runat="server" Label="Calendars" OnSelectedIndexChanged="cblEventCalendars_SelectedIndexChanged" AutoPostBack="true" DataValueField="Id" DataTextField="Name" />
-                            </div>
-                        </div>
-                        <Rock:PanelWidget ID="wpEventItemAttributes" runat="server" Title="Item Attribute Values">
+                        <Rock:PanelWidget ID="wpEventItemAttributes" runat="server" Title="Attribute Values">
                             <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
                         </Rock:PanelWidget>
 
