@@ -86,6 +86,9 @@ namespace RockWeb.Blocks.Event
             gAttributes.GridRebind += gAttributes_GridRebind;
             gAttributes.GridReorder += gAttributes_GridReorder;
 
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the calendar items! Are you sure you wish to continue with the delete?');", EventCalendar.FriendlyTypeName );
+            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.EventCalendar ) ).Id;
+
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upEventCalendar );
         }
@@ -194,7 +197,8 @@ namespace RockWeb.Blocks.Event
 
                 if ( eventCalendar != null )
                 {
-                    if ( !eventCalendar.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                    bool adminAllowed = UserCanAdministrate || eventCalendar.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                    if ( !adminAllowed )
                     {
                         mdDeleteWarning.Show( "You are not authorized to delete this calendar.", ModalAlertType.Information );
                         return;
@@ -242,6 +246,7 @@ namespace RockWeb.Blocks.Event
                     eventCalendar = eventCalendarService.Get( eventCalendarId );
                 }
 
+                eventCalendar.IsActive = cbActive.Checked;
                 eventCalendar.Name = tbName.Text;
                 eventCalendar.Description = tbDescription.Text;
                 eventCalendar.IconCssClass = tbIconCssClass.Text;
@@ -261,9 +266,27 @@ namespace RockWeb.Blocks.Event
                     string qualifierValue = eventCalendar.Id.ToString();
                     SaveAttributes( new EventCalendarItem().TypeId, "EventCalendarId", qualifierValue, AttributesState, rockContext );
 
-                    rockContext.SaveChanges();
+                    // Reload calendar and make sure that the person who may have just added a calendar has security to view/edit/administrate the calendar
+                    eventCalendar = eventCalendarService.Get( eventCalendar.Id );
+                    if ( eventCalendar != null )
+                    {
+                        if ( !eventCalendar.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        {
+                            eventCalendar.AllowPerson( Authorization.VIEW, CurrentPerson, rockContext );
+                        }
+                        if ( !eventCalendar.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                        {
+                            eventCalendar.AllowPerson( Authorization.EDIT, CurrentPerson, rockContext );
+                        }
+                        if ( !eventCalendar.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+                        {
+                            eventCalendar.AllowPerson( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
+                        }
+                    }
+
                 } );
             }
+
 
             ShowDetail( eventCalendar.Id );
         }
@@ -436,7 +459,8 @@ namespace RockWeb.Blocks.Event
                 eventCalendar = new EventCalendar { Id = 0 };
             }
 
-            bool editAllowed = eventCalendar.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            // Admin rights are needed to edit a calendar ( Edit rights only allow adding/removing items )
+            bool adminAllowed = UserCanAdministrate || eventCalendar.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
 
             pnlDetails.Visible = true;
             hfEventCalendarId.Value = eventCalendar.Id.ToString();
@@ -444,7 +468,7 @@ namespace RockWeb.Blocks.Event
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed || !IsUserAuthorized( Authorization.EDIT ) )
+            if ( !adminAllowed )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( EventCalendar.FriendlyTypeName );
@@ -453,11 +477,19 @@ namespace RockWeb.Blocks.Event
             if ( readOnly )
             {
                 btnEdit.Visible = false;
+                btnDelete.Visible = false;
+                btnSecurity.Visible = false;
                 ShowReadonlyDetails( eventCalendar );
             }
             else
             {
                 btnEdit.Visible = true;
+                btnDelete.Visible = true;
+                btnSecurity.Visible = true;
+
+                btnSecurity.Title = "Secure " + eventCalendar.Name;
+                btnSecurity.EntityId = eventCalendar.Id;
+
                 if ( !eventCalendarId.Equals( 0 ) )
                 {
                     ShowReadonlyDetails( eventCalendar );
@@ -493,6 +525,7 @@ namespace RockWeb.Blocks.Event
             SetEditMode( true );
 
             // General
+            cbActive.Checked = eventCalendar.IsActive;
             tbName.Text = eventCalendar.Name;
             tbDescription.Text = eventCalendar.Description;
             tbIconCssClass.Text = eventCalendar.IconCssClass;

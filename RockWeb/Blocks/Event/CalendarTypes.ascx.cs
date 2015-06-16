@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -24,6 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Event
 {
@@ -116,11 +118,19 @@ namespace RockWeb.Blocks.Event
         {
             using ( var rockContext = new RockContext() )
             {
-                // Get all of the event calendars
-                var calendars = new EventCalendarService( rockContext ).Queryable()
-                    .OrderBy( w => w.Name );
+                var allowedCalendars = new List<EventCalendar>();
 
-                rptEventCalendars.DataSource = calendars.ToList();
+                // Get all of the event calendars that user is authorized to view
+                foreach ( var calendar in new EventCalendarService( rockContext ).Queryable()
+                    .OrderBy( w => w.Name ))
+                {
+                    if ( calendar.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        allowedCalendars.Add( calendar );
+                    }
+                }
+
+                rptEventCalendars.DataSource = allowedCalendars;
                 rptEventCalendars.DataBind();
             }
         }
