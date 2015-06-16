@@ -63,8 +63,9 @@
                                     <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
                                     <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                     <Rock:RockBoundField DataField="FieldType" HeaderText="Field Type" />
-                                    <Rock:BoolField DataField="AllowSearch" HeaderText="Allow Search" />
                                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
+                                    <Rock:BoolField DataField="IsGridColumn" HeaderText="Show in Grid" />
+                                    <Rock:BoolField DataField="AllowSearch" HeaderText="Allow Search" />
                                     <Rock:EditField OnClick="gAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gAttributes_Delete" />
                                 </Columns>
