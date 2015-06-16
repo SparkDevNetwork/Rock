@@ -283,7 +283,11 @@ namespace Rock.Web.UI.Controls
             _pnbCellPhone.Placeholder = cellPhone != null ? cellPhone.Value.EndsWith( "Phone" ) ? cellPhone.Value : cellPhone.Value + " Phone" : "Cell Phone";
             _pnbCellPhone.Required = false;
 
-            _cbIsMessagingEnabled.Checked = true;
+            if ( IsMessagingEnabled == true)
+            {
+               _cbIsMessagingEnabled.Checked = true;
+            }
+            
            
             _ebEmail.Placeholder = "Email";
             _ebEmail.Required = false;
