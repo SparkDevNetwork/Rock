@@ -110,13 +110,16 @@ namespace church.ccv.Utility
                                      .Where( w => w.WorkflowTypeId == workflowType.Id)
                                      .Select( w => w.InitiatorPersonAlias.Person.Id);
 
+
                 var families = new GroupService( rockContext ).Queryable().AsNoTracking()
                                     .Where( g =>
                                             g.GroupTypeId == familyGroupTypeId &&
                                             g.Members.Any( m => visitorIds.Contains( m.PersonId ) ) &&
-                                            !g.Members.Any( m => workflowInitiators.Contains( m.PersonId ) ) );
+                                            !g.Members.Any( m => workflowInitiators.Contains( m.PersonId ) ) )
+                                    .ToList();
 
-                foreach ( var family in families.ToList() )
+
+                foreach ( var family in families )
                 {
                     var headOfHouse = family.Members
                                             .OrderBy( m => m.GroupRole.Order )
