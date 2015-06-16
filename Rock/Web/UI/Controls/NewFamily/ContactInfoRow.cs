@@ -282,12 +282,6 @@ namespace Rock.Web.UI.Controls
             var cellPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
             _pnbCellPhone.Placeholder = cellPhone != null ? cellPhone.Value.EndsWith( "Phone" ) ? cellPhone.Value : cellPhone.Value + " Phone" : "Cell Phone";
             _pnbCellPhone.Required = false;
-
-            if ( IsMessagingEnabled == true)
-            {
-               _cbIsMessagingEnabled.Checked = true;
-            }
-            
            
             _ebEmail.Placeholder = "Email";
             _ebEmail.Required = false;

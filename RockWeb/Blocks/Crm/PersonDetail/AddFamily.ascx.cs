@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE, "", 4 )]
     [BooleanField( "Marital Status Confirmation", "Should user be asked to confirm saving an adults without a marital status?", true, "", 5 )]
     [BooleanField( "Grade", "Require a grade for each child", "Don't require", "Should Grade be required for each child added?", false, "", 6 )]
-    [BooleanField("SMS", "SMS is enabled by default", "SMS is not enabled by default", "Should SMS be enabled for cell phone numbers by default", false, "", 7)]
+    [BooleanField("SMS", "SMS is enabled by default", "SMS is not enabled by default", "Should SMS be enabled for cell phone numbers by default?", false, "", 7)]
     [AttributeCategoryField( "Attribute Categories", "The Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 8 )]
 
     public partial class AddFamily : Rock.Web.UI.RockBlock
