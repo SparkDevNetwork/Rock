@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Event
 
         private EventCalendar _eventCalendar = null;
         private bool _canView = false;
+        private bool _canEdit = false;
 
         #endregion
 
@@ -70,6 +71,8 @@ namespace RockWeb.Blocks.Event
             base.LoadViewState( savedState );
 
             AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
+
+            AddDynamicControls();
         }
 
         /// <summary>
@@ -101,20 +104,18 @@ namespace RockWeb.Blocks.Event
                     RockPage.SaveSharedItem( key, _eventCalendar );
                 }
 
-                if ( _eventCalendar != null && _eventCalendar.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                if ( _eventCalendar != null )
                 {
-                    _canView = true;
+                    _canEdit = UserCanEdit || _eventCalendar.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                    _canView = _canEdit || _eventCalendar.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
                     rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
                     gEventCalendarItems.DataKeyNames = new string[] { "Id" };
+                    gEventCalendarItems.Actions.ShowAdd = _canEdit;
                     gEventCalendarItems.Actions.AddClick += gEventCalendarItems_AddClick;
                     gEventCalendarItems.GridRebind += gEventCalendarItems_GridRebind;
                     gEventCalendarItems.ExportFilename = _eventCalendar.Name;
-
-                    // make sure they have Auth to edit the block OR edit to the EventCalendar
-                    bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _eventCalendar.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
-                    gEventCalendarItems.Actions.ShowAdd = canEditBlock;
-                    gEventCalendarItems.IsDeleteEnabled = canEditBlock;
+                    gEventCalendarItems.IsDeleteEnabled = _canEdit;
                 }
             }
         }
@@ -167,6 +168,23 @@ namespace RockWeb.Blocks.Event
             rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Audience" ), "Audience", cblAudience.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Status" ), "Status", cbActive.Checked.ToTrueFalse() );
 
+            if ( AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                    if ( filterControl != null )
+                    {
+                        try
+                        {
+                            var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
+                            rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( attribute.Key ), attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues ).ToJson() );
+                        }
+                        catch { }
+                    }
+                }
+            }
+
             BindEventCalendarItemsGrid();
         }
 
@@ -192,7 +210,7 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            if ( e.Key == MakeKeyUniqueToEventCalendar( "Campus" ) )
+            if ( e.Key == MakeKeyUniqueToEventCalendar( "Campuses" ) )
             {
                 e.Value = ResolveValues( e.Value, cblCampus );
             }
@@ -200,20 +218,13 @@ namespace RockWeb.Blocks.Event
             {
                 e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
             }
-            else if ( e.Key == MakeKeyUniqueToEventCalendar( "Audience" ) )
+            else if ( e.Key == MakeKeyUniqueToEventCalendar( "Audiences" ) )
             {
                 e.Value = ResolveValues( e.Value, cblAudience );
             }
             else if ( e.Key == MakeKeyUniqueToEventCalendar( "Status" ) )
             {
-                if ( e.Value == "False" )
-                {
-                    e.Value = string.Empty;
-                }
-                else
-                {
-                    return;
-                }
+                e.Value = e.Value == "True" ? "Only Show Active Items" : string.Empty; 
             }
             else
             {
@@ -228,22 +239,31 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
         protected void DeleteEventCalendarItem_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            RockContext rockContext = new RockContext();
-            EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
-            EventCalendarItem eventCalendarItem = eventCalendarItemService.Get( e.RowKeyId );
-            if ( eventCalendarItem != null )
+            using ( RockContext rockContext = new RockContext() )
             {
-                string errorMessage;
-                if ( !eventCalendarItemService.CanDelete( eventCalendarItem, out errorMessage ) )
+                EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
+                EventCalendarItem eventCalendarItem = eventCalendarItemService.Get( e.RowKeyId );
+                if ( eventCalendarItem != null )
                 {
-                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                    return;
+                    if ( eventCalendarItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                    {
+                        string errorMessage;
+                        if ( !eventCalendarItemService.CanDelete( eventCalendarItem, out errorMessage ) )
+                        {
+                            mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                            return;
+                        }
+
+                        int eventCalendarId = eventCalendarItem.EventCalendarId;
+
+                        eventCalendarItemService.Delete( eventCalendarItem );
+                        rockContext.SaveChanges();
+                    }
+                    else
+                    {
+                        mdGridWarning.Show( "You are not authorized to delete this calendar item", ModalAlertType.Warning );
+                    }
                 }
-
-                int eventCalendarId = eventCalendarItem.EventCalendarId;
-
-                eventCalendarItemService.Delete( eventCalendarItem );
-                rockContext.SaveChanges();
             }
 
             BindEventCalendarItemsGrid();
@@ -257,7 +277,10 @@ namespace RockWeb.Blocks.Event
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gEventCalendarItems_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "EventItemId", 0, "EventCalendarId", _eventCalendar.Id );
+            if ( _canEdit )
+            {
+                NavigateToLinkedPage( "DetailPage", "EventItemId", 0, "EventCalendarId", _eventCalendar.Id );
+            }
         }
 
         /// <summary>
@@ -267,10 +290,17 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gEventCalendarItems_Edit( object sender, RowEventArgs e )
         {
-            bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _eventCalendar.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
-            if ( canEditBlock )
+            using ( RockContext rockContext = new RockContext() )
             {
-                NavigateToLinkedPage( "DetailPage", "EventItemId", new EventCalendarItemService( new RockContext() ).Get( e.RowKeyId ).EventItemId, "EventCalendarId", _eventCalendar.Id );
+                EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
+                EventCalendarItem eventCalendarItem = eventCalendarItemService.Get( e.RowKeyId );
+                if ( eventCalendarItem != null )
+                {
+                    if ( eventCalendarItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                    {
+                        NavigateToLinkedPage( "DetailPage", "EventItemId", eventCalendarItem.EventItemId, "EventCalendarId", _eventCalendar.Id );
+                    }
+                }
             }
         }
 
@@ -294,8 +324,12 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void SetFilter()
         {
-            drpDate.DelimitedValues = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Date Range" ) );
-
+            string drFilter = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Date Range" ) );
+            if ( string.IsNullOrWhiteSpace( drFilter ))
+            {
+                rFilter.SaveUserPreference(MakeKeyUniqueToEventCalendar( "Date Range" ), string.Empty );
+            }
+                
             if ( _eventCalendar != null )
             {
                 cblAudience.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() ) );
@@ -303,12 +337,12 @@ namespace RockWeb.Blocks.Event
                 cblCampus.DataBind();
             }
 
-            string campusValue = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Campus" ) );
+            string campusValue = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Campuses" ) );
             if ( !string.IsNullOrWhiteSpace( campusValue ) )
             {
                 cblCampus.SetValues( campusValue.Split( ';' ).ToList() );
             }
-            string audienceValue = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Audience" ) );
+            string audienceValue = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Audiences" ) );
             if ( !string.IsNullOrWhiteSpace( audienceValue ) )
             {
                 cblAudience.SetValues( audienceValue.Split( ';' ).ToList() );
@@ -319,7 +353,133 @@ namespace RockWeb.Blocks.Event
             {
                 cbActive.Checked = statusValue.AsBoolean();
             }
+
+            BindAttributes();
+            AddDynamicControls();
         }
+
+        private void BindAttributes()
+        {
+            // Parse the attribute filters 
+            AvailableAttributes = new List<AttributeCache>();
+            if ( _eventCalendar != null )
+            {
+                int entityTypeId = new EventCalendarItem().TypeId;
+                foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
+                    .Where( a =>
+                        a.EntityTypeId == entityTypeId &&
+                        a.IsGridColumn &&
+                        a.EntityTypeQualifierColumn.Equals( "EventCalendarId", StringComparison.OrdinalIgnoreCase ) && 
+                        a.EntityTypeQualifierValue.Equals( _eventCalendar.Id.ToString() ) ) 
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name ) )
+                {
+                    AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the attribute columns.
+        /// </summary>
+        private void AddDynamicControls()
+        {
+            // Clear the filter controls
+            phAttributeFilters.Controls.Clear();
+
+            // Remove attribute columns
+            foreach ( var column in gEventCalendarItems.Columns.OfType<AttributeField>().ToList() )
+            {
+                gEventCalendarItems.Columns.Remove( column );
+            }
+
+            // Remove Active column
+            foreach ( var column in gEventCalendarItems.Columns.OfType<BoundField>()
+                .Where( c => c.DataField == "Active" )
+                .ToList() )
+            {
+                gEventCalendarItems.Columns.Remove( column );
+            } 
+
+            // Remove Delete column
+            foreach ( var column in gEventCalendarItems.Columns.OfType<DeleteField>().ToList() )
+            {
+                gEventCalendarItems.Columns.Remove( column );  
+            }
+
+            if ( AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false );
+                    if ( control != null )
+                    {
+                        if ( control is IRockControl )
+                        {
+                            var rockControl = (IRockControl)control;
+                            rockControl.Label = attribute.Name;
+                            rockControl.Help = attribute.Description;
+                            phAttributeFilters.Controls.Add( control );
+                        }
+                        else
+                        {
+                            var wrapper = new RockControlWrapper();
+                            wrapper.ID = control.ID + "_wrapper";
+                            wrapper.Label = attribute.Name;
+                            wrapper.Controls.Add( control );
+                            phAttributeFilters.Controls.Add( wrapper );
+                        }
+
+                        string savedValue = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( attribute.Key ) );
+                        if ( !string.IsNullOrWhiteSpace( savedValue ) )
+                        {
+                            try
+                            {
+                                var values = JsonConvert.DeserializeObject<List<string>>( savedValue );
+                                attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, values );
+                            }
+                            catch { }
+                        }
+                    }
+
+                    string dataFieldExpression = attribute.Key;
+                    bool columnExists = gEventCalendarItems.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
+                    if ( !columnExists )
+                    {
+                        AttributeField boundField = new AttributeField();
+                        boundField.DataField = dataFieldExpression;
+                        boundField.HeaderText = attribute.Name;
+                        boundField.SortExpression = string.Empty;
+
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                        if ( attributeCache != null )
+                        {
+                            boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                        }
+
+                        gEventCalendarItems.Columns.Add( boundField );
+                    }
+                }
+            }
+
+            // Add IsActive column
+            var activeField = new BoundField();
+            activeField.DataField = "Active";
+            activeField.SortExpression = "Active";
+            activeField.HeaderText = "Active";
+            activeField.HtmlEncode = false;
+            gEventCalendarItems.Columns.Add( activeField );
+            
+            // Add delete column
+            if ( _canEdit )
+            {
+                var deleteField = new DeleteField();
+                gEventCalendarItems.Columns.Add( deleteField );
+                deleteField.Click += DeleteEventCalendarItem_Click;
+            }
+
+        }
+
 
         /// <summary>
         /// Binds the event calendar items grid.
@@ -335,57 +495,55 @@ namespace RockWeb.Blocks.Event
 
                 var rockContext = new RockContext();
 
-                // The reason why we ToList() everything is so that we're using LINQ to Object rather than LINQ to Entity, enabling us to use object methods such as GetEarliestStartDate()
                 EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
-                var qry = eventCalendarItemService.Queryable( "EventItem, EventCalendar, EventItem.EventItemCampuses, EventItem.EventItemAudiences, EventItem.EventItemCampuses.EventItemSchedules" )
-                    .Where( m => m.EventCalendarId == _eventCalendar.Id ).ToList();
+                var qry = eventCalendarItemService
+                    .Queryable( "EventCalendar,EventItem.EventItemAudiences,EventItem.EventItemCampuses.EventItemSchedules" )
+                    .Where( m => 
+                        m.EventItem != null &&
+                        m.EventCalendarId == _eventCalendar.Id );
 
+                // Filter by Active Only
+                if ( cbActive.Checked )
+                {
+                    qry = qry
+                        .Where( m => 
+                            m.EventItem.IsActive.HasValue && 
+                            m.EventItem.IsActive.Value );
+                }
+                    
                 // Filter by Campus
                 List<int> campusIds = cblCampus.SelectedValuesAsInt;
                 if ( campusIds.Count > 0 )
                 {
-                    qry = qry.Where( i => i.EventItem.EventItemCampuses.Any( c => c.CampusId.HasValue && campusIds.Contains( c.CampusId.Value ) ) ).ToList();
+                    qry = qry
+                        .Where( i => 
+                            i.EventItem.EventItemCampuses.Any( c => c.CampusId.HasValue && campusIds.Contains( c.CampusId.Value ) ) );
                 }
 
-                // Filter by Date Range
-                var drp = new DateRangePicker();
-                drp.DelimitedValues = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Date Range" ) );
-                DateTime minusOneMonth = DateTime.Now.AddDays( -30 );
-                DateTime plusOneMonth = DateTime.Now.AddDays( 30 );
-                if ( drp.LowerValue.HasValue && drp.UpperValue.HasValue )
+                // Filter query by any configured attribute filters
+                if ( AvailableAttributes != null && AvailableAttributes.Any() )
                 {
-                    qry = qry.Where( i =>
-                        i.EventItem.GetEarliestStartDate().HasValue
-                        && i.EventItem.GetEarliestStartDate() > drp.LowerValue.Value
-                        && i.EventItem.GetEarliestStartDate() < drp.UpperValue.Value
-                        ).ToList();
-                }
-                else
-                {
-                    if ( !drp.LowerValue.HasValue && !drp.UpperValue.HasValue )
+                    var attributeValueService = new AttributeValueService( rockContext );
+                    var parameterExpression = attributeValueService.ParameterExpression;
+
+                    foreach ( var attribute in AvailableAttributes )
                     {
-                        qry = qry.Where( i =>
-                            (
-                            i.EventItem.GetEarliestStartDate() > minusOneMonth
-                            && i.EventItem.GetEarliestStartDate() < plusOneMonth
-                            )
-                            || !i.EventItem.GetEarliestStartDate().HasValue ).ToList();
-                    }
-                    if ( drp.LowerValue.HasValue )
-                    {
-                        qry = qry.Where( i =>
-                            i.EventItem.GetEarliestStartDate().HasValue
-                            && i.EventItem.GetEarliestStartDate() > drp.LowerValue.Value
-                            && i.EventItem.GetEarliestStartDate() < plusOneMonth
-                            ).ToList();
-                    }
-                    if ( drp.UpperValue.HasValue )
-                    {
-                        qry = qry.Where( i =>
-                            i.EventItem.GetEarliestStartDate().HasValue
-                            && i.EventItem.GetEarliestStartDate() > minusOneMonth
-                            && i.EventItem.GetEarliestStartDate() < drp.UpperValue.Value
-                            ).ToList();
+                        var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                        if ( filterControl != null )
+                        {
+                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
+                            var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
+                            if ( expression != null )
+                            {
+                                var attributeValues = attributeValueService
+                                    .Queryable()
+                                    .Where( v => v.Attribute.Id == attribute.Id );
+
+                                attributeValues = attributeValues.Where( parameterExpression, expression, null );
+
+                                qry = qry.Where( w => attributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
+                            }
+                        }
                     }
                 }
 
@@ -393,31 +551,64 @@ namespace RockWeb.Blocks.Event
                 List<int> audiences = cblAudience.SelectedValuesAsInt;
                 if ( audiences.Any() )
                 {
-                    qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => audiences.Contains( c.DefinedValueId ) ) ).ToList();
+                    qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => audiences.Contains( c.DefinedValueId ) ) );
                 }
                 // Filter by Status
                 if ( cbActive.Checked )
                 {
-                    qry = qry.Where( i => i.EventItem.IsActive.HasValue && i.EventItem.IsActive.HasValue ).ToList();
+                    qry = qry.Where( i => i.EventItem.IsActive.HasValue && i.EventItem.IsActive.HasValue );
                 }
 
+                SortProperty sortProperty = gEventCalendarItems.SortProperty;
+
+                // Sort and query db
                 List<EventCalendarItem> eventCalendarItems = null;
-                eventCalendarItems = qry.OrderByDescending( a => a.EventItem.GetEarliestStartDate() ).ToList();
+                if ( sortProperty != null )
+                {
+                    eventCalendarItems = qry.Sort( sortProperty ).ToList();
+                }
+                else
+                {
+                    eventCalendarItems = qry.ToList().OrderByDescending( a => a.EventItem.GetEarliestStartDate() ).ToList();
+                }
+
+                // Now that items have been loaded and ordered from db, calculate the earliest date for each item, and then filter again on the date
+                var drp = new DateRangePicker();
+                drp.DelimitedValues = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Date Range" ) );
+                DateTime lowerDateRange = drp.LowerValue ?? RockDateTime.Today.AddMonths( -6 );
+                DateTime upperDateRange = ( drp.UpperValue ?? RockDateTime.Today ).AddDays( 1 );
+
+                var itemsWithEarliestStartDate = eventCalendarItems
+                    .Select( i => new
+                    {
+                        Item = i,
+                        EarliestStartDate = i.EventItem.GetEarliestStartDate()
+                    } )
+                    .ToList();
+
+                itemsWithEarliestStartDate = itemsWithEarliestStartDate
+                    .Where( i =>
+                        !i.EarliestStartDate.HasValue ||
+                        (
+                            i.EarliestStartDate.Value >= lowerDateRange &&
+                            i.EarliestStartDate.Value < upperDateRange 
+                        ) )
+                    .ToList();
 
                 gEventCalendarItems.ObjectList = new Dictionary<string, object>();
-                eventCalendarItems.ForEach( m => gEventCalendarItems.ObjectList.Add( m.Id.ToString(), m ) );
+                itemsWithEarliestStartDate.ForEach( m => gEventCalendarItems.ObjectList.Add( m.Item.Id.ToString(), m.Item ) );
                 gEventCalendarItems.EntityTypeId = EntityTypeCache.Read( "Rock.Model.EventCalendarItem" ).Id;
 
-                gEventCalendarItems.DataSource = eventCalendarItems.Select( m => new
+                gEventCalendarItems.DataSource = itemsWithEarliestStartDate.Select( m => new
                 {
-                    m.Id,
-                    m.Guid,
-                    Date = m.EventItem.GetEarliestStartDate().HasValue ? m.EventItem.GetEarliestStartDate().Value.ToShortDateString() : "N/A",
-                    Name = m.EventItem.Name,
-                    Campus = m.EventItem.EventItemCampuses.ToList().Select( c => c.Campus != null ? c.Campus.Name : "All Campuses" ).ToList().AsDelimited( "<br>" ),
-                    Calendar = m.EventItem.EventCalendarItems.ToList().Select( i => i.EventCalendar.Name ).ToList().AsDelimited( "<br>" ),
-                    Audience = m.EventItem.EventItemAudiences.ToList().Select( i => i.DefinedValue.Value ).ToList().AsDelimited( "<br>" ),
-                    Active = m.EventItem.IsActive.Value ? "<span class='label label-success'>Active</span>" : "<span class='label label-campus'>Inactive</span>"
+                    m.Item.Id,
+                    m.Item.Guid,
+                    Date = m.EarliestStartDate.HasValue ? m.EarliestStartDate.Value.ToShortDateString() : "N/A",
+                    Name = m.Item.EventItem.Name,
+                    Campus = m.Item.EventItem.EventItemCampuses.ToList().Select( c => c.Campus != null ? c.Campus.Name : "All Campuses" ).ToList().AsDelimited( "<br>" ),
+                    Calendar = m.Item.EventItem.EventCalendarItems.ToList().Select( i => i.EventCalendar.Name ).ToList().AsDelimited( "<br>" ),
+                    Audience = m.Item.EventItem.EventItemAudiences.ToList().Select( i => i.DefinedValue.Value ).ToList().AsDelimited( "<br>" ),
+                    Active = m.Item.EventItem.IsActive.Value ? "<span class='label label-success'>Active</span>" : "<span class='label label-default'>Inactive</span>"
                 } ).ToList();
 
                 gEventCalendarItems.DataBind();

@@ -287,8 +287,10 @@ namespace RockWeb.Blocks.Event
                 } );
             }
 
-
-            ShowDetail( eventCalendar.Id );
+            // Redirect back to same page so that item grid will show any attributes that were selected to show on grid
+            var qryParams = new Dictionary<string, string>();
+            qryParams["EventCalendarId"] = eventCalendar.Id.ToString();
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
