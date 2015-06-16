@@ -19,7 +19,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
+
+using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
@@ -43,30 +44,32 @@ namespace RockWeb.Blocks.Event
     [Description( "Displays the details of the given Event Calendar." )]
     public partial class CalendarDetail : RockBlock, IDetailBlock
     {
-        #region Child Grid Dictionarys
+        #region Properties
 
-        /// <summary>
-        /// Gets or sets the state of the event calendar attributes.
-        /// </summary>
-        /// <value>
-        /// The state of the event calendar attributes.
-        /// </value>
-        private ViewStateList<Attribute> EventCalendarAttributesState
-        {
-            get
-            {
-                return ViewState["EventCalendarAttributesState"] as ViewStateList<Attribute>;
-            }
-
-            set
-            {
-                ViewState["EventCalendarAttributesState"] = value;
-            }
-        }
+        private List<Attribute> AttributesState { get; set; }
 
         #endregion
 
         #region Control Methods
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            string json = ViewState["AttributesState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                AttributesState = new List<Attribute>();
+            }
+            else
+            {
+                AttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+            }
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -75,14 +78,16 @@ namespace RockWeb.Blocks.Event
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            bool editAllowed = IsUserAuthorized( Authorization.ADMINISTRATE );
 
-            gEventCalendarAttributes.DataKeyNames = new string[] { "Guid" };
-            gEventCalendarAttributes.Actions.ShowAdd = editAllowed;
-            gEventCalendarAttributes.Actions.AddClick += gEventCalendarAttributes_Add;
-            gEventCalendarAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
-            gEventCalendarAttributes.GridRebind += gEventCalendarAttributes_GridRebind;
-            gEventCalendarAttributes.GridReorder += gEventCalendarAttributes_GridReorder;
+            gAttributes.DataKeyNames = new string[] { "Guid" };
+            gAttributes.Actions.ShowAdd = UserCanAdministrate;
+            gAttributes.Actions.AddClick += gAttributes_Add;
+            gAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
+            gAttributes.GridRebind += gAttributes_GridRebind;
+            gAttributes.GridReorder += gAttributes_GridReorder;
+
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upEventCalendar );
         }
 
         /// <summary>
@@ -111,11 +116,13 @@ namespace RockWeb.Blocks.Event
         /// </returns>
         protected override object SaveViewState()
         {
-            // Persist any changes that might have been made to objects in list
-            if ( EventCalendarAttributesState != null )
+            var jsonSetting = new JsonSerializerSettings
             {
-                EventCalendarAttributesState.SaveViewState();
-            }
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+            };
+
+            ViewState["AttributesState"] = JsonConvert.SerializeObject( AttributesState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -156,7 +163,7 @@ namespace RockWeb.Blocks.Event
 
         #region Events
 
-        #region Control Events
+        #region Edit Events
 
         /// <summary>
         /// Handles the Click event of the btnEdit control.
@@ -165,7 +172,11 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            ShowEditDetails( GetEventCalendar( hfEventCalendarId.Value.AsInteger() ) );
+            var rockContext = new RockContext();
+            var eventCalendar = new EventCalendarService( rockContext ).Get( hfEventCalendarId.Value.AsInteger() );
+
+            LoadStateDetails( eventCalendar, rockContext );
+            ShowEditDetails( eventCalendar );
         }
 
         /// <summary>
@@ -175,38 +186,35 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            RockContext rockContext = new RockContext();
-
-            EventCalendarService eventCalendarService = new EventCalendarService( rockContext );
-            AuthService authService = new AuthService( rockContext );
-            EventCalendar eventCalendar = eventCalendarService.Get( int.Parse( hfEventCalendarId.Value ) );
-
-            if ( eventCalendar != null )
+            using ( var rockContext = new RockContext() )
             {
-                if ( !eventCalendar.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                EventCalendarService eventCalendarService = new EventCalendarService( rockContext );
+                AuthService authService = new AuthService( rockContext );
+                EventCalendar eventCalendar = eventCalendarService.Get( int.Parse( hfEventCalendarId.Value ) );
+
+                if ( eventCalendar != null )
                 {
-                    mdDeleteWarning.Show( "You are not authorized to delete this calendar.", ModalAlertType.Information );
-                    return;
+                    if ( !eventCalendar.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                    {
+                        mdDeleteWarning.Show( "You are not authorized to delete this calendar.", ModalAlertType.Information );
+                        return;
+                    }
+
+                    string errorMessage;
+                    if ( !eventCalendarService.CanDelete( eventCalendar, out errorMessage ) )
+                    {
+                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                    eventCalendarService.Delete( eventCalendar );
+
+                    rockContext.SaveChanges();
                 }
-
-                string errorMessage;
-                if ( !eventCalendarService.CanDelete( eventCalendar, out errorMessage ) )
-                {
-                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
-                    return;
-                }
-
-                eventCalendarService.Delete( eventCalendar );
-
-                rockContext.SaveChanges();
             }
 
             NavigateToParentPage();
         }
-
-        #endregion
-
-        #region Action Events
 
         /// <summary>
         /// Handles the Click event of the btnSave control.
@@ -216,52 +224,48 @@ namespace RockWeb.Blocks.Event
         protected void btnSave_Click( object sender, EventArgs e )
         {
             EventCalendar eventCalendar;
-            var rockContext = new RockContext();
-            EventCalendarService eventCalendarService = new EventCalendarService( rockContext );
-            AttributeService attributeService = new AttributeService( rockContext );
-            AttributeQualifierService qualifierService = new AttributeQualifierService( rockContext );
-
-            int eventCalendarId = int.Parse( hfEventCalendarId.Value );
-
-            if ( eventCalendarId == 0 )
+            using ( var rockContext = new RockContext() )
             {
-                eventCalendar = new EventCalendar();
-                eventCalendarService.Add( eventCalendar );
+                EventCalendarService eventCalendarService = new EventCalendarService( rockContext );
+                AttributeService attributeService = new AttributeService( rockContext );
+                AttributeQualifierService qualifierService = new AttributeQualifierService( rockContext );
+
+                int eventCalendarId = int.Parse( hfEventCalendarId.Value );
+
+                if ( eventCalendarId == 0 )
+                {
+                    eventCalendar = new EventCalendar();
+                    eventCalendarService.Add( eventCalendar );
+                }
+                else
+                {
+                    eventCalendar = eventCalendarService.Get( eventCalendarId );
+                }
+
+                eventCalendar.Name = tbName.Text;
+                eventCalendar.Description = tbDescription.Text;
+                eventCalendar.IconCssClass = tbIconCssClass.Text;
+
+                if ( !eventCalendar.IsValid )
+                {
+                    // Controls will render the error messages
+                    return;
+                }
+
+                // need WrapTransaction due to Attribute saves
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+
+                    /* Save Attributes */
+                    string qualifierValue = eventCalendar.Id.ToString();
+                    SaveAttributes( new EventCalendarItem().TypeId, "EventCalendarId", qualifierValue, AttributesState, rockContext );
+
+                    rockContext.SaveChanges();
+                } );
             }
-            else
-            {
-                eventCalendar = eventCalendarService.Get( eventCalendarId );
-            }
 
-            eventCalendar.Name = tbName.Text;
-            eventCalendar.Description = tbDescription.Text;
-            eventCalendar.IconCssClass = tbIconCssClass.Text;
-
-            if ( !eventCalendar.IsValid )
-            {
-                // Controls will render the error messages
-                return;
-            }
-
-            // need WrapTransaction due to Attribute saves
-            rockContext.WrapTransaction( () =>
-            {
-                rockContext.SaveChanges();
-
-                /* Save Attributes */
-                string qualifierValue = eventCalendar.Id.ToString();
-                SaveAttributes( new EventCalendarItem().TypeId, "EventCalendarId", qualifierValue, EventCalendarAttributesState, rockContext );
-
-                // Reload to save default role
-                eventCalendar = eventCalendarService.Get( eventCalendar.Id );
-
-                rockContext.SaveChanges();
-            } );
-
-            var qryParams = new Dictionary<string, string>();
-            qryParams["EventCalendarId"] = eventCalendar.Id.ToString();
-
-            NavigateToPage( RockPage.Guid, qryParams );
+            ShowDetail( eventCalendar.Id );
         }
 
         /// <summary>
@@ -280,8 +284,6 @@ namespace RockWeb.Blocks.Event
                 ShowReadonlyDetails( GetEventCalendar( hfEventCalendarId.ValueAsInt(), new RockContext() ) );
             }
         }
-
-        #endregion
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.
@@ -311,7 +313,107 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
-        #region Internal Methods
+        #region Attribute Events
+
+        /// <summary>
+        /// Handles the Add event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gAttributes_Add( object sender, EventArgs e )
+        {
+            ShowAttributeEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gAttributes_Edit( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = (Guid)e.RowKeyValue;
+            ShowAttributeEdit( attributeGuid );
+        }
+
+        /// <summary>
+        /// Handles the GridReorder event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gAttributes_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            SortAttributes( AttributesState, e.OldIndex, e.NewIndex );
+            ReOrderAttributes( AttributesState );
+            BindAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void gAttributes_Delete( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = (Guid)e.RowKeyValue;
+            AttributesState.RemoveEntity( attributeGuid );
+
+            BindAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gAttributes_GridRebind( object sender, EventArgs e )
+        {
+            BindAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgAttribute_SaveClick( object sender, EventArgs e )
+        {
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+            edtAttributes.GetAttributeProperties( attribute );
+
+            // Controls will show warnings
+            if ( !attribute.IsValid )
+            {
+                return;
+            }
+
+            if ( AttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
+            {
+                attribute.Order = AttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
+                AttributesState.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                attribute.Order = AttributesState.Any() ? AttributesState.Max( a => a.Order ) + 1 : 0;
+            }
+
+            AttributesState.Add( attribute );
+
+            ReOrderAttributes( AttributesState );
+
+            BindAttributesGrid();
+
+            HideDialog();
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Methods
+
+        #region Main Form Methods
 
         /// <summary>
         /// Shows the edit.
@@ -322,7 +424,7 @@ namespace RockWeb.Blocks.Event
             pnlDetails.Visible = false;
 
             EventCalendar eventCalendar = null;
-            RockContext rockContext = null;
+            var rockContext = new RockContext();
 
             if ( !eventCalendarId.Equals( 0 ) )
             {
@@ -342,19 +444,27 @@ namespace RockWeb.Blocks.Event
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed || !IsUserAuthorized( Authorization.ADMINISTRATE ) )
+            if ( !editAllowed || !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( EventCalendar.FriendlyTypeName );
             }
-            if ( !eventCalendarId.Equals( 0 ) )
+
+            if ( readOnly )
             {
+                btnEdit.Visible = false;
                 ShowReadonlyDetails( eventCalendar );
             }
             else
             {
-                if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
+                btnEdit.Visible = true;
+                if ( !eventCalendarId.Equals( 0 ) )
                 {
+                    ShowReadonlyDetails( eventCalendar );
+                }
+                else
+                {
+                    LoadStateDetails( eventCalendar, rockContext );
                     ShowEditDetails( eventCalendar );
                 }
             }
@@ -370,6 +480,7 @@ namespace RockWeb.Blocks.Event
             {
                 eventCalendar = new EventCalendar();
             }
+
             if ( eventCalendar.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( EventCalendar.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -381,30 +492,12 @@ namespace RockWeb.Blocks.Event
 
             SetEditMode( true );
 
-            var rockContext = new RockContext();
-
-            var eventCalendarService = new EventCalendarService( rockContext );
-            var attributeService = new AttributeService( rockContext );
-
             // General
             tbName.Text = eventCalendar.Name;
-
             tbDescription.Text = eventCalendar.Description;
-
             tbIconCssClass.Text = eventCalendar.IconCssClass;
 
-            // Attributes
-            string qualifierValue = eventCalendar.Id.ToString();
-
-            EventCalendarAttributesState = new ViewStateList<Attribute>();
-            EventCalendarAttributesState.AddAll( attributeService.GetByEntityTypeId( new EventCalendarItem().TypeId ).AsQueryable()
-                .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "EventCalendarId", StringComparison.OrdinalIgnoreCase ) &&
-                    a.EntityTypeQualifierValue.Equals( qualifierValue ) )
-                .OrderBy( a => a.Order )
-                .ThenBy( a => a.Name )
-                .ToList() );
-            BindEventCalendarAttributesGrid();
+            BindAttributesGrid();
         }
 
         /// <summary>
@@ -416,19 +509,10 @@ namespace RockWeb.Blocks.Event
             SetEditMode( false );
 
             hfEventCalendarId.SetValue( eventCalendar.Id );
+            AttributesState = null;
+
             lReadOnlyTitle.Text = eventCalendar.Name.FormatAsHtmlTitle();
-
             lEventCalendarDescription.Text = eventCalendar.Description;
-
-            DescriptionList descriptionList = new DescriptionList();
-            descriptionList.Add( string.Empty, string.Empty );
-            lblMainDetails.Text = descriptionList.Html;
-
-            if ( !eventCalendar.IsAuthorized( Authorization.EDIT, CurrentPerson ) || !IsUserAuthorized( Authorization.ADMINISTRATE ) )
-            {
-                btnEdit.Visible = false;
-                btnDelete.Visible = false;
-            }
         }
 
         /// <summary>
@@ -483,8 +567,8 @@ namespace RockWeb.Blocks.Event
         {
             switch ( hfActiveDialog.Value )
             {
-                case "EVENTCALENDARATTRIBUTES":
-                    dlgEventCalendarAttribute.Show();
+                case "ATTRIBUTES":
+                    dlgAttribute.Show();
                     break;
             }
         }
@@ -496,22 +580,34 @@ namespace RockWeb.Blocks.Event
         {
             switch ( hfActiveDialog.Value )
             {
-                case "EVENTCALENDARATTRIBUTES":
-                    dlgEventCalendarAttribute.Hide();
+                case "ATTRIBUTES":
+                    dlgAttribute.Hide();
                     break;
             }
 
             hfActiveDialog.Value = string.Empty;
         }
 
+        #endregion
+
+        #region Attribute Grid
+
         /// <summary>
-        /// Sets the attribute list order.
+        /// Loads the state details.
         /// </summary>
-        /// <param name="itemList">The item list.</param>
-        private void SetAttributeListOrder( ViewStateList<Attribute> itemList )
+        /// <param name="eventCalendar">The event calendar.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void LoadStateDetails( EventCalendar eventCalendar, RockContext rockContext )
         {
-            int order = 0;
-            itemList.OrderBy( a => a.Order ).ToList().ForEach( a => a.Order = order++ );
+            var attributeService = new AttributeService( rockContext );
+            AttributesState = attributeService
+                .GetByEntityTypeId( new EventCalendarItem().TypeId ).AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "EventCalendarId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( eventCalendar.Id.ToString() ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
         }
 
         /// <summary>
@@ -520,15 +616,15 @@ namespace RockWeb.Blocks.Event
         /// <param name="itemList">The item list.</param>
         /// <param name="oldIndex">The old index.</param>
         /// <param name="newIndex">The new index.</param>
-        private void ReorderAttributeList( ViewStateList<Attribute> itemList, int oldIndex, int newIndex )
+        private void SortAttributes( List<Attribute> attributeList, int oldIndex, int newIndex )
         {
-            var movedItem = itemList.Where( a => a.Order == oldIndex ).FirstOrDefault();
+            var movedItem = attributeList.Where( a => a.Order == oldIndex ).FirstOrDefault();
             if ( movedItem != null )
             {
                 if ( newIndex < oldIndex )
                 {
                     // Moved up
-                    foreach ( var otherItem in itemList.Where( a => a.Order < oldIndex && a.Order >= newIndex ) )
+                    foreach ( var otherItem in attributeList.Where( a => a.Order < oldIndex && a.Order >= newIndex ) )
                     {
                         otherItem.Order = otherItem.Order + 1;
                     }
@@ -536,7 +632,7 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     // Moved Down
-                    foreach ( var otherItem in itemList.Where( a => a.Order > oldIndex && a.Order <= newIndex ) )
+                    foreach ( var otherItem in attributeList.Where( a => a.Order > oldIndex && a.Order <= newIndex ) )
                     {
                         otherItem.Order = otherItem.Order - 1;
                     }
@@ -547,24 +643,78 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Reorder attributes.
+        /// </summary>
+        private void ReOrderAttributes( List<Attribute> attributeList )
+        {
+            attributeList = attributeList.OrderBy( a => a.Order ).ToList();
+            int order = 0;
+            attributeList.ForEach( a => a.Order = order++ );
+        }
+
+        /// <summary>
+        /// Binds the group type attributes grid.
+        /// </summary>
+        private void BindAttributesGrid()
+        {
+            gAttributes.DataSource = AttributesState
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .Select( a => new
+                {
+                    a.Id,
+                    a.Guid,
+                    a.Name,
+                    a.Description,
+                    FieldType = FieldTypeCache.GetName( a.FieldTypeId ),
+                    a.AllowSearch,
+                    a.IsRequired
+                } )
+                .ToList();
+            gAttributes.DataBind();
+        }
+
+        /// <summary>
+        /// Shows the attribute edit.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        private void ShowAttributeEdit( Guid attributeGuid )
+        {
+            Attribute attribute;
+            if ( attributeGuid.Equals( Guid.Empty ) )
+            {
+                attribute = new Attribute();
+                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+            }
+            else
+            {
+                attribute = AttributesState.First( a => a.Guid.Equals( attributeGuid ) );
+            }
+
+            edtAttributes.ReservedKeyNames = AttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
+
+            edtAttributes.SetAttributeProperties( attribute, typeof( EventCalendar ) );
+
+            ShowDialog( "Attributes" );
+        }
+
+        /// <summary>
         /// Saves the attributes.
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="qualifierColumn">The qualifier column.</param>
         /// <param name="qualifierValue">The qualifier value.</param>
-        /// <param name="viewStateAttributes">The view state attributes.</param>
-        /// <param name="attributeService">The attribute service.</param>
-        /// <param name="qualifierService">The qualifier service.</param>
-        /// <param name="categoryService">The category service.</param>
-        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, ViewStateList<Attribute> viewStateAttributes, RockContext rockContext )
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<Attribute> attributes, RockContext rockContext )
         {
             // Get the existing attributes for this entity type and qualifier value
             var attributeService = new AttributeService( rockContext );
-            var attributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+            var existingAttributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
 
             // Delete any of those attributes that were removed in the UI
-            var selectedAttributeGuids = viewStateAttributes.Select( a => a.Guid );
-            foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
+            var selectedAttributeGuids = attributes.Select( a => a.Guid );
+            foreach ( var attr in existingAttributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
@@ -572,142 +722,17 @@ namespace RockWeb.Blocks.Event
             }
 
             // Update the Attributes that were assigned in the UI
-            foreach ( var attributeState in viewStateAttributes )
+            foreach ( var attribute in attributes )
             {
-                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
+                Helper.SaveAttributeEdits( attribute, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
+
+            AttributeCache.FlushEntityAttributes();
         }
 
         #endregion
 
-        #region EventCalendarAttributes Grid and Picker
-
-        /// <summary>
-        /// Handles the Add event of the gEventCalendarAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gEventCalendarAttributes_Add( object sender, EventArgs e )
-        {
-            gEventCalendarAttributes_ShowEdit( Guid.Empty );
-        }
-
-        /// <summary>
-        /// Handles the Edit event of the gEventCalendarAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gEventCalendarAttributes_Edit( object sender, RowEventArgs e )
-        {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
-            gEventCalendarAttributes_ShowEdit( attributeGuid );
-        }
-
-        /// <summary>
-        /// Gets the event calendar's attributes_ show edit.
-        /// </summary>
-        /// <param name="attributeGuid">The attribute GUID.</param>
-        protected void gEventCalendarAttributes_ShowEdit( Guid attributeGuid )
-        {
-            Attribute attribute;
-            if ( attributeGuid.Equals( Guid.Empty ) )
-            {
-                attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
-                edtEventCalendarAttributes.ActionTitle = ActionTitle.Add( "attribute for Events of Calendar type " + tbName.Text );
-            }
-            else
-            {
-                attribute = EventCalendarAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
-                edtEventCalendarAttributes.ActionTitle = ActionTitle.Edit( "attribute for Events of Calendar type " + tbName.Text );
-            }
-
-            var reservedKeyNames = new List<string>();
-            EventCalendarAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
-            edtEventCalendarAttributes.ReservedKeyNames = reservedKeyNames.ToList();
-
-            edtEventCalendarAttributes.SetAttributeProperties( attribute, typeof( EventCalendar ) );
-
-            ShowDialog( "EventCalendarAttributes" );
-        }
-
-        /// <summary>
-        /// Handles the GridReorder event of the gEventCalendarAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
-        protected void gEventCalendarAttributes_GridReorder( object sender, GridReorderEventArgs e )
-        {
-            ReorderAttributeList( EventCalendarAttributesState, e.OldIndex, e.NewIndex );
-            BindEventCalendarAttributesGrid();
-        }
-
-        /// <summary>
-        /// Handles the Delete event of the gEventCalendarAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        protected void gEventCalendarAttributes_Delete( object sender, RowEventArgs e )
-        {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
-            EventCalendarAttributesState.RemoveEntity( attributeGuid );
-
-            BindEventCalendarAttributesGrid();
-        }
-
-        /// <summary>
-        /// Handles the GridRebind event of the gEventCalendarAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gEventCalendarAttributes_GridRebind( object sender, EventArgs e )
-        {
-            BindEventCalendarAttributesGrid();
-        }
-
-        /// <summary>
-        /// Handles the SaveClick event of the dlgEventCalendarAttribute control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void dlgEventCalendarAttribute_SaveClick( object sender, EventArgs e )
-        {
-            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-            edtEventCalendarAttributes.GetAttributeProperties( attribute );
-
-            // Controls will show warnings
-            if ( !attribute.IsValid )
-            {
-                return;
-            }
-
-            if ( EventCalendarAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
-            {
-                attribute.Order = EventCalendarAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
-                EventCalendarAttributesState.RemoveEntity( attribute.Guid );
-            }
-            else
-            {
-                attribute.Order = EventCalendarAttributesState.Any() ? EventCalendarAttributesState.Max( a => a.Order ) + 1 : 0;
-            }
-            EventCalendarAttributesState.Add( attribute );
-
-            BindEventCalendarAttributesGrid();
-            HideDialog();
-        }
-
-        /// <summary>
-        /// Binds the Event Calendar Type attributes grid.
-        /// </summary>
-        private void BindEventCalendarAttributesGrid()
-        {
-            gEventCalendarAttributes.AddCssClass( "attribute-grid" );
-            SetAttributeListOrder( EventCalendarAttributesState );
-            gEventCalendarAttributes.DataSource = EventCalendarAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
-            gEventCalendarAttributes.DataBind();
-        }
-
         #endregion
+
     }
 }

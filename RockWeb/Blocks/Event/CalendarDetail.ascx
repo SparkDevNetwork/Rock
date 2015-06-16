@@ -19,20 +19,13 @@
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                <Rock:NotificationBox ID="nbNotAllowedToEdit" runat="server" NotificationBoxType="Danger" Visible="false"
-                    Text="You are not authorized to save group with the selected group type and/or parent group." />
+
                 <asp:ValidationSummary ID="valEventCalendarDetail" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                 <div id="pnlViewDetails" runat="server">
                     <p class="description">
                         <asp:Literal ID="lEventCalendarDescription" runat="server"></asp:Literal>
                     </p>
-
-                    <div class="row">
-                        <div class="cold-md-12">
-                            <asp:Literal ID="lblMainDetails" runat="server" />
-                        </div>
-                    </div>
 
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
@@ -52,11 +45,7 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-12">
-                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.EventCalendar, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                        </div>
-                    </div>
+                    <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.EventCalendar, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
 
                     <div class="row">
                         <div class="col-md-6">
@@ -66,16 +55,18 @@
                         </div>
                     </div>
 
-                    <Rock:PanelWidget ID="wpEventCalendarAttributes" runat="server" Title="Calendar Item Attributes">
+                    <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Calendar Item Attributes">
                         <div class="grid">
-                            <Rock:Grid ID="gEventCalendarAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Event Calendar Attribute">
+                            <Rock:Grid ID="gAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Attribute">
                                 <Columns>
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
+                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                     <Rock:RockBoundField DataField="FieldType" HeaderText="Field Type" />
                                     <Rock:BoolField DataField="AllowSearch" HeaderText="Allow Search" />
-                                    <Rock:EditField OnClick="gEventCalendarAttributes_Edit" />
-                                    <Rock:DeleteField OnClick="gEventCalendarAttributes_Delete" />
+                                    <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
+                                    <Rock:EditField OnClick="gAttributes_Edit" />
+                                    <Rock:DeleteField OnClick="gAttributes_Delete" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
@@ -93,10 +84,11 @@
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
-        <Rock:ModalDialog ID="dlgEventCalendarAttribute" runat="server" Title="Event Calendar Attributes" OnSaveClick="dlgEventCalendarAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="EventCalendarAttributes">
+        <Rock:ModalDialog ID="dlgAttribute" runat="server" Title="Calendar Item Attribute" OnSaveClick="dlgAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Attributes">
             <Content>
-                <Rock:AttributeEditor ID="edtEventCalendarAttributes" runat="server" ShowActions="false" ValidationGroup="EventCalendarAttributes" />
+                <Rock:AttributeEditor ID="edtAttributes" runat="server" ShowActions="false" ValidationGroup="Attributes" />
             </Content>
         </Rock:ModalDialog>
+
     </ContentTemplate>
 </asp:UpdatePanel>
