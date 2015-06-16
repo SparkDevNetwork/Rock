@@ -1254,6 +1254,13 @@ namespace Rock.Model
                 }
             }
 
+            // ensure person has a PersonAlias/PrimaryAlias
+            if ( !this.Aliases.Any() || !this.Aliases.Any( a => a.AliasPersonId == this.Id ) )
+            {
+                
+                this.Aliases.Add( new PersonAlias { AliasPerson = this, AliasPersonGuid = this.Guid, Guid = Guid.NewGuid() } );
+            }
+
             var transaction = new Rock.Transactions.SaveMetaphoneTransaction( this );
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
         }

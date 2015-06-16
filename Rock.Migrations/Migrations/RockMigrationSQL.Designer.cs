@@ -226,5 +226,16 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201506130028565_AttributeValueAsDateTimeIndex_UpdateValues", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- child label w/ icons
+        ///  UPDATE [BinaryFileData]
+        ///	SET [Content] = 0xEFBBBF1043547E7E43442C7E43435E7E43547E0D0A5E58417E54413030307E4A534E5E4C54305E4D4E575E4D54445E504F4E5E504D4E5E4C48302C305E4A4D415E5052362C367E534432345E4A55535E4C524E5E4349305E585A0D0A5E58410D0A5E4D4D540D0A5E50573831320D0A5E4C4C303430360D0A5E4C53300D0A5E46543435322C3131395E41304E2C3133352C3133345E46423333332C312C302C525E46485C5E46445757575E46530D0A5E465431322C3235345E41304E2C3133352C3134365E46485C5E4644355E46530D0A5E465431342C3330395E413 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201506162223455_EnsurePersonAlias_UpdateCheckinLabels {
+            get {
+                return ResourceManager.GetString("_201506162223455_EnsurePersonAlias_UpdateCheckinLabels", resourceCulture);
+            }
+        }
     }
 }

@@ -95,6 +95,15 @@ namespace Rock.Model
         public virtual Person Person { get; set; }
 
         /// <summary>
+        /// Gets or sets the alias person.
+        /// </summary>
+        /// <value>
+        /// The alias person.
+        /// </value>
+        [DataMember]
+        public virtual Person AliasPerson { get; set; }
+
+        /// <summary>
         /// Gets the previous encrypted key for the <see cref="Rock.Model.Person"/>.
         /// </summary>
         /// <value>
@@ -152,6 +161,7 @@ namespace Rock.Model
         public PersonAliasConfiguration()
         {
             HasRequired( a => a.Person ).WithMany( p => p.Aliases ).HasForeignKey( a => a.PersonId ).WillCascadeOnDelete( false );
+            HasRequired( a => a.AliasPerson ).WithMany().HasForeignKey( a => a.AliasPersonId ).WillCascadeOnDelete( false );
         }
     }
 

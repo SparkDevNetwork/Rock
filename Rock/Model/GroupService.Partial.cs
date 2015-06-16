@@ -531,11 +531,6 @@ namespace Rock.Model
                     if ( person != null )
                     {
                         bool updateRequired = false;
-                        if ( !person.Aliases.Any( a => a.AliasPersonId == person.Id ) )
-                        {
-                            person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
-                            updateRequired = true;
-                        }
                         var changes = familyDemographicChanges[person.Guid];
                         if ( groupMember.GroupRoleId != childRoleId )
                         {
