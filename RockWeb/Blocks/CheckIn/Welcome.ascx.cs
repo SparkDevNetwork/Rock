@@ -275,7 +275,7 @@ if ($ActiveWhen.text() != '')
             foreach ( var groupType in CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentCheckInState.ConfiguredGroupTypes ) )		
             {		
                 var lUl = new HtmlGenericControl( "ul" );		
-                lUl.AddCssClass( "checkin-count-locations" );		
+                lUl.AddCssClass( "kioskmanager-count-locations" );		
                 phCounts.Controls.Add( lUl );		
 		
                 foreach ( var location in groupType.KioskGroups.SelectMany( g => g.KioskLocations ).OrderBy( l => l.Location.Name).Distinct() )		
@@ -288,28 +288,28 @@ if ($ActiveWhen.text() != '')
                         if ( locationAttendance != null )		
                         {		
                             var lLi = new HtmlGenericControl( "li" );		
-                            lUl.Controls.Add( lLi );		
-                            lLi.InnerHtml = string.Format( "{0}: <strong>{1}</strong>", locationAttendance.LocationName, locationAttendance.CurrentCount );
+                            lUl.Controls.Add( lLi );
+                            lLi.InnerHtml = string.Format( "<strong>{0}</strong>: {1}", locationAttendance.LocationName, locationAttendance.CurrentCount );
 
                             var gUl = new HtmlGenericControl( "ul" );
-                            gUl.AddCssClass( "checkin-count-groups" );
+                            gUl.AddCssClass( "kioskmanager-count-groups" );
                             lLi.Controls.Add( gUl );
 
                             foreach ( var groupAttendance in locationAttendance.Groups )		
                             {		
                                 var gLi = new HtmlGenericControl( "li" );		
-                                gUl.Controls.Add( gLi );		
-                                gLi.InnerHtml = string.Format( "{0}: <strong>{1}</strong>", groupAttendance.GroupName, groupAttendance.CurrentCount );
+                                gUl.Controls.Add( gLi );
+                                gLi.InnerHtml = string.Format( "<strong>{0}</strong>: {1}", groupAttendance.GroupName, groupAttendance.CurrentCount );
 
                                 var sUl = new HtmlGenericControl( "ul" );
-                                sUl.AddCssClass( "checkin-count-schedules" );
+                                sUl.AddCssClass( "kioskmanager-count-schedules" );
                                 gLi.Controls.Add( sUl );
 
                                 foreach ( var scheduleAttendance in groupAttendance.Schedules )		
                                 {		
                                     var sLi = new HtmlGenericControl( "li" );		
-                                    sUl.Controls.Add( sLi );		
-                                    sLi.InnerHtml = string.Format( "{0}: <strong>{1}</strong>", scheduleAttendance.ScheduleName, scheduleAttendance.CurrentCount );		
+                                    sUl.Controls.Add( sLi );
+                                    sLi.InnerHtml = string.Format( "<strong>{0}</strong>: {1}", scheduleAttendance.ScheduleName, scheduleAttendance.CurrentCount );		
                                 }		
                             }		
                         }		
