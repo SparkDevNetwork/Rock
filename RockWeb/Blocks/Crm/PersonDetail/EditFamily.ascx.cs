@@ -820,34 +820,20 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         // People added to family (new or from other family)
                         if ( !familyMember.ExistingFamilyMember )
                         {
-                            var groupMember = new GroupMember();
-                            groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-
+                            Person person = null;
                             if ( familyMember.Id == -1 )
                             {
                                 // added new person
                                 demographicChanges.Add( "Created" );
 
-                                var person = new Person();
+                                person = new Person();
 
                                 person.TitleValueId = familyMember.TitleValueId;
-                                History.EvaluateChange( demographicChanges, "Title", string.Empty, DefinedValueCache.GetName( person.TitleValueId) );
-
                                 person.FirstName = familyMember.FirstName;
                                 person.NickName = familyMember.NickName;
-                                History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName );
-
                                 person.LastName = familyMember.LastName;
-                                History.EvaluateChange( demographicChanges, "Last Name", string.Empty, person.LastName );
-
                                 person.SuffixValueId = familyMember.SuffixValueId;
-                                History.EvaluateChange( demographicChanges, "Suffix", string.Empty, DefinedValueCache.GetName( person.SuffixValueId ) );
-
                                 person.Gender = familyMember.Gender;
-                                History.EvaluateChange( demographicChanges, "Gender", null, person.Gender );
-
-                                person.MaritalStatusValueId = familyMember.MaritalStatusValueId;
-                                History.EvaluateChange( demographicChanges, "Marital Status", string.Empty, DefinedValueCache.GetName( person.MaritalStatusValueId ) );
 
                                 DateTime? birthdate = familyMember.BirthDate;
                                 if ( birthdate.HasValue )
@@ -859,72 +845,46 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         birthdate = birthdate.Value.AddYears( -100 );
                                     }
                                 }
+
                                 person.SetBirthDate( birthdate );
-                                History.EvaluateChange( demographicChanges, "Birth Date", null, person.BirthDate );
 
+                                person.MaritalStatusValueId = familyMember.MaritalStatusValueId;
                                 person.GradeOffset = familyMember.GradeOffset;
-                                History.EvaluateChange( demographicChanges, "Graduation Year", null, person.GraduationYear );
-
                                 person.ConnectionStatusValueId = familyMember.ConnectionStatusValueId;
-                                History.EvaluateChange( demographicChanges, "Connection Status", string.Empty, DefinedValueCache.GetName( person.ConnectionStatusValueId ) );
-
-                                person.IsEmailActive = true;
-                                History.EvaluateChange( demographicChanges, "Email Active", true.ToString(), ( person.IsEmailActive ?? true ).ToString() );
-
-                                person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                                History.EvaluateChange( demographicChanges, "Record Type", string.Empty, DefinedValueCache.GetName( person.RecordTypeValueId.Value ) );
-
                                 if ( !isChild )
                                 {
                                     person.GivingGroupId = _family.Id;
-                                    History.EvaluateChange( demographicChanges, "Giving Group", string.Empty, _family.Name );
                                 }
 
+                                person.IsEmailActive = true;
                                 person.EmailPreference = EmailPreference.EmailAllowed;
-
-                                groupMember.Person = person;
+                                person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                             }
                             else
                             {
-                                // added from other family
-                                groupMember.Person = personService.Get( familyMember.Id );
+                                person = personService.Get( familyMember.Id );
+                                
                             }
 
-                            if ( recordStatusValueID > 0 )
+                            if (person == null)
                             {
-                                History.EvaluateChange( demographicChanges, "Record Status", DefinedValueCache.GetName( groupMember.Person.RecordStatusValueId ), DefinedValueCache.GetName( recordStatusValueID ) );
-                                groupMember.Person.RecordStatusValueId = recordStatusValueID;
-
-                                History.EvaluateChange( demographicChanges, "Record Status Reason", DefinedValueCache.GetName( groupMember.Person.RecordStatusReasonValueId ), DefinedValueCache.GetName( reasonValueId ) );
-                                groupMember.Person.RecordStatusReasonValueId = reasonValueId;
+                                // shouldn't happen
+                                return;
                             }
 
-                            groupMember.GroupId = _family.Id;
-                            if ( role != null )
+                            if ( person.RecordStatusValueId != recordStatusValueID )
                             {
-                                History.EvaluateChange( memberChanges, "Role", string.Empty, role.Name );
-                                groupMember.GroupRoleId = role.Id;
+                                History.EvaluateChange( demographicChanges, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), DefinedValueCache.GetName( recordStatusValueID ) );
+                                person.RecordStatusValueId = recordStatusValueID;
                             }
 
-                            if ( groupMember.Person != null )
+                            if ( person.RecordStatusValueId != recordStatusValueID )
                             {
-                                familyMemberService.Add( groupMember );
-                                rockContext.SaveChanges();
-
-                                // Every person should have an alias record with same id.  If it's missing, create it
-                                if ( !groupMember.Person.Aliases.Any( a => a.AliasPersonId == groupMember.Person.Id ) )
-                                {
-                                    var groupMemberPerson = personService.Get( groupMember.Person.Id );
-                                    if ( groupMemberPerson != null )
-                                    {
-                                        groupMemberPerson.Aliases.Add( new PersonAlias { AliasPersonId = groupMemberPerson.Id, AliasPersonGuid = groupMemberPerson.Guid } );
-                                        rockContext.SaveChanges();
-                                    }
-                                }
-
-                                familyMember.Id = groupMember.Person.Id;
+                                History.EvaluateChange( demographicChanges, "Record Status Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( reasonValueId ) );
+                                person.RecordStatusReasonValueId = reasonValueId;
                             }
 
+                            PersonService.AddPersonToFamily( person, person.Id == 0, _family.Id, role.Id, rockContext );
                         }
                         else
                         {
@@ -1003,49 +963,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         // Remove anyone that was moved from another family
                         if ( familyMember.RemoveFromOtherFamilies )
                         {
-                            var otherFamilies = familyMemberService.Queryable()
-                                .Where( m =>
-                                    m.PersonId == familyMember.Id &&
-                                    m.Group.GroupTypeId == familyGroupTypeId &&
-                                    m.GroupId != _family.Id )
-                                .ToList();
-
-                            foreach ( var otherFamilyMember in otherFamilies )
-                            {
-                                var fm = familyMemberService.Get( otherFamilyMember.Id );
-
-                                // If the person's giving group id was the family they are being removed from, update it to this new family's id
-                                if ( fm.Person.GivingGroupId == fm.GroupId )
-                                {
-                                    var person = personService.Get( fm.PersonId );
-
-                                    History.EvaluateChange( demographicChanges, "Giving Group", person.GivingGroup.Name, _family.Name );
-                                    person.GivingGroupId = _family.Id;
-
-                                    rockContext.SaveChanges();
-                                }
-
-                                var oldMemberChanges = new List<string>();
-                                History.EvaluateChange( oldMemberChanges, "Role", fm.GroupRole.Name, string.Empty );
-                                History.EvaluateChange( oldMemberChanges, "Family", fm.Group.Name, string.Empty );
-                                HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                    fm.Person.Id, oldMemberChanges, fm.Group.Name, typeof( Group ), fm.Group.Id );
-
-                                familyMemberService.Delete( fm );
-                                rockContext.SaveChanges();
-
-                                var f = familyService.Queryable()
-                                    .Where( g =>
-                                        g.Id == otherFamilyMember.GroupId &&
-                                        !g.Members.Any() )
-                                    .FirstOrDefault();
-                                if ( f != null )
-                                {
-                                    familyService.Delete( f );
-                                    rockContext.SaveChanges();
-                                }
-
-                            }
+                            PersonService.RemovePersonFromOtherFamilies( _family.Id, familyMember.Id, rockContext );
                         }
 
                         HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
@@ -1180,6 +1098,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 } );
             }
         }
+
+        
 
         /// <summary>
         /// Handles the Click event of the btnCancel control.
