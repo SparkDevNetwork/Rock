@@ -18,9 +18,9 @@
                         <asp:Repeater ID="rptEventCalendars" runat="server">
                             <ItemTemplate>
                                 <li>
-                                    <asp:LinkButton ID="lbEventCalendar" runat="server" CommandArgument='<%# Eval("EventCalendar.Id") %>' CommandName="Display">
-                                        <i class='<%# Eval("EventCalendar.IconCssClass") %>'></i>
-                                        <h3><%# Eval("EventCalendar.Name") %> </h3>
+                                    <asp:LinkButton ID="lbEventCalendar" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
+                                        <i class='<%# Eval("IconCssClass") %>'></i>
+                                        <h3><%# Eval("Name") %> </h3>
                                     </asp:LinkButton>
                                 </li>
                             </ItemTemplate>
