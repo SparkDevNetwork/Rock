@@ -15,20 +15,15 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Event
 {
@@ -38,16 +33,25 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Calendar Types" )]
     [Category( "Event" )]
     [Description( "Displays the calendars that user is authorized to view." )]
-    [LinkedPage( "Detail Page", "Page used to view status of an event calendar." )]
+    [LinkedPage( "Detail Page", "Page used to view details of an event calendar." )]
     public partial class CalendarTypes : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
+            lbAddEventCalendar.Visible = UserCanAdministrate;
+
             rptEventCalendars.ItemCommand += rptEventCalendars_ItemCommand;
+
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
         /// <summary>
@@ -57,11 +61,7 @@ namespace RockWeb.Blocks.Event
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            bool editAllowed = IsUserAuthorized( Authorization.ADMINISTRATE );
-            if ( !editAllowed )
-            {
-                lbAddEventCalendar.Visible = false;
-            }
+
             if ( !Page.IsPostBack )
             {
                 GetData();
@@ -80,6 +80,16 @@ namespace RockWeb.Blocks.Event
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             GetData();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddEventCalendar control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddEventCalendar_Click( object sender, EventArgs e )
+        {
+            NavigateToLinkedPage( "DetailPage", "EventCalendarId", 0 );
         }
 
         /// <summary>
@@ -104,37 +114,18 @@ namespace RockWeb.Blocks.Event
 
         private void GetData()
         {
-            var rockContext = new RockContext();
-
-            int personId = CurrentPerson != null ? CurrentPerson.Id : 0;
-
-            // Get all of the event calendars
-            var allEventCalendars = new EventCalendarService( rockContext ).Queryable()
-                .OrderBy( w => w.Name )
-                .ToList();
-
-            var displayedTypes = new List<EventCalendar>();
-            foreach ( var eventCalendar in allEventCalendars )
+            using ( var rockContext = new RockContext() )
             {
-                displayedTypes.Add( eventCalendar );
+                // Get all of the event calendars
+                var calendars = new EventCalendarService( rockContext ).Queryable()
+                    .OrderBy( w => w.Name );
+
+                rptEventCalendars.DataSource = calendars.ToList();
+                rptEventCalendars.DataBind();
             }
-
-            // Create a query to return workflow type, the count of active action forms, and the selected class
-            var qry = displayedTypes
-                .Select( w => new
-                {
-                    EventCalendar = w
-                } );
-
-            rptEventCalendars.DataSource = qry.ToList();
-            rptEventCalendars.DataBind();
         }
 
         #endregion
 
-        protected void lbAddEventCalendar_Click( object sender, EventArgs e )
-        {
-            NavigateToLinkedPage( "DetailPage", "EventCalendarId", 0 );
-        }
     }
 }
