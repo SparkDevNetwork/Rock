@@ -667,8 +667,9 @@ namespace RockWeb.Blocks.Event
                     a.Name,
                     a.Description,
                     FieldType = FieldTypeCache.GetName( a.FieldTypeId ),
-                    a.AllowSearch,
-                    a.IsRequired
+                    a.IsRequired,
+                    a.IsGridColumn,
+                    a.AllowSearch
                 } )
                 .ToList();
             gAttributes.DataBind();
@@ -692,7 +693,7 @@ namespace RockWeb.Blocks.Event
             }
 
             edtAttributes.ReservedKeyNames = AttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
-
+            edtAttributes.AllowSearchVisible = true;
             edtAttributes.SetAttributeProperties( attribute, typeof( EventCalendar ) );
 
             ShowDialog( "Attributes" );
