@@ -32,14 +32,14 @@ using Rock.Store;
 using System.Text;
 using Rock.Security;
 
-namespace RockWeb.Blocks.Calendar
+namespace RockWeb.Blocks.Event
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// Renders a particular calendar using Lava.
     /// </summary>
-    [DisplayName( "Event Calendar Lava" )]
-    [Category( "Event Calendar" )]
-    [Description( "Displays details for a specific package." )]
+    [DisplayName( "Calendar Lava" )]
+    [Category( "Event" )]
+    [Description( "Renders a particular calendar using Lava." )]
     [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Assets/Lava/EventCalendar/ExternalCalendar.lava' %}", "", 2 )]
     [BooleanField( "Show Campus Filter", "Determines whether the campus filters are shown", false )]
     [BooleanField( "Show Category Filter", "Determines whether the campus filters are shown", false )]
@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Calendar
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar name.", false )]
     [IntegerField( "Event Calendar Id", "The Id of the event calendar to be displayed", true, 1 )]
-    public partial class ExternalCalendarLava : Rock.Web.UI.RockBlock
+    public partial class CalendarLava : Rock.Web.UI.RockBlock
     {
         #region Fields
 

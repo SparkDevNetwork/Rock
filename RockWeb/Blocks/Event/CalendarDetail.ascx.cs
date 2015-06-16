@@ -33,12 +33,15 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
 
-namespace RockWeb.Blocks.Calendar
+namespace RockWeb.Blocks.Event
 {
-    [DisplayName( "Event Calendar Detail" )]
-    [Category( "Event Calendar" )]
-    [Description( "Displays the details of the given Event Calendar for editing." )]
-    public partial class EventCalendarDetail : RockBlock, IDetailBlock
+    /// <summary>
+    /// Displays the details of the given Event Calendar.
+    /// </summary>
+    [DisplayName( "Calendar Detail" )]
+    [Category( "Event" )]
+    [Description( "Displays the details of the given Event Calendar." )]
+    public partial class CalendarDetail : RockBlock, IDetailBlock
     {
         #region Child Grid Dictionarys
 

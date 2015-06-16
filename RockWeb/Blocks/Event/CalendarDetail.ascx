@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EventCalendarDetail.ascx.cs" Inherits="RockWeb.Blocks.Calendar.EventCalendarDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CalendarDetail.ascx.cs" Inherits="RockWeb.Blocks.Event.CalendarDetail" %>
 
 <script type="text/javascript">
     function clearActiveDialog() {

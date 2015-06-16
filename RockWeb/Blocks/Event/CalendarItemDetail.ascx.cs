@@ -34,13 +34,16 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
 
-namespace RockWeb.Blocks.Calendar
+namespace RockWeb.Blocks.Event
 {
-    [DisplayName( "Event Item Detail" )]
-    [Category( "Event Calendar" )]
-    [Description( "Displays the details of the given eventItem." )]
+    /// <summary>
+    /// Displays the details of the given calendar item.
+    /// </summary>
+    [DisplayName( "Calendar Item Detail" )]
+    [Category( "Event" )]
+    [Description( "Displays the details of the given calendar item." )]
     [BooleanField( "Show Edit", "", true, "", 2 )]
-    public partial class EventItemDetail : RockBlock, IDetailBlock
+    public partial class CalendarItemDetail : RockBlock, IDetailBlock
     {
         #region Properties
 
