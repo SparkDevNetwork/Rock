@@ -29,13 +29,16 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Calendar
+namespace RockWeb.Blocks.Event
 {
-    [DisplayName( "Event Calendar Item List" )]
-    [Category( "Event Calendar" )]
+    /// <summary>
+    /// Lists all the items in the given calendar.
+    /// </summary>
+    [DisplayName( "Calendar Item List" )]
+    [Category( "Event" )]
     [Description( "Lists all the items in the given calendar." )]
     [LinkedPage( "Detail Page" )]
-    public partial class EventCalendarItemList : RockBlock, ISecondaryBlock
+    public partial class CalendarItemList : RockBlock, ISecondaryBlock
     {
         #region Private Variables
 

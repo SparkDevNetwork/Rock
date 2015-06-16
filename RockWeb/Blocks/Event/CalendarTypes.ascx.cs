@@ -30,14 +30,14 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Calendar
+namespace RockWeb.Blocks.Event
 {
     /// <summary>
-    /// Block to display the evnet calendars that user is authorized to view, and the activities that are currently assigned to the user.
+    /// Displays the calendars that user is authorized to view.
     /// </summary>
-    [DisplayName( "Event Calendar List" )]
-    [Category( "Event Calendar" )]
-    [Description( "Block to display the event calendars." )]
+    [DisplayName( "Calendar Types" )]
+    [Category( "Event" )]
+    [Description( "Displays the calendars that user is authorized to view." )]
     [LinkedPage( "Detail Page", "Page used to view status of an event calendar." )]
     public partial class CalendarTypes : Rock.Web.UI.RockBlock
     {
