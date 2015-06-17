@@ -601,12 +601,13 @@ namespace Rock.Model
             return groupMemberService
                 .Queryable()
                 .Where( m => m.Group.GroupTypeId == familyGroupTypeId )
-                .Select( m => new PersonFamilyGivingXref {
+                .Select( m => new PersonFamilyGivingXref
+                {
                     PersonId = m.PersonId,
                     GivingId = m.Person.GivingId,
                     FamilyGroupId = m.GroupId,
                     FamilyRoleId = m.GroupRoleId
-                });
+                } );
         }
 
         /// <summary>
@@ -648,10 +649,9 @@ namespace Rock.Model
             var groupMemberService = new GroupMemberService( (RockContext)this.Context );
             return groupMemberService
                 .Queryable()
-                .Where( m => 
-                    m.Group.GroupTypeId == groupTypeFamilyId )
-                .GroupBy( m =>
-                    m.GroupId,
+                .Where( m => m.Group.GroupTypeId == groupTypeFamilyId )
+                .GroupBy(
+                    m => m.GroupId,
                     ( key, g ) => g
                         .OrderBy( m => m.GroupRole.Order )
                         .ThenBy( m => m.Person.Gender )
@@ -670,7 +670,7 @@ namespace Rock.Model
         {
             return Queryable()
                 .Where( p => p.Id == p.GivingLeaderId );
-        }        
+        }
 
         /// <summary>
         /// Returns a collection of <see cref="Rock.Model.Person" /> entities containing the family members of the provided person.
@@ -683,7 +683,7 @@ namespace Rock.Model
         public IQueryable<GroupMember> GetFamilyMembers( int personId, bool includeSelf = false )
         {
             int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
-            
+
             var groupMemberService = new GroupMemberService( (RockContext)this.Context );
 
             var familyGroupIds = groupMemberService.Queryable()
@@ -694,7 +694,7 @@ namespace Rock.Model
                 .Distinct();
 
             return groupMemberService.Queryable( "Person,GroupRole" )
-                .Where( m => 
+                .Where( m =>
                     familyGroupIds.Contains( m.GroupId ) &&
                     ( includeSelf || m.PersonId != personId ) );
         }
@@ -766,11 +766,15 @@ namespace Rock.Model
 
             var qryKids = this.Queryable();
 
-            var qryChildrenWithParents = qryKids.Join( qryFamilyGroups, k => k.Id, k2 => k2.Child.Id, ( k, f ) => new ChildWithParents
-            {
-                Child = f.Child,
-                Parents = f.Parents
-            } );
+            var qryChildrenWithParents = qryKids.Join(
+                qryFamilyGroups,
+                k => k.Id,
+                k2 => k2.Child.Id,
+                ( k, f ) => new ChildWithParents
+                    {
+                        Child = f.Child,
+                        Parents = f.Parents
+                    } );
 
             if ( !includeChildrenWithoutParents )
             {
@@ -1022,8 +1026,6 @@ namespace Rock.Model
                 .FirstOrDefault();
         }
 
-
-
         #endregion
 
         /// <summary>
@@ -1160,7 +1162,7 @@ namespace Rock.Model
 
             // make sure the person isn't in the family already
             bool alreadyInFamily = groupMemberService.Queryable().Any( a => a.GroupId == familyId && a.PersonId == person.Id );
-            if (alreadyInFamily)
+            if ( alreadyInFamily )
             {
                 throw new Exception( "Person is already in the specified family" );
             }
@@ -1221,11 +1223,22 @@ namespace Rock.Model
 
             rockContext.SaveChanges();
 
-            HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                            groupMember.Id, demographicChanges );
+            HistoryService.SaveChanges(
+                rockContext,
+                typeof( Person ),
+                Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                groupMember.Id,
+                demographicChanges );
 
-            HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                groupMember.Id, memberChanges, family.Name, typeof( Group ), familyId );
+            HistoryService.SaveChanges(
+                rockContext,
+                typeof( Person ),
+                Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                groupMember.Id,
+                memberChanges,
+                family.Name,
+                typeof( Group ),
+                familyId );
         }
 
         /// <summary>
@@ -1233,6 +1246,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="familyId">The groupId of the family that they should stay in</param>
         /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         public static void RemovePersonFromOtherFamilies( int familyId, int personId, RockContext rockContext )
         {
             var groupMemberService = new GroupMemberService( rockContext );
@@ -1242,7 +1256,7 @@ namespace Rock.Model
 
             // make sure they belong to the specified family before we delete them from other families
             var isFamilyMember = groupMemberService.Queryable().Any( a => a.GroupId == familyId && a.PersonId == personId );
-            if (!isFamilyMember)
+            if ( !isFamilyMember )
             {
                 throw new Exception( "Person is not in the specified family" );
             }
@@ -1271,18 +1285,29 @@ namespace Rock.Model
 
                     var demographicChanges = new List<string>();
                     History.EvaluateChange( demographicChanges, "Giving Group", person.GivingGroup.Name, family.Name );
-                    HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                            person.Id, demographicChanges );
-                    person.GivingGroupId = familyId;
+                    HistoryService.SaveChanges(
+                        rockContext,
+                        typeof( Person ),
+                        Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                        person.Id,
+                        demographicChanges );
 
+                    person.GivingGroupId = familyId;
                     rockContext.SaveChanges();
                 }
 
                 var oldMemberChanges = new List<string>();
                 History.EvaluateChange( oldMemberChanges, "Role", fm.GroupRole.Name, string.Empty );
                 History.EvaluateChange( oldMemberChanges, "Family", fm.Group.Name, string.Empty );
-                HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                    fm.Person.Id, oldMemberChanges, fm.Group.Name, typeof( Group ), fm.Group.Id );
+                HistoryService.SaveChanges(
+                    rockContext,
+                    typeof( Person ),
+                    Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                    fm.Person.Id,
+                    oldMemberChanges,
+                    fm.Group.Name,
+                    typeof( Group ),
+                    fm.Group.Id );
 
                 groupMemberService.Delete( fm.GroupMember );
                 rockContext.SaveChanges();
@@ -1448,7 +1473,7 @@ namespace Rock.Model
                         if ( string.IsNullOrWhiteSpace( attributeKeyValue.Value ) )
                         {
                             foreach ( var attributeValue in attributeValues
-                                .Where( v => 
+                                .Where( v =>
                                     v.Attribute != null &&
                                     v.Attribute.Key == attributeKeyValue.Key )
                                 .ToList() )
@@ -1461,7 +1486,7 @@ namespace Rock.Model
                         else
                         {
                             var attributeValue = attributeValues
-                                .Where( v => 
+                                .Where( v =>
                                     v.Attribute != null &&
                                     v.Attribute.Key == attributeKeyValue.Key )
                                 .FirstOrDefault();
