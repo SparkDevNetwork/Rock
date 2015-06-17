@@ -388,6 +388,7 @@ namespace Rock.Reporting.DataFilter
         /// </summary>
         /// <param name="values">The values.</param>
         /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough()] 
         protected internal List<string> FixDelimination( List<string> values )
         {
             if ( values.Count() == 1 && values[0].Contains( "[" ) )
