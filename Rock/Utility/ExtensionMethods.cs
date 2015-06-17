@@ -904,6 +904,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The STR.</param>
         /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough()] 
         public static Guid AsGuid( this string str )
         {
             return str.AsGuidOrNull() ?? Guid.Empty;
@@ -914,6 +915,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough()] 
         public static Guid? AsGuidOrNull( this string str )
         {
             Guid value;
@@ -1010,6 +1012,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough()]
         public static DateTime? AsDateTime( this string str )
         {
             DateTime value;
