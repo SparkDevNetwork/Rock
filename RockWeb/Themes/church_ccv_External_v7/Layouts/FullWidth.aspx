@@ -2,12 +2,7 @@
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
 
-    <div>
-        <Rock:Zone Name="Feature" runat="server" />
-    </div>
-
-	<main class="container">
-
+    <div class="container">
         <!-- Start Content Area -->
 
         <!-- Page Title -->
@@ -15,6 +10,11 @@
 
         <!-- Breadcrumbs -->
         <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
+    </div>
+
+    <Rock:Zone Name="Feature" runat="server" />
+
+	<main class="container">
 
         <!-- Ajax Error -->
         <div class="alert alert-danger ajax-error" style="display:none">
@@ -24,12 +24,11 @@
 
         <Rock:Zone Name="Main" runat="server" />
 
-        <div class="row">
-            <div class="col-md-12">
-                <Rock:Zone Name="Section A" runat="server" />
-            </div>
-        </div>
+	</main>
 
+    <Rock:Zone Name="Section A" runat="server" />
+
+    <div class="container">
         <div class="row">
             <div class="col-md-4">
                 <Rock:Zone Name="Section B" runat="server" />
@@ -41,10 +40,9 @@
                 <Rock:Zone Name="Section D" runat="server" />
             </div>
         </div>
+    </div>
 
-        <!-- End Content Area -->
-
-	</main>
+    <!-- End Content Area -->
 
 </asp:Content>
 

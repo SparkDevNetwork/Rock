@@ -8004,6 +8004,15 @@ button.close {
 .btn-group-justified > .btn:last-child {
   border-right-width: 2px;
 }
+@media (min-width: 992px) {
+  .nav-responsive-md > li {
+    float: none;
+  }
+  .nav-responsive-md > li + li {
+    margin-top: 2px;
+    margin-left: 0;
+  }
+}
 .panel.panel-block {
   border: 0;
   box-shadow: none;

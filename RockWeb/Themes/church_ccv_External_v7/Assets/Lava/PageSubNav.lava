@@ -1,15 +1,16 @@
+{% comment %}
 
-<section class="nav-sub">
+{% assign pageMenuClasses = "nav nav-pills nav-responsive-md margin-b-md"  %}
+
+{% endcomment %}
+
 
 {% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
-    <ul class="nav nav-pills nav-stacked nav-categories">
-        {% for childPage in Page.Pages %}
-          <li{% if childPage.Current == 'true' %} class="active"{% endif%}>
-              <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
-          </li>
-        {% endfor %}
-    </ul>
+  <ul class="{{ pageMenuClasses | Default: 'nav nav-pills nav-responsive-md margin-b-md' }}">
+    {% for childPage in Page.Pages %}
+      <li{% if childPage.Current == 'true' %} class="active"{% endif%}>
+        <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+      </li>
+    {% endfor %}
+  </ul>
 {% endif %}
-
-</section>
-<p />

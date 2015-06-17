@@ -5193,9 +5193,6 @@ body {
   margin-left: auto;
   margin-right: auto;
 }
-main {
-  margin-bottom: 60px;
-}
 .img-full {
   width: 100%;
   height: auto;
@@ -5231,7 +5228,7 @@ h6,
 .h6 {
   text-transform: uppercase;
 }
-.lead {
+.lead-din {
   font-family: "DINWebCondensed", sans-serif;
   font-size: 20px;
   line-height: 1.3;
@@ -5239,7 +5236,7 @@ h6,
   font-weight: 300;
 }
 @media (min-width: 768px) {
-  .lead {
+  .lead-din {
     font-size: 23px;
   }
 }
@@ -5608,6 +5605,7 @@ h6,
   padding-bottom: 30px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  margin-top: 60px;
 }
 @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio: 2), only screen and (-o-min-device-pixel-ratio: 2/1), only screen and (min-device-pixel-ratio: 2), only screen and (min-resolution: 192dpi), only screen and (min-resolution: 2dppx) {
   .mainfooter {
@@ -5740,6 +5738,13 @@ h6,
 }
 .bigblock-graylighter {
   background-color: #eeeeee;
+}
+.bigblock-graylighter .page-header {
+  border-color: #d5d5d5;
+}
+.bigblock-graylighter .nav-pills > li:not(.active) > a:hover,
+.bigblock-graylighter .nav-pills > li:not(.active) > a:focus {
+  background: #d5d5d5;
 }
 .bigblock-graydark {
   background-color: #333333;

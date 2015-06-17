@@ -19,6 +19,16 @@
 
 .bigblock-graylighter {
   background-color: @gray-lighter;
+
+  .page-header {
+    border-color: darken(@gray-lighter, 10%);
+  }
+  .nav-pills {
+    > li:not(.active) > a:hover,
+    > li:not(.active) > a:focus {
+      background: darken(@gray-lighter, 10%)
+    }
+  }
 }
 
 .bigblock-graydark {
