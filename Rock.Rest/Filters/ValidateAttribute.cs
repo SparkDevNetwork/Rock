@@ -43,14 +43,21 @@ namespace Rock.Rest.Filters
             ModelStateDictionary modelState = actionContext.ModelState;
 
             IEntity valueArg = null;
-            if ( actionContext.ActionArguments.ContainsKey( "value" ) )
+            if ( actionContext.ActionArguments.Count > 0 )
             {
-                valueArg = actionContext.ActionArguments["value"] as IEntity;
+                if ( actionContext.ActionArguments.ContainsKey( "value" ) )
+                {
+                    valueArg = actionContext.ActionArguments["value"] as IEntity;
+                }
+                else if ( actionContext.ActionArguments.First().Value is IEntity )
+                {
+                    valueArg = actionContext.ActionArguments.First().Value as IEntity;
+                }
             }
 
             if ( valueArg != null )
             {
-                Type entityType = actionContext.ActionArguments["value"].GetType();
+                Type entityType = valueArg.GetType();
                 IgnoreModelErrorsAttribute ignoreModelErrorsAttribute = entityType.GetCustomAttributes( typeof( IgnoreModelErrorsAttribute ), true ).FirstOrDefault() as IgnoreModelErrorsAttribute;
 
                 if ( ignoreModelErrorsAttribute != null )
