@@ -839,16 +839,7 @@ namespace RockWeb.Blocks.Examples
             _stopwatch.Stop();
             AppendFormat( "{0:00}:{1:00}.{2:00} saved attributes for everyone <br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
             _stopwatch.Start();
-
-            // Create person alias records for each person
-            PersonService personService = new PersonService( rockContext );
-            foreach ( var person in personService.Queryable( "Aliases" )
-                .Where( p =>
-                    _peopleDictionary.Keys.Contains( p.Guid ) &&
-                    !p.Aliases.Any() ) )
-            {
-                person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
-            }
+            
             rockContext.ChangeTracker.DetectChanges();
             rockContext.SaveChanges( disablePrePostProcessing: true );
 
@@ -2070,11 +2061,6 @@ namespace RockWeb.Blocks.Examples
                 foreach ( var groupMember in familyMembers )
                 {
                     var person = groupMember.Person;
-
-                    //if ( !person.Aliases.Any( a => a.AliasPersonId == person.Id ) )
-                    //{
-                    //    person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
-                    //}
 
                     if ( groupMember.GroupRoleId != _childRoleId )
                     {
