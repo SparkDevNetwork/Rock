@@ -207,16 +207,12 @@ namespace Rock.Model
                         {
                             if ( HttpContext.Current != null && HttpContext.Current.Session != null )
                             {
-                                if ( HttpContext.Current.Session["RockUserId"] != null )
-                                {
-                                    transaction.SessionUserId = (int)HttpContext.Current.Session["RockUserId"];
-                                }
                                 HttpContext.Current.Session["RockUserId"] = user.Id;
                             }
 
                             // see if there is already a LastActivitytransaction queued for this user, and just update its LastActivityDate instead of adding another to the queue
                             var userLastActivity = Rock.Transactions.RockQueue.TransactionQueue.ToArray().OfType<Rock.Transactions.UserLastActivityTransaction>()
-                                .Where( a => a.UserId == transaction.UserId && a.SessionUserId == transaction.SessionUserId ).FirstOrDefault();
+                                .Where( a => a.UserId == transaction.UserId ).FirstOrDefault();
 
                             if ( userLastActivity != null )
                             {
