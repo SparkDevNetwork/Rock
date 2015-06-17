@@ -132,7 +132,12 @@ namespace Rock.Web.UI.Controls
         {
             get 
             {
-                return ViewState["NoteTypeId"] as int? ?? 0;
+                int? noteTypeId = ViewState["NoteTypeId"] as int?;
+                if ( !noteTypeId.HasValue && NoteTypes.Any() )
+                {
+                    noteTypeId = NoteTypes.First().Id;
+                }
+                return noteTypeId ?? 0;
             }
             set 
             {
