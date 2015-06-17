@@ -29,7 +29,8 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            Sql( MigrationSQL._201506161607081_UpdateCalendarBlocks );
+            AlterColumn("dbo.EventCalendar", "IsActive", c => c.Boolean(nullable: false));
+            Sql( MigrationSQL._201506170003272_UpdateCalendarBlocks );
         }
         
         /// <summary>
@@ -37,6 +38,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            AlterColumn("dbo.EventCalendar", "IsActive", c => c.Boolean());
         }
     }
 }
