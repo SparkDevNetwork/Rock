@@ -219,6 +219,7 @@ namespace Rock.Model
                         oldEntityType.IsSecured = false;
                         oldEntityType.IsEntity = false;
                         oldEntityType.AssemblyName = null;
+                        EntityTypeCache.Flush( oldEntityType.Id );
                     }
                 }
 
@@ -242,6 +243,7 @@ namespace Rock.Model
                         existingEntityType.IsSecured = entityType.IsSecured;
                         existingEntityType.FriendlyName = existingEntityType.FriendlyName ?? entityType.FriendlyName;
                         existingEntityType.AssemblyName = entityType.AssemblyName;
+                        EntityTypeCache.Flush( existingEntityType.Id );
                     }
                     entityTypes.Remove( key );
                 }
