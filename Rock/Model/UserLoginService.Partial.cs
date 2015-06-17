@@ -363,16 +363,12 @@ namespace Rock.Model
         /// <param name="userName">Name of the user.</param>
         public static void UpdateLastLogin( string userName )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !string.IsNullOrWhiteSpace( userName ) && !userName.StartsWith( "rckipid=" ) )
             {
-                var userLoginService = new UserLoginService( rockContext );
-                var historyService = new HistoryService( rockContext );
-
-                var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-                var activityCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), rockContext ).Id;
-
-                if ( !string.IsNullOrWhiteSpace( userName ) && !userName.StartsWith( "rckipid=" ) )
+                using ( var rockContext = new RockContext() )
                 {
+                    var userLoginService = new UserLoginService( rockContext );
+
                     var userLogin = userLoginService.GetByUserName( userName );
                     if ( userLogin != null )
                     {
@@ -389,6 +385,10 @@ namespace Rock.Model
                             }
                             summary.Append( "." );
 
+                            var historyService = new HistoryService( rockContext );
+                            var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                            var activityCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), rockContext ).Id;
+
                             historyService.Add( new History
                             {
                                 EntityTypeId = personEntityTypeId,
@@ -397,6 +397,7 @@ namespace Rock.Model
                                 Summary = summary.ToString()
                             } );
                         }
+
                         rockContext.SaveChanges();
                     }
                 }
