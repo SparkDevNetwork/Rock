@@ -93,11 +93,11 @@
 
         <%-- Panel for location closed --%>
         <asp:Panel ID="pnlClosed" runat="server">
-            <div class="checkin-header">
-                <h1>Location Closed</h1>
+            <div class="checkin-header checkin-closed-header">
+                <h1>Closed</h1>
             </div>
 
-            <div class="checkin-body">
+            <div class="checkin-body checkin-closed-body">
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
                         <p>This location is currently closed.</p>
@@ -138,7 +138,7 @@
                                     <div class="btn-group kioskmanager-location-toggle">
                                         <asp:LinkButton runat="server" ID="lbOpen" CssClass="btn btn-default btn-lg btn-success" Text="Open" CommandName="Open" CommandArgument='<%# DataBinder.Eval(Container.DataItem, "LocationId") %>'/>
                                         <asp:LinkButton runat="server" ID="lbClose" CssClass="btn btn-default btn-lg" Text="Close" CommandName="Close" CommandArgument='<%# DataBinder.Eval(Container.DataItem, "LocationId") %>'/>
-                                        
+
                                     </div>
                                     <div class="kioskmanager-location-label">
                                         <asp:Literal ID="lLocationName" runat="server" />
@@ -210,15 +210,15 @@
                 </div>
             </div>
 
-            <div class="checkin-footer">   
-                
+            <div class="checkin-footer">
+
                 <div class="checkin-actions">
                     <asp:LinkButton ID="lbCancel" runat="server" CausesValidation="false" OnClick="lbCancel_Click" CssClass="btn btn-default">Cancel</asp:LinkButton>
                 </div>
 
-                <div class="kioskmanager-counts">		
-                    <h3>Current Counts</h3>		
-                    <asp:PlaceHolder ID="phCounts" runat="server"></asp:PlaceHolder>		
+                <div class="kioskmanager-counts">
+                    <h3>Current Counts</h3>
+                    <asp:PlaceHolder ID="phCounts" runat="server"></asp:PlaceHolder>
                 </div>
 
             </div>
