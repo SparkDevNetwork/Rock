@@ -145,7 +145,7 @@ function() {
             CampusesPicker campusesPicker = new CampusesPicker();
             campusesPicker.ID = filterControl.ID + "_0";
             campusesPicker.Label = string.Empty;
-            campusesPicker.CssClass = "js-campuses-picker";
+            campusesPicker.CssClass = "js-campuses-picker campuses-picker";
             campusesPicker.Campuses = CampusCache.All();
 
             filterControl.Controls.Add( campusesPicker );
