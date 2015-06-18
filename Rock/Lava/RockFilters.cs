@@ -788,6 +788,37 @@ namespace Rock.Lava
             return string.Format( "{0:" + format + "}", input );
         }
 
+
+        /// <summary>
+        /// Divideds the by.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="operand">The operand.</param>
+        /// <param name="precision">The precision.</param>
+        /// <returns></returns>
+        public static object DividedBy( object input, object operand, int precision = 2 )
+        {
+            if ( input == null || operand == null )
+                return null;
+
+            try
+            {
+                decimal dInput = 0;
+                decimal dOperand = 0;
+
+                if ( decimal.TryParse( input.ToString(), out dInput ) && decimal.TryParse( operand.ToString(), out dOperand ) )
+                {
+                    decimal result = ( dInput / dOperand );
+                    return decimal.Round( result, precision );
+                }
+
+                return "Could not convert input to number";
+                
+            } catch (Exception ex){
+                return ex.Message;
+            }
+        }
+
         #endregion
 
         #region Attribute Filters
