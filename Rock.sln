@@ -16,7 +16,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Version", "Rock.Versio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Rest", "Rock.Rest\Rock.Rest.csproj", "{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}"
 EndProject
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "http://vsdev:6229", "{3ADB92E5-342B-458D-B779-369FC8A66CF6}"
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "http://rock.dev:6229", "{3ADB92E5-342B-458D-B779-369FC8A66CF6}"
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "true"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5.1"
