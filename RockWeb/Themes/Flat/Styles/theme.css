@@ -877,6 +877,11 @@ Copyright (c) 2012 Dan Eden*/
   width: 340px;
   height: 190px;
 }
+.campuses-picker {
+  float: left;
+  margin-top: 0;
+  margin-right: 24px;
+}
 /*.banner
 {
   color: @banner-text-color;
