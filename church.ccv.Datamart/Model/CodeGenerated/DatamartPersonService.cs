@@ -125,8 +125,10 @@ namespace church.ccv.Datamart.Model
             target.IsHeadOfHousehold = source.IsHeadOfHousehold;
             target.IsServing = source.IsServing;
             target.IsStaff = source.IsStaff;
+            target.LastAttendedDate = source.LastAttendedDate;
             target.LastContributionDate = source.LastContributionDate;
             target.LastName = source.LastName;
+            target.LastPublicNote = source.LastPublicNote;
             target.Latitude = source.Latitude;
             target.Longitude = source.Longitude;
             target.MaritalStatus = source.MaritalStatus;

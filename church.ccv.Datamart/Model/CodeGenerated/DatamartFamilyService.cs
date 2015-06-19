@@ -126,6 +126,7 @@ namespace church.ccv.Datamart.Model
             target.InNeighborhoodGroup = source.InNeighborhoodGroup;
             target.IsEra = source.IsEra;
             target.IsServing = source.IsServing;
+            target.LastAttendedDate = source.LastAttendedDate;
             target.Latitude = source.Latitude;
             target.LocationId = source.LocationId;
             target.Longitude = source.Longitude;

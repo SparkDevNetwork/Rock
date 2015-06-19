@@ -626,6 +626,15 @@ namespace church.ccv.Datamart.Model
         [DataMember]
         public DateTime? LastAttendedDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the last public note.
+        /// </summary>
+        /// <value>
+        /// The last public note.
+        /// </value>
+        [DataMember]
+        public string LastPublicNote { get; set; }
+
         #endregion
     }
 }

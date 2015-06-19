@@ -99,15 +99,6 @@ namespace church.ccv.Datamart.Model
         public int? AdultsInGroups { get; set; }
 
         /// <summary>
-        /// Gets or sets the adults in groups percentage.
-        /// </summary>
-        /// <value>
-        /// The adults in groups percentage.
-        /// </value>
-        [DataMember]
-        public decimal AdultsInGroupsPercentage { get; set; }
-
-        /// <summary>
         /// Gets or sets the adults baptized.
         /// </summary>
         /// <value>
@@ -117,13 +108,22 @@ namespace church.ccv.Datamart.Model
         public int? AdultsBaptized { get; set; }
 
         /// <summary>
-        /// Gets or sets the adults baptized percentage.
+        /// Gets or sets the adults taken starting point.
         /// </summary>
         /// <value>
-        /// The adults baptized percentage.
+        /// The adults taken starting point.
         /// </value>
         [DataMember]
-        public decimal AdultsBaptizedPercentage { get; set; }
+        public int? AdultsTakenStartingPoint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the adults serving.
+        /// </summary>
+        /// <value>
+        /// The adults serving.
+        /// </value>
+        [DataMember]
+        public int? AdultsServing { get; set; }
 
         /// <summary>
         /// Gets or sets the adult member count.
@@ -144,15 +144,6 @@ namespace church.ccv.Datamart.Model
         public int? AdultMembersInGroups { get; set; }
 
         /// <summary>
-        /// Gets or sets the adult members in groups percentage.
-        /// </summary>
-        /// <value>
-        /// The adult members in groups percentage.
-        /// </value>
-        [DataMember]
-        public decimal AdultMembersInGroupsPercentage { get; set; }
-
-        /// <summary>
         /// Gets or sets the adult attendee count.
         /// </summary>
         /// <value>
@@ -169,15 +160,6 @@ namespace church.ccv.Datamart.Model
         /// </value>
         [DataMember]
         public int? AdultAttendeesInGroups { get; set; }
-
-        /// <summary>
-        /// Gets or sets the adult attendees in groups percentage.
-        /// </summary>
-        /// <value>
-        /// The adult attendees in groups percentage.
-        /// </value>
-        [DataMember]
-        public decimal AdultAttendeesInGroupsPercentage { get; set; }
 
         /// <summary>
         /// Gets or sets the adult visitors.
