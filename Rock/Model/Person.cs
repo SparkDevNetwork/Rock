@@ -1587,7 +1587,7 @@ namespace Rock.Model
         /// <param name="relatedPersonId">The related person identifier.</param>
         /// <param name="currentPersonAlias">The current person alias.</param>
         /// <param name="rockContext">The rock context.</param>
-        [Obsolete("Use the other CreateCheckinRelationship")]
+        [Obsolete( "Use the other CreateCheckinRelationship" )]
         public static void CreateCheckinRelationship( int personId, int relatedPersonId, PersonAlias currentPersonAlias, RockContext rockContext = null )
         {
             CreateCheckinRelationship( personId, relatedPersonId, rockContext );
@@ -1603,63 +1603,16 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         public static void CreateCheckinRelationship( int personId, int relatedPersonId, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
-
             var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
-            var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) );
             var canCheckInRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) );
-
-            if ( ownerRole != null && canCheckInRole != null )
+            if ( canCheckInRole != null )
             {
+                rockContext = rockContext ?? new RockContext();
                 var groupMemberService = new GroupMemberService( rockContext );
-                var knownRelationshipGroup = groupMemberService.Queryable()
-                    .Where( m =>
-                        m.PersonId == personId &&
-                        m.GroupRole.Guid.Equals( ownerRole.Guid ) )
-                    .Select( m => m.Group )
-                    .FirstOrDefault();
-
-                // Create known relationship group if doesn't exist
-                if ( knownRelationshipGroup == null )
-                {
-                    var groupMember = new GroupMember();
-                    groupMember.PersonId = personId;
-                    groupMember.GroupRoleId = ownerRole.Id;
-
-                    knownRelationshipGroup = new Group();
-                    knownRelationshipGroup.Name = knownRelationshipGroupType.Name;
-                    knownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
-                    knownRelationshipGroup.Members.Add( groupMember );
-
-                    new GroupService( rockContext ).Add( knownRelationshipGroup );
-                    rockContext.SaveChanges();
-                }
-
-                // Add relationships
-                var canCheckInMember = groupMemberService.Queryable()
-                    .FirstOrDefault( m =>
-                        m.GroupId == knownRelationshipGroup.Id &&
-                        m.PersonId == relatedPersonId &&
-                        m.GroupRoleId == canCheckInRole.Id );
-
-                if ( canCheckInMember == null )
-                {
-                    canCheckInMember = new GroupMember();
-                    canCheckInMember.GroupId = knownRelationshipGroup.Id;
-                    canCheckInMember.PersonId = relatedPersonId;
-                    canCheckInMember.GroupRoleId = canCheckInRole.Id;
-                    groupMemberService.Add( canCheckInMember );
-                    rockContext.SaveChanges();
-                }
-
-                var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true );
-                if ( inverseGroupMember != null )
-                {
-                    groupMemberService.Add( inverseGroupMember );
-                    rockContext.SaveChanges();
-                }
+                groupMemberService.CreateKnownRelationship( personId, relatedPersonId, canCheckInRole.Id );
             }
         }
+
 
 
         /// <summary>
