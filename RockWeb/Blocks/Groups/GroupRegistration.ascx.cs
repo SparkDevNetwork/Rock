@@ -330,7 +330,7 @@ namespace RockWeb.Blocks.Groups
                         }
 
                         History.EvaluateChange( changes, "Email", person.Email, tbEmail.Text );
-                        spouse.Email = tbEmail.Text;
+                        spouse.Email = tbSpouseEmail.Text;
 
                         SetPhoneNumber( rockContext, spouse, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), spouseChanges );
                         SetPhoneNumber( rockContext, spouse, pnSpouseCell, cbSpouseSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), spouseChanges );
