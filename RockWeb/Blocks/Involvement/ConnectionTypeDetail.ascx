@@ -8,12 +8,20 @@
 
 <asp:UpdatePanel ID="upConnectionType" runat="server">
     <ContentTemplate>
+        <asp:Panel ID="pnlDeleteConfirm" runat="server" CssClass="panel panel-body" Visible="false">
+            <Rock:NotificationBox ID="nbDeleteConfirm" runat="server" NotificationBoxType="Warning">
+                       Deleting a site will delete all the layouts and pages associated with the site. Are you sure you want to delete the site?
+            </Rock:NotificationBox>
+            <asp:LinkButton ID="btnDeleteConfirm" runat="server" Text="Confirm Delete" CssClass="btn btn-danger" OnClick="btnDeleteConfirm_Click" />
+            <asp:LinkButton ID="btnDeleteCancel" runat="server" Text="Cancel" CssClass="btn btn-primary" OnClick="btnDeleteCancel_Click" />
 
+        </asp:Panel>
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" Visible="false">
             <asp:HiddenField ID="hfConnectionTypeId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-calendar"></i>
+                <h1 class="panel-title">
+                    <asp:Literal ID="lIcon" runat="server" />
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
             </div>
             <div class="panel-body">
@@ -94,6 +102,18 @@
                         </div>
                     </Rock:PanelWidget>
 
+                    <Rock:PanelWidget ID="wpConnectionStatuses" runat="server" Title="Statuses">
+                        <div class="grid">
+                            <Rock:Grid ID="gConnectionStatuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Status">
+                                <Columns>
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:DeleteField OnClick="gConnectionStatuses_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                    </Rock:PanelWidget>
+
                     <Rock:PanelWidget ID="wpConnectionWorkflow" runat="server" Title="Workflows">
                         <div class="grid">
                             <Rock:Grid ID="gConnectionWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Workflow">
@@ -124,12 +144,25 @@
                 <Rock:AttributeEditor ID="edtConnectionTypeAttributes" runat="server" ShowActions="false" ValidationGroup="ConnectionTypeAttributes" />
             </Content>
         </Rock:ModalDialog>
+
         <Rock:ModalDialog ID="dlgConnectionActivityTypes" runat="server" ScrollbarEnabled="false" SaveButtonText="Add" OnSaveClick="btnAddConnectionActivityType_Click" Title="Create Activity" ValidationGroup="ConnectionActivityType">
             <Content>
                 <asp:HiddenField ID="hfConnnectionTypeAddConnectionActivityTypeGuid" runat="server" />
                 <Rock:DataTextBox ID="tbConnectionActivityTypeName" SourceTypeName="Rock.Model.ConnectionActivityType, Rock" PropertyName="Name" Label="Activity Name" runat="server" ValidationGroup="ConnectionActivityType" />
             </Content>
         </Rock:ModalDialog>
+
+        <Rock:ModalDialog ID="dlgConnectionStatuses" runat="server" ScrollbarEnabled="false" SaveButtonText="Add" OnSaveClick="btnAddConnectionStatus_Click" Title="Create Activity" ValidationGroup="ConnectionStatus">
+            <Content>
+                <asp:HiddenField ID="hfConnnectionTypeAddConnectionStatusGuid" runat="server" />
+                <Rock:DataTextBox ID="tbConnectionStatusName" SourceTypeName="Rock.Model.ConnectionStatus, Rock" PropertyName="Name" Label="Name" runat="server" ValidationGroup="ConnectionStatus" />
+                <Rock:DataTextBox ID="tbConnectionStatusDescription" SourceTypeName="Rock.Model.ConnectionStatus, Rock" PropertyName="Description" Label="Description" runat="server" ValidationGroup="ConnectionStatus" />
+                <Rock:RockCheckBox ID="cbIsCritical" runat="server" Label="Is Critical" ValidationGroup="ConnectionStatus" />
+                <Rock:RockCheckBox ID="cbIsDefault" runat="server" Label="Is Default" ValidationGroup="ConnectionStatus" />
+                <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Is Active" ValidationGroup="ConnectionStatus" />
+            </Content>
+        </Rock:ModalDialog>
+
         <Rock:ModalDialog ID="dlgConnectionWorkflow" runat="server" Title="Campus Select" OnSaveClick="dlgConnectionWorkflow_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ConnectionWorkflow">
             <Content>
 
@@ -139,7 +172,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="TriggerType" />
+                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="TriggerType" OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" AutoPostBack="true" />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlWorkflowType" runat="server" Label="Workflow Type" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="WorkflowType" />
@@ -148,7 +181,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlFrom" runat="server" Label="From" Visible="false" />
+                        <Rock:RockDropDownList ID="ddlPrimaryQualifier" runat="server" Visible="false" />
                     </div>
                     <div class="col-md-6">
                     </div>
@@ -156,7 +189,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlTo" runat="server" Label="To" Visible="false" />
+                        <Rock:RockDropDownList ID="ddlSecondaryQualifier" runat="server" Visible="false" />
                     </div>
                     <div class="col-md-6">
                     </div>

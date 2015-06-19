@@ -50,7 +50,7 @@ namespace Rock.Model
         public ConnectionWorkflowTriggerType TriggerType { get; set; }
 
         [DataMember]
-        public String QualifierValue;
+        public string QualifierValue { get; set; }
 
         #endregion
 

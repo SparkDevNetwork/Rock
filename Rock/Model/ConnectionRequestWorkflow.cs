@@ -52,7 +52,7 @@ namespace Rock.Model
         public ConnectionWorkflowTriggerType TriggerType { get; set; }
 
         [DataMember]
-        public String TriggerQualifier;
+        public String TriggerQualifier { get; set; }
 
         #endregion
 
@@ -83,7 +83,7 @@ namespace Rock.Model
         public ConnectionRequestWorkflowConfiguration()
         {
             this.HasRequired( p => p.ConnectionWorkflow ).WithMany().HasForeignKey( p => p.ConnectionWorkflowId ).WillCascadeOnDelete( false );
-            this.HasRequired( p => p.ConnectionRequest ).WithMany( p => p.ConnectionRequestWorkflows ).HasForeignKey( p => p.ConnectionRequestId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.ConnectionRequest ).WithMany( p => p.ConnectionRequestWorkflows ).HasForeignKey( p => p.ConnectionRequestId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.Workflow ).WithMany().HasForeignKey( p => p.WorkflowId ).WillCascadeOnDelete( false );
         }
     }

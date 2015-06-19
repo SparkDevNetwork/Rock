@@ -6,7 +6,7 @@
     }
 </script>
 
-<asp:UpdatePanel ID="upnlConnectionOpportunityList" runat="server">
+<asp:UpdatePanel ID="upnlConnectionOpportunityDetail" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server">
             <asp:HiddenField ID="hfConnectionOpportunityId" runat="server" />
@@ -15,6 +15,7 @@
 
                 <div class="panel-heading clearfix">
                     <h1 class="panel-title pull-left">
+                        <asp:Literal ID="lIcon" runat="server" />
                         <asp:Literal ID="lReadOnlyTitle" runat="server" />
                     </h1>
 
@@ -152,7 +153,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When" DataTextField="Name" DataValueField="Id" />
+                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When" DataTextField="Name" DataValueField="Id" OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" AutoPostBack="true" />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlWorkflowType" runat="server" Label="Workflow Type" DataTextField="Name" DataValueField="Id" />
@@ -161,7 +162,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlFrom" runat="server" Label="From" Visible="false" />
+                        <Rock:RockDropDownList ID="ddlPrimaryQualifier" runat="server" Visible="false" />
                     </div>
                     <div class="col-md-6">
                     </div>
@@ -169,7 +170,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlTo" runat="server" Label="To" Visible="false" />
+                        <Rock:RockDropDownList ID="ddlSecondaryQualifier" runat="server" Visible="false" />
                     </div>
                     <div class="col-md-6">
                     </div>

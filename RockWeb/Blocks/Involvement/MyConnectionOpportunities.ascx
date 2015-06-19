@@ -5,7 +5,9 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-gears"></i>My Connection Requests</h1>
+                <h1 class="panel-title">
+                    <asp:Literal ID="lTypeIcon" runat="server" />
+                    </i>My Connection Opportunities</h1>
 
                 <div class="pull-right">
                     <asp:LinkButton ID="lbConnectionTypes" runat="server" CssClass=" pull-right" OnClick="lbConnectionTypes_Click" CausesValidation="false"><i class="fa fa-gear"></i></asp:LinkButton>
@@ -37,11 +39,23 @@
         </div>
         <asp:Panel ID="pnlGrid" runat="server" CssClass="panel panel-block" Visible="false">
             <div class="panel-heading">
+                <asp:Literal ID="lOpportunityIcon" runat="server" />
+
                 <asp:Literal ID="lConnectionRequest" runat="server"></asp:Literal></h4>
             </div>
             <div class="panel-body">
 
-                <div class="grid">
+                <div class="grid grid-panel">
+                    <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
+                        <Rock:PersonPicker ID="ppRequestor" runat="server" Label="Requestor" />
+                        <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" />
+                        <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
+                        <Rock:PersonPicker ID="ppConnector" runat="server" Label="Connector" />
+                        <Rock:RockCheckBoxList ID="cblState" runat="server" Label="State" RepeatDirection="Horizontal" />
+                        <Rock:RockCheckBoxList ID="cblStatus" runat="server" Label="Status" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
+                        <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
+                        <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
+                    </Rock:GridFilter>
                     <Rock:Grid ID="gConnectionRequests" runat="server" OnRowSelected="gConnectionRequests_Edit">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />

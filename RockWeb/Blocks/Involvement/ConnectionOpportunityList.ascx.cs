@@ -193,7 +193,7 @@ namespace RockWeb.Blocks.Involvement
                 }
                 else
                 {
-                    return;
+                    e.Value = "Active";
                 }
             }
             else
@@ -274,7 +274,7 @@ namespace RockWeb.Blocks.Involvement
         /// Binds the filter.
         /// </summary>
         private void SetFilter()
-        {      
+        {
             string statusValue = rFilter.GetUserPreference( MakeKeyUniqueToConnectionType( "Status" ) );
             if ( !string.IsNullOrWhiteSpace( statusValue ) )
             {
@@ -298,13 +298,13 @@ namespace RockWeb.Blocks.Involvement
 
                 // The reason why we ToList() everything is so that we're using LINQ to Object rather than LINQ to Entity, enabling us to use object methods such as GetEarliestStartDate()
                 ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
-                var qry = connectionOpportunityService.Queryable( )
+                var qry = connectionOpportunityService.Queryable()
                     .Where( o => o.ConnectionTypeId == _connectionType.Id ).ToList();
 
                 // Filter by Status
                 if ( cbActive.Checked )
                 {
-                    qry = qry.Where( o => o.IsActive).ToList();
+                    qry = qry.Where( o => o.IsActive ).ToList();
                 }
 
                 List<ConnectionOpportunity> connectionOpportunities = null;
