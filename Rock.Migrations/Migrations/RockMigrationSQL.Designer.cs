@@ -81,22 +81,181 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to // &lt;copyright&gt;
-        ///// Copyright 2013 by the Spark Development Network
-        /////
-        ///// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
-        ///// you may not use this file except in compliance with the License.
-        ///// You may obtain a copy of the License at
-        /////
-        ///// http://www.apache.org/licenses/LICENSE-2.0
-        /////
-        ///// Unless required by applicable law or agreed to in writing, software
-        ///// distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
-        ///// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expres [rest of string was truncated]&quot;;.
+        ///   Looks up a localized string similar to 
+        ///DECLARE @MergeTemplateEntityTypeId int = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = &apos;Rock.MergeTemplates.WordDocumentMergeTemplateType&apos;)
+        ///DECLARE @GeneralCategoryId int = (SELECT TOP 1 [Id] FROM [Category] WHERE [Guid] = &apos;CAA86576-901B-C4A6-4F62-70EB0A2B32A8&apos;)
+        ///
+        ///
+        ///-- envelope
+        ///INSERT INTO [dbo].[BinaryFile] ([IsTemporary], [IsSystem], [BinaryFileTypeId], [Path], [FileName], [MimeType], [Description], [StorageEntityTypeId], [Guid]) 
+        ///        VALUES 
+        ///        (0, 0, 3, N&apos;~/GetFile.ashx?guid=425298 [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201506051749054_AddSampleMergeDocs {
             get {
                 return ResourceManager.GetString("_201506051749054_AddSampleMergeDocs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to BEGIN TRY
+        ///    ALTER TABLE Person
+        ///
+        ///    DROP COLUMN DaysUntilBirthday
+        ///END TRY
+        ///
+        ///BEGIN CATCH
+        ///END CATCH
+        ///
+        ///ALTER TABLE Person ADD DaysUntilBirthday AS (
+        ///    CASE 
+        ///        -- if there birthday is Feb 29 and their next birthday is this year and it isn&apos;t a leap year, set their birthday to Feb 28 (this year)
+        ///        WHEN (
+        ///                BirthMonth = 2
+        ///                AND BirthDay = 29
+        ///                AND datepart(month, sysdatetime()) &lt; 3
+        ///                AND (isdate(convert(VARCHAR(4), datepart(year, [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201506112030400_PersonDaysUntilBirthday {
+            get {
+                return ResourceManager.GetString("_201506112030400_PersonDaysUntilBirthday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the pledge analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///CREATE PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///	  @AccountId int
+        ///	, @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmountPledged decimal(18,2) = NULL
+        ///	, @MaxAmountPledged decimal(18,2) = NULL
+        ///	, @MinComplete decimal(18,2) = NULL
+        ///	, @MaxComplete decimal(18,2) = NULL
+        ///	, @MinAmountGiven decimal(18,2) = NULL
+        ///	, @MaxAmountGiven decimal(18,2) = NULL
+        ///	, @Include [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201506121300596_FinancialAnalyticsProcs_1 {
+            get {
+                return ResourceManager.GetString("_201506121300596_FinancialAnalyticsProcs_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the giving analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///CREATE PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery]
+        ///	  @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmount decimal(18,2) = NULL
+        ///	, @MaxAmount decimal(18,2) = NULL
+        ///	, @AccountIds varchar(max) = NULL
+        ///	, @CurrencyTypeIds varchar(max) = NULL
+        ///	, @SourceTypeIds varchar(max) = NULL
+        ///	, @ViewBy varchar(1) = &apos;G&apos;		-- G = Giving Leader, A = Adults, C = Children, F = Famil [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201506121300596_FinancialAnalyticsProcs_2 {
+            get {
+                return ResourceManager.GetString("_201506121300596_FinancialAnalyticsProcs_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ALTER TABLE AttributeValue DROP COLUMN ValueAsNumeric
+        ///
+        ///ALTER TABLE AttributeValue ADD [ValueAsNumeric] AS (
+        ///    CASE 
+        ///        WHEN len([value]) &lt; (100)
+        ///            AND isnumeric([value]) = (1)
+        ///            AND NOT [value] LIKE &apos;%[^0-9.]%&apos;
+        ///            AND NOT [value] LIKE &apos;%[.]%&apos;
+        ///            THEN TRY_CONVERT([numeric](38, 10), [value])
+        ///        END
+        ///    ) persisted
+        ///
+        ///CREATE INDEX IX_ValueAsNumeric on AttributeValue (ValueAsNumeric)
+        ///
+        ///
+        ///ALTER TABLE AttributeValue DROP COLUMN ValueAsDateTime
+        ///ALTER TA [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201506130028565_AttributeValueAsDateTimeIndex_CreateColumns {
+            get {
+                return ResourceManager.GetString("_201506130028565_AttributeValueAsDateTimeIndex_CreateColumns", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CREATE TRIGGER [dbo].[tgrAttributeValue_InsertUpdate]
+        ///   ON  [dbo].[AttributeValue]
+        ///   AFTER INSERT, UPDATE
+        ///AS 
+        ///BEGIN
+        ///    update [AttributeValue] set ValueAsDateTime = CASE WHEN len(value) &lt; 50 and isnull(value,&apos;&apos;) != &apos;&apos; and isnumeric([value]) = 0 THEN
+        ///        ISNULL(TRY_CONVERT([datetime], TRY_CONVERT([datetimeoffset], left([value], (19)), 126)), TRY_CONVERT(DATETIME, [value], 101))
+        ///    END where Id in (select Id from inserted)
+        ///END.
+        /// </summary>
+        public static string _201506130028565_AttributeValueAsDateTimeIndex_CreateTrigger {
+            get {
+                return ResourceManager.GetString("_201506130028565_AttributeValueAsDateTimeIndex_CreateTrigger", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to update AttributeValue set Value = Value WHERE CASE WHEN len(value) &lt; 50 and isnull(value,&apos;&apos;) != &apos;&apos; and isnumeric([value]) = 0 THEN
+        ///        ISNULL(TRY_CONVERT([datetime], TRY_CONVERT([datetimeoffset], left([value], (19)), 126)), TRY_CONVERT(DATETIME, [value], 101))
+        ///    END is not NULL
+        ///
+        ///.
+        /// </summary>
+        public static string _201506130028565_AttributeValueAsDateTimeIndex_UpdateValues {
+            get {
+                return ResourceManager.GetString("_201506130028565_AttributeValueAsDateTimeIndex_UpdateValues", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- child label w/ icons
+        ///  UPDATE [BinaryFileData]
+        ///	SET [Content] = 0xEFBBBF1043547E7E43442C7E43435E7E43547E0D0A5E58417E54413030307E4A534E5E4C54305E4D4E575E4D54445E504F4E5E504D4E5E4C48302C305E4A4D415E5052362C367E534432345E4A55535E4C524E5E4349305E585A0D0A5E58410D0A5E4D4D540D0A5E50573831320D0A5E4C4C303430360D0A5E4C53300D0A5E46543435322C3131395E41304E2C3133352C3133345E46423333332C312C302C525E46485C5E46445757575E46530D0A5E465431322C3235345E41304E2C3133352C3134365E46485C5E4644355E46530D0A5E465431342C3330395E413 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201506162223455_EnsurePersonAlias_UpdateCheckinLabels {
+            get {
+                return ResourceManager.GetString("_201506162223455_EnsurePersonAlias_UpdateCheckinLabels", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Calendar Detail Page
+        ///UPDATE [Page] SET [BreadCrumbDisplayName] = 0 WHERE [GUID] = &apos;B54725E1-3640-4419-B580-2AF77DAF6568&apos;
+        ///
+        ///-- Calendar Item Detail Page
+        ///UPDATE [Page] SET [BreadCrumbDisplayName] = 0 WHERE [GUID] = &apos;7FB33834-F40A-4221-8849-BB8C06903B04&apos;
+        ///
+        ///-- Calendar Detail
+        ///UPDATE [BlockType] SET
+        ///	[Path] = &apos;~/Blocks/Event/CalendarDetail.ascx&apos;,
+        ///	[Name] = &apos;Calendar Detail&apos;,
+        ///	[Description] = &apos;Displays the details of the given Event Calendar.&apos;,
+        ///	[Category] = &apos;Event&apos;
+        ///WHERE [Path] = &apos;~/Blocks/Calendar/ [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201506170003272_UpdateCalendarBlocks {
+            get {
+                return ResourceManager.GetString("_201506170003272_UpdateCalendarBlocks", resourceCulture);
             }
         }
     }

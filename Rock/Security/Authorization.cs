@@ -258,10 +258,10 @@ namespace Rock.Security
         /// <returns></returns>
         public static bool Authorized( ISecured entity, string action, Rock.Model.Person person )
         {
-            return ItemAuthorized( entity, action, person ) ?? entity.IsAllowedByDefault( action );
+            return ItemAuthorized( entity, action, person, null ) ?? entity.IsAllowedByDefault( action );
         }
 
-        private static bool? ItemAuthorized( ISecured entity, string action, Rock.Model.Person person )
+        private static bool? ItemAuthorized( ISecured entity, string action, Rock.Model.Person person, List<ISecured> parentHistory )
         {
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
@@ -270,6 +270,17 @@ namespace Rock.Security
             }
 
             var entityTypeId = entity.TypeId;
+
+            parentHistory = parentHistory ?? new List<ISecured>();
+            if ( parentHistory.Contains( entity ) )
+            {
+                // infinite recursion situation, so threat as if no rules were found and return NULL
+                return null;
+            }
+            else
+            {
+                parentHistory.Add( entity );
+            }
 
             // If there are entries in the Authorizations object for this entity type and entity instance, evaluate each 
                 // one to find the first one specific to the selected user or a role that the selected user belongs 
@@ -329,12 +340,12 @@ namespace Rock.Security
 
             if ( entity.ParentAuthorityPre != null )
             {
-                parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, person );
+                parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, person, parentHistory );
             }
 
             if ( !parentAuthorized.HasValue && entity.ParentAuthority != null )
             {
-                parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, person );
+                parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, person, parentHistory );
             }
 
             return parentAuthorized;

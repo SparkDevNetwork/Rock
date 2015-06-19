@@ -338,7 +338,9 @@ namespace RockWeb.Blocks.CheckIn
                 groupTypeEditor.CheckinLabels = new List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>();
 
                 groupType.LoadAttributes( rockContext );
-                List<string> labelAttributeKeys = CheckinGroupTypeEditor.GetCheckinLabelAttributes( groupType.Attributes, rockContext ).Select( a => a.Key ).ToList();
+                List<string> labelAttributeKeys = CheckinGroupTypeEditor.GetCheckinLabelAttributes( groupType.Attributes, rockContext )
+                    .OrderBy( a => a.Value.Order )
+                    .Select( a => a.Key ).ToList();
                 BinaryFileService binaryFileService = new BinaryFileService( rockContext );
 
                 foreach ( string key in labelAttributeKeys )
@@ -906,6 +908,7 @@ namespace RockWeb.Blocks.CheckIn
 
                     rockContext.SaveChanges();
 
+                    int labelOrder = 0;
                     foreach ( var checkinLabelAttributeInfo in GroupTypeCheckinLabelAttributesState[groupTypeUI.Guid] )
                     {
                         var attribute = new Rock.Model.Attribute();
@@ -918,6 +921,7 @@ namespace RockWeb.Blocks.CheckIn
                         attribute.DefaultValue = checkinLabelAttributeInfo.BinaryFileGuid.ToString();
                         attribute.Key = checkinLabelAttributeInfo.AttributeKey;
                         attribute.Name = checkinLabelAttributeInfo.FileName;
+                        attribute.Order = labelOrder++;
 
                         if ( !attribute.IsValid )
                         {

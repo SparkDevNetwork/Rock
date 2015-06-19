@@ -255,22 +255,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     lActions.Text = sbActions.ToString();
                     ulActions.Visible = !string.IsNullOrWhiteSpace( lActions.Text );
-
-                    // Every person should have an alias record with same id.  If it's missing, create it
-                    if ( !Person.Aliases.Any( a => a.AliasPersonId == Person.Id ) )
-                    {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            var personService = new PersonService( rockContext );
-                            var person = personService.Get( Person.Id );
-                            if ( person != null )
-                            {
-                                person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
-                                rockContext.SaveChanges();
-                                Person = person;
-                            }
-                        }
-                    }
                 }
                 else
                 {

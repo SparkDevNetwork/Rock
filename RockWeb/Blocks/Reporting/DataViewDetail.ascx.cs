@@ -558,10 +558,9 @@ $(document).ready(function() {
         /// <param name="filter">The filter.</param>
         private void ShowPreview( DataView dataView )
         {
-            if ( BindGrid( gPreview, dataView, 15 ) )
-            {
-                modalPreview.Show();
-            }
+            BindGrid( gPreview, dataView, 15 );
+            
+            modalPreview.Show();
         }
 
         /// <summary>
@@ -641,10 +640,17 @@ $(document).ready(function() {
                 }
             }
 
+            var errorBox = ( grid == gPreview) ? nbPreviewError : nbGridError;
+
             if ( errorMessages.Any() )
             {
-                nbEditModeMessage.NotificationBoxType = NotificationBoxType.Warning;
-                nbEditModeMessage.Text = "INFO: There was a problem with one or more of the filters for this data view...<br/><br/> " + errorMessages.AsDelimited( "<br/>" );
+                errorBox.NotificationBoxType = NotificationBoxType.Warning;
+                errorBox.Text = "WARNING: There was a problem with one or more of the filters for this data view...<br/><br/> " + errorMessages.AsDelimited( "<br/>" );
+                errorBox.Visible = true;
+            }
+            else
+            {
+                errorBox.Visible = false;
             }
 
             if ( dataView.EntityTypeId.HasValue )
@@ -701,6 +707,7 @@ $(document).ready(function() {
             FilterGroup groupControl = sender as FilterGroup;
             FilterField filterField = new FilterField();
             filterField.DataViewFilterGuid = Guid.NewGuid();
+            filterField.DeleteClick += filterControl_DeleteClick;
             groupControl.Controls.Add( filterField );
             filterField.ID = string.Format( "ff_{0}", filterField.DataViewFilterGuid.ToString( "N" ) );
             filterField.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;

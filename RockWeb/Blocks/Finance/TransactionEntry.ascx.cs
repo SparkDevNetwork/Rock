@@ -1565,17 +1565,43 @@ namespace RockWeb.Blocks.Finance
                     var transaction = gateway.Charge( financialGateway, paymentInfo, out errorMessage );
                     if ( transaction != null )
                     {
-                        transaction.TransactionDateTime = RockDateTime.Now;
+                        var txnChanges = new List<string>();
+                        txnChanges.Add( "Created Transaction" );
+
+                        History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
+
                         transaction.AuthorizedPersonAliasId = person.PrimaryAliasId;
+                        History.EvaluateChange( txnChanges, "Person", string.Empty, person.FullName );
+
+                        transaction.TransactionDateTime = RockDateTime.Now;
+                        History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );
+
                         transaction.FinancialGatewayId = financialGateway.Id;
-                        transaction.TransactionTypeValueId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) ).Id;
+                        History.EvaluateChange( txnChanges, "Gateway", string.Empty, financialGateway.Name );
+
+                        var txnType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
+                        transaction.TransactionTypeValueId = txnType.Id;
+                        History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
+
                         transaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
+                        History.EvaluateChange( txnChanges, "Currency Type", string.Empty, paymentInfo.CurrencyTypeValue.Value );
+
                         transaction.CreditCardTypeValueId = CreditCardTypeValueId;
+                        if ( CreditCardTypeValueId.HasValue )
+                        {
+                            var ccType = DefinedValueCache.Read( CreditCardTypeValueId.Value );
+                            History.EvaluateChange( txnChanges, "Credit Card Type", string.Empty, ccType.Value );
+                        }
 
                         Guid sourceGuid = Guid.Empty;
                         if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
                         {
-                            transaction.SourceTypeValueId = DefinedValueCache.Read( sourceGuid ).Id;
+                            var source = DefinedValueCache.Read( sourceGuid );
+                            if ( source != null )
+                            {
+                                transaction.SourceTypeValueId = source.Id;
+                                History.EvaluateChange( txnChanges, "Source", string.Empty, source.Value );
+                            }
                         }
 
                         foreach ( var account in SelectedAccounts.Where( a => a.Amount > 0 ) )
@@ -1584,6 +1610,7 @@ namespace RockWeb.Blocks.Finance
                             transactionDetail.Amount = account.Amount;
                             transactionDetail.AccountId = account.Id;
                             transaction.TransactionDetails.Add( transactionDetail );
+                            History.EvaluateChange( txnChanges, account.Name, 0.0M.ToString( "C2" ), transactionDetail.Amount.ToString("C2") );
                         }
 
                         var batchService = new FinancialBatchService( rockContext );
@@ -1596,11 +1623,47 @@ namespace RockWeb.Blocks.Finance
                             transaction.TransactionDateTime.Value,
                             financialGateway.GetBatchTimeOffset() );
 
-                        batch.ControlAmount += transaction.TotalAmount;
+                        var batchChanges = new List<string>();
+
+                        if ( batch.Id == 0 )
+                        {
+                            batchChanges.Add( "Generated the batch" );
+                            History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
+                            History.EvaluateChange( batchChanges, "Status", null, batch.Status );
+                            History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
+                            History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+                        }
+
+                        decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
+                        History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.ToString("C2"), newControlAmount.ToString("C2") );
+                        batch.ControlAmount = newControlAmount;
 
                         transaction.BatchId = batch.Id;
                         batch.Transactions.Add( transaction );
-                        rockContext.SaveChanges();
+
+                        rockContext.WrapTransaction( () =>
+                        {
+                            rockContext.SaveChanges();
+
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( FinancialBatch ),
+                                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                                batch.Id,
+                                batchChanges
+                            );
+
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( FinancialBatch ),
+                                Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                                batch.Id,
+                                txnChanges,
+                                person.FullName,
+                                typeof( FinancialTransaction ),
+                                transaction.Id
+                            );
+                        } );
 
                         TransactionCode = transaction.TransactionCode;
                     }

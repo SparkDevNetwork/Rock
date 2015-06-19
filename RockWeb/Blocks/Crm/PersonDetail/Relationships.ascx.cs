@@ -16,16 +16,15 @@
 //
 using System;
 using System.ComponentModel;
-using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -37,23 +36,52 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Description( "Allows you to view relationships of a particular person." )]
 
     [GroupRoleField( "", "Group Type/Role Filter", "The Group Type and role to display other members from.", false, "" )]
-    [BooleanField("Show Role", "Should the member's role be displayed with their name")]
-    [BooleanField("Create Group", "Should group be created if a group/role cannot be found for the current person.", true)]
+    [BooleanField( "Show Role", "Should the member's role be displayed with their name" )]
+    [BooleanField( "Create Group", "Should group be created if a group/role cannot be found for the current person.", true )]
     public partial class Relationships : Rock.Web.UI.PersonBlock
     {
-        protected bool CanEdit = false;
-        protected bool ShowRole = false;
-        protected Guid ownerRoleGuid = Guid.Empty;
-        protected bool IsKnownRelationships = false;
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can edit.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can edit; otherwise, <c>false</c>.
+        /// </value>
+        protected bool CanEdit { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [show role].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show role]; otherwise, <c>false</c>.
+        /// </value>
+        protected bool ShowRole { get; set; }
+
+        /// <summary>
+        /// Gets or sets the owner role unique identifier.
+        /// </summary>
+        /// <value>
+        /// The owner role unique identifier.
+        /// </value>
+        protected Guid ownerRoleGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is known relationships.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is known relationships; otherwise, <c>false</c>.
+        /// </value>
+        protected bool IsKnownRelationships { get; set; }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
-            if ( Guid.TryParse( GetAttributeValue( "GroupType/RoleFilter" ), out ownerRoleGuid ) )
-            {
-                IsKnownRelationships = ownerRoleGuid.Equals(new Guid(Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER));
-            }
+            ownerRoleGuid = GetAttributeValue( "GroupType/RoleFilter" ).AsGuidOrNull() ?? Guid.Empty;
+            IsKnownRelationships = ownerRoleGuid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() );
 
             lbAdd.Visible = IsKnownRelationships;
 
@@ -86,7 +114,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 upRelationships.Visible = true;
 
-                bool.TryParse( GetAttributeValue( "ShowRole" ), out ShowRole );
+                ShowRole = GetAttributeValue( "ShowRole" ).AsBoolean();
 
                 if ( !Page.IsPostBack )
                 {
@@ -103,6 +131,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbAdd control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAdd_Click( object sender, EventArgs e )
         {
             if ( CanEdit )
@@ -111,25 +144,34 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
         }
 
-        void rGroupMembers_ItemDataBound( object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e )
+        /// <summary>
+        /// Handles the ItemDataBound event of the rGroupMembers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rGroupMembers_ItemDataBound( object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e )
         {
             var lbEdit = e.Item.FindControl( "lbEdit" ) as LinkButton;
             var lbRemove = e.Item.FindControl( "lbRemove" ) as LinkButton;
 
-            if ( lbEdit != null && lbRemove != null)
+            if ( lbEdit != null && lbRemove != null )
             {
                 lbEdit.Visible = CanEdit;
                 lbRemove.Visible = CanEdit;
             }
         }
 
-
-        void rGroupMembers_ItemCommand( object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e )
+        /// <summary>
+        /// Handles the ItemCommand event of the rGroupMembers control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterCommandEventArgs"/> instance containing the event data.</param>
+        protected void rGroupMembers_ItemCommand( object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e )
         {
             if ( CanEdit )
             {
-                int groupMemberId = int.MinValue;
-                if ( int.TryParse( e.CommandArgument.ToString(), out groupMemberId ) )
+                int groupMemberId = e.CommandArgument.ToString().AsIntegerOrNull() ?? 0;
+                if ( groupMemberId != 0 )
                 {
                     var rockContext = new RockContext();
                     var service = new GroupMemberService( rockContext );
@@ -140,7 +182,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         {
                             ShowModal( groupMember.Person, groupMember.GroupRoleId, groupMemberId );
                         }
-
                         else if ( e.CommandName == "RemoveRole" )
                         {
                             if ( IsKnownRelationships )
@@ -163,7 +204,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
         }
 
-        void modalAddPerson_SaveClick( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the SaveClick event of the modalAddPerson control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void modalAddPerson_SaveClick( object sender, EventArgs e )
         {
             if ( CanEdit )
             {
@@ -178,8 +224,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         var group = memberService.Queryable()
                             .Where( m =>
                                 m.PersonId == Person.Id &&
-                                m.GroupRole.Guid == ownerRoleGuid
-                            )
+                                m.GroupRole.Guid == ownerRoleGuid )
                             .Select( m => m.Group )
                             .FirstOrDefault();
 
@@ -215,7 +260,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             if ( IsKnownRelationships )
                             {
                                 var inverseGroupMember = memberService.GetInverseRelationship(
-                                    groupMember, bool.Parse( GetAttributeValue( "CreateGroup" ) ), CurrentPersonAlias );
+                                    groupMember, GetAttributeValue( "CreateGroup" ).AsBoolean(), CurrentPersonAlias );
                                 if ( inverseGroupMember != null )
                                 {
                                     rockContext.SaveChanges();
@@ -227,9 +272,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 }
                             }
                         }
-
                     }
-
                 }
 
                 HideDialog();
@@ -253,12 +296,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         var group = memberService.Queryable()
                             .Where( m =>
                                 m.PersonId == Person.Id &&
-                                m.GroupRole.Guid == ownerRoleGuid
-                            )
+                                m.GroupRole.Guid == ownerRoleGuid )
                             .Select( m => m.Group )
                             .FirstOrDefault();
 
-                        if ( group == null && bool.Parse( GetAttributeValue( "CreateGroup" ) ) )
+                        if ( group == null && GetAttributeValue( "CreateGroup" ).AsBoolean() )
                         {
                             var role = new GroupTypeRoleService( rockContext ).Get( ownerRoleGuid );
                             if ( role != null && role.GroupTypeId.HasValue )
@@ -284,7 +326,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         {
                             lGroupName.Text = group.Name.Pluralize();
                             phEditActions.Visible = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                        
+
                             if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                             {
                                 phGroupTypeIcon.Controls.Clear();
@@ -315,10 +357,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
         }
 
-        private void ShowModal( Person person, int? roleId, int? groupMemberId  )
+        /// <summary>
+        /// Shows the modal.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="roleId">The role identifier.</param>
+        /// <param name="groupMemberId">The group member identifier.</param>
+        private void ShowModal( Person person, int? roleId, int? groupMemberId )
         {
-            Guid roleGuid = Guid.Empty;
-            if ( Guid.TryParse( GetAttributeValue( "GroupType/RoleFilter" ), out roleGuid ) )
+            Guid roleGuid = GetAttributeValue( "GroupType/RoleFilter" ).AsGuidOrNull() ?? Guid.Empty;
+            if ( roleGuid != Guid.Empty )
             {
                 var groupTypeRoleService = new GroupTypeRoleService( new RockContext() );
                 var role = groupTypeRoleService.Get( ownerRoleGuid );
@@ -328,21 +376,29 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     .Where( r => r.Guid == roleGuid )
                     .Select( r => r.GroupTypeId )
                     .FirstOrDefault();
-
             }
+
             grpRole.GroupRoleId = roleId;
             ppPerson.SetValue( person );
 
             ShowDialog( groupMemberId ?? 0, true );
         }
 
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        /// <param name="roleId">The role identifier.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void ShowDialog( int roleId, bool setValues = false )
         {
             hfRoleId.Value = roleId.ToString();
             ShowDialog( setValues );
         }
 
-
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void ShowDialog( bool setValues = false )
         {
             if ( !string.IsNullOrWhiteSpace( hfRoleId.Value ) )
@@ -351,6 +407,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
         }
 
+        /// <summary>
+        /// Hides the dialog.
+        /// </summary>
         private void HideDialog()
         {
             modalAddPerson.Hide();

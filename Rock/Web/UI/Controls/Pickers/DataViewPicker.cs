@@ -14,7 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Data.Entity;
+using System.Linq;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -63,12 +66,25 @@ namespace Rock.Web.UI.Controls
                 // add Empty option first
                 this.Items.Add( new ListItem() );
 
-                foreach ( var dataView in new DataViewService( new RockContext() ).GetByEntityTypeId( _entityTypeId.Value ) )
+                using ( var rockContext = new RockContext() )
                 {
-                    if ( dataView.IsAuthorized( Authorization.VIEW, this.RockBlock().CurrentPerson ) &&
-                        dataView.DataViewFilter.IsAuthorized( Authorization.VIEW, this.RockBlock().CurrentPerson ) )
+                    var allEntityFilters = new DataViewFilterService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( f => f.EntityTypeId == _entityTypeId )
+                        .ToList();
+                        
+                    foreach ( var dataView in new DataViewService( rockContext )
+                        .GetByEntityTypeId( _entityTypeId.Value )
+                        .Include( "EntityType" )
+                        .Include( "Category" )
+                        .Include( "DataViewFilter" )
+                        .AsNoTracking() )
                     {
-                        this.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
+                        if ( dataView.IsAuthorized( Authorization.VIEW, this.RockBlock().CurrentPerson ) &&
+                            dataView.DataViewFilter.IsAuthorized( Authorization.VIEW, this.RockBlock().CurrentPerson, allEntityFilters ) )
+                        {
+                            this.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
+                        }
                     }
                 }
             }
