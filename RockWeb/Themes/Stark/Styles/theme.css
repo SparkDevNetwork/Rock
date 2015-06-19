@@ -875,6 +875,11 @@ Copyright (c) 2012 Dan Eden*/
   width: 340px;
   height: 190px;
 }
+.campuses-picker {
+  float: left;
+  margin-top: 0;
+  margin-right: 24px;
+}
 /*.banner
 {
   color: @banner-text-color;
@@ -2670,7 +2675,7 @@ tr.row-highlight td {
 
     1. SQL Command - block to query database directly
     2. Data Views - block for creating data views
-
+    3. Dynamic Report - block for making reports dynamically updated
 */
 .sql-comand .panel {
   margin-bottom: 24px;
@@ -2711,6 +2716,9 @@ tr.row-highlight td {
   .filter-item div[class*='col'] {
     margin-bottom: 0;
   }
+}
+.filter-row {
+  margin-bottom: 12px;
 }
 /*
     Used to manage styles for specific blocks.

@@ -92,7 +92,7 @@ namespace Rock.Reporting.DataFilter.Person
 function() {
     var result = 'Campuses';
     var campusesPicker = $('.js-campuses-picker', $content);
-    var checkedCampuses = $('..js-campuses-picker', $content).find(':checked').closest('label');
+    var checkedCampuses = $('.js-campuses-picker', $content).find(':checked').closest('label');
     if (checkedCampuses.length) {
         var campusCommaList = checkedCampuses.map(function() { return $(this).text() }).get().join(',');
         result = 'Campuses: ' + campusCommaList;
@@ -145,7 +145,7 @@ function() {
             CampusesPicker campusesPicker = new CampusesPicker();
             campusesPicker.ID = filterControl.ID + "_0";
             campusesPicker.Label = string.Empty;
-            campusesPicker.CssClass = "js-campuses-picker";
+            campusesPicker.CssClass = "js-campuses-picker campuses-picker";
             campusesPicker.Campuses = CampusCache.All();
 
             filterControl.Controls.Add( campusesPicker );

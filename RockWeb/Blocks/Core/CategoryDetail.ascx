@@ -12,6 +12,7 @@
                 <asp:HiddenField ID="hfCategoryId" runat="server" />
 
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:CustomValidator ID="cvCategory" runat="server" Display="None" />
 
                 <div id="pnlEditDetails" runat="server">
 

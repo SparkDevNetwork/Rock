@@ -894,10 +894,9 @@ namespace Rock.Data
 
             try
             {
-                // dynamically add plugin entities so that queryables can use a mixture of entities from different plugins and core
-                // from http://romiller.com/2012/03/26/dynamically-building-a-model-with-code-first/
-                var entityMethod = typeof( DbModelBuilder ).GetMethod( "Entity" );
-
+                //// dynamically add plugin entities so that queryables can use a mixture of entities from different plugins and core
+                //// from http://romiller.com/2012/03/26/dynamically-building-a-model-with-code-first/, but using the new RegisterEntityType in 6.1.3
+                
                 // look for IRockEntity classes
                 var entityTypeList = Reflection.FindTypes( typeof( Rock.Data.IRockEntity ) )
                     .Where( a => !a.Value.IsAbstract && ( a.Value.GetCustomAttribute<NotMappedAttribute>() == null ) && ( a.Value.GetCustomAttribute<System.Runtime.Serialization.DataContractAttribute>() != null ) )
@@ -905,7 +904,7 @@ namespace Rock.Data
 
                 foreach ( var entityType in entityTypeList )
                 {
-                    entityMethod.MakeGenericMethod( entityType ).Invoke( modelBuilder, new object[] { } );
+                    modelBuilder.RegisterEntityType( entityType );
                 }
             }
             catch ( Exception ex )

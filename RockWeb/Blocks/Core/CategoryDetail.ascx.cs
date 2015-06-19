@@ -261,9 +261,13 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            if ( !category.IsValid )
+            // if the category IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of category didn't pass.
+            // So, make sure a message is displayed in the validation summary
+            cvCategory.IsValid = category.IsValid;
+
+            if ( !cvCategory.IsValid )
             {
-                // Controls will render the error messages                    
+                cvCategory.ErrorMessage = category.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
                 return;
             }
 

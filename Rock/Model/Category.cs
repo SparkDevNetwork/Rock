@@ -185,6 +185,42 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsValid
+        {
+            get
+            {
+                var result = base.IsValid;
+                if ( result )
+                {
+                    // make sure it isn't getting saved with a recursive parent hierarchy
+                    var parentIds = new List<int>();
+                    parentIds.Add( this.Id );
+                    var parent = this.ParentCategoryId.HasValue ? (this.ParentCategory ?? new CategoryService(new RockContext()).Get(this.ParentCategoryId.Value)) : null;
+                    while ( parent != null )
+                    {
+                        if ( parentIds.Contains( parent.Id ) )
+                        {
+                            this.ValidationResults.Add( new ValidationResult( "Parent Category cannot be a child of this category (recursion)" ) );
+                            return false;
+                        }
+                        else
+                        {
+                            parentIds.Add( parent.Id );
+                            parent = parent.ParentCategory;
+                        }
+                    }
+                }
+
+                return result;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -216,7 +252,7 @@ namespace Rock.Model
         /// </summary>
         public CategoryConfiguration()
         {
-            this.HasOptional( p => p.ParentCategory ).WithMany( p => p.ChildCategories).HasForeignKey( p => p.ParentCategoryId).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ParentCategory ).WithMany( p => p.ChildCategories ).HasForeignKey( p => p.ParentCategoryId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }

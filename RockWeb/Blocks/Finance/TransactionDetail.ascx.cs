@@ -237,6 +237,8 @@ namespace RockWeb.Blocks.Finance
             int? txnId = hfTransactionId.Value.AsIntegerOrNull();
             int? batchId = hfBatchId.Value.AsIntegerOrNull();
 
+            var changes = new List<string>();
+
             if ( txnId.HasValue )
             {
                 txn = txnService.Get( txnId.Value );
@@ -247,15 +249,38 @@ namespace RockWeb.Blocks.Finance
                 txn = new FinancialTransaction();
                 txnService.Add( txn );
                 txn.BatchId = batchId;
+                changes.Add( "Created transaction" );
             }
 
             if ( txn != null )
             {
-                if ( ppAuthorizedPerson.PersonId.HasValue )
+                string newPerson = ppAuthorizedPerson.PersonName;
+
+                if ( batchId.HasValue )
                 {
-                    txn.AuthorizedPersonAliasId = ppAuthorizedPerson.PersonAliasId;
+                    if ( !txn.AuthorizedPersonAliasId.Equals( ppAuthorizedPerson.PersonAliasId ) )
+                    {
+                        string prevPerson = ( txn.AuthorizedPersonAlias != null && txn.AuthorizedPersonAlias.Person != null ) ?
+                            txn.AuthorizedPersonAlias.Person.FullName : string.Empty;
+                        History.EvaluateChange( changes, "Person", prevPerson, newPerson );
+                    }
+
+                    History.EvaluateChange( changes, "Date/Time", txn.TransactionDateTime, dtTransactionDateTime.SelectedDateTime );
+                    History.EvaluateChange( changes, "Type", GetDefinedValue( txn.TransactionTypeValueId ), GetDefinedValue( ddlTransactionType.SelectedValue.AsInteger() ) );
+                    History.EvaluateChange( changes, "Source", GetDefinedValue( txn.SourceTypeValueId ), GetDefinedValue( ddlSourceType.SelectedValueAsInt() ) );
+
+                    if ( !txn.FinancialGatewayId.Equals( gpPaymentGateway.SelectedValueAsInt() ) )
+                    {
+                        History.EvaluateChange( changes, "Gateway", GetFinancialGatewayName( txn.FinancialGatewayId, rockContext ), GetFinancialGatewayName( gpPaymentGateway.SelectedValueAsInt(), rockContext ) );
+                    }
+
+                    History.EvaluateChange( changes, "Transaction Code", txn.TransactionCode, tbTransactionCode.Text );
+                    History.EvaluateChange( changes, "Currency Type", GetDefinedValue( txn.CurrencyTypeValueId ), GetDefinedValue( ddlCurrencyType.SelectedValueAsInt() ) );
+                    History.EvaluateChange( changes, "Credit Card Type", GetDefinedValue( txn.CreditCardTypeValueId ), GetDefinedValue( ddlCreditCardType.SelectedValueAsInt() ) );
+                    History.EvaluateChange( changes, "Summary", txn.Summary, tbSummary.Text );
                 }
 
+                txn.AuthorizedPersonAliasId = ppAuthorizedPerson.PersonAliasId;
                 txn.TransactionDateTime = dtTransactionDateTime.SelectedDateTime;
                 txn.TransactionTypeValueId = ddlTransactionType.SelectedValue.AsInteger();
                 txn.SourceTypeValueId = ddlSourceType.SelectedValueAsInt();
@@ -290,32 +315,72 @@ namespace RockWeb.Blocks.Finance
                                          select txnDetail;
                     deletedDetails.ToList().ForEach( txnDetail =>
                     {
+                        if ( batchId.HasValue )
+                        {
+                            History.EvaluateChange( changes, txnDetail.Account != null ? txnDetail.Account.Name : "Unknown", txnDetail.Amount.ToString( "C2" ), string.Empty );
+                        }
                         txnDetailService.Delete( txnDetail );
                     } );
-                    rockContext.SaveChanges();
 
                     // Save Transaction Details
                     foreach ( var editorTxnDetail in TransactionDetailsState )
                     {
+                        string oldAccountName = string.Empty;
+                        string newAccountName = string.Empty;
+                        decimal oldAmount = 0.0M;
+                        decimal newAmount = 0.0M;
+
                         // Add or Update the activity type
                         var txnDetail = txn.TransactionDetails.FirstOrDefault( d => d.Guid.Equals( editorTxnDetail.Guid ) );
-                        if ( txnDetail == null )
+                        if ( txnDetail != null )
+                        {
+                            oldAccountName = AccountName( txnDetail.AccountId );
+                            oldAmount = txnDetail.Amount;
+                        }
+                        else 
                         {
                             txnDetail = new FinancialTransactionDetail();
                             txnDetail.Guid = editorTxnDetail.Guid;
                             txn.TransactionDetails.Add( txnDetail );
                         }
+
+                        newAccountName = AccountName( editorTxnDetail.AccountId );
+                        newAmount = UseSimpleAccountMode ? tbSingleAccountAmount.Text.AsDecimal() : editorTxnDetail.Amount;
+
+                        if ( batchId.HasValue )
+                        {
+                            if ( string.IsNullOrWhiteSpace(oldAccountName) )
+                            {
+                                History.EvaluateChange( changes, newAccountName, string.Empty, newAmount.ToString( "C2" ) );
+                            }
+                            else
+                            {
+                                if ( oldAccountName == newAccountName )
+                                {
+                                    if ( oldAmount != newAmount )
+                                    {
+                                        History.EvaluateChange( changes, oldAccountName, oldAmount.ToString("C2"), newAmount.ToString("C2") );
+                                    }
+                                }
+                                else
+                                {
+                                    History.EvaluateChange( changes, oldAccountName, oldAmount.ToString( "C2" ), string.Empty );
+                                    History.EvaluateChange( changes, newAccountName, string.Empty, newAmount.ToString( "C2" ) );
+                                }
+                            }
+                        }
+
                         txnDetail.AccountId = editorTxnDetail.AccountId;
-                        txnDetail.Amount = UseSimpleAccountMode ? tbSingleAccountAmount.Text.AsDecimal() : editorTxnDetail.Amount;
+                        txnDetail.Amount = newAmount;
                         txnDetail.Summary = editorTxnDetail.Summary;
                     }
-                    rockContext.SaveChanges();
 
                     // Delete any transaction images that were removed
                     var orphanedBinaryFileIds = new List<int>();
                     var txnImagesInDB = txnImageService.Queryable().Where( a => a.TransactionId.Equals( txn.Id ) ).ToList();
                     foreach ( var txnImage in txnImagesInDB.Where( i => !TransactionImagesState.Contains( i.BinaryFileId ) ) )
                     {
+                        changes.Add( "Removed Image" );
                         orphanedBinaryFileIds.Add( txnImage.BinaryFileId );
                         txnImageService.Delete( txnImage );
                     }
@@ -328,14 +393,24 @@ namespace RockWeb.Blocks.Finance
                         var txnImage = txnImagesInDB.FirstOrDefault( i => i.BinaryFileId == binaryFileId );
                         if ( txnImage == null )
                         {
+                            changes.Add( "Added Image" );
                             txnImage = new FinancialTransactionImage();
                             txnImage.TransactionId = txn.Id;
                             txn.Images.Add( txnImage );
                         }
+                        else
+                        {
+                            if ( txnImage.BinaryFileId != binaryFileId )
+                            {
+                                changes.Add( "Updated Image" );
+                            }
+                        }
+
                         txnImage.BinaryFileId = binaryFileId;
                         txnImage.Order = imageOrder;
                         imageOrder++;
                     }
+
                     rockContext.SaveChanges();
 
                     // Make sure updated binary files are not temporary
@@ -348,6 +423,21 @@ namespace RockWeb.Blocks.Finance
                     foreach ( var binaryFile in binaryFileService.Queryable().Where( f => orphanedBinaryFileIds.Contains( f.Id ) ) )
                     {
                         binaryFileService.Delete( binaryFile );
+                    }
+
+                    // If the transaction is associated with a batch, update that batch's history
+                    if ( batchId.HasValue )
+                    {
+                        HistoryService.SaveChanges(
+                            rockContext,
+                            typeof( FinancialBatch ),
+                            Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                            batchId.Value,
+                            changes,
+                            !string.IsNullOrWhiteSpace( newPerson ) ? newPerson : string.Format( "Transaction Id:{0}", txn.Id ),
+                            typeof( FinancialTransaction ),
+                            txn.Id
+                        );
                     }
 
                     rockContext.SaveChanges();
@@ -1115,9 +1205,13 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="accountId">The account identifier.</param>
         /// <returns></returns>
-        protected string AccountName( int accountId )
+        protected string AccountName( int? accountId )
         {
-            return AccountNames.ContainsKey( accountId ) ? AccountNames[accountId] : "";
+            if ( accountId.HasValue )
+            {
+                return AccountNames.ContainsKey( accountId.Value ) ? AccountNames[accountId.Value] : string.Empty;
+            }
+            return string.Empty;
         }
 
         /// <summary>
@@ -1132,6 +1226,45 @@ namespace RockWeb.Blocks.Finance
             string width = maxWidth.HasValue ? string.Format( "&maxWidth={0}", maxWidth.Value ) : string.Empty;
             string height = maxHeight.HasValue ? string.Format( "&maxHeight={0}", maxHeight.Value ) : string.Empty;
             return ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}{1}{2}", binaryFileId, width, height ) );
+        }
+
+        /// <summary>
+        /// Gets the defined value.
+        /// </summary>
+        /// <param name="definedValueId">The defined value identifier.</param>
+        /// <returns></returns>
+        protected string GetDefinedValue( int? definedValueId )
+        {
+            if ( definedValueId.HasValue )
+            {
+                var dv = DefinedValueCache.Read( definedValueId.Value );
+                if ( dv != null )
+                {
+                    return dv.Value;
+                }
+            }
+
+            return "None";
+        }
+
+        /// <summary>
+        /// Gets the name of the financial gateway.
+        /// </summary>
+        /// <param name="gatewayId">The gateway identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        protected string GetFinancialGatewayName( int? gatewayId, RockContext rockContext )
+        {
+            if ( gatewayId.HasValue )
+            {
+                var gw = new FinancialGatewayService( rockContext ).Get( gatewayId.Value );
+                if ( gw != null )
+                {
+                    return gw.Name;
+                }
+            }
+
+            return "None";
         }
 
         #endregion

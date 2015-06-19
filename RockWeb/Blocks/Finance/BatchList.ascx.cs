@@ -245,8 +245,19 @@ namespace RockWeb.Blocks.Finance
                         return;
                     }
 
-                    batchService.Delete( batch );
-                    rockContext.SaveChanges();
+                    rockContext.WrapTransaction( () =>
+                    {
+                        HistoryService.SaveChanges(
+                            rockContext,
+                            typeof( FinancialBatch ),
+                            Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                            batch.Id,
+                            new List<string> { "Deleted the batch" } );
+
+                        batchService.Delete( batch );
+
+                        rockContext.SaveChanges();
+                    } );
                 }
             }
 
@@ -333,13 +344,24 @@ namespace RockWeb.Blocks.Finance
 
                     foreach ( var batch in batchesToUpdate )
                     {
+                        var changes = new List<string>();
+                        History.EvaluateChange( changes, "Status", batch.Status, newStatus );
                         batch.Status = newStatus;
+
                         if ( !batch.IsValid )
                         {
                             string message = string.Format( "Unable to update status for the selected batches.<br/><br/>{0}", batch.ValidationResults.AsDelimited( "<br/>" ) );
                             maWarningDialog.Show( message, ModalAlertType.Warning );
                             return;
                         }
+
+                        HistoryService.SaveChanges(
+                            rockContext,
+                            typeof( FinancialBatch ),
+                            Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                            batch.Id,
+                            changes,
+                            false );
                     }
 
                     rockContext.SaveChanges();

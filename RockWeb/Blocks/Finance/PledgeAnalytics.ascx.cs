@@ -29,6 +29,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using System.Data;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -63,6 +64,7 @@ namespace RockWeb.Blocks.Finance
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            gList.DataKeyNames = new string[] { "Id" };
             gList.GridRebind += gList_GridRebind;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
@@ -143,64 +145,39 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
-            int accountId = -1;
-            int.TryParse(apAccount.SelectedValue, out accountId);
-
-
-            var pledgeService = new FinancialPledgeService(_rockContext);
-
-            var qry = pledgeService.Queryable().AsNoTracking()
-                            .Where(p => p.AccountId == accountId);
-
-            // apply pledge date range
-            if ( drpDateRange.LowerValue.HasValue && drpDateRange.UpperValue.HasValue )
+            int? accountId = apAccount.SelectedValue.AsIntegerOrNull();
+            if ( accountId.HasValue )
             {
-                qry = qry.Where(p => ( p.StartDate <= drpDateRange.LowerValue.Value && p.EndDate >= drpDateRange.LowerValue.Value ) || ( p.StartDate <= drpDateRange.UpperValue.Value && p.EndDate >= drpDateRange.UpperValue.Value ));
-            }
-            else
-            {
-                if ( drpDateRange.LowerValue.HasValue )
+                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateRange.DelimitedValues );
+                var start = dateRange.Start;
+                var end = dateRange.End;
+
+                var minPledgeAmount = nrePledgeAmount.LowerValue;
+                var maxPledgeAmount = nrePledgeAmount.UpperValue;
+
+                var minComplete = nrePercentComplete.LowerValue;
+                var maxComplete = nrePercentComplete.UpperValue;
+
+                var minGiftAmount = nreAmountGiven.LowerValue;
+                var maxGiftAmount = nreAmountGiven.UpperValue;
+
+                int includeOption = rblInclude.SelectedValueAsInt() ?? 0;
+                bool includePledges = includeOption != 1;
+                bool includeGifts = includeOption != 0;
+
+                DataSet ds = FinancialPledgeService.GetPledgeAnalytics( accountId.Value, start, end,
+                    minPledgeAmount, maxPledgeAmount, minComplete, maxComplete, minGiftAmount, maxGiftAmount,
+                    includePledges, includeGifts );
+                System.Data.DataView dv = ds.Tables[0].DefaultView;
+
+                if ( gList.SortProperty != null )
                 {
-                    qry = qry.Where(p => p.StartDate <= drpDateRange.LowerValue.Value && p.EndDate >= drpDateRange.LowerValue.Value);
+                    dv.Sort = string.Format( "[{0}] {1}", gList.SortProperty.Property, gList.SortProperty.DirectionString );
                 }
 
-                if ( drpDateRange.UpperValue.HasValue )
-                {
-                    qry = qry.Where(p => p.StartDate <= drpDateRange.UpperValue.Value && p.EndDate >= drpDateRange.UpperValue.Value);
-                }
+                gList.DataSource = dv;
+                gList.DataBind();
             }
-
-            var pledgeSummary = qry
-                    .GroupBy( p => new 
-                    { 
-                        GivingId = p.PersonAlias.Person.GivingId,
-                        AccountId = p.AccountId,
-                        AccountName = p.Account.Name
-                    } )
-                    .Select( p => new 
-                    { 
-                        GivingId = p.Key.GivingId,
-                        AccountId = p.Key.AccountId,
-                        AccountName = p.Key.AccountName,
-                        PledgeTotal = p.Sum( t => t.TotalAmount)
-                    } );
-
-
-
-            // filter pledge range
-            if ( nrePledgeAmount.Visible && nrePledgeAmount.LowerValue.HasValue )
-            {
-                pledgeSummary = pledgeSummary.Where(p => p.PledgeTotal >= nrePledgeAmount.LowerValue.Value);
-            }
-
-            if ( nrePledgeAmount.Visible && nrePledgeAmount.UpperValue.HasValue )
-            {
-                pledgeSummary = pledgeSummary.Where(p => p.PledgeTotal <= nrePledgeAmount.UpperValue.Value);
-            }
-
-
-            gList.DataSource = pledgeSummary.ToList();
-            gList.DataBind();
         }
 
         /// <summary>

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -88,10 +89,11 @@ namespace Rock.Reporting.DataFilter.Person
         public override string GetClientFormatSelection( Type entityType )
         {
             return "'Attended ' + " +
-                "'\\'' + $('select:first', $content).find(':selected').text() + '\\' ' + " +
-                "$('select:last', $content).find(':selected').text() + ' ' + " +
-                "$('input:first', $content).val() + ' times in the last ' + " +
-                "$('input:last', $content).val() + ' week(s)'";
+                "'\\'' + $('.js-group-type', $content).find(':selected').text() + '\\' ' + " +
+                " ($('.js-child-group-types', $content).is(':checked') ? '( or child group types) ' : '') + " +
+                "$('.js-filter-compare', $content).find(':selected').text() + ' ' + " +
+                "$('.js-attended-count', $content).val() + ' times in the last ' + " +
+                "$('.js-in-last-weeks-count', $content).val() + ' week(s)'";
         }
 
         /// <summary>
@@ -110,13 +112,15 @@ namespace Rock.Reporting.DataFilter.Person
                 var groupType = Rock.Web.Cache.GroupTypeCache.Read( options[0].AsGuid() );
 
                 ComparisonType comparisonType = options[1].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
+                bool includeChildGroups = options.Length > 4 ? options[4].AsBoolean() : false; 
 
                 s = string.Format(
-                    "Attended '{0}' {1} {2} times in the last {3} week(s)",
+                    "Attended '{0}'{4} {1} {2} times in the last {3} week(s)",
                     groupType != null ? groupType.Name : "?",
                     comparisonType.ConvertToString(),
                     options[2],
-                    options[3] );
+                    options[3],
+                    includeChildGroups ? " (or child group types) " : string.Empty );
             }
 
             return s;
@@ -130,6 +134,7 @@ namespace Rock.Reporting.DataFilter.Person
         {
             var ddlGroupType = new RockDropDownList();
             ddlGroupType.ID = filterControl.ID + "_0";
+            ddlGroupType.AddCssClass( "js-group-type" );
             filterControl.Controls.Add( ddlGroupType );
 
             foreach ( Rock.Model.GroupType groupType in new GroupTypeService( new RockContext() ).Queryable() )
@@ -137,25 +142,34 @@ namespace Rock.Reporting.DataFilter.Person
                 ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Guid.ToString() ) );
             }
 
+            var cbChildGroupTypes = new RockCheckBox();
+            cbChildGroupTypes.ID = filterControl.ID + "_cbChildGroupTypes";
+            cbChildGroupTypes.AddCssClass( "js-child-group-types" );
+            cbChildGroupTypes.Text = "Include Child Group Types(s)";
+            filterControl.Controls.Add( cbChildGroupTypes );
+
             var ddlIntegerCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypes );
             ddlIntegerCompare.ID = filterControl.ID + "_ddlIntegerCompare";
+            ddlIntegerCompare.AddCssClass( "js-filter-compare" );
             filterControl.Controls.Add( ddlIntegerCompare );
 
             var tbAttendedCount = new RockTextBox();
             tbAttendedCount.ID = filterControl.ID + "_2";
+            tbAttendedCount.AddCssClass( "js-attended-count" );
             filterControl.Controls.Add( tbAttendedCount );
 
             var tbInLastWeeksCount = new RockTextBox();
             tbInLastWeeksCount.ID = filterControl.ID + "_tbInLastWeeksCount";
+            tbInLastWeeksCount.AddCssClass( "js-in-last-weeks-count" );
             filterControl.Controls.Add( tbInLastWeeksCount );
 
-            var controls = new Control[4] { ddlGroupType, ddlIntegerCompare, tbAttendedCount, tbInLastWeeksCount };
+            var controls = new Control[5] { ddlGroupType, cbChildGroupTypes, ddlIntegerCompare, tbAttendedCount, tbInLastWeeksCount };
 
             // set the default values in case this is a newly added filter
             SetSelection(
                 entityType,
                 controls,
-                string.Format( "{0}|{1}|4|16", ddlGroupType.Items.Count > 0 ? ddlGroupType.Items[0].Value : "0", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
+                string.Format( "{0}|{1}|4|16|false", ddlGroupType.Items.Count > 0 ? ddlGroupType.Items[0].Value : "0", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
 
             return controls;
         }
@@ -169,6 +183,12 @@ namespace Rock.Reporting.DataFilter.Person
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
+            var ddlGroupType = controls[0] as RockDropDownList;
+            var cbChildGroupTypes = controls[1] as RockCheckBox;
+            var ddlIntegerCompare = controls[2] as DropDownList;
+            var tbAttendedCount = controls[3] as RockTextBox;
+            var tbInLastWeeksCount = controls[4] as RockTextBox;
+
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -177,14 +197,19 @@ namespace Rock.Reporting.DataFilter.Person
             writer.Write( "<span class='data-view-filter-label'>Attended</span>" );
             writer.RenderEndTag();
 
-            writer.AddAttribute( "class", "col-md-5" );
+            writer.AddAttribute( "class", "col-md-3" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            controls[0].RenderControl( writer );
+            ddlGroupType.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( "class", "col-md-2" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            cbChildGroupTypes.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute( "class", "col-md-5" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            controls[1].RenderControl( writer );
+            ddlIntegerCompare.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
@@ -197,7 +222,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             writer.AddAttribute( "class", "col-md-2" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            controls[2].RenderControl( writer );
+            tbAttendedCount.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute( "class", "col-md-3" );
@@ -207,7 +232,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             writer.AddAttribute( "class", "col-md-2" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            controls[3].RenderControl( writer );
+            tbInLastWeeksCount.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute( "class", "col-md-3" );
@@ -226,11 +251,13 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            string groupTypeGuid = ( (DropDownList)controls[0] ).SelectedValue;
-            string comparisonType = ( (DropDownList)controls[1] ).SelectedValue;
-            string attended = ( (TextBox)controls[2] ).Text;
-            string weeks = ( (TextBox)controls[3] ).Text;
-            return string.Format( "{0}|{1}|{2}|{3}", groupTypeGuid, comparisonType, attended, weeks );
+            var ddlGroupType = controls[0] as RockDropDownList;
+            var cbChildGroupTypes = controls[1] as RockCheckBox;
+            var ddlIntegerCompare = controls[2] as DropDownList;
+            var tbAttendedCount = controls[3] as RockTextBox;
+            var tbInLastWeeksCount = controls[4] as RockTextBox;
+
+            return string.Format( "{0}|{1}|{2}|{3}|{4}", ddlGroupType.SelectedValue, ddlIntegerCompare.SelectedValue, tbAttendedCount.Text, tbInLastWeeksCount.Text, cbChildGroupTypes.Checked.ToTrueFalse() );
         }
 
         /// <summary>
@@ -241,13 +268,24 @@ namespace Rock.Reporting.DataFilter.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
+
+            var ddlGroupType = controls[0] as RockDropDownList;
+            var cbChildGroupTypes = controls[1] as RockCheckBox;
+            var ddlIntegerCompare = controls[2] as DropDownList;
+            var tbAttendedCount = controls[3] as RockTextBox;
+            var tbInLastWeeksCount = controls[4] as RockTextBox;
+
             string[] options = selection.Split( '|' );
             if ( options.Length >= 4 )
             {
-                ( (DropDownList)controls[0] ).SelectedValue = options[0];
-                ( (DropDownList)controls[1] ).SelectedValue = options[1];
-                ( (TextBox)controls[2] ).Text = options[2];
-                ( (TextBox)controls[3] ).Text = options[3];
+                ddlGroupType.SelectedValue = options[0];
+                ddlIntegerCompare.SelectedValue = options[1];
+                tbAttendedCount.Text = options[2];
+                tbInLastWeeksCount.Text = options[3];
+                if ( options.Length >= 5 )
+                {
+                    cbChildGroupTypes.Checked = options[4].AsBooleanOrNull() ?? false;
+                }
             }
         }
 
@@ -262,34 +300,64 @@ namespace Rock.Reporting.DataFilter.Person
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
             string[] options = selection.Split( '|' );
-            if ( options.Length != 4 )
+            if ( options.Length < 4 )
             {
                 return null;
             }
 
             Guid groupTypeGuid = options[0].AsGuid();
             ComparisonType comparisonType = options[1].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
-            int attended = options[2].AsInteger();
-            int weeks = options[3].AsInteger();
+            int? attended = options[2].AsIntegerOrNull();
+            int? weeks = options[3].AsIntegerOrNull();
 
-            var groupType = new GroupTypeService( new RockContext() ).Get( groupTypeGuid );
-            int? groupTypeId = groupType != null ? groupType.Id : (int?)null;
+            bool includeChildGroupTypes = options.Length >= 5 ? options[4].AsBooleanOrNull() ?? false : false;
 
-            DateTime startDate = RockDateTime.Now.AddDays( 0 - ( 7 * weeks ) );
+            var groupTypeService = new GroupTypeService( new RockContext() );
+
+            var groupType = groupTypeService.Get( groupTypeGuid );
+            List<int> groupTypeIds = new List<int>();
+            if ( groupType != null )
+            {
+                groupTypeIds.Add( groupType.Id );
+
+                if ( includeChildGroupTypes )
+                {
+                    var childGroupTypes = groupTypeService.GetAllAssociatedDescendents( groupType.Guid );
+                    if ( childGroupTypes.Any() )
+                    {
+                        groupTypeIds.AddRange( childGroupTypes.Select( a => a.Id ) );
+
+                        // get rid of any duplicates
+                        groupTypeIds = groupTypeIds.Distinct().ToList();
+                    }
+                }
+            }
 
             var rockContext = serviceInstance.Context as RockContext;
-            var attendanceQry = new AttendanceService( rockContext ).Queryable();
+            var attendanceQry = new AttendanceService( rockContext ).Queryable().Where( a => a.DidAttend.HasValue && a.DidAttend.Value );
+            if ( weeks.HasValue )
+            {
+                DateTime startDate = RockDateTime.Now.AddDays( 0 - ( 7 * weeks.Value ) );
+                attendanceQry = attendanceQry.Where( a => a.StartDateTime < startDate );
+            }
+
+            if ( groupTypeIds.Count == 1 )
+            {
+                int groupTypeId = groupTypeIds[0];
+                attendanceQry = attendanceQry.Where( a => a.Group.GroupTypeId == groupTypeId );
+            }
+            else if ( groupTypeIds.Count > 1 )
+            {
+                attendanceQry = attendanceQry.Where( a => groupTypeIds.Contains( a.Group.GroupTypeId ) );
+            }
+            else
+            {
+                // no group type selected, so return nothing
+                return Expression.Constant( false );
+            }
 
             var qry = new PersonService( rockContext ).Queryable()
-                  .Where( p => attendanceQry.Where( xx => xx.PersonAlias.PersonId == p.Id ).Count( a =>
-                            (
-                                (
-                                    ( a.Group.GroupTypeId == groupTypeId ) &&
-                                    ( a.StartDateTime >= startDate )
-                                ) &&
-                                ( a.DidAttend.HasValue && a.DidAttend.Value )
-                            )
-                        ) == attended );
+                  .Where( p => attendanceQry.Where( xx => xx.PersonAlias.PersonId == p.Id ).Count() == attended );
 
             BinaryExpression compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" ) as BinaryExpression;
             BinaryExpression result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, null );

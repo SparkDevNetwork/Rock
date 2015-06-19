@@ -69,7 +69,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see> that are descendants of a specified group type.
-        /// WARNING: This will fail if there is a circular reference in the GroupTypeAssociation table.
+        /// WARNING: This will fail (max recursion) if there is a circular reference in the GroupTypeAssociation table.
         /// </summary>
         /// <param name="parentGroupTypeId">The parent group type identifier.</param>
         /// <returns>

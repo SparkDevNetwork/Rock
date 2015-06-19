@@ -438,8 +438,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
                                 if ( binaryFile != null )
                                 {
-                                    binaryFileService.Delete( binaryFile );
-                                    rockContext.SaveChanges();
+                                    string errorMessage;
+                                    if ( binaryFileService.CanDelete( binaryFile, out errorMessage ) )
+                                    {
+                                        binaryFileService.Delete( binaryFile );
+                                        rockContext.SaveChanges();
+                                    }
                                 }
                             }
                         }

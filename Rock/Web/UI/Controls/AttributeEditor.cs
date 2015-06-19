@@ -55,6 +55,7 @@ namespace Rock.Web.UI.Controls
         private RockTextBox _tbIconCssClass;
         private RockCheckBox _cbRequired;
         private RockCheckBox _cbShowInGrid;
+        private RockCheckBox _cbAllowSearch;
 
         private RockDropDownList _ddlFieldType;
         private PlaceHolder _phQualifiers;
@@ -321,6 +322,46 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [allow search visible].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow search visible]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowSearchVisible
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbAllowSearch.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbAllowSearch.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [allow search].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow search]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowSearch
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbAllowSearch.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbAllowSearch.Checked = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the field type id.
         /// </summary>
         /// <value>
@@ -537,6 +578,14 @@ namespace Rock.Web.UI.Controls
                 _cbShowInGrid.Help = "If selected, this attribute will be included in a grid.";
                 Controls.Add( _cbShowInGrid );
 
+                _cbAllowSearch = new RockCheckBox();
+                _cbAllowSearch.ID = "cbAllowSearch";
+                _cbAllowSearch.Label = "Allow Search";
+                _cbAllowSearch.Text = "Yes";
+                _cbAllowSearch.Help = "If selected, this attribute can be search on.";
+                _cbAllowSearch.Visible = false;  // Default is to not show this option
+                Controls.Add( _cbAllowSearch );
+
                 _ddlFieldType = new RockDropDownList();
                 _ddlFieldType.ID = "ddlFieldType";
                 _ddlFieldType.Label = "Field Type";
@@ -631,6 +680,7 @@ namespace Rock.Web.UI.Controls
             _tbIconCssClass.ValidationGroup = validationGroup;
             _cbRequired.ValidationGroup = validationGroup;
             _cbShowInGrid.ValidationGroup = validationGroup;
+            _cbAllowSearch.ValidationGroup = validationGroup;
             _ddlFieldType.ValidationGroup = validationGroup;
             foreach ( var control in _phQualifiers.Controls )
             {
@@ -679,7 +729,11 @@ namespace Rock.Web.UI.Controls
             _tbName.RenderControl( writer );
             writer.RenderEndTag();
 
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.RenderEndTag();
+
+            writer.RenderEndTag();  // row
 
             // row 2
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
@@ -690,7 +744,7 @@ namespace Rock.Web.UI.Controls
             _tbDescription.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.RenderEndTag();
+            writer.RenderEndTag();  // row
 
             // row 3
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
@@ -703,8 +757,24 @@ namespace Rock.Web.UI.Controls
             _tbKey.RenderControl( writer );
             _cvKey.RenderControl( writer );
             _tbIconCssClass.RenderControl( writer );
+
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbRequired.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbShowInGrid.RenderControl( writer );
+            _cbAllowSearch.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
+            
             writer.RenderEndTag();
 
             // row 3 col 2
@@ -822,6 +892,7 @@ namespace Rock.Web.UI.Controls
                 this.FieldTypeId = attribute.FieldTypeId;
                 this.Required = attribute.IsRequired;
                 this.ShowInGrid = attribute.IsGridColumn;
+                this.AllowSearch = attribute.AllowSearch;
 
                 var qualifiers = new Dictionary<string, ConfigurationValue>();
                 if ( attribute.AttributeQualifiers != null )
@@ -867,6 +938,7 @@ namespace Rock.Web.UI.Controls
                 attribute.IsMultiValue = false;
                 attribute.IsRequired = this.Required;
                 attribute.IsGridColumn = this.ShowInGrid;
+                attribute.AllowSearch = this.AllowSearch;
 
                 attribute.Categories.Clear();
                 new CategoryService( new RockContext() ).Queryable().Where( c => this.CategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>

@@ -100,9 +100,10 @@ namespace Rock.Model
         /// <param name="categoryGuid">The category unique identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="changes">The changes.</param>
-        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes )
+        /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
+        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, bool commitSave = true )
         {
-            SaveChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null );
+            SaveChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null, commitSave );
         }
 
         /// <summary>
@@ -116,12 +117,16 @@ namespace Rock.Model
         /// <param name="caption">The caption.</param>
         /// <param name="relatedModelType">Type of the related model.</param>
         /// <param name="relatedEntityId">The related entity identifier.</param>
-        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId )
+        /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
+        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, bool commitSave = true )
         {
             if ( changes.Any() )
             {
                 AddChanges( rockContext, modelType, categoryGuid, entityId, changes, caption, relatedModelType, relatedEntityId );
-                rockContext.SaveChanges();
+                if ( commitSave )
+                {
+                    rockContext.SaveChanges();
+                }
             }
         }
     }

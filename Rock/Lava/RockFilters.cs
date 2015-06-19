@@ -377,6 +377,21 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Trims the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string Trim( object input )
+        {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+
+            return input.ToString().Trim();
+        }
+
+        /// <summary>
         /// Remove the first occurrence of a substring - this is a Rock version on this filter which takes any object
         /// </summary>
         /// <param name="input"></param>
@@ -773,6 +788,37 @@ namespace Rock.Lava
             return string.Format( "{0:" + format + "}", input );
         }
 
+
+        /// <summary>
+        /// Divideds the by.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="operand">The operand.</param>
+        /// <param name="precision">The precision.</param>
+        /// <returns></returns>
+        public static object DividedBy( object input, object operand, int precision = 2 )
+        {
+            if ( input == null || operand == null )
+                return null;
+
+            try
+            {
+                decimal dInput = 0;
+                decimal dOperand = 0;
+
+                if ( decimal.TryParse( input.ToString(), out dInput ) && decimal.TryParse( operand.ToString(), out dOperand ) )
+                {
+                    decimal result = ( dInput / dOperand );
+                    return decimal.Round( result, precision );
+                }
+
+                return "Could not convert input to number";
+                
+            } catch (Exception ex){
+                return ex.Message;
+            }
+        }
+
         #endregion
 
         #region Attribute Filters
@@ -821,18 +867,30 @@ namespace Rock.Lava
             }
 
             // If input is an object that has attributes, find it's attribute value
-            else if ( input is IHasAttributes)
-            {
-                var item = (IHasAttributes)input;
-                if ( item.Attributes == null)
+            else
+            { 
+                IHasAttributes item = null;
+                if ( input is IHasAttributes)
                 {
-                    item.LoadAttributes( rockContext );
+                    item = (IHasAttributes)input;
+                }
+                else if ( input is IHasAttributesWrapper )  
+                {
+                    item = ((IHasAttributesWrapper)input).HasAttributesEntity;
                 }
 
-                if ( item.Attributes.ContainsKey(attributeKey))
+                if ( item != null )
                 {
-                    attribute = item.Attributes[attributeKey];
-                    rawValue = item.AttributeValues[attributeKey].Value;
+                    if ( item.Attributes == null )
+                    {
+                        item.LoadAttributes( rockContext );
+                    }
+
+                    if ( item.Attributes.ContainsKey( attributeKey ) )
+                    {
+                        attribute = item.Attributes[attributeKey];
+                        rawValue = item.AttributeValues[attributeKey].Value;
+                    }
                 }
             }
 
@@ -1409,6 +1467,76 @@ namespace Rock.Lava
             }
 
             return inputList;
+        }
+
+        /// <summary>
+        /// Wheres the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="filterKey">The filter key.</param>
+        /// <param name="filterValue">The filter value.</param>
+        /// <returns></returns>
+        public static object Where( object input, string filterKey, object filterValue )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            if ( input is IEnumerable )
+            {
+                var result = new List<object>();
+                
+                foreach ( var value in ( (IEnumerable)input ) )
+                {
+                    if ( value is ILiquidizable )
+                    {
+                        var liquidObject = value as ILiquidizable;
+                        if (liquidObject.ContainsKey(filterKey) && liquidObject[filterKey].Equals(filterValue)) {
+                            result.Add(liquidObject);
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            return input;
+        }
+
+        /// <summary>
+        /// Selects the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="selectKey">The select key.</param>
+        /// <returns></returns>
+        public static object Select( object input, string selectKey )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            if ( input is IEnumerable )
+            {
+                var result = new List<object>();
+
+                foreach ( var value in ( (IEnumerable)input ) )
+                {
+                    if ( value is ILiquidizable )
+                    {
+                        var liquidObject = value as ILiquidizable;
+                        if ( liquidObject.ContainsKey( selectKey ) )
+                        {
+                            result.Add( liquidObject );
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            return input;
         }
 
         #endregion
