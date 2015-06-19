@@ -178,7 +178,7 @@ namespace church.ccv.Utility
                                 visitorWorkflow.SetAttributeValue( "HeadOfHouse", headOfHouse.PrimaryAlias.Guid.ToString() );
                                 visitorWorkflow.SetAttributeValue( "Family", family.ToString() );
                                 visitorWorkflow.SetAttributeValue( "FirstVisitDate", firstVisitDates.OrderByDescending( d => d.ValueAsDateTime ).Select( d => d.ValueAsDateTime ).FirstOrDefault().ToString() );
-                                visitorWorkflow.SetAttributeValue( "Campus", family.Campus.Name );
+                                visitorWorkflow.SetAttributeValue( "Campus", family.Campus.Guid.ToString() );
                                 visitorWorkflow.SetAttributeValue( "Children", BuildPersonList( children.Select( m => m.Person ).ToList() ) );
                                 visitorWorkflow.SetAttributeValue( "Adults", BuildPersonList( adults.Select( m => m.Person ).ToList() ) );
                                 visitorWorkflow.SetAttributeValue( "HomePhone", homePhone );
