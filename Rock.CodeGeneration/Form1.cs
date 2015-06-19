@@ -38,12 +38,13 @@ namespace Rock.CodeGeneration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void btnLoad_Click( object sender, EventArgs e )
         {
-            if ( lblAssemblyPath.Text == string.Empty )
+            if ( !Directory.Exists( lblAssemblyPath.Text ) || lblAssemblyPath.Text == string.Empty )
             {
                 rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
                 FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
                 lblAssemblyPath.Text = fi.FullName;
-                toolTip1.SetToolTip(lblAssemblyPath, fi.LastWriteTime.ToString());
+                lblAssemblyDateTime.Text = fi.LastWriteTime.ToElapsedString();
+                toolTip1.SetToolTip( lblAssemblyDateTime, fi.LastWriteTime.ToString() );
             }
 
             ofdAssembly.InitialDirectory = Path.GetDirectoryName( lblAssemblyPath.Text );
