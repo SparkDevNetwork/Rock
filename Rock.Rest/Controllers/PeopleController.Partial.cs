@@ -232,7 +232,7 @@ namespace Rock.Rest.Controllers
         /// <param name="removeFromOtherFamilies">if set to <c>true</c> [remove from other families].</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        [HttpGet]
+        [HttpPost]
         [System.Web.Http.Route( "api/People/AddExistingPersonToFamily" )]
         public System.Net.Http.HttpResponseMessage AddExistingPersonToFamily( int personId, int familyId, int groupRoleId, bool removeFromOtherFamilies )
         {
