@@ -50,6 +50,9 @@ namespace Rock.Client
         public int? GuestCount { get; set; }
 
         /// <summary />
+        public bool IsNotified { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
