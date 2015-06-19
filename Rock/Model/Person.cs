@@ -1581,15 +1581,27 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Creates the checkin relationship.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="relatedPersonId">The related person identifier.</param>
+        /// <param name="currentPersonAlias">The current person alias.</param>
+        /// <param name="rockContext">The rock context.</param>
+        [Obsolete("Use the other CreateCheckinRelationship")]
+        public static void CreateCheckinRelationship( int personId, int relatedPersonId, PersonAlias currentPersonAlias, RockContext rockContext = null )
+        {
+            CreateCheckinRelationship( personId, relatedPersonId, rockContext );
+        }
+
+        /// <summary>
         /// Adds the related person to the selected person's known relationships with a role of 'Can check in' which
         /// is typically configured to allow check-in.  If an inverse relationship is configured for 'Can check in'
         /// (i.e. 'Allow check in by'), that relationship will also be created.
         /// </summary>
         /// <param name="personId">A <see cref="System.Int32" /> representing the Id of the Person.</param>
         /// <param name="relatedPersonId">A <see cref="System.Int32" /> representing the Id of the related Person.</param>
-        /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias" /> representing the Person who is logged in.</param>
         /// <param name="rockContext">The rock context.</param>
-        public static void CreateCheckinRelationship( int personId, int relatedPersonId, PersonAlias currentPersonAlias, RockContext rockContext = null )
+        public static void CreateCheckinRelationship( int personId, int relatedPersonId, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
 
@@ -1640,7 +1652,7 @@ namespace Rock.Model
                     rockContext.SaveChanges();
                 }
 
-                var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true, currentPersonAlias );
+                var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true );
                 if ( inverseGroupMember != null )
                 {
                     groupMemberService.Add( inverseGroupMember );
