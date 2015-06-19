@@ -174,8 +174,6 @@ namespace RockWeb.Blocks.Cms
                 site.PageNotFoundPageRouteId = ppPageNotFoundPage.PageRouteId;
                 site.ErrorPage = tbErrorPage.Text;
                 site.GoogleAnalyticsCode = tbGoogleAnalytics.Text;
-                site.FacebookAppId = tbFacebookAppId.Text;
-                site.FacebookAppSecret = tbFacebookAppSecret.Text;
 
                 var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
                 site.SiteDomains = site.SiteDomains ?? new List<SiteDomain>();
@@ -451,8 +449,6 @@ namespace RockWeb.Blocks.Cms
 
             tbSiteDomains.Text = string.Join( "\n", site.SiteDomains.Select( dom => dom.Domain ).ToArray() );
             tbGoogleAnalytics.Text = site.GoogleAnalyticsCode;
-            tbFacebookAppId.Text = site.FacebookAppId;
-            tbFacebookAppSecret.Text = site.FacebookAppSecret;
         }
 
         /// <summary>
