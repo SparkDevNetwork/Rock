@@ -245,7 +245,7 @@ namespace RockWeb.Blocks.Event
                 EventCalendarItem eventCalendarItem = eventCalendarItemService.Get( e.RowKeyId );
                 if ( eventCalendarItem != null )
                 {
-                    if ( eventCalendarItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                    if ( _canEdit )
                     {
                         string errorMessage;
                         if ( !eventCalendarItemService.CanDelete( eventCalendarItem, out errorMessage ) )
@@ -296,10 +296,7 @@ namespace RockWeb.Blocks.Event
                 EventCalendarItem eventCalendarItem = eventCalendarItemService.Get( e.RowKeyId );
                 if ( eventCalendarItem != null )
                 {
-                    if ( eventCalendarItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
-                    {
-                        NavigateToLinkedPage( "DetailPage", "EventItemId", eventCalendarItem.EventItemId, "EventCalendarId", _eventCalendar.Id );
-                    }
+                    NavigateToLinkedPage( "DetailPage", "EventItemId", eventCalendarItem.EventItemId, "EventCalendarId", _eventCalendar.Id );
                 }
             }
         }
@@ -575,8 +572,8 @@ namespace RockWeb.Blocks.Event
                 // Now that items have been loaded and ordered from db, calculate the earliest date for each item, and then filter again on the date
                 var drp = new DateRangePicker();
                 drp.DelimitedValues = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Date Range" ) );
-                DateTime lowerDateRange = drp.LowerValue ?? RockDateTime.Today.AddMonths( -6 );
-                DateTime upperDateRange = ( drp.UpperValue ?? RockDateTime.Today ).AddDays( 1 );
+                DateTime? lowerDateRange = drp.LowerValue;
+                DateTime? upperDateRange = drp.UpperValue;
 
                 var itemsWithEarliestStartDate = eventCalendarItems
                     .Select( i => new
@@ -586,14 +583,15 @@ namespace RockWeb.Blocks.Event
                     } )
                     .ToList();
 
-                itemsWithEarliestStartDate = itemsWithEarliestStartDate
-                    .Where( i =>
-                        !i.EarliestStartDate.HasValue ||
-                        (
-                            i.EarliestStartDate.Value >= lowerDateRange &&
-                            i.EarliestStartDate.Value < upperDateRange 
-                        ) )
-                    .ToList();
+                if ( lowerDateRange.HasValue || upperDateRange.HasValue )
+                    itemsWithEarliestStartDate = itemsWithEarliestStartDate
+                        .Where( i =>
+                            !i.EarliestStartDate.HasValue ||
+                            (
+                                ( !lowerDateRange.HasValue || i.EarliestStartDate.Value >= lowerDateRange.Value ) &&
+                                ( !upperDateRange.HasValue || i.EarliestStartDate.Value < upperDateRange.Value.AddDays( 1 ) )
+                            ) )
+                        .ToList();
 
                 gEventCalendarItems.ObjectList = new Dictionary<string, object>();
                 itemsWithEarliestStartDate.ForEach( m => gEventCalendarItems.ObjectList.Add( m.Item.Id.ToString(), m.Item ) );

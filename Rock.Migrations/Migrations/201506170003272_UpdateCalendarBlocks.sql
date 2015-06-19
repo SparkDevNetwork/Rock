@@ -1,8 +1,20 @@
 -- Calendar Detail Page
-UPDATE [Page] SET [BreadCrumbDisplayName] = 0 WHERE [GUID] = 'B54725E1-3640-4419-B580-2AF77DAF6568'
+UPDATE [Page] SET 
+    [InternalName] = 'Event Calendar',
+    [PageTitle] = 'Event Calendar',
+    [BrowserTitle] = 'Event Calendar',
+    [IconCssClass] = 'fa fa-calendar',
+    [BreadCrumbDisplayName] = 0 
+WHERE [GUID] = 'B54725E1-3640-4419-B580-2AF77DAF6568'
 
 -- Calendar Item Detail Page
-UPDATE [Page] SET [BreadCrumbDisplayName] = 0 WHERE [GUID] = '7FB33834-F40A-4221-8849-BB8C06903B04'
+UPDATE [Page] SET 
+    [InternalName] = 'Calendar Item',
+    [PageTitle] = 'Calendar Item',
+    [BrowserTitle] = 'Calendar Item',
+    [IconCssClass] = 'fa fa-calendar-o',
+    [BreadCrumbDisplayName] = 0 
+WHERE [GUID] = '7FB33834-F40A-4221-8849-BB8C06903B04'
 
 -- Calendar Detail
 UPDATE [BlockType] SET
