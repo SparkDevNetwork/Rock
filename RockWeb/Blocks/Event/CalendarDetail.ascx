@@ -13,7 +13,7 @@
             <asp:HiddenField ID="hfEventCalendarId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-calendar"></i>
+                <h1 class="panel-title"><asp:Literal ID="lCalendarIcon" runat="server" />
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
             </div>
             <div class="panel-body">
