@@ -202,19 +202,31 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets the inverse relationship.
+        /// </summary>
+        /// <param name="groupMember">The group member.</param>
+        /// <param name="createGroup">if set to <c>true</c> [create group].</param>
+        /// <param name="personAlias">The person alias.</param>
+        /// <returns></returns>
+        [Obsolete("Use the other GetInverseRelationship")]
+        public GroupMember GetInverseRelationship( GroupMember groupMember, bool createGroup, PersonAlias personAlias )
+        {
+            return GetInverseRelationship( groupMember, createGroup );
+        }
+
+        /// <summary>
+        /// Gets the inverse relationship.
         /// Returns the <see cref="Rock.Model.GroupMember" /> who has an inverse relationship to the provided <see cref="Rock.Model.GroupMember" />.
         /// </summary>
         /// <param name="groupMember">A <see cref="Rock.Model.GroupMember" /> representing the person to find the inverse relationship for.</param>
-        /// <param name="createGroup">A <see cref="System.Boolean"/> flag indicating if a new <see cref="Rock.Model.Group"/> can be created 
-        /// for the person with the inverse relationship. </param>
-        /// <param name="personAlias">The alias of the <see cref="Rock.Model.Person"/> who has the inverse relationship.</param>
+        /// <param name="createGroup">A <see cref="System.Boolean" /> flag indicating if a new <see cref="Rock.Model.Group" /> can be created
+        /// for the person with the inverse relationship.</param>
         /// <returns>
-        /// A <see cref="Rock.Model.GroupMember"/> representing the <see cref="Rock.Model.Person"/> with the inverse relationship.
+        /// A <see cref="Rock.Model.GroupMember" /> representing the <see cref="Rock.Model.Person" /> with the inverse relationship.
         /// </returns>
         /// <remarks>
         /// In Rock, examples of inverse relationships include: Parent/Child, Can Check In/Check in By, Sibling/Sibling, Grandparent/Grandchild, etc.
         /// </remarks>
-        public GroupMember GetInverseRelationship( GroupMember groupMember, bool createGroup, PersonAlias personAlias )
+        public GroupMember GetInverseRelationship( GroupMember groupMember, bool createGroup )
         {
             var groupRole = groupMember.GroupRole;
             if ( groupRole == null )
