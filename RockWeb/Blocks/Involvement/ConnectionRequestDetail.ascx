@@ -5,6 +5,7 @@
 
         <asp:HiddenField ID="hfConnectionOpportunityId" runat="server" />
         <asp:HiddenField ID="hfConnectionRequestId" runat="server" />
+        <asp:HiddenField ID="hfActiveDialog" runat="server" />
         <asp:Panel ID="pnlReadDetails" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
@@ -13,39 +14,33 @@
                 </h1>
 
                 <div class="panel-labels">
-                    <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" Text="Main campus" />
-                    <Rock:HighlightLabel ID="hlOpportunity" runat="server" LabelType="Info" Text="Ushers" />
-                    <Rock:HighlightLabel ID="hlStatus" runat="server" LabelType="Primary" Text="No Contact" />
-                    <Rock:HighlightLabel ID="hlState" runat="server" LabelType="Success" Text="Active" />
+                    <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
+                    <Rock:HighlightLabel ID="hlOpportunity" runat="server" LabelType="Info" />
+                    <Rock:HighlightLabel ID="hlStatus" runat="server" LabelType="Primary" Visible="false"/>
+                    <Rock:HighlightLabel ID="hlState" runat="server" Visible="false" />
                 </div>
             </div>
             <div class="panel-body">
-
-                <div class="pull-right">
-                    <Rock:HighlightLabel ID="hlFollowUp" runat="server" LabelType="Success" Text="Follow-up: 5/6/2015" />
-                </div>
-
                 <div class="row">
                     <div class="col-md-6">
                         <div class="col-md-4">
-                            <Rock:ImageEditor ID="imgPhoto" runat="server" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" />
+                            <div class="photo">
+                                <asp:Literal ID="lPortrait" runat="server" />
+                            </div>
                         </div>
                         <div class="col-md-8">
-                            <Rock:RockLiteral ID="lHomePhone" runat="server" Text="(623) 555-3322   Home" />
-                            <Rock:RockLiteral ID="lWorkPhone" runat="server" Text="(623) 555-3322   Work" />
-                            <Rock:RockLiteral ID="lCellPhone" runat="server" Text="(623) 555-3322   Cell" />
-                            <Rock:RockLiteral ID="lEmail" runat="server" Text="ted@rocksoliddemochurch.com" />
+                            <Rock:RockLiteral ID="lContactInfo" runat="server" />
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockLiteral ID="lRequestDate" runat="server" Label="Request Date" Text="2/1/2015" />
-                        <Rock:RockLiteral ID="lAssignedGroup" runat="server" Label="Assigned Group" Text="Ushers 9:30am" />
+                        <Rock:RockLiteral ID="lRequestDate" runat="server" Label="Request Date" />
+                        <Rock:RockLiteral ID="lAssignedGroup" runat="server" Label="Assigned Group" />
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-12">
-                        +1 Pinterest cardigan gastropub, freegan yr YOLO pop-up pickled authentic. Austin flannel kale chips listicle Shoreditch readymade sriracha, deep v salvia mixtape lo-fi umami kitsch. Blue Bottle hella scenester, leggings Banksy PBR&B kogi wolf fingerstache twee asymmetrical Schlitz farm-to-table. Fashion axe Shoreditch Echo Park, American Apparel cold-pressed yr tousled bicycle rights fap Tumblr Banksy hashtag butcher flannel. Flexitarian YOLO cardigan, Etsy chia fashion axe chambray tilde sriracha gastropub Wes Anderson quinoa. Actually mixtape Kickstarter tousled pickled gluten-free, YOLO kitsch artisan pour-over tilde. Plaid Truffaut taxidermy twee, gluten-free Vice bitters.
+                        <Rock:RockLiteral ID="lComments" runat="server" />
                     </div>
                 </div>
 
@@ -53,7 +48,16 @@
                     <div class="col-md-6">
                         <div class="col-md-6">
                             <asp:Label ID="lblSomething" Text="Available Workflows" Font-Bold="true" runat="server" />
-                            <asp:LinkButton ID="btnAvailableWorkflows" runat="server" Text="Send Application" CssClass="btn btn-default btn-xs" />
+                            </br>
+                            <asp:Repeater ID="rptRequestWorkflows" runat="server">
+                                <ItemTemplate>
+                                    <li class="btn btn-default btn-xs">
+                                        <asp:LinkButton ID="lbRequestWorkflow" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
+                                        <%# Eval("Name") %>
+                                        </asp:LinkButton>
+                                    </li>
+                                </ItemTemplate>
+                            </asp:Repeater>
                         </div>
                         <div class="col-md-6">
                         </div>
@@ -76,7 +80,7 @@
                         </asp:Panel>
                     </div>
                 </div>
-
+                </br>
                 <div class="actions">
                     <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="lbEdit_Click"></asp:LinkButton>
                     <asp:LinkButton ID="lbTransfer" runat="server" Text="Transfer" CssClass="btn btn-link" CausesValidation="false" OnClick="lbTransfer_Click"></asp:LinkButton>
@@ -87,35 +91,16 @@
 
             </div>
         </asp:Panel>
-        <Rock:PanelWidget ID="wpConnectionRequestWorkflow" runat="server" Title="Workflows">
-            <div class="grid">
-                <Rock:Grid ID="gConnectionRequestWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location">
-                    <Columns>
-                        <Rock:RockBoundField DataField="WorkflowType" HeaderText="Workflow Type" />
-                        <Rock:RockBoundField DataField="Trigger" HeaderText="Trigger" />
-                    </Columns>
-                </Rock:Grid>
-            </div>
-        </Rock:PanelWidget>
-        <Rock:PanelWidget ID="wpConnectionOpportunityActivities" runat="server" Title="Activity">
-            <div class="grid">
-                <Rock:Grid ID="gConnectionOpportunityActivities" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group">
-                    <Columns>
-                        <Rock:RockBoundField DataField="Name" HeaderText="Name" />
-                        <Rock:RockBoundField DataField="Campus" HeaderText="Campus" />
-                    </Columns>
-                </Rock:Grid>
-            </div>
-        </Rock:PanelWidget>
         <asp:Panel ID="pnlEditDetails" runat="server" Visible="false" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <asp:Literal ID="lConnectionOpportunityIconHtml2" runat="server" />
-                    <asp:Literal ID="lReadOnlyTitle2" runat="server" />
+                    <asp:Literal ID="lConnectionOpportunityIconHtmlEdit" runat="server" />
+                    <asp:Literal ID="lReadOnlyTitleEdit" runat="server" />
                 </h1>
 
                 <div class="panel-labels">
-                    <Rock:HighlightLabel ID="hlOpportunityEdit" runat="server" LabelType="info" Text="Ushers" />
+                    <Rock:HighlightLabel ID="hlOpportunityEdit" runat="server" LabelType="info"/>
+                    <Rock:HighlightLabel ID="hlStatusEdit" runat="server" LabelType="primary"/>
                 </div>
             </div>
 
@@ -126,19 +111,23 @@
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:PersonPicker runat="server" ID="ppConnectionRequestPerson" Label="Person" CssClass="js-authorizedperson" Required="true" />
+                        <Rock:PersonPicker runat="server" ID="ppConnectionRequestPerson" Label="Person" Required="true" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Status" RepeatDirection="Horizontal" />
+                        <Rock:RockRadioButtonList ID="rblState" runat="server" Label="State" RepeatDirection="Horizontal" OnSelectedIndexChanged="rblState_SelectedIndexChanged" AutoPostBack="true" />
+                        <Rock:DatePicker ID="dpFollowUp" runat="server" Label="Follow-up Date" Visible="false" />
                     </div>
                 </div>
+                <Rock:RockTextBox ID="tbComments" Label="Comments" runat="server" TextMode="MultiLine" Rows="4" />
+
+                <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Status" RepeatDirection="Horizontal" />
 
                 <div class="row">
                     <div class="col-md-6">
+                        <Rock:RockDropDownList ID="ddlAssignedGroup" runat="server" Label="Assigned Group" />
                     </div>
                     <div class="col-md-6">
-                        <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
-                        <asp:PlaceHolder ID="phAttributesReadOnly" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                        <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" />
                     </div>
                 </div>
 
@@ -148,5 +137,160 @@
                 </div>
             </div>
         </asp:Panel>
+        <asp:Panel ID="pnlTransferDetails" runat="server" CssClass="panel panel-block" Visible="false">
+            <div class="panel-heading">
+                <h1 class="panel-title">
+                    <asp:Literal ID="lConnectionOpportunityIconHtmlTransfer" runat="server" />
+                    <asp:Literal ID="lReadOnlyTitleTransfer" runat="server" />
+                </h1>
+
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlOpportunityTransfer" runat="server" LabelType="info" />
+                </div>
+            </div>
+
+            <div class="panel-body">
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <asp:Label ID="asdasd" runat="server" Text="New Opportunity" Font-Bold="true" />
+                        <div class="row">
+                            <div class="col-md-8">
+                                <Rock:RockDropDownList ID="ddlTransferOpportunity" runat="server" />
+                            </div>
+                            <div class="col-md-4">
+                                <Rock:BootstrapButton ID="btnSearch" runat="server" CssClass="btn btn-primary" Text="Search" OnClick="btnSearch_Click" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockDropDownList ID="ddlTransferStatus" runat="server" Label="Status" />
+                    </div>
+                </div>
+
+                <Rock:RockCheckBox ID="cbClearConnector" Checked="true" runat="server" Text=" Clear Connector" />
+
+                <Rock:RockTextBox ID="tbTransferNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" />
+                <div class="actions">
+                    <asp:LinkButton ID="btnTransferSave" runat="server" AccessKey="s" Text="Transfer" CssClass="btn btn-primary" OnClick="btnTransferSave_Click"></asp:LinkButton>
+                    <asp:LinkButton ID="btnTransferCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
+                </div>
+            </div>
+        </asp:Panel>
+        <Rock:PanelWidget ID="wpConnectionRequestWorkflow" runat="server" Title="Workflows">
+            <div class="grid">
+                <Rock:Grid ID="gConnectionRequestWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location" OnRowSelected="gConnectionRequestWorkflows_RowSelected">
+                    <Columns>
+                        <Rock:RockBoundField DataField="WorkflowType" HeaderText="Workflow Type" />
+                        <Rock:RockBoundField DataField="Trigger" HeaderText="Trigger" />
+                        <Rock:RockBoundField DataField="CurrentActivity" HeaderText="Current Activity" />
+                        <Rock:RockBoundField DataField="Date" HeaderText="Date" />
+                        <Rock:RockBoundField DataField="Status" HeaderText="Status" HtmlEncode="false" />
+                    </Columns>
+                </Rock:Grid>
+            </div>
+        </Rock:PanelWidget>
+        <Rock:PanelWidget ID="wpConnectionRequestActivities" runat="server" Title="Activities">
+            <div class="grid">
+                <Rock:Grid ID="gConnectionRequestActivities" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Activity">
+                    <Columns>
+                        <Rock:RockBoundField DataField="Date" HeaderText="Date" />
+                        <Rock:RockBoundField DataField="Activity" HeaderText="Activity" />
+                        <Rock:RockBoundField DataField="Opportunity" HeaderText="Opportunity" />
+                        <Rock:RockBoundField DataField="Connector" HeaderText="Connector" />
+                        <Rock:RockBoundField DataField="Note" HeaderText="Note" />
+                    </Columns>
+                </Rock:Grid>
+            </div>
+        </Rock:PanelWidget>
+
+        <Rock:ModalDialog ID="dlgConnectionRequestActivities" runat="server" ValidationGroup="ConnectionOpportunityGroup" SaveButtonText="Add" OnSaveClick="btnAddConnectionRequestActivity_Click" Title="Select Group">
+            <Content>
+                <asp:HiddenField ID="hfAddConnectionRequestActivityGuid" runat="server" />
+                <Rock:RockDropDownList ID="ddlActivity" runat="server" Label="Activity" />
+                <Rock:RockDropDownList ID="ddlOpportunity" runat="server" Label="Opportunity" />
+                <Rock:PersonPicker ID="ppConnector" runat="server" Label="Connector" />
+                <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" />
+            </Content>
+        </Rock:ModalDialog>
+        <Rock:ModalDialog ID="dlgSearch" runat="server" ValidationGroup="Search" SaveButtonText="Search" OnSaveClick="dlgSearch_SaveClick" Title="Search Opportunities">
+            <Content>
+                <div class="col-md-6">
+                    <Rock:RockTextBox ID="tbSearchName" runat="server" Label="Name" />
+                </div>
+                <div class="col-md-6">
+                    <div class='treeview-scroll scroll-container scroll-container-vertical'>
+                        <div class='scrollbar'>
+                            <div class='track'>
+                                <div class='thumb'>
+                                    <div class='end'></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class='viewport'>
+                            <div class='overview'>
+                                <div class='treeview treeview-items'>
+                                    <ul class="rocktree">
+                                        <asp:Repeater ID="rptSearchResult" runat="server">
+                                            <ItemTemplate>
+                                                <li class="rocktree-item">
+                                                    <Rock:PanelWidget ID="SearchTermPanel" runat="server" CssClass="panel panel-block" TitleIconCssClass='<%# Eval("IconCssClass") %>' Title='<%# Eval("Name") %>'>
+                                                        <div class="row">
+                                                            <div class="col-md-4">
+                                                                <div class="photo">
+                                                                    <img src='<%# Eval("PhotoUrl") %>' ></img>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-8">
+                                                                <%# Eval("Description") %>
+                                                            </div>
+                                                        </div>
+                                                        <Rock:BootstrapButton ID="btnSearchSelect" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display" Text="Select" CssClass="btn btn-default" />
+                                                    </Rock:PanelWidget>
+                                                </li>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </Content>
+        </Rock:ModalDialog>
+        <script type="text/javascript">
+            $(function () {
+                var scrollbCategory = $('.treeview-scroll');
+                scrollbCategory.tinyscrollbar({ axis: 'x', sizethumb: 60, size: 200 });
+
+                // resize scrollbar when the window resizes
+                $(document).ready(function () {
+                    $(window).on('resize', function () {
+                        resizeScrollbar(scrollbCategory);
+                    });
+                });
+
+                $('#treeview-items')
+                    .on('rockTree:rendered', function () {
+
+                        // update viewport height
+                        resizeScrollbar(scrollbCategory);
+
+                    });
+
+                $('#dlgSearch').click(function () {
+                    resizeScrollbar(scrollbCategory);
+                });
+            });
+
+            function resizeScrollbar(scrollControl) {
+                var overviewHeight = $(scrollControl).find('.overview').height();
+
+                $(scrollControl).find('.viewport').height(overviewHeight);
+
+                scrollControl.tinyscrollbar_update('relative');
+            }
+        </script>
     </ContentTemplate>
 </asp:UpdatePanel>

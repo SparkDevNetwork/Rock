@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Involvement
     [DisplayName( "My Connection Opportunities" )]
     [Category( "Involvement" )]
     [Description( "Block to display the connection opportunities that user is authorized to view, and the opportunities that are currently assigned to the user." )]
-
+    [IntegerField( "Connection Type Id", "The Id of the connection type that determines the opportunities listed.", true, 1 )]
     [LinkedPage( "Configuration Page", "Page used to modify and create connection opportunities." )]
     [LinkedPage( "Detail Page", "Page used to view status of an opportunity." )]
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
@@ -79,6 +79,7 @@ namespace RockWeb.Blocks.Involvement
             base.OnInit( e );
 
             rptConnectionOpportunities.ItemCommand += rptConnectionOpportunities_ItemCommand;
+            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
             gConnectionRequests.DataKeyNames = new string[] { "Id" };
             gConnectionRequests.Actions.ShowAdd = false;
@@ -97,6 +98,8 @@ namespace RockWeb.Blocks.Involvement
 
             if ( !Page.IsPostBack )
             {
+                SetFilter();
+
                 GetData();
             }
         }
@@ -115,6 +118,196 @@ namespace RockWeb.Blocks.Involvement
             return base.SaveViewState();
         }
 
+        #endregion
+
+        #region Filter Methods
+
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "First Name" ), "First Name", tbFirstName.Text );
+            rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "Last Name" ), "Last Name", tbLastName.Text );
+            int personId = ppRequestor.PersonId ?? 0;
+            rFilter.SaveUserPreference( "Requestor", personId.ToString() );
+            personId = ppConnector.PersonId ?? 0;
+            rFilter.SaveUserPreference( "Connector", personId.ToString() );
+            rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "State" ), "State", cblState.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "Status" ), "Status", cblStatus.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "Campus" ), "Campus", cblStatus.SelectedValues.AsDelimited( ";" ) );
+
+            GetData();
+        }
+
+        /// <summary>
+        /// Rs the filter_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+
+            if ( e.Key == MakeKeyUniqueToOpportunity( "First Name" ) )
+            {
+                return;
+            }
+            else if ( e.Key == MakeKeyUniqueToOpportunity( "Last Name" ) )
+            {
+                return;
+            }
+            else if ( e.Key == MakeKeyUniqueToOpportunity( "Requestor" ) )
+            {
+                string personName = string.Empty;
+
+                int? personId = e.Value.AsIntegerOrNull();
+                if ( personId.HasValue )
+                {
+                    var personService = new PersonService( new RockContext() );
+                    var person = personService.Get( personId.Value );
+                    if ( person != null )
+                    {
+                        personName = person.FullName;
+                    }
+                }
+
+                e.Value = personName;
+            }
+            else if ( e.Key == MakeKeyUniqueToOpportunity( "Connector" ) )
+            {
+                string personName = string.Empty;
+
+                int? personId = e.Value.AsIntegerOrNull();
+                if ( personId.HasValue )
+                {
+                    var personService = new PersonService( new RockContext() );
+                    var person = personService.Get( personId.Value );
+                    if ( person != null )
+                    {
+                        personName = person.FullName;
+                    }
+                }
+
+                e.Value = personName;
+            }
+            else if ( e.Key == MakeKeyUniqueToOpportunity( "State" ) )
+            {
+                e.Value = ResolveValues( e.Value, cblState );
+            }
+            else if ( e.Key == MakeKeyUniqueToOpportunity( "Status" ) )
+            {
+                e.Value = ResolveValues( e.Value, cblStatus );
+            }
+            else if ( e.Key == MakeKeyUniqueToOpportunity( "Campus" ) )
+            {
+                e.Value = ResolveValues( e.Value, cblCampus );
+            }
+            else
+            {
+                e.Value = string.Empty;
+            }
+
+        }
+
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
+        private void SetFilter()
+        {
+            if ( SelectedConnectionOpportunityId.HasValue )
+            {
+                cblStatus.DataSource = new ConnectionOpportunityService( new RockContext() ).Get( SelectedConnectionOpportunityId.Value ).ConnectionType.ConnectionStatuses.ToList();
+                cblStatus.DataBind();
+            }
+
+            cblState.BindToEnum<ConnectionState>();
+            cblCampus.DataSource = CampusCache.All();
+
+            cblCampus.DataBind();
+
+            tbFirstName.Text = rFilter.GetUserPreference( MakeKeyUniqueToOpportunity( "First Name" ) );
+            tbLastName.Text = rFilter.GetUserPreference( MakeKeyUniqueToOpportunity( "Last Name" ) );
+
+            int? personId = rFilter.GetUserPreference( "Requestor" ).AsIntegerOrNull();
+            if ( personId.HasValue && personId.Value != 0 )
+            {
+                var personService = new PersonService( new RockContext() );
+                var person = personService.Get( personId.Value );
+                if ( person != null )
+                {
+                    ppRequestor.SetValue( person );
+                }
+            }
+
+            personId = rFilter.GetUserPreference( "Connector" ).AsIntegerOrNull();
+            if ( personId.HasValue && personId.Value != 0 )
+            {
+                var personService = new PersonService( new RockContext() );
+                var person = personService.Get( personId.Value );
+                if ( person != null )
+                {
+                    ppConnector.SetValue( person );
+                }
+            }
+
+            string stateValue = rFilter.GetUserPreference( MakeKeyUniqueToOpportunity( "State" ) );
+            if ( !string.IsNullOrWhiteSpace( stateValue ) )
+            {
+                cblState.SetValues( stateValue.Split( ';' ).ToList() );
+            }
+
+            string statusValue = rFilter.GetUserPreference( MakeKeyUniqueToOpportunity( "Status" ) );
+            if ( !string.IsNullOrWhiteSpace( statusValue ) )
+            {
+                cblStatus.SetValues( statusValue.Split( ';' ).ToList() );
+            }
+
+            string campusValue = rFilter.GetUserPreference( MakeKeyUniqueToOpportunity( "Campus" ) );
+            if ( !string.IsNullOrWhiteSpace( campusValue ) )
+            {
+                cblCampus.SetValues( campusValue.Split( ';' ).ToList() );
+            }
+
+        }
+
+        /// <summary>
+        /// Resolves the values.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <param name="listControl">The list control.</param>
+        /// <returns></returns>
+        private string ResolveValues( string values, System.Web.UI.WebControls.CheckBoxList checkBoxList )
+        {
+            var resolvedValues = new List<string>();
+
+            foreach ( string value in values.Split( ';' ) )
+            {
+                var item = checkBoxList.Items.FindByValue( value );
+                if ( item != null )
+                {
+                    resolvedValues.Add( item.Text );
+                }
+            }
+
+            return resolvedValues.AsDelimited( ", " );
+        }
+
+        /// <summary>
+        /// Makes the key unique to group.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        private string MakeKeyUniqueToOpportunity( string key )
+        {
+            if ( SelectedConnectionOpportunityId != null )
+            {
+                return string.Format( "{0}-{1}", SelectedConnectionOpportunityId, key );
+            }
+            return key;
+        }
         #endregion
 
         #region Events
@@ -147,7 +340,7 @@ namespace RockWeb.Blocks.Involvement
             {
                 SelectedConnectionOpportunityId = connectionOpportunityId.Value;
             }
-
+            SetFilter();
             GetData();
         }
 
@@ -188,11 +381,14 @@ namespace RockWeb.Blocks.Involvement
         private void GetData()
         {
             var rockContext = new RockContext();
+            int connectionTypeId = GetAttributeValue( "ConnectionTypeId" ).AsInteger();
+            lTypeIcon.Text = string.Format( "<i class='{0}'></i>", new ConnectionTypeService( rockContext ).Get( connectionTypeId ).IconCssClass );
 
             int personId = CurrentPerson != null ? CurrentPerson.Id : 0;
 
             // Get all of the connectionOpportunities
             var allConnectionOpportunities = new ConnectionOpportunityService( rockContext ).Queryable( "ConnectionOpportunityCampuses" )
+                .Where( o => o.ConnectionTypeId == connectionTypeId )
                 .OrderBy( w => w.Name )
                 .ToList();
 
@@ -224,10 +420,10 @@ namespace RockWeb.Blocks.Involvement
                 .ToList();
 
             connectionOpportunityIds.ForEach( id =>
-                connectionOpportunityCounts.Add( id, connectionRequests.Where( w => w.ConnectionOpportunityId == id ).Count() ) );
+                connectionOpportunityCounts.Add( id, connectionRequests.Where( r => r.ConnectionOpportunityId == id && r.ConnectionStatus.IsCritical ).Count() ) );
 
             var displayedTypes = new List<ConnectionOpportunity>();
-            foreach ( var connectionOpportunity in allConnectionOpportunities.Where( w => connectionOpportunityCounts.Keys.Contains( w.Id ) ) )
+            foreach ( var connectionOpportunity in allConnectionOpportunities.Where( o => connectionOpportunityCounts.Keys.Contains( o.Id ) ) )
             {
                 if ( connectionOpportunityCounts[connectionOpportunity.Id] > 0 )
                 {
@@ -271,10 +467,58 @@ namespace RockWeb.Blocks.Involvement
             if ( selectedConnectionOpportunity != null )
             {
                 AddAttributeColumns( selectedConnectionOpportunity );
+                rFilter.Visible = true;
+                var qryRequests = connectionRequests.Where( w => w.ConnectionOpportunityId == selectedConnectionOpportunity.Id );
 
-                gConnectionRequests.DataSource = connectionRequests
-                    .Where( w => w.ConnectionOpportunityId == selectedConnectionOpportunity.Id )
-                    .Select( r => new
+                // Filter by Requestor
+                string firstName = tbFirstName.Text;
+                string lastName = tbLastName.Text;
+                if ( ppRequestor.PersonId.HasValue || !string.IsNullOrWhiteSpace( firstName ) || !string.IsNullOrWhiteSpace( lastName ) )
+                {
+                    qryRequests = qryRequests.Where( r =>
+                       ( !string.IsNullOrWhiteSpace( firstName ) && r.PersonAlias.Person.FirstName.ToLower().StartsWith( firstName.ToLower() ) ) ||
+                        ( !string.IsNullOrWhiteSpace( lastName ) && r.PersonAlias.Person.LastName.ToLower().StartsWith( lastName.ToLower() ) ) ||
+                        ( ppRequestor.PersonId.HasValue && r.PersonAlias.PersonId == ppRequestor.PersonId.Value ) );
+                }
+
+                // Filter by Connector
+                if ( ppConnector.PersonId.HasValue )
+                {
+                    qryRequests = qryRequests
+                        .Where( r =>
+                            r.ConnectorPersonAlias != null &&
+                            r.ConnectorPersonAlias.PersonId == ppConnector.PersonId.Value );
+                }
+
+                // Filter by State
+                var states = new List<ConnectionState>();
+                foreach ( string state in cblState.SelectedValues )
+                {
+                    if ( !string.IsNullOrWhiteSpace( state ) )
+                    {
+                        states.Add( state.ConvertToEnum<ConnectionState>() );
+                    }
+                }
+                if ( states.Any() )
+                {
+                    qryRequests = qryRequests.Where( r => states.Contains( r.ConnectionState ) );
+                }
+
+                // Filter by Status
+                List<int> statusIds = cblStatus.SelectedValuesAsInt;
+                if ( statusIds.Count > 0 )
+                {
+                    qryRequests = qryRequests.Where( r => statusIds.Contains( r.ConnectionStatusId ) );
+                }
+
+                // Filter by Campus
+                List<int> campusIds = cblCampus.SelectedValuesAsInt;
+                if ( campusIds.Count > 0 )
+                {
+                    qryRequests = qryRequests.Where( r => r.Campus != null && campusIds.Contains( r.CampusId.Value ) );
+                }
+
+                gConnectionRequests.DataSource = qryRequests.Select( r => new
                     {
                         r.Id,
                         r.Guid,
@@ -289,12 +533,14 @@ namespace RockWeb.Blocks.Involvement
                     .ToList();
                 gConnectionRequests.DataBind();
                 gConnectionRequests.Visible = true;
+                lOpportunityIcon.Text = string.Format( "<i class='{0}'></i>", selectedConnectionOpportunity.IconCssClass );
 
                 lConnectionRequest.Text = connectionRequests.Where( w => w.ConnectionOpportunityId == selectedConnectionOpportunity.Id ).Select( w => w.ConnectionOpportunity.Name ).FirstOrDefault() + " Connection Requests";
 
             }
             else
             {
+                rFilter.Visible = false;
                 gConnectionRequests.Visible = false;
             }
 

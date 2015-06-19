@@ -78,7 +78,7 @@ namespace Rock.Model
         /// </summary>
         public ConnectionStatusConfiguration()
         {
-            this.HasOptional( p => p.ConnectionType ).WithMany( p => p.ConnectionStatuses ).HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ConnectionType ).WithMany( p => p.ConnectionStatuses ).HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( true );
         }
     }
 

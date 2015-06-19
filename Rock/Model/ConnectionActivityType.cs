@@ -41,9 +41,8 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
-        [Required]
-        [DataMember( IsRequired = true )]
-        public int ConnectionTypeId { get; set; }
+        [DataMember]
+        public int? ConnectionTypeId { get; set; }
 
         [DataMember]
         public bool IsActive { get; set; }
@@ -70,7 +69,7 @@ namespace Rock.Model
         /// </summary>
         public ConnectionActivityTypeConfiguration()
         {
-            this.HasRequired( p => p.ConnectionType ).WithMany( p => p.ConnectionActivityTypes ).HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ConnectionType ).WithMany( p => p.ConnectionActivityTypes ).HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( true );
         }
     }
 

@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using System.Web;
 
 using Rock.Data;
 
@@ -100,6 +101,32 @@ namespace Rock.Model
         [DataMember]
         public virtual GroupMemberStatus GroupMemberStatus { get; set; }
 
+        /// <summary>
+        /// Gets the URL of the person's photo.
+        /// </summary>
+        /// <value>
+        /// URL of the photo
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual string PhotoUrl
+        {
+            get
+            {
+                return ConnectionOpportunity.GetPhotoUrl( this.PhotoId );
+            }
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that contains the Person's photo.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.BinaryFile"/> that contains the Person's photo.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile Photo { get; set; }
+
         [DataMember]
         public virtual ICollection<ConnectionOpportunityGroup> ConnectionOpportunityGroups
         {
@@ -137,6 +164,53 @@ namespace Rock.Model
         private ICollection<ConnectionOpportunityCampus> _connectionOpportunityCampuses;
 
         #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Returns a URL for the person's photo.
+        /// </summary>
+        /// <param name="photoId">The photo identifier.</param>
+        /// <param name="gender">The gender.</param>
+        /// <param name="age">The age.</param>
+        /// <param name="RecordTypeValueGuid">The record type value unique identifier.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="maxHeight">The maximum height.</param>
+        /// <returns></returns>
+        public static string GetPhotoUrl( int? photoId, int? maxWidth = null, int? maxHeight = null )
+        {
+            string virtualPath = String.Empty;
+            if ( photoId.HasValue )
+            {
+                string widthHeightParams = string.Empty;
+                if ( maxWidth.HasValue )
+                {
+                    widthHeightParams += string.Format( "&maxwidth={0}", maxWidth.Value );
+                }
+
+                if ( maxHeight.HasValue )
+                {
+                    widthHeightParams += string.Format( "&maxheight={0}", maxHeight.Value );
+                }
+
+                virtualPath = String.Format( "~/GetImage.ashx?id={0}" + widthHeightParams, photoId );
+            }
+            else
+            {
+                virtualPath = "~/Assets/Images/no-picture.svg?";
+            }
+
+            if ( System.Web.HttpContext.Current == null )
+            {
+                return virtualPath;
+            }
+            else
+            {
+                return VirtualPathUtility.ToAbsolute( virtualPath );
+            }
+        }
+
+        #endregion
     }
 
     #region Entity Configuration
@@ -154,7 +228,8 @@ namespace Rock.Model
             this.HasOptional( p => p.GroupMemberRole ).WithMany().HasForeignKey( p => p.GroupMemberRoleId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ConnectorGroup ).WithMany().HasForeignKey( p => p.ConnectorGroupId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.GroupType ).WithMany().HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( false );
-            this.HasRequired( p => p.ConnectionType ).WithMany( p => p.ConnectionOpportunities ).HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.ConnectionType ).WithMany( p => p.ConnectionOpportunities ).HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
         }
     }
 

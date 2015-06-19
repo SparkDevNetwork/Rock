@@ -69,8 +69,8 @@ namespace Rock.Model
         /// </summary>
         public ConnectionOpportunityGroupConfiguration()
         {
-            this.HasRequired( p => p.ConnectionOpportunity ).WithMany( p => p.ConnectionOpportunityGroups ).HasForeignKey( p => p.ConnectionOpportunityId ).WillCascadeOnDelete( false );
-            this.HasRequired( p => p.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.ConnectionOpportunity ).WithMany( p => p.ConnectionOpportunityGroups ).HasForeignKey( p => p.ConnectionOpportunityId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
         }
     }
 

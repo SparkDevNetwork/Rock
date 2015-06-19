@@ -91,6 +91,7 @@ namespace Rock.Model
             target.ConnectionOpportunityId = source.ConnectionOpportunityId;
             target.ConnectionTypeId = source.ConnectionTypeId;
             target.TriggerType = source.TriggerType;
+            target.QualifierValue = source.QualifierValue;
             target.WorkflowTypeId = source.WorkflowTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
