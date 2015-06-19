@@ -73,6 +73,7 @@
     <Compile Include="Model\DatamartEraLoss.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reporting\DataSelect\Person\NeighborhoodLeaderSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\LastPublicNoteSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\StartingPointDateSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\NeighborhoodPastorSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\NeighborhoodSelect.cs" />
