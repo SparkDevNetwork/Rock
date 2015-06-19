@@ -1,12 +1,15 @@
-{% assign groupLeaderCount = 0 %}
+{% assign allowedToView = 0 %}
 {% for group in Groups %}
   {% comment %}if user is a NH Group Leader or NH Area leader{% endcomment %}
-  {% if group.IsLeader or group.Role == "Neighborhood Leader" %}
-    {% assign groupLeaderCount = groupLeaderCount | Plus: 1 %}
+  {% if group.IsLeader or group.Role == "Leader" %}
+    {% assign allowedToView = allowedToView | Plus: 1 %}
+  {% endif %}
+  {% if group.Role == "Host" %}
+    {% assign allowedToView = allowedToView | Plus: 1 %}
   {% endif %}
 {% endfor %}
 
-{% unless Groups == empty or groupLeaderCount == 0 %}
+{% unless Groups == empty or allowedToView == 0 %}
 
   {% capture _panelTitle %}{{ panelTitle | Default: "Groups" }}{% endcapture%}
 
@@ -15,7 +18,7 @@
 
     <ul class="list-group list-group-panel">
       {% for group in Groups %}
-        {% if group.IsLeader or group.Role == "Neighborhood Leader" %}
+        {% if group.IsLeader or group.Role == "Leader" or group.Role == "Host" %}
           <li class="list-group-item">
             <a href="{{ LinkedPages.DetailPage }}?GroupId={{group.Group.Id}}" class="js-group-item" data-toggle="tooltip" data-placement="top" title="{{ group.GroupType }}">
               {{ group.Group.Name }} <small>({{ group.Role }})</small>

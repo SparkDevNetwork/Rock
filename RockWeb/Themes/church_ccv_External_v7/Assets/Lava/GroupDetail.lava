@@ -7,6 +7,8 @@ REQUIRED VARIABLES
 {% assign fullRosterPage = "/page/558" %}
 {% assign invitationListPage = "/page/559" %}
 
+{% include '~~/Assets/Lava/GroupDetail.lava' %}
+
 
 {% endcomment %}
 
@@ -157,8 +159,18 @@ REQUIRED VARIABLES
                 {% endif %}
                 {% assign pendingStartingPoint = member.Person | Attribute: 'PendingStartingPoint' %}
                 {% if pendingStartingPoint != '' %}
-                  <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Starting Point Pending"></i>
+                  <i class="fa fa-map-marker text-muted" data-toggle="tooltip" data-placement="bottom" title="Starting Point Pending"></i>
                 {% endif %}
+                {% assign groupMembers = member.Person | Groups: "23",'All' %}
+                {% assign activeCount = 0 %}
+                {% for groupMember in groupMembers %}
+                  {% if groupMember.GroupMemberStatus == "Active" %}
+                    {% assign activeCount = activeCount | Plus: 1 %}
+                  {% endif %}
+                {% endfor %}
+                {% unless activeCount == 0 %}
+                  <i class="fa fa-gear text-muted" data-toggle="tooltip" data-placement="bottom" title="Currently Serving"></i>
+                {% endunless %}
               </p>
             </div>
 
@@ -237,8 +249,18 @@ REQUIRED VARIABLES
                 {% endif %}
                 {% assign pendingStartingPoint = member.Person | Attribute: 'PendingStartingPoint' %}
                 {% if pendingStartingPoint != '' %}
-                  <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Starting Point Pending"></i>
+                  <i class="fa fa-map-marker text-muted" data-toggle="tooltip" data-placement="bottom" title="Starting Point Pending"></i>
                 {% endif %}
+                {% assign groupMembers = member.Person | Groups: "23",'All' %}
+                {% assign activeCount = 0 %}
+                {% for groupMember in groupMembers %}
+                  {% if groupMember.GroupMemberStatus == "Active" %}
+                    {% assign activeCount = activeCount | Plus: 1 %}
+                  {% endif %}
+                {% endfor %}
+                {% unless activeCount == 0 %}
+                  <i class="fa fa-gear text-muted" data-toggle="tooltip" data-placement="bottom" title="Currently Serving"></i>
+                {% endunless %}
               </p>
             </div>
 
@@ -315,8 +337,18 @@ REQUIRED VARIABLES
                 {% endif %}
                 {% assign pendingStartingPoint = member.Person | Attribute: 'PendingStartingPoint' %}
                 {% if pendingStartingPoint != '' %}
-                  <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Starting Point Pending"></i>
+                  <i class="fa fa-map-marker text-muted" data-toggle="tooltip" data-placement="bottom" title="Starting Point Pending"></i>
                 {% endif %}
+                {% assign groupMembers = member.Person | Groups: "23",'All' %}
+                {% assign activeCount = 0 %}
+                {% for groupMember in groupMembers %}
+                  {% if groupMember.GroupMemberStatus == "Active" %}
+                    {% assign activeCount = activeCount | Plus: 1 %}
+                  {% endif %}
+                {% endfor %}
+                {% unless activeCount == 0 %}
+                  <i class="fa fa-gear text-muted" data-toggle="tooltip" data-placement="bottom" title="Currently Serving"></i>
+                {% endunless %}
               </p>
             </div>
 
