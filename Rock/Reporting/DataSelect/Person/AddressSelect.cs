@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -162,10 +163,12 @@ namespace Rock.Reporting.DataSelect.Person
             Street1,
             Street2,
             City,
-            State,
+            Region,
             PostalCode,
             Country
         }
+
+        static Dictionary<string, string> newlabels = new Dictionary<string, string>();
 
         /// <summary>
         /// Creates the child controls.
@@ -181,15 +184,52 @@ namespace Rock.Reporting.DataSelect.Person
                 locationTypeList.Items.Add( new ListItem( value.Value, value.Guid.ToString() ) );
             }
 
-            locationTypeList.Items.Insert( 0, Rock.Constants.None.ListItem );
-
             locationTypeList.ID = parentControl.ID + "_grouplocationType";
             locationTypeList.Label = "Address Type";
+            locationTypeList.SelectedIndex = 0;
             parentControl.Controls.Add( locationTypeList );
 
             RockRadioButtonList addressPartRadioButtonList = new RockRadioButtonList();
             addressPartRadioButtonList.Items.Clear();
             addressPartRadioButtonList.BindToEnum<AddressNamePart>( false );
+
+            //Localises the radio button list by modifying 
+            var globalAttributesCache = GlobalAttributesCache.Read();
+            var defaultcountry = ( !string.IsNullOrWhiteSpace(globalAttributesCache.OrganizationCountry) ) ? globalAttributesCache.OrganizationCountry : "US";
+            var countryValue = DefinedTypeCache.Read(new Guid(SystemGuid.DefinedType.LOCATION_COUNTRIES))
+                    .DefinedValues
+                    .Where(v => v.Value.Equals(defaultcountry, StringComparison.OrdinalIgnoreCase))
+                    .FirstOrDefault();
+            if ( countryValue != null )
+            {
+                if (!newlabels.ContainsKey("City"))
+                {
+                    newlabels.Add("City", countryValue.GetAttributeValue("CityLabel"));
+                }
+
+                if ( !newlabels.ContainsKey("Region") )
+                {
+                    newlabels.Add("Region", countryValue.GetAttributeValue("StateLabel"));
+                }
+
+                if ( !newlabels.ContainsKey("PostalCode") )
+                {
+                    newlabels.Add("PostalCode", countryValue.GetAttributeValue("PostalCodeLabel"));
+                }   
+            }
+
+            foreach ( KeyValuePair<string, string> pair in newlabels )
+            {
+                string oldvalue = pair.Key.SplitCase();
+                string newvalue = pair.Value.SplitCase();
+                var find = addressPartRadioButtonList.Items.FindByText(oldvalue);
+                int index = addressPartRadioButtonList.Items.IndexOf(find);
+                if ( index != -1 )
+                { 
+                    addressPartRadioButtonList.Items.Remove(find);
+                    addressPartRadioButtonList.Items.Insert(index, newvalue);
+                }
+            }
 
             // default to first one
             addressPartRadioButtonList.SelectedIndex = 0;
