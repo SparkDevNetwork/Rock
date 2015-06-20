@@ -9,13 +9,11 @@
 <asp:UpdatePanel ID="upConnectionType" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDeleteConfirm" runat="server" CssClass="panel panel-body" Visible="false">
-            <Rock:NotificationBox ID="nbDeleteConfirm" runat="server" NotificationBoxType="Warning">
-                       Deleting a site will delete all the layouts and pages associated with the site. Are you sure you want to delete the site?
-            </Rock:NotificationBox>
+            <Rock:NotificationBox ID="nbDeleteConfirm" runat="server" NotificationBoxType="Warning" Text="Deleting a site will delete all the layouts and pages associated with the site. Are you sure you want to delete the site?" />
             <asp:LinkButton ID="btnDeleteConfirm" runat="server" Text="Confirm Delete" CssClass="btn btn-danger" OnClick="btnDeleteConfirm_Click" />
             <asp:LinkButton ID="btnDeleteCancel" runat="server" Text="Cancel" CssClass="btn btn-primary" OnClick="btnDeleteCancel_Click" />
-
         </asp:Panel>
+
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" Visible="false">
             <asp:HiddenField ID="hfConnectionTypeId" runat="server" />
 
@@ -25,22 +23,14 @@
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
             </div>
             <div class="panel-body">
-
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                <Rock:NotificationBox ID="nbNotAllowedToEdit" runat="server" NotificationBoxType="Danger" Visible="false"
-                    Text="You are not authorized to save connection type." />
+
                 <asp:ValidationSummary ID="valConnectionTypeDetail" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                 <div id="pnlViewDetails" runat="server">
                     <p class="description">
                         <asp:Literal ID="lConnectionTypeDescription" runat="server"></asp:Literal>
                     </p>
-
-                    <div class="row">
-                        <div class="cold-md-12">
-                            <asp:Literal ID="lblMainDetails" runat="server" />
-                        </div>
-                    </div>
 
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
@@ -60,11 +50,7 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-12">
-                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                        </div>
-                    </div>
+                    <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
 
                     <div class="row">
                         <div class="col-md-6">
@@ -76,52 +62,52 @@
                         </div>
                     </div>
 
-                    <Rock:PanelWidget ID="wpConnectionTypeAttributes" runat="server" Title="Opportunity Attributes">
+                    <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Opportunity Attributes">
                         <div class="grid">
-                            <Rock:Grid ID="gConnectionTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Opportunity Attribute">
+                            <Rock:Grid ID="gAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Opportunity Attribute">
                                 <Columns>
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
                                     <Rock:RockBoundField DataField="FieldType" HeaderText="Field Type" />
                                     <Rock:BoolField DataField="AllowSearch" HeaderText="Allow Search" />
-                                    <Rock:EditField OnClick="gConnectionTypeAttributes_Edit" />
-                                    <Rock:DeleteField OnClick="gConnectionTypeAttributes_Delete" />
+                                    <Rock:EditField OnClick="gAttributes_Edit" />
+                                    <Rock:DeleteField OnClick="gAttributes_Delete" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="wpConnectionActivityTypes" runat="server" Title="Activities">
+                    <Rock:PanelWidget ID="wpActivityTypes" runat="server" Title="Activities">
                         <div class="grid">
-                            <Rock:Grid ID="gConnectionActivityTypes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Activity">
+                            <Rock:Grid ID="gActivityTypes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Activity">
                                 <Columns>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Activities" />
-                                    <Rock:DeleteField OnClick="gConnectionActivityTypes_Delete" />
+                                    <Rock:DeleteField OnClick="gActivityTypes_Delete" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="wpConnectionStatuses" runat="server" Title="Statuses">
+                    <Rock:PanelWidget ID="wpStatuses" runat="server" Title="Statuses">
                         <div class="grid">
-                            <Rock:Grid ID="gConnectionStatuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Status">
+                            <Rock:Grid ID="gStatuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Status">
                                 <Columns>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                                     <Rock:RockBoundField DataField="Description" HeaderText="Description" />
-                                    <Rock:DeleteField OnClick="gConnectionStatuses_Delete" />
+                                    <Rock:DeleteField OnClick="gStatuses_Delete" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="wpConnectionWorkflow" runat="server" Title="Workflows">
+                    <Rock:PanelWidget ID="wpWorkflow" runat="server" Title="Workflows">
                         <div class="grid">
-                            <Rock:Grid ID="gConnectionWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Workflow">
+                            <Rock:Grid ID="gWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Workflow">
                                 <Columns>
                                     <Rock:RockBoundField DataField="WorkflowType" HeaderText="Workflow Type" />
                                     <Rock:RockBoundField DataField="Trigger" HeaderText="Trigger" />
-                                    <Rock:EditField OnClick="gConnectionWorkflows_Edit" />
-                                    <Rock:DeleteField OnClick="gConnectionWorkflows_Delete" />
+                                    <Rock:EditField OnClick="gWorkflows_Edit" />
+                                    <Rock:DeleteField OnClick="gWorkflows_Delete" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
@@ -139,9 +125,9 @@
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
-        <Rock:ModalDialog ID="dlgConnectionTypeAttribute" runat="server" Title="Event Calendar Attributes" OnSaveClick="dlgConnectionTypeAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ConnectionTypeAttributes">
+        <Rock:ModalDialog ID="dlgAttribute" runat="server" Title="Connection Opportunity Attributes" OnSaveClick="dlgConnectionTypeAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Attributes">
             <Content>
-                <Rock:AttributeEditor ID="edtConnectionTypeAttributes" runat="server" ShowActions="false" ValidationGroup="ConnectionTypeAttributes" />
+                <Rock:AttributeEditor ID="edtAttributes" runat="server" ShowActions="false" ValidationGroup="Attributes" />
             </Content>
         </Rock:ModalDialog>
 

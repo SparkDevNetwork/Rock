@@ -71,6 +71,23 @@ namespace Rock.Model
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Pres the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        {
+            var transaction = new Rock.Transactions.ConnectionRequestActivityChangeTransaction( entry );
+            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+
+            base.PreSaveChanges( dbContext, entry );
+        }
+
+        #endregion
     }
 
     #region Entity Configuration

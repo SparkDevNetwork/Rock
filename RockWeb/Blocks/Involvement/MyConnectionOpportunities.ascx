@@ -21,9 +21,9 @@
                         <asp:Repeater ID="rptConnectionOpportunities" runat="server">
                             <ItemTemplate>
                                 <li class='<%# Eval("Class") %>'>
-                                    <asp:LinkButton ID="lbConnectionOpportunity" runat="server" CommandArgument='<%# Eval("ConnectionOpportunity.Id") %>' CommandName="Display">
-                                        <i class='<%# Eval("ConnectionOpportunity.IconCssClass") %>'></i>
-                                        <h3><%# Eval("ConnectionOpportunity.Name") %> </h3>
+                                    <asp:LinkButton ID="lbConnectionOpportunity" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
+                                        <i class='<%# Eval("IconCssClass") %>'></i>
+                                        <h3><%# Eval("Name") %> </h3>
                                         <div class="notification">
                                             <span class="label label-danger"><%# ((int)Eval("Count")).ToString("#,###,###") %></span>
                                         </div>
@@ -47,7 +47,7 @@
 
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                        <Rock:PersonPicker ID="ppRequestor" runat="server" Label="Requestor" />
+                        <Rock:PersonPicker ID="ppRequester" runat="server" Label="Requester" />
                         <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" />
                         <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
                         <Rock:PersonPicker ID="ppConnector" runat="server" Label="Connector" />

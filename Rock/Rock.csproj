@@ -363,6 +363,7 @@
     <Compile Include="Model\FinancialTransactionDetailService.Partial.cs" />
     <Compile Include="Model\FinancialPledgeService.Partial.cs" />
     <Compile Include="Model\GroupMemberRequirement.cs" />
+    <Compile Include="Model\ConnectionWorkflowService.Partial.cs" />
     <Compile Include="Model\GroupRequirement.cs" />
     <Compile Include="Model\GroupRequirementType.cs" />
     <Compile Include="Model\GroupScheduleExclusion.cs" />
@@ -432,7 +433,9 @@
     <Compile Include="SystemGuid\Attribute.cs" />
     <Compile Include="SystemGuid\NoteType.cs" />
     <Compile Include="SystemGuid\ServiceJob.cs" />
+    <Compile Include="Transactions\ConnectionRequestActivityChangeTransaction.cs" />
     <Compile Include="Transactions\GroupAttendedTransaction.cs" />
+    <Compile Include="Transactions\ConnectionRequestChangeTransaction.cs" />
     <Compile Include="Transactions\GroupMemberChangeTransaction.cs" />
     <Compile Include="Transactions\RunJobNowTransaction.cs" />
     <Compile Include="Transactions\DeleteAttributeBinaryFile.cs" />
