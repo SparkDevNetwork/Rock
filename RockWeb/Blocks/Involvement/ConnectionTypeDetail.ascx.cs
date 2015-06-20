@@ -21,6 +21,8 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -40,70 +42,65 @@ namespace RockWeb.Blocks.Involvement
     [Description( "Displays the details of the given Connection Type for editing." )]
     public partial class ConnectionTypeDetail : RockBlock, IDetailBlock
     {
-        #region Child Grid Dictionarys
+        #region Properties
 
-        /// <summary>
-        /// Gets or sets the state of the event calendar attributes.
-        /// </summary>
-        /// <value>
-        /// The state of the event calendar attributes.
-        /// </value>
-        private ViewStateList<Attribute> ConnectionTypeAttributesState
-        {
-            get
-            {
-                return ViewState["ConnectionTypeAttributesState"] as ViewStateList<Attribute>;
-            }
+        private List<Attribute> AttributesState { get; set; }
 
-            set
-            {
-                ViewState["ConnectionTypeAttributesState"] = value;
-            }
-        }
+        private List<ConnectionActivityType> ActivityTypesState { get; set; }
 
-        private ViewStateList<ConnectionActivityType> ConnectionActivityTypesState
-        {
-            get
-            {
-                return ViewState["ConnectionActivityTypesState"] as ViewStateList<ConnectionActivityType>;
-            }
+        private List<ConnectionStatus> StatusesState { get; set; }
 
-            set
-            {
-                ViewState["ConnectionActivityTypesState"] = value;
-            }
-        }
-
-        private ViewStateList<ConnectionStatus> ConnectionStatusesState
-        {
-            get
-            {
-                return ViewState["ConnectionStatusesState"] as ViewStateList<ConnectionStatus>;
-            }
-
-            set
-            {
-                ViewState["ConnectionStatusesState"] = value;
-            }
-        }
-
-
-        private ViewStateList<ConnectionWorkflow> ConnectionWorkflowsState
-        {
-            get
-            {
-                return ViewState["ConnectionWorkflowsState"] as ViewStateList<ConnectionWorkflow>;
-            }
-
-            set
-            {
-                ViewState["ConnectionWorkflowsState"] = value;
-            }
-        }
+        private ViewStateList<ConnectionWorkflow> WorkflowsState { get; set; }
 
         #endregion
 
         #region Control Methods
+
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            string json = ViewState["AttributesState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                AttributesState = new List<Attribute>();
+            }
+            else
+            {
+                AttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+            }
+
+            json = ViewState["ActivityTypesState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                ActivityTypesState = new List<ConnectionActivityType>();
+            }
+            else
+            {
+                ActivityTypesState = JsonConvert.DeserializeObject<List<ConnectionActivityType>>( json );
+            }
+
+            json = ViewState["StatusesState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                StatusesState = new List<ConnectionStatus>();
+            }
+            else
+            {
+                StatusesState = JsonConvert.DeserializeObject<List<ConnectionStatus>>( json );
+            }
+
+            json = ViewState["WorkflowsState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                AttributesState = new List<Attribute>();
+            }
+            else
+            {
+                AttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+            }
+        }
+
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -114,27 +111,30 @@ namespace RockWeb.Blocks.Involvement
             base.OnInit( e );
             bool editAllowed = IsUserAuthorized( Authorization.ADMINISTRATE );
 
-            gConnectionTypeAttributes.DataKeyNames = new string[] { "Guid" };
-            gConnectionTypeAttributes.Actions.ShowAdd = editAllowed;
-            gConnectionTypeAttributes.Actions.AddClick += gConnectionTypeAttributes_Add;
-            gConnectionTypeAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
-            gConnectionTypeAttributes.GridRebind += gConnectionTypeAttributes_GridRebind;
-            gConnectionTypeAttributes.GridReorder += gConnectionTypeAttributes_GridReorder;
+            gAttributes.DataKeyNames = new string[] { "Guid" };
+            gAttributes.Actions.ShowAdd = editAllowed;
+            gAttributes.Actions.AddClick += gAttributes_Add;
+            gAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
+            gAttributes.GridRebind += gAttributes_GridRebind;
+            gAttributes.GridReorder += gAttributes_GridReorder;
 
-            gConnectionActivityTypes.DataKeyNames = new string[] { "Guid" };
-            gConnectionActivityTypes.Actions.ShowAdd = true;
-            gConnectionActivityTypes.Actions.AddClick += gConnectionActivityTypes_Add;
-            gConnectionActivityTypes.GridRebind += gConnectionActivityTypes_GridRebind;
+            gActivityTypes.DataKeyNames = new string[] { "Guid" };
+            gActivityTypes.Actions.ShowAdd = true;
+            gActivityTypes.Actions.AddClick += gActivityTypes_Add;
+            gActivityTypes.GridRebind += gActivityTypes_GridRebind;
 
-            gConnectionStatuses.DataKeyNames = new string[] { "Guid" };
-            gConnectionStatuses.Actions.ShowAdd = true;
-            gConnectionStatuses.Actions.AddClick += gConnectionStatuses_Add;
-            gConnectionStatuses.GridRebind += gConnectionStatuses_GridRebind;
+            gStatuses.DataKeyNames = new string[] { "Guid" };
+            gStatuses.Actions.ShowAdd = true;
+            gStatuses.Actions.AddClick += gStatuses_Add;
+            gStatuses.GridRebind += gStatuses_GridRebind;
 
-            gConnectionWorkflows.DataKeyNames = new string[] { "Guid" };
-            gConnectionWorkflows.Actions.ShowAdd = true;
-            gConnectionWorkflows.Actions.AddClick += gConnectionWorkflows_Add;
-            gConnectionWorkflows.GridRebind += gConnectionWorkflows_GridRebind;
+            gWorkflows.DataKeyNames = new string[] { "Guid" };
+            gWorkflows.Actions.ShowAdd = true;
+            gWorkflows.Actions.AddClick += gWorkflows_Add;
+            gWorkflows.GridRebind += gWorkflows_GridRebind;
+
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upConnectionType );
         }
 
         /// <summary>
@@ -163,24 +163,16 @@ namespace RockWeb.Blocks.Involvement
         /// </returns>
         protected override object SaveViewState()
         {
-            // Persist any changes that might have been made to objects in list
-            if ( ConnectionTypeAttributesState != null )
+            var jsonSetting = new JsonSerializerSettings
             {
-                ConnectionTypeAttributesState.SaveViewState();
-            }
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+            };
 
-            if ( ConnectionActivityTypesState != null )
-            {
-                ConnectionActivityTypesState.SaveViewState();
-            }
-            if ( ConnectionStatusesState != null )
-            {
-                ConnectionStatusesState.SaveViewState();
-            }
-            if ( ConnectionWorkflowsState != null )
-            {
-                ConnectionWorkflowsState.SaveViewState();
-            }
+            ViewState["AttributesState"] = JsonConvert.SerializeObject( AttributesState, Formatting.None, jsonSetting );
+            ViewState["ActivityTypesState"] = JsonConvert.SerializeObject( ActivityTypesState, Formatting.None, jsonSetting );
+            ViewState["StatusesState"] = JsonConvert.SerializeObject( StatusesState, Formatting.None, jsonSetting );
+            ViewState["WorkflowsState"] = JsonConvert.SerializeObject( WorkflowsState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -230,7 +222,11 @@ namespace RockWeb.Blocks.Involvement
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            ShowEditDetails( GetConnectionType( hfConnectionTypeId.Value.AsInteger() ) );
+            var rockContext = new RockContext();
+            var connectionType = new EventCalendarService( rockContext ).Get( hfConnectionTypeId.Value.AsInteger() );
+
+            LoadStateDetails( connectionType, rockContext );
+            ShowEditDetails( connectionType );
         }
 
         /// <summary>
@@ -240,41 +236,42 @@ namespace RockWeb.Blocks.Involvement
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDeleteConfirm_Click( object sender, EventArgs e )
         {
-            RockContext rockContext = new RockContext();
-            ConnectionWorkflowService connectionWorkflowService = new ConnectionWorkflowService( rockContext );
-            ConnectionTypeService connectionTypeService = new ConnectionTypeService( rockContext );
-            AuthService authService = new AuthService( rockContext );
-            ConnectionType connectionType = connectionTypeService.Get( int.Parse( hfConnectionTypeId.Value ) );
-
-            if ( connectionType != null )
+            using ( var rockContext = new RockContext() )
             {
-                if ( !connectionType.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+
+                ConnectionWorkflowService connectionWorkflowService = new ConnectionWorkflowService( rockContext );
+                ConnectionTypeService connectionTypeService = new ConnectionTypeService( rockContext );
+                AuthService authService = new AuthService( rockContext );
+                ConnectionType connectionType = connectionTypeService.Get( int.Parse( hfConnectionTypeId.Value ) );
+
+                if ( connectionType != null )
                 {
-                    mdDeleteWarning.Show( "You are not authorized to delete this calendar.", ModalAlertType.Information );
-                    return;
+                    if ( !connectionType.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                    {
+                        mdDeleteWarning.Show( "You are not authorized to delete this calendar.", ModalAlertType.Information );
+                        return;
+                    }
+
+                    string errorMessage;
+                    if ( !connectionTypeService.CanDelete( connectionType, out errorMessage ) )
+                    {
+                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                    connectionTypeService.Delete( connectionType );
+
+                    rockContext.SaveChanges();
                 }
-
-                string errorMessage;
-                if ( !connectionTypeService.CanDelete( connectionType, out errorMessage ) )
-                {
-                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
-                    return;
-                }
-
-
-                connectionWorkflowService.DeleteRange( connectionType.ConnectionWorkflows );
-                foreach ( var connectionOpportunity in connectionType.ConnectionOpportunities )
-                {
-                    connectionWorkflowService.DeleteRange( connectionOpportunity.ConnectionWorkflows );
-                }
-                connectionTypeService.Delete( connectionType );
-
-                rockContext.SaveChanges();
             }
-
             NavigateToParentPage();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnDeleteCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDeleteCancel_Click( object sender, EventArgs e )
         {
             btnDelete.Visible = true;
@@ -282,16 +279,17 @@ namespace RockWeb.Blocks.Involvement
             pnlDeleteConfirm.Visible = false;
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
             btnDelete.Visible = false;
             btnEdit.Visible = false;
             pnlDeleteConfirm.Visible = true;
         }
-
-        #endregion
-
-        #region Action Events
 
         /// <summary>
         /// Handles the Click event of the btnSave control.
@@ -301,116 +299,130 @@ namespace RockWeb.Blocks.Involvement
         protected void btnSave_Click( object sender, EventArgs e )
         {
             ConnectionType connectionType;
-            var rockContext = new RockContext();
-            ConnectionTypeService connectionTypeService = new ConnectionTypeService( rockContext );
-            ConnectionActivityTypeService connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
-            ConnectionStatusService connectionStatusService = new ConnectionStatusService( rockContext );
-            ConnectionWorkflowService connectionWorkflowService = new ConnectionWorkflowService( rockContext );
-
-            AttributeService attributeService = new AttributeService( rockContext );
-            AttributeQualifierService qualifierService = new AttributeQualifierService( rockContext );
-
-            int connectionTypeId = int.Parse( hfConnectionTypeId.Value );
-
-            if ( connectionTypeId == 0 )
+            using ( var rockContext = new RockContext() )
             {
-                connectionType = new ConnectionType();
-                connectionTypeService.Add( connectionType );
-            }
-            else
-            {
-                connectionType = connectionTypeService.Queryable( "ConnectionActivityTypes, ConnectionWorkflows" ).Where( c => c.Id == connectionTypeId ).FirstOrDefault();
+                ConnectionTypeService connectionTypeService = new ConnectionTypeService( rockContext );
+                ConnectionActivityTypeService connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
+                ConnectionStatusService connectionStatusService = new ConnectionStatusService( rockContext );
+                ConnectionWorkflowService connectionWorkflowService = new ConnectionWorkflowService( rockContext );
+                AttributeService attributeService = new AttributeService( rockContext );
+                AttributeQualifierService qualifierService = new AttributeQualifierService( rockContext );
 
-                var selectedConnectionWorkflows = ConnectionWorkflowsState.Select( l => l.Guid );
-                foreach ( var connectionWorkflow in connectionType.ConnectionWorkflows.Where( l => !selectedConnectionWorkflows.Contains( l.Guid ) ).ToList() )
+                int connectionTypeId = int.Parse( hfConnectionTypeId.Value );
+
+                if ( connectionTypeId == 0 )
                 {
-                    connectionType.ConnectionWorkflows.Remove( connectionWorkflow );
-                    connectionWorkflowService.Delete( connectionWorkflow );
-                }
-
-                var selectedConnectionActivityTypes = ConnectionActivityTypesState.Select( r => r.Guid );
-                foreach ( var connectionActivityType in connectionType.ConnectionActivityTypes.Where( r => !selectedConnectionActivityTypes.Contains( r.Guid ) ).ToList() )
-                {
-                    connectionType.ConnectionActivityTypes.Remove( connectionActivityType );
-                    connectionActivityTypeService.Delete( connectionActivityType );
-                }
-
-                var selectedConnectionStatuses = ConnectionStatusesState.Select( r => r.Guid );
-                foreach ( var connectionStatus in connectionType.ConnectionStatuses.Where( r => !selectedConnectionStatuses.Contains( r.Guid ) ).ToList() )
-                {
-                    connectionType.ConnectionStatuses.Remove( connectionStatus );
-                    connectionStatusService.Delete( connectionStatus );
-                }
-            }
-
-            connectionType.Name = tbName.Text;
-            connectionType.Description = tbDescription.Text;
-            connectionType.IconCssClass = tbIconCssClass.Text;
-            connectionType.EnableFutureFollowup = cbFutureFollowUp.Checked;
-            connectionType.EnableFullActivityList = cbFullActivityList.Checked;
-
-            foreach ( var connectionActivityTypeState in ConnectionActivityTypesState )
-            {
-                ConnectionActivityType connectionActivityType = connectionType.ConnectionActivityTypes.Where( a => a.Guid == connectionActivityTypeState.Guid ).FirstOrDefault();
-                if ( connectionActivityType == null )
-                {
-                    connectionActivityType = new ConnectionActivityType();
-                    connectionType.ConnectionActivityTypes.Add( connectionActivityType );
-                }
-
-                connectionActivityType.CopyPropertiesFrom( connectionActivityTypeState );
-            }
-
-            foreach ( var connectionStatusState in ConnectionStatusesState )
-            {
-                ConnectionStatus connectionStatus = connectionType.ConnectionStatuses.Where( a => a.Guid == connectionStatusState.Guid ).FirstOrDefault();
-                if ( connectionStatus == null )
-                {
-                    connectionStatus = new ConnectionStatus();
-                    connectionType.ConnectionStatuses.Add( connectionStatus );
-                }
-                connectionStatus.CopyPropertiesFrom( connectionStatusState );
-                connectionStatus.ConnectionTypeId = connectionStatus.ConnectionType.Id;
-            }
-
-            foreach ( ConnectionWorkflow connectionWorkflowState in ConnectionWorkflowsState )
-            {
-                ConnectionWorkflow connectionWorkflow = connectionType.ConnectionWorkflows.Where( a => a.Guid == connectionWorkflowState.Guid ).FirstOrDefault();
-                if ( connectionWorkflow == null )
-                {
-                    connectionWorkflow = new ConnectionWorkflow();
-                    connectionType.ConnectionWorkflows.Add( connectionWorkflow );
+                    connectionType = new ConnectionType();
+                    connectionTypeService.Add( connectionType );
                 }
                 else
                 {
-                    connectionWorkflowState.Id = connectionWorkflow.Id;
-                    connectionWorkflowState.Guid = connectionWorkflow.Guid;
+                    connectionType = connectionTypeService.Queryable( "ConnectionActivityTypes, ConnectionWorkflows" ).Where( c => c.Id == connectionTypeId ).FirstOrDefault();
+
+                    var selectedConnectionWorkflows = WorkflowsState.Select( l => l.Guid );
+                    foreach ( var connectionWorkflow in connectionType.ConnectionWorkflows.Where( l => !selectedConnectionWorkflows.Contains( l.Guid ) ).ToList() )
+                    {
+                        connectionType.ConnectionWorkflows.Remove( connectionWorkflow );
+                        connectionWorkflowService.Delete( connectionWorkflow );
+                    }
+
+                    var selectedConnectionActivityTypes = ActivityTypesState.Select( r => r.Guid );
+                    foreach ( var connectionActivityType in connectionType.ConnectionActivityTypes.Where( r => !selectedConnectionActivityTypes.Contains( r.Guid ) ).ToList() )
+                    {
+                        connectionType.ConnectionActivityTypes.Remove( connectionActivityType );
+                        connectionActivityTypeService.Delete( connectionActivityType );
+                    }
+
+                    var selectedConnectionStatuses = StatusesState.Select( r => r.Guid );
+                    foreach ( var connectionStatus in connectionType.ConnectionStatuses.Where( r => !selectedConnectionStatuses.Contains( r.Guid ) ).ToList() )
+                    {
+                        connectionType.ConnectionStatuses.Remove( connectionStatus );
+                        connectionStatusService.Delete( connectionStatus );
+                    }
                 }
 
-                connectionWorkflow.CopyPropertiesFrom( connectionWorkflowState );
-                connectionWorkflow.ConnectionTypeId = connectionTypeId;
+                connectionType.Name = tbName.Text;
+                connectionType.Description = tbDescription.Text;
+                connectionType.IconCssClass = tbIconCssClass.Text;
+                connectionType.EnableFutureFollowup = cbFutureFollowUp.Checked;
+                connectionType.EnableFullActivityList = cbFullActivityList.Checked;
+
+                foreach ( var connectionActivityTypeState in ActivityTypesState )
+                {
+                    ConnectionActivityType connectionActivityType = connectionType.ConnectionActivityTypes.Where( a => a.Guid == connectionActivityTypeState.Guid ).FirstOrDefault();
+                    if ( connectionActivityType == null )
+                    {
+                        connectionActivityType = new ConnectionActivityType();
+                        connectionType.ConnectionActivityTypes.Add( connectionActivityType );
+                    }
+
+                    connectionActivityType.CopyPropertiesFrom( connectionActivityTypeState );
+                }
+
+                foreach ( var connectionStatusState in StatusesState )
+                {
+                    ConnectionStatus connectionStatus = connectionType.ConnectionStatuses.Where( a => a.Guid == connectionStatusState.Guid ).FirstOrDefault();
+                    if ( connectionStatus == null )
+                    {
+                        connectionStatus = new ConnectionStatus();
+                        connectionType.ConnectionStatuses.Add( connectionStatus );
+                    }
+                    connectionStatus.CopyPropertiesFrom( connectionStatusState );
+                    connectionStatus.ConnectionTypeId = connectionType.Id;
+                }
+
+                foreach ( ConnectionWorkflow connectionWorkflowState in WorkflowsState )
+                {
+                    ConnectionWorkflow connectionWorkflow = connectionType.ConnectionWorkflows.Where( a => a.Guid == connectionWorkflowState.Guid ).FirstOrDefault();
+                    if ( connectionWorkflow == null )
+                    {
+                        connectionWorkflow = new ConnectionWorkflow();
+                        connectionType.ConnectionWorkflows.Add( connectionWorkflow );
+                    }
+                    else
+                    {
+                        connectionWorkflowState.Id = connectionWorkflow.Id;
+                        connectionWorkflowState.Guid = connectionWorkflow.Guid;
+                    }
+
+                    connectionWorkflow.CopyPropertiesFrom( connectionWorkflowState );
+                    connectionWorkflow.ConnectionTypeId = connectionTypeId;
+                }
+
+                if ( !connectionType.IsValid )
+                {
+                    // Controls will render the error messages
+                    return;
+                }
+
+                // need WrapTransaction due to Attribute saves
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+
+                    /* Save Attributes */
+                    string qualifierValue = connectionType.Id.ToString();
+                    SaveAttributes( new ConnectionOpportunity().TypeId, "ConnectionTypeId", qualifierValue, AttributesState, rockContext );
+
+                    // Reload calendar and make sure that the person who may have just added a calendar has security to view/edit/administrate the calendar
+                    connectionType = connectionTypeService.Get( connectionType.Id );
+                    if ( connectionType != null )
+                    {
+                        if ( !connectionType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        {
+                            connectionType.AllowPerson( Authorization.VIEW, CurrentPerson, rockContext );
+                        }
+                        if ( !connectionType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                        {
+                            connectionType.AllowPerson( Authorization.EDIT, CurrentPerson, rockContext );
+                        }
+                        if ( !connectionType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+                        {
+                            connectionType.AllowPerson( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
+                        }
+                    }
+                } );
             }
-
-            if ( !connectionType.IsValid )
-            {
-                // Controls will render the error messages
-                return;
-            }
-
-            // need WrapTransaction due to Attribute saves
-            rockContext.WrapTransaction( () =>
-            {
-                rockContext.SaveChanges();
-
-                /* Save Attributes */
-                string qualifierValue = connectionType.Id.ToString();
-                SaveAttributes( new ConnectionOpportunity().TypeId, "ConnectionTypeId", qualifierValue, ConnectionTypeAttributesState, rockContext );
-
-                // Reload to save default role
-                connectionType = connectionTypeService.Get( connectionType.Id );
-
-                rockContext.SaveChanges();
-            } );
 
             var qryParams = new Dictionary<string, string>();
             qryParams["ConnectionTypeId"] = connectionType.Id.ToString();
@@ -435,14 +447,40 @@ namespace RockWeb.Blocks.Involvement
             }
         }
 
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            var currentConnectionType = GetConnectionType( hfConnectionTypeId.Value.AsInteger() );
+            if ( currentConnectionType != null )
+            {
+                ShowReadonlyDetails( currentConnectionType );
+            }
+            else
+            {
+                string connectionTypeId = PageParameter( "ConnectionTypeId" );
+                if ( !string.IsNullOrWhiteSpace( connectionTypeId ) )
+                {
+                    ShowDetail( connectionTypeId.AsInteger() );
+                }
+                else
+                {
+                    pnlDetails.Visible = false;
+                }
+            }
+        }
+
         #endregion
 
         #region ConnectionActivityType Events
 
-        protected void gConnectionActivityTypes_Delete( object sender, RowEventArgs e )
+        protected void gActivityTypes_Delete( object sender, RowEventArgs e )
         {
             Guid rowGuid = (Guid)e.RowKeyValue;
-            ConnectionActivityTypesState.RemoveEntity( rowGuid );
+            ActivityTypesState.RemoveEntity( rowGuid );
             BindConnectionActivityTypesGrid();
         }
 
@@ -454,23 +492,23 @@ namespace RockWeb.Blocks.Involvement
             {
                 return;
             }
-            if ( ConnectionActivityTypesState.Any( a => a.Guid.Equals( connectionActivityType.Guid ) ) )
+            if ( ActivityTypesState.Any( a => a.Guid.Equals( connectionActivityType.Guid ) ) )
             {
-                ConnectionActivityTypesState.RemoveEntity( connectionActivityType.Guid );
+                ActivityTypesState.RemoveEntity( connectionActivityType.Guid );
             }
-            ConnectionActivityTypesState.Add( connectionActivityType );
+            ActivityTypesState.Add( connectionActivityType );
 
             BindConnectionActivityTypesGrid();
 
             HideDialog();
         }
 
-        private void gConnectionActivityTypes_GridRebind( object sender, EventArgs e )
+        private void gActivityTypes_GridRebind( object sender, EventArgs e )
         {
             BindConnectionActivityTypesGrid();
         }
 
-        private void gConnectionActivityTypes_Add( object sender, EventArgs e )
+        private void gActivityTypes_Add( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
             tbConnectionActivityTypeName.Text = string.Empty;
@@ -480,10 +518,10 @@ namespace RockWeb.Blocks.Involvement
 
         private void BindConnectionActivityTypesGrid()
         {
-            SetConnectionActivityTypeListOrder( ConnectionActivityTypesState );
-            gConnectionActivityTypes.DataSource = ConnectionActivityTypesState.OrderBy( a => a.Name ).ToList();
+            SetConnectionActivityTypeListOrder( ActivityTypesState );
+            gActivityTypes.DataSource = ActivityTypesState.OrderBy( a => a.Name ).ToList();
 
-            gConnectionActivityTypes.DataBind();
+            gActivityTypes.DataBind();
         }
 
         /// <summary>
@@ -505,10 +543,10 @@ namespace RockWeb.Blocks.Involvement
 
         #region ConnectionStatus Events
 
-        protected void gConnectionStatuses_Delete( object sender, RowEventArgs e )
+        protected void gStatuses_Delete( object sender, RowEventArgs e )
         {
             Guid rowGuid = (Guid)e.RowKeyValue;
-            ConnectionStatusesState.RemoveEntity( rowGuid );
+            StatusesState.RemoveEntity( rowGuid );
             BindConnectionStatusesGrid();
         }
 
@@ -519,7 +557,7 @@ namespace RockWeb.Blocks.Involvement
             connectionStatus.Description = tbConnectionStatusDescription.Text;
             if ( cbIsDefault.Checked == true )
             {
-                foreach ( var connectionStatusState in ConnectionStatusesState )
+                foreach ( var connectionStatusState in StatusesState )
                 {
                     connectionStatusState.IsDefault = false;
                 }
@@ -531,23 +569,23 @@ namespace RockWeb.Blocks.Involvement
             {
                 return;
             }
-            if ( ConnectionStatusesState.Any( a => a.Guid.Equals( connectionStatus.Guid ) ) )
+            if ( StatusesState.Any( a => a.Guid.Equals( connectionStatus.Guid ) ) )
             {
-                ConnectionStatusesState.RemoveEntity( connectionStatus.Guid );
+                StatusesState.RemoveEntity( connectionStatus.Guid );
             }
-            ConnectionStatusesState.Add( connectionStatus );
+            StatusesState.Add( connectionStatus );
 
             BindConnectionStatusesGrid();
 
             HideDialog();
         }
 
-        private void gConnectionStatuses_GridRebind( object sender, EventArgs e )
+        private void gStatuses_GridRebind( object sender, EventArgs e )
         {
             BindConnectionStatusesGrid();
         }
 
-        private void gConnectionStatuses_Add( object sender, EventArgs e )
+        private void gStatuses_Add( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
             tbConnectionStatusName.Text = string.Empty;
@@ -560,10 +598,10 @@ namespace RockWeb.Blocks.Involvement
 
         private void BindConnectionStatusesGrid()
         {
-            SetConnectionStatusListOrder( ConnectionStatusesState );
-            gConnectionStatuses.DataSource = ConnectionStatusesState.OrderBy( a => a.Name ).ToList();
+            SetConnectionStatusListOrder( StatusesState );
+            gStatuses.DataSource = StatusesState.OrderBy( a => a.Name ).ToList();
 
-            gConnectionStatuses.DataBind();
+            gStatuses.DataBind();
         }
 
         /// <summary>
@@ -591,7 +629,7 @@ namespace RockWeb.Blocks.Involvement
             Guid guid = hfAddConnectionWorkflowGuid.Value.AsGuid();
             if ( !guid.IsEmpty() )
             {
-                connectionWorkflow = ConnectionWorkflowsState.FirstOrDefault( l => l.Guid.Equals( guid ) );
+                connectionWorkflow = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( guid ) );
             }
 
             if ( connectionWorkflow == null )
@@ -611,40 +649,40 @@ namespace RockWeb.Blocks.Involvement
             {
                 return;
             }
-            if ( ConnectionWorkflowsState.Any( a => a.Guid.Equals( connectionWorkflow.Guid ) ) )
+            if ( WorkflowsState.Any( a => a.Guid.Equals( connectionWorkflow.Guid ) ) )
             {
-                ConnectionWorkflowsState.RemoveEntity( connectionWorkflow.Guid );
+                WorkflowsState.RemoveEntity( connectionWorkflow.Guid );
             }
 
-            ConnectionWorkflowsState.Add( connectionWorkflow );
+            WorkflowsState.Add( connectionWorkflow );
 
             BindConnectionWorkflowsGrid();
 
             HideDialog();
         }
 
-        protected void gConnectionWorkflows_Delete( object sender, RowEventArgs e )
+        protected void gWorkflows_Delete( object sender, RowEventArgs e )
         {
             Guid rowGuid = (Guid)e.RowKeyValue;
-            ConnectionWorkflowsState.RemoveEntity( rowGuid );
+            WorkflowsState.RemoveEntity( rowGuid );
 
             BindConnectionWorkflowsGrid();
         }
 
-        private void gConnectionWorkflows_GridRebind( object sender, EventArgs e )
+        private void gWorkflows_GridRebind( object sender, EventArgs e )
         {
             BindConnectionWorkflowsGrid();
         }
 
-        protected void gConnectionWorkflows_Edit( object sender, RowEventArgs e )
+        protected void gWorkflows_Edit( object sender, RowEventArgs e )
         {
             Guid connectionWorkflowGuid = (Guid)e.RowKeyValue;
-            gConnectionWorkflows_ShowEdit( connectionWorkflowGuid );
+            gWorkflows_ShowEdit( connectionWorkflowGuid );
         }
 
-        protected void gConnectionWorkflows_ShowEdit( Guid connectionWorkflowGuid )
+        protected void gWorkflows_ShowEdit( Guid connectionWorkflowGuid )
         {
-            ConnectionWorkflow connectionWorkflow = ConnectionWorkflowsState.FirstOrDefault( l => l.Guid.Equals( connectionWorkflowGuid ) );
+            ConnectionWorkflow connectionWorkflow = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( connectionWorkflowGuid ) );
             if ( connectionWorkflow != null )
             {
                 ddlTriggerType.BindToEnum<ConnectionWorkflowTriggerType>();
@@ -674,7 +712,7 @@ namespace RockWeb.Blocks.Involvement
             }
         }
 
-        private void gConnectionWorkflows_Add( object sender, EventArgs e )
+        private void gWorkflows_Add( object sender, EventArgs e )
         {
             ddlTriggerType.BindToEnum<ConnectionWorkflowTriggerType>();
             ddlWorkflowType.Items.Clear();
@@ -701,7 +739,7 @@ namespace RockWeb.Blocks.Involvement
         {
             RockContext rockContext = new RockContext();
             String[] qualifierValues = new String[2];
-            ConnectionWorkflow connectionWorkflow = ConnectionWorkflowsState.FirstOrDefault( l => l.Guid.Equals( hfAddConnectionWorkflowGuid.Value.AsGuid() ) );
+            ConnectionWorkflow connectionWorkflow = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( hfAddConnectionWorkflowGuid.Value.AsGuid() ) );
             ConnectionWorkflowTriggerType connectionWorkflowTriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
             int connectionTypeId = int.Parse( hfConnectionTypeId.Value );
             switch ( connectionWorkflowTriggerType )
@@ -800,15 +838,15 @@ namespace RockWeb.Blocks.Involvement
 
         private void BindConnectionWorkflowsGrid()
         {
-            SetConnectionWorkflowListOrder( ConnectionWorkflowsState );
-            gConnectionWorkflows.DataSource = ConnectionWorkflowsState.Select( c => new
+            SetConnectionWorkflowListOrder( WorkflowsState );
+            gWorkflows.DataSource = WorkflowsState.Select( c => new
             {
                 c.Id,
                 c.Guid,
                 WorkflowType = c.WorkflowType.Name,
                 Trigger = c.TriggerType.ConvertToString()
             } ).ToList();
-            gConnectionWorkflows.DataBind();
+            gWorkflows.DataBind();
         }
 
         private void SetConnectionWorkflowListOrder( ViewStateList<ConnectionWorkflow> connectionWorkflowList )
@@ -823,32 +861,6 @@ namespace RockWeb.Blocks.Involvement
         }
 
         #endregion
-
-        /// <summary>
-        /// Handles the BlockUpdated event of the control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
-        {
-            var currentConnectionType = GetConnectionType( hfConnectionTypeId.Value.AsInteger() );
-            if ( currentConnectionType != null )
-            {
-                ShowReadonlyDetails( currentConnectionType );
-            }
-            else
-            {
-                string connectionTypeId = PageParameter( "ConnectionTypeId" );
-                if ( !string.IsNullOrWhiteSpace( connectionTypeId ) )
-                {
-                    ShowDetail( connectionTypeId.AsInteger() );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
-            }
-        }
 
         #endregion
 
@@ -940,38 +952,38 @@ namespace RockWeb.Blocks.Involvement
 
             cbFutureFollowUp.Checked = connectionType.EnableFutureFollowup;
 
-            if ( ConnectionActivityTypesState == null )
+            if ( ActivityTypesState == null )
             {
-                ConnectionActivityTypesState = new ViewStateList<ConnectionActivityType>();
+                ActivityTypesState = new ViewStateList<ConnectionActivityType>();
                 if ( connectionType.ConnectionActivityTypes != null )
                 {
-                    ConnectionActivityTypesState.AddAll( connectionType.ConnectionActivityTypes.ToList() );
+                    ActivityTypesState.AddAll( connectionType.ConnectionActivityTypes.ToList() );
                 }
             }
 
-            if ( ConnectionStatusesState == null )
+            if ( StatusesState == null )
             {
-                ConnectionStatusesState = new ViewStateList<ConnectionStatus>();
+                StatusesState = new ViewStateList<ConnectionStatus>();
                 if ( connectionType.ConnectionStatuses != null )
                 {
-                    ConnectionStatusesState.AddAll( connectionType.ConnectionStatuses.ToList() );
+                    StatusesState.AddAll( connectionType.ConnectionStatuses.ToList() );
                 }
             }
 
-            if ( ConnectionWorkflowsState == null )
+            if ( WorkflowsState == null )
             {
-                ConnectionWorkflowsState = new ViewStateList<ConnectionWorkflow>();
+                WorkflowsState = new ViewStateList<ConnectionWorkflow>();
                 if ( connectionType.ConnectionWorkflows != null )
                 {
-                    ConnectionWorkflowsState.AddAll( connectionType.ConnectionWorkflows.ToList() );
+                    WorkflowsState.AddAll( connectionType.ConnectionWorkflows.ToList() );
                 }
             }
 
             // Attributes
             string qualifierValue = connectionType.Id.ToString();
 
-            ConnectionTypeAttributesState = new ViewStateList<Attribute>();
-            ConnectionTypeAttributesState.AddAll( attributeService.GetByEntityTypeId( new ConnectionOpportunity().TypeId ).AsQueryable()
+            AttributesState = new ViewStateList<Attribute>();
+            AttributesState.AddAll( attributeService.GetByEntityTypeId( new ConnectionOpportunity().TypeId ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -1065,10 +1077,10 @@ namespace RockWeb.Blocks.Involvement
                     dlgConnectionTypeAttribute.Show();
                     break;
                 case "CONNECTIONACTIVITYTYPES":
-                    dlgConnectionActivityTypes.Show();
+                    dlgActivityTypes.Show();
                     break;
                 case "CONNECTIONSTATUSES":
-                    dlgConnectionStatuses.Show();
+                    dlgStatuses.Show();
                     break;
                 case "CONNECTIONWORKFLOWS":
                     dlgConnectionWorkflow.Show();
@@ -1087,10 +1099,10 @@ namespace RockWeb.Blocks.Involvement
                     dlgConnectionTypeAttribute.Hide();
                     break;
                 case "CONNECTIONACTIVITYTYPES":
-                    dlgConnectionActivityTypes.Hide();
+                    dlgActivityTypes.Hide();
                     break;
                 case "CONNECTIONSTATUSES":
-                    dlgConnectionStatuses.Hide();
+                    dlgStatuses.Hide();
                     break;
                 case "CONNECTIONWORKFLOWS":
                     dlgConnectionWorkflow.Hide();
@@ -1152,7 +1164,7 @@ namespace RockWeb.Blocks.Involvement
         /// <param name="attributeService">The attribute service.</param>
         /// <param name="qualifierService">The qualifier service.</param>
         /// <param name="categoryService">The category service.</param>
-        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, ViewStateList<Attribute> viewStateAttributes, RockContext rockContext )
+        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<Attribute> viewStateAttributes, RockContext rockContext )
         {
             // Get the existing attributes for this entity type and qualifier value
             var attributeService = new AttributeService( rockContext );
@@ -1179,31 +1191,31 @@ namespace RockWeb.Blocks.Involvement
         #region ConnectionTypeAttributes Grid and Picker
 
         /// <summary>
-        /// Handles the Add event of the gConnectionTypeAttributes control.
+        /// Handles the Add event of the gAttributes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gConnectionTypeAttributes_Add( object sender, EventArgs e )
+        protected void gAttributes_Add( object sender, EventArgs e )
         {
-            gConnectionTypeAttributes_ShowEdit( Guid.Empty );
+            gAttributes_ShowEdit( Guid.Empty );
         }
 
         /// <summary>
-        /// Handles the Edit event of the gConnectionTypeAttributes control.
+        /// Handles the Edit event of the gAttributes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gConnectionTypeAttributes_Edit( object sender, RowEventArgs e )
+        protected void gAttributes_Edit( object sender, RowEventArgs e )
         {
             Guid attributeGuid = (Guid)e.RowKeyValue;
-            gConnectionTypeAttributes_ShowEdit( attributeGuid );
+            gAttributes_ShowEdit( attributeGuid );
         }
 
         /// <summary>
         /// Gets the event calendar's attributes_ show edit.
         /// </summary>
         /// <param name="attributeGuid">The attribute GUID.</param>
-        protected void gConnectionTypeAttributes_ShowEdit( Guid attributeGuid )
+        protected void gAttributes_ShowEdit( Guid attributeGuid )
         {
             Attribute attribute;
             if ( attributeGuid.Equals( Guid.Empty ) )
@@ -1214,12 +1226,12 @@ namespace RockWeb.Blocks.Involvement
             }
             else
             {
-                attribute = ConnectionTypeAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
+                attribute = AttributesState.First( a => a.Guid.Equals( attributeGuid ) );
                 edtConnectionTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for Events of Calendar type " + tbName.Text );
             }
 
             var reservedKeyNames = new List<string>();
-            ConnectionTypeAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            AttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
             edtConnectionTypeAttributes.ReservedKeyNames = reservedKeyNames.ToList();
 
             edtConnectionTypeAttributes.SetAttributeProperties( attribute, typeof( ConnectionType ) );
@@ -1228,36 +1240,36 @@ namespace RockWeb.Blocks.Involvement
         }
 
         /// <summary>
-        /// Handles the GridReorder event of the gConnectionTypeAttributes control.
+        /// Handles the GridReorder event of the gAttributes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
-        protected void gConnectionTypeAttributes_GridReorder( object sender, GridReorderEventArgs e )
+        protected void gAttributes_GridReorder( object sender, GridReorderEventArgs e )
         {
-            ReorderAttributeList( ConnectionTypeAttributesState, e.OldIndex, e.NewIndex );
+            ReorderAttributeList( AttributesState, e.OldIndex, e.NewIndex );
             BindConnectionTypeAttributesGrid();
         }
 
         /// <summary>
-        /// Handles the Delete event of the gConnectionTypeAttributes control.
+        /// Handles the Delete event of the gAttributes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        protected void gConnectionTypeAttributes_Delete( object sender, RowEventArgs e )
+        protected void gAttributes_Delete( object sender, RowEventArgs e )
         {
             Guid attributeGuid = (Guid)e.RowKeyValue;
-            ConnectionTypeAttributesState.RemoveEntity( attributeGuid );
+            AttributesState.RemoveEntity( attributeGuid );
 
             BindConnectionTypeAttributesGrid();
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gConnectionTypeAttributes control.
+        /// Handles the GridRebind event of the gAttributes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gConnectionTypeAttributes_GridRebind( object sender, EventArgs e )
+        protected void gAttributes_GridRebind( object sender, EventArgs e )
         {
             BindConnectionTypeAttributesGrid();
         }
@@ -1278,16 +1290,16 @@ namespace RockWeb.Blocks.Involvement
                 return;
             }
 
-            if ( ConnectionTypeAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
+            if ( AttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
             {
-                attribute.Order = ConnectionTypeAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
-                ConnectionTypeAttributesState.RemoveEntity( attribute.Guid );
+                attribute.Order = AttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
+                AttributesState.RemoveEntity( attribute.Guid );
             }
             else
             {
-                attribute.Order = ConnectionTypeAttributesState.Any() ? ConnectionTypeAttributesState.Max( a => a.Order ) + 1 : 0;
+                attribute.Order = AttributesState.Any() ? AttributesState.Max( a => a.Order ) + 1 : 0;
             }
-            ConnectionTypeAttributesState.Add( attribute );
+            AttributesState.Add( attribute );
 
             BindConnectionTypeAttributesGrid();
             HideDialog();
@@ -1298,9 +1310,9 @@ namespace RockWeb.Blocks.Involvement
         /// </summary>
         private void BindConnectionTypeAttributesGrid()
         {
-            gConnectionTypeAttributes.AddCssClass( "attribute-grid" );
-            SetAttributeListOrder( ConnectionTypeAttributesState );
-            gConnectionTypeAttributes.DataSource = ConnectionTypeAttributesState
+            gAttributes.AddCssClass( "attribute-grid" );
+            SetAttributeListOrder( AttributesState );
+            gAttributes.DataSource = AttributesState
                 .Select( a => new
                 {
                     a.Id,
@@ -1311,7 +1323,7 @@ namespace RockWeb.Blocks.Involvement
                     Order = a.Order
                 } )
                 .OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
-            gConnectionTypeAttributes.DataBind();
+            gAttributes.DataBind();
         }
 
         #endregion

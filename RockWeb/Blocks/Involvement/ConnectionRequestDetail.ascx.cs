@@ -558,13 +558,14 @@ namespace RockWeb.Blocks.Involvement
             {
                 a.Id,
                 a.Guid,
+                CreatedDate = a.CreatedDateTime.Value,
                 Date = a.CreatedDateTime.Value.ToShortDateString(),
                 Activity = a.ConnectionActivityType.Name,
                 Opportunity = a.ConnectionOpportunity.Name,
                 Connector = a.ConnectorPersonAlias != null ? a.ConnectorPersonAlias.Person.FullName : "",
                 Note = a.Note
             } )
-            .OrderBy( a => a.Date )
+            .OrderByDescending( a => a.CreatedDate )
             .ToList();
             gConnectionRequestActivities.DataBind();
         }
@@ -652,8 +653,6 @@ namespace RockWeb.Blocks.Involvement
             }
 
             btnSave.Visible = !readOnly;
-
-            LoadDropDowns();
 
             ppConnectionRequestPerson.SetValue( _connectionRequest.PersonAlias.Person );
             ppConnectionRequestPerson.Enabled = !readOnly;
@@ -743,7 +742,6 @@ namespace RockWeb.Blocks.Involvement
             ConnectionRequest connectionRequest = null;
             bool passedAllRequirements = true;
             connectionRequest = new ConnectionRequestService( rockContext ).Get( connectionRequestId );
-
 
             var groupMember = new GroupMember { Id = 0 };
             groupMember.GroupId = connectionRequest.AssignedGroupId.Value;
@@ -886,22 +884,6 @@ namespace RockWeb.Blocks.Involvement
             }
 
             hfActiveDialog.Value = string.Empty;
-        }
-
-        /// <summary>
-        /// Loads the drop downs.
-        /// </summary>
-        private void LoadDropDowns()
-        {
-            int connectionOpportunityId = hfConnectionOpportunityId.ValueAsInt();
-            ConnectionOpportunity connectionOpportunity = new ConnectionOpportunityService( new RockContext() ).Get( connectionOpportunityId );
-            if ( connectionOpportunity != null )
-            {
-                //ddlConnectionOpportunityRole.DataSource = connectionOpportunity.ConnectionOpportunityType.Roles.OrderBy( a => a.Order ).ToList();
-                //ddlConnectionOpportunityRole.DataBind();
-            }
-
-            // rblStatus.BindToEnum<Connec>();
         }
 
         #endregion

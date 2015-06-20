@@ -5,7 +5,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-plug"></i> Connection Types</h1>
+                <h1 class="panel-title"><i class="fa fa-plug"></i>Connection Types</h1>
 
                 <div class="pull-right">
                     <asp:LinkButton ID="lbAddConnectionType" runat="server" CssClass="btn btn-action btn-xs pull-right" OnClick="lbAddConnectionType_Click" CausesValidation="false"><i class="fa fa-plus"></i></asp:LinkButton>
@@ -18,9 +18,9 @@
                         <asp:Repeater ID="rptConnectionTypes" runat="server">
                             <ItemTemplate>
                                 <li>
-                                    <asp:LinkButton ID="lbConnectionType" runat="server" CommandArgument='<%# Eval("ConnectionType.Id") %>' CommandName="Display">
-                                        <i class='<%# Eval("ConnectionType.IconCssClass") %>'></i>
-                                        <h3><%# Eval("ConnectionType.Name") %> </h3>
+                                    <asp:LinkButton ID="lbConnectionType" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
+                                        <i class='<%# Eval("IconCssClass") %>'></i>
+                                        <h3><%# Eval("Name") %> </h3>
                                     </asp:LinkButton>
                                 </li>
                             </ItemTemplate>

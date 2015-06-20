@@ -17,18 +17,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Involvement
 {
@@ -43,9 +40,16 @@ namespace RockWeb.Blocks.Involvement
     {
         #region Base Control Methods
 
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            lbAddConnectionType.Visible = UserCanAdministrate;
 
             rptConnectionTypes.ItemCommand += rptConnectionTypes_ItemCommand;
         }
@@ -57,11 +61,7 @@ namespace RockWeb.Blocks.Involvement
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            bool editAllowed = IsUserAuthorized( Authorization.ADMINISTRATE );
-            if ( !editAllowed )
-            {
-                lbAddConnectionType.Visible = false;
-            }
+
             if ( !Page.IsPostBack )
             {
                 GetData();
@@ -102,36 +102,31 @@ namespace RockWeb.Blocks.Involvement
 
         #region Methods
 
+        /// <summary>
+        /// Gets the data.
+        /// </summary>
         private void GetData()
         {
-            var rockContext = new RockContext();
-
-            int personId = CurrentPerson != null ? CurrentPerson.Id : 0;
-
-            // Get all of the event calendars
-            var allConnectionTypes = new ConnectionTypeService( rockContext ).Queryable()
-                .OrderBy( w => w.Name )
-                .ToList();
-
-            var displayedTypes = new List<ConnectionType>();
-            foreach ( var connectionType in allConnectionTypes )
+            using ( var rockContext = new RockContext() )
             {
-                displayedTypes.Add( connectionType );
+                // Get all of the event calendars
+                var allConnectionTypes = new ConnectionTypeService( rockContext ).Queryable()
+                    .OrderBy( w => w.Name )
+                    .ToList();
+
+                rptConnectionTypes.DataSource = allConnectionTypes.ToList();
+                rptConnectionTypes.DataBind();
             }
 
-            // Create a query to return workflow type, the count of active action forms, and the selected class
-            var qry = displayedTypes
-                .Select( w => new
-                {
-                    ConnectionType = w
-                } );
-
-            rptConnectionTypes.DataSource = qry.ToList();
-            rptConnectionTypes.DataBind();
         }
 
         #endregion
 
+        /// <summary>
+        /// Handles the Click event of the lbAddConnectionType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddConnectionType_Click( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "DetailPage", "ConnectionTypeId", 0 );

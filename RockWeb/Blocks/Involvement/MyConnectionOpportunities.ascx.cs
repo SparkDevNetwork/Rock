@@ -17,20 +17,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Newtonsoft.Json;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using Rock.Security;
 
 namespace RockWeb.Blocks.Involvement
 {
@@ -42,13 +39,9 @@ namespace RockWeb.Blocks.Involvement
     [Description( "Block to display the connection opportunities that user is authorized to view, and the opportunities that are currently assigned to the user." )]
     [IntegerField( "Connection Type Id", "The Id of the connection type that determines the opportunities listed.", true, 1 )]
     [LinkedPage( "Configuration Page", "Page used to modify and create connection opportunities." )]
-    [LinkedPage( "Detail Page", "Page used to view status of an opportunity." )]
+    [LinkedPage( "Detail Page", "Page used to view details of an requests." )]
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        #endregion
-
         #region Properties
 
         protected bool? StatusFilter { get; set; }
@@ -74,9 +67,15 @@ namespace RockWeb.Blocks.Involvement
             GetData();
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            lbConnectionTypes.Visible = UserCanAdministrate;
 
             rptConnectionOpportunities.ItemCommand += rptConnectionOpportunities_ItemCommand;
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
@@ -86,6 +85,8 @@ namespace RockWeb.Blocks.Involvement
             gConnectionRequests.IsDeleteEnabled = false;
             gConnectionRequests.GridRebind += gConnectionRequests_GridRebind;
 
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
         /// <summary>
@@ -132,8 +133,8 @@ namespace RockWeb.Blocks.Involvement
         {
             rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "First Name" ), "First Name", tbFirstName.Text );
             rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "Last Name" ), "Last Name", tbLastName.Text );
-            int personId = ppRequestor.PersonId ?? 0;
-            rFilter.SaveUserPreference( "Requestor", personId.ToString() );
+            int personId = ppRequester.PersonId ?? 0;
+            rFilter.SaveUserPreference( "Requester", personId.ToString() );
             personId = ppConnector.PersonId ?? 0;
             rFilter.SaveUserPreference( "Connector", personId.ToString() );
             rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "State" ), "State", cblState.SelectedValues.AsDelimited( ";" ) );
@@ -159,7 +160,7 @@ namespace RockWeb.Blocks.Involvement
             {
                 return;
             }
-            else if ( e.Key == MakeKeyUniqueToOpportunity( "Requestor" ) )
+            else if ( e.Key == MakeKeyUniqueToOpportunity( "Requester" ) )
             {
                 string personName = string.Empty;
 
@@ -231,14 +232,14 @@ namespace RockWeb.Blocks.Involvement
             tbFirstName.Text = rFilter.GetUserPreference( MakeKeyUniqueToOpportunity( "First Name" ) );
             tbLastName.Text = rFilter.GetUserPreference( MakeKeyUniqueToOpportunity( "Last Name" ) );
 
-            int? personId = rFilter.GetUserPreference( "Requestor" ).AsIntegerOrNull();
+            int? personId = rFilter.GetUserPreference( "Requester" ).AsIntegerOrNull();
             if ( personId.HasValue && personId.Value != 0 )
             {
                 var personService = new PersonService( new RockContext() );
                 var person = personService.Get( personId.Value );
                 if ( person != null )
                 {
-                    ppRequestor.SetValue( person );
+                    ppRequester.SetValue( person );
                 }
             }
 
@@ -378,174 +379,180 @@ namespace RockWeb.Blocks.Involvement
 
         #region Methods
 
+        /// <summary>
+        /// Gets the data.
+        /// </summary>
         private void GetData()
         {
-            var rockContext = new RockContext();
-            int connectionTypeId = GetAttributeValue( "ConnectionTypeId" ).AsInteger();
-            lTypeIcon.Text = string.Format( "<i class='{0}'></i>", new ConnectionTypeService( rockContext ).Get( connectionTypeId ).IconCssClass );
-
-            int personId = CurrentPerson != null ? CurrentPerson.Id : 0;
-
-            // Get all of the connectionOpportunities
-            var allConnectionOpportunities = new ConnectionOpportunityService( rockContext ).Queryable( "ConnectionOpportunityCampuses" )
-                .Where( o => o.ConnectionTypeId == connectionTypeId )
-                .OrderBy( w => w.Name )
-                .ToList();
-
-            // Get the Ids of the groups the user is in
-            var userGroupIds = CurrentPerson.Members.Select( m => m.GroupId ).ToList();
-            GroupService groupService = new GroupService( rockContext );
-            var involvementAdminGroupId = groupService.Get( Rock.SystemGuid.Group.GROUP_INVOLVEMENT_ADMINISTRATORS.AsGuid() ).Id;
-            var rockAdminGroupId = groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).Id;
-            // Get the connectionOpportunities that have connector groups the user is in.
-            var connectionOpportunityIds = allConnectionOpportunities
-                .Where( o =>
-                    ( o.ConnectorGroupId.HasValue && userGroupIds.Contains( o.ConnectorGroupId.Value ) )
-                    || o.ConnectionOpportunityCampuses.Any( c => userGroupIds.Contains( c.ConnectorGroupId.Value ) )
-                    || userGroupIds.Contains( involvementAdminGroupId )
-                    || userGroupIds.Contains( rockAdminGroupId ) )//TODO Redo Roles
-                .Select( o => o.Id )//
-                .Distinct()
-                .ToList();
-
-            // Create variable for storing authorized types and the count of active form actions
-            var connectionOpportunityCounts = new Dictionary<int, int>();
-
-            List<ConnectionRequest> connectionRequests = null;
-
-            connectionRequests = new ConnectionRequestService( rockContext ).Queryable()
-                .Where( r =>
-                    connectionOpportunityIds.Contains( r.ConnectionOpportunityId )
-                    ) //TODO Status
-                .ToList();
-
-            connectionOpportunityIds.ForEach( id =>
-                connectionOpportunityCounts.Add( id, connectionRequests.Where( r => r.ConnectionOpportunityId == id && r.ConnectionStatus.IsCritical ).Count() ) );
-
-            var displayedTypes = new List<ConnectionOpportunity>();
-            foreach ( var connectionOpportunity in allConnectionOpportunities.Where( o => connectionOpportunityCounts.Keys.Contains( o.Id ) ) )
+            using ( var rockContext = new RockContext() )
             {
-                if ( connectionOpportunityCounts[connectionOpportunity.Id] > 0 )
+                int connectionTypeId = GetAttributeValue( "ConnectionTypeId" ).AsInteger();
+                lTypeIcon.Text = string.Format( "<i class='{0}'></i>", new ConnectionTypeService( rockContext ).Get( connectionTypeId ).IconCssClass );
+
+                // Get all of the connectionOpportunities
+                var allConnectionOpportunities = new ConnectionOpportunityService( rockContext ).Queryable( "ConnectionOpportunityCampuses" )
+                    .Where( o => o.ConnectionTypeId == connectionTypeId )
+                    .OrderBy( w => w.Name )
+                    .ToList();
+
+                // Get the Ids of the groups the user is in
+                var userGroupIds = CurrentPerson.Members.Select( m => m.GroupId ).ToList();
+                GroupService groupService = new GroupService( rockContext );
+                var involvementAdminGroupId = groupService.Get( Rock.SystemGuid.Group.GROUP_INVOLVEMENT_ADMINISTRATORS.AsGuid() ).Id;
+                var rockAdminGroupId = groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).Id;
+                // Get the connectionOpportunities that have connector groups the user is in.
+                var connectionOpportunityIds = allConnectionOpportunities
+                    .Where( o =>
+                        ( o.ConnectorGroupId.HasValue && userGroupIds.Contains( o.ConnectorGroupId.Value ) )
+                        || o.ConnectionOpportunityCampuses.Any( c => userGroupIds.Contains( c.ConnectorGroupId.Value ) )
+                        || userGroupIds.Contains( involvementAdminGroupId )
+                        || userGroupIds.Contains( rockAdminGroupId ) )//TODO Redo Roles
+                    .Select( o => o.Id )//
+                    .Distinct()
+                    .ToList();
+
+                // Create variable for storing authorized types and the count of active form actions
+                var connectionOpportunityCounts = new Dictionary<int, int>();
+
+                List<ConnectionRequest> connectionRequests = null;
+
+                connectionRequests = new ConnectionRequestService( rockContext ).Queryable()
+                    .Where( r =>
+                        connectionOpportunityIds.Contains( r.ConnectionOpportunityId )
+                        ) //TODO Status
+                    .ToList();
+
+                connectionOpportunityIds.ForEach( id =>
+                    connectionOpportunityCounts.Add( id, connectionRequests.Where( r => r.ConnectionOpportunityId == id && r.ConnectionStatus.IsCritical ).Count() ) );
+
+                var displayedTypes = new List<ConnectionOpportunity>();
+                foreach ( var connectionOpportunity in allConnectionOpportunities.Where( o => connectionOpportunityCounts.Keys.Contains( o.Id ) ) )
                 {
-                    // Always show any types that have active assignments assigned to user
-                    displayedTypes.Add( connectionOpportunity );
+                    if ( connectionOpportunityCounts[connectionOpportunity.Id] > 0 )
+                    {
+                        // Always show any types that have active assignments assigned to user
+                        displayedTypes.Add( connectionOpportunity );
+                    }
+                    else
+                    {
+                        // If there are not any active assigned activities, and not filtering by active, then also
+                        // show any types that user is authorized to edit
+                        if ( ( !StatusFilter.HasValue || !StatusFilter.Value ) &&
+                            connectionOpportunity.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                        {
+                            displayedTypes.Add( connectionOpportunity );
+                        }
+                    }
+                }
+
+                // Create a query to return connectionRequest type, the count of active action forms, and the selected class
+                var qry = displayedTypes
+                    .Select( o => new
+                    {
+                        ConnectionOpportunity = o,
+                        Count = connectionOpportunityCounts[o.Id],
+                        Class = ( SelectedConnectionOpportunityId.HasValue && SelectedConnectionOpportunityId.Value == o.Id ) ? "active" : ""
+                    } );
+
+                rptConnectionOpportunities.DataSource = qry.ToList();
+                rptConnectionOpportunities.DataBind();
+
+                ConnectionOpportunity selectedConnectionOpportunity = null;
+                if ( SelectedConnectionOpportunityId.HasValue )
+                {
+                    selectedConnectionOpportunity = allConnectionOpportunities
+                        .Where( w =>
+                            w.Id == SelectedConnectionOpportunityId.Value &&
+                            connectionOpportunityCounts.Keys.Contains( SelectedConnectionOpportunityId.Value ) )
+                        .FirstOrDefault();
+                }
+
+                if ( selectedConnectionOpportunity != null )
+                {
+                    AddAttributeColumns( selectedConnectionOpportunity );
+                    rFilter.Visible = true;
+                    var qryRequests = connectionRequests.Where( w => w.ConnectionOpportunityId == selectedConnectionOpportunity.Id );
+
+                    // Filter by Requester
+                    string firstName = tbFirstName.Text;
+                    string lastName = tbLastName.Text;
+                    if ( ppRequester.PersonId.HasValue || !string.IsNullOrWhiteSpace( firstName ) || !string.IsNullOrWhiteSpace( lastName ) )
+                    {
+                        qryRequests = qryRequests.Where( r =>
+                           ( !string.IsNullOrWhiteSpace( firstName ) && r.PersonAlias.Person.FirstName.ToLower().StartsWith( firstName.ToLower() ) ) ||
+                            ( !string.IsNullOrWhiteSpace( lastName ) && r.PersonAlias.Person.LastName.ToLower().StartsWith( lastName.ToLower() ) ) ||
+                            ( ppRequester.PersonId.HasValue && r.PersonAlias.PersonId == ppRequester.PersonId.Value ) );
+                    }
+
+                    // Filter by Connector
+                    if ( ppConnector.PersonId.HasValue )
+                    {
+                        qryRequests = qryRequests
+                            .Where( r =>
+                                r.ConnectorPersonAlias != null &&
+                                r.ConnectorPersonAlias.PersonId == ppConnector.PersonId.Value );
+                    }
+
+                    // Filter by State
+                    var states = new List<ConnectionState>();
+                    foreach ( string state in cblState.SelectedValues )
+                    {
+                        if ( !string.IsNullOrWhiteSpace( state ) )
+                        {
+                            states.Add( state.ConvertToEnum<ConnectionState>() );
+                        }
+                    }
+                    if ( states.Any() )
+                    {
+                        qryRequests = qryRequests.Where( r => states.Contains( r.ConnectionState ) );
+                    }
+
+                    // Filter by Status
+                    List<int> statusIds = cblStatus.SelectedValuesAsInt;
+                    if ( statusIds.Count > 0 )
+                    {
+                        qryRequests = qryRequests.Where( r => statusIds.Contains( r.ConnectionStatusId ) );
+                    }
+
+                    // Filter by Campus
+                    List<int> campusIds = cblCampus.SelectedValuesAsInt;
+                    if ( campusIds.Count > 0 )
+                    {
+                        qryRequests = qryRequests.Where( r => r.Campus != null && campusIds.Contains( r.CampusId.Value ) );
+                    }
+
+                    gConnectionRequests.DataSource = qryRequests.Select( r => new
+                        {
+                            r.Id,
+                            r.Guid,
+                            Name = r.PersonAlias.Person.FullName,
+                            Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
+                            Status = r.ConnectionStatus.Name,
+                            Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
+                            Activities = r.ConnectionRequestActivities.Select( a => a.ConnectionActivityType.Name ).ToList().AsDelimited( "</br>" ),
+                            State = r.ConnectionState.ToString() == "Active" ? "<span class='label label-success'>Active</span>" : "<span class='label label-campus'>" + r.ConnectionState.ToString() + "</span>"
+
+                        } )
+                        .ToList();
+                    gConnectionRequests.DataBind();
+                    gConnectionRequests.Visible = true;
+                    lOpportunityIcon.Text = string.Format( "<i class='{0}'></i>", selectedConnectionOpportunity.IconCssClass );
+
+                    lConnectionRequest.Text = connectionRequests.Where( w => w.ConnectionOpportunityId == selectedConnectionOpportunity.Id ).Select( w => w.ConnectionOpportunity.Name ).FirstOrDefault() + " Connection Requests";
+
                 }
                 else
                 {
-                    // If there are not any active assigned activities, and not filtering by active, then also
-                    // show any types that user is authorized to edit
-                    if ( ( !StatusFilter.HasValue || !StatusFilter.Value ) &&
-                        connectionOpportunity.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
-                    {
-                        displayedTypes.Add( connectionOpportunity );
-                    }
+                    rFilter.Visible = false;
+                    gConnectionRequests.Visible = false;
                 }
             }
-
-            // Create a query to return connectionRequest type, the count of active action forms, and the selected class
-            var qry = displayedTypes
-                .Select( o => new
-                {
-                    ConnectionOpportunity = o,
-                    Count = connectionOpportunityCounts[o.Id],
-                    Class = ( SelectedConnectionOpportunityId.HasValue && SelectedConnectionOpportunityId.Value == o.Id ) ? "active" : ""
-                } );
-
-            rptConnectionOpportunities.DataSource = qry.ToList();
-            rptConnectionOpportunities.DataBind();
-
-            ConnectionOpportunity selectedConnectionOpportunity = null;
-            if ( SelectedConnectionOpportunityId.HasValue )
-            {
-                selectedConnectionOpportunity = allConnectionOpportunities
-                    .Where( w =>
-                        w.Id == SelectedConnectionOpportunityId.Value &&
-                        connectionOpportunityCounts.Keys.Contains( SelectedConnectionOpportunityId.Value ) )
-                    .FirstOrDefault();
-            }
-
-            if ( selectedConnectionOpportunity != null )
-            {
-                AddAttributeColumns( selectedConnectionOpportunity );
-                rFilter.Visible = true;
-                var qryRequests = connectionRequests.Where( w => w.ConnectionOpportunityId == selectedConnectionOpportunity.Id );
-
-                // Filter by Requestor
-                string firstName = tbFirstName.Text;
-                string lastName = tbLastName.Text;
-                if ( ppRequestor.PersonId.HasValue || !string.IsNullOrWhiteSpace( firstName ) || !string.IsNullOrWhiteSpace( lastName ) )
-                {
-                    qryRequests = qryRequests.Where( r =>
-                       ( !string.IsNullOrWhiteSpace( firstName ) && r.PersonAlias.Person.FirstName.ToLower().StartsWith( firstName.ToLower() ) ) ||
-                        ( !string.IsNullOrWhiteSpace( lastName ) && r.PersonAlias.Person.LastName.ToLower().StartsWith( lastName.ToLower() ) ) ||
-                        ( ppRequestor.PersonId.HasValue && r.PersonAlias.PersonId == ppRequestor.PersonId.Value ) );
-                }
-
-                // Filter by Connector
-                if ( ppConnector.PersonId.HasValue )
-                {
-                    qryRequests = qryRequests
-                        .Where( r =>
-                            r.ConnectorPersonAlias != null &&
-                            r.ConnectorPersonAlias.PersonId == ppConnector.PersonId.Value );
-                }
-
-                // Filter by State
-                var states = new List<ConnectionState>();
-                foreach ( string state in cblState.SelectedValues )
-                {
-                    if ( !string.IsNullOrWhiteSpace( state ) )
-                    {
-                        states.Add( state.ConvertToEnum<ConnectionState>() );
-                    }
-                }
-                if ( states.Any() )
-                {
-                    qryRequests = qryRequests.Where( r => states.Contains( r.ConnectionState ) );
-                }
-
-                // Filter by Status
-                List<int> statusIds = cblStatus.SelectedValuesAsInt;
-                if ( statusIds.Count > 0 )
-                {
-                    qryRequests = qryRequests.Where( r => statusIds.Contains( r.ConnectionStatusId ) );
-                }
-
-                // Filter by Campus
-                List<int> campusIds = cblCampus.SelectedValuesAsInt;
-                if ( campusIds.Count > 0 )
-                {
-                    qryRequests = qryRequests.Where( r => r.Campus != null && campusIds.Contains( r.CampusId.Value ) );
-                }
-
-                gConnectionRequests.DataSource = qryRequests.Select( r => new
-                    {
-                        r.Id,
-                        r.Guid,
-                        Name = r.PersonAlias.Person.FullName,
-                        Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
-                        Status = r.ConnectionStatus.Name,
-                        Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
-                        Activities = r.ConnectionRequestActivities.Select( a => a.ConnectionActivityType.Name ).ToList().AsDelimited( "</br>" ),
-                        State = r.ConnectionState.ToString() == "Active" ? "<span class='label label-success'>Active</span>" : "<span class='label label-campus'>" + r.ConnectionState.ToString() + "</span>"
-
-                    } )
-                    .ToList();
-                gConnectionRequests.DataBind();
-                gConnectionRequests.Visible = true;
-                lOpportunityIcon.Text = string.Format( "<i class='{0}'></i>", selectedConnectionOpportunity.IconCssClass );
-
-                lConnectionRequest.Text = connectionRequests.Where( w => w.ConnectionOpportunityId == selectedConnectionOpportunity.Id ).Select( w => w.ConnectionOpportunity.Name ).FirstOrDefault() + " Connection Requests";
-
-            }
-            else
-            {
-                rFilter.Visible = false;
-                gConnectionRequests.Visible = false;
-            }
-
         }
 
+        /// <summary>
+        /// Adds the attribute columns.
+        /// </summary>
+        /// <param name="connectionOpportunity">The connection opportunity.</param>
         protected void AddAttributeColumns( ConnectionOpportunity connectionOpportunity )
         {
             // Remove attribute columns
