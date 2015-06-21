@@ -14,15 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -31,7 +29,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "EventCalendarItem" )]
     [DataContract]
-    public partial class EventCalendarItem : Model<EventCalendarItem>
+    public partial class EventCalendarItem : Model<EventCalendarItem>, ISecured
     {
 
         /// <summary>
@@ -76,6 +74,23 @@ namespace Rock.Model
         [DataMember]
         public virtual EventItem EventItem { get; set; }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                return this.EventCalendar;
+            }
+        }
         #endregion
 
     }

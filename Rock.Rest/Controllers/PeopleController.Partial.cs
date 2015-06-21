@@ -170,7 +170,7 @@ namespace Rock.Rest.Controllers
         #region Post
 
         /// <summary>
-        /// Posts the specified person.
+        /// Adds a new person and puts them into a new family
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
@@ -189,6 +189,65 @@ namespace Rock.Rest.Controllers
 
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
             PersonService.SaveNewPerson( person, (Rock.Data.RockContext)Service.Context, null, false );
+
+            return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person.Id );
+        }
+
+        /// <summary>
+        /// Adds a new person and adds them to the specified family.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="familyId">The family identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "api/People/AddNewPersonToFamily/{familyId}" )]
+        public System.Net.Http.HttpResponseMessage AddNewPersonToFamily( Person person, int familyId, int groupRoleId )
+        {
+            SetProxyCreation( true );
+
+            CheckCanEdit( person );
+
+            if ( !person.IsValid )
+            {
+                return ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    string.Join( ",", person.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+            }
+
+            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+
+            PersonService.AddPersonToFamily( person, person.Id == 0, familyId, groupRoleId, (Rock.Data.RockContext)Service.Context );
+
+            return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person.Id );
+        }
+
+        /// <summary>
+        /// Adds the existing person to family, optionally removing them from any other families they belong to
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="familyId">The family identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
+        /// <param name="removeFromOtherFamilies">if set to <c>true</c> [remove from other families].</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "api/People/AddExistingPersonToFamily" )]
+        public System.Net.Http.HttpResponseMessage AddExistingPersonToFamily( int personId, int familyId, int groupRoleId, bool removeFromOtherFamilies )
+        {
+            SetProxyCreation( true );
+
+            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+            var person = this.Get( personId );
+            CheckCanEdit( person );
+
+            PersonService.AddPersonToFamily( person, false, familyId, groupRoleId, (Rock.Data.RockContext)Service.Context );
+
+            if ( removeFromOtherFamilies )
+            {
+                PersonService.RemovePersonFromOtherFamilies( familyId, personId, (Rock.Data.RockContext)Service.Context );
+            }
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person.Id );
         }

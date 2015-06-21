@@ -16,8 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http.Formatting;
 using System.Text;
+using Rock.Web.Cache;
 
 namespace Rock.Utility
 {
@@ -43,6 +45,14 @@ namespace Rock.Utility
         private bool SerializeInSimpleMode { get; set; }
 
         /// <summary>
+        /// Gets or sets the person that initiated the REST request
+        /// </summary>
+        /// <value>
+        /// The person.
+        /// </value>
+        private Rock.Model.Person Person { get; set; }
+
+        /// <summary>
         /// Returns a specialized instance of the <see cref="T:System.Net.Http.Formatting.MediaTypeFormatter" /> that can format a response for the given parameters.
         /// </summary>
         /// <param name="type">The type to format.</param>
@@ -61,6 +71,12 @@ namespace Rock.Utility
 
             // if either "simple", "expanded", or True is specified in the LoadAttributes param, tell the formatter to load the attributes on the way out
             LoadAttributes = SerializeInSimpleMode || loadAttributes.Equals( "expanded", StringComparison.OrdinalIgnoreCase );
+            
+            // NOTE: request.Properties["Person"] gets set in Rock.Rest.Filters.SecurityAttribute.OnActionExecuting
+            if ( LoadAttributes && request.Properties.ContainsKey( "Person" ) )
+            {
+                this.Person = request.Properties["Person"] as Rock.Model.Person;
+            }
 
             return base.GetPerRequestFormatterInstance( type, request, mediaType );
         }
@@ -74,29 +90,84 @@ namespace Rock.Utility
         /// <param name="effectiveEncoding">The encoding to use when writing.</param>
         public override void WriteToStream( Type type, object value, System.IO.Stream writeStream, Encoding effectiveEncoding )
         {
+            IEnumerable<Attribute.IHasAttributes> items = null;
+
             // query should be filtered by now, so iterate thru items and load attributes before the response is serialized
             if ( LoadAttributes )
             {
                 if ( value is IEnumerable<Rock.Attribute.IHasAttributes> )
                 {
-                    var rockContext = new Rock.Data.RockContext();
-
                     // if the REST call specified that Attributes should be loaded and we are returning a list of IHasAttributes..
-                    foreach ( var item in value as IEnumerable<Rock.Attribute.IHasAttributes> )
-                    {
-                        item.LoadAttributes( rockContext );
-                    }
+                    items = value as IEnumerable<Rock.Attribute.IHasAttributes>;
                 }
-                else if (value is Rock.Attribute.IHasAttributes)
+                else if ( value is Rock.Attribute.IHasAttributes )
+                {
+                    // if the REST call specified that Attributes should be loaded and we are returning a single IHasAttributes..
+                    items = new List<Attribute.IHasAttributes>( new Attribute.IHasAttributes[] { value as Rock.Attribute.IHasAttributes } );
+                }
+
+                if ( items != null )
                 {
                     var rockContext = new Rock.Data.RockContext();
-                    
-                    // if the REST call specified that Attributes should be loaded and we are returning a single IHasAttributes..
-                    (value as Rock.Attribute.IHasAttributes).LoadAttributes( rockContext );
+                    foreach ( var item in items )
+                    {
+                        Rock.Attribute.Helper.LoadAttributes( item, rockContext );
+                    }
+
+                    FilterAttributes( rockContext, items, this.Person );
                 }
             }
 
             base.WriteToStream( type, value, writeStream, effectiveEncoding );
+        }
+
+        /// <summary>
+        /// Filters the attributes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="items">The items.</param>
+        /// <param name="person">The person.</param>
+        private static void FilterAttributes( Data.RockContext rockContext, IEnumerable<Attribute.IHasAttributes> items, Rock.Model.Person person )
+        {
+            if ( !items.Any() )
+            {
+                return;
+            }
+
+            var itemType = items.First().GetType();
+
+            var entityType = EntityTypeCache.Read( itemType );
+            if ( entityType == null )
+            {
+                // shouldn't happen
+                return;
+            }
+
+            var entityAttributes = AttributeCache.GetByEntity( entityType.Id );
+
+            // only return attributes that the person has VIEW auth to
+            foreach ( var entityAttribute in entityAttributes )
+            {
+                foreach ( var attributeId in entityAttribute.AttributeIds )
+                {
+                    var attribute = AttributeCache.Read( attributeId );
+                    if ( !attribute.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                    {
+                        foreach ( var item in items )
+                        {
+                            if ( item.AttributeValues.ContainsKey( attribute.Key ) )
+                            {
+                                item.AttributeValues.Remove( attribute.Key );
+                            }
+
+                            if ( item.Attributes.ContainsKey( attribute.Key ) )
+                            {
+                                item.Attributes.Remove( attribute.Key );
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>

@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -23,6 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -31,7 +31,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "EventCalendar" )]
     [DataContract]
-    public partial class EventCalendar : Model<EventCalendar>
+    public partial class EventCalendar : Model<EventCalendar>, ISecured
     {
         /// <summary>
         /// Gets or sets the Name of the EventCalendar. This property is required.
@@ -69,7 +69,12 @@ namespace Rock.Model
         /// The is active.
         /// </value>
         [DataMember]
-        public bool? IsActive { get; set; }
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+        private bool _isActive = true;
 
         #region Virtual Properties
 

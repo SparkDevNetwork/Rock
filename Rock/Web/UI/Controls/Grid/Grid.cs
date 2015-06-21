@@ -879,6 +879,14 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the datasource SQL (if the Datasource is an IQueryable)
+        /// </summary>
+        /// <value>
+        /// The datasource SQL.
+        /// </value>
+        public string DatasourceSQL { get; private set; }
+
+        /// <summary>
         /// Sets the linq data source 
         /// The grid will use it to load only the records it needs based on the current page and page size
         /// NOTE: Make sure that your query is sorted/ordered
@@ -897,6 +905,8 @@ namespace Rock.Web.UI.Controls
             {
                 this.DataSource = qry.ToList();
             }
+
+            DatasourceSQL = qry.ToString();
         }
 
         /// <summary>

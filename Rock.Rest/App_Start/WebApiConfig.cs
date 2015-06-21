@@ -59,6 +59,32 @@ namespace Rock.Rest
                     action = "DataView"
                 } );
 
+            // Add API route for DeleteAttributeValue
+            config.Routes.MapHttpRoute(
+                name: "DeleteAttributeValueApi",
+                routeTemplate: "api/{controller}/AttributeValue/{id}",
+                defaults: new
+                {
+                    action = "DeleteAttributeValue"
+                },
+                constraints: new
+                {
+                    httpMethod = new HttpMethodConstraint( new string[] { "DELETE" } ),
+                } );
+
+            // Add API route for SetAttributeValue
+            config.Routes.MapHttpRoute(
+                name: "SetAttributeValueApi",
+                routeTemplate: "api/{controller}/AttributeValue/{id}",
+                defaults: new
+                {
+                    action = "SetAttributeValue"
+                },
+                constraints: new
+                {
+                    httpMethod = new HttpMethodConstraint( new string[] { "POST" } ),
+                } );
+
             // Add API route for setting context
             config.Routes.MapHttpRoute(
                 name: "SetContextApi",

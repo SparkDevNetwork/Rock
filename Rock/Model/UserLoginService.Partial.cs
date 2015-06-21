@@ -207,16 +207,12 @@ namespace Rock.Model
                         {
                             if ( HttpContext.Current != null && HttpContext.Current.Session != null )
                             {
-                                if ( HttpContext.Current.Session["RockUserId"] != null )
-                                {
-                                    transaction.SessionUserId = (int)HttpContext.Current.Session["RockUserId"];
-                                }
                                 HttpContext.Current.Session["RockUserId"] = user.Id;
                             }
 
                             // see if there is already a LastActivitytransaction queued for this user, and just update its LastActivityDate instead of adding another to the queue
                             var userLastActivity = Rock.Transactions.RockQueue.TransactionQueue.ToArray().OfType<Rock.Transactions.UserLastActivityTransaction>()
-                                .Where( a => a.UserId == transaction.UserId && a.SessionUserId == transaction.SessionUserId ).FirstOrDefault();
+                                .Where( a => a.UserId == transaction.UserId ).FirstOrDefault();
 
                             if ( userLastActivity != null )
                             {
@@ -367,16 +363,12 @@ namespace Rock.Model
         /// <param name="userName">Name of the user.</param>
         public static void UpdateLastLogin( string userName )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !string.IsNullOrWhiteSpace( userName ) && !userName.StartsWith( "rckipid=" ) )
             {
-                var userLoginService = new UserLoginService( rockContext );
-                var historyService = new HistoryService( rockContext );
-
-                var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-                var activityCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), rockContext ).Id;
-
-                if ( !string.IsNullOrWhiteSpace( userName ) && !userName.StartsWith( "rckipid=" ) )
+                using ( var rockContext = new RockContext() )
                 {
+                    var userLoginService = new UserLoginService( rockContext );
+
                     var userLogin = userLoginService.GetByUserName( userName );
                     if ( userLogin != null )
                     {
@@ -393,6 +385,10 @@ namespace Rock.Model
                             }
                             summary.Append( "." );
 
+                            var historyService = new HistoryService( rockContext );
+                            var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                            var activityCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), rockContext ).Id;
+
                             historyService.Add( new History
                             {
                                 EntityTypeId = personEntityTypeId,
@@ -401,6 +397,7 @@ namespace Rock.Model
                                 Summary = summary.ToString()
                             } );
                         }
+
                         rockContext.SaveChanges();
                     }
                 }

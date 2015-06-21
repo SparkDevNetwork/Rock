@@ -67,6 +67,12 @@
     <Compile Include="CodeGenerated\EntitySet.cs" />
     <Compile Include="CodeGenerated\EntitySetItem.cs" />
     <Compile Include="CodeGenerated\EntityType.cs" />
+    <Compile Include="CodeGenerated\EventCalendar.cs" />
+    <Compile Include="CodeGenerated\EventCalendarItem.cs" />
+    <Compile Include="CodeGenerated\EventItem.cs" />
+    <Compile Include="CodeGenerated\EventItemAudience.cs" />
+    <Compile Include="CodeGenerated\EventItemCampus.cs" />
+    <Compile Include="CodeGenerated\EventItemSchedule.cs" />
     <Compile Include="CodeGenerated\ExceptionLog.cs" />
     <Compile Include="CodeGenerated\FieldType.cs" />
     <Compile Include="CodeGenerated\FinancialAccount.cs" />
@@ -86,6 +92,7 @@
     <Compile Include="CodeGenerated\GroupLocation.cs" />
     <Compile Include="CodeGenerated\GroupMember.cs" />
     <Compile Include="CodeGenerated\GroupMemberRequirement.cs" />
+    <Compile Include="CodeGenerated\GroupMemberWorkflowTrigger.cs" />
     <Compile Include="CodeGenerated\GroupRequirement.cs" />
     <Compile Include="CodeGenerated\GroupRequirementType.cs" />
     <Compile Include="CodeGenerated\GroupScheduleExclusion.cs" />

@@ -1254,6 +1254,13 @@ namespace Rock.Model
                 }
             }
 
+            // ensure person has a PersonAlias/PrimaryAlias
+            if ( !this.Aliases.Any() || !this.Aliases.Any( a => a.AliasPersonId == this.Id ) )
+            {
+                
+                this.Aliases.Add( new PersonAlias { AliasPerson = this, AliasPersonGuid = this.Guid, Guid = Guid.NewGuid() } );
+            }
+
             var transaction = new Rock.Transactions.SaveMetaphoneTransaction( this );
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
         }
@@ -1574,73 +1581,38 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Creates the checkin relationship.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="relatedPersonId">The related person identifier.</param>
+        /// <param name="currentPersonAlias">The current person alias.</param>
+        /// <param name="rockContext">The rock context.</param>
+        [Obsolete( "Use the other CreateCheckinRelationship" )]
+        public static void CreateCheckinRelationship( int personId, int relatedPersonId, PersonAlias currentPersonAlias, RockContext rockContext = null )
+        {
+            CreateCheckinRelationship( personId, relatedPersonId, rockContext );
+        }
+
+        /// <summary>
         /// Adds the related person to the selected person's known relationships with a role of 'Can check in' which
         /// is typically configured to allow check-in.  If an inverse relationship is configured for 'Can check in'
         /// (i.e. 'Allow check in by'), that relationship will also be created.
         /// </summary>
         /// <param name="personId">A <see cref="System.Int32" /> representing the Id of the Person.</param>
         /// <param name="relatedPersonId">A <see cref="System.Int32" /> representing the Id of the related Person.</param>
-        /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias" /> representing the Person who is logged in.</param>
         /// <param name="rockContext">The rock context.</param>
-        public static void CreateCheckinRelationship( int personId, int relatedPersonId, PersonAlias currentPersonAlias, RockContext rockContext = null )
+        public static void CreateCheckinRelationship( int personId, int relatedPersonId, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
-
             var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
-            var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) );
             var canCheckInRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) );
-
-            if ( ownerRole != null && canCheckInRole != null )
+            if ( canCheckInRole != null )
             {
+                rockContext = rockContext ?? new RockContext();
                 var groupMemberService = new GroupMemberService( rockContext );
-                var knownRelationshipGroup = groupMemberService.Queryable()
-                    .Where( m =>
-                        m.PersonId == personId &&
-                        m.GroupRole.Guid.Equals( ownerRole.Guid ) )
-                    .Select( m => m.Group )
-                    .FirstOrDefault();
-
-                // Create known relationship group if doesn't exist
-                if ( knownRelationshipGroup == null )
-                {
-                    var groupMember = new GroupMember();
-                    groupMember.PersonId = personId;
-                    groupMember.GroupRoleId = ownerRole.Id;
-
-                    knownRelationshipGroup = new Group();
-                    knownRelationshipGroup.Name = knownRelationshipGroupType.Name;
-                    knownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
-                    knownRelationshipGroup.Members.Add( groupMember );
-
-                    new GroupService( rockContext ).Add( knownRelationshipGroup );
-                    rockContext.SaveChanges();
-                }
-
-                // Add relationships
-                var canCheckInMember = groupMemberService.Queryable()
-                    .FirstOrDefault( m =>
-                        m.GroupId == knownRelationshipGroup.Id &&
-                        m.PersonId == relatedPersonId &&
-                        m.GroupRoleId == canCheckInRole.Id );
-
-                if ( canCheckInMember == null )
-                {
-                    canCheckInMember = new GroupMember();
-                    canCheckInMember.GroupId = knownRelationshipGroup.Id;
-                    canCheckInMember.PersonId = relatedPersonId;
-                    canCheckInMember.GroupRoleId = canCheckInRole.Id;
-                    groupMemberService.Add( canCheckInMember );
-                    rockContext.SaveChanges();
-                }
-
-                var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true, currentPersonAlias );
-                if ( inverseGroupMember != null )
-                {
-                    groupMemberService.Add( inverseGroupMember );
-                    rockContext.SaveChanges();
-                }
+                groupMemberService.CreateKnownRelationship( personId, relatedPersonId, canCheckInRole.Id );
             }
         }
+
 
 
         /// <summary>
