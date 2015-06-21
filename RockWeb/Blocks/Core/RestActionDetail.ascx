@@ -4,9 +4,16 @@
     <ContentTemplate>
 
         <h4>
-            <asp:Literal ID="ltlRestActionName" runat="server" /></h4>
+            <asp:Literal ID="ltlRestActionName" runat="server" />
+        </h4>
         <Rock:HiddenFieldWithClass ID="hfUrl" runat="server" CssClass="rest-url" />
-        <Rock:HelpBlock runat="server" ID="hbUrlPreview" />
+        <h2>
+            <asp:Literal runat="server" ID="lUrlPreview" /></h2>
+        <Rock:RockRadioButtonList ID="rblLoadAttributes" CssClass="js-load-attributes" runat="server" Label="LoadAttributes=">
+            <asp:ListItem Text="false" Selected="True"/>
+            <asp:ListItem Text="simple" />
+            <asp:ListItem Text="expanded" />
+        </Rock:RockRadioButtonList>
         <Rock:RockTextBox ID="tbPayload" runat="server" Label="Payload" TextMode="MultiLine" Rows="10" />
         <Rock:KeyValueList ID="lstParameterValues" runat="server" Label="Parameter Values" />
         <a id="btnPOST" class="btn btn-action" runat="server" href="javascript:doPost()">POST</a>
@@ -15,6 +22,7 @@
         <a id="btnGET" class="btn btn-action" runat="server" href="javascript:doGet()">GET</a>
 
         <h4>Result</h4>
+        <span class="js-from-rest-url"></span>
         <pre id="result-data">
         </pre>
 
@@ -56,15 +64,28 @@
                 var restUrl = $('.rest-url').val();
                 var $keys = $('.key-value-rows .key-value-key');
                 $.each($keys, function (keyIndex) {
-                    var key = $keys[keyIndex];
-                    var $value = $(key).siblings('.key-value-value').first();
-                    restUrl = restUrl.replace('{' + $(key).val() + '}', $value.val());
+                    var $key = $($keys[keyIndex]);
+                    var $value = $key.siblings('.key-value-value').first();
+                    var keyTemplate = '{' + $key.val() + '}';
+                    if (restUrl.indexOf(keyTemplate) < 0) {
+                        restUrl = restUrl + (restUrl.indexOf("?") < 0 ? "?" : "&") + $key.val() + "=" + $value.val();
+                    }
+                    else {
+                        restUrl = restUrl.replace(keyTemplate, $value.val());
+                    }
+                        
                 });
+                
+                var loadAttributesOption = $('.js-load-attributes :checked').val();
+                if ((loadAttributesOption || "false") != "false") {
+                    restUrl = restUrl + (restUrl.indexOf("?") < 0 ? "?" : "&") + "loadAttributes=" + loadAttributesOption;
+                }
+
+                $('.js-from-rest-url').text(restUrl);
                 return restUrl;
             }
 
-            function handleFail(a, b, c, d) {
-                debugger
+            function handleFail(a) {
                 $('#result-data').html('FAIL:' + a.status + '<br/>' + a.statusText + '<br/><br/>' + a.responseText);
             }
 
@@ -74,7 +95,6 @@
 
             function getPayload() {
                 return $('#<%=tbPayload.ClientID %>').val();
-                //return JSON.parse($('#<%=tbPayload.ClientID %>').val());
             }
 
         </script>

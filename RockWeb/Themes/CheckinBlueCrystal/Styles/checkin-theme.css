@@ -8174,6 +8174,39 @@ input.checkin-phone-entry {
   margin-bottom: 18px;
   color: #ffffff;
 }
+.checkin-closed-header > h1 {
+  font-size: 5em;
+  line-height: 1;
+  margin-bottom: 0;
+}
+@media (min-width: 768px) {
+  .checkin-closed-header > h1 {
+    font-size: 9em;
+  }
+}
+@media (min-width: 992px) {
+  .checkin-closed-header > h1 {
+    font-size: 14em;
+  }
+}
+@media (min-width: 1200px) {
+  .checkin-closed-header > h1 {
+    font-size: 17em;
+  }
+}
+.checkin-closed-body {
+  padding-left: .5em;
+}
+@media (min-width: 768px) {
+  .checkin-closed-body {
+    padding-left: 1em;
+  }
+}
+@media (min-width: 992px) {
+  .checkin-closed-body {
+    padding-left: 2em;
+  }
+}
 .checkin-scroll-panel {
   position: absolute;
   z-index: 1;

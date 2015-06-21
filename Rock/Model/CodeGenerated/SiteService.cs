@@ -94,8 +94,6 @@ namespace Rock.Model
             target.DefaultPageRouteId = source.DefaultPageRouteId;
             target.Description = source.Description;
             target.ErrorPage = source.ErrorPage;
-            target.FacebookAppId = source.FacebookAppId;
-            target.FacebookAppSecret = source.FacebookAppSecret;
             target.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
             target.IsSystem = source.IsSystem;
             target.LoginPageId = source.LoginPageId;

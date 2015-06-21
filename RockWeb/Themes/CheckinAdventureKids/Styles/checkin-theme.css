@@ -8072,22 +8072,6 @@ body {
   margin-bottom: 12px;
   margin-top: 6px;
 }
-.checkin-count h3,
-.checkin-count li {
-  color: #92724c;
-}
-.checkin-count-locations,
-.checkin-count-groups,
-.checkin-count-schedules {
-  list-style: none;
-}
-.checkin-count-locations > li {
-  float: left;
-}
-.checkin-counts ul li {
-  float: left;
-  margin-right: 24px;
-}
 .checkin-actions a {
   font-size: 22px;
   font-weight: 700;
@@ -8190,6 +8174,39 @@ input.checkin-phone-entry {
   font-size: 22px;
   margin-bottom: 18px;
   color: #92724c;
+}
+.checkin-closed-header > h1 {
+  font-size: 5em;
+  line-height: 1;
+  margin-bottom: 0;
+}
+@media (min-width: 768px) {
+  .checkin-closed-header > h1 {
+    font-size: 9em;
+  }
+}
+@media (min-width: 992px) {
+  .checkin-closed-header > h1 {
+    font-size: 14em;
+  }
+}
+@media (min-width: 1200px) {
+  .checkin-closed-header > h1 {
+    font-size: 17em;
+  }
+}
+.checkin-closed-body {
+  padding-left: .5em;
+}
+@media (min-width: 768px) {
+  .checkin-closed-body {
+    padding-left: 1em;
+  }
+}
+@media (min-width: 992px) {
+  .checkin-closed-body {
+    padding-left: 2em;
+  }
 }
 .checkin-scroll-panel {
   position: absolute;
@@ -8304,9 +8321,24 @@ input.checkin-phone-entry {
   bottom: 0px;
   left: 75%;
 }
-/*.kioskmanager-schedules {
-
-}*/
+.kioskmanager-counts .kioskmanager-count h3,
+.kioskmanager-counts .kioskmanager-count li {
+  color: #92724c;
+}
+.kioskmanager-counts .kioskmanager-count-locations,
+.kioskmanager-counts .kioskmanager-count-groups,
+.kioskmanager-counts .kioskmanager-count-schedules {
+  list-style: none;
+  padding: 0;
+}
+.kioskmanager-counts .kioskmanager-count-locations > li {
+  float: left;
+  margin-right: 12px;
+}
+.kioskmanager-counts .kioskmanager-counts ul li {
+  float: left;
+  margin-right: 24px;
+}
 /*!
  * Bootstrap Modal
  *

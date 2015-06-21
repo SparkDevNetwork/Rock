@@ -43,6 +43,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EntitySet.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EntitySetItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EntityType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EventCalendar.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EventCalendarItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EventItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EventItemAudience.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EventItemCampus.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EventItemSchedule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ExceptionLog.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FieldType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialAccount.cs" />
@@ -62,6 +68,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupLocation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMember.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMemberRequirement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMemberWorkflowTrigger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupRequirement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupRequirementType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupScheduleExclusion.cs" />

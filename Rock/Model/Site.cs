@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -216,6 +217,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 25 )]
         [DataMember]
+        [Obsolete("Attribute value of Facebook Authentication provider are used instead.")]
         public string FacebookAppId { get; set; }
 
         /// <summary>
@@ -226,6 +228,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [Obsolete( "Attribute value of Facebook Authentication provider are used instead." )]
         public string FacebookAppSecret { get; set; }
         
         #endregion

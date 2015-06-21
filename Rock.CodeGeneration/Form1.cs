@@ -38,12 +38,13 @@ namespace Rock.CodeGeneration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void btnLoad_Click( object sender, EventArgs e )
         {
-            if ( lblAssemblyPath.Text == string.Empty )
+            if ( !Directory.Exists( lblAssemblyPath.Text ) || lblAssemblyPath.Text == string.Empty )
             {
                 rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
                 FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
                 lblAssemblyPath.Text = fi.FullName;
-                toolTip1.SetToolTip(lblAssemblyPath, fi.LastWriteTime.ToString());
+                lblAssemblyDateTime.Text = fi.LastWriteTime.ToElapsedString();
+                toolTip1.SetToolTip( lblAssemblyDateTime, fi.LastWriteTime.ToString() );
             }
 
             ofdAssembly.InitialDirectory = Path.GetDirectoryName( lblAssemblyPath.Text );
@@ -699,9 +700,12 @@ order by [parentTable], [columnName]
 
                 if ( !property.GetCustomAttributes( typeof( DatabaseGeneratedAttribute ) ).Any() )
                 {
-                    if ( property.SetMethod != null && property.SetMethod.IsPublic && property.GetMethod.IsPublic )
+                    if ( (property.GetCustomAttribute<ObsoleteAttribute>() == null) )
                     {
-                        properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
+                        if ( property.SetMethod != null && property.SetMethod.IsPublic && property.GetMethod.IsPublic )
+                        {
+                            properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
+                        }
                     }
                 }
             }
@@ -797,8 +801,9 @@ order by [parentTable], [columnName]
             entityProperties.Remove( "ModifiedByPersonAliasId" );
 
             var dataMembers = type.GetProperties().SortByStandardOrder()
-                .Where( a => a.GetCustomAttribute( typeof( DataMemberAttribute ) ) != null )
-                .Where( a => (a.GetCustomAttribute( typeof( NotMappedAttribute ) ) == null || a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null) )
+                .Where( a => a.GetCustomAttribute<DataMemberAttribute>() != null )
+                .Where( a => a.GetCustomAttribute<ObsoleteAttribute>() == null )
+                .Where( a => (a.GetCustomAttribute<NotMappedAttribute>() == null || a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null) )
                 .Where( a => !entityProperties.Keys.Contains( a.Name ) );
 
             var rockClientIncludeAttribute = type.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>();
