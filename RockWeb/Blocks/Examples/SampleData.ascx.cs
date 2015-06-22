@@ -744,7 +744,7 @@ namespace RockWeb.Blocks.Examples
                 // inverseGroupMember relationship because it was already added to the
                 // context.  All we have to do below is save the changes to the context
                 // when we're ready.)
-                var inverseGroupMember = memberService.GetInverseRelationship( groupMember, createGroup: true, personAlias: CurrentPersonAlias );
+                var inverseGroupMember = memberService.GetInverseRelationship( groupMember, createGroup: true );
             }
         }
 

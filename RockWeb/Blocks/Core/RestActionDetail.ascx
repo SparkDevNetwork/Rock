@@ -64,9 +64,16 @@
                 var restUrl = $('.rest-url').val();
                 var $keys = $('.key-value-rows .key-value-key');
                 $.each($keys, function (keyIndex) {
-                    var key = $keys[keyIndex];
-                    var $value = $(key).siblings('.key-value-value').first();
-                    restUrl = restUrl.replace('{' + $(key).val() + '}', $value.val());
+                    var $key = $($keys[keyIndex]);
+                    var $value = $key.siblings('.key-value-value').first();
+                    var keyTemplate = '{' + $key.val() + '}';
+                    if (restUrl.indexOf(keyTemplate) < 0) {
+                        restUrl = restUrl + (restUrl.indexOf("?") < 0 ? "?" : "&") + $key.val() + "=" + $value.val();
+                    }
+                    else {
+                        restUrl = restUrl.replace(keyTemplate, $value.val());
+                    }
+                        
                 });
                 
                 var loadAttributesOption = $('.js-load-attributes :checked').val();

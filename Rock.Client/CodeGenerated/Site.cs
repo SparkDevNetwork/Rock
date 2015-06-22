@@ -53,12 +53,6 @@ namespace Rock.Client
         public string ErrorPage { get; set; }
 
         /// <summary />
-        public string FacebookAppId { get; set; }
-
-        /// <summary />
-        public string FacebookAppSecret { get; set; }
-
-        /// <summary />
         public string GoogleAnalyticsCode { get; set; }
 
         /// <summary />
