@@ -877,10 +877,23 @@ Copyright (c) 2012 Dan Eden*/
   width: 340px;
   height: 190px;
 }
-.campuses-picker {
+.campuses-picker:before,
+.campuses-picker:after {
+  content: " ";
+  display: table;
+}
+.campuses-picker:after {
+  clear: both;
+}
+.campuses-picker .checkbox {
   float: left;
   margin-top: 0;
   margin-right: 24px;
+}
+.campuses-picker .campuses-picker-vertical .checkbox {
+  float: none;
+  margin-top: inherit;
+  margin-right: 0;
 }
 /*.banner
 {
