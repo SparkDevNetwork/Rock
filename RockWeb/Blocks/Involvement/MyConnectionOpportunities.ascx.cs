@@ -42,6 +42,13 @@ namespace RockWeb.Blocks.Involvement
     [LinkedPage( "Detail Page", "Page used to view details of an requests." )]
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
     {
+        #region Private Variables
+
+        private bool _canView = false;
+        private bool _canEdit = false;
+
+        #endregion
+
         #region Properties
 
         protected bool? StatusFilter { get; set; }
@@ -76,6 +83,7 @@ namespace RockWeb.Blocks.Involvement
             base.OnInit( e );
 
             lbConnectionTypes.Visible = UserCanAdministrate;
+
 
             rptConnectionOpportunities.ItemCommand += rptConnectionOpportunities_ItemCommand;
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;

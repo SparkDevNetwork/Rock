@@ -19,7 +19,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -41,6 +43,7 @@ namespace RockWeb.Blocks.Involvement
 
         private ConnectionType _connectionType = null;
         private bool _canView = false;
+        private bool _canEdit = false;
 
         #endregion
 
@@ -67,6 +70,8 @@ namespace RockWeb.Blocks.Involvement
             base.LoadViewState( savedState );
 
             AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
+
+            AddDynamicControls();
         }
 
         /// <summary>
@@ -100,18 +105,16 @@ namespace RockWeb.Blocks.Involvement
 
                 if ( _connectionType != null && _connectionType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
-                    _canView = true;
+                    _canEdit = UserCanEdit || _connectionType.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                    _canView = _canEdit || _connectionType.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
                     rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
                     gConnectionOpportunities.DataKeyNames = new string[] { "Id" };
                     gConnectionOpportunities.Actions.AddClick += gConnectionOpportunities_AddClick;
                     gConnectionOpportunities.GridRebind += gConnectionOpportunities_GridRebind;
                     gConnectionOpportunities.ExportFilename = _connectionType.Name;
-
-                    // make sure they have Auth to edit the block OR edit to the ConnectionType
-                    bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _connectionType.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
-                    gConnectionOpportunities.Actions.ShowAdd = canEditBlock;
-                    gConnectionOpportunities.IsDeleteEnabled = canEditBlock;
+                    gConnectionOpportunities.Actions.ShowAdd = _canEdit;
+                    gConnectionOpportunities.IsDeleteEnabled = _canEdit;
                 }
             }
         }
@@ -161,6 +164,23 @@ namespace RockWeb.Blocks.Involvement
         {
             rFilter.SaveUserPreference( MakeKeyUniqueToConnectionType( "Status" ), "Status", cbActive.Checked.ToTrueFalse() );
 
+            if ( AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                    if ( filterControl != null )
+                    {
+                        try
+                        {
+                            var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
+                            rFilter.SaveUserPreference( MakeKeyUniqueToConnectionType( attribute.Key ), attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues ).ToJson() );
+                        }
+                        catch { }
+                    }
+                }
+            }
+
             BindConnectionOpportunitiesGrid();
         }
 
@@ -187,14 +207,7 @@ namespace RockWeb.Blocks.Involvement
             }
             else if ( e.Key == MakeKeyUniqueToConnectionType( "Status" ) )
             {
-                if ( e.Value == "False" )
-                {
-                    e.Value = string.Empty;
-                }
-                else
-                {
-                    e.Value = "Active";
-                }
+                e.Value = e.Value == "True" ? "Only Show Active Items" : string.Empty;
             }
             else
             {
@@ -209,22 +222,31 @@ namespace RockWeb.Blocks.Involvement
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
         protected void DeleteConnectionOpportunity_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            RockContext rockContext = new RockContext();
-            ConnectionOpportunityService connectionTypeItemService = new ConnectionOpportunityService( rockContext );
-            ConnectionOpportunity connectionTypeItem = connectionTypeItemService.Get( e.RowKeyId );
-            if ( connectionTypeItem != null )
+            using ( RockContext rockContext = new RockContext() )
             {
-                string errorMessage;
-                if ( !connectionTypeItemService.CanDelete( connectionTypeItem, out errorMessage ) )
+                ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
+                ConnectionOpportunity connectionOpportunity = connectionOpportunityService.Get( e.RowKeyId );
+                if ( connectionOpportunity != null )
                 {
-                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                    return;
+                    if ( _canEdit )
+                    {
+                        string errorMessage;
+                        if ( !connectionOpportunityService.CanDelete( connectionOpportunity, out errorMessage ) )
+                        {
+                            mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                            return;
+                        }
+
+                        int connectionTypeId = connectionOpportunity.ConnectionTypeId;
+
+                        connectionOpportunityService.Delete( connectionOpportunity );
+                        rockContext.SaveChanges();
+                    }
+                    else
+                    {
+                        mdGridWarning.Show( "You are not authorized to delete this calendar item", ModalAlertType.Warning );
+                    }
                 }
-
-                int connectionTypeId = connectionTypeItem.ConnectionTypeId;
-
-                connectionTypeItemService.Delete( connectionTypeItem );
-                rockContext.SaveChanges();
             }
 
             BindConnectionOpportunitiesGrid();
@@ -238,7 +260,10 @@ namespace RockWeb.Blocks.Involvement
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gConnectionOpportunities_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "ConnectionOpportunityId", 0, "ConnectionTypeId", _connectionType.Id );
+            if ( _canEdit )
+            {
+                NavigateToLinkedPage( "DetailPage", "ConnectionOpportunityId", 0, "ConnectionTypeId", _connectionType.Id );
+            }
         }
 
         /// <summary>
@@ -248,10 +273,14 @@ namespace RockWeb.Blocks.Involvement
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gConnectionOpportunities_Edit( object sender, RowEventArgs e )
         {
-            bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _connectionType.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
-            if ( canEditBlock )
+            using ( RockContext rockContext = new RockContext() )
             {
-                NavigateToLinkedPage( "DetailPage", "ConnectionOpportunityId", new ConnectionOpportunityService( new RockContext() ).Get( e.RowKeyId ).Id, "ConnectionTypeId", _connectionType.Id );
+                ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
+                ConnectionOpportunity connectionOpportunity = connectionOpportunityService.Get( e.RowKeyId );
+                if ( connectionOpportunity != null )
+                {
+                    NavigateToLinkedPage( "DetailPage", "ConnectionOpportunityId", connectionOpportunity.Id, "ConnectionTypeId", _connectionType.Id );
+                }
             }
         }
 
@@ -280,6 +309,135 @@ namespace RockWeb.Blocks.Involvement
             {
                 cbActive.Checked = statusValue.AsBoolean();
             }
+
+            BindAttributes();
+            AddDynamicControls();
+        }
+
+
+        /// <summary>
+        /// Binds the attributes.
+        /// </summary>
+        private void BindAttributes()
+        {
+            // Parse the attribute filters 
+            AvailableAttributes = new List<AttributeCache>();
+            if ( _connectionType != null )
+            {
+                int entityTypeId = new ConnectionOpportunity().TypeId;
+                foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
+                    .Where( a =>
+                        a.EntityTypeId == entityTypeId &&
+                        a.IsGridColumn &&
+                        a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( _connectionType.Id.ToString() ) )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name ) )
+                {
+                    AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the attribute columns.
+        /// </summary>
+        private void AddDynamicControls()
+        {
+            // Clear the filter controls
+            phAttributeFilters.Controls.Clear();
+
+            // Remove attribute columns
+            foreach ( var column in gConnectionOpportunities.Columns.OfType<AttributeField>().ToList() )
+            {
+                gConnectionOpportunities.Columns.Remove( column );
+            }
+
+            // Remove Active column
+            foreach ( var column in gConnectionOpportunities.Columns.OfType<BoundField>()
+                .Where( c => c.DataField == "Active" )
+                .ToList() )
+            {
+                gConnectionOpportunities.Columns.Remove( column );
+            }
+
+            // Remove Delete column
+            foreach ( var column in gConnectionOpportunities.Columns.OfType<DeleteField>().ToList() )
+            {
+                gConnectionOpportunities.Columns.Remove( column );
+            }
+
+            if ( AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false );
+                    if ( control != null )
+                    {
+                        if ( control is IRockControl )
+                        {
+                            var rockControl = (IRockControl)control;
+                            rockControl.Label = attribute.Name;
+                            rockControl.Help = attribute.Description;
+                            phAttributeFilters.Controls.Add( control );
+                        }
+                        else
+                        {
+                            var wrapper = new RockControlWrapper();
+                            wrapper.ID = control.ID + "_wrapper";
+                            wrapper.Label = attribute.Name;
+                            wrapper.Controls.Add( control );
+                            phAttributeFilters.Controls.Add( wrapper );
+                        }
+
+                        string savedValue = rFilter.GetUserPreference( MakeKeyUniqueToConnectionType( attribute.Key ) );
+                        if ( !string.IsNullOrWhiteSpace( savedValue ) )
+                        {
+                            try
+                            {
+                                var values = JsonConvert.DeserializeObject<List<string>>( savedValue );
+                                attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, values );
+                            }
+                            catch { }
+                        }
+                    }
+
+                    string dataFieldExpression = attribute.Key;
+                    bool columnExists = gConnectionOpportunities.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
+                    if ( !columnExists )
+                    {
+                        AttributeField boundField = new AttributeField();
+                        boundField.DataField = dataFieldExpression;
+                        boundField.HeaderText = attribute.Name;
+                        boundField.SortExpression = string.Empty;
+
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                        if ( attributeCache != null )
+                        {
+                            boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                        }
+
+                        gConnectionOpportunities.Columns.Add( boundField );
+                    }
+                }
+            }
+
+            // Add IsActive column
+            var activeField = new BoundField();
+            activeField.DataField = "Active";
+            activeField.SortExpression = "Active";
+            activeField.HeaderText = "Active";
+            activeField.HtmlEncode = false;
+            gConnectionOpportunities.Columns.Add( activeField );
+
+            // Add delete column
+            if ( _canEdit )
+            {
+                var deleteField = new DeleteField();
+                gConnectionOpportunities.Columns.Add( deleteField );
+                deleteField.Click += DeleteConnectionOpportunity_Click;
+            }
+
         }
 
         /// <summary>
@@ -296,19 +454,53 @@ namespace RockWeb.Blocks.Involvement
 
                 var rockContext = new RockContext();
 
-                // The reason why we ToList() everything is so that we're using LINQ to Object rather than LINQ to Entity, enabling us to use object methods such as GetEarliestStartDate()
                 ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
                 var qry = connectionOpportunityService.Queryable()
-                    .Where( o => o.ConnectionTypeId == _connectionType.Id ).ToList();
+                    .Where( o => o.ConnectionTypeId == _connectionType.Id );
 
-                // Filter by Status
+                // Filter by Active Only
                 if ( cbActive.Checked )
                 {
-                    qry = qry.Where( o => o.IsActive ).ToList();
+                    qry = qry.Where( o => o.IsActive );
                 }
 
+                // Filter query by any configured attribute filters
+                if ( AvailableAttributes != null && AvailableAttributes.Any() )
+                {
+                    var attributeValueService = new AttributeValueService( rockContext );
+                    var parameterExpression = attributeValueService.ParameterExpression;
+
+                    foreach ( var attribute in AvailableAttributes )
+                    {
+                        var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                        if ( filterControl != null )
+                        {
+                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
+                            var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
+                            if ( expression != null )
+                            {
+                                var attributeValues = attributeValueService
+                                    .Queryable()
+                                    .Where( v => v.Attribute.Id == attribute.Id );
+
+                                attributeValues = attributeValues.Where( parameterExpression, expression, null );
+
+                                qry = qry.Where( w => attributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
+                            }
+                        }
+                    }
+                }
+                SortProperty sortProperty = gConnectionOpportunities.SortProperty;
+
                 List<ConnectionOpportunity> connectionOpportunities = null;
-                connectionOpportunities = qry.OrderByDescending( a => a.Name ).ToList();
+                if ( sortProperty != null )
+                {
+                    connectionOpportunities = qry.Sort( sortProperty ).ToList();
+                }
+                else
+                {
+                    connectionOpportunities = qry.ToList().OrderByDescending( a => a.Name).ToList();
+                }
 
                 gConnectionOpportunities.ObjectList = new Dictionary<string, object>();
                 connectionOpportunities.ForEach( m => gConnectionOpportunities.ObjectList.Add( m.Id.ToString(), m ) );

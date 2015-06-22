@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Involvement
 
         private List<ConnectionStatus> StatusesState { get; set; }
 
-        private ViewStateList<ConnectionWorkflow> WorkflowsState { get; set; }
+        private List<ConnectionWorkflow> WorkflowsState { get; set; }
 
         #endregion
 
@@ -132,6 +132,10 @@ namespace RockWeb.Blocks.Involvement
             gWorkflows.Actions.ShowAdd = true;
             gWorkflows.Actions.AddClick += gWorkflows_Add;
             gWorkflows.GridRebind += gWorkflows_GridRebind;
+
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the connection opportunities! Are you sure you wish to continue with the delete?');", ConnectionType.FriendlyTypeName );
+            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ConnectionType ) ).Id;
+
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upConnectionType );
@@ -223,7 +227,7 @@ namespace RockWeb.Blocks.Involvement
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var connectionType = new EventCalendarService( rockContext ).Get( hfConnectionTypeId.Value.AsInteger() );
+            var connectionType = new ConnectionTypeService( rockContext ).Get( hfConnectionTypeId.Value.AsInteger() );
 
             LoadStateDetails( connectionType, rockContext );
             ShowEditDetails( connectionType );
@@ -319,22 +323,22 @@ namespace RockWeb.Blocks.Involvement
                 {
                     connectionType = connectionTypeService.Queryable( "ConnectionActivityTypes, ConnectionWorkflows" ).Where( c => c.Id == connectionTypeId ).FirstOrDefault();
 
-                    var selectedConnectionWorkflows = WorkflowsState.Select( l => l.Guid );
-                    foreach ( var connectionWorkflow in connectionType.ConnectionWorkflows.Where( l => !selectedConnectionWorkflows.Contains( l.Guid ) ).ToList() )
+                    var uiWorkflows = WorkflowsState.Select( l => l.Guid );
+                    foreach ( var connectionWorkflow in connectionType.ConnectionWorkflows.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList() )
                     {
                         connectionType.ConnectionWorkflows.Remove( connectionWorkflow );
                         connectionWorkflowService.Delete( connectionWorkflow );
                     }
 
-                    var selectedConnectionActivityTypes = ActivityTypesState.Select( r => r.Guid );
-                    foreach ( var connectionActivityType in connectionType.ConnectionActivityTypes.Where( r => !selectedConnectionActivityTypes.Contains( r.Guid ) ).ToList() )
+                    var uiActivityTypes = ActivityTypesState.Select( r => r.Guid );
+                    foreach ( var connectionActivityType in connectionType.ConnectionActivityTypes.Where( r => !uiActivityTypes.Contains( r.Guid ) ).ToList() )
                     {
                         connectionType.ConnectionActivityTypes.Remove( connectionActivityType );
                         connectionActivityTypeService.Delete( connectionActivityType );
                     }
 
-                    var selectedConnectionStatuses = StatusesState.Select( r => r.Guid );
-                    foreach ( var connectionStatus in connectionType.ConnectionStatuses.Where( r => !selectedConnectionStatuses.Contains( r.Guid ) ).ToList() )
+                    var uiStatuses = StatusesState.Select( r => r.Guid );
+                    foreach ( var connectionStatus in connectionType.ConnectionStatuses.Where( r => !uiStatuses.Contains( r.Guid ) ).ToList() )
                     {
                         connectionType.ConnectionStatuses.Remove( connectionStatus );
                         connectionStatusService.Delete( connectionStatus );
@@ -475,6 +479,189 @@ namespace RockWeb.Blocks.Involvement
 
         #endregion
 
+        #region Attributes Grid and Picker
+
+        /// <summary>
+        /// Handles the Add event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gAttributes_Add( object sender, EventArgs e )
+        {
+            gAttributes_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gAttributes_Edit( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = (Guid)e.RowKeyValue;
+            gAttributes_ShowEdit( attributeGuid );
+        }
+
+        /// <summary>
+        /// Gets the event calendar's attributes_ show edit.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute GUID.</param>
+        protected void gAttributes_ShowEdit( Guid attributeGuid )
+        {
+            Attribute attribute;
+            if ( attributeGuid.Equals( Guid.Empty ) )
+            {
+                attribute = new Attribute();
+                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+            }
+            else
+            {
+                attribute = AttributesState.First( a => a.Guid.Equals( attributeGuid ) );
+            }
+
+            edtAttributes.ActionTitle = ActionTitle.Edit( "attribute for Events of Calendar type " + tbName.Text );
+            var reservedKeyNames = new List<string>();
+            AttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            edtAttributes.ReservedKeyNames = reservedKeyNames.ToList();
+            edtAttributes.SetAttributeProperties( attribute, typeof( ConnectionType ) );
+
+            ShowDialog( "Attributes" );
+        }
+
+        /// <summary>
+        /// Handles the GridReorder event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gAttributes_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            ReOrderAttributes( AttributesState );
+            BindAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void gAttributes_Delete( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = (Guid)e.RowKeyValue;
+            AttributesState.RemoveEntity( attributeGuid );
+
+            BindAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gAttributes_GridRebind( object sender, EventArgs e )
+        {
+            BindAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgConnectionTypeAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgConnectionTypeAttribute_SaveClick( object sender, EventArgs e )
+        {
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+            edtAttributes.GetAttributeProperties( attribute );
+
+            // Controls will show warnings
+            if ( !attribute.IsValid )
+            {
+                return;
+            }
+
+            if ( AttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
+            {
+                attribute.Order = AttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
+                AttributesState.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                attribute.Order = AttributesState.Any() ? AttributesState.Max( a => a.Order ) + 1 : 0;
+            }
+            AttributesState.Add( attribute );
+
+            ReOrderAttributes( AttributesState );
+
+            BindAttributesGrid();
+
+            HideDialog();
+        }
+
+        /// <summary>
+        /// Binds the Connection Type attributes grid.
+        /// </summary>
+        private void BindAttributesGrid()
+        {
+            gAttributes.DataSource = AttributesState
+                         .OrderBy( a => a.Order )
+                         .ThenBy( a => a.Name )
+                         .Select( a => new
+                         {
+                             a.Id,
+                             a.Guid,
+                             a.Name,
+                             a.Description,
+                             FieldType = FieldTypeCache.GetName( a.FieldTypeId ),
+                             a.IsRequired,
+                             a.IsGridColumn,
+                             a.AllowSearch
+                         } )
+                         .ToList();
+            gAttributes.DataBind();
+        }
+
+        private void ReOrderAttributes( List<Attribute> attributeList )
+        {
+            attributeList = attributeList.OrderBy( a => a.Order ).ToList();
+            int order = 0;
+            attributeList.ForEach( a => a.Order = order++ );
+        }
+
+        /// <summary>
+        /// Saves the attributes.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="qualifierColumn">The qualifier column.</param>
+        /// <param name="qualifierValue">The qualifier value.</param>
+        /// <param name="viewStateAttributes">The view state attributes.</param>
+        /// <param name="attributeService">The attribute service.</param>
+        /// <param name="qualifierService">The qualifier service.</param>
+        /// <param name="categoryService">The category service.</param>
+        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<Attribute> viewStateAttributes, RockContext rockContext )
+        {
+            // Get the existing attributes for this entity type and qualifier value
+            var attributeService = new AttributeService( rockContext );
+            var attributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+
+            // Delete any of those attributes that were removed in the UI
+            var selectedAttributeGuids = viewStateAttributes.Select( a => a.Guid );
+            foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
+            {
+                attributeService.Delete( attr );
+                rockContext.SaveChanges();
+                Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+            }
+
+            // Update the Attributes that were assigned in the UI
+            foreach ( var attributeState in viewStateAttributes )
+            {
+                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
+            }
+        }
+
+
+        #endregion
+
         #region ConnectionActivityType Events
 
         protected void gActivityTypes_Delete( object sender, RowEventArgs e )
@@ -528,7 +715,7 @@ namespace RockWeb.Blocks.Involvement
         /// Sets the attribute list order.
         /// </summary>
         /// <param name="attributeList">The attribute list.</param>
-        private void SetConnectionActivityTypeListOrder( ViewStateList<ConnectionActivityType> connectionActivityTypeList )
+        private void SetConnectionActivityTypeListOrder( List<ConnectionActivityType> connectionActivityTypeList )
         {
             if ( connectionActivityTypeList != null )
             {
@@ -608,7 +795,7 @@ namespace RockWeb.Blocks.Involvement
         /// Sets the attribute list order.
         /// </summary>
         /// <param name="attributeList">The attribute list.</param>
-        private void SetConnectionStatusListOrder( ViewStateList<ConnectionStatus> connectionStatusList )
+        private void SetConnectionStatusListOrder( List<ConnectionStatus> connectionStatusList )
         {
             if ( connectionStatusList != null )
             {
@@ -705,29 +892,29 @@ namespace RockWeb.Blocks.Involvement
                     ddlWorkflowType.SelectedValue = connectionWorkflow.WorkflowTypeId.ToString();
                 }
                 ddlTriggerType.SelectedValue = connectionWorkflow.TriggerType.ConvertToInt().ToString();
-
-                hfAddConnectionWorkflowGuid.Value = connectionWorkflowGuid.ToString();
-                UpdateTriggerQualifiers();
-                ShowDialog( "ConnectionWorkflows", true );
             }
+            else
+            {
+                ddlTriggerType.BindToEnum<ConnectionWorkflowTriggerType>();
+                ddlWorkflowType.Items.Clear();
+                ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
+
+                foreach ( var workflowType in new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name ) )
+                {
+                    if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        ddlWorkflowType.Items.Add( new ListItem( workflowType.Name, workflowType.Id.ToString() ) );
+                    }
+                }
+            }
+            hfAddConnectionWorkflowGuid.Value = connectionWorkflowGuid.ToString();
+            UpdateTriggerQualifiers();
+            ShowDialog( "ConnectionWorkflows", true );
         }
 
         private void gWorkflows_Add( object sender, EventArgs e )
         {
-            ddlTriggerType.BindToEnum<ConnectionWorkflowTriggerType>();
-            ddlWorkflowType.Items.Clear();
-            ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
-
-            foreach ( var workflowType in new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name ) )
-            {
-                if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                {
-                    ddlWorkflowType.Items.Add( new ListItem( workflowType.Name, workflowType.Id.ToString() ) );
-                }
-            }
-            hfAddConnectionWorkflowGuid.Value = Guid.Empty.ToString();
-            UpdateTriggerQualifiers();
-            ShowDialog( "ConnectionWorkflows", true );
+            gWorkflows_ShowEdit( Guid.Empty );
         }
 
         protected void ddlTriggerType_SelectedIndexChanged( object sender, EventArgs e )
@@ -849,7 +1036,7 @@ namespace RockWeb.Blocks.Involvement
             gWorkflows.DataBind();
         }
 
-        private void SetConnectionWorkflowListOrder( ViewStateList<ConnectionWorkflow> connectionWorkflowList )
+        private void SetConnectionWorkflowListOrder( List<ConnectionWorkflow> connectionWorkflowList )
         {
             if ( connectionWorkflowList != null )
             {
@@ -875,7 +1062,7 @@ namespace RockWeb.Blocks.Involvement
             pnlDetails.Visible = false;
 
             ConnectionType connectionType = null;
-            RockContext rockContext = null;
+            RockContext rockContext = new RockContext();
 
             if ( !connectionTypeId.Equals( 0 ) )
             {
@@ -887,7 +1074,8 @@ namespace RockWeb.Blocks.Involvement
                 connectionType = new ConnectionType { Id = 0 };
             }
 
-            bool editAllowed = connectionType.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            // Admin rights are needed to edit a calendar ( Edit rights only allow adding/removing items )
+            bool adminAllowed = UserCanAdministrate || connectionType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
 
             pnlDetails.Visible = true;
             hfConnectionTypeId.Value = connectionType.Id.ToString();
@@ -895,20 +1083,37 @@ namespace RockWeb.Blocks.Involvement
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed || !IsUserAuthorized( Authorization.ADMINISTRATE ) )
+            if ( !adminAllowed )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ConnectionType.FriendlyTypeName );
             }
-            if ( !connectionTypeId.Equals( 0 ) )
+            if ( readOnly )
             {
+                btnEdit.Visible = false;
+                btnDelete.Visible = false;
+                btnSecurity.Visible = false;
                 ShowReadonlyDetails( connectionType );
             }
             else
             {
-                if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
+                btnEdit.Visible = true;
+                btnDelete.Visible = true;
+                btnSecurity.Visible = true;
+
+                btnSecurity.Title = "Secure " + connectionType.Name;
+                btnSecurity.EntityId = connectionType.Id;
+
+                if ( !connectionTypeId.Equals( 0 ) )
                 {
-                    ShowEditDetails( connectionType );
+                    ShowReadonlyDetails( connectionType );
+                }
+                else
+                {
+                    if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
+                    {
+                        ShowEditDetails( connectionType );
+                    }
                 }
             }
         }
@@ -934,63 +1139,18 @@ namespace RockWeb.Blocks.Involvement
             }
 
             lIcon.Text = string.Format( "<i class='{0}'></i>", connectionType.IconCssClass );
+
             SetEditMode( true );
-
-            var rockContext = new RockContext();
-
-            var connectionTypeService = new ConnectionTypeService( rockContext );
-            var attributeService = new AttributeService( rockContext );
 
             // General
             tbName.Text = connectionType.Name;
-
             tbDescription.Text = connectionType.Description;
-
             tbIconCssClass.Text = connectionType.IconCssClass;
-
             cbFullActivityList.Checked = connectionType.EnableFullActivityList;
-
             cbFutureFollowUp.Checked = connectionType.EnableFutureFollowup;
 
-            if ( ActivityTypesState == null )
-            {
-                ActivityTypesState = new ViewStateList<ConnectionActivityType>();
-                if ( connectionType.ConnectionActivityTypes != null )
-                {
-                    ActivityTypesState.AddAll( connectionType.ConnectionActivityTypes.ToList() );
-                }
-            }
 
-            if ( StatusesState == null )
-            {
-                StatusesState = new ViewStateList<ConnectionStatus>();
-                if ( connectionType.ConnectionStatuses != null )
-                {
-                    StatusesState.AddAll( connectionType.ConnectionStatuses.ToList() );
-                }
-            }
-
-            if ( WorkflowsState == null )
-            {
-                WorkflowsState = new ViewStateList<ConnectionWorkflow>();
-                if ( connectionType.ConnectionWorkflows != null )
-                {
-                    WorkflowsState.AddAll( connectionType.ConnectionWorkflows.ToList() );
-                }
-            }
-
-            // Attributes
-            string qualifierValue = connectionType.Id.ToString();
-
-            AttributesState = new ViewStateList<Attribute>();
-            AttributesState.AddAll( attributeService.GetByEntityTypeId( new ConnectionOpportunity().TypeId ).AsQueryable()
-                .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                    a.EntityTypeQualifierValue.Equals( qualifierValue ) )
-                .OrderBy( a => a.Order )
-                .ThenBy( a => a.Name )
-                .ToList() );
-            BindConnectionTypeAttributesGrid();
+            BindAttributesGrid();
             BindConnectionActivityTypesGrid();
             BindConnectionWorkflowsGrid();
             BindConnectionStatusesGrid();
@@ -1006,19 +1166,13 @@ namespace RockWeb.Blocks.Involvement
             SetEditMode( false );
 
             hfConnectionTypeId.SetValue( connectionType.Id );
+            AttributesState = null;
+            ActivityTypesState = null;
+            WorkflowsState = null;
+            StatusesState = null;
+
             lReadOnlyTitle.Text = connectionType.Name.FormatAsHtmlTitle();
-
             lConnectionTypeDescription.Text = connectionType.Description;
-
-            DescriptionList descriptionList = new DescriptionList();
-            descriptionList.Add( string.Empty, string.Empty );
-            lblMainDetails.Text = descriptionList.Html;
-
-            if ( !connectionType.IsAuthorized( Authorization.EDIT, CurrentPerson ) || !IsUserAuthorized( Authorization.ADMINISTRATE ) )
-            {
-                btnEdit.Visible = false;
-                btnDelete.Visible = false;
-            }
         }
 
         /// <summary>
@@ -1073,19 +1227,56 @@ namespace RockWeb.Blocks.Involvement
         {
             switch ( hfActiveDialog.Value )
             {
-                case "CONNECTIONTYPEATTRIBUTES":
-                    dlgConnectionTypeAttribute.Show();
+                case "ATTRIBUTES":
+                    dlgAttribute.Show();
                     break;
                 case "CONNECTIONACTIVITYTYPES":
-                    dlgActivityTypes.Show();
+                    dlgConnectionActivityTypes.Show();
                     break;
                 case "CONNECTIONSTATUSES":
-                    dlgStatuses.Show();
+                    dlgConnectionStatuses.Show();
                     break;
                 case "CONNECTIONWORKFLOWS":
                     dlgConnectionWorkflow.Show();
                     break;
             }
+        }
+
+        private void LoadStateDetails( ConnectionType connectionType, RockContext rockContext )
+        {
+            var attributeService = new AttributeService( rockContext );
+            AttributesState = attributeService
+                .GetByEntityTypeId( new EventCalendarItem().TypeId ).AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( connectionType.Id.ToString() ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
+
+            var activityTypeService = new ConnectionActivityTypeService( rockContext );
+            ActivityTypesState = activityTypeService
+                .Queryable()
+                .Where( a =>
+                    a.ConnectionTypeId == connectionType.Id )
+                .OrderBy( a => a.Name )
+                .ToList();
+
+            var statusService = new ConnectionStatusService( rockContext );
+            StatusesState = statusService
+                .Queryable()
+                .Where( a =>
+                    a.ConnectionTypeId == connectionType.Id )
+                .OrderBy( a => a.Name )
+                .ToList();
+
+            var workflowService = new ConnectionWorkflowService( rockContext );
+            WorkflowsState = workflowService
+                .Queryable()
+                .Where( a =>
+                    a.ConnectionTypeId == connectionType.Id )
+                .OrderBy( a => a.WorkflowType.Name )
+                .ToList();
         }
 
         /// <summary>
@@ -1095,14 +1286,14 @@ namespace RockWeb.Blocks.Involvement
         {
             switch ( hfActiveDialog.Value )
             {
-                case "CONNECTIONTYPEATTRIBUTES":
-                    dlgConnectionTypeAttribute.Hide();
+                case "ATTRIBUTES":
+                    dlgAttribute.Hide();
                     break;
                 case "CONNECTIONACTIVITYTYPES":
-                    dlgActivityTypes.Hide();
+                    dlgConnectionActivityTypes.Hide();
                     break;
                 case "CONNECTIONSTATUSES":
-                    dlgStatuses.Hide();
+                    dlgConnectionStatuses.Hide();
                     break;
                 case "CONNECTIONWORKFLOWS":
                     dlgConnectionWorkflow.Hide();
@@ -1112,221 +1303,10 @@ namespace RockWeb.Blocks.Involvement
             hfActiveDialog.Value = string.Empty;
         }
 
-        /// <summary>
-        /// Sets the attribute list order.
-        /// </summary>
-        /// <param name="itemList">The item list.</param>
-        private void SetAttributeListOrder( ViewStateList<Attribute> itemList )
-        {
-            int order = 0;
-            itemList.OrderBy( a => a.Order ).ToList().ForEach( a => a.Order = order++ );
-        }
-
-        /// <summary>
-        /// Reorders the attribute list.
-        /// </summary>
-        /// <param name="itemList">The item list.</param>
-        /// <param name="oldIndex">The old index.</param>
-        /// <param name="newIndex">The new index.</param>
-        private void ReorderAttributeList( ViewStateList<Attribute> itemList, int oldIndex, int newIndex )
-        {
-            var movedItem = itemList.Where( a => a.Order == oldIndex ).FirstOrDefault();
-            if ( movedItem != null )
-            {
-                if ( newIndex < oldIndex )
-                {
-                    // Moved up
-                    foreach ( var otherItem in itemList.Where( a => a.Order < oldIndex && a.Order >= newIndex ) )
-                    {
-                        otherItem.Order = otherItem.Order + 1;
-                    }
-                }
-                else
-                {
-                    // Moved Down
-                    foreach ( var otherItem in itemList.Where( a => a.Order > oldIndex && a.Order <= newIndex ) )
-                    {
-                        otherItem.Order = otherItem.Order - 1;
-                    }
-                }
-
-                movedItem.Order = newIndex;
-            }
-        }
-
-        /// <summary>
-        /// Saves the attributes.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="qualifierColumn">The qualifier column.</param>
-        /// <param name="qualifierValue">The qualifier value.</param>
-        /// <param name="viewStateAttributes">The view state attributes.</param>
-        /// <param name="attributeService">The attribute service.</param>
-        /// <param name="qualifierService">The qualifier service.</param>
-        /// <param name="categoryService">The category service.</param>
-        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<Attribute> viewStateAttributes, RockContext rockContext )
-        {
-            // Get the existing attributes for this entity type and qualifier value
-            var attributeService = new AttributeService( rockContext );
-            var attributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
-
-            // Delete any of those attributes that were removed in the UI
-            var selectedAttributeGuids = viewStateAttributes.Select( a => a.Guid );
-            foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
-            {
-                attributeService.Delete( attr );
-                rockContext.SaveChanges();
-                Rock.Web.Cache.AttributeCache.Flush( attr.Id );
-            }
-
-            // Update the Attributes that were assigned in the UI
-            foreach ( var attributeState in viewStateAttributes )
-            {
-                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
-            }
-        }
 
         #endregion
 
-        #region ConnectionTypeAttributes Grid and Picker
 
-        /// <summary>
-        /// Handles the Add event of the gAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gAttributes_Add( object sender, EventArgs e )
-        {
-            gAttributes_ShowEdit( Guid.Empty );
-        }
-
-        /// <summary>
-        /// Handles the Edit event of the gAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gAttributes_Edit( object sender, RowEventArgs e )
-        {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
-            gAttributes_ShowEdit( attributeGuid );
-        }
-
-        /// <summary>
-        /// Gets the event calendar's attributes_ show edit.
-        /// </summary>
-        /// <param name="attributeGuid">The attribute GUID.</param>
-        protected void gAttributes_ShowEdit( Guid attributeGuid )
-        {
-            Attribute attribute;
-            if ( attributeGuid.Equals( Guid.Empty ) )
-            {
-                attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
-                edtConnectionTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for Events of Calendar type " + tbName.Text );
-            }
-            else
-            {
-                attribute = AttributesState.First( a => a.Guid.Equals( attributeGuid ) );
-                edtConnectionTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for Events of Calendar type " + tbName.Text );
-            }
-
-            var reservedKeyNames = new List<string>();
-            AttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
-            edtConnectionTypeAttributes.ReservedKeyNames = reservedKeyNames.ToList();
-
-            edtConnectionTypeAttributes.SetAttributeProperties( attribute, typeof( ConnectionType ) );
-
-            ShowDialog( "ConnectionTypeAttributes" );
-        }
-
-        /// <summary>
-        /// Handles the GridReorder event of the gAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
-        protected void gAttributes_GridReorder( object sender, GridReorderEventArgs e )
-        {
-            ReorderAttributeList( AttributesState, e.OldIndex, e.NewIndex );
-            BindConnectionTypeAttributesGrid();
-        }
-
-        /// <summary>
-        /// Handles the Delete event of the gAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        protected void gAttributes_Delete( object sender, RowEventArgs e )
-        {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
-            AttributesState.RemoveEntity( attributeGuid );
-
-            BindConnectionTypeAttributesGrid();
-        }
-
-        /// <summary>
-        /// Handles the GridRebind event of the gAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gAttributes_GridRebind( object sender, EventArgs e )
-        {
-            BindConnectionTypeAttributesGrid();
-        }
-
-        /// <summary>
-        /// Handles the SaveClick event of the dlgConnectionTypeAttribute control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void dlgConnectionTypeAttribute_SaveClick( object sender, EventArgs e )
-        {
-            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-            edtConnectionTypeAttributes.GetAttributeProperties( attribute );
-
-            // Controls will show warnings
-            if ( !attribute.IsValid )
-            {
-                return;
-            }
-
-            if ( AttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
-            {
-                attribute.Order = AttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
-                AttributesState.RemoveEntity( attribute.Guid );
-            }
-            else
-            {
-                attribute.Order = AttributesState.Any() ? AttributesState.Max( a => a.Order ) + 1 : 0;
-            }
-            AttributesState.Add( attribute );
-
-            BindConnectionTypeAttributesGrid();
-            HideDialog();
-        }
-
-        /// <summary>
-        /// Binds the Connection Type Type attributes grid.
-        /// </summary>
-        private void BindConnectionTypeAttributesGrid()
-        {
-            gAttributes.AddCssClass( "attribute-grid" );
-            SetAttributeListOrder( AttributesState );
-            gAttributes.DataSource = AttributesState
-                .Select( a => new
-                {
-                    a.Id,
-                    a.Guid,
-                    Name = a.Name,
-                    FieldType = a.FieldType != null ? a.FieldType.ToString() : FieldTypeCache.GetName( a.FieldTypeId ),
-                    AllowSearch = a.AllowSearch,
-                    Order = a.Order
-                } )
-                .OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
-            gAttributes.DataBind();
-        }
-
-        #endregion
 
     }
 }

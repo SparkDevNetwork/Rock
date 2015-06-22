@@ -18,10 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -32,7 +33,6 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Involvement
 {
@@ -44,11 +44,14 @@ namespace RockWeb.Blocks.Involvement
     {
         #region Properties
 
-        public List<ConnectionOpportunityGroup> ConnectionOpportunityGroupsState { get; set; }
+        public int _connectionTypeId = 0;
+        public bool _canEdit = false;
 
-        public List<ConnectionOpportunityCampus> ConnectionOpportunityCampusesState { get; set; }
+        public List<ConnectionOpportunityGroup> GroupsState { get; set; }
 
-        public List<ConnectionWorkflow> ConnectionOpportunityWorkflowsState { get; set; }
+        public List<ConnectionOpportunityCampus> CampusesState { get; set; }
+
+        public List<ConnectionWorkflow> WorkflowsState { get; set; }
 
         #endregion Properties
 
@@ -62,33 +65,34 @@ namespace RockWeb.Blocks.Involvement
         {
             base.LoadViewState( savedState );
 
-            string json = ViewState["ConnectionOpportunityGroupsState"] as string;
+            string json = ViewState["GroupsState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
-                ConnectionOpportunityGroupsState = new List<ConnectionOpportunityGroup>();
+                GroupsState = new List<ConnectionOpportunityGroup>();
             }
             else
             {
-                ConnectionOpportunityGroupsState = JsonConvert.DeserializeObject<List<ConnectionOpportunityGroup>>( json );
-            }
-            json = ViewState["ConnectionOpportunityCampusesState"] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
-            {
-                ConnectionOpportunityCampusesState = new List<ConnectionOpportunityCampus>();
-            }
-            else
-            {
-                ConnectionOpportunityCampusesState = JsonConvert.DeserializeObject<List<ConnectionOpportunityCampus>>( json );
+                GroupsState = JsonConvert.DeserializeObject<List<ConnectionOpportunityGroup>>( json );
             }
 
-            json = ViewState["ConnectionOpportunityWorkflowsState"] as string;
+            json = ViewState["CampusesState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
-                ConnectionOpportunityWorkflowsState = new List<ConnectionWorkflow>();
+                CampusesState = new List<ConnectionOpportunityCampus>();
             }
             else
             {
-                ConnectionOpportunityWorkflowsState = JsonConvert.DeserializeObject<List<ConnectionWorkflow>>( json );
+                CampusesState = JsonConvert.DeserializeObject<List<ConnectionOpportunityCampus>>( json );
+            }
+
+            json = ViewState["WorkflowsState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                WorkflowsState = new List<ConnectionWorkflow>();
+            }
+            else
+            {
+                WorkflowsState = JsonConvert.DeserializeObject<List<ConnectionWorkflow>>( json );
             }
         }
 
@@ -137,8 +141,10 @@ namespace RockWeb.Blocks.Involvement
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlConnectionOpportunityDetail );
-        }
 
+            _connectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
+
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -151,6 +157,7 @@ namespace RockWeb.Blocks.Involvement
             if ( !Page.IsPostBack )
             {
                 string connectionOpportunityId = PageParameter( "ConnectionOpportunityId" );
+
                 if ( !string.IsNullOrWhiteSpace( connectionOpportunityId ) )
                 {
                     ShowDetail( connectionOpportunityId.AsInteger() );
@@ -162,10 +169,12 @@ namespace RockWeb.Blocks.Involvement
             }
             else
             {
+                nbIncorrectOpportunity.Visible = false;
                 nbNotAllowedToEdit.Visible = false;
-                var connectionOpportunity = new ConnectionOpportunity { ConnectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger() };
-                connectionOpportunity.LoadAttributes();
-                Rock.Attribute.Helper.AddEditControls( connectionOpportunity, phAttributes, true, BlockValidationGroup );
+
+                ShowOpportunityAttributes();
+
+                ShowDialog();
             }
         }
 
@@ -183,9 +192,10 @@ namespace RockWeb.Blocks.Involvement
                 ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
             };
 
-            ViewState["ConnectionOpportunityGroupsState"] = JsonConvert.SerializeObject( ConnectionOpportunityGroupsState, Formatting.None, jsonSetting );
-            ViewState["ConnectionOpportunityCampusesState"] = JsonConvert.SerializeObject( ConnectionOpportunityCampusesState, Formatting.None, jsonSetting );
-            ViewState["ConnectionOpportunityWorkflowsState"] = JsonConvert.SerializeObject( ConnectionOpportunityWorkflowsState, Formatting.None, jsonSetting );
+            ViewState["ConnectionOpportunityGroupsState"] = JsonConvert.SerializeObject( GroupsState, Formatting.None, jsonSetting );
+            ViewState["ConnectionOpportunityCampusesState"] = JsonConvert.SerializeObject( CampusesState, Formatting.None, jsonSetting );
+            ViewState["ConnectionOpportunityWorkflowsState"] = JsonConvert.SerializeObject( WorkflowsState, Formatting.None, jsonSetting );
+
             return base.SaveViewState();
         }
 
@@ -223,6 +233,32 @@ namespace RockWeb.Blocks.Involvement
             return breadCrumbs;
         }
 
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            var currentConnectionOpportunity = GetConnectionOpportunity( hfConnectionOpportunityId.Value.AsInteger() );
+            if ( currentConnectionOpportunity != null )
+            {
+                ShowDetail( currentConnectionOpportunity.Id );
+            }
+            else
+            {
+                string connectionOpportunityId = PageParameter( "ConnectionOpportunityId" );
+                if ( !string.IsNullOrWhiteSpace( connectionOpportunityId ) )
+                {
+                    ShowDetail( connectionOpportunityId.AsInteger() );
+                }
+                else
+                {
+                    pnlDetails.Visible = false;
+                }
+            }
+        }
+
         #endregion Control Methods
 
         #region Edit Events
@@ -234,161 +270,143 @@ namespace RockWeb.Blocks.Involvement
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            ConnectionOpportunity connectionOpportunity;
+            ConnectionOpportunity connectionOpportunity = null;
 
-            RockContext rockContext = new RockContext();
-
-            ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
-            EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
-            ConnectionWorkflowService connectionWorkflowService = new ConnectionWorkflowService( rockContext );
-            ConnectionOpportunityCampusService connectionOpportunityCampusService = new ConnectionOpportunityCampusService( rockContext );
-            ConnectionOpportunityGroupService connectionOpportunityGroupService = new ConnectionOpportunityGroupService( rockContext );
-            AttributeService attributeService = new AttributeService( rockContext );
-            AttributeQualifierService attributeQualifierService = new AttributeQualifierService( rockContext );
-            CategoryService categoryService = new CategoryService( rockContext );
-
-            int connectionOpportunityId = int.Parse( hfConnectionOpportunityId.Value );
-
-            if ( connectionOpportunityId == 0 )
+            using ( RockContext rockContext = new RockContext() )
             {
-                connectionOpportunity = new ConnectionOpportunity();
-                connectionOpportunity.Name = string.Empty;
-                connectionOpportunity.ConnectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
-            }
-            else
-            {
-                connectionOpportunity = connectionOpportunityService.Queryable( "ConnectionOpportunityGroups, ConnectionWorkflows" ).Where( ei => ei.Id == connectionOpportunityId ).FirstOrDefault();
+                ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
+                EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
+                ConnectionWorkflowService connectionWorkflowService = new ConnectionWorkflowService( rockContext );
+                ConnectionOpportunityCampusService connectionOpportunityCampusService = new ConnectionOpportunityCampusService( rockContext );
+                ConnectionOpportunityGroupService connectionOpportunityGroupService = new ConnectionOpportunityGroupService( rockContext );
+
+                int connectionOpportunityId = hfConnectionOpportunityId.ValueAsInt();
+                if ( connectionOpportunityId != 0 )
+                {
+                    connectionOpportunity = connectionOpportunityService
+                        .Queryable( "ConnectionOpportunityGroups, ConnectionWorkflows" )
+                        .Where( ei => ei.Id == connectionOpportunityId )
+                        .FirstOrDefault();
+                }
+                if ( connectionOpportunity == null )
+                {
+                    connectionOpportunity = new ConnectionOpportunity();
+                    connectionOpportunity.Name = string.Empty;
+                    connectionOpportunity.ConnectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
+                    connectionOpportunityService.Add( connectionOpportunity );
+
+                }
+
+                connectionOpportunity.Name = tbName.Text;
+                connectionOpportunity.Description = tbDescription.Text;
+                connectionOpportunity.IsActive = cbIsActive.Checked;
+                connectionOpportunity.PublicName = tbPublicName.Text;
+                connectionOpportunity.IconCssClass = tbIconCssClass.Text;
+
+                connectionOpportunity.GroupTypeId = ddlGroupType.SelectedValue.AsInteger();
+                connectionOpportunity.GroupMemberRoleId = ddlGroupRole.SelectedValue.AsInteger();
+                connectionOpportunity.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
+
+                if ( imgupPhoto.BinaryFileId != null )
+                {
+                    connectionOpportunity.PhotoId = imgupPhoto.BinaryFileId.Value;
+                }
+
+                if ( gpConnectorGroup.SelectedValue.AsIntegerOrNull() != 0 )
+                {
+                    connectionOpportunity.ConnectorGroupId = gpConnectorGroup.SelectedValue.AsIntegerOrNull();
+                }
+
                 // remove any workflows that removed in the UI
-                var selectedConnectionOpportunityWorkflows = ConnectionOpportunityWorkflowsState.Select( l => l.Guid );
-                foreach ( var connectionOpportunityWorkflow in connectionOpportunity.ConnectionWorkflows.Where( l => !selectedConnectionOpportunityWorkflows.Contains( l.Guid ) ).ToList() )
+                var uiWorkflows = WorkflowsState.Select( l => l.Guid );
+                foreach ( var connectionOpportunityWorkflow in connectionOpportunity.ConnectionWorkflows.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList() )
                 {
                     connectionOpportunity.ConnectionWorkflows.Remove( connectionOpportunityWorkflow );
                     connectionWorkflowService.Delete( connectionOpportunityWorkflow );
                 }
 
+                //Add or Update workflows from the UI
+                foreach ( ConnectionWorkflow connectionOpportunityWorkflowState in WorkflowsState )
+                {
+                    ConnectionWorkflow connectionOpportunityWorkflow = connectionOpportunity.ConnectionWorkflows.Where( a => a.Guid == connectionOpportunityWorkflowState.Guid ).FirstOrDefault();
+                    if ( connectionOpportunityWorkflow == null )
+                    {
+                        connectionOpportunityWorkflow = new ConnectionWorkflow();
+                        connectionOpportunity.ConnectionWorkflows.Add( connectionOpportunityWorkflow );
+                    }
+                    connectionOpportunityWorkflow.CopyPropertiesFrom( connectionOpportunityWorkflowState );
+                    connectionOpportunityWorkflow.ConnectionOpportunityId = connectionOpportunity.Id;
+                }
+
                 // remove any campuses that removed in the UI
-                var selectedConnectionOpportunityCampuses = ConnectionOpportunityCampusesState.Select( l => l.Guid );
-                foreach ( var connectionOpportunityCampus in connectionOpportunity.ConnectionOpportunityCampuses.Where( l => !selectedConnectionOpportunityCampuses.Contains( l.Guid ) ).ToList() )
+                var uiCampuses = CampusesState.Select( l => l.Guid );
+                foreach ( var connectionOpportunityCampus in connectionOpportunity.ConnectionOpportunityCampuses.Where( l => !uiCampuses.Contains( l.Guid ) ).ToList() )
                 {
                     connectionOpportunity.ConnectionOpportunityCampuses.Remove( connectionOpportunityCampus );
                     connectionOpportunityCampusService.Delete( connectionOpportunityCampus );
                 }
 
+                //Add or Update campuses from the UI
+                foreach ( var connectionOpportunityCampusState in CampusesState )
+                {
+                    ConnectionOpportunityCampus connectionOpportunityCampus = connectionOpportunity.ConnectionOpportunityCampuses.Where( a => a.Guid == connectionOpportunityCampusState.Guid ).FirstOrDefault();
+                    if ( connectionOpportunityCampus == null )
+                    {
+                        connectionOpportunityCampus = new ConnectionOpportunityCampus();
+                        connectionOpportunity.ConnectionOpportunityCampuses.Add( connectionOpportunityCampus );
+                    }
+
+                    connectionOpportunityCampus.CopyPropertiesFrom( connectionOpportunityCampusState );
+                }
+
                 // Remove any groups that were removed in the UI
-                var selectedConnectionOpportunityGroups = ConnectionOpportunityGroupsState.Select( r => r.Guid );
-                foreach ( var connectionOpportunityGroup in connectionOpportunity.ConnectionOpportunityGroups.Where( r => !selectedConnectionOpportunityGroups.Contains( r.Guid ) ).ToList() )
+                var uiGroups = GroupsState.Select( r => r.Guid );
+                foreach ( var connectionOpportunityGroup in connectionOpportunity.ConnectionOpportunityGroups.Where( r => !uiGroups.Contains( r.Guid ) ).ToList() )
                 {
                     connectionOpportunity.ConnectionOpportunityGroups.Remove( connectionOpportunityGroup );
                     connectionOpportunityGroupService.Delete( connectionOpportunityGroup );
                 }
-            }
 
-
-            connectionOpportunity.Name = tbName.Text;
-            connectionOpportunity.Description = tbDescription.Text;
-            connectionOpportunity.IsActive = cbIsActive.Checked;
-            connectionOpportunity.PublicName = tbPublicName.Text;
-            connectionOpportunity.IconCssClass = tbIconCssClass.Text;
-
-            connectionOpportunity.GroupTypeId = ddlGroupType.SelectedValue.AsInteger();
-            connectionOpportunity.GroupMemberRoleId = ddlGroupRole.SelectedValue.AsInteger();
-            connectionOpportunity.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
-
-            connectionOpportunity.LoadAttributes();
-            Rock.Attribute.Helper.GetEditValues( phAttributes, connectionOpportunity );
-
-            if ( imgupPhoto.BinaryFileId != null )
-            {
-                connectionOpportunity.PhotoId = imgupPhoto.BinaryFileId.Value;
-            }
-            if ( gpConnectorGroup.SelectedValue.AsIntegerOrNull() != 0 )
-            {
-                connectionOpportunity.ConnectorGroupId = gpConnectorGroup.SelectedValue.AsIntegerOrNull();
-            }
-
-            foreach ( var connectionOpportunityGroupState in ConnectionOpportunityGroupsState )
-            {
-                ConnectionOpportunityGroup connectionOpportunityGroup = connectionOpportunity.ConnectionOpportunityGroups.Where( a => a.Guid == connectionOpportunityGroupState.Guid ).FirstOrDefault();
-                if ( connectionOpportunityGroup == null )
+                //Add or Update groups from the UI
+                foreach ( var connectionOpportunityGroupState in GroupsState )
                 {
-                    connectionOpportunityGroup = new ConnectionOpportunityGroup();
-                    connectionOpportunity.ConnectionOpportunityGroups.Add( connectionOpportunityGroup );
+                    ConnectionOpportunityGroup connectionOpportunityGroup = connectionOpportunity.ConnectionOpportunityGroups.Where( a => a.Guid == connectionOpportunityGroupState.Guid ).FirstOrDefault();
+                    if ( connectionOpportunityGroup == null )
+                    {
+                        connectionOpportunityGroup = new ConnectionOpportunityGroup();
+                        connectionOpportunity.ConnectionOpportunityGroups.Add( connectionOpportunityGroup );
+                    }
+
+                    connectionOpportunityGroup.CopyPropertiesFrom( connectionOpportunityGroupState );
                 }
 
-                connectionOpportunityGroup.CopyPropertiesFrom( connectionOpportunityGroupState );
-            }
-
-            foreach ( var connectionOpportunityCampusState in ConnectionOpportunityCampusesState )
-            {
-                ConnectionOpportunityCampus connectionOpportunityCampus = connectionOpportunity.ConnectionOpportunityCampuses.Where( a => a.Guid == connectionOpportunityCampusState.Guid ).FirstOrDefault();
-                if ( connectionOpportunityCampus == null )
+                if ( !Page.IsValid )
                 {
-                    connectionOpportunityCampus = new ConnectionOpportunityCampus();
-                    connectionOpportunity.ConnectionOpportunityCampuses.Add( connectionOpportunityCampus );
+                    return;
                 }
 
-                connectionOpportunityCampus.CopyPropertiesFrom( connectionOpportunityCampusState );
-            }
-
-            foreach ( ConnectionWorkflow connectionOpportunityWorkflowState in ConnectionOpportunityWorkflowsState )
-            {
-                ConnectionWorkflow connectionOpportunityWorkflow = connectionOpportunity.ConnectionWorkflows.Where( a => a.Guid == connectionOpportunityWorkflowState.Guid ).FirstOrDefault();
-                if ( connectionOpportunityWorkflow == null )
+                if ( !connectionOpportunity.IsValid )
                 {
-                    connectionOpportunityWorkflow = new ConnectionWorkflow();
-                    connectionOpportunity.ConnectionWorkflows.Add( connectionOpportunityWorkflow );
-                }
-                else
-                {
-                    connectionOpportunityWorkflowState.Id = connectionOpportunityWorkflow.Id;
-                    connectionOpportunityWorkflowState.Guid = connectionOpportunityWorkflow.Guid;
-                }
-                connectionOpportunityWorkflow.CopyPropertiesFrom( connectionOpportunityWorkflowState );
-                connectionOpportunityWorkflow.ConnectionOpportunityId = connectionOpportunity.Id;
-            }
-
-            // Check to see if user is still allowed to edit with selected connectionOpportunity type and parent connectionOpportunity
-            if ( !IsUserAuthorized( Authorization.EDIT ) ) //!connectionOpportunity.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
-            {
-                nbNotAllowedToEdit.Visible = true;
-                return;
-            }
-
-            if ( !Page.IsValid )
-            {
-                return;
-            }
-
-            if ( !connectionOpportunity.IsValid )
-            {
-                // Controls will render the error messages
-                return;
-            }
-
-            // use WrapTransaction since SaveAttributeValues does it's own RockContext.SaveChanges()
-            rockContext.WrapTransaction( () =>
-            {
-                var adding = connectionOpportunity.Id.Equals( 0 );
-                if ( adding )
-                {
-                    connectionOpportunityService.Add( connectionOpportunity );
+                    // Controls will render the error messages
+                    return;
                 }
 
-                rockContext.SaveChanges();
-
-                if ( adding )
+                // use WrapTransaction since SaveAttributeValues does it's own RockContext.SaveChanges()
+                rockContext.WrapTransaction( () =>
                 {
-                    // add ADMINISTRATE to the person who added the connectionOpportunity
-                    Rock.Security.Authorization.AllowPerson( connectionOpportunity, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
-                }
+                    rockContext.SaveChanges();
 
-                connectionOpportunity.SaveAttributeValues( rockContext );
+                    connectionOpportunity.LoadAttributes();
+                    Rock.Attribute.Helper.GetEditValues( phAttributes, connectionOpportunity );
+                    connectionOpportunity.SaveAttributeValues( rockContext );
+                } );
 
-                rockContext.SaveChanges();
-            } );
-            var qryParams = new Dictionary<string, string>();
-            qryParams["ConnectionTypeId"] = PageParameter( "ConnectionTypeId" );
-            NavigateToParentPage( qryParams );
+                var qryParams = new Dictionary<string, string>();
+                qryParams["ConnectionTypeId"] = PageParameter( "ConnectionTypeId" );
+                NavigateToParentPage( qryParams );
+            }
+
+
         }
 
         /// <summary>
@@ -435,42 +453,26 @@ namespace RockWeb.Blocks.Involvement
 
         #region Control Events
 
+        #region ConnectionOpportunityGroup Grid/Dialog Events
+
         /// <summary>
-        /// Handles the BlockUpdated event of the control.
+        /// Handles the Delete event of the gConnectionOpportunityGroups control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
-        {
-            var currentConnectionOpportunity = GetConnectionOpportunity( hfConnectionOpportunityId.Value.AsInteger() );
-            if ( currentConnectionOpportunity != null )
-            {
-                ShowDetail( currentConnectionOpportunity.Id );
-            }
-            else
-            {
-                string connectionOpportunityId = PageParameter( "ConnectionOpportunityId" );
-                if ( !string.IsNullOrWhiteSpace( connectionOpportunityId ) )
-                {
-                    ShowDetail( connectionOpportunityId.AsInteger() );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
-            }
-        }
-
-        #region ConnectionOpportunityGroup Events
-
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gConnectionOpportunityGroups_Delete( object sender, RowEventArgs e )
         {
             Guid rowGuid = (Guid)e.RowKeyValue;
-            ConnectionOpportunityGroupsState.RemoveEntity( rowGuid );
-            BindConnectionOpportunityGroupsGrid();
+            GroupsState.RemoveEntity( rowGuid );
+            BindGroupGrid();
         }
 
-        protected void btnAddConnectionOpportunityGroup_Click( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the SaveClick event of the dlgGroupDetails control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgGroupDetails_SaveClick( object sender, EventArgs e )
         {
             ConnectionOpportunityGroup connectionOpportunityGroup = new ConnectionOpportunityGroup();
             connectionOpportunityGroup.Group = new GroupService( new RockContext() ).Get( ddlGroup.SelectedValueAsInt().Value );
@@ -481,28 +483,37 @@ namespace RockWeb.Blocks.Involvement
                 return;
             }
 
-            if ( ConnectionOpportunityGroupsState.Any( a => a.Guid.Equals( connectionOpportunityGroup.Guid ) ) )
+            if ( GroupsState.Any( a => a.Guid.Equals( connectionOpportunityGroup.Guid ) ) )
             {
-                ConnectionOpportunityGroupsState.RemoveEntity( connectionOpportunityGroup.Guid );
+                GroupsState.RemoveEntity( connectionOpportunityGroup.Guid );
             }
-            ConnectionOpportunityGroupsState.Add( connectionOpportunityGroup );
+            GroupsState.Add( connectionOpportunityGroup );
 
-            BindConnectionOpportunityGroupsGrid();
+            BindGroupGrid();
 
             HideDialog();
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gConnectionOpportunityGroups control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gConnectionOpportunityGroups_GridRebind( object sender, EventArgs e )
         {
-            BindConnectionOpportunityGroupsGrid();
+            BindGroupGrid();
         }
 
+        /// <summary>
+        /// Handles the Add event of the gConnectionOpportunityGroups control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gConnectionOpportunityGroups_Add( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
             ddlGroup.Items.Clear();
-            List<int> selectedGroupIds = ConnectionOpportunityGroupsState.Select( c => c.GroupId ).ToList();
-            // get all group types that have at least one role
+            List<int> selectedGroupIds = GroupsState.Select( c => c.GroupId ).ToList();
 
             var groups = new GroupService( rockContext ).Queryable().Where( g => !selectedGroupIds.Contains( g.Id ) && g.GroupTypeId.ToString() == ddlGroupType.SelectedValue ).ToList();
             foreach ( var g in groups )
@@ -511,13 +522,15 @@ namespace RockWeb.Blocks.Involvement
             }
             ddlGroup.DataBind();
 
-            ShowDialog( "ConnectionOpportunityGroups", true );
+            ShowDialog( "GroupDetails", true );
         }
 
-        private void BindConnectionOpportunityGroupsGrid()
+        /// <summary>
+        /// Binds the group grid.
+        /// </summary>
+        private void BindGroupGrid()
         {
-            SetConnectionOpportunityGroupListOrder( ConnectionOpportunityGroupsState );
-            gConnectionOpportunityGroups.DataSource = ConnectionOpportunityGroupsState.Select( g => new
+            gConnectionOpportunityGroups.DataSource = GroupsState.Select( g => new
             {
                 g.Id,
                 g.Guid,
@@ -527,33 +540,28 @@ namespace RockWeb.Blocks.Involvement
             gConnectionOpportunityGroups.DataBind();
         }
 
-        /// <summary>
-        /// Sets the attribute list order.
-        /// </summary>
-        /// <param name="attributeList">The attribute list.</param>
-        private void SetConnectionOpportunityGroupListOrder( List<ConnectionOpportunityGroup> connectionOpportunityGroupList )
-        {
-            if ( connectionOpportunityGroupList != null )
-            {
-                if ( connectionOpportunityGroupList.Any() )
-                {
-                    connectionOpportunityGroupList.OrderBy( g => g.Group.Campus != null ? g.Group.Campus.Name : "N/A" ).ThenBy( g => g.Group.Name ).ToList();
-                }
-            }
-        }
-
         #endregion
 
         #region ConnectionOpportunityCampus Events
 
+        /// <summary>
+        /// Handles the Delete event of the gConnectionOpportunityCampuses control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gConnectionOpportunityCampuses_Delete( object sender, RowEventArgs e )
         {
             Guid rowGuid = (Guid)e.RowKeyValue;
-            ConnectionOpportunityCampusesState.RemoveEntity( rowGuid );
-            BindConnectionOpportunityCampusesGrid();
+            CampusesState.RemoveEntity( rowGuid );
+            BindCampusGrid();
         }
 
-        protected void btnAddConnectionOpportunityCampus_Click( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the SaveClick event of the dlgCampusDetails control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgCampusDetails_SaveClick( object sender, EventArgs e )
         {
             ConnectionOpportunityCampus connectionOpportunityCampus = new ConnectionOpportunityCampus();
             connectionOpportunityCampus.Campus = new CampusService( new RockContext() ).Get( cpCampus.SelectedCampusId.Value );
@@ -566,55 +574,70 @@ namespace RockWeb.Blocks.Involvement
                 return;
             }
 
-            if ( ConnectionOpportunityCampusesState.Any( a => a.Guid.Equals( connectionOpportunityCampus.Guid ) ) )
+            if ( CampusesState.Any( a => a.Guid.Equals( connectionOpportunityCampus.Guid ) ) )
             {
-                ConnectionOpportunityCampusesState.RemoveEntity( connectionOpportunityCampus.Guid );
+                CampusesState.RemoveEntity( connectionOpportunityCampus.Guid );
             }
-            ConnectionOpportunityCampusesState.Add( connectionOpportunityCampus );
+            CampusesState.Add( connectionOpportunityCampus );
 
-            BindConnectionOpportunityCampusesGrid();
+            BindCampusGrid();
 
             HideDialog();
         }
 
         private void gConnectionOpportunityCampuses_GridRebind( object sender, EventArgs e )
         {
-            BindConnectionOpportunityCampusesGrid();
+            BindCampusGrid();
         }
 
+        /// <summary>
+        /// Handles the Add event of the gConnectionOpportunityCampuses control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gConnectionOpportunityCampuses_Add( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
-            gpGroup.SetValue( null );
-            cpCampus.Campuses = CampusCache.All();
-
-            ShowDialog( "ConnectionOpportunityCampuses", true );
+            gConnectionOpportunityCampuses_ShowEdit( Guid.Empty );
         }
 
+        /// <summary>
+        /// Handles the Edit event of the gConnectionOpportunityCampuses control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gConnectionOpportunityCampuses_Edit( object sender, RowEventArgs e )
         {
             Guid connectionOpportunityCampusGuid = (Guid)e.RowKeyValue;
             gConnectionOpportunityCampuses_ShowEdit( connectionOpportunityCampusGuid );
         }
 
+        /// <summary>
+        /// handles the connection opportunity campuses_ show edit.
+        /// </summary>
+        /// <param name="connectionOpportunityCampusGuid">The connection opportunity campus unique identifier.</param>
         protected void gConnectionOpportunityCampuses_ShowEdit( Guid connectionOpportunityCampusGuid )
         {
-            ConnectionOpportunityCampus connectionCampus = ConnectionOpportunityCampusesState.FirstOrDefault( l => l.Guid.Equals( connectionOpportunityCampusGuid ) );
+            ConnectionOpportunityCampus connectionCampus = CampusesState.FirstOrDefault( l => l.Guid.Equals( connectionOpportunityCampusGuid ) );
             if ( connectionCampus != null )
             {
                 cpCampus.Campuses = CampusCache.All();
                 cpCampus.SetValue( connectionCampus.CampusId );
                 gpGroup.SetValue( connectionCampus.ConnectorGroupId );
-
-                hfAddConnectionOpportunityCampusGuid.Value = connectionOpportunityCampusGuid.ToString();
-                ShowDialog( "ConnectionOpportunityCampuses", true );
             }
+            else
+            {
+                gpGroup.SetValue( null );
+                cpCampus.Campuses = CampusCache.All();
+            }
+            ShowDialog( "CampusDetails", true );
         }
 
-        private void BindConnectionOpportunityCampusesGrid()
+        /// <summary>
+        /// Binds the campus grid.
+        /// </summary>
+        private void BindCampusGrid()
         {
-            SetConnectionOpportunityCampusListOrder( ConnectionOpportunityCampusesState );
-            gConnectionOpportunityCampuses.DataSource = ConnectionOpportunityCampusesState.Select( g => new
+            gConnectionOpportunityCampuses.DataSource = CampusesState.Select( g => new
             {
                 g.Id,
                 g.Guid,
@@ -624,43 +647,29 @@ namespace RockWeb.Blocks.Involvement
             gConnectionOpportunityCampuses.DataBind();
         }
 
-        /// <summary>
-        /// Sets the attribute list order.
-        /// </summary>
-        /// <param name="attributeList">The attribute list.</param>
-        private void SetConnectionOpportunityCampusListOrder( List<ConnectionOpportunityCampus> connectionOpportunityCampusList )
-        {
-            if ( connectionOpportunityCampusList != null )
-            {
-                if ( connectionOpportunityCampusList.Any() )
-                {
-                    connectionOpportunityCampusList.OrderBy( g => g.Campus.Name ).ThenBy( g => g.ConnectorGroup.Name ).ToList();
-                }
-            }
-        }
-
         #endregion
 
         #region ConnectionOpportunityWorkflow Events
 
-        protected void dlgConnectionOpportunityWorkflow_SaveClick( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the SaveClick event of the dlgWorkflowDetails control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgWorkflowDetails_SaveClick( object sender, EventArgs e )
         {
             ConnectionWorkflow connectionOpportunityWorkflow = null;
-            Guid guid = hfAddConnectionOpportunityWorkflowGuid.Value.AsGuid();
+            Guid guid = hfWorkflowGuid.Value.AsGuid();
             if ( !guid.IsEmpty() )
             {
-                connectionOpportunityWorkflow = ConnectionOpportunityWorkflowsState.FirstOrDefault( l => l.Guid.Equals( guid ) );
+                connectionOpportunityWorkflow = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( guid ) );
             }
 
             if ( connectionOpportunityWorkflow == null )
             {
                 connectionOpportunityWorkflow = new ConnectionWorkflow();
             }
-            try
-            {
-                connectionOpportunityWorkflow.WorkflowType = new WorkflowTypeService( new RockContext() ).Get( ddlWorkflowType.SelectedValueAsId().Value );
-            }
-            catch { }
+            connectionOpportunityWorkflow.WorkflowType = new WorkflowTypeService( new RockContext() ).Get( ddlWorkflowType.SelectedValueAsId().Value ) ?? null;
             connectionOpportunityWorkflow.WorkflowTypeId = ddlWorkflowType.SelectedValueAsId().Value;
             connectionOpportunityWorkflow.TriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
             connectionOpportunityWorkflow.ConnectionOpportunityId = 0;
@@ -668,40 +677,59 @@ namespace RockWeb.Blocks.Involvement
             {
                 return;
             }
-            if ( ConnectionOpportunityWorkflowsState.Any( a => a.Guid.Equals( connectionOpportunityWorkflow.Guid ) ) )
+            if ( WorkflowsState.Any( a => a.Guid.Equals( connectionOpportunityWorkflow.Guid ) ) )
             {
-                ConnectionOpportunityWorkflowsState.RemoveEntity( connectionOpportunityWorkflow.Guid );
+                WorkflowsState.RemoveEntity( connectionOpportunityWorkflow.Guid );
             }
 
-            ConnectionOpportunityWorkflowsState.Add( connectionOpportunityWorkflow );
+            WorkflowsState.Add( connectionOpportunityWorkflow );
 
-            BindConnectionOpportunityWorkflowsGrid();
+            BindWorkflowGrid();
 
             HideDialog();
         }
 
+        /// <summary>
+        /// Handles the Delete event of the gConnectionOpportunityWorkflows control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gConnectionOpportunityWorkflows_Delete( object sender, RowEventArgs e )
         {
             Guid rowGuid = (Guid)e.RowKeyValue;
-            ConnectionOpportunityWorkflowsState.RemoveEntity( rowGuid );
+            WorkflowsState.RemoveEntity( rowGuid );
 
-            BindConnectionOpportunityWorkflowsGrid();
+            BindWorkflowGrid();
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gConnectionOpportunityWorkflows control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gConnectionOpportunityWorkflows_GridRebind( object sender, EventArgs e )
         {
-            BindConnectionOpportunityWorkflowsGrid();
+            BindWorkflowGrid();
         }
 
+        /// <summary>
+        /// Handles the Edit event of the gConnectionOpportunityWorkflows control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gConnectionOpportunityWorkflows_Edit( object sender, RowEventArgs e )
         {
             Guid connectionOpportunityWorkflowGuid = (Guid)e.RowKeyValue;
             gConnectionOpportunityWorkflows_ShowEdit( connectionOpportunityWorkflowGuid );
         }
 
+        /// <summary>
+        /// gs the connection opportunity workflows_ show edit.
+        /// </summary>
+        /// <param name="connectionOpportunityWorkflowGuid">The connection opportunity workflow unique identifier.</param>
         protected void gConnectionOpportunityWorkflows_ShowEdit( Guid connectionOpportunityWorkflowGuid )
         {
-            ConnectionWorkflow connectionOpportunityWorkflow = ConnectionOpportunityWorkflowsState.FirstOrDefault( l => l.Guid.Equals( connectionOpportunityWorkflowGuid ) );
+            ConnectionWorkflow connectionOpportunityWorkflow = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( connectionOpportunityWorkflowGuid ) );
             if ( connectionOpportunityWorkflow != null )
             {
                 ddlTriggerType.BindToEnum<ConnectionWorkflowTriggerType>();
@@ -731,42 +759,56 @@ namespace RockWeb.Blocks.Involvement
                 {
                     ddlTriggerType.SelectedValue = connectionOpportunityWorkflow.TriggerType.ConvertToInt().ToString();
                 }
-
-                hfAddConnectionOpportunityWorkflowGuid.Value = connectionOpportunityWorkflowGuid.ToString();
-                UpdateTriggerQualifiers();
-                ShowDialog( "ConnectionOpportunityWorkflows", true );
             }
-        }
-
-        private void gConnectionOpportunityWorkflows_Add( object sender, EventArgs e )
-        {
-            ddlTriggerType.BindToEnum<ConnectionWorkflowTriggerType>();
-            ddlWorkflowType.Items.Clear();
-            ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
-
-            foreach ( var workflowType in new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name ) )
+            else
             {
-                if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                ddlTriggerType.BindToEnum<ConnectionWorkflowTriggerType>();
+                ddlWorkflowType.Items.Clear();
+                ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
+
+                foreach ( var workflowType in new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name ) )
                 {
-                    ddlWorkflowType.Items.Add( new ListItem( workflowType.Name, workflowType.Id.ToString() ) );
+                    if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        ddlWorkflowType.Items.Add( new ListItem( workflowType.Name, workflowType.Id.ToString() ) );
+                    }
                 }
             }
-            hfAddConnectionOpportunityWorkflowGuid.Value = Guid.Empty.ToString();
+
+            hfWorkflowGuid.Value = connectionOpportunityWorkflowGuid.ToString();
             UpdateTriggerQualifiers();
-            ShowDialog( "ConnectionOpportunityWorkflows", true );
+            ShowDialog( "WorkflowDetails", true );
         }
 
+        /// <summary>
+        /// Handles the Add event of the gConnectionOpportunityWorkflows control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gConnectionOpportunityWorkflows_Add( object sender, EventArgs e )
+        {
+            gConnectionOpportunityWorkflows_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlTriggerType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlTriggerType_SelectedIndexChanged( object sender, EventArgs e )
         {
             UpdateTriggerQualifiers();
         }
 
+        /// <summary>
+        /// Updates the trigger qualifiers.
+        /// </summary>
         private void UpdateTriggerQualifiers()
         {
             RockContext rockContext = new RockContext();
             String[] qualifierValues = new String[2];
 
-            ConnectionWorkflow connectionWorkflow = ConnectionOpportunityWorkflowsState.FirstOrDefault( l => l.Guid.Equals( hfAddConnectionOpportunityWorkflowGuid.Value.AsGuid() ) );
+            ConnectionWorkflow connectionWorkflow = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( hfWorkflowGuid.Value.AsGuid() ) );
             ConnectionWorkflowTriggerType connectionWorkflowTriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
             int connectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
             switch ( connectionWorkflowTriggerType )
@@ -845,6 +887,7 @@ namespace RockWeb.Blocks.Involvement
                     ddlSecondaryQualifier.Items.Clear();
                     break;
             }
+
             if ( connectionWorkflow != null )
             {
                 if ( connectionWorkflow.TriggerType == ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>() )
@@ -863,10 +906,12 @@ namespace RockWeb.Blocks.Involvement
 
         }
 
-        private void BindConnectionOpportunityWorkflowsGrid()
+        /// <summary>
+        /// Binds the workflow grid.
+        /// </summary>
+        private void BindWorkflowGrid()
         {
-            SetConnectionOpportunityWorkflowListOrder( ConnectionOpportunityWorkflowsState );
-            gConnectionOpportunityWorkflows.DataSource = ConnectionOpportunityWorkflowsState.Select( c => new
+            gConnectionOpportunityWorkflows.DataSource = WorkflowsState.Select( c => new
             {
                 c.Id,
                 c.Guid,
@@ -876,28 +921,23 @@ namespace RockWeb.Blocks.Involvement
             gConnectionOpportunityWorkflows.DataBind();
         }
 
-        private void SetConnectionOpportunityWorkflowListOrder( List<ConnectionWorkflow> connectionOpportunityWorkflowList )
-        {
-            if ( connectionOpportunityWorkflowList != null )
-            {
-                if ( connectionOpportunityWorkflowList.Any() )
-                {
-                    connectionOpportunityWorkflowList.OrderBy( c => c.WorkflowType.Name ).ThenBy( c => c.TriggerType.ConvertToString() ).ToList();
-                }
-            }
-        }
-
         #endregion
 
         #region ConnectionTypeWorkflow Events
 
-
-
+        /// <summary>
+        /// Handles the GridRebind event of the gConnectionTypeWorkflows control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gConnectionTypeWorkflows_GridRebind( object sender, EventArgs e )
         {
             BindConnectionTypeWorkflowsGrid();
         }
 
+        /// <summary>
+        /// Binds the connection type workflows grid.
+        /// </summary>
         private void BindConnectionTypeWorkflowsGrid()
         {
             var inheritedWorkflows = new ConnectionTypeService( new RockContext() ).Get( PageParameter( "ConnectionTypeId" ).AsInteger() ).ConnectionWorkflows.ToList();
@@ -912,6 +952,10 @@ namespace RockWeb.Blocks.Involvement
             gConnectionTypeWorkflows.DataBind();
         }
 
+        /// <summary>
+        /// Sets the connection type workflow list order.
+        /// </summary>
+        /// <param name="connectionTypeWorkflowList">The connection type workflow list.</param>
         private void SetConnectionTypeWorkflowListOrder( List<ConnectionWorkflow> connectionTypeWorkflowList )
         {
             if ( connectionTypeWorkflowList != null )
@@ -925,22 +969,42 @@ namespace RockWeb.Blocks.Involvement
 
         #endregion
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlGroupType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlGroupType_SelectedIndexChanged( object sender, EventArgs e )
         {
             int groupTypeId = ddlGroupType.SelectedValue.AsInteger();
             LoadGroupRoles( groupTypeId );
-            ConnectionOpportunityGroupsState.Clear();
-            BindConnectionOpportunityGroupsGrid();
+            GroupsState.Clear();
+            BindGroupGrid();
         }
 
+        /// <summary>
+        /// Handles the CheckedChanged event of the tglUseAllGroupsOfGroupType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglUseAllGroupsOfGroupType_CheckedChanged( object sender, EventArgs e )
         {
             if ( tglUseAllGroupsOfGroupType.Checked )
             {
-                ConnectionOpportunityGroupsState.Clear();
-                BindConnectionOpportunityGroupsGrid();
+                GroupsState.Clear();
+                BindGroupGrid();
             }
             wpConnectionOpportunityGroups.Visible = !tglUseAllGroupsOfGroupType.Checked;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnHideDialog control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnHideDialog_Click( object sender, EventArgs e )
+        {
+            HideDialog();
         }
 
         #endregion
@@ -956,10 +1020,9 @@ namespace RockWeb.Blocks.Involvement
         {
             ConnectionOpportunity connectionOpportunity = null;
 
-            bool viewAllowed = false;
-            bool editAllowed = IsUserAuthorized( Authorization.EDIT );
+            bool editAllowed = UserCanEdit;
 
-            RockContext rockContext = null;
+            RockContext rockContext = new RockContext();
 
             if ( !connectionOpportunityId.Equals( 0 ) )
             {
@@ -969,33 +1032,48 @@ namespace RockWeb.Blocks.Involvement
             if ( connectionOpportunity == null )
             {
                 connectionOpportunity = new ConnectionOpportunity { Id = 0, IsActive = true, Name = "" };
-
-                rockContext = rockContext ?? new RockContext();
             }
 
-            viewAllowed = editAllowed || connectionOpportunity.IsAuthorized( Authorization.VIEW, CurrentPerson );
-            editAllowed = IsUserAuthorized( Authorization.EDIT ) || connectionOpportunity.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
-            pnlDetails.Visible = viewAllowed;
 
-            hfConnectionOpportunityId.Value = connectionOpportunity.Id.ToString();
-
-            // render UI based on Authorized and IsSystem
-            bool readOnly = false;
-
-            nbEditModeMessage.Text = string.Empty;
+            // Only users that have Edit rights to block, or edit rights to the calendar (from query string) should be able to edit
             if ( !editAllowed )
             {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ConnectionOpportunity.FriendlyTypeName );
+                var connectionType = new ConnectionTypeService( rockContext ).Get( _connectionTypeId );
+                if ( connectionType != null )
+                {
+                    editAllowed = connectionType.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                }
             }
 
-            if ( readOnly )
+            bool readOnly = true;
+
+            if ( !editAllowed )
             {
-                SetEditMode( false );
+                // User is not authorized
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ConnectionOpportunity.FriendlyTypeName );
             }
             else
             {
+                nbEditModeMessage.Text = string.Empty;
+
+                if ( connectionOpportunity.Id != 0 && !( connectionOpportunity.ConnectionTypeId == _connectionTypeId ) )
+                {
+                    // Item does not belong to calendar
+                    nbIncorrectOpportunity.Visible = true;
+                }
+                else
+                {
+                    readOnly = false;
+                }
+            }
+
+            pnlDetails.Visible = !readOnly;
+            this.HideSecondaryBlocks( !readOnly );
+
+            if ( !readOnly )
+            {
+                hfConnectionOpportunityId.Value = connectionOpportunity.Id.ToString();
                 ShowEditDetails( connectionOpportunity );
             }
         }
@@ -1028,8 +1106,6 @@ namespace RockWeb.Blocks.Involvement
             }
             lIcon.Text = string.Format( "<i class='{0}'></i>", connectionOpportunity.IconCssClass );
 
-            SetEditMode( true );
-
             tbName.Text = connectionOpportunity.Name;
             tbPublicName.Text = connectionOpportunity.PublicName;
             tbIconCssClass.Text = connectionOpportunity.IconCssClass;
@@ -1037,51 +1113,37 @@ namespace RockWeb.Blocks.Involvement
             cbIsActive.Checked = connectionOpportunity.IsActive;
             tglUseAllGroupsOfGroupType.Checked = connectionOpportunity.UseAllGroupsOfType;
 
-            if ( ConnectionOpportunityWorkflowsState == null )
-            {
-                ConnectionOpportunityWorkflowsState = connectionOpportunity.ConnectionWorkflows.ToList();
-            }
-            if ( ConnectionOpportunityGroupsState == null )
-            {
-                ConnectionOpportunityGroupsState = connectionOpportunity.ConnectionOpportunityGroups.ToList();
-            }
-            if ( ConnectionOpportunityCampusesState == null )
-            {
-                ConnectionOpportunityCampusesState = connectionOpportunity.ConnectionOpportunityCampuses.ToList();
-            }
-
-            var rockContext = new RockContext();
-
-            var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
-            var attributeService = new AttributeService( rockContext );
+            WorkflowsState = connectionOpportunity.ConnectionWorkflows.ToList();
+            GroupsState = connectionOpportunity.ConnectionOpportunityGroups.ToList();
+            CampusesState = connectionOpportunity.ConnectionOpportunityCampuses.ToList();
 
             LoadDropDowns( connectionOpportunity );
-            connectionOpportunity.LoadAttributes();
-            if ( connectionOpportunity.Attributes.Any() )
-            {
-                wpConnectionOpportunityAttributes.Visible = true;
-                wpConnectionOpportunityAttributes.Expanded = true;
-                Rock.Attribute.Helper.AddEditControls( connectionOpportunity, phAttributes, true, BlockValidationGroup );
-            }
-            else
-            {
-                wpConnectionOpportunityAttributes.Visible = false;
-            }
 
-            BindConnectionOpportunityGroupsGrid();
-            BindConnectionOpportunityWorkflowsGrid();
+            ShowOpportunityAttributes();
+
+            BindGroupGrid();
+            BindWorkflowGrid();
+            BindCampusGrid();
+
             BindConnectionTypeWorkflowsGrid();
-            BindConnectionOpportunityCampusesGrid();
         }
 
         /// <summary>
-        /// Sets the edit mode.
+        /// Shows the opportunity attributes.
         /// </summary>
-        /// <param name="editable">if set to <c>true</c> [editable].</param>
-        private void SetEditMode( bool editable )
+        private void ShowOpportunityAttributes()
         {
-            pnlEditDetails.Visible = editable;
-            this.HideSecondaryBlocks( editable );
+            wpAttributes.Visible = false;
+            phAttributes.Controls.Clear();
+
+            var connectionOpportunity = new ConnectionOpportunity { ConnectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger() };
+            connectionOpportunity.LoadAttributes();
+            if ( connectionOpportunity.Attributes.Count > 0 )
+            {
+                wpAttributes.Visible = true;
+                Rock.Attribute.Helper.AddEditControls( connectionOpportunity, phAttributes, true, BlockValidationGroup );
+            }
+
         }
 
         /// <summary>
@@ -1181,16 +1243,16 @@ namespace RockWeb.Blocks.Involvement
         {
             switch ( hfActiveDialog.Value )
             {
-                case "CONNECTIONOPPORTUNITYGROUPS":
-                    dlgConnectionOpportunityGroups.Show();
+                case "GROUPDETAILS":
+                    dlgGroupDetails.Show();
                     break;
 
-                case "CONNECTIONOPPORTUNITYCAMPUSES":
-                    dlgConnectionOpportunityCampuses.Show();
+                case "CAMPUSDETAILS":
+                    dlgCampusDetails.Show();
                     break;
 
-                case "CONNECTIONOPPORTUNITYWORKFLOWS":
-                    dlgConnectionOpportunityWorkflow.Show();
+                case "WORKFLOWDETAILS":
+                    dlgWorkflowDetails.Show();
                     break;
             }
         }
@@ -1202,16 +1264,16 @@ namespace RockWeb.Blocks.Involvement
         {
             switch ( hfActiveDialog.Value )
             {
-                case "CONNECTIONOPPORTUNITYGROUPS":
-                    dlgConnectionOpportunityGroups.Hide();
+                case "GROUPDETAILS":
+                    dlgGroupDetails.Hide();
                     break;
 
-                case "CONNECTIONOPPORTUNITYCAMPUSES":
-                    dlgConnectionOpportunityCampuses.Hide();
+                case "CAMPUSDETAILS":
+                    dlgCampusDetails.Hide();
                     break;
 
-                case "CONNECTIONOPPORTUNITYWORKFLOWS":
-                    dlgConnectionOpportunityWorkflow.Hide();
+                case "WORKFLOWDETAILS":
+                    dlgWorkflowDetails.Hide();
                     break;
             }
 

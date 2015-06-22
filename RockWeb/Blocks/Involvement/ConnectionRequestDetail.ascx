@@ -213,6 +213,7 @@
                 <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" />
             </Content>
         </Rock:ModalDialog>
+
         <Rock:ModalDialog ID="dlgSearch" runat="server" ValidationGroup="Search" SaveButtonText="Search" OnSaveClick="dlgSearch_SaveClick" Title="Search Opportunities">
             <Content>
                 <div class="col-md-6">
@@ -259,6 +260,7 @@
 
             </Content>
         </Rock:ModalDialog>
+
         <script type="text/javascript">
             $(function () {
                 var scrollbCategory = $('.treeview-scroll');
