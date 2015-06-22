@@ -116,7 +116,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Person is deceased; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool? IsDeceased
+        public bool IsDeceased
         {
             get
             {
@@ -124,14 +124,7 @@ namespace Rock.Model
             }
             set
             {
-                if ( value.HasValue )
-                {
-                    _isDeceased = value.Value;
-                }
-                else
-                {
-                    _isDeceased = false;
-                }
+                _isDeceased = value;
             }
         }
 

@@ -115,7 +115,7 @@ namespace RockWeb.Blocks.Crm
                         e.Row.AddCssClass( "inactive" );
                     }
 
-                    if ( person.IsDeceased ?? false )
+                    if ( person.IsDeceased )
                     {
                         e.Row.AddCssClass( "deceased" );
                     }
@@ -522,7 +522,7 @@ namespace RockWeb.Blocks.Crm
         /// <value>
         /// The is deceased.
         /// </value>
-        public bool? IsDeceased { get; set; }
+        public bool IsDeceased { get; set; }
 
         /// <summary>
         /// Gets the age.
