@@ -71,9 +71,12 @@ namespace Rock.Utility
 
             // if either "simple", "expanded", or True is specified in the LoadAttributes param, tell the formatter to load the attributes on the way out
             LoadAttributes = SerializeInSimpleMode || loadAttributes.Equals( "expanded", StringComparison.OrdinalIgnoreCase );
-
+            
             // NOTE: request.Properties["Person"] gets set in Rock.Rest.Filters.SecurityAttribute.OnActionExecuting
-            this.Person = request.Properties["Person"] as Rock.Model.Person;
+            if ( LoadAttributes && request.Properties.ContainsKey( "Person" ) )
+            {
+                this.Person = request.Properties["Person"] as Rock.Model.Person;
+            }
 
             return base.GetPerRequestFormatterInstance( type, request, mediaType );
         }

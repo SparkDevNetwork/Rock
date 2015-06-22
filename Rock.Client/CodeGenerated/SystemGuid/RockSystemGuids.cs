@@ -59,6 +59,8 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class Category
     {
+        public const string HISTORY_FINANCIAL_BATCH = "AF6A8CFF-F24F-4AA8-B126-94B6903961C0";
+        public const string HISTORY_FINANCIAL_TRANSACTION = "477EE3BE-C68F-48BD-B218-FAFC99AF56B3";
         public const string HISTORY_PERSON = "6F09163D-7DDD-4E1E-8D18-D7CAA04451A7";
         public const string HISTORY_PERSON_ACTIVITY = "0836845E-5ED8-4ABE-8787-3B61EF2F0FA5";
         public const string HISTORY_PERSON_COMMUNICATIONS = "F291034B-7581-48F3-B522-E31B8534D529";
@@ -195,6 +197,7 @@ namespace Rock.Client.SystemGuid
         public const string GROUP_MEMBER = "49668B95-FEDC-43DD-8085-D2B0D6343C48";
         public const string MERGE_TEMPLATE = "CD1DB988-6891-4B0F-8D1B-B0A311A3BC3E";
         public const string METRICCATEGORY = "3D35C859-DF37-433F-A20A-0FFD0FCB9862";
+        public const string NOTE = "53DC1E78-14A5-44DE-903F-6A2CB02164E7";
         public const string PERSON = "72657ED8-D16E-492E-AC12-144C5E7567E7";
         public const string PERSON_ALIAS = "90F5E87B-F0D5-4617-8AE9-EB57E673F36F";
         public const string REPORTING_DATASELECT_LIQUIDSELECT = "C130DC52-CA31-45EE-A4F2-6C53A838EF3D";

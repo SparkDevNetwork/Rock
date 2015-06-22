@@ -186,7 +186,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         {
                             if ( IsKnownRelationships )
                             {
-                                var inverseGroupMember = service.GetInverseRelationship( groupMember, false, CurrentPersonAlias );
+                                var inverseGroupMember = service.GetInverseRelationship( groupMember, false );
                                 if ( inverseGroupMember != null )
                                 {
                                     service.Delete( inverseGroupMember );
@@ -249,7 +249,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             GroupMember formerInverseGroupMember = null;
                             if ( IsKnownRelationships )
                             {
-                                formerInverseGroupMember = memberService.GetInverseRelationship( groupMember, false, CurrentPersonAlias );
+                                formerInverseGroupMember = memberService.GetInverseRelationship( groupMember, false );
                             }
 
                             groupMember.PersonId = ppPerson.PersonId.Value;
@@ -259,8 +259,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                             if ( IsKnownRelationships )
                             {
-                                var inverseGroupMember = memberService.GetInverseRelationship(
-                                    groupMember, GetAttributeValue( "CreateGroup" ).AsBoolean(), CurrentPersonAlias );
+                                var inverseGroupMember = memberService.GetInverseRelationship( groupMember, GetAttributeValue( "CreateGroup" ).AsBoolean() );
                                 if ( inverseGroupMember != null )
                                 {
                                     rockContext.SaveChanges();

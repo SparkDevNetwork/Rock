@@ -30,8 +30,8 @@ namespace Rock.Migrations
         public override void Up()
         {
             // ensure that there aren't any PersonAlias records that point to a Person that doesn't exist (so we don't break the new FK constraint)
-            Sql( "delete from PersonAlias where AliasPersonId != PersonId and AliasPersonId not in (select Id from Person)" );
-            AddForeignKey("dbo.PersonAlias", "AliasPersonId", "dbo.Person", "Id");
+            //Sql( "delete from PersonAlias where AliasPersonId != PersonId and AliasPersonId not in (select Id from Person)" );
+            //AddForeignKey("dbo.PersonAlias", "AliasPersonId", "dbo.Person", "Id");
 
             Sql( MigrationSQL._201506162223455_EnsurePersonAlias_UpdateCheckinLabels );
         }
