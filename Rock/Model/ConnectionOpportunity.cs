@@ -228,7 +228,7 @@ namespace Rock.Model
             this.HasOptional( p => p.GroupMemberRole ).WithMany().HasForeignKey( p => p.GroupMemberRoleId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ConnectorGroup ).WithMany().HasForeignKey( p => p.ConnectorGroupId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.GroupType ).WithMany().HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( false );
-            this.HasRequired( p => p.ConnectionType ).WithMany( p => p.ConnectionOpportunities ).HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.ConnectionType ).WithMany( p => p.ConnectionOpportunities ).HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
         }
     }

@@ -2,7 +2,7 @@
 
 <script type="text/javascript">
     function clearActiveDialog() {
-        $('#<%=hfActiveDialog.ClientID %>').val('');
+        $('#<%=btnHideDialog.ClientID %>').click();
     }
 </script>
 
@@ -26,9 +26,14 @@
 
                 <div class="panel-body">
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+
+                    <Rock:NotificationBox ID="nbIncorrectOpportunity" runat="server" NotificationBoxType="Danger" Visible="false"
+                        Text="The opportunity selected does not belong to the selected connection type." />
+
                     <Rock:NotificationBox ID="nbNotAllowedToEdit" runat="server" NotificationBoxType="Danger" Visible="false"
-                        Text="You are not authorized to save group with the selected group type and/or parent group." />
-                    <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                        Text="You are not authorized to save opportunities for the configured connection type." />
+
+                    <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                     <div id="pnlEditDetails" runat="server">
 
@@ -50,11 +55,7 @@
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-12">
-                                <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.ConnectionOpportunity, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                            </div>
-                        </div>
+                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.ConnectionOpportunity, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
 
                         <div class="row">
                             <div class="col-md-6">
@@ -83,11 +84,11 @@
                             </div>
                         </div>
 
-                        <Rock:PanelWidget ID="wpConnectionOpportunityAttributes" runat="server" Title="Opportunity Attributes">
+                        <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Opportunity Attributes">
                             <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
                         </Rock:PanelWidget>
 
-                        <Rock:PanelWidget ID="wpConnectionOpportunityGroups" runat="server" Title="Groups">
+                        <Rock:PanelWidget ID="wpConnectionOpportunityGroups" runat="server" Title="Connection Groups">
                             <div class="grid">
                                 <Rock:Grid ID="gConnectionOpportunityGroups" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group">
                                     <Columns>
@@ -98,6 +99,7 @@
                                 </Rock:Grid>
                             </div>
                         </Rock:PanelWidget>
+
                         <Rock:PanelWidget ID="wpConnectionOpportunityCampuses" runat="server" Title="Campus Connector Groups">
                             <div class="grid">
                                 <Rock:Grid ID="gConnectionOpportunityCampuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Campus Connector Group">
@@ -110,6 +112,7 @@
                                 </Rock:Grid>
                             </div>
                         </Rock:PanelWidget>
+
                         <Rock:PanelWidget ID="wpConnectionTypeWorkflow" runat="server" Title="Inherited Workflows">
                             <div class="grid">
                                 <Rock:Grid ID="gConnectionTypeWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Workflow">
@@ -120,6 +123,7 @@
                                 </Rock:Grid>
                             </div>
                         </Rock:PanelWidget>
+
                         <Rock:PanelWidget ID="wpConnectionOpportunityWorkflow" runat="server" Title="Workflows">
                             <div class="grid">
                                 <Rock:Grid ID="gConnectionOpportunityWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Workflow">
@@ -142,14 +146,15 @@
             </div>
         </asp:Panel>
 
+        <asp:Button ID="btnHideDialog" runat="server" Style="display: none" OnClick="btnHideDialog_Click" />
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
-        <Rock:ModalDialog ID="dlgConnectionOpportunityWorkflow" runat="server" Title="Campus Select" OnSaveClick="dlgConnectionOpportunityWorkflow_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ConnectionOpportunityWorkflow">
+        <Rock:ModalDialog ID="dlgWorkflowDetails" runat="server" Title="Campus Select" OnSaveClick="dlgWorkflowDetails_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="WorkflowDetails">
             <Content>
 
-                <asp:HiddenField ID="hfAddConnectionOpportunityWorkflowGuid" runat="server" />
+                <asp:HiddenField ID="hfWorkflowGuid" runat="server" />
 
-                <asp:ValidationSummary ID="valConnectionOpportunityWorkflowSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="ConnectionOpportunityWorkflow" />
+                <asp:ValidationSummary ID="valWorkflowDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="WorkflowDetails" />
 
                 <div class="row">
                     <div class="col-md-6">
@@ -178,17 +183,19 @@
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgConnectionOpportunityGroups" runat="server" ValidationGroup="ConnectionOpportunityGroup" SaveButtonText="Add" OnSaveClick="btnAddConnectionOpportunityGroup_Click" Title="Select Group">
+        <Rock:ModalDialog ID="dlgGroupDetails" runat="server" ValidationGroup="GroupDetails" SaveButtonText="Add" OnSaveClick="dlgGroupDetails_SaveClick" Title="Select Group">
             <Content>
-                <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Select Group" ValidationGroup="ConnectionOpportunityGroup" />
+                <asp:ValidationSummary ID="valGroupDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="GroupDetails" />
+                <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Select Group" ValidationGroup="GroupDetails" />
             </Content>
         </Rock:ModalDialog>
-        <Rock:ModalDialog ID="dlgConnectionOpportunityCampuses" runat="server" ValidationGroup="ConnectionOpportunityGroup" SaveButtonText="Add" OnSaveClick="btnAddConnectionOpportunityCampus_Click" Title="Select Group">
+
+        <Rock:ModalDialog ID="dlgCampusDetails" runat="server" ValidationGroup="CampusDetails" SaveButtonText="Add" OnSaveClick="dlgCampusDetails_SaveClick" Title="Select Group">
             <Content>
-                <asp:HiddenField ID="hfAddConnectionOpportunityCampusGuid" runat="server" />
-                <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" ValidationGroup="ConnectionOpportunityGroup" Required="true" />
-                <Rock:GroupPicker ID="gpGroup" runat="server" Label="Connector Group" ValidationGroup="ConnectionOpportunityGroup" />
+                <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" ValidationGroup="CampusDetails" Required="true" />
+                <Rock:GroupPicker ID="gpGroup" runat="server" Label="Connector Group" ValidationGroup="CampusDetails" />
             </Content>
         </Rock:ModalDialog>
+
     </ContentTemplate>
 </asp:UpdatePanel>
