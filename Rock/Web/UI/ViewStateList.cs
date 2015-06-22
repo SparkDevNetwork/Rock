@@ -28,6 +28,7 @@ namespace Rock.Web.UI
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
+    [Obsolete("Should just use ViewState instead")]
     public class ViewStateList<T> : IEnumerable<T> where T : Model<T>, new()
     {
         /// <summary>

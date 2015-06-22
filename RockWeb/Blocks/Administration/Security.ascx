@@ -34,7 +34,8 @@
 </script>
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
-        <div class="nav navbar nav-pagelist">
+
+        <div id="divActions" runat="server" class="nav navbar nav-pagelist">
             <ul class="nav nav-pills">
                 <asp:Repeater ID="rptActions" runat="server">
                     <ItemTemplate>
@@ -47,7 +48,7 @@
             </ul>
         </div>
 
-        <div class="tab-content">
+        <div id="divContent" runat="server" class="tab-content">
 
             <asp:PlaceHolder ID="phList" runat="server">
                 <div id="security-details" class="security-action-description alert alert-info collapse">

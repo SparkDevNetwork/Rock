@@ -335,6 +335,58 @@ namespace Rock.Rest
             return null;
         }
 
+        // DELETE api/<controller>/AttributeValue 
+        [Authenticate, Secured]
+        [HttpDelete]
+        public virtual HttpResponseMessage DeleteAttributeValue( int id, string attributeKey )
+        {
+            return SetAttributeValue( id, attributeKey, null );
+        }
+
+        // POST api/<controller>/AttributeValue 
+        [Authenticate, Secured]
+        [HttpPost]
+        public virtual HttpResponseMessage SetAttributeValue( int id, string attributeKey, string attributeValue )
+        {
+            T model;
+            if ( !Service.TryGet( id, out model ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            CheckCanEdit( model );
+
+            Rock.Attribute.IHasAttributes modelWithAttributes = model as Rock.Attribute.IHasAttributes;
+            if ( modelWithAttributes != null )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    modelWithAttributes.LoadAttributes( rockContext );
+                    Rock.Web.Cache.AttributeCache attributeCache = modelWithAttributes.Attributes.ContainsKey( attributeKey ) ? modelWithAttributes.Attributes[attributeKey] : null;
+
+                    if ( attributeCache != null )
+                    {
+                        if ( !attributeCache.IsAuthorized( Rock.Security.Authorization.EDIT, this.GetPerson() ) )
+                        {
+                            throw new HttpResponseException( new HttpResponseMessage( HttpStatusCode.Forbidden ) { ReasonPhrase = string.Format( "Not authorized to edit {0} on {1}", modelWithAttributes.GetType().GetFriendlyTypeName(), attributeKey ) } );
+                        }
+
+                        Rock.Attribute.Helper.SaveAttributeValue( modelWithAttributes, attributeCache, attributeValue, rockContext );
+                        var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Accepted, modelWithAttributes.Id );
+                        return response;
+                    }
+                    else
+                    {
+                        throw new HttpResponseException( new HttpResponseMessage( HttpStatusCode.BadRequest ) { ReasonPhrase = string.Format( "{0} does not have a {1} attribute", modelWithAttributes.GetType().GetFriendlyTypeName(), attributeKey ) } );
+                    }
+                }
+            }
+            else
+            {
+                throw new HttpResponseException( new HttpResponseMessage( HttpStatusCode.BadRequest ) { ReasonPhrase = "specified item does not have attributes" } );
+            }
+        }
+
         /// <summary>
         /// Gets the encrypted context key for an entity.
         /// </summary>
