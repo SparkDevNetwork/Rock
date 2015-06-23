@@ -184,6 +184,25 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the CSS class for the checkbox "div" (see Rock.Web.UI.Adapters.CheckboxAdaptor)
+        /// </summary>
+        /// <value>
+        /// The container CSS class.
+        /// </value>
+        public string ContainerCssClass
+        {
+            get
+            {
+                return this.ViewState["ContainerCssClass"] as string ?? string.Empty;
+            }
+
+            set
+            {
+                this.ViewState["ContainerCssClass"] = value;
+            }
+        }
+
         // Needed for rendering help block with no label value
         private string TemporaryHelpValue = string.Empty;
 
