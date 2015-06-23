@@ -59,17 +59,22 @@
                     <Rock:RockTextBox ID="txtFilterTitle" runat="server" Label="Filter Title" />
 
                     <Rock:RockDropDownList ID="ddlReport" runat="server" Label="Report" Help="Select the report to present to the user. Then set which of the report's dataview's filters to show." Required="false" ValidationGroup="vgConfigure" OnSelectedIndexChanged="ddlReport_SelectedIndexChanged" AutoPostBack="true" />
-                    <Rock:NotificationBox ID="nbMultipleFilterGroupsWarning" runat="server" NotificationBoxType="Warning" Text="This report has multiple filter groups. This block currently only supports non-grouped filters" Dismissable="true" Visible="false" />
-                    <Rock:HelpBlock ID="hbDataFilters" runat="server" 
-                        Text="Select which filters that will be visible to the user. 
-                        If Configurable is selected for a visible filter, the user will be able to change the filter, otherwise, the filter will presented as checkbox where user can choose to use the filter or not.
-                        Select 'Toggle Filter' to present a checkbox with the configurable filter" />
-                    <Rock:Grid ID="grdDataFilters" runat="server" DisplayType="Light" DataKeyNames="Guid" RowItemText="Filter">
+                    <Rock:HelpBlock ID="hbDataFilters" runat="server">
+                        <p>Select which filters that will be visible to the user.</p>
+
+                        <p>If Configurable is selected for a visible filter, the user will be able to change the filter, otherwise, the filter will presented as checkbox where user can choose to use the filter or not.
+                        Select 'Toggle Filter' to present a checkbox with the configurable filter.<p>
+
+                        <p>NOTE: Grouped Filters will be included, but are not configurable</p>
+                    </Rock:HelpBlock>
+
+
+                    <Rock:Grid ID="grdDataFilters" runat="server" DisplayType="Light" DataKeyNames="Guid" RowItemText="Filter" OnRowDataBound="grdDataFilters_RowDataBound">
                         <Columns>
                             <Rock:SelectField HeaderText="Show as a Filter" DataSelectedField="ShowAsFilter" ShowSelectAll="false" ItemStyle-CssClass="js-select-show-filter" Tooltip="Show filter to user" />
                             <Rock:SelectField HeaderText="Configurable" DataSelectedField="IsConfigurable" ShowSelectAll="false" ItemStyle-CssClass="js-select-configure-filter" Tooltip="Allow this filter to be configured" />
-                            <Rock:SelectField HeaderText="Toggle Filter" DataSelectedField="IsTogglable" ShowSelectAll="false" ItemStyle-CssClass="js-select-togglable-filter" Tooltip="Show checkbox so user can choose to include the filter or not"/>
-                            <asp:BoundField DataField="Title" HeaderText="Title" />
+                            <Rock:SelectField HeaderText="Toggle Filter" DataSelectedField="IsTogglable" ShowSelectAll="false" ItemStyle-CssClass="js-select-togglable-filter" Tooltip="Show checkbox so user can choose to include the filter or not" />
+                            <asp:BoundField DataField="TitlePath" HeaderText="Title" />
                             <asp:BoundField DataField="Summary" HeaderText="Summary" />
                         </Columns>
                     </Rock:Grid>
