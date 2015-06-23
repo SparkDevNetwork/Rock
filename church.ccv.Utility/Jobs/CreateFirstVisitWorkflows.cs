@@ -183,15 +183,15 @@ namespace church.ccv.Utility
                                 visitorWorkflow.SetAttributeValue( "Adults", BuildPersonList( adults.Select( m => m.Person ).ToList() ) );
                                 visitorWorkflow.SetAttributeValue( "HomePhone", homePhone );
                                 visitorWorkflow.SetAttributeValue( "MobilePhone", mobilePhone );
+                                visitorWorkflow.SetAttributeValue( "Email", headOfHouse.Email );
 
-                                var homeAddressGuid = family.GroupLocations
-                                        .Where( l => l.Location != null && l.Location.LocationTypeValue != null && l.Location.LocationTypeValue.Guid == homeAddressTypeGuid )
-                                        .Select( l => l.Location.Guid )
-                                        .FirstOrDefault();
+                                var homeAddress = new GroupLocationService( rockContext ).Queryable().AsNoTracking()
+                                                            .Where( l => l.GroupId == family.Id && l.GroupLocationTypeValue.Guid == homeAddressTypeGuid )
+                                                            .FirstOrDefault();
 
-                                if ( homeAddressGuid != null )
+                                if ( homeAddress != null )
                                 {
-                                    visitorWorkflow.SetAttributeValue( "HomeAddress", homeAddressGuid.ToString() );
+                                    visitorWorkflow.SetAttributeValue( "HomeAddress", homeAddress.Location.Guid.ToString() );
                                 }
 
                                 // get neighborhood info
