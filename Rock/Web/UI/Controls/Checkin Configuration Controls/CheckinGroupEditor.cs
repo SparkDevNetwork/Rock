@@ -622,6 +622,7 @@ $('.checkin-group > .panel-body').on('validation-error', function() {
                 group.GroupType = new GroupType();
                 group.GroupType.Id = group.GroupTypeId;
                 group.GroupType.InheritedGroupTypeId = checkinGroupTypeEditor.InheritedGroupTypeId;
+                group.GroupType.Guid = checkinGroupTypeEditor.GroupTypeGuid;
             }
 
             if ( group.Attributes == null )
