@@ -95,12 +95,13 @@ namespace Rock.Model
         public virtual Person Person { get; set; }
 
         /// <summary>
-        /// Gets or sets the alias person.
+        /// Sets the alias person
+        /// NOTE: This is a special case where we want to allow the AliasPersonId to keep the value even if the associated Person is deleted
         /// </summary>
         /// <value>
         /// The alias person.
         /// </value>
-        public virtual Person AliasPerson { get; set; }
+        public virtual Person AliasPerson { internal get; set; }
 
         /// <summary>
         /// Gets the previous encrypted key for the <see cref="Rock.Model.Person"/>.
@@ -160,6 +161,9 @@ namespace Rock.Model
         public PersonAliasConfiguration()
         {
             HasRequired( a => a.Person ).WithMany( p => p.Aliases ).HasForeignKey( a => a.PersonId ).WillCascadeOnDelete( false );
+            
+            // NOTE: The foreign key is a fake foreign key (not a physical foreign key in the database) 
+            // since we want to keep the AliasPersonId even if the associated Person is deleted
             HasRequired( a => a.AliasPerson ).WithMany().HasForeignKey( a => a.AliasPersonId ).WillCascadeOnDelete( false );
         }
     }
