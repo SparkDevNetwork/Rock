@@ -200,6 +200,9 @@ namespace RockWeb.Blocks.CheckIn
             {
                 nbGroupTypeWarning.Visible = false;
                 var groupTypes = new GroupTypeService( _rockContext ).GetChildGroupTypes( groupType.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Name );
+
+                // only add each group type once in case the group type is a child of multiple parents
+                _addedGroupTypeIds = new List<int>();
                 rptGroupTypes.DataSource = groupTypes.ToList();
                 rptGroupTypes.DataBind();
             }
@@ -732,13 +735,16 @@ function(item) {
 
             nbMissedDateRangeRequired.Visible = false;
 
+            // make a qryPersonAlias so that the generated SQL will be a "WHERE .. IN ()" instead of an OUTER JOIN (which is incredibly slow for this) 
+            var qryPersonAlias = new PersonAliasService( rockContext ).Queryable();
+
             // get either the first 2 visits or the first 5 visits (using a const take of 2 or 5 vs a variable to help the SQL optimizer)
             var qryByPersonWithSummary = qryByPerson.Select( a => new
             {
                 PersonId = a.PersonId,
-                FirstVisits = qryAllVisits.Where( b => b.PersonAlias.PersonId == a.PersonId ).Select( s => s.StartDateTime ).OrderBy( x => x ).Take( 2 ),
+                FirstVisits = qryAllVisits.Where( b => qryPersonAlias.Where( pa => pa.PersonId == a.PersonId).Any(pa => pa.Id == b.PersonAliasId)).Select( s => s.StartDateTime ).OrderBy( x => x ).Take( 2 ),
                 LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
-                AttendanceSummary = qryAttendanceWithSummaryDateTime.Where( x => x.Attendance.PersonAlias.PersonId == a.PersonId ).GroupBy( g => g.SummaryDateTime ).Select( s => s.Key )
+                AttendanceSummary = qryAttendanceWithSummaryDateTime.Where( x => qryPersonAlias.Where( pa => pa.PersonId == a.PersonId ).Any( pa => pa.Id == x.Attendance.PersonAliasId ) ).GroupBy( g => g.SummaryDateTime ).Select( s => s.Key )
             } );
 
             if ( nthVisitsTake > 2 )
@@ -746,9 +752,9 @@ function(item) {
                 qryByPersonWithSummary = qryByPerson.Select( a => new
                 {
                     PersonId = a.PersonId,
-                    FirstVisits = qryAllVisits.Where( b => b.PersonAlias.PersonId == a.PersonId ).Select( s => s.StartDateTime ).OrderBy( x => x ).Take( 5 ),
+                    FirstVisits = qryAllVisits.Where( b => qryPersonAlias.Where( pa => pa.PersonId == a.PersonId ).Any( pa => pa.Id == b.PersonAliasId ) ).Select( s => s.StartDateTime ).OrderBy( x => x ).Take( 2 ),
                     LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
-                    AttendanceSummary = qryAttendanceWithSummaryDateTime.Where( x => x.Attendance.PersonAlias.PersonId == a.PersonId ).GroupBy( g => g.SummaryDateTime ).Select( s => s.Key )
+                    AttendanceSummary = qryAttendanceWithSummaryDateTime.Where( x => qryPersonAlias.Where( pa => pa.PersonId == a.PersonId ).Any( pa => pa.Id == x.Attendance.PersonAliasId ) ).GroupBy( g => g.SummaryDateTime ).Select( s => s.Key )
                 } );
             }
 
@@ -1208,21 +1214,19 @@ function(item) {
             }
         }
 
+        // list of grouptype ids that have already been rendered (in case a group type has multiple parents )
+        private List<int> _addedGroupTypeIds;
+
         /// <summary>
         /// Adds the group type controls.
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
         /// <param name="pnlGroupTypes">The PNL group types.</param>
-        private void AddGroupTypeControls( GroupType groupType, HtmlGenericContainer liGroupTypeItem, List<int> addedGroupTypes = null )
+        private void AddGroupTypeControls( GroupType groupType, HtmlGenericContainer liGroupTypeItem )
         {
-            if ( addedGroupTypes == null )
+            if ( !_addedGroupTypeIds.Contains( groupType.Id ) )
             {
-                addedGroupTypes = new List<int>();
-            }
-
-            if ( !addedGroupTypes.Contains( groupType.Id ) )
-            {
-                addedGroupTypes.Add( groupType.Id );
+                _addedGroupTypeIds.Add( groupType.Id );
 
                 if ( groupType.Groups.Any() )
                 {
@@ -1264,7 +1268,7 @@ function(item) {
                         var liChildGroupTypeItem = new HtmlGenericContainer( "li", "rocktree-item rocktree-folder" );
                         liChildGroupTypeItem.ID = "liGroupTypeItem" + childGroupType.Id;
                         ulGroupTypeList.Controls.Add( liChildGroupTypeItem );
-                        AddGroupTypeControls( childGroupType, liChildGroupTypeItem, addedGroupTypes );
+                        AddGroupTypeControls( childGroupType, liChildGroupTypeItem );
                     }
                 }
             }
