@@ -221,6 +221,24 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the CSS class for the checkbox &lt;input&gt;
+        /// </summary>
+        /// <value>
+        /// The checkbox &lt;input&gt; CSS class.
+        /// </value>
+        public override string CssClass
+        {
+            get
+            {
+                return base.CssClass;
+            }
+            set
+            {
+                base.CssClass = value;
+            }
+        }
+
         // Needed for rendering help block with no label value
         private string TemporaryHelpValue = string.Empty;
 
