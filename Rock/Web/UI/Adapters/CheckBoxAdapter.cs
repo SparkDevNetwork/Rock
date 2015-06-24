@@ -57,7 +57,15 @@ namespace Rock.Web.UI.Adapters
                 bool renderCheckboxLabel = true;
                 if ( renderCheckboxLabel )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkbox" );
+                    var containerCssClass = "checkbox";
+
+                    if ( cb is RockCheckBox )
+                    {
+                        containerCssClass += " " + ( cb as RockCheckBox ).ContainerCssClass;
+                    }
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, containerCssClass );
+
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                     if ( cb is RockCheckBox )

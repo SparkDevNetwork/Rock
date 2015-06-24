@@ -1374,9 +1374,11 @@ namespace Rock.Web.UI.Controls
                 if ( this.ExportGridAsWYSIWYG )
                 {
                     var gridColumns = this.Columns.OfType<DataControlField>().Where( a => a.Visible ).ToList();
+                    columnCounter = 1;
                     foreach ( var col in gridColumns )
                     {
-                        worksheet.Cells[3, columnCounter++].Value = col.HeaderText;
+                        worksheet.Cells[3, columnCounter].Value = col.HeaderText;
+                        columnCounter++;
                     }
 
                     var dataItems = this.DataSourceAsList;
@@ -1402,19 +1404,20 @@ namespace Rock.Web.UI.Controls
                         GridViewRowEventArgs args = new GridViewRowEventArgs( gridViewRow );
                         gridViewRow.DataItem = dataItem;
                         this.OnRowDataBound( args );
-                        int colIndex = 1;
+                        columnCounter = 0;
                         foreach ( var col in gridColumns )
                         {
-                            var cell = gridViewRow.Cells[colIndex - 1] as DataControlFieldCell;
+                            columnCounter++;
+                            var fieldCell = gridViewRow.Cells[columnCounter] as DataControlFieldCell;
 
                             object exportValue = null;
-                            if ( cell.ContainingField is RockBoundField )
+                            if ( fieldCell.ContainingField is RockBoundField )
                             {
-                                exportValue = ( cell.ContainingField as RockBoundField ).GetExportValue( gridViewRow );
+                                exportValue = ( fieldCell.ContainingField as RockBoundField ).GetExportValue( gridViewRow );
                             }
-                            else if ( cell.ContainingField is RockTemplateField )
+                            else if ( fieldCell.ContainingField is RockTemplateField )
                             {
-                                var textControls = cell.ControlsOfTypeRecursive<Control>().OfType<ITextControl>();
+                                var textControls = fieldCell.ControlsOfTypeRecursive<Control>().OfType<ITextControl>();
                                 if ( textControls.Any() )
                                 {
                                     exportValue = textControls.Select( a => a.Text ).Where( t => !string.IsNullOrWhiteSpace( t ) ).ToList().AsDelimited( string.Empty );
@@ -1423,11 +1426,11 @@ namespace Rock.Web.UI.Controls
 
                             if ( exportValue != null )
                             {
-                                worksheet.Cells[rowCounter, colIndex].Value = exportValue.ToString();
+                                worksheet.Cells[rowCounter, columnCounter].Value = exportValue.ToString();
                             }
                             else
                             {
-                                worksheet.Cells[rowCounter, colIndex].Value = cell.Text;
+                                worksheet.Cells[rowCounter, columnCounter].Value = fieldCell.Text;
                             }
 
                             // format background color for alternating rows
@@ -1441,8 +1444,6 @@ namespace Rock.Web.UI.Controls
                             {
                                 worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
                             }
-
-                            colIndex++;
                         }
 
                         rowCounter++;
