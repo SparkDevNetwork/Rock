@@ -245,6 +245,41 @@ namespace Rock.Field.Types
         }
 
         #endregion
+
+        /// <summary>
+        /// Gets the values from string.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        public List<KeyValuePair<string, object>> GetValuesFromString( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            List<KeyValuePair<string, object>> values = new List<KeyValuePair<string, object>>();
+
+            bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" );
+
+            string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            foreach ( string nameValue in nameValues )
+            {
+                string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                if ( nameAndValue.Length == 2 && isDefinedType )
+                {
+                    var definedValue = DefinedValueCache.Read( nameAndValue[1].AsInteger() );
+                    if ( definedValue != null )
+                    {
+                        values.Add( new KeyValuePair<string, object>(nameAndValue[0], definedValue));
+                    }
+                    else
+                    {
+                        values.Add(  new KeyValuePair<string, object>(nameAndValue[0], nameAndValue[1]) );
+                    }
+                }
+            }
+
+            return values;
+        }
       
     }
 }
