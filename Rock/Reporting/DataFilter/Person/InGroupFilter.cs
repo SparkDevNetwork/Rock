@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -30,9 +31,9 @@ namespace Rock.Reporting.DataFilter.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter people on whether they are in the specified group" )]
+    [Description( "Filter people on whether they are in the specified group or groups" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Person In Group Filter" )]
+    [ExportMetadata( "ComponentName", "Person In Group(s) Filter" )]
     public class InGroupFilter : DataFilterComponent
     {
         #region Properties
@@ -73,7 +74,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "In Group";
+            return "In Group(s)";
         }
 
         /// <summary>
@@ -87,11 +88,21 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string GetClientFormatSelection( Type entityType )
         {
-            return @"
+            return GetGroupFilterClientSelection( false);
+        }
+
+        /// <summary>
+        /// Gets the group filter client selection based on if we are in "Not" mode
+        /// </summary>
+        /// <param name="not">if set to <c>true</c> [not].</param>
+        /// <returns></returns>
+        public virtual string GetGroupFilterClientSelection(bool not)
+        {
+            string format = @"
 function() {
   var groupName = $('.group-picker', $content).find('.selected-names').text();
   var checkedRoles = $('.rock-check-box-list', $content).find(':checked').closest('label');
-  var result = 'In group: ' + groupName;
+  var result = '{0} ' + groupName;
   if (checkedRoles.length > 0) {
      var roleCommaList = checkedRoles.map(function() { return $(this).text() }).get().join(',');
      result = result + ', with role(s): ' + roleCommaList;
@@ -105,6 +116,7 @@ function() {
   return result;
 }
 ";
+            return string.Format(format, not ? "Not in groups:" : "In groups:");
         }
 
         /// <summary>
@@ -115,12 +127,24 @@ function() {
         /// <returns></returns>
         public override string FormatSelection( Type entityType, string selection )
         {
+            return GroupFilterFormatSelection( selection, false );
+        }
+
+        /// <summary>
+        /// Formats the selection for the InGroupFilter/NotInGroupFilter based on if we are in "Not" mode
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <param name="not">if set to <c>true</c> [not].</param>
+        /// <returns></returns>
+        public virtual string GroupFilterFormatSelection( string selection, bool not )
+        {
             string result = "Group Member";
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
                 var rockContext = new RockContext();
-                var group = new GroupService( rockContext ).Get( selectionValues[0].AsGuid() );
+                var groupGuids = selectionValues[0].Split( ',' ).AsGuidList();
+                var groups = new GroupService( rockContext ).GetByGuids( groupGuids );
 
                 var groupTypeRoleGuidList = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsGuid() ).ToList();
 
@@ -138,9 +162,9 @@ function() {
                     groupMemberStatus = selectionValues[3].ConvertToEnumOrNull<GroupMemberStatus>();
                 }
 
-                if ( group != null )
+                if ( groups != null )
                 {
-                    result = string.Format( "In group: {0}", group.Name );
+                    result = string.Format( not ? "Not in groups: {0}" : "In groups: {0}", groups.Select( a => a.Name ).ToList().AsDelimited( ", ", " or " ) );
                     if ( includeChildGroups )
                     {
                         result += " or child groups";
@@ -151,7 +175,7 @@ function() {
                         result += string.Format( ", with role(s): {0}", groupTypeRoles.Select( a => string.Format( "{0} ({1})", a.Name, a.GroupType.Name ) ).ToList().AsDelimited( "," ) );
                     }
 
-                    if (groupMemberStatus.HasValue)
+                    if ( groupMemberStatus.HasValue )
                     {
                         result += string.Format( ", with member status: {0}", groupMemberStatus.ConvertToString() );
                     }
@@ -184,8 +208,9 @@ function() {
         {
             gp = new GroupPicker();
             gp.ID = filterControl.ID + "_gp";
-            gp.Label = "Group";
+            gp.Label = "Group(s)";
             gp.SelectItem += gp_SelectItem;
+            gp.AllowMultiSelect = true;
             filterControl.Controls.Add( gp );
 
             cbChildGroups = new RockCheckBox();
@@ -222,23 +247,32 @@ function() {
         {
             var rockContext = new RockContext();
 
-            int groupId = gp.SelectedValueAsId() ?? 0;
+            var groupIdList = gp.SelectedValues.AsIntegerList();
             var groupService = new GroupService( rockContext );
 
-            var group = groupService.Get( groupId );
+            var groups = groupService.GetByIds( groupIdList );
 
-            if ( group != null )
+            if ( groups != null && groups.Any() )
             {
                 var groupTypeRoleService = new GroupTypeRoleService( rockContext );
                 var qryGroupTypeRoles = groupTypeRoleService.Queryable();
+                List<int> selectedGroupTypeIds = groups.Select( a => a.GroupTypeId ).Distinct().ToList();
+
                 if ( cbChildGroups.Checked )
                 {
-                    var childGroupTypeIds = groupService.GetAllDescendents( group.Id ).Select( a => a.GroupTypeId ).Distinct().ToList();
-                    qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue && ( a.GroupTypeId == group.GroupTypeId || childGroupTypeIds.Contains( a.GroupTypeId.Value ) ) );
+                    List<int> childGroupTypeIds = new List<int>();
+                    foreach ( var group in groups )
+                    {
+                        childGroupTypeIds.AddRange( groupService.GetAllDescendents( group.Id ).Select( a => a.GroupTypeId ).ToList() );
+                    }
+
+                    childGroupTypeIds = childGroupTypeIds.Distinct().ToList();
+
+                    qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue && ( selectedGroupTypeIds.Contains( a.GroupTypeId.Value ) || childGroupTypeIds.Contains( a.GroupTypeId.Value ) ) );
                 }
                 else
                 {
-                    qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue && a.GroupTypeId == group.GroupTypeId );
+                    qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue && selectedGroupTypeIds.Contains( a.GroupTypeId.Value ) );
                 }
 
                 var list = qryGroupTypeRoles.OrderBy( a => a.GroupType.Order ).ThenBy( a => a.GroupType.Name ).ThenBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
@@ -300,18 +334,13 @@ function() {
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            int groupId = ( controls[0] as GroupPicker ).SelectedValueAsInt() ?? 0;
-            Guid? groupGuid = null;
-            var group = new GroupService( new RockContext() ).Get( groupId );
-            if ( group != null )
-            {
-                groupGuid = group.Guid;
-            }
+            List<int> groupIdList = ( controls[0] as GroupPicker ).SelectedValues.AsIntegerList();
+            var groupGuids = new GroupService( new RockContext() ).GetByIds( groupIdList ).Select( a => a.Guid ).Distinct().ToList();
 
             var value2 = ( controls[2] as RockCheckBoxList ).SelectedValues.AsDelimited( "," );
             var value3 = ( controls[1] as CheckBox ).Checked.ToString();
             var value4 = ( controls[3] as RockDropDownList ).SelectedValue;
-            return groupGuid.ToString() + "|" + value2 + "|" + value3 + "|" + value4;
+            return groupGuids.AsDelimited(",") + "|" + value2 + "|" + value3 + "|" + value4;
         }
 
         /// <summary>
@@ -325,11 +354,11 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                Guid groupGuid = selectionValues[0].AsGuid();
-                var group = new GroupService( new RockContext() ).Get( groupGuid );
-                if ( group != null )
+                List<Guid> groupGuids = selectionValues[0].Split( ',' ).AsGuidList();
+                var groups = new GroupService( new RockContext() ).GetByGuids( groupGuids );
+                if ( groups != null )
                 {
-                    ( controls[0] as GroupPicker ).SetValue( group.Id );
+                    ( controls[0] as GroupPicker ).SetValues( groups );
                 }
 
                 CheckBox cbChildGroups = controls[1] as CheckBox;
@@ -374,14 +403,9 @@ function() {
             if ( selectionValues.Length >= 2 )
             {
                 GroupMemberService groupMemberService = new GroupMemberService( (RockContext)serviceInstance.Context );
-                int groupId = 0;
-                Guid groupGuid = selectionValues[0].AsGuid();
+                List<Guid> groupGuids = selectionValues[0].Split( ',' ).AsGuidList();
                 var groupService = new GroupService( (RockContext)serviceInstance.Context );
-                var group = groupService.Get( groupGuid );
-                if ( group != null )
-                {
-                    groupId = group.Id;
-                }
+                var groupIds = groupService.GetByGuids( groupGuids ).Select( a => a.Id ).Distinct().ToList();
 
                 bool includeChildGroups = false;
                 if ( selectionValues.Length >= 3 )
@@ -399,12 +423,17 @@ function() {
 
                 if ( includeChildGroups )
                 {
-                    var childGroupIds = groupService.GetAllDescendents( group.Id ).Select( a => a.Id ).Distinct().ToList();
-                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => xx.GroupId == groupId || childGroupIds.Contains( xx.GroupId ) );
+                    List<int> childGroupIds = new List<int>();
+                    foreach (var groupId in groupIds)
+                    {
+                        childGroupIds.AddRange(groupService.GetAllDescendents( groupId ).Select( a => a.Id ).Distinct().ToList());
+                    }
+
+                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupIds.Contains(xx.GroupId) || childGroupIds.Contains( xx.GroupId ) );
                 }
                 else
                 {
-                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => xx.GroupId == groupId );
+                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupIds.Contains( xx.GroupId ) );
                 }
 
                 if ( groupMemberStatus.HasValue )
