@@ -39,6 +39,7 @@ namespace Rock.Field.Types
         {
             var configKeys = base.ConfigurationKeys();
             configKeys.Insert(0, "keyprompt" );
+            configKeys.Insert( 0, "displayvaluefirst" );
             return configKeys;
         }
 
@@ -57,6 +58,11 @@ namespace Rock.Field.Types
             tbKeyPrompt.Label = "Key Prompt";
             tbKeyPrompt.Help = "The text to display as a prompt in the key textbox.";
 
+            var cbDisplayValueFirst = new RockCheckBox();
+            controls.Insert( 4, cbDisplayValueFirst );
+            cbDisplayValueFirst.Label = "Display Value First";
+            cbDisplayValueFirst.Help = "Reverses the display order of the key and the value.";
+
             return controls;
         }
 
@@ -72,6 +78,7 @@ namespace Rock.Field.Types
             configurationValues.Add( "valueprompt", new ConfigurationValue( "Label Prompt", "The text to display as a prompt in the label textbox.", "" ) );
             configurationValues.Add( "definedtype", new ConfigurationValue( "Defined Type", "Optional Defined Type to select values from, otherwise values will be free-form text fields", "" ) );
             configurationValues.Add( "customvalues", new ConfigurationValue( "Custom Values", "Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1:text1,value2:text2,value3:text3,...'.", "" ) );
+            configurationValues.Add( "displayvaluefirst", new ConfigurationValue( "Display Value First", "Reverses the display order of the key and the value.", "" ) );
 
             if ( controls != null )
             {
@@ -90,6 +97,10 @@ namespace Rock.Field.Types
                 if ( controls.Count > 3 && controls[3] != null && controls[3] is RockTextBox )
                 {
                     configurationValues["customvalues"].Value = ( (RockTextBox)controls[3] ).Text;
+                }
+                if ( controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox )
+                {
+                    configurationValues["displayvaluefirst"].Value = ( (RockCheckBox)controls[4] ).Checked.ToString();
                 }
             }
 
@@ -121,6 +132,10 @@ namespace Rock.Field.Types
                 if ( controls.Count > 3 && controls[3] != null && controls[3] is RockTextBox && configurationValues.ContainsKey( "customvalues" ) )
                 {
                    ( (RockTextBox)controls[3] ).Text = configurationValues["customvalues"].Value;
+                }
+                if ( controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox && configurationValues.ContainsKey( "displayvaluefirst" ) )
+                {
+                    ( (RockCheckBox)controls[4] ).Checked = configurationValues["displayvaluefirst"].Value.AsBoolean();
                 }
             }
         }
@@ -192,6 +207,11 @@ namespace Rock.Field.Types
                 if ( configurationValues.ContainsKey( "keyprompt" ) )
                 {
                     control.KeyPrompt = configurationValues["keyprompt"].Value;
+                }
+
+                if ( configurationValues.ContainsKey( "displayvaluefirst" ) )
+                {
+                    control.DisplayValueFirst = configurationValues["displayvaluefirst"].Value.AsBoolean();
                 }
             }
 
