@@ -408,7 +408,7 @@ namespace Rock.Rest.Controllers
                     }
                     else
                     {
-                        personInfoHtml += familyGroupTypeRoles.First( a => a.Id == familyGroupMember.GroupRoleId ).Name;
+                        personInfoHtml += familyGroupType.Roles.First( a => a.Id == familyGroupMember.GroupRoleId ).Name;
                     }
 
                     if ( personAge != null )
