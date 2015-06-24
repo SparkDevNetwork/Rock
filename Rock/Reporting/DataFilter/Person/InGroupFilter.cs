@@ -99,24 +99,24 @@ namespace Rock.Reporting.DataFilter.Person
         public virtual string GetGroupFilterClientSelection(bool not)
         {
             string format = @"
-function() {
+function() {{
   var groupName = $('.group-picker', $content).find('.selected-names').text();
   var checkedRoles = $('.rock-check-box-list', $content).find(':checked').closest('label');
   var result = '{0} ' + groupName;
-  if (checkedRoles.length > 0) {
-     var roleCommaList = checkedRoles.map(function() { return $(this).text() }).get().join(',');
+  if (checkedRoles.length > 0) {{
+     var roleCommaList = checkedRoles.map(function() {{ return $(this).text() }}).get().join(',');
      result = result + ', with role(s): ' + roleCommaList;
-  }
+  }}
 
   var groupMemberStatus = $('.js-group-member-status option:selected', $content).text();
-  if (groupMemberStatus) {
+  if (groupMemberStatus) {{
      result = result + ', with member status:' + groupMemberStatus;
-  }
+  }}
 
   return result;
-}
+}}
 ";
-            return string.Format(format, not ? "Not in groups:" : "In groups:");
+            return string.Format( format, not ? "Not in groups:" : "In groups:" );
         }
 
         /// <summary>
