@@ -81,6 +81,15 @@ namespace Rock.Web.UI.Controls
         /// </value>
         string ClientID { get; }
 
+
+        /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        string FormGroupCssClass { get; set; }
+
         /// <summary>
         /// Gets the help block.
         /// </summary>
