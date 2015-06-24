@@ -762,7 +762,15 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSelect_Click( object sender, EventArgs e )
         {
-            SetValueOnSelect();
+            if ( this.AllowMultiSelect )
+            {
+                SetValuesOnSelect();
+            }
+            else
+            {
+                SetValueOnSelect();
+            }
+
             if ( SelectItem != null )
             {
                 SelectItem( sender, e );
