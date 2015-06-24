@@ -88,7 +88,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string GetClientFormatSelection( Type entityType )
         {
-            return GetGroupFilterClientSelection( false);
+            return GetGroupFilterClientSelection( false );
         }
 
         /// <summary>
@@ -96,13 +96,28 @@ namespace Rock.Reporting.DataFilter.Person
         /// </summary>
         /// <param name="not">if set to <c>true</c> [not].</param>
         /// <returns></returns>
-        public virtual string GetGroupFilterClientSelection(bool not)
+        public virtual string GetGroupFilterClientSelection( bool not )
         {
             string format = @"
 function() {{
-  var groupName = $('.group-picker', $content).find('.selected-names').text();
-  var checkedRoles = $('.rock-check-box-list', $content).find(':checked').closest('label');
-  var result = '{0} ' + groupName;
+  var groupNames = $('.js-group-picker', $content).find('.selected-names').text();
+  var checkedRoles = $('.js-roles', $content).find(':checked').closest('label');
+  var result = '{0} ' + groupNames;
+  var includeChildGroups = $('.js-include-child-groups', $content).is(':checked');
+  if (includeChildGroups) {{
+    var includeDescendantGroups = $('.js-include-child-groups-descendants', $content).is(':checked');    
+    var includeSelectedGroups = $('.js-include-selected-groups', $content).is(':checked');
+    if (includeDescendantGroups) {{
+        result = result + ' or descendant groups';
+    }} else {{
+        result = result + ' or child groups';
+    }}
+
+    if (!includeSelectedGroups) {{
+        result = result + ' not including selected groups';
+    }}
+  }}
+
   if (checkedRoles.length > 0) {{
      var roleCommaList = checkedRoles.map(function() {{ return $(this).text() }}).get().join(',');
      result = result + ', with role(s): ' + roleCommaList;
@@ -151,9 +166,16 @@ function() {{
                 var groupTypeRoles = new GroupTypeRoleService( rockContext ).Queryable().Where( a => groupTypeRoleGuidList.Contains( a.Guid ) ).ToList();
 
                 bool includeChildGroups = false;
+                bool includeChildGroupsPlusDescendants = false;
+                bool includeChildGroupsIncludeSelected = false;
                 if ( selectionValues.Length >= 3 )
                 {
                     includeChildGroups = selectionValues[2].AsBooleanOrNull() ?? false;
+                    if ( selectionValues.Length >= 6 )
+                    {
+                        includeChildGroupsIncludeSelected = selectionValues[4].AsBooleanOrNull() ?? false;
+                        includeChildGroupsPlusDescendants = selectionValues[5].AsBooleanOrNull() ?? false;
+                    }
                 }
 
                 GroupMemberStatus? groupMemberStatus = null;
@@ -167,7 +189,19 @@ function() {{
                     result = string.Format( not ? "Not in groups: {0}" : "In groups: {0}", groups.Select( a => a.Name ).ToList().AsDelimited( ", ", " or " ) );
                     if ( includeChildGroups )
                     {
-                        result += " or child groups";
+                        if ( includeChildGroupsPlusDescendants )
+                        {
+                            result += " or descendant groups";
+                        }
+                        else
+                        {
+                            result += " or child groups";
+                        }
+
+                        if ( !includeChildGroupsIncludeSelected )
+                        {
+                            result += " not including selected groups";
+                        }
                     }
 
                     if ( groupTypeRoles.Count() > 0 )
@@ -201,6 +235,16 @@ function() {{
         private RockCheckBox cbChildGroups = null;
 
         /// <summary>
+        /// The "Include Selected Groups" checkbox
+        /// </summary>
+        private RockCheckBox cbIncludeSelectedGroup = null;
+
+        /// <summary>
+        /// The "Include Decendants Groups" checkbox
+        /// </summary>
+        private RockCheckBox cbChildGroupsPlusDescendants = null;
+
+        /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
@@ -210,19 +254,38 @@ function() {{
             gp.ID = filterControl.ID + "_gp";
             gp.Label = "Group(s)";
             gp.SelectItem += gp_SelectItem;
+            gp.CssClass = "js-group-picker";
             gp.AllowMultiSelect = true;
             filterControl.Controls.Add( gp );
 
             cbChildGroups = new RockCheckBox();
             cbChildGroups.ID = filterControl.ID + "_cbChildsGroups";
             cbChildGroups.Text = "Include Child Group(s)";
+            cbChildGroups.CssClass = "js-include-child-groups";
             cbChildGroups.AutoPostBack = true;
             cbChildGroups.CheckedChanged += gp_SelectItem;
             filterControl.Controls.Add( cbChildGroups );
 
+            cbIncludeSelectedGroup = new RockCheckBox();
+            cbIncludeSelectedGroup.ID = filterControl.ID + "_cbIncludeSelectedGroup";
+            cbIncludeSelectedGroup.Text = "Include Selected Group(s)";
+            cbIncludeSelectedGroup.CssClass = "js-include-selected-groups";
+            cbIncludeSelectedGroup.AutoPostBack = true;
+            cbIncludeSelectedGroup.CheckedChanged += gp_SelectItem;
+            filterControl.Controls.Add( cbIncludeSelectedGroup );
+
+            cbChildGroupsPlusDescendants = new RockCheckBox();
+            cbChildGroupsPlusDescendants.ID = filterControl.ID + "_cbChildGroupsPlusDescendants";
+            cbChildGroupsPlusDescendants.Text = "Include All Descendants(s)";
+            cbChildGroupsPlusDescendants.CssClass = "js-include-child-groups-descendants";
+            cbChildGroupsPlusDescendants.AutoPostBack = true;
+            cbChildGroupsPlusDescendants.CheckedChanged += gp_SelectItem;
+            filterControl.Controls.Add( cbChildGroupsPlusDescendants );
+
             cblRole = new RockCheckBoxList();
             cblRole.Label = "with Group Member Role(s) (optional)";
             cblRole.ID = filterControl.ID + "_cblRole";
+            cblRole.CssClass = "js-roles";
             cblRole.Visible = false;
             filterControl.Controls.Add( cblRole );
 
@@ -235,7 +298,7 @@ function() {{
             ddlGroupMemberStatus.SetValue( GroupMemberStatus.Active.ConvertToInt() );
             filterControl.Controls.Add( ddlGroupMemberStatus );
 
-            return new Control[4] { gp, cbChildGroups, cblRole, ddlGroupMemberStatus };
+            return new Control[6] { gp, cbChildGroups, cbIncludeSelectedGroup, cbChildGroupsPlusDescendants, cblRole, ddlGroupMemberStatus };
         }
 
         /// <summary>
@@ -250,25 +313,41 @@ function() {{
             var groupIdList = gp.SelectedValues.AsIntegerList();
             var groupService = new GroupService( rockContext );
 
-            var groups = groupService.GetByIds( groupIdList );
+            var qryGroups = groupService.GetByIds( groupIdList );
 
-            if ( groups != null && groups.Any() )
+            if ( qryGroups.Any() )
             {
                 var groupTypeRoleService = new GroupTypeRoleService( rockContext );
                 var qryGroupTypeRoles = groupTypeRoleService.Queryable();
-                List<int> selectedGroupTypeIds = groups.Select( a => a.GroupTypeId ).Distinct().ToList();
+                List<int> selectedGroupTypeIds = qryGroups.Select( a => a.GroupTypeId ).Distinct().ToList();
 
                 if ( cbChildGroups.Checked )
                 {
                     List<int> childGroupTypeIds = new List<int>();
-                    foreach ( var group in groups )
+                    foreach ( var groupId in qryGroups.Select( a => a.Id ).ToList() )
                     {
-                        childGroupTypeIds.AddRange( groupService.GetAllDescendents( group.Id ).Select( a => a.GroupTypeId ).ToList() );
+                        if ( cbChildGroupsPlusDescendants.Checked )
+                        {
+                            // get all children and descendants of the selected group(s)
+                            childGroupTypeIds.AddRange( groupService.GetAllDescendents( groupId ).Select( a => a.GroupTypeId ).ToList() );
+                        }
+                        else
+                        {
+                            // get only immediate children of the selected group(s)
+                            childGroupTypeIds.AddRange( groupService.Queryable().Where( a => a.ParentGroupId == groupId ).Select( a => a.GroupTypeId ).ToList() );
+                        }
                     }
 
                     childGroupTypeIds = childGroupTypeIds.Distinct().ToList();
 
-                    qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue && ( selectedGroupTypeIds.Contains( a.GroupTypeId.Value ) || childGroupTypeIds.Contains( a.GroupTypeId.Value ) ) );
+                    if ( cbIncludeSelectedGroup.Checked )
+                    {
+                        qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue && ( selectedGroupTypeIds.Contains( a.GroupTypeId.Value ) || childGroupTypeIds.Contains( a.GroupTypeId.Value ) ) );
+                    }
+                    else
+                    {
+                        qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue && childGroupTypeIds.Contains( a.GroupTypeId.Value ) );
+                    }
                 }
                 else
                 {
@@ -301,29 +380,49 @@ function() {{
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-            if ( controls.Count() >= 3 )
+            if ( controls.Count() < 6 )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                GroupPicker groupPicker = controls[0] as GroupPicker;
-                groupPicker.RenderControl( writer );
-                RockCheckBox cbChildGroups = controls[1] as RockCheckBox;
-                cbChildGroups.RenderControl( writer );
-                writer.RenderEndTag();
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                RockCheckBoxList cblRoles = controls[2] as RockCheckBoxList;
-                cblRoles.RenderControl( writer );
-                RockDropDownList ddlGroupMemberStatus = controls[3] as RockDropDownList;
-                ddlGroupMemberStatus.RenderControl( writer );
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();
+                return;
             }
+
+            GroupPicker groupPicker = controls[0] as GroupPicker;
+            RockCheckBox cbChildGroups = controls[1] as RockCheckBox;
+            RockCheckBox cbIncludeSelectedGroup = controls[2] as RockCheckBox;
+            RockCheckBox cbChildGroupsPlusDescendants = controls[3] as RockCheckBox;
+            RockCheckBoxList cblRoles = controls[4] as RockCheckBoxList;
+            RockDropDownList ddlGroupMemberStatus = controls[5] as RockDropDownList;
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            groupPicker.RenderControl( writer );
+            cbChildGroups.RenderControl( writer );
+            if ( !cbChildGroups.Checked )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Disabled, "disabled" );
+            }
+
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            cbIncludeSelectedGroup.ContainerCssClass = "margin-l-md";
+            cbIncludeSelectedGroup.RenderControl( writer );
+            cbChildGroupsPlusDescendants.ContainerCssClass = "margin-l-md";
+            cbChildGroupsPlusDescendants.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            cblRoles.RenderControl( writer );
+
+            ddlGroupMemberStatus.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
         }
 
         /// <summary>
@@ -334,13 +433,29 @@ function() {{
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            List<int> groupIdList = ( controls[0] as GroupPicker ).SelectedValues.AsIntegerList();
+            if ( controls.Count() < 6 )
+            {
+                return null;
+            }
+
+            GroupPicker groupPicker = controls[0] as GroupPicker;
+            RockCheckBox cbChildGroups = controls[1] as RockCheckBox;
+            RockCheckBox cbIncludeSelectedGroup = controls[2] as RockCheckBox;
+            RockCheckBox cbChildGroupsPlusDescendants = controls[3] as RockCheckBox;
+            RockCheckBoxList cblRoles = controls[4] as RockCheckBoxList;
+            RockDropDownList ddlGroupMemberStatus = controls[5] as RockDropDownList;
+
+            List<int> groupIdList = groupPicker.SelectedValues.AsIntegerList();
             var groupGuids = new GroupService( new RockContext() ).GetByIds( groupIdList ).Select( a => a.Guid ).Distinct().ToList();
 
-            var value2 = ( controls[2] as RockCheckBoxList ).SelectedValues.AsDelimited( "," );
-            var value3 = ( controls[1] as CheckBox ).Checked.ToString();
-            var value4 = ( controls[3] as RockDropDownList ).SelectedValue;
-            return groupGuids.AsDelimited(",") + "|" + value2 + "|" + value3 + "|" + value4;
+            return string.Format(
+                "{0}|{1}|{2}|{3}|{4}|{5}",
+                groupGuids.AsDelimited( "," ),
+                cblRoles.SelectedValues.AsDelimited( "," ),
+                cbChildGroups.Checked.ToString(),
+                ddlGroupMemberStatus.SelectedValue,
+                cbIncludeSelectedGroup.Checked.ToString(),
+                cbChildGroupsPlusDescendants.Checked.ToString() );
         }
 
         /// <summary>
@@ -351,6 +466,18 @@ function() {{
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
+            if ( controls.Count() < 6 )
+            {
+                return;
+            }
+
+            GroupPicker groupPicker = controls[0] as GroupPicker;
+            RockCheckBox cbChildGroups = controls[1] as RockCheckBox;
+            RockCheckBox cbIncludeSelectedGroup = controls[2] as RockCheckBox;
+            RockCheckBox cbChildGroupsPlusDescendants = controls[3] as RockCheckBox;
+            RockCheckBoxList cblRoles = controls[4] as RockCheckBoxList;
+            RockDropDownList ddlGroupMemberStatus = controls[5] as RockDropDownList;
+
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
@@ -358,26 +485,34 @@ function() {{
                 var groups = new GroupService( new RockContext() ).GetByGuids( groupGuids );
                 if ( groups != null )
                 {
-                    ( controls[0] as GroupPicker ).SetValues( groups );
+                    groupPicker.SetValues( groups );
                 }
 
-                CheckBox cbChildGroups = controls[1] as CheckBox;
                 if ( selectionValues.Length >= 3 )
                 {
                     cbChildGroups.Checked = selectionValues[2].AsBooleanOrNull() ?? false;
                 }
 
+                if ( selectionValues.Length >= 6 )
+                {
+                    cbIncludeSelectedGroup.Checked = selectionValues[4].AsBooleanOrNull() ?? false;
+                    cbChildGroupsPlusDescendants.Checked = selectionValues[5].AsBooleanOrNull() ?? false;
+                }
+                else
+                {
+                    cbIncludeSelectedGroup.Checked = true;
+                    cbChildGroupsPlusDescendants.Checked = true;
+                }
+
                 gp_SelectItem( this, new EventArgs() );
 
                 string[] selectedRoleGuids = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-                RockCheckBoxList cblRole = controls[2] as RockCheckBoxList;
 
-                foreach ( var item in cblRole.Items.OfType<ListItem>() )
+                foreach ( var item in cblRoles.Items.OfType<ListItem>() )
                 {
                     item.Selected = selectedRoleGuids.Contains( item.Value );
                 }
 
-                RockDropDownList ddlGroupMemberStatus = controls[3] as RockDropDownList;
                 if ( selectionValues.Length >= 4 )
                 {
                     ddlGroupMemberStatus.SetValue( selectionValues[3] );
@@ -408,9 +543,23 @@ function() {{
                 var groupIds = groupService.GetByGuids( groupGuids ).Select( a => a.Id ).Distinct().ToList();
 
                 bool includeChildGroups = false;
+                bool includeChildGroupsIncludeSelected = false;
+                bool includeChildGroupsPlusDescendants = false;
                 if ( selectionValues.Length >= 3 )
                 {
                     includeChildGroups = selectionValues[2].AsBooleanOrNull() ?? false;
+                }
+
+                if ( selectionValues.Length >= 6 )
+                {
+                    includeChildGroupsIncludeSelected = selectionValues[4].AsBooleanOrNull() ?? false;
+                    includeChildGroupsPlusDescendants = selectionValues[5].AsBooleanOrNull() ?? false;
+                }
+                else if ( includeChildGroups )
+                {
+                    // in case the selection was saved before these options where added
+                    includeChildGroupsIncludeSelected = true;
+                    includeChildGroupsPlusDescendants = true;
                 }
 
                 GroupMemberStatus? groupMemberStatus = null;
@@ -424,12 +573,28 @@ function() {{
                 if ( includeChildGroups )
                 {
                     List<int> childGroupIds = new List<int>();
-                    foreach (var groupId in groupIds)
+                    foreach ( var groupId in groupIds )
                     {
-                        childGroupIds.AddRange(groupService.GetAllDescendents( groupId ).Select( a => a.Id ).Distinct().ToList());
+                        if ( includeChildGroupsPlusDescendants )
+                        {
+                            // get all children and descendants of the selected group(s)
+                            childGroupIds.AddRange( groupService.GetAllDescendents( groupId ).Select( a => a.Id ).Distinct().ToList() );
+                        }
+                        else
+                        {
+                            // get only immediate children of the selected group(s)
+                            childGroupIds.AddRange( groupService.Queryable().Where( a => a.ParentGroupId == groupId ).Select( a => a.Id ) );
+                        }
                     }
 
-                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupIds.Contains(xx.GroupId) || childGroupIds.Contains( xx.GroupId ) );
+                    if ( includeChildGroupsIncludeSelected )
+                    {
+                        groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupIds.Contains( xx.GroupId ) || childGroupIds.Contains( xx.GroupId ) );
+                    }
+                    else
+                    {
+                        groupMemberServiceQry = groupMemberServiceQry.Where( xx => childGroupIds.Contains( xx.GroupId ) );
+                    }
                 }
                 else
                 {
