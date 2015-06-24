@@ -148,4 +148,7 @@
   <data name="_201506170003272_UpdateCalendarBlocks" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201506170003272_updatecalendarblocks.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201506242325188_GeoSpatialIndexes_AddSystemEmail" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506242325188_geospatialindexes_addsystememail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>
