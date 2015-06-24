@@ -19,7 +19,7 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Neighborhood Pastor" )]
 
-    [BooleanField( "Show As Link", "", true, "CustomSetting" )]
+    [BooleanField( "Show As Link", "", true )]
     public class NeighborhoodPastorSelect : DataSelectComponent
     {
         /// <summary>
