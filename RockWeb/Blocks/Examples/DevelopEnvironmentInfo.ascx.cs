@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Examples
                 var csBuilder = new SqlConnectionStringBuilder( ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString );
                 lDatabaseName.Text = string.Format(
                     @"
-Name: {0}
+Database: {0}
 Server: {1}",
             csBuilder.InitialCatalog,
             csBuilder.DataSource );
@@ -46,7 +46,7 @@ Server: {1}",
                     @"
 SiteName: {0}
 IsDevelopmentEnvironment: {1}
-Development Path: {2}",
+Path: {2}",
                     System.Web.Hosting.HostingEnvironment.SiteName,
                     System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment,
                     System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath );
