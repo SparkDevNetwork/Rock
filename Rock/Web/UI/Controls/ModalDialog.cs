@@ -180,6 +180,27 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [cancel link visible].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [cancel link visible]; otherwise, <c>false</c>.
+        /// </value>
+        public bool CancelLinkVisible
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cancelLink.Visible;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _cancelLink.Visible= value;
+            }
+        }
+
+        /// <summary>
         /// The content of the popup.
         /// </summary>
         [
@@ -311,11 +332,11 @@ namespace Rock.Web.UI.Controls
         {
             RegisterJavaScript();
 
-            _serverSaveLink.Visible = SaveClick != null;
+            _serverSaveLink.Visible = !string.IsNullOrWhiteSpace( SaveButtonText ) && SaveClick != null;
             _serverSaveLink.InnerText = SaveButtonText;
             _serverSaveLink.ValidationGroup = this.ValidationGroup;
 
-            _saveLink.Visible = SaveClick == null && !string.IsNullOrWhiteSpace( OnOkScript );
+            _saveLink.Visible = !string.IsNullOrWhiteSpace( SaveButtonText ) && SaveClick == null && !string.IsNullOrWhiteSpace( OnOkScript );
             _saveLink.InnerText = SaveButtonText;
             _saveLink.ValidationGroup = this.ValidationGroup;
 

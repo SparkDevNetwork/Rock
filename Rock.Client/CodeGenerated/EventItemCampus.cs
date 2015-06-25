@@ -44,7 +44,7 @@ namespace Rock.Client
         public string ContactEmail { get; set; }
 
         /// <summary />
-        public int ContactPersonAliasId { get; set; }
+        public int? ContactPersonAliasId { get; set; }
 
         /// <summary />
         public string ContactPhone { get; set; }
@@ -54,9 +54,6 @@ namespace Rock.Client
 
         /// <summary />
         public string Location { get; set; }
-
-        /// <summary />
-        public string RegistrationUrl { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -82,6 +79,9 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<EventItemSchedule> EventItemSchedules { get; set; }
+
+        /// <summary />
+        public ICollection<EventItemCampusGroupMap> Linkages { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
