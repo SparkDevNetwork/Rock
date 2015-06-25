@@ -74,7 +74,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Recent Attendance";
+            return "Recent Attendance (Group Type)";
         }
 
         /// <summary>
@@ -384,7 +384,7 @@ namespace Rock.Reporting.DataFilter.Person
             if ( dateRange.End.HasValue )
             {
                 var endDate = dateRange.End.Value;
-                attendanceQry = attendanceQry.Where( a => a.EndDateTime < endDate );
+                attendanceQry = attendanceQry.Where( a => a.StartDateTime < endDate );
             }
 
             if ( groupTypeIds.Count == 1 )
