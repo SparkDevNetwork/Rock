@@ -91,6 +91,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        Description( "The CSS class to add to the form-group div." )
+        ]
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
+        }
+
+
+        /// <summary>
         /// Gets or sets the required error message.  If blank, the LabelName name will be used
         /// </summary>
         /// <value>
@@ -181,6 +199,43 @@ namespace Rock.Web.UI.Controls
             set
             {
                 this.ViewState["DisplayInline"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the CSS class for the checkbox "div" (see Rock.Web.UI.Adapters.CheckboxAdaptor)
+        /// </summary>
+        /// <value>
+        /// The container CSS class.
+        /// </value>
+        public string ContainerCssClass
+        {
+            get
+            {
+                return this.ViewState["ContainerCssClass"] as string ?? string.Empty;
+            }
+
+            set
+            {
+                this.ViewState["ContainerCssClass"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the CSS class for the checkbox &lt;input&gt;
+        /// </summary>
+        /// <value>
+        /// The checkbox &lt;input&gt; CSS class.
+        /// </value>
+        public override string CssClass
+        {
+            get
+            {
+                return base.CssClass;
+            }
+            set
+            {
+                base.CssClass = value;
             }
         }
 

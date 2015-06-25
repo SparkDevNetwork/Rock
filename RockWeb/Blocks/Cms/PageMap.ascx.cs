@@ -30,11 +30,11 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
 {
-    [DisplayName( "Site Map" )]
+    [DisplayName( "Page Map" )]
     [Category( "CMS" )]
     [Description( "Displays a site map in a tree view." )]
     [LinkedPage( "Root Page", "Select the root page to use as a starting point for the tree view. Leaving empty will build a tree of all pages.", false )]
-    public partial class SiteMap : RockBlock
+    public partial class PageMap : RockBlock
     {
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.

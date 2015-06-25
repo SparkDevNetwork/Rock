@@ -59,6 +59,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the CSS class name of a font based icon.
         /// </value>
+        [MaxLength( 100 )]
         [DataMember]
         public string IconCssClass { get; set; }
 
@@ -90,6 +91,26 @@ namespace Rock.Model
             set { _eventCalenderItems = value; }
         }
         private ICollection<EventCalendarItem> _eventCalenderItems;
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the supported actions.
+        /// </summary>
+        /// <value>
+        /// The supported actions.
+        /// </value>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve calendar items." );
+                return supportedActions;
+            }
+        }
 
         #endregion
     }

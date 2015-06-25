@@ -54,7 +54,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// The optional checkbox which can be used to disable/enable the filter for the current run of the report
         /// </summary>
-        public CheckBox cbIncludeFilter;
+        public RockCheckBox cbIncludeFilter;
 
         /// <summary>
         /// The filter controls
@@ -458,7 +458,8 @@ namespace Rock.Web.UI.Controls
             lbDelete.Controls.Add( iDelete );
             iDelete.AddCssClass( "fa fa-times" );
 
-            cbIncludeFilter = new CheckBox();
+            cbIncludeFilter = new RockCheckBox();
+            cbIncludeFilter.ContainerCssClass = "data-view-filter-field-checkbox";
             Controls.Add( cbIncludeFilter );
             cbIncludeFilter.ID = this.ID + "_cbIncludeFilter";
         }
@@ -556,6 +557,11 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
 
+            writer.AddAttribute( "class", "row js-filter-row filter-row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.AddAttribute( "class", "col-md-12" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            
             if ( ShowCheckbox )
             {
                 //// EntityFieldFilter renders the checkbox itself (see EntityFieldFilter.cs), 
@@ -579,6 +585,9 @@ namespace Rock.Web.UI.Controls
             {
                 component.RenderControls( FilteredEntityType, this, writer, filterControls );
             }
+
+            writer.RenderEndTag(); // "col-md-12"
+            writer.RenderEndTag(); // "row js-filter-row filter-row"
 
             if ( !HideFilterTypePicker )
             {
