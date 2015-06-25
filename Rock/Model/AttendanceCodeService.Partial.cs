@@ -40,7 +40,7 @@ namespace Rock.Model
         /// <summary>
         /// A list of <see cref="System.String"/> values that are not allowable as attendance codes.
         /// </summary>
-        private static List<string> noGood = new List<string> { "666", "KKK", "FCK", "SHT", "5HT", "DCK", "F4G", "D4M" };
+        private static List<string> noGood = new List<string> { "666", "KKK", "FCK", "SHT", "5HT", "DCK", "F4G", "D4M", "H8R" };
 
         /// <summary>
         /// Returns a new <see cref="Rock.Model.AttendanceCode"/>
