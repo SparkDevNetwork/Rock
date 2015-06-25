@@ -50,6 +50,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        Description( "The CSS class to add to the form-group div." )
+        ]
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the CSS Icon text.
         /// </summary>
         /// <value>
@@ -762,7 +779,15 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSelect_Click( object sender, EventArgs e )
         {
-            SetValueOnSelect();
+            if ( this.AllowMultiSelect )
+            {
+                SetValuesOnSelect();
+            }
+            else
+            {
+                SetValueOnSelect();
+            }
+
             if ( SelectItem != null )
             {
                 SelectItem( sender, e );
