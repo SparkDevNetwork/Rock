@@ -59,9 +59,14 @@
 
             var numberOf = $picker.find('.js-number').val();
 
-            var url = Rock.settings.get('baseUrl') + 'api/Utility/CalculateSlidingDateRange?slidingDateRangeType=' + $select.val() + '&timeUnitType=' + timeUnitType + '&number=' + numberOf;
-            $.get(url, function (r) {
+            var getDateRangeUrl = Rock.settings.get('baseUrl') + 'api/Utility/CalculateSlidingDateRange?slidingDateRangeType=' + $select.val() + '&timeUnitType=' + timeUnitType + '&number=' + numberOf;
+            $.get(getDateRangeUrl, function (r) {
                 $picker.siblings('.js-slidingdaterange-info').text(r);
+            });
+
+            var getTextValueUrl = Rock.settings.get('baseUrl') + 'api/Utility/GetSlidingDateRangeTextValue?slidingDateRangeType=' + $select.val() + '&timeUnitType=' + timeUnitType + '&number=' + numberOf;
+            $.get(getTextValueUrl, function (r) {
+                $picker.siblings('.js-slidingdaterange-text-value').val(r);
             });
         }
 
