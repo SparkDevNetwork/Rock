@@ -59,8 +59,8 @@
 
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockDropDownList ID="ddlGroupType" runat="server" Label="Group Type" OnSelectedIndexChanged="ddlGroupType_SelectedIndexChanged" AutoPostBack="true" />
-                                <Rock:RockDropDownList ID="ddlGroupRole" runat="server" Label="Group Member Role" />
+                                <Rock:RockDropDownList ID="ddlGroupType" runat="server" Label="Group Type" OnSelectedIndexChanged="ddlGroupType_SelectedIndexChanged" AutoPostBack="true" Help="The group type that the user will be placed in" />
+                                <Rock:RockDropDownList ID="ddlGroupRole" runat="server" Label="Group Member Role" Help="The role that the person will hold after being connected" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />
@@ -69,16 +69,16 @@
 
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Group Member Status" />
+                                <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Group Member Status" Help="The Status of the person upon being connected" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:GroupPicker ID="gpConnectorGroup" runat="server" Label="Connector Group" />
+                                <Rock:GroupPicker ID="gpConnectorGroup" runat="server" Label="Connector Group" Help="The group in charge of managing requests for this opportunity" />
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:Toggle ID="tglUseAllGroupsOfGroupType" runat="server" Label="Use All Groups Of This Type" ButtonSizeCssClass="btn btn-sm" OnText="Yes" OffText="No" OnCheckedChanged="tglUseAllGroupsOfGroupType_CheckedChanged" />
+                                <Rock:Toggle ID="tglUseAllGroupsOfGroupType" runat="server" Label="Use All Groups Of This Type" ButtonSizeCssClass="btn btn-sm" OnText="Yes" OffText="No" OnCheckedChanged="tglUseAllGroupsOfGroupType_CheckedChanged" Help="All groups of this group type are used for this opportunity" />
                             </div>
                             <div class="col-md-6">
                             </div>
@@ -88,7 +88,7 @@
                             <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
                         </Rock:PanelWidget>
 
-                        <Rock:PanelWidget ID="wpConnectionOpportunityGroups" runat="server" Title="Connection Groups">
+                        <Rock:PanelWidget ID="wpConnectionOpportunityGroups" runat="server" Title="Groups">
                             <div class="grid">
                                 <Rock:Grid ID="gConnectionOpportunityGroups" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group">
                                     <Columns>
@@ -100,7 +100,7 @@
                             </div>
                         </Rock:PanelWidget>
 
-                        <Rock:PanelWidget ID="wpConnectionOpportunityCampuses" runat="server" Title="Campus Connector Groups">
+                        <Rock:PanelWidget ID="wpConnectionOpportunityCampuses" runat="server" Title="Campus-Specific Connector Groups">
                             <div class="grid">
                                 <Rock:Grid ID="gConnectionOpportunityCampuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Campus Connector Group">
                                     <Columns>

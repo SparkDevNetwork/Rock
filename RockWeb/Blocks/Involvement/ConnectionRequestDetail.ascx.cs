@@ -64,6 +64,7 @@ namespace RockWeb.Blocks.Involvement
             gConnectionRequestActivities.Actions.ShowAdd = true;
             gConnectionRequestActivities.Actions.AddClick += gConnectionRequestActivities_Add;
             gConnectionRequestActivities.GridRebind += gConnectionRequestActivities_GridRebind;
+            gConnectionRequestActivities.RowDataBound += gConnectionRequestActivities_RowDataBound;
 
             gConnectionRequestWorkflows.DataKeyNames = new string[] { "Guid" };
             gConnectionRequestWorkflows.GridRebind += gConnectionRequestWorkflows_GridRebind;
@@ -281,6 +282,10 @@ namespace RockWeb.Blocks.Involvement
             ddlCampus.DataBind();
 
             rblState.BindToEnum<ConnectionState>();
+            if ( !_connectionRequest.ConnectionOpportunity.ConnectionType.EnableFutureFollowup )
+            {
+                rblState.Items.RemoveAt( 2 );
+            }
             rblState.SetValue( _connectionRequest.ConnectionState.ConvertToInt().ToString() );
 
             rblStatus.Items.Clear();
@@ -421,7 +426,8 @@ namespace RockWeb.Blocks.Involvement
             }
             ConnectionRequestActivity connectionRequestActivity = new ConnectionRequestActivity();
             connectionRequestActivity.ConnectionOpportunityId = ddlTransferOpportunity.SelectedValueAsId().Value;
-            connectionRequestActivity.ConnectionActivityTypeId = new ConnectionActivityTypeService( rockContext ).Queryable().Where( t => t.Guid == "6e7c8475-2a03-42eb-a883-5b2cc6cae519".AsGuid() ).FirstOrDefault().Id;
+            var guid = "6e7c8475-2a03-42eb-a883-5b2cc6cae519".AsGuid();
+            connectionRequestActivity.ConnectionActivityTypeId = new ConnectionActivityTypeService( rockContext ).Queryable().Where( t => t.Guid == guid ).FirstOrDefault().Id;
             connectionRequestActivity.Note = tbTransferNote.Text;
             _connectionRequest.ConnectionRequestActivities.Add( connectionRequestActivity );
             _connectionRequest.ConnectionOpportunityId = ddlTransferOpportunity.SelectedValueAsId().Value;
@@ -519,11 +525,14 @@ namespace RockWeb.Blocks.Involvement
         protected void btnAddConnectionRequestActivity_Click( object sender, EventArgs e )
         {
             RockContext rockContext = new RockContext();
+            if ( _connectionRequest == null )
+            {
+                _connectionRequest = new ConnectionRequestService( new RockContext() ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
+            }
             ConnectionRequestService connectionRequestService = new ConnectionRequestService( rockContext );
-            ConnectionRequest connectionRequest = connectionRequestService.Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
             ConnectionRequestActivity connectionRequestActivity = new ConnectionRequestActivity();
             connectionRequestActivity.ConnectionActivityTypeId = ddlActivity.SelectedValueAsId().Value;
-            connectionRequestActivity.ConnectionOpportunityId = ddlOpportunity.SelectedValueAsId().Value;
+            connectionRequestActivity.ConnectionOpportunityId = _connectionRequest.ConnectionOpportunityId;
             connectionRequestActivity.ConnectorPersonAliasId = ppConnector.PersonAliasId.Value;
             connectionRequestActivity.Note = tbNote.Text;
             // Controls will show warnings
@@ -532,7 +541,7 @@ namespace RockWeb.Blocks.Involvement
                 return;
             }
 
-            connectionRequest.ConnectionRequestActivities.Add( connectionRequestActivity );
+            _connectionRequest.ConnectionRequestActivities.Add( connectionRequestActivity );
             rockContext.SaveChanges();
 
             BindConnectionRequestActivitiesGrid();
@@ -564,20 +573,26 @@ namespace RockWeb.Blocks.Involvement
                 }
             }
 
-            ddlOpportunity.Items.Clear();
-            ddlOpportunity.Items.Add( new ListItem( string.Empty, string.Empty ) );
-
-            foreach ( var opportunity in _connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities )
-            {
-                if ( opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                {
-                    ddlOpportunity.Items.Add( new ListItem( opportunity.Name, opportunity.Id.ToString() ) );
-                }
-            }
-            ppConnector.SetValue( null );
+            ppConnector.SetValue( CurrentPerson );
             tbNote.Text = string.Empty;
 
             ShowDialog( "ConnectionRequestActivities", true );
+        }
+
+        protected void gConnectionRequestActivities_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( _connectionRequest == null )
+            {
+                _connectionRequest = new ConnectionRequestService( new RockContext() ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
+            }
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var activity = e.Row.DataItem as ConnectionRequestActivity;
+                if ( e.Row.DataItem.GetPropertyValue("OpportunityId") as int? == _connectionRequest.ConnectionOpportunityId )
+                {
+                    e.Row.AddCssClass( "warning" );
+                }
+            }
         }
 
         private void BindConnectionRequestActivitiesGrid()
@@ -596,6 +611,7 @@ namespace RockWeb.Blocks.Involvement
                 Date = a.CreatedDateTime.Value.ToShortDateString(),
                 Activity = a.ConnectionActivityType.Name,
                 Opportunity = a.ConnectionOpportunity.Name,
+                OpportunityId = a.ConnectionOpportunityId,
                 Connector = a.ConnectorPersonAlias != null ? a.ConnectorPersonAlias.Person.FullName : "",
                 Note = a.Note
             } )
@@ -771,7 +787,13 @@ namespace RockWeb.Blocks.Involvement
 
             var manualWorkflows = _connectionRequest.ConnectionOpportunity.ConnectionWorkflows.Union( _connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionWorkflows );
             manualWorkflows = manualWorkflows.Where( w => !_connectionRequest.ConnectionRequestWorkflows.Any( rw => rw.ConnectionWorkflowId == w.Id ) );
-            rptRequestWorkflows.DataSource = manualWorkflows.Select( w => w.WorkflowType ).ToList();
+            manualWorkflows = manualWorkflows.Where( w => w.TriggerType == ConnectionWorkflowTriggerType.Manual );
+            rptRequestWorkflows.DataSource = manualWorkflows.Select( w => new
+            {
+                w.Id,
+                w.Guid,
+                Name = w.WorkflowType.Name
+            } ).ToList();
             rptRequestWorkflows.DataBind();
 
             if ( _connectionRequest.ConnectionState == ConnectionState.Inactive )
@@ -780,6 +802,10 @@ namespace RockWeb.Blocks.Involvement
             }
 
             BindConnectionRequestActivitiesGrid();
+            if ( gConnectionRequestActivities.Rows.Count > 0 )
+            {
+                wpConnectionRequestActivities.Expanded = true;
+            }
             BindConnectionRequestWorkflowsGrid();
 
         }
@@ -996,21 +1022,18 @@ namespace RockWeb.Blocks.Involvement
                 List<string> workflowErrors;
                 if ( workflow.Process( rockContext, _connectionRequest, out workflowErrors ) )
                 {
-                    if ( workflow.IsPersisted || workflowType.IsPersisted )
-                    {
-                        var workflowService = new Rock.Model.WorkflowService( rockContext );
-                        workflowService.Add( workflow );
+                    var workflowService = new Rock.Model.WorkflowService( rockContext );
+                    workflowService.Add( workflow );
 
-                        rockContext.WrapTransaction( () =>
+                    rockContext.WrapTransaction( () =>
+                    {
+                        rockContext.SaveChanges();
+                        workflow.SaveAttributeValues( rockContext );
+                        foreach ( var activity in workflow.Activities )
                         {
-                            rockContext.SaveChanges();
-                            workflow.SaveAttributeValues( rockContext );
-                            foreach ( var activity in workflow.Activities )
-                            {
-                                activity.SaveAttributeValues( rockContext );
-                            }
-                        } );
-                    }
+                            activity.SaveAttributeValues( rockContext );
+                        }
+                    } );
                 }
                 ConnectionRequestWorkflow connectionRequestWorkflow = new ConnectionRequestWorkflow();
                 connectionRequestWorkflow.ConnectionRequestId = _connectionRequest.Id;

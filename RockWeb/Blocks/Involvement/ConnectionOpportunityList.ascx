@@ -31,7 +31,7 @@
                             <Rock:Grid ID="gConnectionOpportunities" runat="server" DisplayType="Full" AllowSorting="false" OnRowSelected="gConnectionOpportunities_Edit">
                                 <Columns>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" />
-                                    <Rock:RockBoundField DataField="GroupType" HeaderText="Campuses" />
+                                    <Rock:RockBoundField DataField="GroupType" HeaderText="Group Type" />
                                     <Rock:RockBoundField DataField="Active" HeaderText="Status" HtmlEncode="false" />
                                     <Rock:DeleteField OnClick="DeleteConnectionOpportunity_Click" />
                                 </Columns>
