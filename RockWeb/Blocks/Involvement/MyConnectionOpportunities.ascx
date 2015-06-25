@@ -7,7 +7,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <asp:Literal ID="lTypeIcon" runat="server" />
-                    </i>My Connection Opportunities</h1>
+                    My Connection Opportunities</h1>
 
                 <div class="pull-right">
                     <asp:LinkButton ID="lbConnectionTypes" runat="server" CssClass=" pull-right" OnClick="lbConnectionTypes_Click" CausesValidation="false"><i class="fa fa-gear"></i></asp:LinkButton>
