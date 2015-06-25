@@ -365,7 +365,7 @@ namespace Rock.Model
 
                 return Queryable( includeDeceased, includeBusinesses )
                     .Where( p =>
-                        ( includeBusinesses && p.RecordTypeValueId.HasValue && p.RecordTypeValueId.Value == recordTypeBusinessId && p.LastName.StartsWith( fullName ) )
+                        ( includeBusinesses && p.RecordTypeValueId.HasValue && p.RecordTypeValueId.Value == recordTypeBusinessId && p.LastName.Contains( fullName ) )
                         ||
                         ( ( p.LastName.StartsWith( lastName ) || previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( lastName ) ) ) &&
                         ( p.FirstName.StartsWith( firstName ) ||
