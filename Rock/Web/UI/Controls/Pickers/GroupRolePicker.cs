@@ -50,6 +50,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        Description( "The CSS class to add to the form-group div." )
+        ]
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the help text.
         /// </summary>
         /// <value>
@@ -240,7 +257,7 @@ namespace Rock.Web.UI.Controls
                         }
                     }
 
-                    _ddlGroupRole.SelectedValue = groupRoleId.ToString();
+                    _ddlGroupRole.SetValue( groupRoleId.ToString() );
                 }
             }
         }

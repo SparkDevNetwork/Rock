@@ -35,13 +35,22 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int? ApprovedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public DateTime? ApprovedOnDateTime { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
         public string DetailsUrl { get; set; }
 
         /// <summary />
-        public bool? IsActive { get; set; }
+        public bool IsActive { get; set; }
+
+        /// <summary />
+        public bool IsApproved { get; set; }
 
         /// <summary />
         public string Name { get; set; }
@@ -65,6 +74,9 @@ namespace Rock.Client
     /// </summary>
     public partial class EventItem : EventItemEntity
     {
+        /// <summary />
+        public PersonAlias ApprovedByPersonAlias { get; set; }
+
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 

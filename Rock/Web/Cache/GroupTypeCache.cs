@@ -490,7 +490,7 @@ namespace Rock.Web.Cache
         private static GroupTypeCache LoadById2( int id, RockContext rockContext )
         {
             var groupTypeService = new GroupTypeService( rockContext );
-            var groupTypeModel = groupTypeService.Get( id );
+            var groupTypeModel = groupTypeService.Queryable().Include(a => a.Roles).FirstOrDefault(a => a.Id == id );
             if ( groupTypeModel != null )
             {
                 groupTypeModel.LoadAttributes( rockContext );

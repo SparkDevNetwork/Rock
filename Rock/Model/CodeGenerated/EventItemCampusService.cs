@@ -51,12 +51,6 @@ namespace Rock.Model
         public bool CanDelete( EventItemCampus item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<EventItemSchedule>( Context ).Queryable().Any( a => a.EventItemCampusId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EventItemCampus.FriendlyTypeName, EventItemSchedule.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -101,7 +95,6 @@ namespace Rock.Model
             target.ContactPhone = source.ContactPhone;
             target.EventItemId = source.EventItemId;
             target.Location = source.Location;
-            target.RegistrationUrl = source.RegistrationUrl;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

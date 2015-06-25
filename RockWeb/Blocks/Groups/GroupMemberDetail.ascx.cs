@@ -142,6 +142,11 @@ namespace RockWeb.Blocks.Groups
                 groupMember.GroupRoleId = role.Id;
                 groupMember.GroupMemberStatus = rblStatus.SelectedValueAsEnum<GroupMemberStatus>();
 
+                if ( cbIsNotified.Visible )
+                {
+                    groupMember.IsNotified = cbIsNotified.Checked;
+                }
+
                 if ( pnlRequirements.Visible )
                 {
                     foreach ( var checkboxItem in cblManualRequirements.Items.OfType<ListItem>() )
@@ -318,6 +323,16 @@ namespace RockWeb.Blocks.Groups
 
             hfGroupId.Value = groupMember.GroupId.ToString();
             hfGroupMemberId.Value = groupMember.Id.ToString();
+
+            if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
+            {
+                cbIsNotified.Checked = groupMember.IsNotified;
+                cbIsNotified.Visible = true;
+            }
+            else
+            {
+                cbIsNotified.Visible = false;
+            }
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;

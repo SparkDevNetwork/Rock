@@ -33,7 +33,7 @@
                             <Rock:PersonPicker runat="server" ID="ppGroupMemberPerson" Label="Person" CssClass="js-authorizedperson" Required="true" OnSelectPerson="ppGroupMemberPerson_SelectPerson" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Status" RepeatDirection="Horizontal" />
+                            <Rock:RockCheckBox runat="server" ID="cbIsNotified" Label="Is Notified" />
                         </div>
                     </div>
 
@@ -42,6 +42,12 @@
                             <Rock:RockDropDownList runat="server" ID="ddlGroupRole" DataTextField="Name" DataValueField="Id" Label="Role" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupRole_SelectedIndexChanged" />
                         </div>
                         <div class="col-md-6">
+                            <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Status" RepeatDirection="Horizontal" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
                             <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
                             <asp:PlaceHolder ID="phAttributesReadOnly" runat="server" EnableViewState="false"></asp:PlaceHolder>
                         </div>
