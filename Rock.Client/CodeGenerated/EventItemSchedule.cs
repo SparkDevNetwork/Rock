@@ -38,7 +38,7 @@ namespace Rock.Client
         public int EventItemCampusId { get; set; }
 
         /// <summary />
-        public int? ScheduleId { get; set; }
+        public int ScheduleId { get; set; }
 
         /// <summary />
         public string ScheduleName { get; set; }

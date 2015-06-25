@@ -26,10 +26,10 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// CalendarItemSchedules REST API
+    /// RegistrationRegistrantFees REST API
     /// </summary>
-    public partial class CalendarItemSchedulesController : Rock.Rest.ApiController<Rock.Model.CalendarItemSchedule>
+    public partial class RegistrationRegistrantFeesController : Rock.Rest.ApiController<Rock.Model.RegistrationRegistrantFee>
     {
-        public CalendarItemSchedulesController() : base( new Rock.Model.CalendarItemScheduleService( new Rock.Data.RockContext() ) ) { } 
+        public RegistrationRegistrantFeesController() : base( new Rock.Model.RegistrationRegistrantFeeService( new Rock.Data.RockContext() ) ) { } 
     }
 }

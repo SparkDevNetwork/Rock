@@ -51,7 +51,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember]
-        public int? ScheduleId { get; set; }
+        public int ScheduleId { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the EventItemSchedule.
@@ -61,6 +61,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember]
+        [MaxLength( 100 )]
         public string ScheduleName { get; set; }
 
         #region Virtual Properties
@@ -83,6 +84,48 @@ namespace Rock.Model
         [DataMember]
         public virtual Schedule Schedule { get; set; }
 
+        /// <summary>
+        /// Gets the next start date time.
+        /// </summary>
+        /// <value>
+        /// The next start date time.
+        /// </value>
+        [NotMapped]
+        public virtual DateTime? NextStartDateTime
+        {
+            get
+            {
+                if ( Schedule != null )
+                {
+                    return Schedule.NextStartDateTime;
+                }
+
+                return null;
+            }
+        }
+        
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the start times.
+        /// </summary>
+        /// <param name="beginDateTime">The begin date time.</param>
+        /// <param name="endDateTime">The end date time.</param>
+        /// <returns></returns>
+        public virtual List<DateTime> GetStartTimes ( DateTime beginDateTime, DateTime endDateTime )
+        {
+            if ( Schedule != null )
+            {
+                return Schedule.GetScheduledStartTimes( beginDateTime, endDateTime );
+            }
+            else
+            {
+                return new List<DateTime>();
+            }
+        }
+
         #endregion
 
     }
@@ -99,7 +142,7 @@ namespace Rock.Model
         /// </summary>
         public EventItemScheduleConfiguration()
         {
-            this.HasRequired( p => p.EventItemCampus ).WithMany( p => p.EventItemSchedules ).HasForeignKey( p => p.EventItemCampusId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.EventItemCampus ).WithMany( p => p.EventItemSchedules ).HasForeignKey( p => p.EventItemCampusId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
         }
     }

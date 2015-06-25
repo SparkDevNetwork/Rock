@@ -619,42 +619,6 @@ namespace RockWeb.Blocks.Core
             this.HideSecondaryBlocks( editable );
         }
 
-        public string GetImageTag(int? imageId, int? maxWidth = null, int? maxHeight = null )
-        {
-            var photoUrl = new StringBuilder();
-
-            photoUrl.Append( System.Web.VirtualPathUtility.ToAbsolute( "~/" ) );
-
-            string styleString = string.Empty;
-            
-            if ( imageId.HasValue )
-            {
-                photoUrl.AppendFormat( "GetImage.ashx?id={0}", imageId );
-
-                if ( maxWidth.HasValue )
-                {
-                    photoUrl.AppendFormat( "&maxwidth={0}", maxWidth.Value );
-                }
-                if ( maxHeight.HasValue )
-                {
-                    photoUrl.AppendFormat( "&maxheight={0}", maxHeight.Value );
-                }
-            }
-            else
-            {
-                photoUrl.Append( "Assets/Images/no-picture.svg?" );
-
-                if ( maxWidth.HasValue || maxHeight.HasValue )
-                {
-                    styleString = string.Format( " style='{0}{1}'",
-                        maxWidth.HasValue ? "max-width:" + maxWidth.Value.ToString() + "px; " : "",
-                        maxHeight.HasValue ? "max-height:" + maxHeight.Value.ToString() + "px;" : "" );
-                }
-            }
-
-            return string.Format( "<img src='{0}'{1}/>", photoUrl.ToString(), styleString );
-        }
-
         // Flush any cached campus that uses location
         private void FlushCampus( int locationId )
         {
