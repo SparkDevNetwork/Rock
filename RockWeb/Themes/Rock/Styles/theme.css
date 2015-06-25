@@ -2542,7 +2542,7 @@ td.grid-col-actions {
 .table > tbody > tr > td.grid-columnreorder {
   padding-top: 12px;
   min-width: 48px;
-  width:48px;
+  width: 48px;
 }
 .table .color-field {
   padding: 0;
@@ -5333,6 +5333,19 @@ div.aspNetDisabled {
   a[href]:after {
     content: '' !important;
   }
+  #page-wrapper {
+    position: absolute;
+    left: -70px;
+  }
+  #content-wrapper {
+    margin-left: 70px !important;
+  }
+  .breadcrumb {
+    display: none;
+  }
+  footer {
+    display: none;
+  }
 }
 /*#region
 // Fonts                       */
@@ -5696,7 +5709,7 @@ a.link-block,
 }
 #content-wrapper {
   background-color: #f3f3f4;
-  min-height: 1000px;
+  min-height: 900px;
   z-index: 30;
   min-width: 320px;
 }

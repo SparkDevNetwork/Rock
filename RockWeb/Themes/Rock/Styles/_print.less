@@ -13,4 +13,23 @@
     // don't show URLs after links
     a[href]:after { content: '' !important; }
 
+    // center the page better after removing the left nav
+    #page-wrapper {
+       position: absolute;
+       left: -70px;
+    }
+
+    #content-wrapper {
+        margin-left: 70px !important;
+    }
+
+    // remove the breadcrumbs
+    .breadcrumb {
+        display: none;
+    }
+
+    // Remove the footer 
+    footer {
+        display: none;
+    }
 }
