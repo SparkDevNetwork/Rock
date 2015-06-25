@@ -147,15 +147,16 @@
                         <Rock:GridFilter ID="fLinkages" runat="server" OnDisplayFilterValue="fLinkages_DisplayFilterValue">
                             <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" />
                         </Rock:GridFilter>
-                        <Rock:Grid ID="gLinkages" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gLinkages_RowSelected" RowItemText="Linkage">
-                            <Columns>
-                                <asp:TemplateField HeaderText="Campus Event Item" SortExpression="EventItemCampus">
-                                    <ItemTemplate>
-                                        <asp:Literal ID="lEventItemCampus" runat="server" /></ItemTemplate>
+                        <Rock:Grid ID="gLinkages" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Linkage">
+                            <Columns> 
+                                <asp:TemplateField HeaderText="Calendar Item">
+                                    <ItemTemplate><asp:Literal ID="lCalendarItem" runat="server" /></ItemTemplate>
                                 </asp:TemplateField>
-                                <asp:HyperLinkField HeaderText="Group" DataTextField="Group" DataNavigateUrlFields="GroupID" SortExpression="Group" DataTextFormatString="" />
+                                <asp:BoundField HeaderText="Campus" DataField="EventItemCampus.Campus.Name" SortExpression="EventItemCampus.Campus.Name" NullDisplayText="All Campuses" />
+                                <asp:HyperLinkField HeaderText="Group" DataTextField="Group" DataNavigateUrlFields="GroupID" SortExpression="Group" />
                                 <asp:BoundField HeaderText="Public Name" DataField="PublicName" SortExpression="PublicName" />
                                 <asp:BoundField HeaderText="URL Slug" DataField="UrlSlug" SortExpression="UrlSlug" />
+                                <Rock:EditField OnClick="gLinkages_Edit" />
                                 <Rock:DeleteField OnClick="gLinkages_Delete" />
                             </Columns>
                         </Rock:Grid>
