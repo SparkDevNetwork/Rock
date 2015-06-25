@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Involvement
     [LinkedPage( "Detail Page" )]
     public partial class ConnectionOpportunityList : RockBlock, ISecondaryBlock
     {
-        #region Private Variables
+        #region Fields
 
         private ConnectionType _connectionType = null;
         private bool _canView = false;
@@ -238,7 +238,6 @@ namespace RockWeb.Blocks.Involvement
                         }
 
                         int connectionTypeId = connectionOpportunity.ConnectionTypeId;
-
                         connectionOpportunityService.Delete( connectionOpportunity );
                         rockContext.SaveChanges();
                     }
@@ -313,7 +312,6 @@ namespace RockWeb.Blocks.Involvement
             BindAttributes();
             AddDynamicControls();
         }
-
 
         /// <summary>
         /// Binds the attributes.
@@ -437,7 +435,6 @@ namespace RockWeb.Blocks.Involvement
                 gConnectionOpportunities.Columns.Add( deleteField );
                 deleteField.Click += DeleteConnectionOpportunity_Click;
             }
-
         }
 
         /// <summary>

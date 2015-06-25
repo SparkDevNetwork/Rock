@@ -40,7 +40,6 @@ namespace RockWeb.Blocks.Involvement
     {
         #region Base Control Methods
 
-
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -48,9 +47,7 @@ namespace RockWeb.Blocks.Involvement
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
             lbAddConnectionType.Visible = UserCanAdministrate;
-
             rptConnectionTypes.ItemCommand += rptConnectionTypes_ItemCommand;
         }
 

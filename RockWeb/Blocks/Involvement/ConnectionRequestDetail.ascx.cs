@@ -39,10 +39,9 @@ namespace RockWeb.Blocks.Involvement
     [Description( "Displays the details of the given connection request for editing state, status, etc." )]
     [LinkedPage( "Manual Workflow Page", "Page used to manually start a workflow." )]
     [LinkedPage( "Workflow Configuration Page", "Page used to view and edit configuration of a workflow." )]
-
     public partial class ConnectionRequestDetail : RockBlock, IDetailBlock
     {
-        #region Properties
+        #region Fields
 
         ConnectionRequest _connectionRequest;
         public bool _canEdit = false;
@@ -50,7 +49,6 @@ namespace RockWeb.Blocks.Involvement
         #endregion
 
         #region Control Methods
-
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -190,8 +188,9 @@ namespace RockWeb.Blocks.Involvement
                         return;
                     }
 
-                    // if the connectionRequest IsValue is false, and the UI controls didn't report any errors, it is probably because the custom rules of ConnectionRequest didn't pass.
-                    // So, make sure a message is displayed in the validation summary
+                    // if the connectionRequest IsValue is false, and the UI controls didn't report any errors, it is probably
+                    // because the custom rules of ConnectionRequest didn't pass.
+                    // So, make sure a message is displayed in the validation summary.
                     cvConnectionRequest.IsValid = connectionRequest.IsValid;
 
                     if ( !cvConnectionRequest.IsValid )
@@ -214,6 +213,7 @@ namespace RockWeb.Blocks.Involvement
                     } );
                 }
             }
+
             pnlReadDetails.Visible = true;
             wpConnectionRequestActivities.Visible = true;
             wpConnectionRequestWorkflow.Visible = true;
@@ -260,6 +260,7 @@ namespace RockWeb.Blocks.Involvement
             {
                 ddlAssignedGroup.Items.Add( new ListItem( String.Format( "{0} ({1})", g.Name, g.Campus != null ? g.Campus.Name : "No Campus" ), g.Id.ToString().ToUpper() ) );
             }
+
             if ( _connectionRequest.AssignedGroupId != null )
             {
                 try
@@ -278,6 +279,7 @@ namespace RockWeb.Blocks.Involvement
             {
                 ddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString().ToUpper() ) );
             }
+
             ddlCampus.SelectedValue = _connectionRequest.CampusId.ToString();
             ddlCampus.DataBind();
 
@@ -286,6 +288,7 @@ namespace RockWeb.Blocks.Involvement
             {
                 rblState.Items.RemoveAt( 2 );
             }
+
             rblState.SetValue( _connectionRequest.ConnectionState.ConvertToInt().ToString() );
 
             rblStatus.Items.Clear();
@@ -293,6 +296,7 @@ namespace RockWeb.Blocks.Involvement
             {
                 rblStatus.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
             }
+
             rblStatus.SelectedValue = _connectionRequest.ConnectionStatusId.ToString();
 
             if ( _connectionRequest.ConnectionState == ConnectionState.FutureFollowUp )
@@ -314,9 +318,13 @@ namespace RockWeb.Blocks.Involvement
                 hlStatusEdit.Text = _connectionRequest.ConnectionStatus.Name;
                 hlStatusEdit.Visible = true;
             }
-
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbConnect control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbConnect_Click( object sender, EventArgs e )
         {
             using ( var rockContext = new RockContext() )
@@ -342,15 +350,20 @@ namespace RockWeb.Blocks.Involvement
 
                 rockContext.SaveChanges();
             }
-
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbTransfer control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbTransfer_Click( object sender, EventArgs e )
         {
             if ( _connectionRequest == null )
             {
                 _connectionRequest = new ConnectionRequestService( new RockContext() ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
             }
+
             pnlReadDetails.Visible = false;
             wpConnectionRequestActivities.Visible = false;
             wpConnectionRequestWorkflow.Visible = false;
@@ -365,9 +378,11 @@ namespace RockWeb.Blocks.Involvement
             {
                 ddlTransferStatus.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
             }
+
             ddlTransferStatus.SelectedValue = _connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses.FirstOrDefault( s => s.IsDefault == true ).Id.ToString();
 
             ddlTransferOpportunity.Items.Clear();
+
             foreach ( var opportunity in _connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities )
             {
                 ddlTransferOpportunity.Items.Add( new ListItem( opportunity.Name, opportunity.Id.ToString().ToUpper() ) );
@@ -389,11 +404,11 @@ namespace RockWeb.Blocks.Involvement
                 {
                     _connectionRequest = new ConnectionRequestService( rockContext ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
                 }
+
                 var connectionWorkflow = new ConnectionWorkflowService( rockContext ).Get( connectionWorkflowId.Value );
 
                 LaunchWorkflow( rockContext, connectionWorkflow, connectionWorkflow.WorkflowType.Name );
                 ShowDetail( PageParameter( "ConnectionRequestId" ).AsInteger(), PageParameter( "ConnectionOpportunityId" ).AsIntegerOrNull() );
-
             }
         }
 
@@ -414,7 +429,6 @@ namespace RockWeb.Blocks.Involvement
                 ddlTransferOpportunity.SetValue( opportunityId.ToString() );
                 HideDialog();
             }
-
         }
 
         protected void btnTransferSave_Click( object sender, EventArgs e )
@@ -424,6 +438,7 @@ namespace RockWeb.Blocks.Involvement
             {
                 _connectionRequest = new ConnectionRequestService( rockContext ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
             }
+
             ConnectionRequestActivity connectionRequestActivity = new ConnectionRequestActivity();
             connectionRequestActivity.ConnectionOpportunityId = ddlTransferOpportunity.SelectedValueAsId().Value;
             var guid = "6e7c8475-2a03-42eb-a883-5b2cc6cae519".AsGuid();
@@ -434,7 +449,6 @@ namespace RockWeb.Blocks.Involvement
             _connectionRequest.ConnectionStatusId = ddlTransferStatus.SelectedValueAsId().Value;
             rockContext.SaveChanges();
 
-
             pnlReadDetails.Visible = true;
             wpConnectionRequestActivities.Visible = true;
             wpConnectionRequestWorkflow.Visible = true;
@@ -442,6 +456,11 @@ namespace RockWeb.Blocks.Involvement
             ShowDetail( PageParameter( "ConnectionRequestId" ).AsInteger(), PageParameter( "ConnectionOpportunityId" ).AsIntegerOrNull() );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSearch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSearch_Click( object sender, EventArgs e )
         {
             RockContext rockContext = new RockContext();
@@ -455,6 +474,11 @@ namespace RockWeb.Blocks.Involvement
             ShowDialog( "Search", true );
         }
 
+        /// <summary>
+        /// Handles the SaveClick event of the dlgSearch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgSearch_SaveClick( object sender, EventArgs e )
         {
             RockContext rockContext = new RockContext();
@@ -475,17 +499,26 @@ namespace RockWeb.Blocks.Involvement
 
         #region ConnectionRequestWorkflow Events
 
+        /// <summary>
+        /// Handles the GridRebind event of the gConnectionRequestWorkflows control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gConnectionRequestWorkflows_GridRebind( object sender, EventArgs e )
         {
             BindConnectionRequestWorkflowsGrid();
         }
 
+        /// <summary>
+        /// Binds the connection request workflows grid.
+        /// </summary>
         private void BindConnectionRequestWorkflowsGrid()
         {
             if ( _connectionRequest == null )
             {
                 _connectionRequest = new ConnectionRequestService( new RockContext() ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
             }
+
             var instantiatedWorkflows = new ConnectionRequestService( new RockContext() ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() ).ConnectionRequestWorkflows.ToList();
             SetConnectionRequestWorkflowListOrder( instantiatedWorkflows );
             gConnectionRequestWorkflows.DataSource = instantiatedWorkflows.Select( c => new
@@ -501,6 +534,10 @@ namespace RockWeb.Blocks.Involvement
             gConnectionRequestWorkflows.DataBind();
         }
 
+        /// <summary>
+        /// Sets the connection request workflow list order.
+        /// </summary>
+        /// <param name="connectionRequestWorkflowList">The connection request workflow list.</param>
         private void SetConnectionRequestWorkflowListOrder( List<ConnectionRequestWorkflow> connectionRequestWorkflowList )
         {
             if ( connectionRequestWorkflowList != null )
@@ -512,6 +549,11 @@ namespace RockWeb.Blocks.Involvement
             }
         }
 
+        /// <summary>
+        /// Handles the RowSelected event of the gConnectionRequestWorkflows control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gConnectionRequestWorkflows_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             ConnectionRequestWorkflow connectionRequestWorkflow = new ConnectionRequestWorkflowService( new RockContext() ).Get( (Guid)e.RowKeyValue );
@@ -522,6 +564,11 @@ namespace RockWeb.Blocks.Involvement
 
         #region ConnectionRequestActivity Events
 
+        /// <summary>
+        /// Handles the Click event of the btnAddConnectionRequestActivity control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddConnectionRequestActivity_Click( object sender, EventArgs e )
         {
             RockContext rockContext = new RockContext();
@@ -545,15 +592,24 @@ namespace RockWeb.Blocks.Involvement
             rockContext.SaveChanges();
 
             BindConnectionRequestActivitiesGrid();
-
             HideDialog();
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gConnectionRequestActivities control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gConnectionRequestActivities_GridRebind( object sender, EventArgs e )
         {
             BindConnectionRequestActivitiesGrid();
         }
 
+        /// <summary>
+        /// Handles the Add event of the gConnectionRequestActivities control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gConnectionRequestActivities_Add( object sender, EventArgs e )
         {
             if ( _connectionRequest == null )
@@ -579,12 +635,18 @@ namespace RockWeb.Blocks.Involvement
             ShowDialog( "ConnectionRequestActivities", true );
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gConnectionRequestActivities control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gConnectionRequestActivities_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( _connectionRequest == null )
             {
                 _connectionRequest = new ConnectionRequestService( new RockContext() ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
             }
+
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 var activity = e.Row.DataItem as ConnectionRequestActivity;
@@ -595,12 +657,16 @@ namespace RockWeb.Blocks.Involvement
             }
         }
 
+        /// <summary>
+        /// Binds the connection request activities grid.
+        /// </summary>
         private void BindConnectionRequestActivitiesGrid()
         {
             if ( _connectionRequest == null )
             {
                 _connectionRequest = new ConnectionRequestService( new RockContext() ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
             }
+
             var connectionRequestActivities = _connectionRequest.ConnectionRequestActivities.ToList();
 
             gConnectionRequestActivities.DataSource = connectionRequestActivities.Select( a => new
@@ -622,6 +688,11 @@ namespace RockWeb.Blocks.Involvement
 
         #endregion
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the rblState control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rblState_SelectedIndexChanged( object sender, EventArgs e )
         {
             if ( rblState.SelectedValueAsEnum<ConnectionState>() == ConnectionState.FutureFollowUp )
@@ -715,7 +786,6 @@ namespace RockWeb.Blocks.Involvement
                 readOnly = false;
             }
 
-
             btnSave.Visible = !readOnly;
 
             ppConnectionRequestPerson.SetValue( _connectionRequest.PersonAlias.Person );
@@ -735,12 +805,14 @@ namespace RockWeb.Blocks.Involvement
                 pnlRequirements.Visible = false;
                 lbConnect.Enabled = false;
             }
+
             StringBuilder sb = new StringBuilder();
             Person person = _connectionRequest.PersonAlias.Person;
             foreach ( PhoneNumber phoneNumber in person.PhoneNumbers )
             {
                 sb.AppendLine( String.Format( "{0} <font color='#808080'>{1}</font></br>", phoneNumber.NumberFormatted, phoneNumber.NumberTypeValue.Value ) );
             }
+
             if ( !String.IsNullOrWhiteSpace( person.Email ) )
             {
                 sb.AppendFormat( "</br> <a href='mailto:{0}'>{0}</a>", person.Email );
@@ -770,12 +842,14 @@ namespace RockWeb.Blocks.Involvement
                 hlState.LabelType = Rock.Web.UI.Controls.LabelType.Danger;
                 hlState.Visible = true;
             }
+
             if ( _connectionRequest.ConnectionState == ConnectionState.FutureFollowUp )
             {
                 hlState.Text = String.Format( "Follow-up: {0}", _connectionRequest.FollowupDate.Value.ToShortDateString() );
                 hlState.LabelType = Rock.Web.UI.Controls.LabelType.Success;
                 hlState.Visible = true;
             }
+
             if ( _connectionRequest.ConnectionStatus.IsCritical )
             {
                 hlStatus.Text = _connectionRequest.ConnectionStatus.Name;
@@ -806,8 +880,8 @@ namespace RockWeb.Blocks.Involvement
             {
                 wpConnectionRequestActivities.Expanded = true;
             }
-            BindConnectionRequestWorkflowsGrid();
 
+            BindConnectionRequestWorkflowsGrid();
         }
 
         /// <summary>
@@ -895,6 +969,7 @@ namespace RockWeb.Blocks.Involvement
             {
                 nbRequirementsErrors.Visible = false;
             }
+
             if ( passedAllRequirements || !groupMember.Group.MustMeetRequirementsToAddMember.Value )
             {
                 if ( !groupMember.Group.MustMeetRequirementsToAddMember.Value )
@@ -968,6 +1043,12 @@ namespace RockWeb.Blocks.Involvement
             hfActiveDialog.Value = string.Empty;
         }
 
+        /// <summary>
+        /// Launches the workflow.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="connectionWorkflow">The connection workflow.</param>
+        /// <param name="name">The name.</param>
         private void LaunchWorkflow( RockContext rockContext, ConnectionWorkflow connectionWorkflow, string name )
         {
             if ( _connectionRequest == null )
@@ -1035,6 +1116,7 @@ namespace RockWeb.Blocks.Involvement
                         }
                     } );
                 }
+
                 ConnectionRequestWorkflow connectionRequestWorkflow = new ConnectionRequestWorkflow();
                 connectionRequestWorkflow.ConnectionRequestId = _connectionRequest.Id;
                 connectionRequestWorkflow.WorkflowId = workflow.Id;

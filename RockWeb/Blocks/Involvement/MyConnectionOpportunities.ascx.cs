@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Involvement
     [LinkedPage( "Detail Page", "Page used to view details of an requests." )]
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
     {
-        #region Private Variables
+        #region Fields
 
         private bool _canView = false;
         private bool _canEdit = false;
@@ -108,7 +108,6 @@ namespace RockWeb.Blocks.Involvement
             if ( !Page.IsPostBack )
             {
                 SetFilter();
-
                 GetData();
             }
         }
@@ -130,7 +129,6 @@ namespace RockWeb.Blocks.Involvement
         #endregion
 
         #region Filter Methods
-
 
         /// <summary>
         /// Handles the ApplyFilterClick event of the rFilter control.
@@ -218,7 +216,6 @@ namespace RockWeb.Blocks.Involvement
             {
                 e.Value = string.Empty;
             }
-
         }
 
         /// <summary>
@@ -234,7 +231,6 @@ namespace RockWeb.Blocks.Involvement
 
             cblState.BindToEnum<ConnectionState>();
             cblCampus.DataSource = CampusCache.All();
-
             cblCampus.DataBind();
 
             tbFirstName.Text = rFilter.GetUserPreference( MakeKeyUniqueToOpportunity( "First Name" ) );
@@ -279,7 +275,6 @@ namespace RockWeb.Blocks.Involvement
             {
                 cblCampus.SetValues( campusValue.Split( ';' ).ToList() );
             }
-
         }
 
         /// <summary>
@@ -315,8 +310,10 @@ namespace RockWeb.Blocks.Involvement
             {
                 return string.Format( "{0}-{1}", SelectedConnectionOpportunityId, key );
             }
+
             return key;
         }
+
         #endregion
 
         #region Events
@@ -349,6 +346,7 @@ namespace RockWeb.Blocks.Involvement
             {
                 SelectedConnectionOpportunityId = connectionOpportunityId.Value;
             }
+
             SetFilter();
             GetData();
         }
@@ -368,7 +366,6 @@ namespace RockWeb.Blocks.Involvement
 
                 qryParam.Add( "ConnectionOpportunityId", connectionRequest.ConnectionOpportunityId.ToString() );
                 NavigateToLinkedPage( "DetailPage", qryParam );
-
             }
         }
 
@@ -510,6 +507,7 @@ namespace RockWeb.Blocks.Involvement
                             states.Add( state.ConvertToEnum<ConnectionState>() );
                         }
                     }
+
                     if ( states.Any() )
                     {
                         qryRequests = qryRequests.Where( r => states.Contains( r.ConnectionState ) );
@@ -545,9 +543,9 @@ namespace RockWeb.Blocks.Involvement
                     gConnectionRequests.DataBind();
                     gConnectionRequests.Visible = true;
                     lOpportunityIcon.Text = string.Format( "<i class='{0}'></i>", selectedConnectionOpportunity.IconCssClass );
-
-                    lConnectionRequest.Text = connectionRequests.Where( w => w.ConnectionOpportunityId == selectedConnectionOpportunity.Id ).Select( w => w.ConnectionOpportunity.Name ).FirstOrDefault() + " Connection Requests";
-
+                    lConnectionRequest.Text = connectionRequests
+                        .Where( w => w.ConnectionOpportunityId == selectedConnectionOpportunity.Id )
+                        .Select( w => w.ConnectionOpportunity.Name ).FirstOrDefault() + " Connection Requests";
                 }
                 else
                 {
@@ -605,8 +603,5 @@ namespace RockWeb.Blocks.Involvement
         }
 
         #endregion
-
-
     }
-
 }
