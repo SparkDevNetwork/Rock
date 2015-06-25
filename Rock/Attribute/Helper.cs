@@ -447,7 +447,7 @@ namespace Rock.Attribute
                     foreach ( var attribute in allAttributes )
                     {
                         // Add a placeholder for this item's value for each attribute
-                        attributeValues.Add( attribute.Key, null );
+                        attributeValues.AddOrIgnore( attribute.Key, null );
                     }
 
                     // If loading attributes for a saved item, read the item's value(s) for each attribute 
