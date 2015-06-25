@@ -62,7 +62,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group static-control" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group static-control " + CssClass );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
@@ -71,7 +71,7 @@ namespace Rock.Web.UI.Controls
                 writer.Write( Label );
                 writer.RenderEndTag();  // label
 
-                writer.AddAttribute("class", "form-control-static " + CssClass);
+                writer.AddAttribute("class", "form-control-static");
                 writer.RenderBeginTag( HtmlTextWriterTag.P );
                 base.RenderControl( writer );
                 writer.RenderEndTag();

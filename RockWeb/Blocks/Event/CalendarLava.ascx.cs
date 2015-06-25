@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Web.UI;
@@ -56,7 +57,7 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #region Properties
-        protected List<EventCalendarItem> _filteredEvents = null;
+        protected List<DateTime> _eventDates = null;
 
         /// <summary>
         /// Gets or sets the accounts that are available for user to add to the list.
@@ -168,8 +169,7 @@ namespace RockWeb.Blocks.Event
                 e.Cell.Style.Add( "font-weight", "bold" );
                 e.Cell.AddCssClass( "alert-success" );
             }
-            if ( _filteredEvents != null && 
-                 _filteredEvents.Any( i => i.EventItem.GetEarliestStartDate() == day.Date ) )
+            if ( _eventDates != null && _eventDates.Any( d => d.Date.Equals( day.Date ) ) )
             {
                 e.Cell.Style.Add( "font-weight", "bold" );
                 e.Cell.AddCssClass( "alert-info" );
@@ -245,93 +245,110 @@ namespace RockWeb.Blocks.Event
             EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( new RockContext() );
 
             // Grab events
-            var qry = eventCalendarItemService.Queryable( "EventItem, EventCalendar, EventItem.EventItemCampuses, EventItem.EventItemAudiences" )
-                    .Where( m => m.EventCalendarId == eventCalendarId ).ToList();
+            var qry = eventCalendarItemService
+                    .Queryable( "EventCalendar,EventItem.EventItemAudiences,EventItem.EventItemCampuses.EventItemSchedules.Schedule" )
+                    .AsNoTracking()
+                    .Where( m =>
+                        m.EventCalendarId == eventCalendarId &&
+                        m.EventItem.IsActive );
 
             // Filter by campus
             List<int> campusIds = cblCampus.SelectedValuesAsInt;
             if ( campusIds.Any() )
             {
-                qry = qry.Where( e => e.EventItem.EventItemCampuses.Any( c => ( c.CampusId.HasValue && campusIds.Contains( c.CampusId.Value ) ) || c.CampusId == null ) ).ToList();
+                qry = qry
+                    .Where( e => 
+                        e.EventItem.EventItemCampuses
+                            .Any( c => 
+                                !c.CampusId.HasValue || 
+                                campusIds.Contains( c.CampusId.Value ) ) );
             }
 
-            //Filter by Category
+            //Filter by Audience
             List<int> categories = cblCategory.SelectedValuesAsInt;
             if ( categories.Any() )
             {
-                qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => categories.Contains( c.DefinedValueId ) ) ).ToList();
+                qry = qry.Where( i => i.EventItem.EventItemAudiences
+                    .Any( c => categories.Contains( c.DefinedValueId ) ) );
             }
 
-            _filteredEvents = qry;
-            // Filter by date
+            // Query the DB now
+            var items = qry.ToList();
 
-            //Daterange filter
-            DateTime minusOneMonth = DateTime.Now.AddDays( -30 );
-            DateTime plusOneMonth = DateTime.Now.AddDays( 30 );
-            if ( drpDateRange.LowerValue.HasValue && drpDateRange.UpperValue.HasValue )
-            {
-                qry = qry.Where( i =>
-                    i.EventItem.GetEarliestStartDate().HasValue
-                    && i.EventItem.GetEarliestStartDate() > drpDateRange.LowerValue.Value
-                    && i.EventItem.GetEarliestStartDate() < drpDateRange.UpperValue.Value
-                    ).ToList();
-            }
-            else
-            {
-                if ( drpDateRange.LowerValue.HasValue )
+            //Daterange 
+            DateTime beginDateTime = drpDateRange.LowerValue ?? RockDateTime.Today.AddMonths( -1 );
+            DateTime endDateTime = drpDateRange.UpperValue ?? RockDateTime.Today.AddMonths( 1 );
+
+            var itemsWithDates = items
+                .Select( i => new
                 {
-                    qry = qry.Where( i =>
-                        i.EventItem.GetEarliestStartDate().HasValue
-                        && i.EventItem.GetEarliestStartDate() > drpDateRange.LowerValue.Value
-                        && i.EventItem.GetEarliestStartDate() < plusOneMonth
-                        ).ToList();
-                }
-                if ( drpDateRange.UpperValue.HasValue )
-                {
-                    qry = qry.Where( i =>
-                        i.EventItem.GetEarliestStartDate().HasValue
-                        && i.EventItem.GetEarliestStartDate() > minusOneMonth
-                        && i.EventItem.GetEarliestStartDate() < drpDateRange.UpperValue.Value
-                        ).ToList();
-                }
-            }
+                    Item = i,
+                    Dates = i.EventItem.GetStartTimes( beginDateTime, endDateTime )
+                } )
+                .Where( i => i.Dates.Any() )
+                .ToList();
 
             //Calendar filter
-            if ( !drpDateRange.LowerValue.HasValue && !drpDateRange.UpperValue.HasValue )
+            if ( CurrentViewMode == "Day" )
             {
-                if ( CurrentViewMode == "Day" )
+                itemsWithDates = itemsWithDates
+                    .Where( i => i.Dates
+                        .Any( d => d.Date.Equals( calEventCalendar.SelectedDate ) ) )
+                    .ToList();
+            }
+
+            if ( CurrentViewMode == "Week" )
+            {
+                itemsWithDates = itemsWithDates
+                    .Where( i => i.Dates
+                        .Any( d => d.Date.StartOfWeek( DayOfWeek.Sunday ).Equals( calEventCalendar.SelectedDate.StartOfWeek( DayOfWeek.Sunday ) ) ) )
+                    .ToList();
+            }
+            if ( CurrentViewMode == "Month" )
+            {
+                itemsWithDates = itemsWithDates
+                    .Where( i => i.Dates
+                        .Any( d =>
+                            d.Date.Year == calEventCalendar.SelectedDate.Year &&
+                            d.Date.Month == calEventCalendar.SelectedDate.Month ) )
+                    .ToList();
+            }
+
+            var eventSummaries = new List<EventSummary>();
+            foreach( var itemWithDates in itemsWithDates )
+            {
+                var eventItem = itemWithDates.Item.EventItem;
+
+                foreach( var datetime in itemWithDates.Dates )
                 {
-                    qry = qry.Where( i =>
-                        i.EventItem.GetEarliestStartDate().HasValue
-                        && i.EventItem.GetEarliestStartDate() == calEventCalendar.SelectedDate
-                        ).ToList();
-                }
-                if ( CurrentViewMode == "Week" )
-                {
-                    qry = qry.Where( i =>
-                        i.EventItem.GetEarliestStartDate().HasValue
-                        && i.EventItem.GetEarliestStartDate().Value.StartOfWeek( DayOfWeek.Sunday ) == calEventCalendar.SelectedDate.StartOfWeek( DayOfWeek.Sunday )
-                        ).ToList();
-                }
-                if ( CurrentViewMode == "Month" )
-                {
-                    qry = qry.Where( i =>
-                        i.EventItem.GetEarliestStartDate().HasValue
-                        && i.EventItem.GetEarliestStartDate().Value.Month == calEventCalendar.SelectedDate.Month
-                        ).ToList();
+                    eventSummaries.Add( new EventSummary
+                    {
+                        Event = eventItem,
+                        DateTime = datetime,
+                        Date = datetime.ToShortDateString(),
+                        Time = datetime.ToShortTimeString(),
+                        Location = eventItem.EventItemCampuses
+                            .ToList()
+                            .Select( c => c.Campus != null ? c.Campus.Name : "All Campuses" )
+                            .ToList()
+                            .AsDelimited( "<br>" ),
+                        Description = eventItem.Description,
+                        DetailPage = String.IsNullOrWhiteSpace( eventItem.DetailsUrl ) ? null : eventItem.DetailsUrl
+                    } );
                 }
             }
-            qry = qry.OrderByDescending( a => a.EventItem.GetEarliestStartDate() ).ToList();
-            var events = qry.Select( e => new EventSummary { Event = e.EventItem, Date = e.EventItem.GetEarliestStartDate().Value.Date.ToShortDateString(), Time = e.EventItem.GetEarliestStartDate().Value.Date.ToShortTimeString(), Location = e.EventItem.EventItemCampuses.ToList().Select( c => c.Campus != null ? c.Campus.Name : "All Campuses" ).ToList().AsDelimited( "<br>" ), Description = e.EventItem.Description, DetailPage = String.IsNullOrWhiteSpace( e.EventItem.DetailsUrl ) ? null : e.EventItem.DetailsUrl } ).ToList();
+
+            var _eventDates = eventSummaries.Select( e => e.DateTime.Date ).Distinct().ToList();
+
+            var events = eventSummaries
+                .OrderBy( e => e.DateTime )
+                .ThenBy( e => e.Event.Name )
+                .ToList();
 
             var mergeFields = new Dictionary<string, object>();
-
             mergeFields.Add( "Events", events );
             mergeFields.Add( "CurrentPerson", CurrentPerson );
             mergeFields.Add( "TimeFrame", CurrentViewMode );
-
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
             lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
@@ -351,10 +368,11 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        [DotLiquid.LiquidType( "Event", "Date", "Time", "Location", "Description", "DetailPage" )]
+        [DotLiquid.LiquidType( "Event", "DateTime", "Date", "Time", "Location", "Description", "DetailPage" )]
         public class EventSummary
         {
             public EventItem Event { get; set; }
+            public DateTime DateTime { get; set; }
             public String Date { get; set; }
             public String Time { get; set; }
             public String Location { get; set; }
