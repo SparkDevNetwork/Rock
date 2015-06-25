@@ -117,7 +117,6 @@ namespace RockWeb.Blocks.Involvement
                 rptConnectionTypes.DataSource = allConnectionTypes.ToList();
                 rptConnectionTypes.DataBind();
             }
-
         }
 
         #endregion

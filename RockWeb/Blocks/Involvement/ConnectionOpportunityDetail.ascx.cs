@@ -173,8 +173,6 @@ namespace RockWeb.Blocks.Involvement
                 nbNotAllowedToEdit.Visible = false;
 
                 ShowOpportunityAttributes();
-
-                ShowDialog();
             }
         }
 
@@ -192,9 +190,9 @@ namespace RockWeb.Blocks.Involvement
                 ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
             };
 
-            ViewState["ConnectionOpportunityGroupsState"] = JsonConvert.SerializeObject( GroupsState, Formatting.None, jsonSetting );
-            ViewState["ConnectionOpportunityCampusesState"] = JsonConvert.SerializeObject( CampusesState, Formatting.None, jsonSetting );
-            ViewState["ConnectionOpportunityWorkflowsState"] = JsonConvert.SerializeObject( WorkflowsState, Formatting.None, jsonSetting );
+            ViewState["GroupsState"] = JsonConvert.SerializeObject( GroupsState, Formatting.None, jsonSetting );
+            ViewState["CampusesState"] = JsonConvert.SerializeObject( CampusesState, Formatting.None, jsonSetting );
+            ViewState["WorkflowsState"] = JsonConvert.SerializeObject( WorkflowsState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -811,6 +809,7 @@ namespace RockWeb.Blocks.Involvement
             ConnectionWorkflow connectionWorkflow = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( hfWorkflowGuid.Value.AsGuid() ) );
             ConnectionWorkflowTriggerType connectionWorkflowTriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
             int connectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
+            var connectionType = new ConnectionTypeService( rockContext ).Get( connectionTypeId );
             switch ( connectionWorkflowTriggerType )
             {
                 case ConnectionWorkflowTriggerType.RequestStarted:
@@ -840,6 +839,11 @@ namespace RockWeb.Blocks.Involvement
                     ddlSecondaryQualifier.Visible = true;
                     ddlSecondaryQualifier.BindToEnum<ConnectionState>();
                     ddlSecondaryQualifier.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+                    if ( !connectionType.EnableFutureFollowup )
+                    {
+                        ddlPrimaryQualifier.Items.RemoveAt( 3 );
+                        ddlSecondaryQualifier.Items.RemoveAt( 3 );
+                    }
                     break;
                 case ConnectionWorkflowTriggerType.StatusChanged:
                     var statusList = new ConnectionStatusService( rockContext ).Queryable().Where( s => s.ConnectionTypeId == connectionTypeId || s.ConnectionTypeId == null ).ToList();
@@ -1117,6 +1121,8 @@ namespace RockWeb.Blocks.Involvement
             GroupsState = connectionOpportunity.ConnectionOpportunityGroups.ToList();
             CampusesState = connectionOpportunity.ConnectionOpportunityCampuses.ToList();
 
+            imgupPhoto.BinaryFileId = connectionOpportunity.PhotoId;
+
             LoadDropDowns( connectionOpportunity );
 
             ShowOpportunityAttributes();
@@ -1143,7 +1149,6 @@ namespace RockWeb.Blocks.Involvement
                 wpAttributes.Visible = true;
                 Rock.Attribute.Helper.AddEditControls( connectionOpportunity, phAttributes, true, BlockValidationGroup );
             }
-
         }
 
         /// <summary>
@@ -1187,7 +1192,9 @@ namespace RockWeb.Blocks.Involvement
                     ddlGroupType.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) );
                 }
             }
+            ddlGroupType.SetValue( connectionOpportunity.GroupTypeId.ToString() );
             LoadGroupRoles( ddlGroupType.SelectedValue.AsInteger() );
+            ddlGroupRole.SetValue( connectionOpportunity.GroupMemberRoleId.ToString() );
 
             // bind group member status
             ddlGroupMemberStatus.BindToEnum<GroupMemberStatus>();

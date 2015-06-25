@@ -56,6 +56,10 @@ namespace RockWeb.Blocks.Involvement
 
         #region Control Methods
 
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
@@ -93,11 +97,11 @@ namespace RockWeb.Blocks.Involvement
             json = ViewState["WorkflowsState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
-                AttributesState = new List<Attribute>();
+                WorkflowsState = new List<ConnectionWorkflow>();
             }
             else
             {
-                AttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+                WorkflowsState = JsonConvert.DeserializeObject<List<ConnectionWorkflow>>( json );
             }
         }
 
@@ -252,7 +256,7 @@ namespace RockWeb.Blocks.Involvement
                 {
                     if ( !connectionType.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
                     {
-                        mdDeleteWarning.Show( "You are not authorized to delete this calendar.", ModalAlertType.Information );
+                        mdDeleteWarning.Show( "You are not authorized to delete this connection type.", ModalAlertType.Information );
                         return;
                     }
 
@@ -408,7 +412,6 @@ namespace RockWeb.Blocks.Involvement
                     string qualifierValue = connectionType.Id.ToString();
                     SaveAttributes( new ConnectionOpportunity().TypeId, "ConnectionTypeId", qualifierValue, AttributesState, rockContext );
 
-                    // Reload calendar and make sure that the person who may have just added a calendar has security to view/edit/administrate the calendar
                     connectionType = connectionTypeService.Get( connectionType.Id );
                     if ( connectionType != null )
                     {
@@ -502,10 +505,7 @@ namespace RockWeb.Blocks.Involvement
             gAttributes_ShowEdit( attributeGuid );
         }
 
-        /// <summary>
-        /// Gets the event calendar's attributes_ show edit.
-        /// </summary>
-        /// <param name="attributeGuid">The attribute GUID.</param>
+
         protected void gAttributes_ShowEdit( Guid attributeGuid )
         {
             Attribute attribute;
@@ -519,7 +519,7 @@ namespace RockWeb.Blocks.Involvement
                 attribute = AttributesState.First( a => a.Guid.Equals( attributeGuid ) );
             }
 
-            edtAttributes.ActionTitle = ActionTitle.Edit( "attribute for Events of Calendar type " + tbName.Text );
+            edtAttributes.ActionTitle = ActionTitle.Edit( "attribute for Opportunities of Connection type " + tbName.Text );
             var reservedKeyNames = new List<string>();
             AttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
             edtAttributes.ReservedKeyNames = reservedKeyNames.ToList();
@@ -655,8 +655,10 @@ namespace RockWeb.Blocks.Involvement
             // Update the Attributes that were assigned in the UI
             foreach ( var attributeState in viewStateAttributes )
             {
-                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
+                var attribute = Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
+
+            AttributeCache.FlushEntityAttributes();
         }
 
 
@@ -958,6 +960,11 @@ namespace RockWeb.Blocks.Involvement
                     ddlSecondaryQualifier.Visible = true;
                     ddlSecondaryQualifier.BindToEnum<ConnectionState>();
                     ddlSecondaryQualifier.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+                    if ( !cbFutureFollowUp.Checked )
+                    {
+                        ddlPrimaryQualifier.Items.RemoveAt( 3 );
+                        ddlSecondaryQualifier.Items.RemoveAt( 3 );
+                    }
                     break;
                 case ConnectionWorkflowTriggerType.StatusChanged:
                     var statusList = new ConnectionStatusService( rockContext ).Queryable().Where( s => s.ConnectionTypeId == connectionTypeId || s.ConnectionTypeId == null ).ToList();
@@ -1074,11 +1081,13 @@ namespace RockWeb.Blocks.Involvement
                 connectionType = new ConnectionType { Id = 0 };
             }
 
-            // Admin rights are needed to edit a calendar ( Edit rights only allow adding/removing items )
+            // Admin rights are needed to edit a connection type ( Edit rights only allow adding/removing items )
             bool adminAllowed = UserCanAdministrate || connectionType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
 
             pnlDetails.Visible = true;
             hfConnectionTypeId.Value = connectionType.Id.ToString();
+
+            lIcon.Text = string.Format( "<i class='{0}'></i>", connectionType.IconCssClass );
 
             bool readOnly = false;
 
@@ -1110,18 +1119,13 @@ namespace RockWeb.Blocks.Involvement
                 }
                 else
                 {
-                    if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
-                    {
-                        ShowEditDetails( connectionType );
-                    }
+                    LoadStateDetails( connectionType, rockContext );
+                    ShowEditDetails( connectionType );
                 }
             }
         }
 
-        /// <summary>
-        /// Shows the edit details.
-        /// </summary>
-        /// <param name="connectionType">the event calendar</param>
+
         private void ShowEditDetails( ConnectionType connectionType )
         {
             if ( connectionType == null )
@@ -1138,8 +1142,6 @@ namespace RockWeb.Blocks.Involvement
                 lReadOnlyTitle.Text = connectionType.Name.FormatAsHtmlTitle();
             }
 
-            lIcon.Text = string.Format( "<i class='{0}'></i>", connectionType.IconCssClass );
-
             SetEditMode( true );
 
             // General
@@ -1149,6 +1151,9 @@ namespace RockWeb.Blocks.Involvement
             cbFullActivityList.Checked = connectionType.EnableFullActivityList;
             cbFutureFollowUp.Checked = connectionType.EnableFutureFollowup;
 
+            ActivityTypesState = connectionType.ConnectionActivityTypes.ToList();
+            WorkflowsState = connectionType.ConnectionWorkflows.ToList();
+            StatusesState = connectionType.ConnectionStatuses.ToList();
 
             BindAttributesGrid();
             BindConnectionActivityTypesGrid();
@@ -1157,10 +1162,7 @@ namespace RockWeb.Blocks.Involvement
 
         }
 
-        /// <summary>
-        /// Shows the readonly details.
-        /// </summary>
-        /// <param name="connectionType">The event calendar.</param>
+
         private void ShowReadonlyDetails( ConnectionType connectionType )
         {
             SetEditMode( false );
@@ -1175,11 +1177,7 @@ namespace RockWeb.Blocks.Involvement
             lConnectionTypeDescription.Text = connectionType.Description;
         }
 
-        /// <summary>
-        /// Gets the event calendar.
-        /// </summary>
-        /// <param name="connectionTypeId">The event calendar identifier.</param>
-        /// <returns></returns>
+
         private ConnectionType GetConnectionType( int connectionTypeId, RockContext rockContext = null )
         {
             string key = string.Format( "ConnectionType:{0}", connectionTypeId );
@@ -1246,36 +1244,12 @@ namespace RockWeb.Blocks.Involvement
         {
             var attributeService = new AttributeService( rockContext );
             AttributesState = attributeService
-                .GetByEntityTypeId( new EventCalendarItem().TypeId ).AsQueryable()
+                .GetByEntityTypeId( new ConnectionOpportunity().TypeId ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( connectionType.Id.ToString() ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
-                .ToList();
-
-            var activityTypeService = new ConnectionActivityTypeService( rockContext );
-            ActivityTypesState = activityTypeService
-                .Queryable()
-                .Where( a =>
-                    a.ConnectionTypeId == connectionType.Id )
-                .OrderBy( a => a.Name )
-                .ToList();
-
-            var statusService = new ConnectionStatusService( rockContext );
-            StatusesState = statusService
-                .Queryable()
-                .Where( a =>
-                    a.ConnectionTypeId == connectionType.Id )
-                .OrderBy( a => a.Name )
-                .ToList();
-
-            var workflowService = new ConnectionWorkflowService( rockContext );
-            WorkflowsState = workflowService
-                .Queryable()
-                .Where( a =>
-                    a.ConnectionTypeId == connectionType.Id )
-                .OrderBy( a => a.WorkflowType.Name )
                 .ToList();
         }
 

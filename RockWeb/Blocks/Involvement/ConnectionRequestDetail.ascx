@@ -16,7 +16,7 @@
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
                     <Rock:HighlightLabel ID="hlOpportunity" runat="server" LabelType="Info" />
-                    <Rock:HighlightLabel ID="hlStatus" runat="server" LabelType="Primary" Visible="false"/>
+                    <Rock:HighlightLabel ID="hlStatus" runat="server" LabelType="Primary" Visible="false" />
                     <Rock:HighlightLabel ID="hlState" runat="server" Visible="false" />
                 </div>
             </div>
@@ -99,8 +99,8 @@
                 </h1>
 
                 <div class="panel-labels">
-                    <Rock:HighlightLabel ID="hlOpportunityEdit" runat="server" LabelType="info"/>
-                    <Rock:HighlightLabel ID="hlStatusEdit" runat="server" LabelType="primary"/>
+                    <Rock:HighlightLabel ID="hlOpportunityEdit" runat="server" LabelType="info" />
+                    <Rock:HighlightLabel ID="hlStatusEdit" runat="server" LabelType="primary" />
                 </div>
             </div>
 
@@ -192,7 +192,7 @@
         </Rock:PanelWidget>
         <Rock:PanelWidget ID="wpConnectionRequestActivities" runat="server" Title="Activities">
             <div class="grid">
-                <Rock:Grid ID="gConnectionRequestActivities" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Activity">
+                <Rock:Grid ID="gConnectionRequestActivities" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Activity" OnRowDataBound="gConnectionRequestActivities_RowDataBound">
                     <Columns>
                         <Rock:RockBoundField DataField="Date" HeaderText="Date" />
                         <Rock:RockBoundField DataField="Activity" HeaderText="Activity" />
@@ -204,12 +204,17 @@
             </div>
         </Rock:PanelWidget>
 
-        <Rock:ModalDialog ID="dlgConnectionRequestActivities" runat="server" ValidationGroup="ConnectionOpportunityGroup" SaveButtonText="Add" OnSaveClick="btnAddConnectionRequestActivity_Click" Title="Select Group">
+        <Rock:ModalDialog ID="dlgConnectionRequestActivities" runat="server" SaveButtonText="Add" OnSaveClick="btnAddConnectionRequestActivity_Click" Title="Add Activity">
             <Content>
                 <asp:HiddenField ID="hfAddConnectionRequestActivityGuid" runat="server" />
-                <Rock:RockDropDownList ID="ddlActivity" runat="server" Label="Activity" />
-                <Rock:RockDropDownList ID="ddlOpportunity" runat="server" Label="Opportunity" />
-                <Rock:PersonPicker ID="ppConnector" runat="server" Label="Connector" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockDropDownList ID="ddlActivity" runat="server" Label="Activity" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:PersonPicker ID="ppConnector" runat="server" Label="Connector" />
+                    </div>
+                </div>
                 <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" />
             </Content>
         </Rock:ModalDialog>
@@ -220,7 +225,7 @@
                     <Rock:RockTextBox ID="tbSearchName" runat="server" Label="Name" />
                 </div>
                 <div class="col-md-6">
-                    <div class='treeview-scroll scroll-container scroll-container-vertical'>
+                    <div class='scroll-container scroll-container-vertical'>
                         <div class='scrollbar'>
                             <div class='track'>
                                 <div class='thumb'>
@@ -230,69 +235,43 @@
                         </div>
                         <div class='viewport'>
                             <div class='overview'>
-                                <div class='treeview treeview-items'>
-                                    <ul class="rocktree">
-                                        <asp:Repeater ID="rptSearchResult" runat="server">
-                                            <ItemTemplate>
-                                                <li class="rocktree-item">
-                                                    <Rock:PanelWidget ID="SearchTermPanel" runat="server" CssClass="panel panel-block" TitleIconCssClass='<%# Eval("IconCssClass") %>' Title='<%# Eval("Name") %>'>
-                                                        <div class="row">
-                                                            <div class="col-md-4">
-                                                                <div class="photo">
-                                                                    <img src='<%# Eval("PhotoUrl") %>' ></img>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-md-8">
-                                                                <%# Eval("Description") %>
-                                                            </div>
-                                                        </div>
-                                                        <Rock:BootstrapButton ID="btnSearchSelect" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display" Text="Select" CssClass="btn btn-default" />
-                                                    </Rock:PanelWidget>
-                                                </li>
-                                            </ItemTemplate>
-                                        </asp:Repeater>
-                                    </ul>
-                                </div>
+                                <asp:Repeater ID="rptSearchResult" runat="server">
+                                    <ItemTemplate>
+                                        <Rock:PanelWidget ID="SearchTermPanel" runat="server" CssClass="panel panel-block" TitleIconCssClass='<%# Eval("IconCssClass") %>' Title='<%# Eval("Name") %>'>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="photo">
+                                                        <img src='<%# Eval("PhotoUrl") %>'></img>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <%# Eval("Description") %>
+                                                </div>
+                                            </div>
+                                            <Rock:BootstrapButton ID="btnSearchSelect" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display" Text="Select" CssClass="btn btn-default" />
+                                        </Rock:PanelWidget>
+                                    </ItemTemplate>
+                                </asp:Repeater>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <script type="text/javascript">
+                    Sys.Application.add_load(function () {
+                        $('.scroll-container').tinyscrollbar({ axis: 'y', sizethumb: 60, size: 200 });
+                        $('.rock-panel-widget > header').on('click', function () {
+                            //TODO: Figure out a less fragile way of doing this: potentially by receiving a callback from PanelWidget
+                            setTimeout(function () {
+                                $('.scroll-container').tinyscrollbar_update('relative');
+                            }, 401);
+                        });
+
+                    });
+
+                </script>
             </Content>
         </Rock:ModalDialog>
 
-        <script type="text/javascript">
-            $(function () {
-                var scrollbCategory = $('.treeview-scroll');
-                scrollbCategory.tinyscrollbar({ axis: 'x', sizethumb: 60, size: 200 });
-
-                // resize scrollbar when the window resizes
-                $(document).ready(function () {
-                    $(window).on('resize', function () {
-                        resizeScrollbar(scrollbCategory);
-                    });
-                });
-
-                $('#treeview-items')
-                    .on('rockTree:rendered', function () {
-
-                        // update viewport height
-                        resizeScrollbar(scrollbCategory);
-
-                    });
-
-                $('#dlgSearch').click(function () {
-                    resizeScrollbar(scrollbCategory);
-                });
-            });
-
-            function resizeScrollbar(scrollControl) {
-                var overviewHeight = $(scrollControl).find('.overview').height();
-
-                $(scrollControl).find('.viewport').height(overviewHeight);
-
-                scrollControl.tinyscrollbar_update('relative');
-            }
-        </script>
     </ContentTemplate>
 </asp:UpdatePanel>

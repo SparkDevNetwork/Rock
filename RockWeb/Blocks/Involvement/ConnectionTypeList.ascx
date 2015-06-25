@@ -5,7 +5,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-plug"></i>Connection Types</h1>
+                <h1 class="panel-title"><i class="fa fa-plug"></i> Connection Types</h1>
 
                 <div class="pull-right">
                     <asp:LinkButton ID="lbAddConnectionType" runat="server" CssClass="btn btn-action btn-xs pull-right" OnClick="lbAddConnectionType_Click" CausesValidation="false"><i class="fa fa-plus"></i></asp:LinkButton>
