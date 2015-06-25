@@ -234,6 +234,39 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the next start time.
+        /// </summary>
+        /// <returns></returns>
+        [NotMapped]
+        public virtual DateTime? NextStartDateTime 
+        {
+            get
+            {
+                DDay.iCal.Event calEvent = GetCalenderEvent();
+                if ( calEvent != null )
+                {
+                    var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
+                    if ( occurrences.Any() )
+                    {
+                        var minDateTime = occurrences
+                            .Where( a =>
+                                a.Period != null &&
+                                a.Period.StartTime != null )
+                            .Select( a => a.Period.StartTime.Value )
+                            .Min( d => (DateTime?)d );
+                        if ( minDateTime.HasValue )
+                        {
+                            // ensure the the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
+                            return DateTime.SpecifyKind( minDateTime.Value, DateTimeKind.Local );
+                        }
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Gets the start time of day.
         /// </summary>
         /// <value>
@@ -330,13 +363,16 @@ namespace Rock.Model
         public virtual List<DateTime> GetScheduledStartTimes( DateTime beginDateTime, DateTime endDateTime )
         {
             var result = new List<DateTime>();
+
             DDay.iCal.Event calEvent = GetCalenderEvent();
             if ( calEvent != null )
             {
-                // use ThreadSafe helper method to get occurrences
                 var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime, endDateTime );
-                
-                foreach ( var startDateTime in occurrences.Where( a => a.Period != null && a.Period.StartTime != null ).Select( a => a.Period.StartTime.Value ) )
+                foreach ( var startDateTime in occurrences
+                    .Where( a => 
+                        a.Period != null && 
+                        a.Period.StartTime != null )
+                    .Select( a => a.Period.StartTime.Value ) )
                 {
                     // ensure the the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
                     result.Add( DateTime.SpecifyKind( startDateTime, DateTimeKind.Local ) );

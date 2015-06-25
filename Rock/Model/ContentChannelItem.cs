@@ -109,7 +109,6 @@ namespace Rock.Model
         [DataMember]
         public DateTime? ApprovedDateTime { get; set; }
 
-
         /// <summary>
         /// Gets or sets the start date time.
         /// </summary>

@@ -242,6 +242,7 @@
     <Compile Include="Model\CodeGenerated\EventCalendarItemService.cs" />
     <Compile Include="Model\CodeGenerated\EventCalendarService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemAudienceService.cs" />
+    <Compile Include="Model\CodeGenerated\EventItemCampusGroupMapService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemCampusService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemService.cs" />
@@ -294,7 +295,9 @@
     <Compile Include="Model\BenevolenceResult.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\CodeGenerated\RegistrationRegistrantFeeService.cs" />
     <Compile Include="Model\EventItemAudience.cs" />
+    <Compile Include="Model\EventItemCampusGroupMap.cs" />
     <Compile Include="Model\EventItemSchedule.cs" />
     <Compile Include="Model\CampusService.partial.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceRequestService.cs" />
@@ -314,6 +317,14 @@
     <Compile Include="Model\CodeGenerated\PersonDuplicateService.cs" />
     <Compile Include="Model\CodeGenerated\PersonPreviousNameService.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationInstanceService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationRegistrantService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationTemplateDiscountService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationTemplateFeeService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationTemplateFormFieldService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationTemplateFormService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationTemplateService.cs" />
     <Compile Include="Model\ContentChannel.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -341,6 +352,15 @@
     <Compile Include="Model\GroupScheduleExclusion.cs" />
     <Compile Include="Model\GroupMemberWorkflowTrigger.Partial.cs" />
     <Compile Include="Model\MergeTemplate.cs" />
+    <Compile Include="Model\RegistrationRegistrant.cs" />
+    <Compile Include="Model\Registration.cs" />
+    <Compile Include="Model\RegistrationRegistrantFee.cs" />
+    <Compile Include="Model\RegistrationTemplateFee.cs" />
+    <Compile Include="Model\RegistrationTemplateDiscount.cs" />
+    <Compile Include="Model\RegistrationTemplateFormField.cs" />
+    <Compile Include="Model\RegistrationTemplateForm.cs" />
+    <Compile Include="Model\RegistrationInstance.cs" />
+    <Compile Include="Model\RegistrationTemplate.cs" />
     <Compile Include="Model\PersonBadgeService.partial.cs" />
     <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PersonPreviousName.cs" />
@@ -420,10 +440,13 @@
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\Cache\NoteTypeCache.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
+    <Compile Include="Web\UI\Controls\Event\RegistrationInstanceEditor.cs" />
+    <Compile Include="Web\UI\Controls\Event\RegistrantEditor.cs" />
     <Compile Include="Web\UI\Controls\Grid\BoolFromArrayField.cs" />
     <Compile Include="Web\UI\Controls\Grid\RockLiteralField.cs" />
     <Compile Include="Web\UI\Controls\Grid\CurrencyField.cs" />
     <Compile Include="Web\UI\Controls\Grid\CallbackField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\FieldTypeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\CampusField.cs" />
     <Compile Include="Web\UI\Controls\Grid\PhoneNumbersField.cs" />
     <Compile Include="Web\UI\Controls\IDisplayRequiredIndicator.cs" />
@@ -432,6 +455,7 @@
     <Compile Include="Web\UI\Controls\Pickers\MergeTemplatePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DataViewPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GradePicker.cs" />
+    <Compile Include="Web\UI\Controls\Event\RegistrationTemplateFormEditor.cs" />
     <Compile Include="Web\UI\Controls\RockRating.cs" />
     <Compile Include="Web\UI\RockBlockWrapper.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
@@ -1324,6 +1348,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Auth\" />
+    <Folder Include="Web\UI\Controls\Registration\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
