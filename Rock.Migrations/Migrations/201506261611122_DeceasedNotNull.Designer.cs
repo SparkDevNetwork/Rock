@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class NotNullBool : IMigrationMetadata
+    public sealed partial class DeceasedNotNull : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(NotNullBool));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(DeceasedNotNull));
         
         string IMigrationMetadata.Id
         {
-            get { return "201506222021552_NotNullBool"; }
+            get { return "201506261611122_DeceasedNotNull"; }
         }
         
         string IMigrationMetadata.Source
