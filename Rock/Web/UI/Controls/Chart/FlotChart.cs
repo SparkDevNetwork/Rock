@@ -117,7 +117,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets a value indicating whether to combine values with different EntityId values into one series vs. showing each in it's own series
+        /// Gets a value indicating whether to combine values with different EntityId values into one series vs. showing each in its own series
         /// </summary>
         /// <value>
         ///   <c>true</c> if [combine values]; otherwise, <c>false</c>.

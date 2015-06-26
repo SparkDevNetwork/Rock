@@ -36,7 +36,7 @@ namespace Rock.Web.UI.Controls
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets the heading (heading is on it's own line at the top)
+        /// Gets or sets the heading (heading is on its own line at the top)
         /// </summary>
         /// <value>
         /// The heading.

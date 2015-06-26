@@ -246,7 +246,7 @@ namespace Rock.Services.NuGet
             }
             else
             {
-                // make a deep copy, remove it's child pages, and ToJson that...
+                // make a deep copy, remove its child pages, and ToJson that...
                 var pageCopy = page.Clone() as Page ?? new Page();
                 pageCopy.Pages = new List<Page>();
                 json = pageCopy.ToJson();
