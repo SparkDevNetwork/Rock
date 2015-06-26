@@ -16,14 +16,12 @@
 
                 <div class="panel-heading clearfix">
                     <h1 class="panel-title pull-left">
-                        <asp:Literal ID="lGroupIconHtml" runat="server" />
                         <asp:Literal ID="lReadOnlyTitle" runat="server" />
                     </h1>
 
                     <div class="panel-labels">
-                        <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
-                        <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
-                        <Rock:HighlightLabel ID="hlCost" runat="server" LabelType="Success" />
+                        <Rock:HighlightLabel ID="hlCost" runat="server" LabelType="Info" ToolTip="Cost" />
+                        <Rock:HighlightLabel ID="hlBalance" runat="server" LabelType="Success" ToolTip="Balance Due" />
                     </div>
                 </div>
                 
@@ -40,7 +38,6 @@
                                 <div class="col-md-6">
                                     <Rock:PersonPicker ID="ppPerson" runat="server" Label="Registered By" OnSelectPerson="ppPerson_SelectPerson" />
                                     <Rock:EmailBox ID="ebConfirmationEmail" runat="server" Label="Confirmation Email" />
-                                    <Rock:GroupPicker ID="gpGroup" runat="server" Label="Group" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockTextBox ID="tbFirstName" runat="server" Label="Registered by First Name" />

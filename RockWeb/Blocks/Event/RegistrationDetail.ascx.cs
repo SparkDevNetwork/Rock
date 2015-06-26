@@ -43,11 +43,15 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of a given registration." )]
 
+    [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 0 )]
+    [LinkedPage( "Group Member Page", "The page for viewing details about a group member", true, "", "", 1 )]
     public partial class RegistrationDetail : RockBlock, IDetailBlock
     {
 
         #region Properties
 
+        private RegistrationTemplate RegistrationTemplate { get; set; }
+        private int? RegistrationTemplateId { get; set; }
         private int? RegistrationInstanceId { get; set; }
         private int? RegistrationId { get; set; }
         private int? RegistrantId { get; set; }
@@ -85,6 +89,58 @@ namespace RockWeb.Blocks.Event
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlRegistrationDetail );
+
+            RegistrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
+            RegistrationId = PageParameter( "RegistrationId" ).AsIntegerOrNull();
+            RegistrantId = PageParameter( "RegistrantId" ).AsIntegerOrNull();
+
+            // This block may be used with a RegistrantId, RegistrationId, or RegistrationInstanceId passed in. 
+            // Based on this, query for the remaining items.
+
+            using ( var rockContext = new RockContext() )
+            {
+                if ( RegistrantId.HasValue )
+                {
+                    var registrant = new RegistrationRegistrantService( rockContext )
+                        .Queryable( "Registration.RegistrationInstance.RegistrationTemplate.Forms.Fields" ).AsNoTracking()
+                        .Where( r => r.Id == RegistrantId.Value )
+                        .FirstOrDefault();
+                    if ( registrant != null )
+                    {
+                        RegistrationId = registrant.RegistrationId;
+                        RegistrationInstanceId = registrant.Registration.RegistrationInstanceId;
+                        RegistrationTemplateId = registrant.Registration.RegistrationInstance.RegistrationTemplateId;
+                        RegistrationTemplate = registrant.Registration.RegistrationInstance.RegistrationTemplate;
+                    }
+                }
+
+                if ( RegistrationId.HasValue && !RegistrationInstanceId.HasValue )
+                {
+                    var registration = new RegistrationService( rockContext )
+                        .Queryable( "RegistrationInstance.RegistrationTemplate.Forms.Fields" ).AsNoTracking()
+                        .Where( r => r.Id == RegistrationId.Value )
+                        .FirstOrDefault();
+                    if ( registration != null )
+                    {
+                        RegistrationInstanceId = registration.RegistrationInstanceId;
+                        RegistrationTemplateId = registration.RegistrationInstance.RegistrationTemplateId;
+                        RegistrationTemplate = registration.RegistrationInstance.RegistrationTemplate;
+                    }
+                }
+
+                if ( RegistrationInstanceId.HasValue && !RegistrationTemplateId.HasValue )
+                {
+                    var registrationInstance = new RegistrationInstanceService( rockContext )
+                        .Queryable( "RegistrationTemplate.Forms.Fields" ).AsNoTracking()
+                        .Where( r => r.Id == RegistrationInstanceId.Value )
+                        .FirstOrDefault();
+                    if ( registrationInstance != null )
+                    {
+                        RegistrationTemplateId = registrationInstance.RegistrationTemplateId;
+                        RegistrationTemplate = registrationInstance.RegistrationTemplate;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -97,23 +153,7 @@ namespace RockWeb.Blocks.Event
 
             if ( !Page.IsPostBack )
             {
-                RegistrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
-                RegistrationId = PageParameter( "RegistrationId" ).AsIntegerOrNull();
-                RegistrantId = PageParameter( "RegistrantId" ).AsIntegerOrNull();
-
-                if ( !RegistrationId.HasValue && RegistrantId.HasValue )
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        RegistrationId = new RegistrationRegistrantService( rockContext )
-                            .Queryable().AsNoTracking()
-                            .Where( r => r.Id == RegistrantId.Value )
-                            .Select( r => r.RegistrationId )
-                            .FirstOrDefault();
-                    }
-                }
-
-                if ( RegistrationId.HasValue )
+                if ( RegistrationInstanceId.HasValue )
                 {
                     ShowDetail( RegistrationId.Value, RegistrationInstanceId );
                 }
@@ -247,7 +287,6 @@ namespace RockWeb.Blocks.Event
                 registration.FirstName = tbFirstName.Text;
                 registration.LastName = tbLastName.Text;
                 registration.ConfirmationEmail = ebConfirmationEmail.Text;
-                registration.GroupId = gpGroup.SelectedValueAsInt();
 
                 if ( !Page.IsValid )
                 {
@@ -457,10 +496,7 @@ namespace RockWeb.Blocks.Event
                     editor.SetRegistrant( registrant );
 
                     var registration = new RegistrationService( rockContext ).Get( hfRegistrationId.ValueAsInt() );
-                    if ( registration != null )
-                    {
-                        hlCost.Text = registration.TotalCost.ToString( "C2" );
-                    }
+                    SetCostLabels( registration );
 
                     RegistrantGuids[editor.RegistrantGuid] = false;
                 }
@@ -588,7 +624,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="registration">The group.</param>
         private void ShowEditDetails( Registration registration )
         {
-            hlCost.Text = registration.TotalCost.ToString( "C2" );
+            SetCostLabels( registration );
 
             SetEditMode( true );
 
@@ -604,7 +640,6 @@ namespace RockWeb.Blocks.Event
             tbFirstName.Text = registration.FirstName;
             tbLastName.Text = registration.LastName;
             ebConfirmationEmail.Text = registration.ConfirmationEmail;
-            gpGroup.SetValue( registration.Group );
         }
 
         /// <summary>
@@ -619,7 +654,7 @@ namespace RockWeb.Blocks.Event
 
             hfRegistrationId.SetValue( registration.Id );
 
-            hlCost.Text = registration.TotalCost.ToString( "C2" );
+            SetCostLabels( registration );
 
             if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
             {
@@ -635,7 +670,11 @@ namespace RockWeb.Blocks.Event
 
             if ( registration.Group != null )
             {
-                lGroup.Text = registration.Group.Name;
+                var qryParams = new Dictionary<string, string>();
+                qryParams.Add( "GroupId", registration.Group.Id.ToString() );
+                string groupUrl = LinkedPageUrl( "GroupDetailPage", qryParams );
+
+                lGroup.Text = string.Format( "<a href='{0}'>{1}</a>", groupUrl, registration.Group.Name );
                 lGroup.Visible = true;
             }
             else
@@ -644,6 +683,27 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Sets the cost labels.
+        /// </summary>
+        /// <param name="registration">The registration.</param>
+        private void SetCostLabels( Registration registration )
+        {
+            if ( registration != null && registration.TotalCost > 0.0M )
+            {
+                hlCost.Visible = true;
+                hlCost.Text = registration.TotalCost.ToString( "C2" );
+
+                hlBalance.Visible = true;
+                hlBalance.Text = registration.BalanceDue.ToString( "C2" );
+                hlBalance.LabelType = registration.BalanceDue > 0 ? LabelType.Danger : LabelType.Success;
+            }
+            else
+            {
+                hlCost.Visible = false;
+                hlBalance.Visible = false;
+            }
+        }
 
         /// <summary>
         /// Sets the edit mode.
@@ -719,6 +779,7 @@ namespace RockWeb.Blocks.Event
         private RegistrantEditor AddRegistrantControl( Guid guid, RegistrationRegistrant registrant = null )
         {
             var registrantEditor = new RegistrantEditor();
+            registrantEditor.SetForms( RegistrationTemplate );
             phRegistrants.Controls.Add( registrantEditor );
             registrantEditor.ID = "re" + guid;
             registrantEditor.SelectPersonClick += registrantEditor_SelectPersonClick;
