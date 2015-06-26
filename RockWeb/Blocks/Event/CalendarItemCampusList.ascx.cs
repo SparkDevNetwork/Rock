@@ -44,7 +44,9 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the campus details for a given calendar item." )]
 
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Detail Page", "The page to view linkage details", true, "", "", 0 )]
+    [LinkedPage( "Registration Instance Page", "The page to view registration details", true, "", "", 1 )]
+    [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 2 )]
     public partial class CalendarItemCampusList : RockBlock, ISecondaryBlock
     {
         #region Properties
@@ -84,6 +86,12 @@ namespace RockWeb.Blocks.Event
                     gCalendarItemCampusList.Actions.ShowAdd = true;
                     gCalendarItemCampusList.Actions.AddClick += gCalendarItemCampusList_Add;
                     gCalendarItemCampusList.GridRebind += gCalendarItemCampusList_GridRebind;
+
+                    var registrationCol = gCalendarItemCampusList.Columns[3] as HyperLinkField;
+                    registrationCol.DataNavigateUrlFormatString = LinkedPageUrl("RegistrationInstancePage") + "?RegistrationInstanceId={0}";
+
+                    var groupCol = gCalendarItemCampusList.Columns[4] as HyperLinkField;
+                    groupCol.DataNavigateUrlFormatString = LinkedPageUrl("GroupDetailPage") + "?GroupId={0}";
 
                 }
             }
@@ -381,7 +389,10 @@ namespace RockWeb.Blocks.Event
                         Campus = c.EventItemCampus.Campus != null ? c.EventItemCampus.Campus.Name : "All Campuses",
                         Date = c.NextStartDateTime.HasValue ? c.NextStartDateTime.Value.ToShortDateString() : "N/A",
                         Location = c.EventItemCampus.Location,
-                        RegistrationGroup = c.EventItemCampus.Linkages.Any() ? c.EventItemCampus.Linkages.FirstOrDefault().ToString() : "",
+                        RegistrationInstanceId = c.EventItemCampus.Linkages.Any() ? c.EventItemCampus.Linkages.FirstOrDefault().RegistrationInstanceId : (int?)null,
+                        RegistrationInstance = c.EventItemCampus.Linkages.Any() ? c.EventItemCampus.Linkages.FirstOrDefault().RegistrationInstance : null,
+                        GroupId = c.EventItemCampus.Linkages.Any() ? c.EventItemCampus.Linkages.FirstOrDefault().GroupId : (int?)null,
+                        Group = c.EventItemCampus.Linkages.Any() ? c.EventItemCampus.Linkages.FirstOrDefault().Group : null,
                         Contact = c.EventItemCampus.ContactPersonAlias != null ? c.EventItemCampus.ContactPersonAlias.Person.FullName : "",
                         Phone = c.EventItemCampus.ContactPhone,
                         Email = c.EventItemCampus.ContactEmail,

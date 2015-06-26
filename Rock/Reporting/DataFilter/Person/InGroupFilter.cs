@@ -362,12 +362,10 @@ function() {{
                 }
 
                 cblRole.Visible = list.Count > 0;
-                cbChildGroups.Visible = true;
             }
             else
             {
                 cblRole.Visible = false;
-                cbChildGroups.Visible = false;
             }
         }
 
