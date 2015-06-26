@@ -219,6 +219,15 @@
                                         <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
                                     </div>
                                 </div>
+                                <Rock:RockControlWrapper id="rcwLinkedRegistrations" runat="server" Label="Linked Registrations">
+                                    <ul class="list-unstyled">
+                                        <asp:Repeater ID="rptLinkedRegistrations" runat="server">
+                                            <ItemTemplate>
+                                                <li><a href='<%# RegistrationInstanceUrl( (int)Eval("RegistrationInstanceId" ) ) %>'><%# Eval("Title") %></a></li>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </ul>
+                                </Rock:RockControlWrapper>
                             </div>
                             <div class="col-md-6 location-maps">
                                 <asp:PlaceHolder ID="phMaps" runat="server" />

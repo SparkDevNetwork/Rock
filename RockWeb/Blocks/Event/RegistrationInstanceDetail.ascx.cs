@@ -45,6 +45,8 @@ namespace RockWeb.Blocks.Event
     [AccountField( "Default Account", "The default account to use for new registration instances", false, "2A6F9E5F-6859-44F1-AB0E-CE9CF6B08EE5", "", 0 )]
     [LinkedPage( "Registration Page", "The page for editing registration and registrant information", true, "", "", 1 )]
     [LinkedPage( "Linkage Page", "The page for editing registration linkages", true, "", "", 2 )]
+    [LinkedPage( "Calendar Item Page", "The page to view calendar item details", true, "", "", 3)]
+    [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 4)]
     public partial class RegistrationInstanceDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Fields
@@ -967,12 +969,32 @@ namespace RockWeb.Blocks.Event
         void gLinkages_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
-            { 
+            {
                 var campusEventItem = e.Row.DataItem as EventItemCampusGroupMap;
-                var lEventItemCampus = e.Row.FindControl( "lEventItemCampus" ) as Literal;
-                if ( campusEventItem != null  && lEventItemCampus != null )
+                var lCalendarItem = e.Row.FindControl( "lCalendarItem" ) as Literal;
+                if ( campusEventItem != null && lCalendarItem != null )
                 {
-                    lEventItemCampus.Text = campusEventItem.ToString( true, false, false );
+                    if ( campusEventItem.EventItemCampus != null &&
+                        campusEventItem.EventItemCampus.EventItem != null )
+                    {
+                        var calendarItems = new List<string>();
+
+                        foreach ( var calendarItem in campusEventItem.EventItemCampus.EventItem.EventCalendarItems )
+                        {
+                            if ( calendarItem.EventItem != null && calendarItem.EventCalendar != null )
+                            {
+                                var qryParams = new Dictionary<string, string>();
+                                qryParams.Add( "EventCalendarId", calendarItem.EventCalendarId.ToString() );
+                                qryParams.Add( "EventItemId", calendarItem.Id.ToString() );
+                                calendarItems.Add( string.Format( "<a href='{0}'>{1}</a> ({2})", 
+                                    LinkedPageUrl( "CalendarItemPage", qryParams ), 
+                                    calendarItem.EventItem.Name,
+                                    calendarItem.EventCalendar.Name ) );
+                            }
+                        }
+
+                        lCalendarItem.Text = calendarItems.AsDelimited( "<br/>" );
+                    }
                 }
             }
         }
@@ -993,7 +1015,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gLinkages_RowSelected( object sender, RowEventArgs e )
+        protected void gLinkages_Edit( object sender, RowEventArgs e )
         {
             NavigateToLinkedPage( "LinkagePage", "LinkageId", e.RowKeyId, "RegistrationInstanceId", hfRegistrationInstanceId.ValueAsInt()  );
         }
@@ -2190,10 +2212,13 @@ namespace RockWeb.Blocks.Event
             int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
             if ( instanceId.HasValue )
             {
+                var groupCol = gLinkages.Columns[2] as HyperLinkField;
+                groupCol.DataNavigateUrlFormatString = LinkedPageUrl( "GroupDetailPage" ) + "?GroupID={0}";
+
                 using ( var rockContext = new RockContext() )
                 {
                     var qry = new EventItemCampusGroupMapService( rockContext )
-                        .Queryable( "EventItemCampus.EventItem,Group" )
+                        .Queryable( "EventItemCampus.EventItem.EventCalendarItems.EventCalendar,Group" )
                         .AsNoTracking()
                         .Where( r => r.RegistrationInstanceId == instanceId.Value );
 
