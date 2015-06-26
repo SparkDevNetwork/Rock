@@ -27,7 +27,8 @@
         </style>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-        
+            <asp:HiddenField ID="hfSelectedEventId" ClientIDMode="Static" runat="server" />
+
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-check-circle"></i> <asp:Literal ID="lBlockTitle" runat="server" /></h1>
 
@@ -41,13 +42,8 @@
                 <h1 class="margin-t-none"><asp:Literal ID="lName" runat="server" /></h1>
 
                 <asp:Panel ID="pnlRegistrationForm" runat="server">
-                    <Rock:RockCheckBoxList ID="cblRegistrants" runat="server" Label="Register" RepeatDirection="Horizontal" />
-
-                    <asp:LinkButton ID="lbRegister" runat="server" Text="Regsiter" CssClass="btn btn-primary margin-b-lg" OnClick="lbRegister_Click" />
 
                     <asp:Literal ID="lEventIntro" runat="server" />
-                
-                    <asp:HiddenField ID="hfSelectedEventId" ClientIDMode="Static" runat="server" />
 
                     <asp:Repeater ID="rptEvents" runat="server">
                          <ItemTemplate>
@@ -90,6 +86,10 @@
                          </ItemTemplate>
                     </asp:Repeater>
                     
+                    <Rock:RockCheckBoxList ID="cblRegistrants" runat="server" Label="Register" RepeatDirection="Horizontal" />
+
+                    <asp:LinkButton ID="lbRegister" runat="server" Text="Register" CssClass="btn btn-primary margin-b-md" OnClick="lbRegister_Click" />
+
                     <asp:Literal ID="lMessages" runat="server" />
                 </asp:Panel>
 

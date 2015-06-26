@@ -42,8 +42,9 @@ namespace RockWeb.Blocks.Event
 
     [BooleanField("Include Family Members", "Lists family members of the individual to select for registration.", true, "", 0)]
     [IntegerField("Days In Range", "The number of days in the future to show events for.", true, 60, "", 1)]
-    [GroupRoleField(null, "Group Member Role", "The role to use when adding the individuals to the group.", true, "", "", 2)]
-    [EnumField( "Group Member Status", "The group member status to add the person with.", typeof( GroupMemberStatus ), true, "Pending", "", 3 )]
+    [IntegerField("Max Display Events", "The maximum number of events to display.", true, 4, "", 2)]
+    [GroupRoleField(null, "Group Member Role", "The role to use when adding the individuals to the group.", true, "", "", 3)]
+    [EnumField( "Group Member Status", "The group member status to add the person with.", typeof( GroupMemberStatus ), true, "Pending", "", 4)]
     public partial class EventCalendarItemPersonalizedRegistration : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -244,10 +245,7 @@ namespace RockWeb.Blocks.Event
                 return;
             }
 
-            lEventIntro.Text = string.Format( "<h4>Upcoming {0}</h4><p>Please select a {1} occurrence below to register {2} for.",
-                                    eventItem.Name.Pluralize(),
-                                    eventItem.Name,
-                                    person.NickName );
+            lEventIntro.Text = string.Format( "<h4>Select An Upcoming {0}</h4><p>", eventItem.Name );
 
             lBlockTitle.Text = string.Format( "{0} Registration", eventItem.Name );
 
@@ -272,47 +270,66 @@ namespace RockWeb.Blocks.Event
             }
 
             cblRegistrants.Items.Insert( 0, new ListItem( person.FullName, person.Id.ToString() ) );
+            cblRegistrants.SelectedIndex = 0;
+
+            if ( cblRegistrants.Items.Count == 1 )
+            {
+                cblRegistrants.Visible = false;
+            }
 
             // get list of upcoming events for the current campus
             var campusEvents = eventItem.EventItemCampuses
-                                    .Where( c => c.CampusId == _campusId).ToList();
+                                    .Where( c => c.CampusId == _campusId || c.CampusId == null).ToList();
 
             List<EventSummary> eventSummaries = new List<EventSummary>();
 
             // go through campus event schedules looking for upcoming dates
             foreach ( var campusEvent in campusEvents )
             {
-                var startDates = campusEvent.GetStartTimes(RockDateTime.Now, RockDateTime.Now.AddDays(_daysInRange));
+                var startDate = campusEvent.GetFirstStartDateTime();
 
-                foreach ( var startDate in startDates )
+                if ( startDate.HasValue && startDate > RockDateTime.Now )
                 {
                     EventSummary eventSummary = new EventSummary();
-                    eventSummary.StartDate = startDate;
+                    eventSummary.StartDate = startDate.Value;
                     eventSummary.Name = campusEvent.EventItem.Name;
                     eventSummary.Location = campusEvent.Location;
                     eventSummary.Id = campusEvent.Id;
                     eventSummary.Campus = campusEvent.Campus;
                     eventSummary.ContactEmail = campusEvent.ContactEmail;
                     eventSummary.ContactPhone = campusEvent.ContactPhone;
-                    eventSummary.Contact = campusEvent.ContactPersonAlias.Person;
+
+                    if ( campusEvent.ContactPersonAlias != null )
+                    {
+                        eventSummary.Contact = campusEvent.ContactPersonAlias.Person;
+                    }
+
                     eventSummary.CampusNote = campusEvent.CampusNote;
 
                     eventSummaries.Add( eventSummary );
                 }
+                
             }
 
-            rptEvents.DataSource = eventSummaries;
+            int maxDisplayItems = GetAttributeValue( "MaxDisplayEvents" ).AsInteger();
+
+            rptEvents.DataSource = eventSummaries.OrderBy(e => e.StartDate).Take(maxDisplayItems);
             rptEvents.DataBind();
 
             if ( eventSummaries.Count > 0 )
             {
                 lbRegister.Enabled = true;
+                lEventIntro.Visible = true;
+                cblRegistrants.Visible = true;
+                lbRegister.Visible = true;
                 lMessages.Text = string.Empty;
                 hfSelectedEventId.Value = eventSummaries.FirstOrDefault().Id.ToString();
             }
             else
             {
-                lbRegister.Enabled = false;
+                lbRegister.Visible = false;
+                lEventIntro.Visible = false;
+                cblRegistrants.Visible = false;
                 lMessages.Text = string.Format( "<div class='alert alert-info'>There are no {0} events for the {1} campus in the next {2} days.</div>",
                                     eventItem.Name,
                                     CampusCache.Read( _campusId ).Name,
@@ -396,5 +413,13 @@ namespace RockWeb.Blocks.Event
         /// The campus.
         /// </value>
         public Campus Campus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedule times.
+        /// </summary>
+        /// <value>
+        /// The schedule times.
+        /// </value>
+        public string ScheduleTimes { get; set; }
     }
 }
