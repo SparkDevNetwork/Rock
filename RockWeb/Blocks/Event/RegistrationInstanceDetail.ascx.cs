@@ -480,30 +480,30 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // Set the Cost
-                var lCost = e.Row.FindControl( "lCost" ) as Literal;
-                if ( lCost != null )
+                if ( registration.TotalCost > 0.0M )
                 {
-                    lCost.Text = totalCost.ToString( "C2" );
-                }
-
-                // Set the payment
-                var lblPaid = e.Row.FindControl( "lblPaid" ) as Label;
-                if ( lblPaid != null && RegistrationPayments != null )
-                {
-                    decimal totalPaid = RegistrationPayments
-                        .Where( d => d.EntityId == registration.Id )
-                        .Sum( d => d.Amount );
-                    lblPaid.Text = totalPaid.ToString( "C2" );
-
-                    if ( totalPaid < totalCost )
+                    var lCost = e.Row.FindControl( "lCost" ) as Label;
+                    if ( lCost != null )
                     {
-                        lblPaid.AddCssClass( "label" );
-                        lblPaid.AddCssClass( "label-danger" );
+                        lCost.Visible = registration.TotalCost > 0.0M;
+                        lCost.Text = registration.TotalCost.ToString( "C2" );
                     }
-                    else if ( totalPaid > totalCost )
+
+                    var lBalance = e.Row.FindControl( "lBalance" ) as Label;
+                    if ( lBalance != null )
                     {
-                        lblPaid.AddCssClass( "label" );
-                        lblPaid.AddCssClass( "label-success" );
+                        lBalance.Visible = registration.TotalCost > 0.0M;
+                        lBalance.Text = registration.BalanceDue.ToString( "C2" );
+                        if ( registration.BalanceDue > 0 )
+                        {
+                            lBalance.AddCssClass( "label-danger" );
+                            lBalance.RemoveCssClass( "label-success" );
+                        }
+                        else
+                        {
+                            lBalance.RemoveCssClass( "label-danger" );
+                            lBalance.AddCssClass( "label-success" );
+                        }
                     }
                 }
             }
