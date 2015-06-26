@@ -25,7 +25,8 @@ namespace Rock
     public class DateRange : IEquatable<DateRange>
     {
         /// <summary>
-        /// Gets or sets the start.
+        /// Gets or sets the start (as a DateTime)
+        /// NOTE: You normally want to do a '&gt;= DateRange.Start' when using this in a query
         /// </summary>
         /// <value>
         /// The start.
@@ -33,7 +34,8 @@ namespace Rock
         public DateTime? Start { get; set; }
 
         /// <summary>
-        /// Gets or sets the end.
+        /// Gets or sets the end date (as a DateTime)
+        /// NOTE: You normally want to do a '&lt; DateRange.End' when using this in a query
         /// </summary>
         /// <value>
         /// The end.
