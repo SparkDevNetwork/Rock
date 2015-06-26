@@ -98,21 +98,22 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<Person> Queryable( string includes, bool includeDeceased, bool includeBusinesses = true )
         {
+            var qry = base.Queryable( includes );
             if ( !includeBusinesses )
             {
                 var definedValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
                 if ( definedValue != null )
                 {
-                    return base.Queryable( includes )
-                        .Where( p =>
-                            p.RecordTypeValueId != definedValue.Id &&
-                            ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) );
+                    qry = qry.Where( p => p.RecordTypeValueId != definedValue.Id );
                 }
             }
 
-            return base.Queryable( includes )
-                .Where( p =>
-                    ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) );
+            if (!includeDeceased)
+            {
+                qry = qry.Where( p => p.IsDeceased == false );
+            }
+
+            return qry;
         }
 
         #region Get People
