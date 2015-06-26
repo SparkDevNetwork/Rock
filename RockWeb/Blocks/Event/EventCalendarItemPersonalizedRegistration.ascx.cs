@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Humanizer;
 
 using Rock;
 using Rock.Data;
@@ -28,7 +29,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
-using System.Web.UI.HtmlControls;
+
 
 namespace RockWeb.Blocks.Event
 {
@@ -39,13 +40,18 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Simplifies the registration process for a given person and event calendar item." )]
 
-    [BooleanField("Include Family Members", "Lists family members of the individual to select for registration.", true)]
+    [BooleanField("Include Family Members", "Lists family members of the individual to select for registration.", true, "", 0)]
+    [IntegerField("Days In Range", "The number of days in the future to show events for.", true, 60, "", 1)]
+    [GroupRoleField(null, "Group Member Role", "The role to use when adding the individuals to the group.", true, "", "", 2)]
+    [EnumField( "Group Member Status", "The group member status to add the person with.", typeof( GroupMemberStatus ), true, "Pending", "", 3 )]
     public partial class EventCalendarItemPersonalizedRegistration : Rock.Web.UI.RockBlock
     {
         #region Fields
 
         // used for private variables
         int _campusId = 0;
+        int _daysInRange = 60;
+        RockContext _rockContext = null;
 
         #endregion
 
@@ -70,6 +76,8 @@ namespace RockWeb.Blocks.Event
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            _rockContext = new RockContext();
         }
 
         /// <summary>
@@ -79,6 +87,8 @@ namespace RockWeb.Blocks.Event
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            int.TryParse( GetAttributeValue( "DaysInRange" ), out _daysInRange );
 
             if ( !Page.IsPostBack )
             {
@@ -102,12 +112,98 @@ namespace RockWeb.Blocks.Event
             LoadContent();
         }
 
+        protected void lbRegister_Click( object sender, EventArgs e )
+        {
+            // get registered group
+            int eventItemCampusId = hfSelectedEventId.Value.AsInteger();
+
+            // look for the group for this event item
+            var eventGroup = new EventItemCampusGroupMapService( _rockContext ).Queryable()
+                                .Where( m => m.EventItemCampusId == eventItemCampusId )
+                                .Select(m => m.Group)
+                                .FirstOrDefault();
+
+            if ( eventGroup != null )
+            {
+                var groupMemberStats = this.GetAttributeValue( "GroupMemberStatus" ).ConvertToEnum<GroupMemberStatus>( GroupMemberStatus.Pending );
+
+                Guid groupRoleGuid = GetAttributeValue( "GroupMemberRole" ).AsGuid();
+
+                // check that the role is in the group
+                var groupRoleId = new GroupTypeRoleService( _rockContext ).Queryable()
+                                    .Where( r => r.Guid == groupRoleGuid && r.GroupType.Id == eventGroup.GroupTypeId )
+                                    .Select( r => r.Id )
+                                    .FirstOrDefault();
+
+                if ( groupRoleId != null )
+                {
+                    List<string> registrantsAdded = new List<string>();
+                    List<string> registransNotAdded = new List<string>();
+                    
+                    foreach ( int registrantId in cblRegistrants.SelectedValuesAsInt )
+                    {
+                        var registrant = new PersonService( _rockContext ).Get( registrantId );
+                        
+                        // check that the person is not already in the group with the current role
+                        var inGroup = new GroupMemberService( _rockContext ).Queryable()
+                                        .Where( m => m.PersonId == registrantId
+                                                    && m.GroupRoleId == groupRoleId
+                                                    && m.GroupId == eventGroup.Id )
+                                        .Any();
+
+                        if ( !inGroup )
+                        {
+                            GroupMember registrantGroupMember = new GroupMember();
+                            registrantGroupMember.PersonId = registrantId;
+                            registrantGroupMember.GroupId = eventGroup.Id;
+                            registrantGroupMember.GroupRoleId = groupRoleId;
+                            registrantGroupMember.GroupMemberStatus = groupMemberStats;
+                            eventGroup.Members.Add( registrantGroupMember );
+
+                            registrantsAdded.Add( registrant.NickName );
+                        } else
+                        {
+                            registransNotAdded.Add( registrant.NickName );
+                        }
+                    }
+
+                    _rockContext.SaveChanges();
+
+                    string notRegisteredMessage = string.Empty;
+                    if (registransNotAdded.Count > 0) {
+                        notRegisteredMessage = string.Format( "{0} were already registered.", registransNotAdded.Humanize() );
+                    }
+
+                    lCompleteMessage.Text = string.Format("<div class='alert alert-success'>{0} have been registered. {2}</div>", 
+                                                    registrantsAdded.Humanize(),
+                                                    notRegisteredMessage );
+                }
+                else
+                {
+                    lCompleteMessage.Text = "<div class='alert alert-warning'>The role configured to use for adding the group member is not a part of this group.</div>";
+                }
+            }
+            else
+            {
+                lCompleteMessage.Text = "<div class='alert alert-warning'>There is no group configured for this event.</div>";
+            }
+
+        }
+        protected void cpCampus_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            if ( cpCampus.SelectedCampusId.HasValue )
+            {
+                _campusId = cpCampus.SelectedCampusId.Value;
+            }
+
+            LoadContent();
+        }
+
         #endregion
 
         #region Methods
 
         private void LoadContent() {
-            RockContext rockContext = new RockContext();
             Person person = null;
             EventItem eventItem = null;
 
@@ -123,7 +219,7 @@ namespace RockWeb.Blocks.Event
             {
                 personGuid = Request["PersonGuid"].AsGuid();
 
-                person = new PersonService( rockContext ).Get( personGuid );
+                person = new PersonService( _rockContext ).Get( personGuid );
             }
 
             if ( person == null )
@@ -139,7 +235,7 @@ namespace RockWeb.Blocks.Event
                 int calendarItemId = 0;
                 int.TryParse( Request["EventItemId"], out calendarItemId );
 
-                eventItem = new EventItemService( rockContext ).Get( calendarItemId );
+                eventItem = new EventItemService( _rockContext ).Get( calendarItemId );
             }
 
             if ( eventItem == null )
@@ -153,13 +249,18 @@ namespace RockWeb.Blocks.Event
                                     eventItem.Name,
                                     person.NickName );
 
+            lBlockTitle.Text = string.Format( "{0} Registration", eventItem.Name );
+
             var families = person.GetFamilies();
             var familyMembers = person.GetFamilyMembers().ToList();
 
-            _campusId = families.FirstOrDefault().CampusId ?? 0;
-            cpCampus.SelectedCampusId = _campusId;
+            if ( _campusId == 0 )
+            {
+                _campusId = families.FirstOrDefault().CampusId ?? 0;
+                cpCampus.SelectedCampusId = _campusId;
+            }
 
-            lName.Text = person.FullName;
+            lName.Text = string.Format("Registering {0} for {1}", person.FullName, eventItem.Name);
 
             // add family registrants
             if ( GetAttributeValue( "IncludeFamilyMembers" ).AsBoolean() )
@@ -173,45 +274,127 @@ namespace RockWeb.Blocks.Event
             cblRegistrants.Items.Insert( 0, new ListItem( person.FullName, person.Id.ToString() ) );
 
             // get list of upcoming events for the current campus
-            // todo filter by approved and status?
-            var campusEvents = eventItem.EventItemCampuses.Where( c => c.CampusId == _campusId ).ToList();
+            var campusEvents = eventItem.EventItemCampuses
+                                    .Where( c => c.CampusId == _campusId).ToList();
 
+            List<EventSummary> eventSummaries = new List<EventSummary>();
+
+            // go through campus event schedules looking for upcoming dates
             foreach ( var campusEvent in campusEvents )
             {
+                var startDates = campusEvent.GetStartTimes(RockDateTime.Now, RockDateTime.Now.AddDays(_daysInRange));
 
-                HtmlGenericControl divEvent = new HtmlGenericControl( "div" );
-                phEvents.Controls.Add( divEvent );
-                divEvent.AddCssClass( "well clearfix" );
+                foreach ( var startDate in startDates )
+                {
+                    EventSummary eventSummary = new EventSummary();
+                    eventSummary.StartDate = startDate;
+                    eventSummary.Name = campusEvent.EventItem.Name;
+                    eventSummary.Location = campusEvent.Location;
+                    eventSummary.Id = campusEvent.Id;
+                    eventSummary.Campus = campusEvent.Campus;
+                    eventSummary.ContactEmail = campusEvent.ContactEmail;
+                    eventSummary.ContactPhone = campusEvent.ContactPhone;
+                    eventSummary.Contact = campusEvent.ContactPersonAlias.Person;
+                    eventSummary.CampusNote = campusEvent.CampusNote;
 
-                HtmlGenericControl divRow = new HtmlGenericControl( "div" );
-                divEvent.Controls.Add( divRow );
-                divRow.AddCssClass( "row" );
+                    eventSummaries.Add( eventSummary );
+                }
+            }
 
-                HtmlGenericControl divRadioCol = new HtmlGenericControl( "div" );
-                divRow.Controls.Add( divRadioCol );
-                divRadioCol.AddCssClass( "pull-left margin-h-md" );
+            rptEvents.DataSource = eventSummaries;
+            rptEvents.DataBind();
 
-                RadioButton rbEvent = new RadioButton();
-                divRadioCol.Controls.Add( rbEvent );
-                rbEvent.GroupName = "event";
-                rbEvent.ID = eventItem.Id.ToString();
-
-                HtmlGenericControl divSummaryCol = new HtmlGenericControl( "div" );
-                divRow.Controls.Add( divSummaryCol );
-                divSummaryCol.AddCssClass( "pull-left" );
-
-                HtmlGenericControl eventTitle = new HtmlGenericControl( "h4" );
-                eventTitle.AddCssClass( "margin-t-none" );
-                divSummaryCol.Controls.Add( eventTitle );
-                eventTitle.InnerText = "July 14th, 2015";
-
-                HtmlGenericControl divCampus = new HtmlGenericControl( "div" );
-                divSummaryCol.Controls.Add( divCampus );
-                divCampus.AddCssClass( "pull-right label label-campus" );
-                divCampus.InnerText = campusEvent.Campus.Name;
+            if ( eventSummaries.Count > 0 )
+            {
+                lbRegister.Enabled = true;
+                lMessages.Text = string.Empty;
+                hfSelectedEventId.Value = eventSummaries.FirstOrDefault().Id.ToString();
+            }
+            else
+            {
+                lbRegister.Enabled = false;
+                lMessages.Text = string.Format( "<div class='alert alert-info'>There are no {0} events for the {1} campus in the next {2} days.</div>",
+                                    eventItem.Name,
+                                    CampusCache.Read( _campusId ).Name,
+                                    _daysInRange.ToString() );
             }
         }
 
         #endregion
+}
+
+    public class EventSummary
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>
+        /// The id.
+        /// </value>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the full name last first.
+        /// </summary>
+        /// <value>
+        /// The full name last first.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the start date.
+        /// </summary>
+        /// <value>
+        /// The start date.
+        /// </value>
+        public DateTime StartDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location.
+        /// </summary>
+        /// <value>
+        /// The location.
+        /// </value>
+        public string Location { get; set; }
+
+        /// <summary>
+        /// Gets or sets the contact.
+        /// </summary>
+        /// <value>
+        /// The contact.
+        /// </value>
+        public Person Contact { get; set; }
+
+        /// <summary>
+        /// Gets or sets the contact phone.
+        /// </summary>
+        /// <value>
+        /// The contact phone.
+        /// </value>
+        public string ContactPhone { get; set; }
+
+        /// <summary>
+        /// Gets or sets the contact email.
+        /// </summary>
+        /// <value>
+        /// The contact email.
+        /// </value>
+        public string ContactEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus note.
+        /// </summary>
+        /// <value>
+        /// The campus note.
+        /// </value>
+        public string CampusNote { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus.
+        /// </summary>
+        /// <value>
+        /// The campus.
+        /// </value>
+        public Campus Campus { get; set; }
     }
 }
