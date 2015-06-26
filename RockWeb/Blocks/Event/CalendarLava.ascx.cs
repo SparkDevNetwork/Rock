@@ -41,21 +41,20 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Calendar Lava" )]
     [Category( "Event" )]
     [Description( "Renders a particular calendar using Lava." )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Assets/Lava/EventCalendar/ExternalCalendar.lava' %}", "", 2 )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Themes/Stark/Assets/Lava/ExternalCalendar.lava' %}", "", 2 )]
     [BooleanField( "Show Campus Filter", "Determines whether the campus filters are shown", false )]
     [BooleanField( "Show Category Filter", "Determines whether the campus filters are shown", false )]
     [BooleanField( "Show Date Range Filter", "Determines whether the campus filters are shown", false )]
+    [BooleanField( "Show Day View", "Determines whether the day view option is shown", false )]
+    [BooleanField( "Show Week View", "Determines whether the week view option is shown", true )]
+    [BooleanField( "Show Month View", "Determines whether the month view option is shown", true )]
+    [DayOfWeekField( "Start of Week Day", "Determines what day is the start of day", true, DayOfWeek.Monday )]
+    [CustomDropdownListField( "Default View Option", "Determines the default view option", "Day,Week,Month", true, "Week" )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar name.", false )]
     [IntegerField( "Event Calendar Id", "The Id of the event calendar to be displayed", true, 1 )]
     public partial class CalendarLava : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        // used for private variables
-
-        #endregion
-
         #region Properties
         protected List<DateTime> _eventDates = null;
 
@@ -69,7 +68,7 @@ namespace RockWeb.Blocks.Event
                 var CurrentViewMode = ViewState["CurrentViewMode"] as String;
                 if ( String.IsNullOrWhiteSpace( CurrentViewMode ) )
                 {
-                    CurrentViewMode = "Day";
+                    CurrentViewMode = GetAttributeValue( "DefaultViewOption" );
                 }
 
                 return CurrentViewMode;
@@ -86,7 +85,7 @@ namespace RockWeb.Blocks.Event
             get
             {
                 var SelectedDate = ViewState["SelectedDate"] as DateTime?;
-                if ( SelectedDate == null)
+                if ( SelectedDate == null )
                 {
                     SelectedDate = DateTime.Today;
                 }
@@ -126,6 +125,7 @@ namespace RockWeb.Blocks.Event
             calEventCalendar.SelectedDate = SelectedDate.Value;
             if ( !Page.IsPostBack )
             {
+                CheckValidConfiguration();
                 LoadDropDowns();
                 DisplayCalendarItemList();
             }
@@ -166,7 +166,6 @@ namespace RockWeb.Blocks.Event
             }
             else if ( day == calEventCalendar.SelectedDate )
             {
-                e.Cell.Style.Add( "font-weight", "bold" );
                 e.Cell.AddCssClass( "alert-success" );
             }
             if ( _eventDates != null && _eventDates.Any( d => d.Date.Equals( day.Date ) ) )
@@ -174,10 +173,11 @@ namespace RockWeb.Blocks.Event
                 e.Cell.Style.Add( "font-weight", "bold" );
                 e.Cell.AddCssClass( "alert-info" );
             }
-           
+
             if ( CurrentViewMode == "Week" )
             {
-                if ( day.StartOfWeek( DayOfWeek.Sunday ) == calEventCalendar.SelectedDate.StartOfWeek( DayOfWeek.Sunday ) )
+                var weekStartDay = GetAttributeValue( "StartofWeekDay" ).AsType<DayOfWeek>();
+                if ( day.StartOfWeek( weekStartDay ) == calEventCalendar.SelectedDate.StartOfWeek( weekStartDay ) )
                 {
                     e.Cell.AddCssClass( "alert-success" );
                 }
@@ -220,7 +220,19 @@ namespace RockWeb.Blocks.Event
             DisplayCalendarItemList();
         }
 
-        #region
+        #region Internal Methods
+
+
+        /// <summary>
+        /// Checks if the default view mode is one that is enabled.
+        /// </summary>
+        private void CheckValidConfiguration()
+        {
+            if ( !GetAttributeValue( string.Format( "Show{0}Filter", GetAttributeValue( "DefaultViewOption" ) ) ).AsBoolean() )
+            {
+                maWarning.Show( "The default view option is one that is not enabled.", ModalAlertType.Warning );
+            }
+        }
 
         private void LoadDropDowns()
         {
@@ -234,6 +246,17 @@ namespace RockWeb.Blocks.Event
             cblCampus.Visible = GetAttributeValue( "ShowCampusFilter" ).AsBoolean();
             cblCategory.Visible = GetAttributeValue( "ShowCategoryFilter" ).AsBoolean();
             drpDateRange.Visible = GetAttributeValue( "ShowDateRangeFilter" ).AsBoolean();
+            btnDay.Visible = GetAttributeValue( "ShowDayView" ).AsBoolean();
+            btnWeek.Visible = GetAttributeValue( "ShowWeekView" ).AsBoolean();
+            btnMonth.Visible = GetAttributeValue( "ShowMonthView" ).AsBoolean();
+
+            //This hides all buttons if only one view is enabled. Logic is based off of http://stackoverflow.com/questions/5343772, and was verified by truth table
+            if ( ( btnDay.Visible != btnWeek.Visible ) != btnMonth.Visible )
+            {
+                btnDay.Visible = false;
+                btnWeek.Visible = false;
+                btnMonth.Visible = false;
+            }
             // get package id
             int eventCalendarId = -1;
 
@@ -257,10 +280,10 @@ namespace RockWeb.Blocks.Event
             if ( campusIds.Any() )
             {
                 qry = qry
-                    .Where( e => 
+                    .Where( e =>
                         e.EventItem.EventItemCampuses
-                            .Any( c => 
-                                !c.CampusId.HasValue || 
+                            .Any( c =>
+                                !c.CampusId.HasValue ||
                                 campusIds.Contains( c.CampusId.Value ) ) );
             }
 
@@ -315,11 +338,11 @@ namespace RockWeb.Blocks.Event
             }
 
             var eventSummaries = new List<EventSummary>();
-            foreach( var itemWithDates in itemsWithDates )
+            foreach ( var itemWithDates in itemsWithDates )
             {
                 var eventItem = itemWithDates.Item.EventItem;
 
-                foreach( var datetime in itemWithDates.Dates )
+                foreach ( var datetime in itemWithDates.Dates )
                 {
                     eventSummaries.Add( new EventSummary
                     {
