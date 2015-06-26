@@ -104,7 +104,7 @@ namespace Rock.Model
                 var definedValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
                 if ( definedValue != null )
                 {
-                    qry = qry.Where( p => p.RecordTypeValueId == definedValue.Id );
+                    qry = qry.Where( p => p.RecordTypeValueId != definedValue.Id );
                 }
             }
 
