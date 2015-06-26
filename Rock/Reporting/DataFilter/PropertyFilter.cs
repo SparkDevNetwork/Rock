@@ -32,9 +32,9 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting.DataFilter
 {
     /// <summary>
-    /// Filter entities on any of it's property or attribute values
+    /// Filter entities on any of its property or attribute values
     /// </summary>
-    [Description( "Filter entities on any of it's property or attribute values" )]
+    [Description( "Filter entities on any of its property or attribute values" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Property Filter" )]
     public class PropertyFilter : EntityFieldFilter
@@ -156,7 +156,7 @@ namespace Rock.Reporting.DataFilter
                 var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true );
                 if ( control != null )
                 {
-                    // Add the field to the dropdown of availailable fields
+                    // Add the field to the dropdown of available fields
                     ddlEntityField.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
                     filterControl.Controls.Add( control );
                     controls.Add( control );

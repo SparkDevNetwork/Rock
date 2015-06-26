@@ -219,7 +219,7 @@ namespace Rock.Reporting.DataFilter
                     // Verify that there is not a child filter that uses this view (would result in stack-overflow error)
                     if ( !IsViewInFilter( dataView.Id, dataView.DataViewFilter ) )
                     {
-                        // TODO: Should probably verify security again on the selected dataview and it's filters,
+                        // TODO: Should probably verify security again on the selected dataview and its filters,
                         // as that could be a moving target.
                         var errorMessages = new List<string>();
                         Expression expression = dataView.GetExpression( serviceInstance, parameterExpression, out errorMessages );

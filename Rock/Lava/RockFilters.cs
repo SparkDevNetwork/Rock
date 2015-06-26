@@ -868,7 +868,7 @@ namespace Rock.Lava
                 }
             }
 
-            // If input is an object that has attributes, find it's attribute value
+            // If input is an object that has attributes, find its attribute value
             else
             { 
                 

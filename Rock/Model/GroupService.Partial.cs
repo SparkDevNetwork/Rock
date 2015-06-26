@@ -61,7 +61,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a collection of <see cref="Rock.Model.Group">Groups</see> by the Id of it's parent <see cref="Rock.Model.Group"/>. 
+        /// Returns a collection of <see cref="Rock.Model.Group">Groups</see> by the Id of its parent <see cref="Rock.Model.Group"/>. 
         /// </summary>
         /// <param name="parentGroupId">A <see cref="System.Int32" /> representing the Id of the parent <see cref="Rock.Model.Group"/> to search by. This value
         /// is nullable and a null value will search for <see cref="Rock.Model.Group">Groups</see> that do not inherit from other groups.</param>
