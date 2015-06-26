@@ -38,5 +38,20 @@ namespace Rock.Rest.Controllers
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( string.Format( "{0}|{1}|{2}||", slidingDateRangeType, number, timeUnitType ) );
             return dateRange.ToStringAutomatic();
         }
+
+        /// <summary>
+        /// Calculates the sliding date range text value for the SlidingDateRange control (called from client side) and returns a string of the sliding date range picker values in text format (Last 4 Weeks, etc)
+        /// </summary>
+        /// <param name="slidingDateRangeType">Type of the sliding date range. </param>
+        /// <param name="timeUnitType">Type of the time unit. Hour = 0, Day = 1, Week = 2, Month = 3, Year = 4</param>
+        /// <param name="number">The number.</param>
+        /// <returns></returns>
+        [System.Web.Http.Route( "api/Utility/GetSlidingDateRangeTextValue" )]
+        [HttpGet]
+        public string GetSlidingDateRangeTextValue( Rock.Web.UI.Controls.SlidingDateRangePicker.SlidingDateRangeType slidingDateRangeType, Rock.Web.UI.Controls.SlidingDateRangePicker.TimeUnitType timeUnitType, int number = 1 )
+        {
+            string textValue = SlidingDateRangePicker.FormatDelimitedValues( string.Format( "{0}|{1}|{2}||", slidingDateRangeType, number, timeUnitType ) );
+            return textValue;
+        }
     }
 }

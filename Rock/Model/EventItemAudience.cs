@@ -89,7 +89,7 @@ namespace Rock.Model
         /// </summary>
         public EventItemAudienceConfiguration()
         {
-            this.HasRequired( p => p.EventItem ).WithMany( p => p.EventItemAudiences ).HasForeignKey( p => p.EventItemId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.EventItem ).WithMany( p => p.EventItemAudiences ).HasForeignKey( p => p.EventItemId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.DefinedValue ).WithMany().HasForeignKey( p => p.DefinedValueId ).WillCascadeOnDelete( false );
         }
     }

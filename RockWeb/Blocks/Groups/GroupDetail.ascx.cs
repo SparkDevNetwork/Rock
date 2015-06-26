@@ -47,6 +47,7 @@ namespace RockWeb.Blocks.Groups
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The style of maps to use", false, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK, "", 5 )]
     [LinkedPage("Group Map Page", "The page to display detailed group map.", true, "", "", 6)]
     [LinkedPage( "Attendance Page", "The page to display attendance list.", false, "", "", 7)]
+    [LinkedPage( "Registration Instance Page", "The page to display registration details.", false, "", "", 7 )]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
         #region Constants
@@ -1386,6 +1387,25 @@ namespace RockWeb.Blocks.Groups
 
             string groupMapUrl = LinkedPageUrl("GroupMapPage", pageParams);
 
+            if ( group.Linkages.Any() )
+            {
+                rcwLinkedRegistrations.Visible = true;
+                rptLinkedRegistrations.DataSource = group.Linkages
+                    .Where( l => l.RegistrationInstanceId.HasValue )
+                    .ToList()
+                    .Select( l => new
+                    {
+                        RegistrationInstanceId = l.RegistrationInstanceId.Value,
+                        Title = l.ToString( true, true, false )
+                    } )
+                    .ToList();
+                rptLinkedRegistrations.DataBind();
+            }
+            else
+            {
+                rcwLinkedRegistrations.Visible = false;
+            }
+
             // Get Map Style
             phMaps.Controls.Clear();
             var mapStyleValue = DefinedValueCache.Read( GetAttributeValue( "MapStyle" ) );
@@ -1518,6 +1538,18 @@ namespace RockWeb.Blocks.Groups
             }
 
             return groupTypeQry;
+        }
+
+        /// <summary>
+        /// Registrations the instance URL.
+        /// </summary>
+        /// <param name="registrationInstanceId">The registration instance identifier.</param>
+        /// <returns></returns>
+        protected string RegistrationInstanceUrl ( int registrationInstanceId )
+        {
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "RegistrationInstanceId", registrationInstanceId.ToString() );
+            return LinkedPageUrl( "RegistrationInstancePage", qryParams );
         }
 
         /// <summary>

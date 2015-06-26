@@ -2542,6 +2542,7 @@ td.grid-col-actions {
 .table > tbody > tr > td.grid-columnreorder {
   padding-top: 12px;
   min-width: 48px;
+  width: 48px;
 }
 .table .color-field {
   padding: 0;

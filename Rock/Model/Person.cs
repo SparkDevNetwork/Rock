@@ -490,14 +490,10 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is business; otherwise, <c>false</c>.
         /// </value>
-        [NotMapped]
-        private bool IsBusiness
+        private static bool IsBusiness( int? recordTypeValueId)
         {
-            get
-            {
-                int recordTypeValueIdBusiness = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
-                return this.RecordTypeValueId.HasValue && this.RecordTypeValueId == recordTypeValueIdBusiness;
-            }
+            int recordTypeValueIdBusiness = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+            return recordTypeValueId.HasValue && recordTypeValueId == recordTypeValueIdBusiness;
         }
 
         /// <summary>
@@ -511,29 +507,42 @@ namespace Rock.Model
         {
             get
             {
-                if ( this.IsBusiness )
-                {
-                    return LastName;
-                }
-
-                var fullName = new StringBuilder();
-
-                fullName.Append( LastName );
-
-                // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so 
-                // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
-                if ( SuffixValueId.HasValue )
-                {
-                    var suffix = DefinedValueCache.Read( SuffixValueId.Value );
-                    if ( suffix != null )
-                    {
-                        fullName.AppendFormat( " {0}", suffix.Value );
-                    }
-                }
-
-                fullName.AppendFormat( ", {0}", NickName );
-                return fullName.ToString();
+                return FormatFullNameReversed( this.LastName, this.NickName, this.SuffixValueId, this.RecordTypeValueId );
             }
+        }
+
+        /// <summary>
+        /// Gets the full name reversed.
+        /// </summary>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="nickName">Name of the nick.</param>
+        /// <param name="suffixValueId">The suffix value identifier.</param>
+        /// <param name="recordTypeValueId">The record type value identifier.</param>
+        /// <returns></returns>
+        public static string FormatFullNameReversed( string lastName, string nickName, int? suffixValueId, int? recordTypeValueId )
+        {
+            if ( IsBusiness(recordTypeValueId) )
+            {
+                return lastName;
+            }
+
+            var fullName = new StringBuilder();
+
+            fullName.Append( lastName );
+
+            // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so 
+            // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
+            if ( suffixValueId.HasValue )
+            {
+                var suffix = DefinedValueCache.Read( suffixValueId.Value );
+                if ( suffix != null )
+                {
+                    fullName.AppendFormat( " {0}", suffix.Value );
+                }
+            }
+
+            fullName.AppendFormat( ", {0}", nickName );
+            return fullName.ToString();
         }
 
         /// <summary>
@@ -547,7 +556,7 @@ namespace Rock.Model
         {
             get
             {
-                if ( this.IsBusiness )
+                if ( IsBusiness(this.RecordTypeValueId) )
                 {
                     return LastName;
                 }
@@ -574,7 +583,7 @@ namespace Rock.Model
         {
             get
             {
-                if ( this.IsBusiness )
+                if ( IsBusiness( this.RecordTypeValueId ) )
                 {
                     return LastName;
                 }
@@ -902,20 +911,28 @@ namespace Rock.Model
         {
             get
             {
-                if ( BirthYear.HasValue )
-                {
-                    DateTime? bd = BirthDate;
-                    if ( bd.HasValue )
-                    {
-                        DateTime today = RockDateTime.Today;
-                        int age = today.Year - bd.Value.Year;
-                        if ( bd.Value > today.AddYears( -age ) ) age--;
-                        return age;
-                    }
-                }
-                return null;
+                return Person.GetAge( this.BirthDate );
+                
             }
             private set { }
+        }
+
+        /// <summary>
+        /// Gets the age.
+        /// </summary>
+        /// <param name="birthDate">The birth date.</param>
+        /// <returns></returns>
+        public static int? GetAge( DateTime? birthDate)
+        {
+            if ( birthDate.HasValue )
+            {
+                DateTime today = RockDateTime.Today;
+                int age = today.Year - birthDate.Value.Year;
+                if ( birthDate.Value > today.AddYears( -age ) ) age--;
+                return age;
+            }
+            
+            return null;
         }
 
         /// <summary>

@@ -25,6 +25,7 @@ namespace Rock.Attribute
     public class KeyValueListFieldAttribute : ValueListFieldAttribute
     {
         private const string KEY_PROMPT_KEY = "keyprompt";
+        private const string DISPLAY_VALUE_FIRST = "displayvaluefirst";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ValueListFieldAttribute" /> class.
@@ -42,8 +43,8 @@ namespace Rock.Attribute
         /// <param name="key">The key.</param>
         /// <param name="fieldTypeClass">The field type class.</param>
         public KeyValueListFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", 
-            string keyPrompt = "", string valuePrompt = "", string definedTypeGuid = "", string customValues = "", 
-            string category = "", int order = 0, string key = null, string fieldTypeClass = null )
+            string keyPrompt = "", string valuePrompt = "", string definedTypeGuid = "", string customValues = "",
+            string category = "", int order = 0, string key = null, string fieldTypeClass = null, bool displayValueFirst = false )
            : base( name, description, required, defaultValue, valuePrompt, definedTypeGuid, customValues, category, order, key, 
             typeof( Rock.Field.Types.KeyValueListFieldType ).FullName )
         {
@@ -52,6 +53,9 @@ namespace Rock.Attribute
                 var configValue = new Field.ConfigurationValue( keyPrompt );
                 FieldConfigurationValues.Add( KEY_PROMPT_KEY, configValue );
             }
+
+            var displayValueFirstConfigValue = new Field.ConfigurationValue( displayValueFirst.ToString() );
+            FieldConfigurationValues.Add( DISPLAY_VALUE_FIRST, displayValueFirstConfigValue );
         }
     }
 }
