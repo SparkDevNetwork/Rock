@@ -526,7 +526,7 @@ namespace Rock.Model
     /// Represents a circular reference exception. This occurs when a group is set as a parent of a group that is higher in the group hierarchy. 
     /// </summary>
     /// <remarks>
-    ///  An example of this is when a child group is set as the parent of it's parent group.
+    ///  An example of this is when a child group is set as the parent of its parent group.
     /// </remarks>
     public class GroupParentCircularReferenceException : Exception
     {
