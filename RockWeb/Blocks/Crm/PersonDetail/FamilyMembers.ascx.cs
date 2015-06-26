@@ -337,9 +337,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         /// <param name="isDeceased">The is deceased.</param>
         /// <returns></returns>
-        protected string FormatPersonCssClass( bool? isDeceased )
+        protected string FormatPersonCssClass( bool isDeceased )
         {
-            return ( isDeceased ?? false ) ? "member deceased" : "member";
+            return isDeceased ? "member deceased" : "member";
         }
 
         /// <summary>

@@ -459,7 +459,7 @@ namespace Rock.Model
                         History.EvaluateChange( demographicChanges, "Record Status", string.Empty, person.RecordStatusValueId.HasValue ? DefinedValueCache.GetName( person.RecordStatusValueId.Value ) : string.Empty );
                         History.EvaluateChange( demographicChanges, "Record Status Reason", string.Empty, person.RecordStatusReasonValueId.HasValue ? DefinedValueCache.GetName( person.RecordStatusReasonValueId.Value ) : string.Empty );
                         History.EvaluateChange( demographicChanges, "Connection Status", string.Empty, person.ConnectionStatusValueId.HasValue ? DefinedValueCache.GetName( person.ConnectionStatusValueId ) : string.Empty );
-                        History.EvaluateChange( demographicChanges, "Deceased", false.ToString(), ( person.IsDeceased ?? false ).ToString() );
+                        History.EvaluateChange( demographicChanges, "Deceased", false.ToString(), ( person.IsDeceased ).ToString() );
                         History.EvaluateChange( demographicChanges, "Title", string.Empty, person.TitleValueId.HasValue ? DefinedValueCache.GetName( person.TitleValueId ) : string.Empty );
                         History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName );
                         History.EvaluateChange( demographicChanges, "Nick Name", string.Empty, person.NickName );
