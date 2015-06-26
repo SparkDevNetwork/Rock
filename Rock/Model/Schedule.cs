@@ -382,6 +382,31 @@ namespace Rock.Model
             return result;
         }
 
+
+        /// <summary>
+        /// Gets the first start date time.
+        /// </summary>
+        /// <returns></returns>
+        public virtual DateTime? GetFirstStartDateTime()
+        {
+            DateTime? firstStartTime = null;
+            
+            DDay.iCal.Event calEvent = GetCalenderEvent();
+            if ( calEvent != null )
+            {
+                if ( this.EffectiveStartDate.HasValue )
+                {
+                    var scheduledStartTimes = this.GetScheduledStartTimes( this.EffectiveStartDate.Value, this.EffectiveStartDate.Value.AddMonths( 1 ) );
+                    if ( scheduledStartTimes.Count > 0 )
+                    {
+                        firstStartTime = scheduledStartTimes[0];
+                    }
+                }
+            }
+
+            return firstStartTime;
+        }
+
         /// <summary>
         /// Determines whether this instance has a non-empty schedule.
         /// </summary>
