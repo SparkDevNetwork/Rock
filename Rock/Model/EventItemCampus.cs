@@ -203,6 +203,35 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the first start date time.
+        /// </summary>
+        /// <returns></returns>
+        public virtual DateTime? GetFirstStartDateTime()
+        {
+            var results = new List<DateTime>();
+
+            foreach ( var eventItemSchedule in EventItemSchedules )
+            {
+
+                var firstStartDate = eventItemSchedule.GetFirstStartDateTime();
+
+                if ( firstStartDate.HasValue )
+                {
+                    results.Add( firstStartDate.Value );
+                }
+            }
+
+            if ( results.Count() > 0 )
+            {
+                return results.OrderBy( d => d ).FirstOrDefault();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
