@@ -38,8 +38,6 @@
             </div>
             <div class="panel-body">
                 <asp:Literal ID="lErrors" runat="server" />
-                
-                <h1 class="margin-t-none"><asp:Literal ID="lName" runat="server" /></h1>
 
                 <asp:Panel ID="pnlRegistrationForm" runat="server">
 
@@ -58,14 +56,15 @@
                                                  <h5 class="margin-t-none"><%# Eval("StartDate", "{0:M/d/yyyy (dddd)}")  %></h5>
                                              
                                                  <p>
-                                                    Location: <%# Eval("Location") %><br />
-                                                    Start Time: <%# Eval("StartDate", "{0:h:mm tt}")  %>
+                                                    <%# string.Format(Eval("Location").ToString().Length > 0 ? "Location: {0}" : "", Eval("Location").ToString())  %>
+                                                     <%# string.Format(Eval("StartDate").ToString().Length > 0 ? "Start Time: {0}" : "", Eval("StartDate", "{0:h:mm tt}"))  %>
                                                  </p>
                                             </div>
                                             <div class="col-md-4 col-sm-8">
                                                 <p>
-                                                    <strong>Contact:</strong><br />
-                                                    <%# Eval("Contact.FullName") %><br />
+                                                    <%# (Eval("ContactName").ToString().Length > 0 || Eval("ContactEmail").ToString().Length > 0 || Eval("ContactPhone").ToString().Length > 0) ? "<strong>Contact:</strong><br />" : ""  %>
+                                                    
+                                                    <%# Eval("ContactName") %><br />
                                                     <%# Eval("ContactEmail") %><br />
                                                     <%# Eval("ContactPhone") %>
                                                  </p>
@@ -73,7 +72,7 @@
                                              
                                              <div class="col-sm-4">
                                                  <div class="pull-right label label-campus">
-                                                     <%# Eval("Campus.Name") %>
+                                                     <%# Eval("Campus") %>
                                                  </div>
                                              </div>
                                          </div>

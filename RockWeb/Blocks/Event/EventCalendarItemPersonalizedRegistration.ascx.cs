@@ -258,8 +258,6 @@ namespace RockWeb.Blocks.Event
                 cpCampus.SelectedCampusId = _campusId;
             }
 
-            lName.Text = string.Format("Registering {0} for {1}", person.FullName, eventItem.Name);
-
             // add family registrants
             if ( GetAttributeValue( "IncludeFamilyMembers" ).AsBoolean() )
             {
@@ -295,13 +293,26 @@ namespace RockWeb.Blocks.Event
                     eventSummary.Name = campusEvent.EventItem.Name;
                     eventSummary.Location = campusEvent.Location;
                     eventSummary.Id = campusEvent.Id;
-                    eventSummary.Campus = campusEvent.Campus;
+
+                    if ( campusEvent.Campus != null )
+                    {
+                        eventSummary.Campus = campusEvent.Campus.Name;
+                    }
+                    else
+                    {
+                        eventSummary.Campus = "All";
+                    }
+
                     eventSummary.ContactEmail = campusEvent.ContactEmail;
                     eventSummary.ContactPhone = campusEvent.ContactPhone;
 
                     if ( campusEvent.ContactPersonAlias != null )
                     {
-                        eventSummary.Contact = campusEvent.ContactPersonAlias.Person;
+                        eventSummary.ContactName = campusEvent.ContactPersonAlias.Person.FullName;
+                    }
+                    else
+                    {
+                        eventSummary.ContactName = string.Empty;
                     }
 
                     eventSummary.CampusNote = campusEvent.CampusNote;
@@ -380,7 +391,7 @@ namespace RockWeb.Blocks.Event
         /// <value>
         /// The contact.
         /// </value>
-        public Person Contact { get; set; }
+        public string ContactName { get; set; }
 
         /// <summary>
         /// Gets or sets the contact phone.
@@ -412,7 +423,7 @@ namespace RockWeb.Blocks.Event
         /// <value>
         /// The campus.
         /// </value>
-        public Campus Campus { get; set; }
+        public string Campus { get; set; }
 
         /// <summary>
         /// Gets or sets the schedule times.
