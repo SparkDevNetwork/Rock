@@ -14,8 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Web.UI;
-
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -23,7 +23,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Grid Bound Field for showing a FieldType 
     /// </summary>
-    [ToolboxData("<{0}:FieldTypeField runat=server></{0}:FieldTypeField>")]
+    [ToolboxData( "<{0}:FieldTypeField runat=server></{0}:FieldTypeField>" )]
     public class FieldTypeField : RockBoundField
     {
         /// <summary>
@@ -38,11 +38,38 @@ namespace Rock.Web.UI.Controls
         {
             try
             {
-                var fieldType = FieldTypeCache.Read( (int)dataValue );
-                if ( fieldType != null )
+                int? dataValueAsInt = null;
+                Guid? dataValueAsGuid = null;
+                if ( dataValue is int )
                 {
-                    return fieldType.Name;
+                    dataValueAsInt = (int)dataValue;
                 }
+                else if ( dataValue is Guid )
+                {
+                    dataValueAsGuid = (Guid)dataValue;
+                }
+                else if ( dataValue is string )
+                {
+                    dataValueAsInt = ( dataValue as string ).AsIntegerOrNull();
+                    dataValueAsGuid = ( dataValue as string ).AsGuidOrNull();
+                }
+
+                FieldTypeCache fieldTypeCache = null;
+                if ( dataValueAsInt.HasValue )
+                {
+                    fieldTypeCache = FieldTypeCache.Read( dataValueAsInt.Value );
+                }
+                else if ( dataValueAsGuid.HasValue )
+                {
+                    fieldTypeCache = FieldTypeCache.Read( dataValueAsGuid.Value );
+                }
+
+                if ( fieldTypeCache != null )
+                {
+                    dataValue = fieldTypeCache.Name;
+                }
+
+                return base.FormatDataValue( dataValue, encode );
             }
             catch
             {

@@ -160,7 +160,7 @@ namespace Rock.Model
         {
             this.HasOptional( p => p.EventItemCampus ).WithMany( e => e.Linkages ).HasForeignKey( p => p.EventItemCampusId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.RegistrationInstance ).WithMany( r => r.Linkages ).HasForeignKey( p => p.RegistrationInstanceId ).WillCascadeOnDelete( true );
-            this.HasOptional( p => p.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.Group ).WithMany( g => g.Linkages ).HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
         }
     }
 

@@ -41,8 +41,8 @@
             $picker.find('.js-time-units-singular').toggle(isCurrent);
             $picker.find('.js-time-units-plural').toggle(isLast || isPrevious);
             $picker.find('.js-time-units-date-range').toggle(isDateRange);
-
-            $picker.siblings('.js-slidingdaterange-info').toggle(isLast || isPrevious || isCurrent);
+            var $pickerContainer = $picker.closest('.js-slidingdaterange-container');
+            $pickerContainer.find('.js-slidingdaterange-info').toggle(isLast || isPrevious || isCurrent);
         },
         updateDateRangeInfo = function ($picker) {
             var $select = $picker.find('.js-slidingdaterange-select');
@@ -59,9 +59,16 @@
 
             var numberOf = $picker.find('.js-number').val();
 
-            var url = Rock.settings.get('baseUrl') + 'api/Utility/CalculateSlidingDateRange?slidingDateRangeType=' + $select.val() + '&timeUnitType=' + timeUnitType + '&number=' + numberOf;
-            $.get(url, function (r) {
-                $picker.siblings('.js-slidingdaterange-info').text(r);
+            var $pickerContainer = $picker.closest('.js-slidingdaterange-container');
+
+            var getDateRangeUrl = Rock.settings.get('baseUrl') + 'api/Utility/CalculateSlidingDateRange?slidingDateRangeType=' + $select.val() + '&timeUnitType=' + timeUnitType + '&number=' + numberOf;
+            $.get(getDateRangeUrl, function (r) {
+                $pickerContainer.find('.js-slidingdaterange-info').text(r);
+            });
+
+            var getTextValueUrl = Rock.settings.get('baseUrl') + 'api/Utility/GetSlidingDateRangeTextValue?slidingDateRangeType=' + $select.val() + '&timeUnitType=' + timeUnitType + '&number=' + numberOf;
+            $.get(getTextValueUrl, function (r) {
+                $pickerContainer.find('.js-slidingdaterange-text-value').val(r);
             });
         }
 

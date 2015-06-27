@@ -105,7 +105,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        public DateTime? EffectiveStartDate { get; private set; }
+        public DateTime? EffectiveStartDate { get; set; }
 
         /// <summary>
         /// Gets or sets that date that this Schedule expires and becomes inactive. This value is inclusive and the schedule will be inactive after this date.
@@ -115,7 +115,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        public DateTime? EffectiveEndDate { get; private set; }
+        public DateTime? EffectiveEndDate { get; set; }
 
         /// <summary>
         /// Gets or sets the weekly day of week.
@@ -316,6 +316,18 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            var calEvent = GetCalenderEvent();
+            if ( calEvent != null )
+            {
+                EffectiveStartDate = calEvent.DTStart != null ? calEvent.DTStart.Value.Date : (DateTime?)null;
+                EffectiveEndDate = calEvent.DTEnd != null ? calEvent.DTEnd.Value.Date : (DateTime?)null;
+            }
+
+            base.PreSaveChanges( dbContext, state );
+        }
 
         /// <summary>
         /// Gets the Schedule's iCalender Event.

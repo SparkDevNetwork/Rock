@@ -600,7 +600,7 @@ namespace Rock.Web.UI
                 PageTitle = _pageCache.PageTitle;
                 PageIcon = _pageCache.IconCssClass;
 
-                // If there's a master page, update it's reference to Current Page
+                // If there's a master page, update its reference to Current Page
                 if ( this.Master is RockMasterPage )
                 {
                     ( (RockMasterPage)this.Master ).SetPage( _pageCache );
@@ -836,7 +836,7 @@ namespace Rock.Web.UI
 
                             if ( control != null )
                             {
-                                // If the current control is a block, set it's properties
+                                // If the current control is a block, set its properties
                                 var blockControl = control as RockBlock;
                                 if ( blockControl != null )
                                 {
