@@ -238,6 +238,16 @@
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
     <Compile Include="Field\Types\NoteTypesFieldType.cs" />
     <Compile Include="Field\Types\NoteTypeFieldType.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionActivityTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionOpportunityCampusService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionOpportunityGroupService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionOpportunityService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionRequestActivityService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionRequestService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionRequestWorkflowService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionStatusService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionWorkflowService.cs" />
     <Compile Include="Jobs\GroupLeaderPendingNotifications.cs" />
     <Compile Include="Model\CodeGenerated\EventCalendarItemService.cs" />
     <Compile Include="Model\CodeGenerated\EventCalendarService.cs" />
@@ -295,6 +305,24 @@
     <Compile Include="Model\BenevolenceResult.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\ConnectionRequest.cs" />
+    <Compile Include="Model\ConnectionOpportunityGroup.cs" />
+    <Compile Include="Model\ConnectionOpportunityCampus.cs" />
+    <Compile Include="Model\ConnectionActivityType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\ConnectionRequestActivity.cs" />
+    <Compile Include="Model\ConnectionStatus.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\ConnectionOpportunity.cs" />
+    <Compile Include="Model\ConnectionType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\ConnectionRequestWorkflow.cs" />
+    <Compile Include="Model\ConnectionWorkflow.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Model\CodeGenerated\RegistrationRegistrantFeeService.cs" />
     <Compile Include="Model\EventItemAudience.cs" />
     <Compile Include="Model\EventItemCampusGroupMap.cs" />
@@ -347,6 +375,7 @@
     <Compile Include="Model\FinancialTransactionDetailService.Partial.cs" />
     <Compile Include="Model\FinancialPledgeService.Partial.cs" />
     <Compile Include="Model\GroupMemberRequirement.cs" />
+    <Compile Include="Model\ConnectionWorkflowService.Partial.cs" />
     <Compile Include="Model\GroupRequirement.cs" />
     <Compile Include="Model\GroupRequirementType.cs" />
     <Compile Include="Model\GroupScheduleExclusion.cs" />
@@ -426,7 +455,9 @@
     <Compile Include="SystemGuid\Attribute.cs" />
     <Compile Include="SystemGuid\NoteType.cs" />
     <Compile Include="SystemGuid\ServiceJob.cs" />
+    <Compile Include="Transactions\ConnectionRequestActivityChangeTransaction.cs" />
     <Compile Include="Transactions\GroupAttendedTransaction.cs" />
+    <Compile Include="Transactions\ConnectionRequestChangeTransaction.cs" />
     <Compile Include="Transactions\GroupMemberChangeTransaction.cs" />
     <Compile Include="Transactions\RunJobNowTransaction.cs" />
     <Compile Include="Transactions\DeleteAttributeBinaryFile.cs" />
