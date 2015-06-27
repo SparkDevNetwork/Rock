@@ -26,7 +26,8 @@
                                     <Rock:RockBoundField DataField="Campus" HeaderText="Campus" />
                                     <Rock:RockBoundField DataField="Date" HeaderText="Next Start Date" SortExpression="Date" />
                                     <Rock:RockBoundField DataField="Location" HeaderText="Location" />
-                                    <Rock:RockBoundField DataField="RegistrationGroup" HeaderText="Registration - Group" />
+                                    <asp:HyperLinkField HeaderText="Registration" DataTextField="RegistrationInstance" DataNavigateUrlFields="RegistrationInstanceId" />
+                                    <asp:HyperLinkField HeaderText="Group" DataTextField="Group" DataNavigateUrlFields="GroupID" />
                                     <Rock:RockBoundField DataField="Contact" HeaderText="Contact" />
                                     <Rock:RockBoundField DataField="Phone" HeaderText="Phone" />
                                     <Rock:RockBoundField DataField="Email" HeaderText="Email" />

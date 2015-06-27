@@ -14,9 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -36,9 +38,35 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override string FormatDataValue( object dataValue, bool encode )
         {
+            int? dataValueAsInt = null;
+            Guid? dataValueAsGuid = null;
             if ( dataValue is int )
             {
-                dataValue = Rock.Web.Cache.DefinedValueCache.Read( (int)dataValue ).Value;
+                dataValueAsInt = (int)dataValue;
+            }
+            else if ( dataValue is Guid )
+            {
+                dataValueAsGuid = (Guid)dataValue;
+            }
+            else if ( dataValue is string )
+            {
+                dataValueAsInt = ( dataValue as string ).AsIntegerOrNull();
+                dataValueAsGuid = ( dataValue as string ).AsGuidOrNull();
+            }
+
+            DefinedValueCache definedValueCache = null;
+            if ( dataValueAsInt.HasValue )
+            {
+                definedValueCache = Rock.Web.Cache.DefinedValueCache.Read( dataValueAsInt.Value );
+            }
+            else if ( dataValueAsGuid.HasValue )
+            {
+                definedValueCache = Rock.Web.Cache.DefinedValueCache.Read( dataValueAsGuid.Value );
+            }
+
+            if ( definedValueCache != null )
+            {
+                dataValue = definedValueCache.Value;
             }
 
             return base.FormatDataValue( dataValue, encode );

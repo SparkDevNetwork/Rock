@@ -40,7 +40,7 @@ namespace Rock.Model
         }
         
         /// <summary>
-        /// Returns a <see cref="Rock.Model.FieldType"/> by it's Guid identifier.
+        /// Returns a <see cref="Rock.Model.FieldType"/> by its Guid identifier.
         /// </summary>
         /// <param name="guid">A <see cref="System.Guid"/> representing the Guid identifier of the <see cref="Rock.Model.FieldType"/> to retrieve.</param>
         /// <returns>The <see cref="Rock.Model.FieldType"/> with a Guid identifier that matches the specified value.</returns>

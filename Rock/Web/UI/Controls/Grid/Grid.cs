@@ -986,7 +986,7 @@ namespace Rock.Web.UI.Controls
 
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                // For each select field that is not bound to a DataSelectedField set it's checkbox/radiobox from
+                // For each select field that is not bound to a DataSelectedField set its checkbox/radiobox from
                 // the previously posted back values in the columns SelectedKeys property
                 foreach ( var col in this.Columns.OfType<SelectField>() )
                 {
@@ -2130,7 +2130,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the entity set from grid if it's datasource is a data table.
+        /// Gets the entity set from grid if its datasource is a data table.
         /// </summary>
         /// <returns></returns>
         private int? GetEntitySetFromGridSourceDataTable()

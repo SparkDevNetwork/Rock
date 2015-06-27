@@ -354,7 +354,7 @@ namespace Rock.Model
                     // it should use the StorageEntityType that is associated with the BinaryFileType
                     if ( BinaryFileType != null )
                     {
-                        // if the storage provider changed, or any of it's settings specific 
+                        // if the storage provider changed, or any of its settings specific 
                         // to the binary file type changed, delete the original provider's content
                         if ( StorageEntityTypeId.HasValue && BinaryFileType.StorageEntityTypeId.HasValue )
                         {
@@ -376,7 +376,7 @@ namespace Rock.Model
                                 // Delete the current provider's storage
                                 StorageProvider.DeleteContent( this );
 
-                                // Set the new storage provider with it's settings
+                                // Set the new storage provider with its settings
                                 StorageEntityTypeId = BinaryFileType.StorageEntityTypeId;
                                 StorageEntitySettings = settingsJson;
                             }

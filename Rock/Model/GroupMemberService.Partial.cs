@@ -66,8 +66,13 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember"/></returns>
         public IQueryable<GroupMember> Queryable( bool includeDeceased )
         {
-            return base.Queryable()
-                .Where( g => includeDeceased || !g.Person.IsDeceased.HasValue || !g.Person.IsDeceased.Value );
+            var qry = base.Queryable();
+            if (!includeDeceased)
+            {
+                qry = qry.Where( g => g.Person.IsDeceased == false );
+            }
+
+            return qry;
         }
 
         /// <summary>
@@ -89,8 +94,13 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> with specified properties eagerly loaded.</returns>
         public IQueryable<GroupMember> Queryable( string includes, bool includeDeceased )
         {
-            return base.Queryable( includes ).Where( g => 
-                includeDeceased || !g.Person.IsDeceased.HasValue || !g.Person.IsDeceased.Value );
+            var qry = base.Queryable( includes );
+            if ( !includeDeceased )
+            {
+                qry = qry.Where( g => g.Person.IsDeceased == false );
+            }
+
+            return qry;
         }
 
         /// <summary>
