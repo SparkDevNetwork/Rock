@@ -757,7 +757,7 @@ namespace RockWeb.Blocks.Event
             {
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
-                Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                AttributeCache.Flush( attr.Id );
             }
 
             // Update the Attributes that were assigned in the UI
