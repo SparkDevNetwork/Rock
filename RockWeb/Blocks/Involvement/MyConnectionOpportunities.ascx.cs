@@ -403,14 +403,14 @@ namespace RockWeb.Blocks.Involvement
                 // Get the Ids of the groups the user is in
                 var userGroupIds = CurrentPerson.Members.Select( m => m.GroupId ).ToList();
                 GroupService groupService = new GroupService( rockContext );
-                var involvementAdminGroupId = groupService.Get( Rock.SystemGuid.Group.GROUP_INVOLVEMENT_ADMINISTRATORS.AsGuid() ).Id;
+                //TODO var involvementAdminGroupId = groupService.Get( Rock.SystemGuid.Group.GROUP_INVOLVEMENT_ADMINISTRATORS.AsGuid() ).Id;
                 var rockAdminGroupId = groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).Id;
                 // Get the connectionOpportunities that have connector groups the user is in.
                 var connectionOpportunityIds = allConnectionOpportunities
                     .Where( o =>
                         ( o.ConnectorGroupId.HasValue && userGroupIds.Contains( o.ConnectorGroupId.Value ) )
                         || o.ConnectionOpportunityCampuses.Any( c => userGroupIds.Contains( c.ConnectorGroupId.Value ) )
-                        || userGroupIds.Contains( involvementAdminGroupId )
+                        //|| userGroupIds.Contains( involvementAdminGroupId )
                         || userGroupIds.Contains( rockAdminGroupId ) )//TODO Redo Roles
                     .Select( o => o.Id )//
                     .Distinct()

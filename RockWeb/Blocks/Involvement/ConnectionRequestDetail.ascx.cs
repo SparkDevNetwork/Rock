@@ -576,19 +576,22 @@ namespace RockWeb.Blocks.Involvement
             {
                 _connectionRequest = new ConnectionRequestService( new RockContext() ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
             }
+
             ConnectionRequestService connectionRequestService = new ConnectionRequestService( rockContext );
             ConnectionRequestActivity connectionRequestActivity = new ConnectionRequestActivity();
             connectionRequestActivity.ConnectionActivityTypeId = ddlActivity.SelectedValueAsId().Value;
             connectionRequestActivity.ConnectionOpportunityId = _connectionRequest.ConnectionOpportunityId;
             connectionRequestActivity.ConnectorPersonAliasId = ppConnector.PersonAliasId.Value;
+            connectionRequestActivity.ConnectionRequestId = PageParameter( "ConnectionRequestId" ).AsInteger();
             connectionRequestActivity.Note = tbNote.Text;
+
             // Controls will show warnings
             if ( !connectionRequestActivity.IsValid )
             {
                 return;
             }
 
-            _connectionRequest.ConnectionRequestActivities.Add( connectionRequestActivity );
+            new ConnectionRequestActivityService( rockContext ).Add( connectionRequestActivity );
             rockContext.SaveChanges();
 
             BindConnectionRequestActivitiesGrid();
@@ -650,7 +653,7 @@ namespace RockWeb.Blocks.Involvement
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 var activity = e.Row.DataItem as ConnectionRequestActivity;
-                if ( e.Row.DataItem.GetPropertyValue("OpportunityId") as int? == _connectionRequest.ConnectionOpportunityId )
+                if ( e.Row.DataItem.GetPropertyValue( "OpportunityId" ) as int? == _connectionRequest.ConnectionOpportunityId )
                 {
                     e.Row.AddCssClass( "warning" );
                 }
@@ -662,12 +665,8 @@ namespace RockWeb.Blocks.Involvement
         /// </summary>
         private void BindConnectionRequestActivitiesGrid()
         {
-            if ( _connectionRequest == null )
-            {
-                _connectionRequest = new ConnectionRequestService( new RockContext() ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
-            }
-
-            var connectionRequestActivities = _connectionRequest.ConnectionRequestActivities.ToList();
+            var connectionRequestId = PageParameter( "ConnectionRequestId" ).AsInteger();
+            var connectionRequestActivities = new ConnectionRequestActivityService( new RockContext() ).Queryable().Where( a => a.ConnectionRequestId == connectionRequestId ).ToList();
 
             gConnectionRequestActivities.DataSource = connectionRequestActivities.Select( a => new
             {
@@ -970,9 +969,9 @@ namespace RockWeb.Blocks.Involvement
                 nbRequirementsErrors.Visible = false;
             }
 
-            if ( passedAllRequirements || !groupMember.Group.MustMeetRequirementsToAddMember.Value )
+            if ( passedAllRequirements || ( groupMember.Group.MustMeetRequirementsToAddMember.HasValue && !groupMember.Group.MustMeetRequirementsToAddMember.Value ) )
             {
-                if ( !groupMember.Group.MustMeetRequirementsToAddMember.Value )
+                if ( groupMember.Group.MustMeetRequirementsToAddMember.HasValue && !groupMember.Group.MustMeetRequirementsToAddMember.Value )
                 {
                     lbConnect.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'Warning: This person currently does not meet all of the requirements of the group. Are you sure you wish to add them to the group?');", ConnectionRequest.FriendlyTypeName );
                 }

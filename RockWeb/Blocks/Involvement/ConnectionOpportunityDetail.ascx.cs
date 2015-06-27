@@ -209,7 +209,6 @@ namespace RockWeb.Blocks.Involvement
         public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
         {
             var breadCrumbs = new List<BreadCrumb>();
-
             int? connectionOpportunityId = PageParameter( pageReference, "ConnectionOpportunityId" ).AsIntegerOrNull();
             if ( connectionOpportunityId != null )
             {
@@ -220,7 +219,7 @@ namespace RockWeb.Blocks.Involvement
                 }
                 else
                 {
-                    breadCrumbs.Add( new BreadCrumb( "New Event Item", pageReference ) );
+                    breadCrumbs.Add( new BreadCrumb( "New Connection Opportunity", pageReference ) );
                 }
             }
             else
