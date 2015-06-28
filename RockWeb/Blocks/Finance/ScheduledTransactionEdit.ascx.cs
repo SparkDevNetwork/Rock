@@ -40,7 +40,6 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Scheduled Transaction Edit" )]
     [Category( "Finance" )]
     [Description( "Edit an existing scheduled transaction." )]
-
     [BooleanField( "Impersonation", "Allow (only use on an internal page used by staff)", "Don't Allow",
         "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 0 )]
     [AccountsField( "Accounts", "The accounts to display.  By default all active accounts with a Public Name will be displayed", false, "", "", 1 )]
@@ -51,35 +50,31 @@ namespace RockWeb.Blocks.Finance
     // Text Options
 
     [TextField( "Panel Title", "The text to display in panel heading", false, "Scheduled Transaction", "Text Options", 4 )]
-
     [TextField( "Contribution Info Title", "The text to display as heading of section for selecting account and amount.", false, "Contribution Information", "Text Options", 5 )]
     [TextField( "Add Account Text", "The button text to display for adding an additional account", false, "Add Another Account", "Text Options", 6 )]
-
     [TextField( "Payment Info Title", "The text to display as heading of section for entering credit card or bank account information.", false, "Payment Information", "Text Options", 7 )]
-
     [TextField( "Confirmation Title", "The text to display as heading of section for confirming information entered.", false, "Confirm Information", "Text Options", 8 )]
-    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.", 
+    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.",
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <p>
-Please confirm the information below. Once you have confirmed that the information is accurate click the 'Finish' button to complete your transaction. 
+Please confirm the information below. Once you have confirmed that the information is accurate click the 'Finish' button to complete your transaction.
 </p>
 ", "Text Options", 9 )]
-    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", 
+    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.",
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <div class='alert alert-info'>
-By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to debit the amount above from my account. I acknowledge that I may 
-update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions. 
+By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to debit the amount above from my account. I acknowledge that I may
+update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions.
 </div>
 ", "Text Options", 10 )]
-
-    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section.", 
+    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section.",
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <p>
-Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively 
-achieve our mission.  We are so grateful for your commitment. 
+Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively
+achieve our mission.  We are so grateful for your commitment.
 </p>
 ", "Text Options", 11 )]
-    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section.", 
+    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section.",
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 ", "Text Options", 12 )]
 
@@ -273,7 +268,7 @@ achieve our mission.  We are so grateful for your commitment.
                     txtBankName.Text = "Test Bank";
                     txtRoutingNumber.Text = "111111118";
                     txtAccountNumber.Text = "1111111111";
-                     */ 
+                     */
                 }
             }
         }
@@ -456,7 +451,7 @@ achieve our mission.  We are so grateful for your commitment.
             var qryParams = new Dictionary<string, string>();
 
             string personParam = PageParameter( "Person" );
-            if (!string.IsNullOrWhiteSpace(personParam))
+            if ( !string.IsNullOrWhiteSpace( personParam ) )
             {
                 qryParams.Add( "Person", personParam );
             }
@@ -520,10 +515,9 @@ achieve our mission.  We are so grateful for your commitment.
             Person targetPerson = null;
             using ( var rockContext = new RockContext() )
             {
-
                 // If impersonation is allowed, and a valid person key was used, set the target to that person
-                bool allowImpersonation = false;
-                if ( bool.TryParse( GetAttributeValue( "Impersonation" ), out allowImpersonation ) && allowImpersonation )
+                bool allowImpersonation = GetAttributeValue( "Impersonation" ).AsBoolean();
+                if ( allowImpersonation )
                 {
                     string personKey = PageParameter( "Person" );
                     if ( !string.IsNullOrWhiteSpace( personKey ) )
@@ -589,11 +583,7 @@ achieve our mission.  We are so grateful for your commitment.
             var selectedGuids = GetAttributeValues( "Accounts" ).Select( Guid.Parse ).ToList();
             bool showAll = !selectedGuids.Any();
 
-            bool additionalAccounts = true;
-            if ( !bool.TryParse( GetAttributeValue( "AdditionalAccounts" ), out additionalAccounts ) )
-            {
-                additionalAccounts = true;
-            }
+            bool additionalAccounts = GetAttributeValue( "AdditionalAccounts" ).AsBoolean( resultIfNullOrEmpty: true );
 
             SelectedAccounts = new List<AccountItem>();
             AvailableAccounts = new List<AccountItem>();
@@ -925,7 +915,7 @@ achieve our mission.  We are so grateful for your commitment.
             if ( ScheduledTransactionId.HasValue )
             {
                 scheduledTransaction = new FinancialScheduledTransactionService( rockContext )
-                    .Queryable("AuthorizedPersonAlias.Person").FirstOrDefault( s => s.Id == ScheduledTransactionId.Value );
+                    .Queryable( "AuthorizedPersonAlias.Person" ).FirstOrDefault( s => s.Id == ScheduledTransactionId.Value );
             }
 
             if ( scheduledTransaction == null )
@@ -1006,7 +996,7 @@ achieve our mission.  We are so grateful for your commitment.
                 if ( ScheduledTransactionId.HasValue )
                 {
                     scheduledTransaction = transactionService
-                        .Queryable("AuthorizedPersonAlias.Person,FinancialGateway")
+                        .Queryable( "AuthorizedPersonAlias.Person,FinancialGateway" )
                         .FirstOrDefault( s => s.Id == ScheduledTransactionId.Value );
                 }
 
@@ -1021,7 +1011,7 @@ achieve our mission.  We are so grateful for your commitment.
                     scheduledTransaction.FinancialGateway.LoadAttributes();
                 }
 
-                if ( scheduledTransaction.AuthorizedPersonAlias == null || scheduledTransaction.AuthorizedPersonAlias.Person == null)
+                if ( scheduledTransaction.AuthorizedPersonAlias == null || scheduledTransaction.AuthorizedPersonAlias.Person == null )
                 {
                     errorMessage = "There was a problem determining the person associated with the transaction";
                     return false;
@@ -1134,7 +1124,7 @@ achieve our mission.  We are so grateful for your commitment.
                     ScheduleId = scheduledTransaction.GatewayScheduleId;
                     TransactionCode = scheduledTransaction.TransactionCode;
 
-                    if (transactionService.GetStatus( scheduledTransaction, out errorMessage ))
+                    if ( transactionService.GetStatus( scheduledTransaction, out errorMessage ) )
                     {
                         rockContext.SaveChanges();
                     }
@@ -1205,8 +1195,8 @@ achieve our mission.  We are so grateful for your commitment.
                 paymentInfo.LastName = authorizedPerson.LastName;
                 paymentInfo.Email = authorizedPerson.Email;
 
-                bool displayPhone = false;
-                if ( bool.TryParse( GetAttributeValue( "DisplayPhone" ), out displayPhone ) && displayPhone )
+                bool displayPhone = GetAttributeValue( "DisplayPhone" ).AsBoolean();
+                if ( displayPhone )
                 {
                     var phoneNumber = personService.GetPhoneNumber( authorizedPerson, DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ) );
                     paymentInfo.Phone = phoneNumber != null ? phoneNumber.ToString() : string.Empty;
@@ -1347,11 +1337,10 @@ achieve our mission.  We are so grateful for your commitment.
 
             string scriptFormat = @"
     Sys.Application.add_load(function () {{
-
         // As amounts are entered, validate that they are numeric and recalc total
         $('.account-amount').on('change', function() {{
-            var totalAmt = Number(0);   
-                 
+            var totalAmt = Number(0);
+
             $('.account-amount .form-control').each(function (index) {{
                 var itemValue = $(this).val();
                 if (itemValue != null && itemValue != '') {{
@@ -1375,7 +1364,7 @@ achieve our mission.  We are so grateful for your commitment.
 
         // Set the date prompt based on the frequency value entered
         $('#ButtonDropDown_btnFrequency .dropdown-menu a').click( function () {{
-            var $when = $(this).parents('div.form-group:first').next(); 
+            var $when = $(this).parents('div.form-group:first').next();
             if ($(this).attr('data-id') == '{3}') {{
                 $when.find('label:first').html('When');
             }} else {{
@@ -1385,7 +1374,7 @@ achieve our mission.  We are so grateful for your commitment.
                 var $dateInput = $when.find('input');
                 var dt = new Date(Date.parse($dateInput.val()));
                 var curr = new Date();
-                if ( (dt-curr) <= 0 ) {{ 
+                if ( (dt-curr) <= 0 ) {{
                     curr.setDate(curr.getDate() + 1);
                     var dd = curr.getDate();
                     var mm = curr.getMonth()+1;
@@ -1394,10 +1383,9 @@ achieve our mission.  We are so grateful for your commitment.
                     $dateInput.data('datePicker').value(mm+'/'+dd+'/'+yy);
                 }}
             }};
-            
         }});
 
-        // Save the state of the selected payment type pill to a hidden field so that state can 
+        // Save the state of the selected payment type pill to a hidden field so that state can
         // be preserved through postback
         $('a[data-toggle=""pill""]').on('shown.bs.tab', function (e) {{
             var tabHref = $(e.target).attr(""href"");
@@ -1416,14 +1404,14 @@ achieve our mission.  We are so grateful for your commitment.
         // Toggle credit card display if saved card option is available
         $('div.radio-content').prev('.form-group').find('input:radio').unbind('click').on('click', function () {{
             var $content = $(this).parents('div.form-group:first').next('.radio-content')
-            var radioDisplay = $content.css('display');            
+            var radioDisplay = $content.css('display');
             if ($(this).val() == 0 && radioDisplay == 'none') {{
                 $content.slideToggle();
             }}
             else if ($(this).val() != 0 && radioDisplay != 'none') {{
                 $content.slideToggle();
             }}
-        }});      
+        }});
 
         // Hide or show a div based on selection of checkbox
         $('input:checkbox.toggle-input').unbind('click').on('click', function () {{
@@ -1438,7 +1426,6 @@ achieve our mission.  We are so grateful for your commitment.
 				return false;
 			}});
         }});
- 
     }});
 
 ";
@@ -1453,7 +1440,7 @@ achieve our mission.  We are so grateful for your commitment.
         #region Helper Classes
 
         /// <summary>
-        /// Lightweight object for each contribution item 
+        /// Lightweight object for each contribution item
         /// </summary>
         [Serializable]
         protected class AccountItem

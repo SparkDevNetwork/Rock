@@ -52,13 +52,9 @@ namespace Rock.Workflow.Action.CheckIn
             if ( checkInState != null )
             {
                 AttendanceCode attendanceCode = null;
-                bool reuseCodeForFamily = false;
-                if ( bool.TryParse( GetAttributeValue( action, "ReuseCodeForFamily" ), out reuseCodeForFamily ) && reuseCodeForFamily )
-                {
-                    reuseCodeForFamily = true;
-                }
-
                 DateTime startDateTime = RockDateTime.Now;
+
+                bool reuseCodeForFamily = GetAttributeValue( action, "ReuseCodeForFamily" ).AsBoolean();
 
                 int securityCodeLength = 3;
                 if ( !int.TryParse( GetAttributeValue( action, "SecurityCodeLength" ), out securityCodeLength ) )
