@@ -176,6 +176,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the export source.
+        /// </summary>
+        /// <value>
+        /// The export source.
+        /// </value>
+        public virtual ExcelExportSource ExportSource
+        {
+            get
+            {
+                object exportSource = this.ViewState["ExportSource"];
+                return exportSource != null ? (ExcelExportSource)exportSource : ExcelExportSource.DataSource;
+            }
+
+            set
+            {
+                this.ViewState["ExportSource"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the filename to use when exporting the grid contents. 
         /// The .xlsx extension will be appended if not given. Special characters are removed
         /// automatically to prevent problems saving the file. Default filename is RockExport.xlsx.
@@ -1277,14 +1297,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to export the data that is shown instead of the properties of the underlying data
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [export grid as wysiwyg]; otherwise, <c>false</c>.
-        /// </value>
-        public bool ExportGridAsWYSIWYG { get; set; }
-
-        /// <summary>
         /// Handles the ExcelExportClick event of the Actions control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1371,17 +1383,21 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                if ( this.ExportGridAsWYSIWYG )
+                if ( this.ExportSource == ExcelExportSource.ColumnOutput )
                 {
                     // Columns to export with their column index as the key
-                    var gridColumns = new Dictionary<int, DataControlField>();
+                    var gridColumns = new Dictionary<int, IRockGridField>();
 
                     for ( int i = 0; i < this.Columns.Count; i++ )
-                    { 
-                        var dataControlField = this.Columns[i] as DataControlField;
-                        if ( dataControlField != null && dataControlField.Visible )
+                    {
+                        var rockField = this.Columns[i] as IRockGridField;
+                        if ( rockField != null &&
+                            (
+                                rockField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude ||
+                                ( rockField.ExcelExportBehavior == ExcelExportBehavior.IncludeIfVisible && rockField.Visible )
+                            ) )
                         {
-                            gridColumns.Add( i, dataControlField );
+                            gridColumns.Add( i, rockField );
                         }
                     }
 
@@ -1435,13 +1451,12 @@ namespace Rock.Web.UI.Controls
                                 }
                             }
 
-                            if ( exportValue != null )
+                            string value = exportValue != null ? exportValue.ToString() : fieldCell.Text;
+                            value = value.ConvertBrToCrLf();
+                            worksheet.Cells[rowCounter, columnCounter].Value = value;
+                            if ( value.Contains( Environment.NewLine ) )
                             {
-                                worksheet.Cells[rowCounter, columnCounter].Value = exportValue.ToString();
-                            }
-                            else
-                            {
-                                worksheet.Cells[rowCounter, columnCounter].Value = fieldCell.Text;
+                                worksheet.Cells[rowCounter, columnCounter].Style.WrapText = true;
                             }
 
                             // format background color for alternating rows
@@ -1552,8 +1567,12 @@ namespace Rock.Web.UI.Controls
                             bool isDefinedValue = ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) );
 
                             var cell = worksheet.Cells[rowCounter, columnCounter];
-                            string value = this.GetExportValue( prop, propValue, isDefinedValue, cell );
-                            cell.Value = value.ConvertBrToCrLf();
+                            string value = this.GetExportValue( prop, propValue, isDefinedValue, cell ).ConvertBrToCrLf();
+                            cell.Value = value;
+                            if ( value.Contains( Environment.NewLine ))
+                            {
+                                cell.Style.WrapText = true;
+                            }
 
                             // format background color for alternating rows
                             if ( rowCounter % 2 == 1 )
@@ -3040,6 +3059,21 @@ namespace Rock.Web.UI.Controls
         Light
     }
 
+    /// <summary>
+    /// The data to export when Excel Export is selected
+    /// </summary>
+    public enum ExcelExportSource
+    {
+        /// <summary>
+        /// Use the columns and formatting from the grid's data source
+        /// </summary>
+        DataSource,
+
+        /// <summary>
+        /// The the columns and formatting that is displayed in output 
+        /// </summary>
+        ColumnOutput
+    }
 
     /// <summary>
     /// Column Prioritiy Values
