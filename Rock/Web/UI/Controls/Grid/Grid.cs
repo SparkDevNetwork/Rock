@@ -1373,11 +1373,22 @@ namespace Rock.Web.UI.Controls
             {
                 if ( this.ExportGridAsWYSIWYG )
                 {
-                    var gridColumns = this.Columns.OfType<DataControlField>().Where( a => a.Visible ).ToList();
+                    // Columns to export with their column index as the key
+                    var gridColumns = new Dictionary<int, DataControlField>();
+
+                    for ( int i = 0; i < this.Columns.Count; i++ )
+                    { 
+                        var dataControlField = this.Columns[i] as DataControlField;
+                        if ( dataControlField != null && dataControlField.Visible )
+                        {
+                            gridColumns.Add( i, dataControlField );
+                        }
+                    }
+
                     columnCounter = 1;
                     foreach ( var col in gridColumns )
                     {
-                        worksheet.Cells[3, columnCounter].Value = col.HeaderText;
+                        worksheet.Cells[3, columnCounter].Value = col.Value.HeaderText;
                         columnCounter++;
                     }
 
@@ -1408,7 +1419,7 @@ namespace Rock.Web.UI.Controls
                         foreach ( var col in gridColumns )
                         {
                             columnCounter++;
-                            var fieldCell = gridViewRow.Cells[columnCounter] as DataControlFieldCell;
+                            var fieldCell = gridViewRow.Cells[col.Key] as DataControlFieldCell;
 
                             object exportValue = null;
                             if ( fieldCell.ContainingField is RockBoundField )
