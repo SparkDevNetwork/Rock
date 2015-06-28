@@ -61,8 +61,8 @@ namespace RockWeb.Blocks.Reporting
     {
         #region Fields
 
-        Dictionary<int, string> _sortExpressions = new Dictionary<int, string>();
-        bool _updatePage = true;
+        private Dictionary<int, string> _sortExpressions = new Dictionary<int, string>();
+        private bool _updatePage = true;
 
         #endregion
 
@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Reporting
 
         #region Events
 
-        void DynamicData_BlockUpdated( object sender, EventArgs e )
+        protected void DynamicData_BlockUpdated( object sender, EventArgs e )
         {
             BuildControls( true );
         }
@@ -228,9 +228,8 @@ namespace RockWeb.Blocks.Reporting
                     query = query.ResolveMergeFields( PageParameters() );
 
                     var parameters = GetParameters();
-                    return DbService.GetDataSet( query, GetAttributeValue("StoredProcedure").AsBoolean(false) ? CommandType.StoredProcedure : CommandType.Text, parameters );
+                    return DbService.GetDataSet( query, GetAttributeValue( "StoredProcedure" ).AsBoolean( false ) ? CommandType.StoredProcedure : CommandType.Text, parameters );
                 }
-
                 catch ( System.Exception ex )
                 {
                     errorMessage = ex.Message;
@@ -296,7 +295,6 @@ namespace RockWeb.Blocks.Reporting
                     // load merge objects if needed by either for formatted output OR page title
                     if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PageTitleLava" ) ) || !string.IsNullOrWhiteSpace( formattedOutput ) )
                     {
-                        
                         if ( CurrentPerson != null )
                         {
                             // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
@@ -389,13 +387,12 @@ namespace RockWeb.Blocks.Reporting
                 phContent.Visible = true;
                 nbError.Visible = false;
             }
-
         }
 
         /// <summary>
         /// Sets the data key names.
         /// </summary>
-        private void SetDataKeyNames(Grid grid, DataTable dataTable )
+        private void SetDataKeyNames( Grid grid, DataTable dataTable )
         {
             string urlMask = GetAttributeValue( "UrlMask" );
             if ( !string.IsNullOrWhiteSpace( urlMask ) )
@@ -419,7 +416,7 @@ namespace RockWeb.Blocks.Reporting
             }
             else
             {
-                if (dataTable.Columns.Contains("Id"))
+                if ( dataTable.Columns.Contains( "Id" ) )
                 {
                     grid.DataKeyNames = new string[1] { "Id" };
                 }
@@ -509,7 +506,6 @@ namespace RockWeb.Blocks.Reporting
                 {
                     bf = new BoolField();
                 }
-
                 else if ( dataTableColumn.DataType == typeof( DateTime ) )
                 {
                     bf = new DateField();
@@ -545,7 +541,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         /// <param name="dataTable">The data table.</param>
         /// <returns></returns>
-        private void SortTable( Grid grid, DataTable dataTable)
+        private void SortTable( Grid grid, DataTable dataTable )
         {
             System.Data.DataView dataView = dataTable.DefaultView;
 
@@ -559,7 +555,7 @@ namespace RockWeb.Blocks.Reporting
         #endregion
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class DataRowDrop : DotLiquid.Drop
         {
