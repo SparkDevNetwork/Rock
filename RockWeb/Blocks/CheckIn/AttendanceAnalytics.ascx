@@ -193,7 +193,7 @@
                             </div>
 
                             <Rock:NotificationBox ID="nbAttendeesError" runat="server" NotificationBoxType="Danger" Dismissable="true" Visible="false" />
-                            <Rock:Grid ID="gAttendeesAttendance" runat="server" AllowSorting="true" RowItemText="Attendee" OnRowDataBound="gAttendeesAttendance_RowDataBound" ExportSource="ColumnOutput">
+                            <Rock:Grid ID="gAttendeesAttendance" runat="server" AllowSorting="true" RowItemText="Attendee" OnRowDataBound="gAttendeesAttendance_RowDataBound" ExportSource="ColumnOutput" ExportFilename="AttendanceAnalytics">
                                 <Columns>
                                     <Rock:SelectField />
                                     <Rock:PersonField DataField="Parent" HeaderText="Parent" SortExpression="Parent.LastName, Parent.NickName"/>
