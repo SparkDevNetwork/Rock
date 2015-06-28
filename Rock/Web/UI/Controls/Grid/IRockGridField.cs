@@ -15,43 +15,53 @@
 // </copyright>
 //
 using System;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// <see cref="Grid"/> Column to display a boolean value.
+    /// Interface for all Rock grid fields
     /// </summary>
-    [ToolboxData( "<{0}:RockTemplateField runat=server></{0}:RockTemplateField>" )]
-    public class RockTemplateField : TemplateField, IPriorityColumn, IRockGridField
+    public interface IRockGridField
     {
-
         /// <summary>
-        /// Gets or sets the column priority.
+        /// Gets or sets the header text.
         /// </summary>
         /// <value>
-        /// The priority of the column.
+        /// The header text.
         /// </value>
-        public ColumnPriority ColumnPriority
-        {
-            get {
-                object t = ViewState["ColumnPriority"];
-                return (t == null) ? ColumnPriority.AlwaysVisible : (ColumnPriority)t; 
-            }
-            set { ViewState["ColumnPriority"] = value; }
-        }
+        string HeaderText { get; set; }
 
         /// <summary>
         /// When exporting a grid with an Export source of ColumnOutput, this property controls whether a column is included
         /// in the export or not
         /// </summary>
-        public virtual ExcelExportBehavior ExcelExportBehavior
-        {
-            get { return _excelExportBehavior; }
-            set { _excelExportBehavior = value; }
-        }
-        private ExcelExportBehavior _excelExportBehavior = ExcelExportBehavior.IncludeIfVisible;
+        ExcelExportBehavior ExcelExportBehavior { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="IRockGridField"/> is visible.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if visible; otherwise, <c>false</c>.
+        /// </value>
+        bool Visible { get; set; }
     }
+
+    public enum ExcelExportBehavior
+    {
+        /// <summary>
+        /// The always include
+        /// </summary>
+        AlwaysInclude,
+
+        /// <summary>
+        /// The include if visible
+        /// </summary>
+        IncludeIfVisible,
+
+        /// <summary>
+        /// The never include
+        /// </summary>
+        NeverInclude,
+    }
+
 }

@@ -193,11 +193,13 @@
                             </div>
 
                             <Rock:NotificationBox ID="nbAttendeesError" runat="server" NotificationBoxType="Danger" Dismissable="true" Visible="false" />
-                            <Rock:Grid ID="gAttendeesAttendance" runat="server" AllowSorting="true" RowItemText="Attendee" OnRowDataBound="gAttendeesAttendance_RowDataBound" ExportGridAsWYSIWYG="true">
+                            <Rock:Grid ID="gAttendeesAttendance" runat="server" AllowSorting="true" RowItemText="Attendee" OnRowDataBound="gAttendeesAttendance_RowDataBound" ExportSource="ColumnOutput">
                                 <Columns>
                                     <Rock:SelectField />
                                     <Rock:PersonField DataField="Parent" HeaderText="Parent" SortExpression="Parent.LastName, Parent.NickName"/>
+                                    <Rock:RockBoundField DataField="Parent.Email" HeaderText="Parent Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                     <Rock:PersonField DataField="Person" HeaderText="Name" SortExpression="Person.LastName, Person.NickName" />
+                                    <Rock:RockBoundField DataField="Person.Email" HeaderText="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                     <Rock:RockLiteralField HeaderText="First Visit" ID="lFirstVisitDate" SortExpression="FirstVisit.StartDateTime"/>
                                     <Rock:RockLiteralField HeaderText="Second Visit" ID="lSecondVisitDate" />
                                     <Rock:DateField DataField="LastVisit.StartDateTime" HeaderText="Last Visit" SortExpression="LastVisit.StartDateTime" />
