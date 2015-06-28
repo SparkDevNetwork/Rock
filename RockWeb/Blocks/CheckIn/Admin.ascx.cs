@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.CheckIn
                 }
                 else
                 {
-                    bool enableLocationSharing = bool.Parse( GetAttributeValue( "EnableLocationSharing" ) ?? "false" );
+                    bool enableLocationSharing = GetAttributeValue( "EnableLocationSharing" ).AsBoolean();
 
                     // Inject script used for geo location determiniation
                     if ( enableLocationSharing )
@@ -342,7 +342,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void TooFar()
         {
-            bool allowManualSetup = bool.Parse( GetAttributeValue( "AllowManualSetup" ) ?? "true" );
+            bool allowManualSetup = GetAttributeValue( "AllowManualSetup" ).AsBoolean( resultIfNullOrEmpty: true );
 
             if ( allowManualSetup )
             {
