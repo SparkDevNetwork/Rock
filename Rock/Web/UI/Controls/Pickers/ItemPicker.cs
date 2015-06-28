@@ -325,7 +325,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the selected value.
+        /// Gets the selected value.
         /// </summary>
         /// <value>
         /// The selected value.  NOTE: If nothing was previously set, it will return <see cref="Rock.Constants.None.IdValue"/>.

@@ -20,6 +20,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -54,12 +55,12 @@ namespace Rock.Model
         public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description of the GroupType.
+        /// Gets or sets the Description of the Location.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the description of the GroupType.
+        /// A <see cref="System.String"/> representing the description of the Location.
         /// </value>
-        [Required]
+        [MaxLength( 200 )]
         [DataMember]
         public string Location { get; set; }
 
@@ -69,9 +70,8 @@ namespace Rock.Model
         /// <value>
         /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.PersonAlias"/> who is the EventItemCampus's contact person.
         /// </value>
-        [Required]
         [DataMember( IsRequired = true )]
-        public int ContactPersonAliasId { get; set; }
+        public int? ContactPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the Contact Person's phone number.
@@ -79,7 +79,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> containing the Contact Person's phone number.
         /// </value>
-        [Required]
+        [MaxLength( 20 )]
         [DataMember]
         public String ContactPhone { get; set; }
 
@@ -89,22 +89,12 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> containing the Contact Person's email address.
         /// </value>
-        [Required]
         [MaxLength( 75 )]
         [DataMember]
         [Previewable]
         [RegularExpression( @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage = "The Email address is invalid" )]
         [Index( "IX_Email" )]
         public string ContactEmail { get; set; }
-
-        /// <summary>
-        /// Gets or sets the url for registration.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing the url for registration.
-        /// </value>
-        [DataMember]
-        public string RegistrationUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the campus note.
@@ -145,6 +135,20 @@ namespace Rock.Model
         public virtual PersonAlias ContactPersonAlias { get; set; }
 
         /// <summary>
+        /// Gets or sets the linkages.
+        /// </summary>
+        /// <value>
+        /// The linkages.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<EventItemCampusGroupMap> Linkages
+        {
+            get { return _linkages ?? ( _linkages = new Collection<EventItemCampusGroupMap>() ); }
+            set { _linkages = value; }
+        }
+        private ICollection<EventItemCampusGroupMap> _linkages;
+
+        /// <summary>
         /// Gets or sets a collection of the <see cref="Rock.Model.EventItemSchedule">EventItemSchedules</see> that belong to this EventItem.
         /// </summary>
         /// <value>
@@ -156,8 +160,93 @@ namespace Rock.Model
             get { return _calendarItemSchedules ?? ( _calendarItemSchedules = new Collection<EventItemSchedule>() ); }
             set { _calendarItemSchedules = value; }
         }
-
         private ICollection<EventItemSchedule> _calendarItemSchedules;
+
+        /// <summary>
+        /// Gets the next start date time.
+        /// </summary>
+        /// <value>
+        /// The next start date time.
+        /// </value>
+        [NotMapped]
+        public virtual DateTime? NextStartDateTime
+        {
+            get
+            {
+                return EventItemSchedules
+                    .Select( s => s.NextStartDateTime )
+                    .DefaultIfEmpty()
+                    .Min();
+            }
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the start times.
+        /// </summary>
+        /// <param name="beginDateTime">The begin date time.</param>
+        /// <param name="endDateTime">The end date time.</param>
+        /// <returns></returns>
+        public virtual List<DateTime> GetStartTimes( DateTime beginDateTime, DateTime endDateTime )
+        {
+            var result = new List<DateTime>();
+
+            foreach( var eventItemSchedule in EventItemSchedules )
+            {
+                result.AddRange( eventItemSchedule.GetStartTimes( beginDateTime, endDateTime ) );
+            }
+
+            return result.Distinct().OrderBy( d => d ).ToList();
+        }
+
+        /// <summary>
+        /// Gets the first start date time.
+        /// </summary>
+        /// <returns></returns>
+        public virtual DateTime? GetFirstStartDateTime()
+        {
+            var results = new List<DateTime>();
+
+            foreach ( var eventItemSchedule in EventItemSchedules )
+            {
+
+                var firstStartDate = eventItemSchedule.GetFirstStartDateTime();
+
+                if ( firstStartDate.HasValue )
+                {
+                    results.Add( firstStartDate.Value );
+                }
+            }
+
+            if ( results.Count() > 0 )
+            {
+                return results.OrderBy( d => d ).FirstOrDefault();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            if ( this.EventItem != null )
+            {
+                return string.Format( "{0} ({1})", this.EventItem.Name,
+                    this.Campus != null ? this.Campus.Name : "All Campuses" );
+            }
+
+            return base.ToString();
+        }
 
         #endregion
     }
@@ -174,9 +263,9 @@ namespace Rock.Model
         /// </summary>
         public EventItemCampusConfiguration()
         {
-            this.HasRequired( p => p.EventItem ).WithMany( p => p.EventItemCampuses ).HasForeignKey( p => p.EventItemId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.EventItem ).WithMany( p => p.EventItemCampuses ).HasForeignKey( p => p.EventItemId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
-            this.HasRequired( p => p.ContactPersonAlias ).WithMany().HasForeignKey( p => p.ContactPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ContactPersonAlias ).WithMany().HasForeignKey( p => p.ContactPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 

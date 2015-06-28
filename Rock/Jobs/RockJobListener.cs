@@ -65,7 +65,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Called by the <see cref="IScheduler"/> when a <see cref="IJobDetail"/>
         /// was about to be executed (an associated <see cref="ITrigger"/>
-        /// has occurred), but a <see cref="ITriggerListener"/> vetoed it's
+        /// has occurred), but a <see cref="ITriggerListener"/> vetoed its
         /// execution.
         /// </summary>
         /// <param name="context"></param>

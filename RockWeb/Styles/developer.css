@@ -125,9 +125,9 @@ span.data-view-filter-label {
 }
 
 
-
+/* TC Commented out to make the toggle work */
 div.toggle-container {   /* ???? JME */
-    display: inline-block;
+    /*display: inline-block;*/
 }
 
 

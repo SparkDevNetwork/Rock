@@ -26,10 +26,10 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// CalendarItemSchedules REST API
+    /// ConnectionTypes REST API
     /// </summary>
-    public partial class CalendarItemSchedulesController : Rock.Rest.ApiController<Rock.Model.CalendarItemSchedule>
+    public partial class ConnectionTypesController : Rock.Rest.ApiController<Rock.Model.ConnectionType>
     {
-        public CalendarItemSchedulesController() : base( new Rock.Model.CalendarItemScheduleService( new Rock.Data.RockContext() ) ) { } 
+        public ConnectionTypesController() : base( new Rock.Model.ConnectionTypeService( new Rock.Data.RockContext() ) ) { } 
     }
 }
