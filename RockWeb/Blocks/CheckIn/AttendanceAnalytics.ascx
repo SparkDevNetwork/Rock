@@ -148,6 +148,9 @@
                                                 <asp:HyperLink ID="btnViewParentsOfAttendees" runat="server" CssClass="btn btn-default btn-sm" data-val="1">
                                                     Parents of Attendees
                                                 </asp:HyperLink>
+                                                <asp:HyperLink ID="btnViewChildrenOfAttendees" runat="server" CssClass="btn btn-default btn-sm" data-val="2">
+                                                    Children of Attendees
+                                                </asp:HyperLink>
                                             </div>
                                         </div>
                                     </div>
@@ -198,6 +201,8 @@
                                     <Rock:SelectField />
                                     <Rock:PersonField DataField="Parent" HeaderText="Parent" SortExpression="Parent.LastName, Parent.NickName"/>
                                     <Rock:RockBoundField DataField="Parent.Email" HeaderText="Parent Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                    <Rock:PersonField DataField="Child" HeaderText="Child" SortExpression="Child.LastName, Child.NickName"/>
+                                    <Rock:RockBoundField DataField="Child.Email" HeaderText="Child Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                     <Rock:PersonField DataField="Person" HeaderText="Name" SortExpression="Person.LastName, Person.NickName" />
                                     <Rock:RockBoundField DataField="Person.Email" HeaderText="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                     <Rock:RockLiteralField HeaderText="First Visit" ID="lFirstVisitDate" SortExpression="FirstVisit.StartDateTime"/>

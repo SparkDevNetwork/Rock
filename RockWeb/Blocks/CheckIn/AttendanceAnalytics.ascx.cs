@@ -845,7 +845,7 @@ function(item) {
                 }
             }
 
-            // declare the qryResult that we'll use in case they didn't choose IncludeParents (and the Anonymous Type will also work if we do include parents)
+            // declare the qryResult that we'll use in case they didn't choose IncludeParents or IncludeChildren (and the Anonymous Type will also work if we do include parents or children)
             var qryPerson = personService.Queryable();
 
             var qryResult = qryByPersonWithSummary.Join(
@@ -856,8 +856,10 @@ function(item) {
                         {
                             a.PersonId,
                             ParentId = (int?)null,
+                            ChildId = (int?)null,
                             Person = p,
                             Parent = (Person)null,
+                            Child = (Person)null,
                             a.FirstVisits,
                             a.LastVisit,
                             p.PhoneNumbers,
@@ -865,6 +867,7 @@ function(item) {
                         } );
 
             var includeParents = hfViewBy.Value.ConvertToEnumOrNull<ViewBy>().GetValueOrDefault( ViewBy.Attendees ) == ViewBy.ParentsOfAttendees;
+            var includeChildren = hfViewBy.Value.ConvertToEnumOrNull<ViewBy>().GetValueOrDefault( ViewBy.Attendees ) == ViewBy.ChildrenOfAttendees;
 
             // if Including Parents, join with qryChildWithParent instead of qryPerson
             if ( includeParents )
@@ -878,11 +881,35 @@ function(item) {
                     {
                         a.PersonId,
                         ParentId = (int?)p.Parent.Id,
+                        ChildId = (int?)null,
                         Person = p.Child,
                         Parent = p.Parent,
+                        Child = (Person)null,
                         a.FirstVisits,
                         a.LastVisit,
                         p.Parent.PhoneNumbers,
+                        a.AttendanceSummary
+                    } );
+            }
+
+            if ( includeChildren )
+            {
+                var qryParentWithChildren = new PersonService( rockContext ).GetParentWithChild();
+                qryResult = qryByPersonWithSummary.Join(
+                    qryParentWithChildren,
+                    a => a.PersonId,
+                    p => p.Parent.Id,
+                    ( a, p ) => new
+                    {
+                        a.PersonId,
+                        ParentId = (int?)null,
+                        ChildId = (int?)p.Child.Id,
+                        Person = p.Parent,
+                        Parent = (Person)null,
+                        Child = p.Child,
+                        a.FirstVisits,
+                        a.LastVisit,
+                        p.Child.PhoneNumbers,
                         a.AttendanceSummary
                     } );
             }
@@ -897,6 +924,18 @@ function(item) {
             if ( parentEmailField != null )
             {
                 parentEmailField.ExcelExportBehavior = includeParents ? ExcelExportBehavior.AlwaysInclude : ExcelExportBehavior.NeverInclude;
+            }
+
+            var childField = gAttendeesAttendance.Columns.OfType<PersonField>().FirstOrDefault( a => a.HeaderText == "Child" );
+            if ( childField != null )
+            {
+                childField.Visible = includeChildren;
+            }
+
+            var childEmailField = gAttendeesAttendance.Columns.OfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Child Email" );
+            if ( childEmailField != null )
+            {
+                childEmailField.ExcelExportBehavior = includeChildren ? ExcelExportBehavior.AlwaysInclude : ExcelExportBehavior.NeverInclude;
             }
 
             SortProperty sortProperty = gAttendeesAttendance.SortProperty;
@@ -1379,7 +1418,12 @@ function(item) {
             /// <summary>
             /// The parent of the attendee
             /// </summary>
-            ParentsOfAttendees = 1
+            ParentsOfAttendees = 1,
+
+            /// <summary>
+            /// The children of the attendee
+            /// </summary>
+            ChildrenOfAttendees = 2
         }
 
         /// <summary>
