@@ -475,7 +475,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="dataTable">The data table.</param>
         private void AddGridColumns( Grid grid, DataTable dataTable )
         {
-            bool showColumns = bool.Parse( GetAttributeValue( "ShowColumns" ) );
+            bool showColumns = GetAttributeValue( "ShowColumns" ).AsBoolean();
             var columnList = GetAttributeValue( "Columns" ).SplitDelimitedValues().ToList();
 
             int rowsToEval = 10;
