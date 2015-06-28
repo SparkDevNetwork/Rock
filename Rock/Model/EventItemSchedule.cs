@@ -126,6 +126,22 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets the first start date time.
+        /// </summary>
+        /// <returns></returns>
+        public virtual DateTime? GetFirstStartDateTime()
+        {
+            if ( Schedule != null )
+            {
+                return Schedule.GetFirstStartDateTime();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         #endregion
 
     }
