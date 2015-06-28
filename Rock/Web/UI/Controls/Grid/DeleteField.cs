@@ -31,6 +31,22 @@ namespace Rock.Web.UI.Controls
     public class DeleteField : RockTemplateField, INotRowSelectedField
     {
         /// <summary>
+        /// When exporting a grid with an Export source of ColumnOutput, this property controls whether a column is included
+        /// in the export or not
+        /// </summary>
+        public override ExcelExportBehavior ExcelExportBehavior
+        {
+            get
+            {
+                return ExcelExportBehavior.NeverInclude;
+            }
+            set
+            {
+                base.ExcelExportBehavior = value;
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="DeleteField" /> class.
         /// </summary>
         public DeleteField()
