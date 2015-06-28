@@ -1451,13 +1451,12 @@ namespace Rock.Web.UI.Controls
                                 }
                             }
 
-                            if ( exportValue != null )
+                            string value = exportValue != null ? exportValue.ToString() : fieldCell.Text;
+                            value = value.ConvertBrToCrLf();
+                            worksheet.Cells[rowCounter, columnCounter].Value = value;
+                            if ( value.Contains( Environment.NewLine ) )
                             {
-                                worksheet.Cells[rowCounter, columnCounter].Value = exportValue.ToString();
-                            }
-                            else
-                            {
-                                worksheet.Cells[rowCounter, columnCounter].Value = fieldCell.Text;
+                                worksheet.Cells[rowCounter, columnCounter].Style.WrapText = true;
                             }
 
                             // format background color for alternating rows
@@ -1568,8 +1567,12 @@ namespace Rock.Web.UI.Controls
                             bool isDefinedValue = ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) );
 
                             var cell = worksheet.Cells[rowCounter, columnCounter];
-                            string value = this.GetExportValue( prop, propValue, isDefinedValue, cell );
-                            cell.Value = value.ConvertBrToCrLf();
+                            string value = this.GetExportValue( prop, propValue, isDefinedValue, cell ).ConvertBrToCrLf();
+                            cell.Value = value;
+                            if ( value.Contains( Environment.NewLine ))
+                            {
+                                cell.Style.WrapText = true;
+                            }
 
                             // format background color for alternating rows
                             if ( rowCounter % 2 == 1 )
