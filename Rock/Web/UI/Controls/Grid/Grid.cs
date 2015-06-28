@@ -176,6 +176,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the export source.
+        /// </summary>
+        /// <value>
+        /// The export source.
+        /// </value>
+        public virtual ExcelExportSource ExportSource
+        {
+            get
+            {
+                object exportSource = this.ViewState["ExportSource"];
+                return exportSource != null ? (ExcelExportSource)exportSource : ExcelExportSource.DataSource;
+            }
+
+            set
+            {
+                this.ViewState["ExportSource"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the filename to use when exporting the grid contents. 
         /// The .xlsx extension will be appended if not given. Special characters are removed
         /// automatically to prevent problems saving the file. Default filename is RockExport.xlsx.
@@ -1277,14 +1297,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to export the data that is shown instead of the properties of the underlying data
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [export grid as wysiwyg]; otherwise, <c>false</c>.
-        /// </value>
-        public bool ExportGridAsWYSIWYG { get; set; }
-
-        /// <summary>
         /// Handles the ExcelExportClick event of the Actions control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1371,13 +1383,28 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                if ( this.ExportGridAsWYSIWYG )
+                if ( this.ExportSource == ExcelExportSource.ColumnOutput )
                 {
-                    var gridColumns = this.Columns.OfType<DataControlField>().Where( a => a.Visible ).ToList();
+                    // Columns to export with their column index as the key
+                    var gridColumns = new Dictionary<int, IRockGridField>();
+
+                    for ( int i = 0; i < this.Columns.Count; i++ )
+                    {
+                        var rockField = this.Columns[i] as IRockGridField;
+                        if ( rockField != null &&
+                            (
+                                rockField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude ||
+                                ( rockField.ExcelExportBehavior == ExcelExportBehavior.IncludeIfVisible && rockField.Visible )
+                            ) )
+                        {
+                            gridColumns.Add( i, rockField );
+                        }
+                    }
+
                     columnCounter = 1;
                     foreach ( var col in gridColumns )
                     {
-                        worksheet.Cells[3, columnCounter].Value = col.HeaderText;
+                        worksheet.Cells[3, columnCounter].Value = col.Value.HeaderText;
                         columnCounter++;
                     }
 
@@ -1408,7 +1435,7 @@ namespace Rock.Web.UI.Controls
                         foreach ( var col in gridColumns )
                         {
                             columnCounter++;
-                            var fieldCell = gridViewRow.Cells[columnCounter] as DataControlFieldCell;
+                            var fieldCell = gridViewRow.Cells[col.Key] as DataControlFieldCell;
 
                             object exportValue = null;
                             if ( fieldCell.ContainingField is RockBoundField )
@@ -3029,6 +3056,21 @@ namespace Rock.Web.UI.Controls
         Light
     }
 
+    /// <summary>
+    /// The data to export when Excel Export is selected
+    /// </summary>
+    public enum ExcelExportSource
+    {
+        /// <summary>
+        /// Use the columns and formatting from the grid's data source
+        /// </summary>
+        DataSource,
+
+        /// <summary>
+        /// The the columns and formatting that is displayed in output 
+        /// </summary>
+        ColumnOutput
+    }
 
     /// <summary>
     /// Column Prioritiy Values
