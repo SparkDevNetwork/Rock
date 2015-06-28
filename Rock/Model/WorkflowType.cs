@@ -154,6 +154,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the name of the icon CSS class. This property will be null if a file based icon is being used.
         /// </value>
         [DataMember]
+        [MaxLength( 100 )]
         public string IconCssClass { get; set; }
 
         #endregion

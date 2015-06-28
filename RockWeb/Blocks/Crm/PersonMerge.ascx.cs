@@ -300,7 +300,7 @@ namespace RockWeb.Blocks.Crm
                     primaryPerson.RecordStatusValueId = GetNewIntValue( "RecordStatus", changes );
                     primaryPerson.RecordStatusReasonValueId = GetNewIntValue( "RecordStatusReason", changes );
                     primaryPerson.ConnectionStatusValueId = GetNewIntValue( "ConnectionStatus", changes );
-                    primaryPerson.IsDeceased = GetNewBoolValue( "Deceased", changes );
+                    primaryPerson.IsDeceased = GetNewBoolValue( "Deceased", changes ) ?? false;
                     primaryPerson.Gender = (Gender)GetNewEnumValue( "Gender", typeof( Gender ), changes );
                     primaryPerson.MaritalStatusValueId = GetNewIntValue( "MaritalStatus", changes );
                     primaryPerson.SetBirthDate( GetNewDateTimeValue( "BirthDate", changes ) );

@@ -1197,7 +1197,7 @@ namespace RockWeb.Blocks.Communication
             {
                 PersonId = person.Id;
                 PersonName = person.FullName;
-                IsDeceased = person.IsDeceased ?? false;
+                IsDeceased = person.IsDeceased;
                 HasSmsNumber = person.PhoneNumbers.Any( p => p.IsMessagingEnabled );
                 Email = person.Email;
                 IsEmailActive = person.IsEmailActive ?? true;

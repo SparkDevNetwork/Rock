@@ -217,6 +217,26 @@
     <Compile Include="Migrations\201506242325188_GeoSpatialIndexes.Designer.cs">
       <DependentUpon>201506242325188_GeoSpatialIndexes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201506251213475_EventRegistration.cs" />
+    <Compile Include="Migrations\201506251213475_EventRegistration.Designer.cs">
+      <DependentUpon>201506251213475_EventRegistration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201506252108267_EventRegistration2.cs" />
+    <Compile Include="Migrations\201506252108267_EventRegistration2.Designer.cs">
+      <DependentUpon>201506252108267_EventRegistration2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201506261611122_DeceasedNotNull.cs" />
+    <Compile Include="Migrations\201506261611122_DeceasedNotNull.Designer.cs">
+      <DependentUpon>201506261611122_DeceasedNotNull.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201506271652457_ConnectionModel.cs" />
+    <Compile Include="Migrations\201506271652457_ConnectionModel.Designer.cs">
+      <DependentUpon>201506271652457_ConnectionModel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201506271657585_ConnectionPages.cs" />
+    <Compile Include="Migrations\201506271657585_ConnectionPages.Designer.cs">
+      <DependentUpon>201506271657585_ConnectionPages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1793,6 +1813,21 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201506242325188_GeoSpatialIndexes.resx">
       <DependentUpon>201506242325188_GeoSpatialIndexes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201506251213475_EventRegistration.resx">
+      <DependentUpon>201506251213475_EventRegistration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201506252108267_EventRegistration2.resx">
+      <DependentUpon>201506252108267_EventRegistration2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201506261611122_DeceasedNotNull.resx">
+      <DependentUpon>201506261611122_DeceasedNotNull.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201506271652457_ConnectionModel.resx">
+      <DependentUpon>201506271652457_ConnectionModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201506271657585_ConnectionPages.resx">
+      <DependentUpon>201506271657585_ConnectionPages.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
