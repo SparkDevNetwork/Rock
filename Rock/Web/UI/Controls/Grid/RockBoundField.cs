@@ -89,6 +89,12 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public virtual object GetExportValue( GridViewRow row )
         {
+            if ( row.DataItem is System.Data.DataRowView )
+            {
+                var dataRow = ( (System.Data.DataRowView)row.DataItem ).Row;
+                return dataRow[this.DataField];
+            }
+
             return row.DataItem.GetPropertyValue( this.DataField );
         }
 

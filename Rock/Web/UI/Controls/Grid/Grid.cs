@@ -1349,32 +1349,97 @@ namespace Rock.Web.UI.Controls
             int rowCounter = 4;
             int columnCounter = 1;
 
-            var gridDataFields = this.Columns.OfType<BoundField>().ToList();
-
-            if ( this.DataSourceAsDataTable != null )
+            if ( this.ExportSource == ExcelExportSource.ColumnOutput )
             {
-                DataTable data = this.DataSourceAsDataTable;
+                // Columns to export with their column index as the key
+                var gridColumns = new Dictionary<int, IRockGridField>();
 
-                // print headings
-                foreach ( DataColumn column in data.Columns )
+                for ( int i = 0; i < this.Columns.Count; i++ )
                 {
-                    var gridField = gridDataFields.FirstOrDefault( a => a.DataField == column.ColumnName );
-                    worksheet.Cells[3, columnCounter].Value = gridField != null ? gridField.HeaderText : column.ColumnName.SplitCase();
+                    var rockField = this.Columns[i] as IRockGridField;
+                    if ( rockField != null &&
+                        (
+                            rockField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude ||
+                            ( rockField.ExcelExportBehavior == ExcelExportBehavior.IncludeIfVisible && rockField.Visible )
+                        ) )
+                    {
+                        gridColumns.Add( i, rockField );
+                    }
+                }
+
+                columnCounter = 1;
+                foreach ( var col in gridColumns )
+                {
+                    worksheet.Cells[3, columnCounter].Value = col.Value.HeaderText;
                     columnCounter++;
                 }
 
-                // print data
-                foreach ( DataRow row in data.Rows )
+                var dataItems = this.DataSourceAsList;
+                var gridViewRow = this.Rows.OfType<GridViewRow>().FirstOrDefault();
+                if ( gridViewRow == null )
                 {
-                    for ( int i = 0; i < data.Columns.Count; i++ )
+                    return;
+                }
+
+                var selectedKeys = SelectedKeys.ToList();
+                foreach ( var dataItem in dataItems )
+                {
+                    if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
                     {
-                        worksheet.Cells[rowCounter, i + 1].Value = row[i].ToString().ConvertBrToCrLf();
+                        var dataKeyValue = dataItem.GetPropertyValue( this.DataKeyNames[0] );
+                        if ( !selectedKeys.Contains( dataKeyValue ) )
+                        {
+                            // if there are specific rows selected, skip over rows that aren't selected
+                            continue;
+                        }
+                    }
+
+                    GridViewRowEventArgs args = new GridViewRowEventArgs( gridViewRow );
+                    gridViewRow.DataItem = dataItem;
+                    this.OnRowDataBound( args );
+                    columnCounter = 0;
+                    foreach ( var col in gridColumns )
+                    {
+                        columnCounter++;
+                        var fieldCell = gridViewRow.Cells[col.Key] as DataControlFieldCell;
+
+                        object exportValue = null;
+                        if ( col.Value is RockBoundField )
+                        {
+                            exportValue = ( col.Value as RockBoundField ).GetExportValue( gridViewRow );
+                        }
+                        else if ( col.Value is RockTemplateField )
+                        {
+                            var textControls = fieldCell.ControlsOfTypeRecursive<Control>().OfType<ITextControl>();
+                            if ( textControls.Any() )
+                            {
+                                exportValue = textControls.Select( a => a.Text ).Where( t => !string.IsNullOrWhiteSpace( t ) ).ToList().AsDelimited( string.Empty );
+                            }
+                        }
+
+                        string value = exportValue != null ? exportValue.ToString() : fieldCell.Text;
+                        value = value.ConvertBrToCrLf();
+                        worksheet.Cells[rowCounter, columnCounter].Value = value;
+                        if ( value.Contains( Environment.NewLine ) )
+                        {
+                            worksheet.Cells[rowCounter, columnCounter].Style.WrapText = true;
+                        }
+
+                        if ( col.Value is CurrencyField )
+                        {
+                            worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "0.00";
+                        }
 
                         // format background color for alternating rows
                         if ( rowCounter % 2 == 1 )
                         {
                             worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
                             worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
+                        }
+
+                        if ( exportValue != null && exportValue is DateTime )
+                        {
+                            worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
                         }
                     }
 
@@ -1383,92 +1448,32 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                if ( this.ExportSource == ExcelExportSource.ColumnOutput )
+                var gridDataFields = this.Columns.OfType<BoundField>().ToList();
+
+                if ( this.DataSourceAsDataTable != null )
                 {
-                    // Columns to export with their column index as the key
-                    var gridColumns = new Dictionary<int, IRockGridField>();
+                    DataTable data = this.DataSourceAsDataTable;
 
-                    for ( int i = 0; i < this.Columns.Count; i++ )
+                    // print headings
+                    foreach ( DataColumn column in data.Columns )
                     {
-                        var rockField = this.Columns[i] as IRockGridField;
-                        if ( rockField != null &&
-                            (
-                                rockField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude ||
-                                ( rockField.ExcelExportBehavior == ExcelExportBehavior.IncludeIfVisible && rockField.Visible )
-                            ) )
-                        {
-                            gridColumns.Add( i, rockField );
-                        }
-                    }
-
-                    columnCounter = 1;
-                    foreach ( var col in gridColumns )
-                    {
-                        worksheet.Cells[3, columnCounter].Value = col.Value.HeaderText;
+                        var gridField = gridDataFields.FirstOrDefault( a => a.DataField == column.ColumnName );
+                        worksheet.Cells[3, columnCounter].Value = gridField != null ? gridField.HeaderText : column.ColumnName.SplitCase();
                         columnCounter++;
                     }
 
-                    var dataItems = this.DataSourceAsList;
-                    var gridViewRow = this.Rows.OfType<GridViewRow>().FirstOrDefault();
-                    if ( gridViewRow == null )
+                    // print data
+                    foreach ( DataRow row in data.Rows )
                     {
-                        return;
-                    }
-
-                    var selectedKeys = SelectedKeys.ToList();
-                    foreach ( var dataItem in dataItems )
-                    {
-                        if (selectedKeys.Any() && this.DataKeyNames.Count() == 1)
+                        for ( int i = 0; i < data.Columns.Count; i++ )
                         {
-                            var dataKeyValue = dataItem.GetPropertyValue( this.DataKeyNames[0] );
-                            if (!selectedKeys.Contains(dataKeyValue))
-                            {
-                                // if there are specific rows selected, skip over rows that aren't selected
-                                continue;
-                            }
-                        }
-                        
-                        GridViewRowEventArgs args = new GridViewRowEventArgs( gridViewRow );
-                        gridViewRow.DataItem = dataItem;
-                        this.OnRowDataBound( args );
-                        columnCounter = 0;
-                        foreach ( var col in gridColumns )
-                        {
-                            columnCounter++;
-                            var fieldCell = gridViewRow.Cells[col.Key] as DataControlFieldCell;
-
-                            object exportValue = null;
-                            if ( fieldCell.ContainingField is RockBoundField )
-                            {
-                                exportValue = ( fieldCell.ContainingField as RockBoundField ).GetExportValue( gridViewRow );
-                            }
-                            else if ( fieldCell.ContainingField is RockTemplateField )
-                            {
-                                var textControls = fieldCell.ControlsOfTypeRecursive<Control>().OfType<ITextControl>();
-                                if ( textControls.Any() )
-                                {
-                                    exportValue = textControls.Select( a => a.Text ).Where( t => !string.IsNullOrWhiteSpace( t ) ).ToList().AsDelimited( string.Empty );
-                                }
-                            }
-
-                            string value = exportValue != null ? exportValue.ToString() : fieldCell.Text;
-                            value = value.ConvertBrToCrLf();
-                            worksheet.Cells[rowCounter, columnCounter].Value = value;
-                            if ( value.Contains( Environment.NewLine ) )
-                            {
-                                worksheet.Cells[rowCounter, columnCounter].Style.WrapText = true;
-                            }
+                            worksheet.Cells[rowCounter, i + 1].Value = row[i].ToString().ConvertBrToCrLf();
 
                             // format background color for alternating rows
                             if ( rowCounter % 2 == 1 )
                             {
                                 worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
                                 worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
-                            }
-
-                            if ( exportValue != null && exportValue is DateTime )
-                            {
-                                worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
                             }
                         }
 
