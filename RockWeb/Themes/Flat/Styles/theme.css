@@ -5241,6 +5241,10 @@ h6.condensed {
 div.aspNetDisabled {
   opacity: 0.5;
 }
+.icon-fw {
+  width: 1.28571429em;
+  text-align: center;
+}
 @media print {
   @page {
     margin: .5in;
