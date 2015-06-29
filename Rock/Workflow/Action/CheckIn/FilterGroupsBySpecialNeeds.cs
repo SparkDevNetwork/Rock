@@ -55,8 +55,8 @@ namespace Rock.Workflow.Action.CheckIn
                 return false;
             }
 
-            bool removeSNGroups = bool.Parse( GetAttributeValue( action, "RemoveSpecialNeedsGroups" ) ?? "true" );
-            bool removeNonSNGroups = bool.Parse( GetAttributeValue( action, "RemoveNonSpecialNeedsGroups" ) ?? "false" );
+            bool removeSNGroups = GetAttributeValue( action, "RemoveSpecialNeedsGroups" ).AsBoolean( resultIfNullOrEmpty: true );
+            bool removeNonSNGroups = GetAttributeValue( action, "RemoveNonSpecialNeedsGroups" ).AsBoolean();
 
             var family = checkInState.CheckIn.Families.FirstOrDefault( f => f.Selected );
             if ( family != null )
@@ -65,12 +65,12 @@ namespace Rock.Workflow.Action.CheckIn
 
                 foreach ( var person in family.People )
                 {
-                    bool isSNPerson = bool.Parse( person.Person.GetAttributeValue( "IsSpecialNeeds" ) ?? "false" );
+                    bool isSNPerson = person.Person.GetAttributeValue( "IsSpecialNeeds" ).AsBoolean();
                     foreach ( var groupType in person.GroupTypes.ToList() )
                     {
                         foreach ( var group in groupType.Groups.ToList() )
                         {
-                            bool isSNGroup = bool.Parse( group.Group.GetAttributeValue( "IsSpecialNeeds" ) ?? "false" );
+                            bool isSNGroup = group.Group.GetAttributeValue( "IsSpecialNeeds" ).AsBoolean();
 
                             // If the group is special needs but the person is not, then remove it.
                             if ( removeSNGroups && isSNGroup && !( isSNPerson ) )

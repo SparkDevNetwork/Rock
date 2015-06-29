@@ -23,20 +23,19 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock;
-using Rock.Data;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [DisplayName("Administration")]
-    [Category("Check-in")]
+    [DisplayName( "Administration" )]
+    [Category( "Check-in" )]
     [Description( "Check-in Administration block" )]
     [BooleanField( "Allow Manual Setup", "If enabled, the block will allow the kiosk to be setup manually if it was not set via other means.", true )]
     [BooleanField( "Enable Location Sharing", "If enabled, the block will attempt to determine the kiosk's location via location sharing geocode.", false, "Geo Location", 0 )]
@@ -72,7 +71,7 @@ namespace RockWeb.Blocks.CheckIn
                 }
                 else
                 {
-                    bool enableLocationSharing = bool.Parse( GetAttributeValue( "EnableLocationSharing" ) ?? "false" );
+                    bool enableLocationSharing = GetAttributeValue( "EnableLocationSharing" ).AsBoolean();
 
                     // Inject script used for geo location determiniation
                     if ( enableLocationSharing )
@@ -128,9 +127,9 @@ namespace RockWeb.Blocks.CheckIn
                     using ( var rockContext = new RockContext() )
                     {
                         ddlKiosk.DataSource = new DeviceService( rockContext )
-                        	.Queryable().AsNoTracking()
+                            .Queryable().AsNoTracking()
                             .Where( d => d.DeviceType.Guid.Equals( kioskDeviceType ) )
-                            .OrderBy(d => d.Name)
+                            .OrderBy( d => d.Name )
                             .Select( d => new
                             {
                                 d.Id,
@@ -192,7 +191,6 @@ namespace RockWeb.Blocks.CheckIn
             string geoScript = string.Format( @"
     <script>
         $(document).ready(function (e) {{
-
             tryGeoLocation();
 
             function tryGeoLocation() {{
@@ -213,7 +211,7 @@ namespace RockWeb.Blocks.CheckIn
                 $(""input[id$='hfLongitude']"").val( longitude );
                 $(""div.checkin-header h1"").html( 'Checking Your Location...' );
                 $(""div.checkin-header"").append( ""<p class='text-muted'>"" + latitude + "" "" + longitude + ""</p>"" );
-                // now perform a postback to fire the check geo location 
+                // now perform a postback to fire the check geo location
                 {0};
             }}
 
@@ -255,6 +253,7 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         #region GeoLocation related
+
         /// <summary>
         /// Handles attempting to find a registered Device kiosk by it's latitude and longitude.
         /// This event method is called automatically when the GeoLocation script get's the client's location.
@@ -343,7 +342,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void TooFar()
         {
-            bool allowManualSetup = bool.Parse( GetAttributeValue( "AllowManualSetup" ) ?? "true" );
+            bool allowManualSetup = GetAttributeValue( "AllowManualSetup" ).AsBoolean( resultIfNullOrEmpty: true );
 
             if ( allowManualSetup )
             {
@@ -355,13 +354,13 @@ namespace RockWeb.Blocks.CheckIn
             {
                 maWarning.Show( "You are too far. Try again later.", ModalAlertType.Alert );
             }
-            
         }
 
         protected void lbRetry_Click( object sender, EventArgs e )
         {
             // TODO
         }
+
         #endregion
 
         #region Manually Setting Kiosks related
@@ -386,7 +385,7 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             var groupTypeIds = new List<int>();
-            foreach(ListItem item in cblGroupTypes.Items)
+            foreach ( ListItem item in cblGroupTypes.Items )
             {
                 if ( item.Selected )
                 {
@@ -440,7 +439,6 @@ namespace RockWeb.Blocks.CheckIn
                 .ToList();
         }
 
-
         private void BindGroupTypes()
         {
             BindGroupTypes( string.Empty );
@@ -462,7 +460,7 @@ namespace RockWeb.Blocks.CheckIn
 
                 if ( selectedValues != string.Empty )
                 {
-                    foreach ( string id in selectedValues.Split(',') )
+                    foreach ( string id in selectedValues.Split( ',' ) )
                     {
                         ListItem item = cblGroupTypes.Items.FindByValue( id );
                         if ( item != null )
@@ -508,7 +506,7 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
-        private void RedirectToNewTheme(string theme)
+        private void RedirectToNewTheme( string theme )
         {
             var pageRef = RockPage.PageReference;
             pageRef.QueryString = new System.Collections.Specialized.NameValueCollection();
