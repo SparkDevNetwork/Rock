@@ -29,15 +29,16 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a bank or debit/credit card that a <see cref="Rock.Model.Person"/> ( or group ) has saved to Rock for
-    /// future reuse. Please note that account number is not actually stored here. The reference/profile number is stored
+    /// Represents a bank or debit/credit card that a <see cref="Rock.Model.Person"/> ( or group ) has saved to Rock for 
+    /// future reuse. Please note that account number is not actually stored here. The reference/profile number is stored 
     /// here as well as a masked version of the account number.  This saved account will either be associated to a person
-    /// alias or a group.
+    /// alias or a group. 
     /// </summary>
     [Table( "FinancialPersonSavedAccount" )]
     [DataContract]
     public partial class FinancialPersonSavedAccount : Model<FinancialPersonSavedAccount>
     {
+
         #region Entity Properties
 
         /// <summary>
@@ -119,7 +120,7 @@ namespace Rock.Model
         public int? CurrencyTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DefinedValueId of the credit card type <see cref="Rock.Model.DefinedValue"/> indicating the credit card brand/type that was used
+        /// Gets or sets the DefinedValueId of the credit card type <see cref="Rock.Model.DefinedValue"/> indicating the credit card brand/type that was used 
         /// to make this transaction. This value will be null for transactions that were not made by credit card.
         /// </summary>
         /// <value>
@@ -202,7 +203,7 @@ namespace Rock.Model
         public virtual FinancialGateway FinancialGateway { get; set; }
 
         /// <summary>
-        /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this
+        /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this 
         /// transaction.
         /// </summary>
         /// <value>
@@ -255,8 +256,8 @@ namespace Rock.Model
 
             return reference;
         }
-
         #endregion
+
     }
 
     #region Entity Configuration
@@ -280,4 +281,5 @@ namespace Rock.Model
     }
 
     #endregion
+
 }
