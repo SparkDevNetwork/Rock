@@ -524,8 +524,6 @@ namespace RockWeb.Blocks.Event
                 lReadOnlyTitle.Text = eventCalendar.Name.FormatAsHtmlTitle();
             }
 
-            lCalendarIcon.Text = string.Format( "<i class='{0}'></i>", string.IsNullOrWhiteSpace( eventCalendar.IconCssClass ) ? "fa fa-calendar" : eventCalendar.IconCssClass );
-
             SetEditMode( true );
 
             // General
@@ -549,7 +547,6 @@ namespace RockWeb.Blocks.Event
             AttributesState = null;
 
             lReadOnlyTitle.Text = eventCalendar.Name.FormatAsHtmlTitle();
-            lCalendarIcon.Text = string.Format( "<i class='{0}'></i>", string.IsNullOrWhiteSpace( eventCalendar.IconCssClass ) ? "fa fa-calendar" : eventCalendar.IconCssClass );
             lEventCalendarDescription.Text = eventCalendar.Description;
         }
 
