@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Event
                         {
                             registerAction = "were";
                         }
-                        notRegisteredMessage = string.Format( "{0} was already registered.", registransNotAdded.Humanize() );
+                        notRegisteredMessage = string.Format( "{0} {1} already registered.", registransNotAdded.Humanize(), registerAction );
                     }
 
                     lCompleteMessage.Text = string.Format("<div class='alert alert-success'>{0} {1}</div>",
