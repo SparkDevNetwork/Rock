@@ -263,6 +263,51 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the CampusID associated with the Location from the location or from the location's parent path
+        /// </summary>
+        /// <param name="locationId">The location identifier.</param>
+        /// <returns></returns>
+        public int? GetCampusIdForLocation( int? locationId)
+        {
+            if ( !locationId.HasValue )
+            {
+                return null;
+            }
+
+            // If location is not a campus, check the location's parent locations to see if any of them are a campus
+            var location = this.Get( locationId.Value );
+            int? campusId = location.CampusId;
+            if ( !campusId.HasValue )
+            {
+                var campusLocations = new Dictionary<int, int>();
+                Rock.Web.Cache.CampusCache.All()
+                    .Where( c => c.LocationId.HasValue )
+                    .Select( c => new
+                    {
+                        CampusId = c.Id,
+                        LocationId = c.LocationId.Value
+                    } )
+                    .ToList()
+                    .ForEach( c => campusLocations.Add( c.CampusId, c.LocationId ) );
+
+                foreach ( var parentLocationId in this.GetAllAncestors( locationId.Value )
+                    .Select( l => l.Id ) )
+                {
+                    campusId = campusLocations
+                        .Where( c => c.Value == parentLocationId )
+                        .Select( c => c.Key )
+                        .FirstOrDefault();
+                    if ( campusId != 0 )
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return campusId;
+        }
+
+        /// <summary>
         /// Gets the path.
         /// </summary>
         /// <param name="locationId">The location identifier.</param>
