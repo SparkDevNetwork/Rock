@@ -336,10 +336,9 @@ function(item) {
 
             dataSourceParams.AddOrReplace( "graphBy", hfGraphBy.Value.AsInteger() );
 
-            if ( cpCampuses.SelectedCampusIds.Any() )
-            {
-                dataSourceParams.AddOrReplace( "campusIds", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
-            }
+            var selectedCampusIds = cpCampuses.SelectedCampusIds;
+            string campusIdsValue = selectedCampusIds.Any() ? selectedCampusIds.AsDelimited( "," ) : "0";
+            dataSourceParams.AddOrReplace( "campusIds", campusIdsValue );
 
             var selectedGroupIds = GetSelectedGroupIds();
 
@@ -357,19 +356,11 @@ function(item) {
 
             lineChartDataSourceUrl += "?" + dataSourceParams.Select( s => string.Format( "{0}={1}", s.Key, s.Value ) ).ToList().AsDelimited( "&" );
 
-            // if no Campuses or Groups are selected show a warning since no data will show up
-            nbCampusesWarning.Visible = false;
+            // if no Groups are selected show a warning since no data will show up
             nbGroupsWarning.Visible = false;
-
             if ( !selectedGroupIds.Any() )
             {
                 nbGroupsWarning.Visible = true;
-                return;
-            }
-
-            if ( !cpCampuses.SelectedCampusIds.Any() )
-            {
-                nbCampusesWarning.Visible = true;
                 return;
             }
 
@@ -479,12 +470,17 @@ function(item) {
             hfGroupBy.Value = this.GetUserPreference( keyPrefix + "GroupBy" );
             hfGraphBy.Value = this.GetUserPreference( keyPrefix + "GraphBy" );
 
-            var campusIdList = this.GetUserPreference( keyPrefix + "CampusIds" ).Split( ',' ).ToList();
-            cpCampuses.SetValues( campusIdList );
-
-            // if no campuses are selected, default to showing all of them
-            if ( cpCampuses.SelectedCampusIds.Count == 0 )
+            var campusIdList = new List<string>();
+            string campusKey = keyPrefix + "CampusIds";
+            var sessionPreferences = RockPage.SessionUserPreferences();
+            if ( sessionPreferences.ContainsKey( campusKey ) )
             {
+                campusIdList = sessionPreferences[campusKey].Split( ',' ).ToList();
+                cpCampuses.SetValues( campusIdList );
+            }
+            else
+            {
+                // if previous campus selection has never been made, default to showing all of them
                 foreach ( ListItem item in cpCampuses.Items )
                 {
                     item.Selected = true;
@@ -621,7 +617,9 @@ function(item) {
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
 
             string groupIds = GetSelectedGroupIds().AsDelimited( "," );
-            string campusIds = cpCampuses.SelectedCampusIds.AsDelimited( "," );
+
+            var selectedCampusIds = cpCampuses.SelectedCampusIds;
+            string campusIds = selectedCampusIds.Any() ? selectedCampusIds.AsDelimited( "," ) : "0";
 
             var chartData = new AttendanceService( _rockContext ).GetChartData(
                 hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week,
@@ -648,9 +646,6 @@ function(item) {
                 dateRange.End = RockDateTime.Now;
             }
 
-            string groupIds = GetSelectedGroupIds().AsDelimited( "," );
-            string campusIds = cpCampuses.SelectedCampusIds.AsDelimited( "," );
-
             var rockContext = new RockContext();
 
             // make a qryPersonAlias so that the generated SQL will be a "WHERE .. IN ()" instead of an OUTER JOIN (which is incredibly slow for this) 
@@ -672,16 +667,25 @@ function(item) {
             }
 
             var groupIdList = new List<int>();
+            string groupIds = GetSelectedGroupIds().AsDelimited( "," );
             if ( !string.IsNullOrWhiteSpace( groupIds ) )
             {
                 groupIdList = groupIds.Split( ',' ).AsIntegerList();
                 qryAttendance = qryAttendance.Where( a => a.GroupId.HasValue && groupIdList.Contains( a.GroupId.Value ) );
             }
 
-            if ( !string.IsNullOrWhiteSpace( campusIds ) )
+            // If campuses were included, filter attendances by those that have selected campus, otherwise only include those without a campus
+            var campusIdList = cpCampuses.SelectedCampusIds;
+            if ( campusIdList.Any() )
             {
-                var campusIdList = campusIds.Split( ',' ).AsIntegerList();
-                qryAttendance = qryAttendance.Where( a => a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) );
+                if ( campusIdList.Count == 1 && campusIdList[0] == 0 )
+                {
+                    qryAttendance = qryAttendance.Where( a => !a.CampusId.HasValue );
+                }
+                else
+                {
+                    qryAttendance = qryAttendance.Where( a => a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) );
+                }
             }
 
             // have the "Missed" query be the same as the qry before the Main date range is applied since it'll have a different date range
@@ -808,7 +812,7 @@ function(item) {
                     qryByPersonWithSummary = qryByPerson.Select( a => new PersonWithSummary
                     {
                         PersonId = a.PersonId,
-                        FirstVisits = qryAllVisits.Where( b => qryPersonAlias.Where( pa => pa.PersonId == a.PersonId ).Any( pa => pa.Id == b.PersonAliasId ) ).Select( s => s.StartDateTime ).OrderBy( x => x ).Take( 2 ),
+                        FirstVisits = qryAllVisits.Where( b => qryPersonAlias.Where( pa => pa.PersonId == a.PersonId ).Any( pa => pa.Id == b.PersonAliasId ) ).Select( s => s.StartDateTime ).OrderBy( x => x ).Take( 5 ),
                         LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
                         AttendanceSummary = qryAttendanceWithSummaryDateTime.Where( x => qryPersonAlias.Where( pa => pa.PersonId == a.PersonId ).Any( pa => pa.Id == x.Attendance.PersonAliasId ) ).GroupBy( g => g.SummaryDateTime ).Select( s => s.Key )
                     } );
