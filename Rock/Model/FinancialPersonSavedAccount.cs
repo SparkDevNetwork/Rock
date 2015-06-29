@@ -29,16 +29,15 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a bank or debit/credit card that a <see cref="Rock.Model.Person"/> ( or group ) has saved to Rock for 
-    /// future reuse. Please note that account number is not actually stored here. The reference/profile number is stored 
+    /// Represents a bank or debit/credit card that a <see cref="Rock.Model.Person"/> ( or group ) has saved to Rock for
+    /// future reuse. Please note that account number is not actually stored here. The reference/profile number is stored
     /// here as well as a masked version of the account number.  This saved account will either be associated to a person
-    /// alias or a group. 
+    /// alias or a group.
     /// </summary>
     [Table( "FinancialPersonSavedAccount" )]
     [DataContract]
     public partial class FinancialPersonSavedAccount : Model<FinancialPersonSavedAccount>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -120,7 +119,7 @@ namespace Rock.Model
         public int? CurrencyTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DefinedValueId of the credit card type <see cref="Rock.Model.DefinedValue"/> indicating the credit card brand/type that was used 
+        /// Gets or sets the DefinedValueId of the credit card type <see cref="Rock.Model.DefinedValue"/> indicating the credit card brand/type that was used
         /// to make this transaction. This value will be null for transactions that were not made by credit card.
         /// </summary>
         /// <value>
@@ -130,6 +129,48 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE )]
         public int? CreditCardTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets an encrypted version of the saved account's expiration month number (1-12).
+        /// </summary>
+        /// <value>
+        /// The expiration month encrypted.
+        /// A <see cref="System.String"/> representing an encrypted version of a saved account's expiration month.
+        /// </value>
+        [DataMember]
+        [HideFromReporting]
+        public string ExpiryMonthEncrypted { get; set; }
+
+        /// <summary>
+        /// Gets or sets an encrypted version of the saved account's expiration year number (YYYY).
+        /// </summary>
+        /// <value>
+        /// The expiration year encrypted.
+        /// A <see cref="System.String"/> representing an encrypted version of a saved account's expiration year.
+        /// </value>
+        [DataMember]
+        [HideFromReporting]
+        public string ExpiryYearEncrypted { get; set; }
+
+        /// <summary>
+        /// Gets or sets an encrypted version of the saved account's name on the card (John J Doe).
+        /// </summary>
+        /// <value>
+        /// The name on the saved account's associated card.
+        /// A <see cref="System.String"/> representing an encrypted version of a saved account's name on card.
+        /// </value>
+        [DataMember]
+        [HideFromReporting]
+        public string NameOnCardEncrypted { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.Location"/> that is associated as the billing address of this SavedAccount. This property is optional.
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> referencing the Id of the <see cref="Rock.Model.Location"/> that is associated as the billing address of this SavedAccount.
+        /// </value>
+        [DataMember]
+        public int BillingLocationId { get; set; }
 
         #endregion
 
@@ -161,7 +202,7 @@ namespace Rock.Model
         public virtual FinancialGateway FinancialGateway { get; set; }
 
         /// <summary>
-        /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this 
+        /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this
         /// transaction.
         /// </summary>
         /// <value>
@@ -214,8 +255,8 @@ namespace Rock.Model
 
             return reference;
         }
-        #endregion
 
+        #endregion
     }
 
     #region Entity Configuration
@@ -239,5 +280,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }
