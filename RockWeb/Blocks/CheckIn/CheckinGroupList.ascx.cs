@@ -113,12 +113,31 @@ namespace RockWeb.Blocks.Checkin
 
         private GroupType GetRootGroupType(int groupId)
         {
+            List<int> parentRecursionHistory = new List<int>();
             GroupTypeService groupTypeService = new GroupTypeService( _rockContext );
             var groupType = groupTypeService.Queryable().AsNoTracking().Include( t => t.ParentGroupTypes ).Where( t => t.Groups.Select( g => g.Id ).Contains( groupId ) ).FirstOrDefault();
 
             while (groupType != null && groupType.ParentGroupTypes.Count != 0 )
             {
-                groupType = GetParentGroupType( groupType );
+                if ( parentRecursionHistory.Contains( groupType.Id ) )
+                {
+                    var exception = new Exception("Infinite Recursion detected in GetRootGroupType for groupId: " + groupId.ToString());
+                    LogException( exception );
+                    return null;
+                }
+                else
+                {
+                    var parentGroupType = GetParentGroupType( groupType );
+                    if (parentGroupType != null && parentGroupType.Id == groupType.Id)
+                    {
+                        // the group type's parent is itself
+                        return groupType;
+                    }
+
+                    groupType = parentGroupType;
+                }
+                
+                parentRecursionHistory.Add(groupType.Id);
             }
 
             return groupType;
