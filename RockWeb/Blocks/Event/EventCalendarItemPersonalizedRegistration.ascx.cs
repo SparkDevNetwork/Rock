@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Event
                                     .Select( r => r.Id )
                                     .FirstOrDefault();
 
-                if ( groupRoleId != null )
+                if ( groupRoleId != 0 )
                 {
                     List<string> registrantsAdded = new List<string>();
                     List<string> registransNotAdded = new List<string>();
@@ -170,13 +170,31 @@ namespace RockWeb.Blocks.Event
 
                     _rockContext.SaveChanges();
 
+                    string registeredMessage = string.Empty;
                     string notRegisteredMessage = string.Empty;
-                    if (registransNotAdded.Count > 0) {
-                        notRegisteredMessage = string.Format( "{0} were already registered.", registransNotAdded.Humanize() );
+                    
+                    if ( registrantsAdded.Count > 0 )
+                    {
+                        string registerAction = "has";
+                        if ( registrantsAdded.Count > 1 )
+                        {
+                            registerAction = "have";
+                        }
+                        registeredMessage = string.Format( "{0} {1} been registered.", registrantsAdded.Humanize(), registerAction );
                     }
 
-                    lCompleteMessage.Text = string.Format("<div class='alert alert-success'>{0} have been registered. {2}</div>", 
-                                                    registrantsAdded.Humanize(),
+                    if (registransNotAdded.Count > 0) {
+                        string registerAction = "was";
+
+                        if ( registransNotAdded.Count > 1 )
+                        {
+                            registerAction = "were";
+                        }
+                        notRegisteredMessage = string.Format( "{0} was already registered.", registransNotAdded.Humanize() );
+                    }
+
+                    lCompleteMessage.Text = string.Format("<div class='alert alert-success'>{0} {1}</div>",
+                                                    registeredMessage,
                                                     notRegisteredMessage );
                 }
                 else
