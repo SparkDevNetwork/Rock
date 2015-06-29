@@ -5438,13 +5438,11 @@ header.main {
   }
 }
 .campus-context-setter---device {
-  margin-left: 15px;
-  margin-bottom: 30px;
-}
-@media (min-width: 768px) {
-  .campus-context-setter---device {
-    margin-left: 30px;
-  }
+  bottom: 30px;
+  left: 30px;
+  position: absolute;
+  opacity: 0.25;
+  filter: alpha(opacity=25);
 }
 main {
   display: block;
