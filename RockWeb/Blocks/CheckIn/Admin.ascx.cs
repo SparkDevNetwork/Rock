@@ -342,7 +342,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void TooFar()
         {
-            bool allowManualSetup = GetAttributeValue( "AllowManualSetup" ).AsBoolean( resultIfNullOrEmpty: true );
+            bool allowManualSetup = GetAttributeValue( "AllowManualSetup" ).AsBoolean( true );
 
             if ( allowManualSetup )
             {

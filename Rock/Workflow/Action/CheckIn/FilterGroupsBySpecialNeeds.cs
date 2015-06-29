@@ -55,7 +55,7 @@ namespace Rock.Workflow.Action.CheckIn
                 return false;
             }
 
-            bool removeSNGroups = GetAttributeValue( action, "RemoveSpecialNeedsGroups" ).AsBoolean( resultIfNullOrEmpty: true );
+            bool removeSNGroups = GetAttributeValue( action, "RemoveSpecialNeedsGroups" ).AsBoolean( true );
             bool removeNonSNGroups = GetAttributeValue( action, "RemoveNonSpecialNeedsGroups" ).AsBoolean();
 
             var family = checkInState.CheckIn.Families.FirstOrDefault( f => f.Selected );
