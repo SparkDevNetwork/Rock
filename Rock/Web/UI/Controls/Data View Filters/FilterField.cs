@@ -459,7 +459,7 @@ namespace Rock.Web.UI.Controls
             iDelete.AddCssClass( "fa fa-times" );
 
             cbIncludeFilter = new RockCheckBox();
-            cbIncludeFilter.ContainerCssClass = "data-view-filter-field-checkbox";
+            cbIncludeFilter.ContainerCssClass = "filterfield-checkbox";
             Controls.Add( cbIncludeFilter );
             cbIncludeFilter.ID = this.ID + "_cbIncludeFilter";
         }
@@ -557,7 +557,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
 
-            writer.AddAttribute( "class", "row js-filter-row filter-row" );
+            writer.AddAttribute( "class", "row js-filter-row filterfield" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( "class", "col-md-12" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
