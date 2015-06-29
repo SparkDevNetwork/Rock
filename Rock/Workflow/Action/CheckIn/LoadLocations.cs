@@ -30,8 +30,8 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Adds the locations for each members group types
     /// </summary>
-    [Description("Adds the locations for each members group types")]
-    [Export(typeof(ActionComponent))]
+    [Description( "Adds the locations for each members group types" )]
+    [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Load Locations" )]
     [BooleanField( "Load All", "By default locations are only loaded for the selected person and group type.  Select this option to load locations for all the loaded people and group types." )]
     public class LoadLocations : CheckInActionComponent
@@ -50,12 +50,7 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
-
-                bool loadAll = false;
-                if ( bool.TryParse( GetAttributeValue( action, "LoadAll" ), out loadAll ) && loadAll )
-                {
-                    loadAll = true;
-                }
+                bool loadAll = GetAttributeValue( action, "LoadAll" ).AsBoolean();
 
                 foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ).ToList() )
                 {
@@ -63,7 +58,7 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var groupType in person.GroupTypes.Where( t => t.Selected || loadAll ).ToList() )
                         {
-                            var kioskGroupType = checkInState.Kiosk.FilteredGroupTypes( checkInState.ConfiguredGroupTypes ) .Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
+                            var kioskGroupType = checkInState.Kiosk.FilteredGroupTypes( checkInState.ConfiguredGroupTypes ).Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
                             if ( kioskGroupType != null )
                             {
                                 foreach ( var group in groupType.Groups.Where( g => g.Selected || loadAll ).ToList() )

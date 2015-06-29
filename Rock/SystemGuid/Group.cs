@@ -40,6 +40,11 @@ namespace Rock.SystemGuid
         /// The Communication Administrators Group guid
         /// </summary>
         public const string GROUP_COMMUNICATION_ADMINISTRATORS = "B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B";
+        
+        /// <summary>
+        /// The Involvement Administrators Group guid
+        /// </summary>
+        public const string GROUP_INVOLVEMENT_ADMINISTRATORS = "060971D2-EAF9-4C0D-B6F6-F01725CAA5AC";
 
         /// <summary>
         /// The Finance Administrators Group guid

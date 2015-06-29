@@ -57,3 +57,56 @@
         });
     })
 });
+
+//
+(function ($) {
+    'use strict';
+    window.Rock = window.Rock || {};
+
+    Rock.reporting = (function () {
+        var _reporting = {},
+            exports = {
+                formatFilterForDateField: function (title, $selectedContent) {
+                    var betweenMode = $('.js-filter-control-between', $selectedContent).is(':visible');
+                    var dateValue = '';
+                    if (betweenMode) {
+                        return title + ' during ' + $('.js-slidingdaterange-text-value', $selectedContent).val();
+                    } else {
+                        var useCurrentDateOffset = $('.js-current-date-checkbox', $selectedContent).is(':checked');
+
+                        if (useCurrentDateOffset) {
+                            var daysOffset = $('.js-current-date-offset', $selectedContent).val();
+                            if (daysOffset > 0) {
+                                dateValue = 'Current Date plus ' + daysOffset + ' days';
+                            }
+                            else if (daysOffset < 0) {
+                                dateValue = 'Current Date minus ' + -daysOffset + ' days';
+                            }
+                            else {
+                                dateValue = 'Current Date';
+                            }
+                        }
+                        else {
+                            dateValue = $('.js-date-picker input', $selectedContent).filter(':visible').val();
+                        }
+                        return title + ' ' + $('.js-filter-compare', $selectedContent).find(':selected').text() + ' \'' + dateValue + '\''
+                    }
+                },
+
+                formatFilterDefault: function (title, $selectedContent) {
+                    var compareTypeText = $('.js-filter-compare', $selectedContent).find(':selected').text();
+                    var compareValueText = $('.js-filter-control', $selectedContent).val();
+                    var result = title;
+                    if ($('.js-filter-control', $selectedContent).is(':visible')) {
+                        result = title + ' ' + compareTypeText + " '" + compareValueText + "'";
+                    } else {
+                        result = title + ' ' + compareTypeText;
+                    }
+
+                    return result;
+                }
+            }
+
+        return exports;
+    }());
+}(jQuery));

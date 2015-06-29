@@ -14,10 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -38,13 +39,35 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override string FormatDataValue( object dataValue, bool encode )
         {
+            int? dataValueAsInt = null;
+            Guid? dataValueAsGuid = null;
             if ( dataValue is int )
             {
-                var campus = Rock.Web.Cache.CampusCache.Read( (int)dataValue );
-                if ( campus != null )
-                {
-                    dataValue = campus.Name;
-                }
+                dataValueAsInt = (int)dataValue;
+            }
+            else if ( dataValue is Guid )
+            {
+                dataValueAsGuid = (Guid)dataValue;
+            }
+            else if ( dataValue is string )
+            {
+                dataValueAsInt = ( dataValue as string ).AsIntegerOrNull();
+                dataValueAsGuid = ( dataValue as string ).AsGuidOrNull();
+            }
+
+            CampusCache campusCache = null;
+            if ( dataValueAsInt.HasValue )
+            {
+                campusCache = CampusCache.Read( dataValueAsInt.Value );
+            }
+            else if ( dataValueAsGuid.HasValue )
+            {
+                campusCache = CampusCache.Read( dataValueAsGuid.Value );
+            }
+
+            if ( campusCache != null )
+            {
+                dataValue = campusCache.Name;
             }
 
             return base.FormatDataValue( dataValue, encode );

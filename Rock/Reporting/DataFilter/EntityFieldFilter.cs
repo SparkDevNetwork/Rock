@@ -53,20 +53,24 @@ namespace Rock.Reporting.DataFilter
         {
             string selectedEntityField = ddlEntityField.SelectedValue;
 
-            writer.AddAttribute( "class", "row js-filter-row filter-row" );
+            writer.AddAttribute( "class", "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             bool entityFieldPickerIsHidden = ddlEntityField.Style[HtmlTextWriterStyle.Display] == "none";
-
-            writer.AddAttribute( "class", "col-md-3" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             
             if ( !entityFieldPickerIsHidden )
             {
+                writer.AddAttribute( "class", "col-md-3" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 ddlEntityField.AddCssClass( "entity-property-selection" );
                 ddlEntityField.RenderControl( writer );
+                writer.RenderEndTag();
             }
-            else if ( ddlEntityField.SelectedItem != null )
+
+            writer.AddAttribute( "class", entityFieldPickerIsHidden ? "col-md-12" : "col-md-9" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            if ( entityFieldPickerIsHidden && ddlEntityField.SelectedItem != null )
             {
                 if ( filterControl.ShowCheckbox )
                 {
@@ -82,10 +86,6 @@ namespace Rock.Reporting.DataFilter
                     writer.RenderEndTag();
                 }
             }
-            writer.RenderEndTag();
-
-            writer.AddAttribute( "class", "col-md-9" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // generate result for "none"
             StringBuilder sb = new StringBuilder();
@@ -99,7 +99,7 @@ namespace Rock.Reporting.DataFilter
             // render empty row for "none"
             writer.AddAttribute( "class", "row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.RenderEndTag();  // row
+            writer.RenderEndTag();  // "row field-criteria"
 
             foreach ( var entityField in entityFields )
             {
@@ -138,9 +138,9 @@ namespace Rock.Reporting.DataFilter
                 }
             }
 
-            writer.RenderEndTag();  // col-md-9
+            writer.RenderEndTag();  // col-md-9 or col-md-12
 
-            writer.RenderEndTag();  // row
+            writer.RenderEndTag();  // "row"
 
             string scriptFormat = @"
     function {0}PropertySelection($content){{

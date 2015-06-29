@@ -833,6 +833,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Attribute( DotLiquid.Context context, object input, string attributeKey, string qualifier = "" )
         {
+            IHasAttributes item = null;
+            
             if ( input == null || attributeKey == null )
             {
                 return string.Empty;
@@ -866,10 +868,10 @@ namespace Rock.Lava
                 }
             }
 
-            // If input is an object that has attributes, find it's attribute value
+            // If input is an object that has attributes, find its attribute value
             else
             { 
-                IHasAttributes item = null;
+                
                 if ( input is IHasAttributes)
                 {
                     item = (IHasAttributes)input;
@@ -933,6 +935,14 @@ namespace Rock.Lava
                     if ( qualifier.Equals( "Url", StringComparison.OrdinalIgnoreCase ) && field is Rock.Field.ILinkableFieldType )
                     {
                         return ( (Rock.Field.ILinkableFieldType)field ).UrlLink( rawValue, attribute.QualifierValues );
+                    }
+
+                    // check if attribute is a key value list and return a collection of key/value pairs
+                    if ( field is Rock.Field.Types.KeyValueListFieldType )
+                    {
+                        var keyValueField = (Rock.Field.Types.KeyValueListFieldType)field;
+
+                        return keyValueField.GetValuesFromString( null, rawValue, attribute.QualifierValues, false );
                     }
 
                     // If qualifier was specified, and the attribute field type is an IEntityFieldType, try to find a property on the entity

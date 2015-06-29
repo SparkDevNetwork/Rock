@@ -32,7 +32,7 @@ namespace Rock.Data
     /// Represents an entity that can be secured and have attributes. 
     /// </summary>
     [IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
-    [IgnoreModelErrors( new[] { "ParentAuthority", "AttributeValues" } )]
+    [IgnoreModelErrors( new[] { "ParentAuthority" } )]
     [DataContract]
     public abstract class Model<T> : Entity<T>, IModel, ISecured, IHasAttributes
         where T : Model<T>, ISecured, new()

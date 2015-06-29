@@ -105,7 +105,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        public DateTime? EffectiveStartDate { get; private set; }
+        public DateTime? EffectiveStartDate { get; set; }
 
         /// <summary>
         /// Gets or sets that date that this Schedule expires and becomes inactive. This value is inclusive and the schedule will be inactive after this date.
@@ -115,7 +115,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        public DateTime? EffectiveEndDate { get; private set; }
+        public DateTime? EffectiveEndDate { get; set; }
 
         /// <summary>
         /// Gets or sets the weekly day of week.
@@ -234,6 +234,39 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the next start time.
+        /// </summary>
+        /// <returns></returns>
+        [NotMapped]
+        public virtual DateTime? NextStartDateTime 
+        {
+            get
+            {
+                DDay.iCal.Event calEvent = GetCalenderEvent();
+                if ( calEvent != null )
+                {
+                    var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
+                    if ( occurrences.Any() )
+                    {
+                        var minDateTime = occurrences
+                            .Where( a =>
+                                a.Period != null &&
+                                a.Period.StartTime != null )
+                            .Select( a => a.Period.StartTime.Value )
+                            .Min( d => (DateTime?)d );
+                        if ( minDateTime.HasValue )
+                        {
+                            // ensure the the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
+                            return DateTime.SpecifyKind( minDateTime.Value, DateTimeKind.Local );
+                        }
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Gets the start time of day.
         /// </summary>
         /// <value>
@@ -285,6 +318,23 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
+        /// Pres the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            var calEvent = GetCalenderEvent();
+            if ( calEvent != null )
+            {
+                EffectiveStartDate = calEvent.DTStart != null ? calEvent.DTStart.Value.Date : (DateTime?)null;
+                EffectiveEndDate = calEvent.DTEnd != null ? calEvent.DTEnd.Value.Date : (DateTime?)null;
+            }
+
+            base.PreSaveChanges( dbContext, state );
+        }
+
+        /// <summary>
         /// Gets the Schedule's iCalender Event.
         /// </summary>
         /// <value>
@@ -330,13 +380,16 @@ namespace Rock.Model
         public virtual List<DateTime> GetScheduledStartTimes( DateTime beginDateTime, DateTime endDateTime )
         {
             var result = new List<DateTime>();
+
             DDay.iCal.Event calEvent = GetCalenderEvent();
             if ( calEvent != null )
             {
-                // use ThreadSafe helper method to get occurrences
                 var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime, endDateTime );
-                
-                foreach ( var startDateTime in occurrences.Where( a => a.Period != null && a.Period.StartTime != null ).Select( a => a.Period.StartTime.Value ) )
+                foreach ( var startDateTime in occurrences
+                    .Where( a => 
+                        a.Period != null && 
+                        a.Period.StartTime != null )
+                    .Select( a => a.Period.StartTime.Value ) )
                 {
                     // ensure the the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
                     result.Add( DateTime.SpecifyKind( startDateTime, DateTimeKind.Local ) );
@@ -344,6 +397,31 @@ namespace Rock.Model
             }
 
             return result;
+        }
+
+
+        /// <summary>
+        /// Gets the first start date time.
+        /// </summary>
+        /// <returns></returns>
+        public virtual DateTime? GetFirstStartDateTime()
+        {
+            DateTime? firstStartTime = null;
+            
+            DDay.iCal.Event calEvent = GetCalenderEvent();
+            if ( calEvent != null )
+            {
+                if ( this.EffectiveStartDate.HasValue )
+                {
+                    var scheduledStartTimes = this.GetScheduledStartTimes( this.EffectiveStartDate.Value, this.EffectiveStartDate.Value.AddMonths( 1 ) );
+                    if ( scheduledStartTimes.Count > 0 )
+                    {
+                        firstStartTime = scheduledStartTimes[0];
+                    }
+                }
+            }
+
+            return firstStartTime;
         }
 
         /// <summary>

@@ -524,6 +524,8 @@ namespace RockWeb.Blocks.Event
                 lReadOnlyTitle.Text = eventCalendar.Name.FormatAsHtmlTitle();
             }
 
+            lCalendarIcon.Text = string.Format( "<i class='{0}'></i>", string.IsNullOrWhiteSpace( eventCalendar.IconCssClass ) ? "fa fa-calendar" : eventCalendar.IconCssClass );
+
             SetEditMode( true );
 
             // General
@@ -547,6 +549,7 @@ namespace RockWeb.Blocks.Event
             AttributesState = null;
 
             lReadOnlyTitle.Text = eventCalendar.Name.FormatAsHtmlTitle();
+            lCalendarIcon.Text = string.Format( "<i class='{0}'></i>", string.IsNullOrWhiteSpace( eventCalendar.IconCssClass ) ? "fa fa-calendar" : eventCalendar.IconCssClass );
             lEventCalendarDescription.Text = eventCalendar.Description;
         }
 
@@ -754,7 +757,7 @@ namespace RockWeb.Blocks.Event
             {
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
-                Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                AttributeCache.Flush( attr.Id );
             }
 
             // Update the Attributes that were assigned in the UI

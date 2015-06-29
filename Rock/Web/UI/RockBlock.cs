@@ -766,6 +766,56 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Creates an HTML img element for a given binary file id
+        /// </summary>
+        /// <param name="imageId">The image identifier.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="maxHeight">The maximum height.</param>
+        /// <param name="showPlaceholderImage">if set to <c>true</c> [show placeholder image].</param>
+        /// <returns></returns>
+        public string GetImageTag( int? imageId, int? maxWidth = null, int? maxHeight = null, bool showPlaceholderImage = true )
+        {
+            var photoUrl = new StringBuilder();
+
+            photoUrl.Append( System.Web.VirtualPathUtility.ToAbsolute( "~/" ) );
+
+            if ( imageId.HasValue )
+            {
+                photoUrl.AppendFormat( "GetImage.ashx?id={0}", imageId );
+
+                if ( maxWidth.HasValue )
+                {
+                    photoUrl.AppendFormat( "&maxwidth={0}", maxWidth.Value );
+                }
+                if ( maxHeight.HasValue )
+                {
+                    photoUrl.AppendFormat( "&maxheight={0}", maxHeight.Value );
+                }
+
+                return string.Format( "<img src='{0}'/>", photoUrl.ToString() );
+            }
+
+            if ( showPlaceholderImage )
+            {
+                photoUrl.Append( "Assets/Images/no-picture.svg?" );
+
+                string styleString = string.Empty;
+
+                if ( maxWidth.HasValue || maxHeight.HasValue )
+                {
+                    styleString = string.Format( " style='{0}{1}'",
+                        maxWidth.HasValue ? "max-width:" + maxWidth.Value.ToString() + "px; " : "",
+                        maxHeight.HasValue ? "max-height:" + maxHeight.Value.ToString() + "px;" : "" );
+                }
+
+                return string.Format( "<img src='{0}'{1}/>", photoUrl.ToString(), styleString );
+            }
+
+            return string.Empty;
+        }
+
+
+        /// <summary>
         /// Sets the visibility of the secondary blocks on the page
         /// </summary>
         /// <param name="hidden">A <see cref="System.Boolean"/> value that indicates if the secondary blocks should be hidden. If <c>true</c> then the secondary blocks will be

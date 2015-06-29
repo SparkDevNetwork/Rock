@@ -307,7 +307,7 @@ namespace Rock.CheckIn
                 var kioskLocation = new KioskLocation( groupLocation.Location );
                 kioskLocation.CampusId = campusId;
 
-                // Populate each kioskLocation with it's schedules (kioskSchedules)
+                // Populate each kioskLocation with its schedules (kioskSchedules)
                 foreach ( var schedule in groupLocation.Schedules.Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
                 {
                     var nextScheduleActiveTime = schedule.GetNextCheckInStartTime( RockDateTime.Now );

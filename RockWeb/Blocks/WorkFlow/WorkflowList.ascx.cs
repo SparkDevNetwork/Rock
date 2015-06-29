@@ -46,6 +46,8 @@ namespace RockWeb.Blocks.WorkFlow
     {
         #region Fields
 
+        private bool _canView = false;
+        private bool _canEdit = false;
         private WorkflowType _workflowType = null;
 
         #endregion
@@ -85,8 +87,11 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnInit( e );
 
-            if ( _workflowType != null && _workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            if ( _workflowType != null )
             {
+                _canEdit = UserCanEdit || _workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                _canView = _canEdit || _workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson );
+
                 gfWorkflows.ApplyFilterClick += gfWorkflows_ApplyFilterClick;
                 gfWorkflows.DisplayFilterValue += gfWorkflows_DisplayFilterValue;
 
@@ -95,11 +100,11 @@ namespace RockWeb.Blocks.WorkFlow
                 this.AddConfigurationUpdateTrigger( upnlSettings );
 
                 gWorkflows.DataKeyNames = new string[] { "Id" };
-                gWorkflows.Actions.ShowAdd = true;
+                gWorkflows.Actions.ShowAdd = _canEdit;
                 gWorkflows.Actions.AddClick += gWorkflows_Add;
                 gWorkflows.GridRebind += gWorkflows_GridRebind;
                 gWorkflows.Actions.ShowAdd = true;
-                gWorkflows.IsDeleteEnabled = true;
+                gWorkflows.IsDeleteEnabled = _canEdit;
 
                 if ( !string.IsNullOrWhiteSpace( _workflowType.WorkTerm ) )
                 {
@@ -129,7 +134,7 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack )
+            if ( !Page.IsPostBack && _canView )
             {
                 SetFilter();
                 BindGrid();
@@ -148,8 +153,6 @@ namespace RockWeb.Blocks.WorkFlow
         public override List<BreadCrumb> GetBreadCrumbs( Rock.Web.PageReference pageReference )
         {
             var breadCrumbs = new List<BreadCrumb>();
-
-            
 
             if (!string.IsNullOrWhiteSpace(GetAttributeValue("DefaultWorkflowType"))) {
                 Guid workflowTypeGuid = Guid.Empty;
@@ -552,14 +555,17 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             };
 
-            var manageField = new EditField();
-            gWorkflows.Columns.Add( manageField );
-            manageField.IconCssClass = "fa fa-edit";
-            manageField.Click += gWorkflows_Manage;
+            if ( _canEdit )
+            {
+                var manageField = new EditField();
+                gWorkflows.Columns.Add( manageField );
+                manageField.IconCssClass = "fa fa-edit";
+                manageField.Click += gWorkflows_Manage;
 
-            var deleteField = new DeleteField();
-            gWorkflows.Columns.Add( deleteField );
-            deleteField.Click += gWorkflows_Delete;
+                var deleteField = new DeleteField();
+                gWorkflows.Columns.Add( deleteField );
+                deleteField.Click += gWorkflows_Delete;
+            }
         }
 
         /// <summary>

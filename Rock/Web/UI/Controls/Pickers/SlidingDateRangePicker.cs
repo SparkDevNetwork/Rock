@@ -49,6 +49,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        Description( "The CSS class to add to the form-group div." )
+        ]
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the help text.
         /// </summary>
         /// <value>
@@ -160,6 +177,14 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        /// <summary>
+        /// Gets or sets the date preview location.
+        /// </summary>
+        /// <value>
+        /// The date preview location.
+        /// </value>
+        public DateRangePreviewLocation PreviewLocation { get; set; }
+
         private DropDownList _ddlLastCurrent;
         private NumberBox _nbNumber;
         private DropDownList _ddlTimeUnitTypeSingular;
@@ -173,6 +198,7 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             HelpBlock = new HelpBlock();
+            Label = "Date Range";
         }
 
         /// <summary>
@@ -183,8 +209,6 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
             Controls.Clear();
             RockControlHelper.CreateChildControls( this, Controls );
-
-            this.Label = "Date Range";
 
             _ddlLastCurrent = new DropDownList();
             _ddlLastCurrent.CssClass = "form-control input-width-md js-slidingdaterange-select slidingdaterange-select";
@@ -332,6 +356,27 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Where to put the HTML element of the daterange preview
+        /// </summary>
+        public enum DateRangePreviewLocation
+        {
+            /// <summary>
+            /// Top
+            /// </summary>
+            Top,
+
+            /// <summary>
+            /// Right
+            /// </summary>
+            Right,
+
+            /// <summary>
+            /// Hide the preview
+            /// </summary>
+            None
+        }
+
+        /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
@@ -339,7 +384,12 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                RockControlHelper.RenderControl( this, writer, "slidingdaterange" );
+                writer.AddAttribute( "class", "js-slidingdaterange-container " + this.CssClass );
+                writer.RenderBeginTag( "div" );
+                
+                RockControlHelper.RenderControl( this, writer, "slidingdaterange");
+                
+                writer.RenderEndTag();
             }
         }
 
@@ -354,9 +404,20 @@ namespace Rock.Web.UI.Controls
             _ddlTimeUnitTypeSingular.AutoPostBack = needsAutoPostBack;
             _ddlTimeUnitTypePlural.AutoPostBack = needsAutoPostBack;
 
-            writer.WriteLine();
-            writer.AddAttribute( "class", "label label-info js-slidingdaterange-info slidingdaterange-info" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            // render a div that will get its text from ~api/Utility/CalculateSlidingDateRange (see slidingDateRangePicker.js)
+            Panel dateRangePreviewDiv = new Panel();
+            dateRangePreviewDiv.CssClass = "label label-info js-slidingdaterange-info slidingdaterange-info";
+
+            if ( this.PreviewLocation == SlidingDateRangePicker.DateRangePreviewLocation.Top )
+            {
+                writer.WriteLine();
+                dateRangePreviewDiv.RenderControl( writer );
+            }
+
+            // render a hidden element that will get its text from ~api/Utility/GetSlidingDateRangeTextValue (see slidingDateRangePicker.js)
+            writer.AddAttribute( "type", "hidden" );
+            writer.AddAttribute( "class", "js-slidingdaterange-text-value" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Input );
             writer.RenderEndTag();
 
             writer.AddAttribute( "id", this.ClientID );
@@ -369,6 +430,12 @@ namespace Rock.Web.UI.Controls
             _ddlTimeUnitTypePlural.RenderControl( writer );
             _drpDateRange.RenderControl( writer );
 
+            if ( this.PreviewLocation == SlidingDateRangePicker.DateRangePreviewLocation.Right )
+            {
+                writer.WriteLine();
+                dateRangePreviewDiv.RenderControl( writer );
+            }
+            
             writer.RenderEndTag();
 
             RegisterJavaScript();
@@ -542,7 +609,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Formats the delimited values.
+        /// Formats the delimited values as a phrase such as "Last 14 Days"
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
@@ -550,24 +617,27 @@ namespace Rock.Web.UI.Controls
         {
             string[] splitValues = ( value ?? string.Empty ).Split( '|' );
             string result = string.Empty;
-            if ( splitValues.Length == 3 )
+            if ( splitValues.Length == 5 )
             {
                 var slidingDateRangeMode = splitValues[0].ConvertToEnum<SlidingDateRangeType>();
                 var numberOfTimeUnits = splitValues[1].AsIntegerOrNull() ?? 1;
-                var timeUnit = splitValues[2].ConvertToEnumOrNull<TimeUnitType>();
+                var timeUnitType = splitValues[2].ConvertToEnumOrNull<TimeUnitType>();
+                string timeUnitText = timeUnitType != null ? timeUnitType.ConvertToString().PluralizeIf( numberOfTimeUnits != 1 ) : null;
                 var start = splitValues[3].AsDateTime();
                 var end = splitValues[4].AsDateTime();
                 if ( slidingDateRangeMode == SlidingDateRangeType.Current )
                 {
-                    return string.Format( "{0} {1}", slidingDateRangeMode.ConvertToString(), timeUnit.ConvertToString() );
+                    return string.Format( "{0} {1}", slidingDateRangeMode.ConvertToString(), timeUnitText );
                 }
                 else if ( ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous ).HasFlag( slidingDateRangeMode ) )
                 {
-                    return string.Format( "{0} {1} {2}", slidingDateRangeMode.ConvertToString(), numberOfTimeUnits, timeUnit.ConvertToString() );
+                    return string.Format( "{0} {1} {2}", slidingDateRangeMode.ConvertToString(), numberOfTimeUnits, timeUnitText );
                 }
                 else
                 {
-                    return string.Format( "{0}: {1} to {2}", slidingDateRangeMode.ConvertToString(), start, end );
+                    // DateRange
+                    var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( value );
+                    return dateRange.ToStringAutomatic();
                 }
             }
 
@@ -576,6 +646,8 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Calculates the date range from delimited values in format SlidingDateRangeType|Number|TimeUnitType|StartDate|EndDate
+        /// NOTE: The Displayed End Date is one day before the actual end date. 
+        /// So, if your date range is displayed as 1/3/2015 to 1/4/2015, this will return 1/5/2015 12:00 AM as the End Date
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>

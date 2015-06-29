@@ -44,15 +44,16 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of the given calendar item." )]
 
-    [BooleanField( "Show Edit", "", true, "", 2 )]
     public partial class CalendarItemDetail : RockBlock, IDetailBlock
     {
         #region Properties
 
+        public int _calendarId = 0;
+        public bool _canEdit = false;
+        public bool _canApprove = false;
+
         public List<EventItemAudience> AudiencesState { get; set; }
         public List<EventCalendarItem> ItemsState { get; set; }
-        public List<EventItemCampus> CampusesState { get; set; }
-        public EventItemCampus SelectedCampusState { get; set; } //Used to manage Schedules
 
         #endregion Properties
 
@@ -86,25 +87,6 @@ namespace RockWeb.Blocks.Event
                 ItemsState = JsonConvert.DeserializeObject<List<EventCalendarItem>>( json );
             }
 
-            json = ViewState["SelectedCampusState"] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
-            {
-                SelectedCampusState = new EventItemCampus();
-            }
-            else
-            {
-                SelectedCampusState = JsonConvert.DeserializeObject<EventItemCampus>( json );
-            }
-
-            json = ViewState["CampusesState"] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
-            {
-                CampusesState = new List<EventItemCampus>();
-            }
-            else
-            {
-                CampusesState = JsonConvert.DeserializeObject<List<EventItemCampus>>( json );
-            }
         }
 
         /// <summary>
@@ -115,26 +97,54 @@ namespace RockWeb.Blocks.Event
         {
             base.OnInit( e );
 
-            gEventItemAudiences.DataKeyNames = new string[] { "Guid" };
-            gEventItemAudiences.Actions.ShowAdd = true;
-            gEventItemAudiences.Actions.AddClick += gEventItemAudiences_Add;
-            gEventItemAudiences.GridRebind += gEventItemAudiences_GridRebind;
-
-            gEventItemCampuses.DataKeyNames = new string[] { "Guid" };
-            gEventItemCampuses.Actions.ShowAdd = true;
-            gEventItemCampuses.Actions.AddClick += gEventItemCampuses_Add;
-            gEventItemCampuses.GridRebind += gEventItemCampuses_GridRebind;
-
-            cblEventCalendars.SelectedIndexChanged += cblEventCalendars_SelectedIndexChanged;
-
-            gEventItemSchedules.DataKeyNames = new string[] { "Guid" };
-            gEventItemSchedules.Actions.ShowAdd = true;
-            gEventItemSchedules.Actions.AddClick += gEventItemSchedules_Add;
-            gEventItemSchedules.GridRebind += gEventItemSchedules_GridRebind;
+            gAudiences.DataKeyNames = new string[] { "Guid" };
+            gAudiences.Actions.ShowAdd = true;
+            gAudiences.Actions.AddClick += gAudiences_Add;
+            gAudiences.GridRebind += gAudiences_GridRebind;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlEventItemList );
+
+            // Get the calendar id of the calendar that user navigated from 
+            _calendarId = PageParameter( "EventCalendarId" ).AsInteger();
+
+            _canEdit = UserCanEdit;
+            _canApprove = UserCanAdministrate;
+
+            // Load the other calendars user is authorized to view 
+            cblAdditionalCalendars.Items.Clear();
+            using ( var rockContext = new RockContext() )
+            {
+                foreach ( var calendar in new EventCalendarService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .OrderBy( c => c.Name ) )
+                {
+                    if ( calendar.Id == _calendarId )
+                    {
+                        _canEdit = _canEdit || 
+                            calendar.IsAuthorized( Authorization.EDIT, CurrentPerson );
+
+                        _canApprove = _canApprove ||
+                            calendar.IsAuthorized( Authorization.APPROVE, CurrentPerson ) ||
+                            calendar.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                    }
+                    else
+                    {
+                        if ( calendar.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                        {
+                            cblAdditionalCalendars.Items.Add( new ListItem( calendar.Name, calendar.Id.ToString() ) );
+                        }
+                    }
+                }
+            }
+            cblAdditionalCalendars.SelectedIndexChanged += cblAdditionalCalendars_SelectedIndexChanged;
+            cblAdditionalCalendars.Visible = cblAdditionalCalendars.Items.Count > 0;
+
+            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+            ScriptManager.RegisterStartupScript( lImage, lImage.GetType(), "image-fluidbox", "$('.photo a').fluidbox();", true );
         }
 
         /// <summary>
@@ -147,21 +157,16 @@ namespace RockWeb.Blocks.Event
 
             if ( !Page.IsPostBack )
             {
-                string eventItemId = PageParameter( "EventItemId" );
-                if ( !string.IsNullOrWhiteSpace( eventItemId ) )
-                {
-                    ShowDetail( eventItemId.AsInteger() );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "EventItemId" ).AsInteger() );
             }
             else
             {
-                nbNotAllowedToEdit.Visible = false;
-                ShowItemAttributes();
-                //ShowDialog();
+                if ( pnlEditDetails.Visible )
+                {
+                    ShowItemAttributes();
+                }
+
+                ShowDialog();
             }
         }
 
@@ -181,8 +186,7 @@ namespace RockWeb.Blocks.Event
 
             ViewState["AudiencesState"] = JsonConvert.SerializeObject( AudiencesState, Formatting.None, jsonSetting );
             ViewState["ItemsState"] = JsonConvert.SerializeObject( ItemsState, Formatting.None, jsonSetting );
-            ViewState["CampusesState"] = JsonConvert.SerializeObject( CampusesState, Formatting.None, jsonSetting );
-            ViewState["SelectedCampusState"] = JsonConvert.SerializeObject( SelectedCampusState, Formatting.None, jsonSetting );
+
             return base.SaveViewState();
         }
 
@@ -202,14 +206,17 @@ namespace RockWeb.Blocks.Event
             int? eventItemId = PageParameter( pageReference, "EventItemId" ).AsIntegerOrNull();
             if ( eventItemId != null )
             {
-                EventItem eventItem = new EventItemService( new RockContext() ).Get( eventItemId.Value );
-                if ( eventItem != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    breadCrumbs.Add( new BreadCrumb( eventItem.Name, pageReference ) );
-                }
-                else
-                {
-                    breadCrumbs.Add( new BreadCrumb( "New Event Item", pageReference ) );
+                    EventItem eventItem = new EventItemService( rockContext ).Get( eventItemId.Value );
+                    if ( eventItem != null )
+                    {
+                        breadCrumbs.Add( new BreadCrumb( eventItem.Name, pageReference ) );
+                    }
+                    else
+                    {
+                        breadCrumbs.Add( new BreadCrumb( "New Calendar Item", pageReference ) );
+                    }
                 }
             }
             else
@@ -220,251 +227,6 @@ namespace RockWeb.Blocks.Event
             return breadCrumbs;
         }
 
-        #endregion Control Methods
-
-        #region Edit Events
-
-        /// <summary>
-        /// Handles the Click event of the btnSave control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSave_Click( object sender, EventArgs e )
-        {
-            EventItem eventItem;
-
-            RockContext rockContext = new RockContext();
-
-            EventItemService eventItemService = new EventItemService( rockContext );
-            EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
-            EventItemCampusService eventItemCampusService = new EventItemCampusService( rockContext );
-            EventItemAudienceService eventItemAudienceService = new EventItemAudienceService( rockContext );
-            EventItemScheduleService eventItemScheduleService = new EventItemScheduleService( rockContext );
-            AttributeService attributeService = new AttributeService( rockContext );
-            AttributeQualifierService attributeQualifierService = new AttributeQualifierService( rockContext );
-            CategoryService categoryService = new CategoryService( rockContext );
-
-            int eventItemId = int.Parse( hfEventItemId.Value );
-
-            if ( eventItemId == 0 )
-            {
-                eventItem = new EventItem();
-                eventItem.Name = string.Empty;
-            }
-            else
-            {
-                eventItem = eventItemService.Queryable( "EventItemAudiences,EventItemCampuses.EventItemSchedules" ).Where( ei => ei.Id == eventItemId ).FirstOrDefault();
-                // remove any campuses that removed in the UI
-                var selectedEventItemCampuses = CampusesState.Select( l => l.Guid );
-                foreach ( var eventItemCampus in eventItem.EventItemCampuses.Where( l => !selectedEventItemCampuses.Contains( l.Guid ) ).ToList() )
-                {
-                    foreach ( var eventItemSchedule in eventItemCampus.EventItemSchedules )
-                    {
-                        eventItemCampus.EventItemSchedules.Remove( eventItemSchedule );
-                        eventItemScheduleService.Delete( eventItemSchedule );
-                    }
-                    eventItem.EventItemCampuses.Remove( eventItemCampus );
-                    eventItemCampusService.Delete( eventItemCampus );
-                }
-
-                // remove any calendar items that removed in the UI
-                List<int> eventCalendarList = cblEventCalendars.SelectedValuesAsInt;
-                var selectedEventCalendarItems = ItemsState.Where( i => eventCalendarList.Contains( i.EventCalendarId ) ).Select( a => a.Guid );
-                foreach ( var eventCalendarItem in eventItem.EventCalendarItems.Where( a => !selectedEventCalendarItems.Contains( a.Guid ) ).ToList() )
-                {
-                    eventItem.EventCalendarItems.Remove( eventCalendarItem );
-                    eventCalendarItemService.Delete( eventCalendarItem );
-                }
-
-                // Remove any audiences that were removed in the UI
-                var selectedEventItemAudiences = AudiencesState.Select( r => r.Guid );
-                foreach ( var eventItemAudience in eventItem.EventItemAudiences.Where( r => !selectedEventItemAudiences.Contains( r.Guid ) ).ToList() )
-                {
-                    eventItem.EventItemAudiences.Remove( eventItemAudience );
-                    eventItemAudienceService.Delete( eventItemAudience );
-                }
-            }
-            try
-            {
-                if ( tbDetailUrl.Text.Substring( 0, 4 ) != "http" )
-                {
-                    eventItem.DetailsUrl = String.Format( "http://{0}", tbDetailUrl.Text );
-                }
-                else
-                {
-                    eventItem.DetailsUrl = tbDetailUrl.Text;
-                }
-            }
-            catch
-            {
-                if ( !String.IsNullOrWhiteSpace( tbDetailUrl.Text ) )
-                {
-                    eventItem.DetailsUrl = String.Format( "http://{0}", tbDetailUrl.Text );
-                }
-            }
-
-
-            eventItem.Name = tbName.Text;
-            eventItem.Description = tbDescription.Text;
-            eventItem.IsActive = cbIsActive.Checked;
-
-            foreach ( var eventItemAudienceState in AudiencesState )
-            {
-                EventItemAudience eventItemAudience = eventItem.EventItemAudiences.Where( a => a.Guid == eventItemAudienceState.Guid ).FirstOrDefault();
-                if ( eventItemAudience == null )
-                {
-                    eventItemAudience = new EventItemAudience();
-                    eventItem.EventItemAudiences.Add( eventItemAudience );
-                }
-
-                eventItemAudience.CopyPropertiesFrom( eventItemAudienceState );
-            }
-
-            if ( imgupPhoto.BinaryFileId != null )
-            {
-                eventItem.PhotoId = imgupPhoto.BinaryFileId.Value;
-            }
-
-            foreach ( EventItemCampus eventItemCampusState in CampusesState )
-            {
-                EventItemCampus eventItemCampus = eventItem.EventItemCampuses.Where( a => a.Guid == eventItemCampusState.Guid ).FirstOrDefault();
-                if ( eventItemCampus == null )
-                {
-                    eventItemCampus = new EventItemCampus();
-                    eventItem.EventItemCampuses.Add( eventItemCampus );
-                }
-                else
-                {
-                    eventItemCampusState.Id = eventItemCampus.Id;
-                    eventItemCampusState.Guid = eventItemCampus.Guid;
-
-                    var selectedEventItemSchedules = eventItemCampusState.EventItemSchedules.Select( s => s.Guid ).ToList();
-                    foreach ( var eventItemSchedule in eventItemCampus.EventItemSchedules.Where( s => !selectedEventItemSchedules.Contains( s.Guid ) ).ToList() )
-                    {
-                        eventItemCampus.EventItemSchedules.Remove( eventItemSchedule );
-                    }
-                }
-
-                eventItemCampus.CopyPropertiesFrom( eventItemCampusState );
-                try
-                {
-                    eventItemCampus.CampusId = eventItemCampusState.Campus.Id;
-                }
-                catch
-                {
-                }
-                var existingEventItemSchedules = eventItemCampus.EventItemSchedules.Select( s => s.Guid ).ToList();
-                foreach ( var eventItemScheduleState in eventItemCampusState.EventItemSchedules.Where( s => !existingEventItemSchedules.Contains( s.Guid ) ).ToList() )
-                {
-                    eventItemCampus.EventItemSchedules.Add( eventItemScheduleState );
-                }
-            }
-
-            List<int> eventCalendarIdList = cblEventCalendars.SelectedValuesAsInt;
-            foreach ( int eventCalendarId in eventCalendarIdList )
-            {
-                EventCalendarItem eventCalendarItemState = ItemsState.FirstOrDefault( i => i.EventCalendarId == eventCalendarId );
-                EventCalendarItem eventCalendarItem = eventItem.EventCalendarItems.Where( a => a.Guid == eventCalendarItemState.Guid ).FirstOrDefault();
-                if ( eventCalendarItem == null )
-                {
-                    eventCalendarItem = new EventCalendarItem();
-                    eventItem.EventCalendarItems.Add( eventCalendarItem );
-                }
-                eventCalendarItem.CopyPropertiesFrom( eventCalendarItemState );
-            }
-
-            // Check to see if user is still allowed to edit with selected eventItem type and parent eventItem
-            if ( !IsUserAuthorized( Authorization.EDIT ) ) //!eventItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
-            {
-                nbNotAllowedToEdit.Visible = true;
-                return;
-            }
-
-            if ( !Page.IsValid )
-            {
-                return;
-            }
-
-            if ( !eventItem.IsValid )
-            {
-                // Controls will render the error messages
-                return;
-            }
-
-            // use WrapTransaction since SaveAttributeValues does it's own RockContext.SaveChanges()
-            rockContext.WrapTransaction( () =>
-            {
-                var adding = eventItem.Id.Equals( 0 );
-                if ( adding )
-                {
-                    eventItemService.Add( eventItem );
-                }
-
-                rockContext.SaveChanges();
-                foreach ( EventCalendarItem eventCalendarItem in eventItem.EventCalendarItems )
-                {
-                    eventCalendarItem.LoadAttributes();
-                    Rock.Attribute.Helper.GetEditValues( phAttributes, eventCalendarItem );
-                    eventCalendarItem.SaveAttributeValues();
-                }
-                if ( adding )
-                {
-                    // add ADMINISTRATE to the person who added the eventItem
-                    Rock.Security.Authorization.AllowPerson( eventItem, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
-                }
-
-                eventItem.SaveAttributeValues( rockContext );
-
-                rockContext.SaveChanges();
-            } );
-            var qryParams = new Dictionary<string, string>();
-            qryParams["EventCalendarId"] = PageParameter( "EventCalendarId" );
-            NavigateToParentPage( qryParams );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            if ( hfEventItemId.Value.Equals( "0" ) )
-            {
-                int? parentEventItemId = PageParameter( "ParentEventItemId" ).AsIntegerOrNull();
-                if ( parentEventItemId.HasValue )
-                {
-                    // Cancelling on Add, and we know the parentEventItemID, so we are probably in treeview mode, so navigate to the current page
-                    var qryParams = new Dictionary<string, string>();
-                    if ( parentEventItemId != 0 )
-                    {
-                        qryParams["EventItemId"] = parentEventItemId.ToString();
-                    }
-
-                    qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
-
-                    NavigateToPage( RockPage.Guid, qryParams );
-                }
-                else
-                {
-                    // Cancelling on Add.  Return to Grid
-                    var qryParams = new Dictionary<string, string>();
-                    qryParams["EventCalendarId"] = PageParameter( "EventCalendarId" );
-                    NavigateToParentPage( qryParams );
-                }
-            }
-            else
-            {
-                // Cancelling on Edit.  Return to Details
-                var qryParams = new Dictionary<string, string>();
-                qryParams["EventCalendarId"] = PageParameter( "EventCalendarId" );
-                NavigateToParentPage( qryParams );
-            }
-        }
-
-        #endregion Edit Events
-
-        #region Control Events
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.
@@ -480,275 +242,319 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                string eventItemId = PageParameter( "EventItemId" );
-                if ( !string.IsNullOrWhiteSpace( eventItemId ) )
-                {
-                    ShowDetail( eventItemId.AsInteger() );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "EventItemId" ).AsInteger() );
             }
         }
 
-        #region EventItemAudience Events
+        #endregion Control Methods
 
-        protected void gEventItemAudiences_Delete( object sender, RowEventArgs e )
-        {
-            Guid rowGuid = (Guid)e.RowKeyValue;
-            AudiencesState.RemoveEntity( rowGuid );
-            BindEventItemAudiencesGrid();
-        }
+        #region Edit Events
 
-        protected void btnAddEventItemAudience_Click( object sender, EventArgs e )
-        {
-            DefinedValue eventItemAudienceValue = new DefinedValueService( new RockContext() ).Get( ddlAudience.SelectedValueAsInt().Value );
-            EventItemAudience eventItemAudience = new EventItemAudience();
-            eventItemAudience.DefinedValue = eventItemAudienceValue;
-            eventItemAudience.DefinedValueId = eventItemAudienceValue.Id;
-            // Controls will show warnings
-            if ( !eventItemAudience.IsValid )
-            {
-                return;
-            }
-
-            if ( AudiencesState.Any( a => a.Guid.Equals( eventItemAudience.Guid ) ) )
-            {
-                AudiencesState.RemoveEntity( eventItemAudience.Guid );
-            }
-            AudiencesState.Add( eventItemAudience );
-
-            BindEventItemAudiencesGrid();
-
-            HideDialog();
-        }
-
-        private void gEventItemAudiences_GridRebind( object sender, EventArgs e )
-        {
-            BindEventItemAudiencesGrid();
-        }
-
-        private void gEventItemAudiences_Add( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the Click event of the btnEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnEdit_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            ddlAudience.Items.Clear();
+            var eventItem = new EventItemService( rockContext ).Get( hfEventItemId.Value.AsInteger() );
 
-            ddlAudience.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() ) );
-            foreach ( EventItemAudience eventItemAudience in AudiencesState )
+            ShowEditDetails( eventItem );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
             {
-                ddlAudience.Items.Remove( eventItemAudience.DefinedValue.Value );
+                EventItemService eventItemService = new EventItemService( rockContext );
+                EventItem eventItem = eventItemService.Get( int.Parse( hfEventItemId.Value ) );
+
+                if ( eventItem != null )
+                {
+                    string errorMessage;
+                    if ( !eventItemService.CanDelete( eventItem, out errorMessage ) )
+                    {
+                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                    eventItemService.Delete( eventItem );
+
+                    rockContext.SaveChanges();
+                }
             }
 
-            ShowDialog( "EventItemAudiences", true );
+            NavigateToParentPage();
         }
 
-        #endregion
-
-        #region EventItemSchedule Events
-
-        protected void gEventItemSchedules_Delete( object sender, RowEventArgs e )
+        /// <summary>
+        /// Handles the Click event of the btnSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnSave_Click( object sender, EventArgs e )
         {
-            Guid rowGuid = (Guid)e.RowKeyValue;
-            SelectedCampusState.EventItemSchedules.Remove( SelectedCampusState.EventItemSchedules.Where( s => s.Guid == rowGuid ).FirstOrDefault() );
-            BindEventItemSchedulesGrid();
-        }
+            EventItem eventItem = null;
 
-        protected void btnAddEventItemSchedule_Click( object sender, EventArgs e )
-        {
-            EventItemSchedule eventItemSchedule = new EventItemSchedule();
-            eventItemSchedule.Schedule = new Schedule();
-            eventItemSchedule.Schedule.iCalendarContent = sbSchedule.iCalendarContent;
-            if ( !String.IsNullOrWhiteSpace( tbEventItemSchedule.Text ) )
+            using ( var rockContext = new RockContext() )
             {
-                eventItemSchedule.ScheduleName = tbEventItemSchedule.Text;
-            }
-            else
-            {
-                eventItemSchedule.ScheduleName = eventItemSchedule.Schedule.FriendlyScheduleText;
-            }
-            eventItemSchedule.ScheduleId = 0;
+                var eventItemService = new EventItemService( rockContext );
+                var eventCalendarItemService = new EventCalendarItemService( rockContext );
+                var eventItemAudienceService = new EventItemAudienceService( rockContext );
 
-            SelectedCampusState.EventItemSchedules.Add( eventItemSchedule );
-
-            BindEventItemSchedulesGrid();
-
-            HideDialog();
-            ShowDialog( "EventItemCampuses", true );
-        }
-
-        private void gEventItemSchedules_GridRebind( object sender, EventArgs e )
-        {
-            BindEventItemSchedulesGrid();
-        }
-
-        private void gEventItemSchedules_Add( object sender, EventArgs e )
-        {
-            tbEventItemSchedule.Text = String.Empty;
-            sbSchedule.iCalendarContent = String.Empty;
-            ShowDialog( "EventItemSchedules", true );
-        }
-
-        #endregion
-
-        #region Campus Events
-
-        protected void dlgEventItemCampus_SaveClick( object sender, EventArgs e )
-        {
-            if ( ppContact.PersonAliasId != null )
-            {
-                EventItemCampus eventItemCampus = null;
-                Guid guid = hfAddEventItemCampusGuid.Value.AsGuid();
-                if ( !guid.IsEmpty() )
+                int eventItemId = hfEventItemId.ValueAsInt();
+                if ( eventItemId != 0 )
                 {
-                    eventItemCampus = CampusesState.FirstOrDefault( l => l.Guid.Equals( guid ) );
+                    eventItem = eventItemService
+                        .Queryable( "EventItemAudiences,EventItemCampuses.Linkages,EventItemCampuses.EventItemSchedules" )
+                        .Where( i => i.Id == eventItemId )
+                        .FirstOrDefault();
                 }
 
-                if ( eventItemCampus == null )
+                if ( eventItem == null )
                 {
-                    eventItemCampus = new EventItemCampus();
+                    eventItem = new EventItem();
+                    eventItemService.Add( eventItem );
                 }
-                eventItemCampus.Campus = null;
-                try
+
+                eventItem.Name = tbName.Text;
+                eventItem.IsActive = cbIsActive.Checked;
+
+                if ( !eventItem.IsApproved && cbIsApproved.Checked )
                 {
-                    eventItemCampus.Campus = new CampusService( new RockContext() ).Get( ddlCampus.SelectedValueAsId().Value );
+                    eventItem.ApprovedByPersonAliasId = CurrentPersonAliasId;
+                    eventItem.ApprovedOnDateTime = RockDateTime.Now;
                 }
-                catch
+                eventItem.IsApproved = cbIsApproved.Checked;
+                if ( !eventItem.IsApproved )
                 {
-                    eventItemCampus.CampusId = null;
+                    eventItem.ApprovedByPersonAliasId = null;
+                    eventItem.ApprovedByPersonAlias = null;
+                    eventItem.ApprovedOnDateTime = null;
                 }
-                eventItemCampus.Location = tbLocation.Text;
-                eventItemCampus.ContactPersonAlias = new PersonAliasService( new RockContext() ).Get( ppContact.PersonAliasId.Value );
-                eventItemCampus.ContactPersonAliasId = ppContact.PersonAliasId.Value;
-                eventItemCampus.ContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), pnPhone.Number );
-                eventItemCampus.ContactEmail = tbEmail.Text;
-                eventItemCampus.RegistrationUrl = tbRegistration.Text;
-                eventItemCampus.CampusNote = tbCampusNote.Text;
-                foreach ( EventItemSchedule schedule in SelectedCampusState.EventItemSchedules )
+                eventItem.Description = tbDescription.Text;
+                eventItem.DetailsUrl = tbDetailUrl.Text;
+
+                int? orphanedImageId = null;
+                if ( eventItem.PhotoId != imgupPhoto.BinaryFileId )
                 {
-                    eventItemCampus.EventItemSchedules.Add( schedule );
+                    orphanedImageId = eventItem.PhotoId;
+                    eventItem.PhotoId = imgupPhoto.BinaryFileId;
                 }
-                if ( !eventItemCampus.IsValid )
+
+                // Remove any audiences that were removed in the UI
+                var uiAudiences = AudiencesState.Select( r => r.Guid ).ToList();
+                foreach ( var eventItemAudience in eventItem.EventItemAudiences.Where( r => !uiAudiences.Contains( r.Guid ) ).ToList() )
+                {
+                    eventItem.EventItemAudiences.Remove( eventItemAudience );
+                    eventItemAudienceService.Delete( eventItemAudience );
+                }
+
+                // Add or Update audiences from the UI
+                foreach ( var eventItemAudienceState in AudiencesState )
+                {
+                    EventItemAudience eventItemAudience = eventItem.EventItemAudiences.Where( a => a.Guid == eventItemAudienceState.Guid ).FirstOrDefault();
+                    if ( eventItemAudience == null )
+                    {
+                        eventItemAudience = new EventItemAudience();
+                        eventItem.EventItemAudiences.Add( eventItemAudience );
+                    }
+                    eventItemAudience.CopyPropertiesFrom( eventItemAudienceState );
+                }
+
+                // remove any calendar items that removed in the UI
+                var calendarIds = new List<int> { _calendarId };
+                calendarIds.AddRange( cblAdditionalCalendars.SelectedValuesAsInt );
+                var uiCalendarGuids = ItemsState.Where( i => calendarIds.Contains( i.EventCalendarId ) ).Select( a => a.Guid );
+                foreach ( var eventCalendarItem in eventItem.EventCalendarItems.Where( a => !uiCalendarGuids.Contains( a.Guid ) ).ToList() )
+                {
+                    eventItem.EventCalendarItems.Remove( eventCalendarItem );
+                    eventCalendarItemService.Delete( eventCalendarItem );
+                }
+
+                // Add or Update calendar items from the UI
+                foreach ( var calendar in ItemsState.Where( i => calendarIds.Contains( i.EventCalendarId ) ) )
+                {
+                    var eventCalendarItem = eventItem.EventCalendarItems.Where( a => a.Guid == calendar.Guid ).FirstOrDefault();
+                    if ( eventCalendarItem == null )
+                    {
+                        eventCalendarItem = new EventCalendarItem();
+                        eventItem.EventCalendarItems.Add( eventCalendarItem );
+                    }
+                    eventCalendarItem.CopyPropertiesFrom( calendar );
+                }
+
+                if ( !Page.IsValid )
                 {
                     return;
                 }
-                SelectedCampusState = null;
-                if ( CampusesState.Any( a => a.Guid.Equals( eventItemCampus.Guid ) ) )
+
+                if ( !eventItem.IsValid )
                 {
-                    CampusesState.RemoveEntity( eventItemCampus.Guid );
+                    // Controls will render the error messages
+                    return;
                 }
 
-                CampusesState.Add( eventItemCampus );
+                // use WrapTransaction since SaveAttributeValues does it's own RockContext.SaveChanges()
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+                    foreach ( EventCalendarItem eventCalendarItem in eventItem.EventCalendarItems )
+                    {
+                        eventCalendarItem.LoadAttributes();
+                        Rock.Attribute.Helper.GetEditValues( phAttributes, eventCalendarItem );
+                        eventCalendarItem.SaveAttributeValues();
+                    }
 
-                BindEventItemCampusesGrid();
+                    if ( orphanedImageId.HasValue )
+                    {
+                        BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                        var binaryFile = binaryFileService.Get( orphanedImageId.Value );
+                        if ( binaryFile != null )
+                        {
+                            // marked the old images as IsTemporary so they will get cleaned up later
+                            binaryFile.IsTemporary = true;
+                            rockContext.SaveChanges();
+                        }
+                    }
+                } );
 
-                HideDialog();
+
+                // Redirect back to same page so that item grid will show any attributes that were selected to show on grid
+                var qryParams = new Dictionary<string, string>();
+                qryParams["EventCalendarId"] = _calendarId.ToString();
+                qryParams["EventItemId"] = eventItem.Id.ToString();
+                NavigateToPage( RockPage.Guid, qryParams );
             }
         }
 
-        protected void gEventItemCampuses_Delete( object sender, RowEventArgs e )
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
         {
-            Guid rowGuid = (Guid)e.RowKeyValue;
-            CampusesState.RemoveEntity( rowGuid );
-
-            BindEventItemCampusesGrid();
-        }
-
-        private void gEventItemCampuses_GridRebind( object sender, EventArgs e )
-        {
-            BindEventItemCampusesGrid();
-        }
-
-        protected void gEventItemCampuses_Edit( object sender, RowEventArgs e )
-        {
-            Guid eventItemCampusGuid = (Guid)e.RowKeyValue;
-            gEventItemCampuses_ShowEdit( eventItemCampusGuid );
-        }
-
-        protected void gEventItemCampuses_ShowEdit( Guid eventItemCampusGuid )
-        {
-            EventItemCampus eventItemCampus = CampusesState.FirstOrDefault( l => l.Guid.Equals( eventItemCampusGuid ) );
-            if ( eventItemCampus != null )
+            int eventItemId = hfEventItemId.ValueAsInt();
+            if ( eventItemId == 0 )
             {
-                ddlCampus.DataSource = CampusCache.All();
-                ddlCampus.DataBind();
-                ddlCampus.Items.Insert( 0, new ListItem( All.Text, All.IdValue ) );
-                if ( eventItemCampus.Campus == null )
-                {
-                    ddlCampus.SelectedValue = "-1";
-                }
-                else
-                {
-                    ddlCampus.SelectedValue = eventItemCampus.Campus.Id.ToString();
-                }
-                ppContact.PersonId = eventItemCampus.ContactPersonAlias.PersonId;
-                pnPhone.Text = eventItemCampus.ContactPhone;
-                tbLocation.Text = eventItemCampus.Location;
-                tbEmail.Text = eventItemCampus.ContactEmail;
-                tbRegistration.Text = eventItemCampus.RegistrationUrl;
-                tbCampusNote.Text = eventItemCampus.CampusNote;
-                hfAddEventItemCampusGuid.Value = eventItemCampusGuid.ToString();
-                SelectedCampusState = eventItemCampus;
-                BindEventItemSchedulesGrid();
-                ShowDialog( "EventItemCampuses", true );
+                var qryParams = new Dictionary<string, string>();
+                qryParams.Add( "EventCalendarId", _calendarId.ToString() );
+                NavigateToParentPage( qryParams );
+            }
+            else
+            {
+                ShowReadonlyDetails( GetEventItem( eventItemId, new RockContext() ) );
             }
         }
 
-        private void gEventItemCampuses_Add( object sender, EventArgs e )
+        #endregion Edit Events
+
+        #region Control Events
+
+        #region Audience Grid/Dialog Events
+
+        /// <summary>
+        /// Handles the Add event of the gAudiences control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gAudiences_Add( object sender, EventArgs e )
         {
-            ddlCampus.DataSource = CampusCache.All();
-            ddlCampus.DataBind();
-            ddlCampus.Items.Insert( 0, new ListItem( All.Text, All.IdValue ) );
-            ppContact.SelectedValue = null;
-            pnPhone.Text = String.Empty;
-            tbLocation.Text = string.Empty;
-            tbEmail.Text = String.Empty;
-            tbRegistration.Text = String.Empty;
-            tbCampusNote.Text = String.Empty;
-            hfAddEventItemCampusGuid.Value = Guid.Empty.ToString();
-            SelectedCampusState = new EventItemCampus();
-            BindEventItemSchedulesGrid();
-            ShowDialog( "EventItemCampuses", true );
+            // Bind options to defined type, but remove any that have already been selected
+            ddlAudience.Items.Clear();
+
+            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() );
+            if ( definedType != null )
+            {
+                var selectedIds = AudiencesState.Select( a => a.DefinedValueId ).ToList();
+                ddlAudience.DataSource = definedType.DefinedValues
+                    .Where( v => !selectedIds.Contains( v.Id ) )
+                    .ToList();
+                ddlAudience.DataBind();
+            }
+
+            ShowDialog( "EventItemAudience", true );
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gAudiences control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gAudiences_Delete( object sender, RowEventArgs e )
+        {
+            Guid guid = (Guid)e.RowKeyValue;
+            var audience = AudiencesState.FirstOrDefault( a => a.DefinedValue.Guid.Equals( guid ) );
+            if ( audience != null )
+            {
+                AudiencesState.Remove( audience );
+            }
+            BindAudienceGrid();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveAudience control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSaveAudience_Click( object sender, EventArgs e )
+        {
+            int? definedValueId = ddlAudience.SelectedValueAsInt();
+            if ( definedValueId.HasValue )
+            {
+                EventItemAudience eventItemAudience = new EventItemAudience { DefinedValueId = definedValueId.Value };
+                AudiencesState.Add( eventItemAudience );
+            }
+
+            BindAudienceGrid();
+
+            HideDialog();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gAudiences control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gAudiences_GridRebind( object sender, EventArgs e )
+        {
+            BindAudienceGrid();
         }
 
         #endregion
 
-        protected void cblEventCalendars_SelectedIndexChanged( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the cblAdditionalCalendars control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cblAdditionalCalendars_SelectedIndexChanged( object sender, EventArgs e )
         {
             ShowItemAttributes();
         }
 
-        protected void ppContact_SelectPerson( object sender, EventArgs e )
-        {
-            if ( ppContact.PersonId.HasValue )
-            {
-                Person contact = new PersonService( new RockContext() ).Get( ppContact.PersonId.Value );
-                tbEmail.Text = contact.Email;
-                PhoneNumber phoneNumber = contact.PhoneNumbers.FirstOrDefault();
-                if ( phoneNumber != null )
-                {
-                    pnPhone.Text = phoneNumber.NumberFormatted;
-                }
-            }
-        }
-
         #endregion
 
-        #region Internal Methods
+        #region Methods
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="eventItemId">The eventItem identifier.</param>
-        /// <param name="parentEventItemId">The parent eventItem identifier.</param>
         public void ShowDetail( int eventItemId )
         {
+            pnlEditDetails.Visible = false;
+
             EventItem eventItem = null;
 
-            bool viewAllowed = false;
-            bool editAllowed = IsUserAuthorized( Authorization.EDIT );
-
-            RockContext rockContext = null;
+            var rockContext = new RockContext();
 
             if ( !eventItemId.Equals( 0 ) )
             {
@@ -758,34 +564,46 @@ namespace RockWeb.Blocks.Event
             if ( eventItem == null )
             {
                 eventItem = new EventItem { Id = 0, IsActive = true, Name = "" };
-
-                rockContext = rockContext ?? new RockContext();
             }
 
-            viewAllowed = editAllowed || eventItem.IsAuthorized( Authorization.VIEW, CurrentPerson );
-            editAllowed = IsUserAuthorized( Authorization.EDIT ) || eventItem.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            eventItem.LoadAttributes( rockContext );
 
-            pnlDetails.Visible = viewAllowed;
-
-            hfEventItemId.Value = eventItem.Id.ToString();
-
-            // render UI based on Authorized and IsSystem
             bool readOnly = false;
-
             nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed )
+
+            if ( !_canEdit )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( EventItem.FriendlyTypeName );
             }
+            else
+            {
+                if ( eventItem.Id != 0 && !eventItem.EventCalendarItems.Any( i => i.EventCalendarId == _calendarId ) )
+                {
+                    readOnly = true;
+                }
+            }
 
             if ( readOnly )
             {
-                SetEditMode( false );
+                btnEdit.Visible = false;
+                btnDelete.Visible = false;
+                ShowReadonlyDetails( eventItem );
             }
             else
             {
-                ShowEditDetails( eventItem );
+                btnEdit.Visible = true;
+                btnDelete.Visible = true;
+
+                if ( !eventItemId.Equals( 0 ) )
+                {
+                    ShowReadonlyDetails( eventItem );
+                }
+                else
+                {
+                    ShowEditDetails( eventItem );
+                }
+
             }
         }
 
@@ -795,120 +613,138 @@ namespace RockWeb.Blocks.Event
         /// <param name="eventItem">The eventItem.</param>
         private void ShowEditDetails( EventItem eventItem )
         {
+            if ( eventItem == null )
+            {
+                eventItem = new EventItem();
+            }
             if ( eventItem.Id == 0 )
             {
-                lReadOnlyTitle.Text = ActionTitle.Add( EventItem.FriendlyTypeName ).FormatAsHtmlTitle();
+                lReadOnlyTitle.Text = ActionTitle.Add( "Calendar Item" ).FormatAsHtmlTitle();
                 hlStatus.Visible = false;
+                hlApproved.Visible = false;
             }
             else
             {
                 lReadOnlyTitle.Text = eventItem.Name.FormatAsHtmlTitle();
-                if ( eventItem.IsActive.Value )
-                {
-                    hlStatus.Text = "Active";
-                    hlStatus.LabelType = LabelType.Success;
-                }
-                else
-                {
-                    hlStatus.Text = "Inactive";
-                    hlStatus.LabelType = LabelType.Campus;
-                }
+                SetLabels( eventItem );
             }
 
             SetEditMode( true );
 
+            hfEventItemId.SetValue( eventItem.Id );
+
             tbName.Text = eventItem.Name;
+            cbIsActive.Checked = eventItem.IsActive;
+            cbIsApproved.Checked = eventItem.IsApproved;
+            cbIsApproved.Enabled = _canApprove;
+            if ( eventItem.IsApproved &&
+                eventItem.ApprovedOnDateTime.HasValue &&
+                eventItem.ApprovedByPersonAlias != null &&
+                eventItem.ApprovedByPersonAlias.Person != null )
+            {
+                lApproval.Text = string.Format("Approved at {0} on {1} by {2}.",
+                    eventItem.ApprovedOnDateTime.Value.ToShortTimeString(),
+                    eventItem.ApprovedOnDateTime.Value.ToShortDateString(),
+                    eventItem.ApprovedByPersonAlias.Person.FullName );
+            }
+
             tbDescription.Text = eventItem.Description;
-            cbIsActive.Checked = eventItem.IsActive.Value;
+            imgupPhoto.BinaryFileId = eventItem.PhotoId;
             tbDetailUrl.Text = eventItem.DetailsUrl;
-            if ( CampusesState == null )
+
+            if ( eventItem.EventCalendarItems != null )
             {
-                CampusesState = eventItem.EventItemCampuses.ToList();
-            }
-            if ( AudiencesState == null )
-            {
-                AudiencesState = eventItem.EventItemAudiences.ToList();
-            }
-            if ( ItemsState == null )
-            {
-                ItemsState = eventItem.EventCalendarItems.ToList();
+                cblAdditionalCalendars.SetValues( eventItem.EventCalendarItems.Select( c => c.EventCalendarId ).ToList() );
             }
 
-            var rockContext = new RockContext();
+            AudiencesState = eventItem.EventItemAudiences.ToList();
+            ItemsState = eventItem.EventCalendarItems.ToList();
 
-            var eventItemService = new EventItemService( rockContext );
-            var attributeService = new AttributeService( rockContext );
-
-            LoadDropDowns( eventItem.EventCalendarItems.ToList() );
             ShowItemAttributes();
-            BindEventItemAudiencesGrid();
-            BindEventItemCampusesGrid();
+            
+            BindAudienceGrid();
         }
 
-        private void ShowItemAttributes()
+        /// <summary>
+        /// Shows the readonly details.
+        /// </summary>
+        /// <param name="eventItem">The event item.</param>
+        private void ShowReadonlyDetails( EventItem eventItem )
         {
-            List<int> eventCalendarList = cblEventCalendars.SelectedValuesAsInt;
-            wpEventItemAttributes.Visible = false;
-            phAttributes.Controls.Clear();
+            SetEditMode( false );
 
-            foreach ( int eventCalendarId in eventCalendarList )
+            hfEventItemId.SetValue( eventItem.Id );
+
+            lReadOnlyTitle.Text = eventItem.Name.FormatAsHtmlTitle();
+
+            SetLabels( eventItem );
+
+            string imgTag = GetImageTag( eventItem.PhotoId, 150, 150, false );
+            if ( eventItem.PhotoId.HasValue )
             {
-                EventCalendarItem eventCalendarItem = ItemsState.FirstOrDefault( i => i.EventCalendarId == eventCalendarId );
-                if ( eventCalendarItem == null )
-                {
-                    eventCalendarItem = new EventCalendarItem();
-                    eventCalendarItem.EventCalendarId = eventCalendarId;
-                }
+                string imageUrl = ResolveRockUrl( String.Format( "~/GetImage.ashx?id={0}", eventItem.PhotoId.Value ) );
+                lImage.Text = string.Format( "<a href='{0}'>{1}</a>", imageUrl, imgTag );
+                divImage.Visible = true;
+            }
+            else
+            {
+                divImage.Visible = false;
+            }
+
+            lDescription.Text = eventItem.Description;
+            lCalendar.Text = eventItem.EventCalendarItems
+                .Select( c => c.EventCalendar.Name ).ToList().AsDelimited( ", " );
+            lAudiences.Text = eventItem.EventItemAudiences
+                .Select( a => a.DefinedValue.Value ).ToList().AsDelimited( ", " );
+
+            phAttributesView.Controls.Clear();
+            foreach ( var eventCalendarItem in eventItem.EventCalendarItems )
+            {
                 eventCalendarItem.LoadAttributes();
                 if ( eventCalendarItem.Attributes.Count > 0 )
                 {
-                    wpEventItemAttributes.Visible = true;
-                    phAttributes.Controls.Add( new LiteralControl( String.Format( "<h3>{0}</h3>", new EventCalendarService( new RockContext() ).Get( eventCalendarId ).Name ) ) );
-                    PlaceHolder phcalAttributes = new PlaceHolder();
-                    Rock.Attribute.Helper.AddEditControls( eventCalendarItem, phAttributes, true, BlockValidationGroup );
+                    foreach ( var attr in eventCalendarItem.Attributes )
+                    {
+                        if ( attr.Value.IsGridColumn )
+                        {
+                            string value = eventCalendarItem.GetAttributeValue( attr.Key );
+                            if ( !string.IsNullOrWhiteSpace( value ) )
+                            {
+                                var rl = new RockLiteral();
+                                rl.ID = "attr_" + attr.Key;
+                                rl.Label = attr.Value.Name;
+                                rl.Text = attr.Value.FieldType.Field.FormatValueAsHtml( null, value, attr.Value.QualifierValues, false );
+                                phAttributesView.Controls.Add( rl );
+                            }
+                        }
+                    }
                 }
-                ItemsState.Add( eventCalendarItem );
             }
         }
 
-        private void BindEventItemAudiencesGrid()
+        private void SetLabels( EventItem eventItem )
         {
-            SetEventItemAudienceListOrder( AudiencesState );
-            gEventItemAudiences.DataSource = AudiencesState.Select( a => new
+            if ( eventItem.IsActive )
             {
-                a.Id,
-                a.Guid,
-                Audience = a.DefinedValue.Value
-            } ).ToList();
-            gEventItemAudiences.DataBind();
-        }
+                hlStatus.Text = "Active";
+                hlStatus.LabelType = LabelType.Success;
+            }
+            else
+            {
+                hlStatus.Text = "Inactive";
+                hlStatus.LabelType = LabelType.Danger;
+            }
 
-        private void BindEventItemSchedulesGrid()
-        {
-            gEventItemSchedules.DataSource = SelectedCampusState.EventItemSchedules.Select( s => new
+            if ( eventItem.IsApproved )
             {
-                s.Id,
-                s.Guid,
-                Schedule = s.ScheduleName
-            } ).ToList();
-            gEventItemSchedules.DataBind();
-        }
-
-        private void BindEventItemCampusesGrid()
-        {
-            SetEventItemCampusListOrder( CampusesState );
-            gEventItemCampuses.DataSource = CampusesState.Select( c => new
+                hlApproved.Text = "Approved";
+                hlApproved.LabelType = LabelType.Info;
+            }
+            else
             {
-                c.Id,
-                c.Guid,
-                Campus = ( c.Campus != null ) ? c.Campus.Name : "All Campuses",
-                Location = c.Location,
-                Contact = ( c.ContactPersonAlias != null ) ? c.ContactPersonAlias.Person.FullName : "Unknown",
-                Phone = c.ContactPhone,
-                Email = c.ContactEmail,
-                Registration = !String.IsNullOrWhiteSpace( c.RegistrationUrl ) ? "<i class='fa fa-check'></i>" : ""
-            } ).ToList();
-            gEventItemCampuses.DataBind();
+                hlApproved.Text = "Not Approved";
+                hlApproved.LabelType = LabelType.Warning;
+            }
         }
 
         /// <summary>
@@ -918,7 +754,62 @@ namespace RockWeb.Blocks.Event
         private void SetEditMode( bool editable )
         {
             pnlEditDetails.Visible = editable;
+            pnlViewDetails.Visible = !editable;
+
             this.HideSecondaryBlocks( editable );
+        }
+
+        /// <summary>
+        /// Shows the item attributes.
+        /// </summary>
+        private void ShowItemAttributes()
+        {
+            var eventCalendarList = new List<int> { _calendarId };
+            eventCalendarList.AddRange( cblAdditionalCalendars.SelectedValuesAsInt );
+
+            wpAttributes.Visible = false;
+            phAttributes.Controls.Clear();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var eventCalendarService = new EventCalendarService( rockContext );
+
+                foreach ( int eventCalendarId in eventCalendarList )
+                {
+                    EventCalendarItem eventCalendarItem = ItemsState.FirstOrDefault( i => i.EventCalendarId == eventCalendarId );
+                    if ( eventCalendarItem == null )
+                    {
+                        eventCalendarItem = new EventCalendarItem();
+                        eventCalendarItem.EventCalendarId = eventCalendarId;
+                        ItemsState.Add( eventCalendarItem );
+                    }
+
+                    eventCalendarItem.LoadAttributes();
+
+                    if ( eventCalendarItem.Attributes.Count > 0 )
+                    {
+                        wpAttributes.Visible = true;
+                        phAttributes.Controls.Add( new LiteralControl( String.Format( "<h3>{0}</h3>", eventCalendarService.Get( eventCalendarId ).Name ) ) );
+                        PlaceHolder phcalAttributes = new PlaceHolder();
+                        Rock.Attribute.Helper.AddEditControls( eventCalendarItem, phAttributes, true, BlockValidationGroup );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Binds the audience grid.
+        /// </summary>
+        private void BindAudienceGrid()
+        {
+            var values = new List<DefinedValueCache>();
+            AudiencesState.ForEach( a => values.Add( DefinedValueCache.Read( a.DefinedValueId ) ) );
+
+            gAudiences.DataSource = values
+                .OrderBy( v => v.Order )
+                .ThenBy( v => v.Value )
+                .ToList();
+            gAudiences.DataBind();
         }
 
         /// <summary>
@@ -943,45 +834,6 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Loads the drop downs.
-        /// </summary>
-        private void LoadDropDowns( List<EventCalendarItem> itemList )
-        {
-            ddlAudience.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() ) );
-            
-            cblEventCalendars.Items.Clear();
-            foreach ( var calendar in new EventCalendarService( new RockContext() )
-                .Queryable().AsNoTracking()
-                .OrderBy( c => c.Name ) )
-            {
-                if ( calendar.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
-                {
-                    cblEventCalendars.Items.Add( new ListItem( calendar.Name, calendar.Id.ToString() ) );
-                }
-            }
-                
-            if ( !Page.IsPostBack )
-            {
-                string eventItemId = PageParameter( "EventItemId" );
-                if ( !string.IsNullOrWhiteSpace( eventItemId ) )
-                {
-                    if ( eventItemId.AsInteger() == 0 )
-                    {
-                        string eventCalendarId = PageParameter( "EventCalendarId" );
-                        if ( !string.IsNullOrWhiteSpace( eventItemId ) )
-                        {
-                            cblEventCalendars.SetValue( eventCalendarId );
-                        }
-                    }
-                    else
-                    {
-                        cblEventCalendars.SetValues( itemList.Select( i => i.EventCalendarId.ToString() ).ToList() );
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Shows the dialog.
         /// </summary>
         /// <param name="dialog">The dialog.</param>
@@ -1000,16 +852,8 @@ namespace RockWeb.Blocks.Event
         {
             switch ( hfActiveDialog.Value )
             {
-                case "EVENTITEMAUDIENCES":
-                    dlgEventItemAudiences.Show();
-                    break;
-
-                case "EVENTITEMSCHEDULES":
-                    dlgEventItemSchedules.Show();
-                    break;
-
-                case "EVENTITEMCAMPUSES":
-                    dlgEventItemCampus.Show();
+                case "EVENTITEMAUDIENCE":
+                    dlgAudience.Show();
                     break;
             }
         }
@@ -1021,53 +865,15 @@ namespace RockWeb.Blocks.Event
         {
             switch ( hfActiveDialog.Value )
             {
-                case "EVENTITEMAUDIENCES":
-                    dlgEventItemAudiences.Hide();
+                case "EVENTITEMAUDIENCE":
+                    dlgAudience.Hide();
+                    hfActiveDialog.Value = string.Empty;
                     break;
-
-                case "EVENTITEMSCHEDULES":
-                    dlgEventItemSchedules.Hide();
-                    break;
-
-                case "EVENTITEMCAMPUSES":
-                    dlgEventItemCampus.Hide();
-                    break;
-            }
-
-            hfActiveDialog.Value = string.Empty;
-        }
-
-        /// <summary>
-        /// Sets the attribute list order.
-        /// </summary>
-        /// <param name="attributeList">The attribute list.</param>
-        private void SetEventItemAudienceListOrder( List<EventItemAudience> eventItemAudienceList )
-        {
-            if ( eventItemAudienceList != null )
-            {
-                if ( eventItemAudienceList.Any() )
-                {
-                    int order = 0;
-                    eventItemAudienceList.OrderBy( a => a.DefinedValue.Order ).ThenBy( a => a.DefinedValue.Value ).ToList().ForEach( a => a.DefinedValue.Order = order++ );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Sets the attribute list order.
-        /// </summary>
-        /// <param name="attributeList">The attribute list.</param>
-        private void SetEventItemCampusListOrder( List<EventItemCampus> eventItemCampusList )
-        {
-            if ( eventItemCampusList != null )
-            {
-                if ( eventItemCampusList.Any() )
-                {
-                    eventItemCampusList.OrderBy( c => ( c.Campus != null ) ? c.Campus.Name : "All Campuses" ).ThenBy( c => ( c.ContactPersonAlias != null ) ? c.ContactPersonAlias.Name : "Unknown" ).ToList();
-                }
             }
         }
 
         #endregion
-    }
+
+
+}
 }

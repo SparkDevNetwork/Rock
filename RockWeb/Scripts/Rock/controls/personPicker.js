@@ -22,7 +22,7 @@
             $('#' + controlId + '_personPicker').autocomplete({
                 source: function (request, response) {
                     var promise = $.ajax({
-                        url: restUrl + request.term + "/true/" + includeBusinesses,
+                        url: restUrl + "name/true/true/?name="+ encodeURIComponent(request.term) + "&includeDeceased=true&includeBusinesses=" + includeBusinesses,
                         dataType: 'json'
                     });
 

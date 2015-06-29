@@ -39,8 +39,7 @@ namespace Rock.Model
             return Queryable( "Communication,PersonAlias.Person" )
                 .Where( r =>
                     r.CommunicationId == communicationId &&
-                    r.Status == status &&
-                    ( !r.PersonAlias.Person.IsDeceased.HasValue || !r.PersonAlias.Person.IsDeceased.Value ) );
+                    r.Status == status && r.PersonAlias.Person.IsDeceased == false );
         }
 
         /// <summary>

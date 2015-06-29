@@ -240,17 +240,18 @@ namespace Rock.Rest.Controllers
                                                     && g.GroupRole.Guid == knownRelationshipOwner 
                                                     && familyMembers.Contains(g.PersonId))
                                     .Select(m => m.GroupId);
-
+            rockContext.Database.Log = s => System.Diagnostics.Debug.WriteLine( s );
             var guests = groupMemberService.Queryable()
                                     .Where(g => g.GroupRole.Guid == knownRelationshipCanCheckin 
                                                     && familyMembersKnownRelationshipGroups.Contains(g.GroupId))
                                     .Select(g => g.PersonId)
-                                    .Distinct();
-
+                                    .Distinct().ToList();
+            
             var guestFamilies = new List<GuestFamily>();
+            rockContext.Database.Log = null;
             foreach ( var guestPersonId in guests )
             {
-                var families = personService.GetFamilies(guestPersonId).Include("Members.Person");
+                var families = personService.GetFamilies(guestPersonId);
 
                 foreach ( var family in families )
                 {

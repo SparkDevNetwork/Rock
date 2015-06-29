@@ -305,7 +305,6 @@ namespace Rock.Model
             get { return _groups ?? ( _groups = new Collection<Group>() ); }
             set { _groups = value; }
         }
-
         private ICollection<Group> _groups;
 
         /// <summary>
@@ -320,7 +319,6 @@ namespace Rock.Model
             get { return _members ?? ( _members = new Collection<GroupMember>() ); }
             set { _members = value; }
         }
-
         private ICollection<GroupMember> _members;
 
         /// <summary>
@@ -335,7 +333,6 @@ namespace Rock.Model
             get { return _groupLocations ?? ( _groupLocations = new Collection<GroupLocation>() ); }
             set { _groupLocations = value; }
         }
-
         private ICollection<GroupLocation> _groupLocations;
 
         /// <summary>
@@ -350,7 +347,6 @@ namespace Rock.Model
             get { return _groupsRequirements ?? ( _groupsRequirements = new Collection<GroupRequirement>() ); }
             set { _groupsRequirements = value; }
         }
-
         private ICollection<GroupRequirement> _groupsRequirements;
 
         /// <summary>
@@ -364,9 +360,21 @@ namespace Rock.Model
             get { return _triggers ?? ( _triggers = new Collection<GroupMemberWorkflowTrigger>() ); }
             set { _triggers = value; }
         }
-
         private ICollection<GroupMemberWorkflowTrigger> _triggers;
 
+        /// <summary>
+        /// Gets or sets the linkages.
+        /// </summary>
+        /// <value>
+        /// The linkages.
+        /// </value>
+        public virtual ICollection<EventItemCampusGroupMap> Linkages
+        {
+            get { return _linkages ?? ( _linkages = new Collection<EventItemCampusGroupMap>() ); }
+            set { _linkages = value; }
+        }
+        private ICollection<EventItemCampusGroupMap> _linkages;
+        
         /// <summary>
         /// Gets the securable object that security permissions should be inherited from.  If block is located on a page
         /// security will be inherited from the page, otherwise it will be inherited from the site.
@@ -518,7 +526,7 @@ namespace Rock.Model
     /// Represents a circular reference exception. This occurs when a group is set as a parent of a group that is higher in the group hierarchy. 
     /// </summary>
     /// <remarks>
-    ///  An example of this is when a child group is set as the parent of it's parent group.
+    ///  An example of this is when a child group is set as the parent of its parent group.
     /// </remarks>
     public class GroupParentCircularReferenceException : Exception
     {

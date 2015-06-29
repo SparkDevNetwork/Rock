@@ -53,6 +53,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
     [BooleanField("Hide New Account Option", "Should 'New Account' option be hidden?  For site's that require user to be in a role (Internal Rock Site for example), users shouldn't be able to create their own accont.", false, "", 6, "HideNewAccount" )]
     [RemoteAuthsField("Remote Authorization Types", "Which of the active remote authorization types should be displayed as an option for user to use for authentication.", false, "", "", 7)]
     [CodeEditorField( "Prompt Message", "Optional text (HTML) to display above username and password fields.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"", "", 8 )]
+    [LinkedPage( "Redirect Page", "Page to redirect user to upon successful login. The 'returnurl' query string will always override this setting for database authenticated logins. Redirect Page Setting will override third-party authentication 'returnurl'.", false, "", "", 9 )]
     public partial class Login : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -92,10 +93,19 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
                     {
                         string userName = string.Empty;
                         string returnUrl = string.Empty;
+                        string redirectUrlSetting = LinkedPageUrl( "RedirectPage" );
                         if ( component.Authenticate( Request, out userName, out returnUrl ) )
                         {
-                            LoginUser( userName, returnUrl, false );
-                            break;
+                            if ( !string.IsNullOrWhiteSpace( redirectUrlSetting ) )
+                            {
+                                LoginUser( userName, redirectUrlSetting, false );
+                                break;
+                            }
+                            else
+                            {
+                                LoginUser( userName, returnUrl, false );
+                                break;
+                            }
                         }
                     }
 
@@ -331,6 +341,8 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
         /// <param name="rememberMe">if set to <c>true</c> [remember me].</param>
         private void LoginUser( string userName, string returnUrl, bool rememberMe )
         {
+            string redirectUrlSetting = LinkedPageUrl( "RedirectPage" );
+
             UserLoginService.UpdateLastLogin( userName );
 
             Rock.Security.Authorization.SetAuthCookie( userName, rememberMe, false );
@@ -339,6 +351,11 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
             {
                 string redirectUrl = Server.UrlDecode( returnUrl );
                 Response.Redirect( redirectUrl );
+                Context.ApplicationInstance.CompleteRequest();
+            }
+            else if (!string.IsNullOrWhiteSpace(redirectUrlSetting))
+            {
+                Response.Redirect(redirectUrlSetting);
                 Context.ApplicationInstance.CompleteRequest();
             }
             else

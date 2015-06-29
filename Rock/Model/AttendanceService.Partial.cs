@@ -135,10 +135,21 @@ namespace Rock.Model
                 qryAttendance = qryAttendance.Where( a => a.GroupId.HasValue && groupIdList.Contains( a.GroupId.Value ) );
             }
 
+            // If campuses were included, filter attendances by those that have selected campus, otherwise only include those without a campus
             if ( !string.IsNullOrWhiteSpace( campusIds ) )
             {
                 var campusIdList = campusIds.Split( ',' ).AsIntegerList();
-                qryAttendance = qryAttendance.Where( a => a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) );
+                if ( campusIdList.Any() )
+                {
+                    if ( campusIdList.Count == 1 && campusIdList[0] == 0 )
+                    {
+                        qryAttendance = qryAttendance.Where( a => !a.CampusId.HasValue );
+                    }
+                    else
+                    {
+                        qryAttendance = qryAttendance.Where( a => a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) );
+                    }
+                }
             }
 
             var qryAttendanceWithSummaryDateTime = qryAttendance.GetAttendanceWithSummaryDateTime( groupBy );

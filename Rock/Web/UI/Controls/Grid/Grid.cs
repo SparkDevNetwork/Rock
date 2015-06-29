@@ -176,6 +176,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the export source.
+        /// </summary>
+        /// <value>
+        /// The export source.
+        /// </value>
+        public virtual ExcelExportSource ExportSource
+        {
+            get
+            {
+                object exportSource = this.ViewState["ExportSource"];
+                return exportSource != null ? (ExcelExportSource)exportSource : ExcelExportSource.DataSource;
+            }
+
+            set
+            {
+                this.ViewState["ExportSource"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the filename to use when exporting the grid contents. 
         /// The .xlsx extension will be appended if not given. Special characters are removed
         /// automatically to prevent problems saving the file. Default filename is RockExport.xlsx.
@@ -986,7 +1006,7 @@ namespace Rock.Web.UI.Controls
 
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                // For each select field that is not bound to a DataSelectedField set it's checkbox/radiobox from
+                // For each select field that is not bound to a DataSelectedField set its checkbox/radiobox from
                 // the previously posted back values in the columns SelectedKeys property
                 foreach ( var col in this.Columns.OfType<SelectField>() )
                 {
@@ -1277,14 +1297,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to export the data that is shown instead of the properties of the underlying data
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [export grid as wysiwyg]; otherwise, <c>false</c>.
-        /// </value>
-        public bool ExportGridAsWYSIWYG { get; set; }
-
-        /// <summary>
         /// Handles the ExcelExportClick event of the Actions control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1337,32 +1349,97 @@ namespace Rock.Web.UI.Controls
             int rowCounter = 4;
             int columnCounter = 1;
 
-            var gridDataFields = this.Columns.OfType<BoundField>().ToList();
-
-            if ( this.DataSourceAsDataTable != null )
+            if ( this.ExportSource == ExcelExportSource.ColumnOutput )
             {
-                DataTable data = this.DataSourceAsDataTable;
+                // Columns to export with their column index as the key
+                var gridColumns = new Dictionary<int, IRockGridField>();
 
-                // print headings
-                foreach ( DataColumn column in data.Columns )
+                for ( int i = 0; i < this.Columns.Count; i++ )
                 {
-                    var gridField = gridDataFields.FirstOrDefault( a => a.DataField == column.ColumnName );
-                    worksheet.Cells[3, columnCounter].Value = gridField != null ? gridField.HeaderText : column.ColumnName.SplitCase();
+                    var rockField = this.Columns[i] as IRockGridField;
+                    if ( rockField != null &&
+                        (
+                            rockField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude ||
+                            ( rockField.ExcelExportBehavior == ExcelExportBehavior.IncludeIfVisible && rockField.Visible )
+                        ) )
+                    {
+                        gridColumns.Add( i, rockField );
+                    }
+                }
+
+                columnCounter = 1;
+                foreach ( var col in gridColumns )
+                {
+                    worksheet.Cells[3, columnCounter].Value = col.Value.HeaderText;
                     columnCounter++;
                 }
 
-                // print data
-                foreach ( DataRow row in data.Rows )
+                var dataItems = this.DataSourceAsList;
+                var gridViewRow = this.Rows.OfType<GridViewRow>().FirstOrDefault();
+                if ( gridViewRow == null )
                 {
-                    for ( int i = 0; i < data.Columns.Count; i++ )
+                    return;
+                }
+
+                var selectedKeys = SelectedKeys.ToList();
+                foreach ( var dataItem in dataItems )
+                {
+                    if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
                     {
-                        worksheet.Cells[rowCounter, i + 1].Value = row[i].ToString().ConvertBrToCrLf();
+                        var dataKeyValue = dataItem.GetPropertyValue( this.DataKeyNames[0] );
+                        if ( !selectedKeys.Contains( dataKeyValue ) )
+                        {
+                            // if there are specific rows selected, skip over rows that aren't selected
+                            continue;
+                        }
+                    }
+
+                    GridViewRowEventArgs args = new GridViewRowEventArgs( gridViewRow );
+                    gridViewRow.DataItem = dataItem;
+                    this.OnRowDataBound( args );
+                    columnCounter = 0;
+                    foreach ( var col in gridColumns )
+                    {
+                        columnCounter++;
+                        var fieldCell = gridViewRow.Cells[col.Key] as DataControlFieldCell;
+
+                        object exportValue = null;
+                        if ( col.Value is RockBoundField )
+                        {
+                            exportValue = ( col.Value as RockBoundField ).GetExportValue( gridViewRow );
+                        }
+                        else if ( col.Value is RockTemplateField )
+                        {
+                            var textControls = fieldCell.ControlsOfTypeRecursive<Control>().OfType<ITextControl>();
+                            if ( textControls.Any() )
+                            {
+                                exportValue = textControls.Select( a => a.Text ).Where( t => !string.IsNullOrWhiteSpace( t ) ).ToList().AsDelimited( string.Empty );
+                            }
+                        }
+
+                        string value = exportValue != null ? exportValue.ToString() : fieldCell.Text;
+                        value = value.ConvertBrToCrLf();
+                        worksheet.Cells[rowCounter, columnCounter].Value = value;
+                        if ( value.Contains( Environment.NewLine ) )
+                        {
+                            worksheet.Cells[rowCounter, columnCounter].Style.WrapText = true;
+                        }
+
+                        if ( col.Value is CurrencyField )
+                        {
+                            worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "0.00";
+                        }
 
                         // format background color for alternating rows
                         if ( rowCounter % 2 == 1 )
                         {
                             worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
                             worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
+                        }
+
+                        if ( exportValue != null && exportValue is DateTime )
+                        {
+                            worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
                         }
                     }
 
@@ -1371,64 +1448,26 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                if ( this.ExportGridAsWYSIWYG )
+                var gridDataFields = this.Columns.OfType<BoundField>().ToList();
+
+                if ( this.DataSourceAsDataTable != null )
                 {
-                    var gridColumns = this.Columns.OfType<DataControlField>().Where( a => a.Visible ).ToList();
-                    foreach ( var col in gridColumns )
+                    DataTable data = this.DataSourceAsDataTable;
+
+                    // print headings
+                    foreach ( DataColumn column in data.Columns )
                     {
-                        worksheet.Cells[3, columnCounter++].Value = col.HeaderText;
+                        var gridField = gridDataFields.FirstOrDefault( a => a.DataField == column.ColumnName );
+                        worksheet.Cells[3, columnCounter].Value = gridField != null ? gridField.HeaderText : column.ColumnName.SplitCase();
+                        columnCounter++;
                     }
 
-                    var dataItems = this.DataSourceAsList;
-                    var gridViewRow = this.Rows.OfType<GridViewRow>().FirstOrDefault();
-                    if ( gridViewRow == null )
+                    // print data
+                    foreach ( DataRow row in data.Rows )
                     {
-                        return;
-                    }
-
-                    var selectedKeys = SelectedKeys.ToList();
-                    foreach ( var dataItem in dataItems )
-                    {
-                        if (selectedKeys.Any() && this.DataKeyNames.Count() == 1)
+                        for ( int i = 0; i < data.Columns.Count; i++ )
                         {
-                            var dataKeyValue = dataItem.GetPropertyValue( this.DataKeyNames[0] );
-                            if (!selectedKeys.Contains(dataKeyValue))
-                            {
-                                // if there are specific rows selected, skip over rows that aren't selected
-                                continue;
-                            }
-                        }
-                        
-                        GridViewRowEventArgs args = new GridViewRowEventArgs( gridViewRow );
-                        gridViewRow.DataItem = dataItem;
-                        this.OnRowDataBound( args );
-                        int colIndex = 1;
-                        foreach ( var col in gridColumns )
-                        {
-                            var cell = gridViewRow.Cells[colIndex - 1] as DataControlFieldCell;
-
-                            object exportValue = null;
-                            if ( cell.ContainingField is RockBoundField )
-                            {
-                                exportValue = ( cell.ContainingField as RockBoundField ).GetExportValue( gridViewRow );
-                            }
-                            else if ( cell.ContainingField is RockTemplateField )
-                            {
-                                var textControls = cell.ControlsOfTypeRecursive<Control>().OfType<ITextControl>();
-                                if ( textControls.Any() )
-                                {
-                                    exportValue = textControls.Select( a => a.Text ).Where( t => !string.IsNullOrWhiteSpace( t ) ).ToList().AsDelimited( string.Empty );
-                                }
-                            }
-
-                            if ( exportValue != null )
-                            {
-                                worksheet.Cells[rowCounter, colIndex].Value = exportValue.ToString();
-                            }
-                            else
-                            {
-                                worksheet.Cells[rowCounter, colIndex].Value = cell.Text;
-                            }
+                            worksheet.Cells[rowCounter, i + 1].Value = row[i].ToString().ConvertBrToCrLf();
 
                             // format background color for alternating rows
                             if ( rowCounter % 2 == 1 )
@@ -1436,13 +1475,6 @@ namespace Rock.Web.UI.Controls
                                 worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
                                 worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
                             }
-
-                            if ( exportValue != null && exportValue is DateTime )
-                            {
-                                worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
-                            }
-
-                            colIndex++;
                         }
 
                         rowCounter++;
@@ -1540,8 +1572,12 @@ namespace Rock.Web.UI.Controls
                             bool isDefinedValue = ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) );
 
                             var cell = worksheet.Cells[rowCounter, columnCounter];
-                            string value = this.GetExportValue( prop, propValue, isDefinedValue, cell );
-                            cell.Value = value.ConvertBrToCrLf();
+                            string value = this.GetExportValue( prop, propValue, isDefinedValue, cell ).ConvertBrToCrLf();
+                            cell.Value = value;
+                            if ( value.Contains( Environment.NewLine ))
+                            {
+                                cell.Style.WrapText = true;
+                            }
 
                             // format background color for alternating rows
                             if ( rowCounter % 2 == 1 )
@@ -2129,7 +2165,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the entity set from grid if it's datasource is a data table.
+        /// Gets the entity set from grid if its datasource is a data table.
         /// </summary>
         /// <returns></returns>
         private int? GetEntitySetFromGridSourceDataTable()
@@ -3028,6 +3064,21 @@ namespace Rock.Web.UI.Controls
         Light
     }
 
+    /// <summary>
+    /// The data to export when Excel Export is selected
+    /// </summary>
+    public enum ExcelExportSource
+    {
+        /// <summary>
+        /// Use the columns and formatting from the grid's data source
+        /// </summary>
+        DataSource,
+
+        /// <summary>
+        /// The the columns and formatting that is displayed in output 
+        /// </summary>
+        ColumnOutput
+    }
 
     /// <summary>
     /// Column Prioritiy Values

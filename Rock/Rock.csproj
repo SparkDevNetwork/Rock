@@ -238,9 +238,21 @@
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
     <Compile Include="Field\Types\NoteTypesFieldType.cs" />
     <Compile Include="Field\Types\NoteTypeFieldType.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionActivityTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionOpportunityCampusService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionOpportunityGroupService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionOpportunityService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionRequestActivityService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionRequestService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionRequestWorkflowService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionStatusService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionWorkflowService.cs" />
+    <Compile Include="Jobs\GroupLeaderPendingNotifications.cs" />
     <Compile Include="Model\CodeGenerated\EventCalendarItemService.cs" />
     <Compile Include="Model\CodeGenerated\EventCalendarService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemAudienceService.cs" />
+    <Compile Include="Model\CodeGenerated\EventItemCampusGroupMapService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemCampusService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemService.cs" />
@@ -293,7 +305,27 @@
     <Compile Include="Model\BenevolenceResult.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\ConnectionRequest.cs" />
+    <Compile Include="Model\ConnectionOpportunityGroup.cs" />
+    <Compile Include="Model\ConnectionOpportunityCampus.cs" />
+    <Compile Include="Model\ConnectionActivityType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\ConnectionRequestActivity.cs" />
+    <Compile Include="Model\ConnectionStatus.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\ConnectionOpportunity.cs" />
+    <Compile Include="Model\ConnectionType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\ConnectionRequestWorkflow.cs" />
+    <Compile Include="Model\ConnectionWorkflow.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\CodeGenerated\RegistrationRegistrantFeeService.cs" />
     <Compile Include="Model\EventItemAudience.cs" />
+    <Compile Include="Model\EventItemCampusGroupMap.cs" />
     <Compile Include="Model\EventItemSchedule.cs" />
     <Compile Include="Model\CampusService.partial.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceRequestService.cs" />
@@ -313,6 +345,14 @@
     <Compile Include="Model\CodeGenerated\PersonDuplicateService.cs" />
     <Compile Include="Model\CodeGenerated\PersonPreviousNameService.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationInstanceService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationRegistrantService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationTemplateDiscountService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationTemplateFeeService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationTemplateFormFieldService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationTemplateFormService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationTemplateService.cs" />
     <Compile Include="Model\ContentChannel.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -335,11 +375,21 @@
     <Compile Include="Model\FinancialTransactionDetailService.Partial.cs" />
     <Compile Include="Model\FinancialPledgeService.Partial.cs" />
     <Compile Include="Model\GroupMemberRequirement.cs" />
+    <Compile Include="Model\ConnectionWorkflowService.Partial.cs" />
     <Compile Include="Model\GroupRequirement.cs" />
     <Compile Include="Model\GroupRequirementType.cs" />
     <Compile Include="Model\GroupScheduleExclusion.cs" />
     <Compile Include="Model\GroupMemberWorkflowTrigger.Partial.cs" />
     <Compile Include="Model\MergeTemplate.cs" />
+    <Compile Include="Model\RegistrationRegistrant.cs" />
+    <Compile Include="Model\Registration.cs" />
+    <Compile Include="Model\RegistrationRegistrantFee.cs" />
+    <Compile Include="Model\RegistrationTemplateFee.cs" />
+    <Compile Include="Model\RegistrationTemplateDiscount.cs" />
+    <Compile Include="Model\RegistrationTemplateFormField.cs" />
+    <Compile Include="Model\RegistrationTemplateForm.cs" />
+    <Compile Include="Model\RegistrationInstance.cs" />
+    <Compile Include="Model\RegistrationTemplate.cs" />
     <Compile Include="Model\PersonBadgeService.partial.cs" />
     <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PersonPreviousName.cs" />
@@ -363,12 +413,14 @@
     <Compile Include="Reporting\DataFilter\Person\CampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\CampusFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FirstContributionDateFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\GroupAttendanceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupGeofenceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\NotInGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\NotInGroupFilter.cs" />
     <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\MemberCountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\ParticipationRateSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\ParentPhoneNumberSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\InGroupGeofenceGroupTypeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\TotalGivingAmountSelect.cs" />
@@ -404,7 +456,9 @@
     <Compile Include="SystemGuid\Attribute.cs" />
     <Compile Include="SystemGuid\NoteType.cs" />
     <Compile Include="SystemGuid\ServiceJob.cs" />
+    <Compile Include="Transactions\ConnectionRequestActivityChangeTransaction.cs" />
     <Compile Include="Transactions\GroupAttendedTransaction.cs" />
+    <Compile Include="Transactions\ConnectionRequestChangeTransaction.cs" />
     <Compile Include="Transactions\GroupMemberChangeTransaction.cs" />
     <Compile Include="Transactions\RunJobNowTransaction.cs" />
     <Compile Include="Transactions\DeleteAttributeBinaryFile.cs" />
@@ -419,10 +473,14 @@
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\Cache\NoteTypeCache.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
+    <Compile Include="Web\UI\Controls\Event\RegistrationInstanceEditor.cs" />
+    <Compile Include="Web\UI\Controls\Event\RegistrantEditor.cs" />
     <Compile Include="Web\UI\Controls\Grid\BoolFromArrayField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\IRockGridField.cs" />
     <Compile Include="Web\UI\Controls\Grid\RockLiteralField.cs" />
     <Compile Include="Web\UI\Controls\Grid\CurrencyField.cs" />
     <Compile Include="Web\UI\Controls\Grid\CallbackField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\FieldTypeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\CampusField.cs" />
     <Compile Include="Web\UI\Controls\Grid\PhoneNumbersField.cs" />
     <Compile Include="Web\UI\Controls\IDisplayRequiredIndicator.cs" />
@@ -431,6 +489,7 @@
     <Compile Include="Web\UI\Controls\Pickers\MergeTemplatePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DataViewPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GradePicker.cs" />
+    <Compile Include="Web\UI\Controls\Event\RegistrationTemplateFormEditor.cs" />
     <Compile Include="Web\UI\Controls\RockRating.cs" />
     <Compile Include="Web\UI\RockBlockWrapper.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
@@ -909,7 +968,7 @@
     </Compile>
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActivityTypeEditor.cs" />
     <Compile Include="Web\UI\Controls\Grid\BadgeField.cs" />
-    <Compile Include="Web\UI\Controls\Grid\ISupressRowSelected.cs" />
+    <Compile Include="Web\UI\Controls\Grid\INotRowSelectedField.cs" />
     <Compile Include="Web\UI\Controls\Toggle.cs" />
     <Compile Include="Web\UI\Controls\HelpBlock.cs" />
     <Compile Include="Reporting\DataFilterComponent.cs" />
@@ -1323,6 +1382,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Auth\" />
+    <Folder Include="Web\UI\Controls\Registration\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
