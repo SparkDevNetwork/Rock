@@ -751,6 +751,7 @@ Copyright (c) 2012 Dan Eden*/
   30. Paneled List Group - extends the bootstrap list group to behave in a panel
   31. Sliding Date Range
   32. Photo Round
+  33, Wizard
 
   xx. Misc
 */
@@ -875,6 +876,24 @@ Copyright (c) 2012 Dan Eden*/
 #dialog .scroll-container-picker .viewport {
   width: 340px;
   height: 190px;
+}
+.campuses-picker:before,
+.campuses-picker:after {
+  content: " ";
+  display: table;
+}
+.campuses-picker:after {
+  clear: both;
+}
+.campuses-picker .checkbox {
+  float: left;
+  margin-top: 0;
+  margin-right: 24px;
+}
+.campuses-picker .campuses-picker-vertical .checkbox {
+  float: none;
+  margin-top: inherit;
+  margin-right: 0;
 }
 /*.banner
 {
@@ -2114,6 +2133,79 @@ ul.list-group-panel .list-group-item:first-child {
   width: 35px;
   border-radius: 17.5px;
 }
+.wizard {
+  background-color: #eeeeee;
+  padding: 8px 0;
+  margin-bottom: 12px;
+}
+.wizard:before,
+.wizard:after {
+  content: " ";
+  display: table;
+}
+.wizard:after {
+  clear: both;
+}
+.wizard-item-icon {
+  background-color: #de2e31;
+  border-radius: 24px;
+  padding: 6px 8px;
+  color: #ffffff;
+  text-align: center;
+  display: inline-block;
+  margin: 0 auto;
+}
+.wizard-item-label {
+  font-weight: 300;
+  font-size: 12px;
+  color: #737373;
+}
+.wizard-item {
+  min-width: 200px;
+  text-align: center;
+  float: left;
+  position: relative;
+  z-index: 1;
+}
+.wizard-item:before {
+  border-top: 4px solid #d4d4d4;
+  content: "";
+  margin: 0 auto;
+  /* this centers the line to the full width specified */
+  position: absolute;
+  /* positioning must be absolute here, and relative positioning must be applied to the parent */
+  top: 30%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+}
+.wizard-item.active:before {
+  border-top: 4px solid #bbbbbb;
+}
+.wizard-item.active .wizard-item-icon {
+  background-color: #7a1315;
+  color: #ffffff;
+}
+.wizard-item.active .wizard-item-label {
+  color: #333333;
+}
+.wizard-item.complete:before {
+  border-top: 4px solid #bbbbbb;
+}
+.wizard-item.complete .wizard-item-icon {
+  background-color: #7a1315;
+  color: #ffffff;
+}
+.wizard-item.complete .wizard-item-label {
+  color: #333333;
+}
+.wizard-item:first-child:before {
+  left: 110px;
+}
+.wizard-item:last-child:before {
+  right: 110px;
+}
 /*
     Used to manage styles related to Rock's forms
     
@@ -2525,6 +2617,7 @@ td.grid-col-actions {
 .table > tbody > tr > td.grid-columnreorder {
   padding-top: 12px;
   min-width: 48px;
+  width: 48px;
 }
 .table .color-field {
   padding: 0;
