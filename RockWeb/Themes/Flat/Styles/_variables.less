@@ -31,6 +31,21 @@
 @help-color: #86b8cc;
 @required-field-color: #eca9a7;
 
+// wizard styles
+@wizard-bg: @gray-lighter;
+@wizard-item-bar-color: #bbb;
+
+@wizard-item-label-active-color: @text-color;
+@wizard-item-icon-active-color: @nav-pills-active-link-hover-color;
+@wizard-item-icon-active-bg: @nav-pills-active-link-hover-bg;
+
+@wizard-item-label-complete-color: @wizard-item-label-active-color;
+@wizard-item-icon-complete-color: @wizard-item-icon-color;
+@wizard-item-icon-complete-bg: @wizard-item-icon-active-bg;
+
+@wizard-item-label-color: lighten(@wizard-item-label-active-color, 25%);
+@wizard-item-icon-color: @wizard-item-icon-active-color;
+@wizard-item-icon-bg: lighten(@wizard-item-icon-active-bg, 25%);
 
 // Rock Overrides 
 // -------------------------
