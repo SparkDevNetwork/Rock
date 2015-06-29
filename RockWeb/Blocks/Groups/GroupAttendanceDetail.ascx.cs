@@ -157,6 +157,7 @@ namespace RockWeb.Blocks.Groups
                 var rockContext = new RockContext();
                 var attendanceService = new AttendanceService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
+                var locationService = new LocationService( rockContext );
 
                 DateTime startDate = _occurrence.Date;
                 DateTime endDate = _occurrence.Date.AddDays( 1 );
@@ -208,6 +209,7 @@ namespace RockWeb.Blocks.Groups
                                 attendance.PersonAliasId = personAliasId;
                                 attendance.StartDateTime = _occurrence.Date;
                                 attendance.LocationId = _occurrence.LocationId;
+                                attendance.CampusId = locationService.GetCampusIdForLocation( _occurrence.LocationId );
                                 attendance.ScheduleId = _occurrence.ScheduleId;
                                 attendanceService.Add( attendance );
                             }
