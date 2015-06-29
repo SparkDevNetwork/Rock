@@ -5239,6 +5239,10 @@ h6.condensed {
 div.aspNetDisabled {
   opacity: 0.5;
 }
+.icon-fw {
+  width: 1.28571429em;
+  text-align: center;
+}
 /*
     Used to manage styles for specific blocks.
 
