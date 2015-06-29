@@ -94,6 +94,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
+        [DataMember]
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>

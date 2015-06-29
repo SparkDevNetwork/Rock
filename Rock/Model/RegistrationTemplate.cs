@@ -268,7 +268,7 @@ namespace Rock.Model
         /// Gets or sets the Page entity for the parent page.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Page"/> entity for the parent Page
+        /// The <see cref="Rock.Model.Page" /> entity for the parent Page
         /// </value>
         public virtual Category Category { get; set; }
 
