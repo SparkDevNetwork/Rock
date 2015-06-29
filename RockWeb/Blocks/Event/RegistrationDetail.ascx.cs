@@ -465,7 +465,8 @@ namespace RockWeb.Blocks.Event
             var editor = sender as RegistrantEditor;
             if ( editor != null && RegistrantGuids.ContainsKey( editor.RegistrantGuid ) )
             {
-                var uiRegistrant = editor.GetRegistrant();
+                var uiRegistrant = new RegistrationRegistrant();
+                editor.SetRegistrantFromControl( uiRegistrant );
 
                 using ( var rockContext = new RockContext() )
                 {
@@ -493,7 +494,7 @@ namespace RockWeb.Blocks.Event
                     
                     rockContext.SaveChanges();
 
-                    editor.SetRegistrant( registrant );
+                    editor.SetControlFromRegistrant( registrant );
 
                     var registration = new RegistrationService( rockContext ).Get( hfRegistrationId.ValueAsInt() );
                     SetCostLabels( registration );
@@ -790,7 +791,7 @@ namespace RockWeb.Blocks.Event
 
             if ( registrant != null )
             {
-                registrantEditor.SetRegistrant( registrant );
+                registrantEditor.SetControlFromRegistrant( registrant );
                 if ( !Page.IsPostBack && RegistrantId.HasValue && RegistrantId.Value == registrant.Id )
                 {
                     pwRegistrationDetails.Expanded = false;

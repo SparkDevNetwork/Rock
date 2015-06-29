@@ -108,6 +108,7 @@ namespace Rock.Model
         /// <value>
         /// The registration instance.
         /// </value>
+        [DataMember]
         public virtual RegistrationInstance RegistrationInstance { get; set; }
 
         /// <summary>
@@ -132,6 +133,7 @@ namespace Rock.Model
         /// <value>
         /// The registrants.
         /// </value>
+        [DataMember]
         public virtual ICollection<RegistrationRegistrant> Registrants
         {
             get { return _registrants ?? ( _registrants = new Collection<RegistrationRegistrant>() ); }
