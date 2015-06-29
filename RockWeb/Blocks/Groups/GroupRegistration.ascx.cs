@@ -577,7 +577,9 @@ namespace RockWeb.Blocks.Groups
 
             string registerButtonText = GetAttributeValue( "RegisterButtonAltText" );
             if ( string.IsNullOrWhiteSpace( registerButtonText ) )
+            {
                 registerButtonText = "Register";
+            }
             btnRegister.Text = registerButtonText;
 
             int groupId = PageParameter( "GroupId" ).AsInteger();
