@@ -356,12 +356,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        /// Where to put the HTML element of the daterange preview
         /// </summary>
         public enum DateRangePreviewLocation
         {
+            /// <summary>
+            /// Top
+            /// </summary>
             Top,
+
+            /// <summary>
+            /// Right
+            /// </summary>
             Right,
+
+            /// <summary>
+            /// Hide the preview
+            /// </summary>
             None
         }
 

@@ -46,6 +46,9 @@ namespace Rock.Web.UI.Controls
         bool Visible { get; set; }
     }
 
+    /// <summary>
+    /// Enum that defines when a column should be included in an Excel export ( when in ColumnOutput ExportSource )
+    /// </summary>
     public enum ExcelExportBehavior
     {
         /// <summary>

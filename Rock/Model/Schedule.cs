@@ -317,6 +317,11 @@ namespace Rock.Model
 
         #region Public Methods
 
+        /// <summary>
+        /// Pres the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
         public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
         {
             var calEvent = GetCalenderEvent();
