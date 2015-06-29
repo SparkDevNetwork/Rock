@@ -168,6 +168,7 @@
                                                     <asp:ListItem Text="3rd" Value="3" />
                                                     <asp:ListItem Text="4th" Value="4" />
                                                     <asp:ListItem Text="5th" Value="5" />
+                                                    <asp:ListItem Text="No" Value="0" />
                                                 </Rock:RockDropDownList>
                                                 <span>visit</span>
                                             </asp:Panel>
