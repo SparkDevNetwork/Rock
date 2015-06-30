@@ -76,9 +76,14 @@ namespace Rock.Web.UI.Controls
 
             this.yaxis.tickFormatter = @"
 function (val, axis) {
+  // round to at most 2 decimal places
+  var roundedVal = (Math.round(val * 100))/100;
+
   // show commas 
   // from http://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
-  return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  var formattedValue =  val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+  return formattedValue;
 }".Trim();
 
             SetFlotLinesPointsBarsStyle( chartStyle, this.series.lines );

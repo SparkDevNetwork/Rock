@@ -33,9 +33,9 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting.DataFilter.Group
 {
     /// <summary>
-    /// Filter group on any of it's attribute values
+    /// Filter group on any of its attribute values
     /// </summary>
-    [Description( "Filter group on it's attribute values" )]
+    [Description( "Filter group on its attribute values" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Group Attributes Filter" )]
     public class GroupAttributesFilter : EntityFieldFilter
@@ -176,7 +176,7 @@ namespace Rock.Reporting.DataFilter.Group
                 var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true );
                 if ( control != null )
                 {
-                    // Add the field to the dropdown of availailable fields
+                    // Add the field to the dropdown of available fields
                     ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
                     pnlGroupAttributeFilterControls.Controls.Add( control );
                 }

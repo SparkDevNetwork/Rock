@@ -2805,7 +2805,7 @@ tr.row-highlight td {
     margin-bottom: 0;
   }
 }
-.filter-row {
+.filterfield {
   margin-bottom: 12px;
 }
 /*
@@ -5238,6 +5238,10 @@ h6.condensed {
 }
 div.aspNetDisabled {
   opacity: 0.5;
+}
+.icon-fw {
+  width: 1.28571429em;
+  text-align: center;
 }
 /*
     Used to manage styles related to Rock's store

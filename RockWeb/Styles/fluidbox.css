@@ -12,7 +12,7 @@
 	left: 0;
 	bottom: 0;
 	right: 0;
-	z-index: 500;
+	z-index: 1040; /* @zindex-modal-background */
 }
 .fluidbox-wrap {
 	background-position: center center;
@@ -23,7 +23,7 @@
 	transition: all .25s ease-in-out;
 }
 	.fluidbox-opened .fluidbox-wrap {
-		z-index: 600;
+		z-index: 1050; /* @zindex-modal */
 	}
 .fluidbox-ghost {
 	background-size: cover;

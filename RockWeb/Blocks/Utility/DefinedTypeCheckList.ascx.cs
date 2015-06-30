@@ -36,14 +36,13 @@ namespace RockWeb.Blocks.Utility
     [DisplayName( "Defined Type Check List" )]
     [Category( "Utility" )]
     [Description( "Used for managing the values of a defined type as a checklist." )]
-
     [DefinedTypeField( "Defined Type", "The Defined Type to display values for." )]
     [TextField( "Attribute Key", "The attribute key on the Defined Type that is used to store whether item has been completed (should be a boolean field type)." )]
     [BooleanField( "Hide Checked Items", "Hide items that are already checked.", false )]
-    [BooleanField("Hide Block When Empty", "Hides entire block if no checklist items are available.", false)]
-    [TextField("Checklist Title", "Title for your checklist.",false,"","Description",1)]
-    [CodeEditorField("Checklist Description", "Description for your checklist. Leave this blank and nothing will be displayed.", 
-        CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, "", "Description", 2)]
+    [BooleanField( "Hide Block When Empty", "Hides entire block if no checklist items are available.", false )]
+    [TextField( "Checklist Title", "Title for your checklist.", false, "", "Description", 1 )]
+    [CodeEditorField( "Checklist Description", "Description for your checklist. Leave this blank and nothing will be displayed.",
+        CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, "", "Description", 2 )]
     public partial class DefinedTypeCheckList : RockBlock
     {
         private string attributeKey = string.Empty;
@@ -70,7 +69,7 @@ $('.checklist-item label strong, .checklist-desc-toggle').on('click', function (
     $header.find('i').toggleClass('fa-chevron-up fa-chevron-down');
 });
 ";
-            ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "DefinedValueChecklistScript", script, true);
+            ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "DefinedValueChecklistScript", script, true );
         }
 
         /// <summary>
@@ -116,8 +115,8 @@ $('.checklist-item label strong, .checklist-desc-toggle').on('click', function (
 
             if ( Page.IsPostBack && wasVisible && this.Visible == false )
             {
-                // If last item was just checked do a redirect back to the same page.  
-                // This is needed to hide the control since content is inside an update 
+                // If last item was just checked do a redirect back to the same page.
+                // This is needed to hide the control since content is inside an update
                 // panel
                 Response.Redirect( CurrentPageReference.BuildUrl(), false );
             }
@@ -138,36 +137,28 @@ $('.checklist-item label strong, .checklist-desc-toggle').on('click', function (
             this.Visible = true;
 
             // Should selected items be displayed
-            bool hideCheckedItems = false;
-            if ( !bool.TryParse( GetAttributeValue( "HideCheckedItems" ), out hideCheckedItems ) )
-            {
-                hideCheckedItems = false;
-            }
+            bool hideCheckedItems = GetAttributeValue( "HideCheckedItems" ).AsBoolean();
 
             // Should content be hidden when empty list
-            bool hideBlockWhenEmpty = false;
-            if ( !bool.TryParse( GetAttributeValue( "HideBlockWhenEmpty" ), out hideBlockWhenEmpty ) )
-            {
-                hideBlockWhenEmpty = false;
-            }
+            bool hideBlockWhenEmpty = GetAttributeValue( "HideBlockWhenEmpty" ).AsBoolean();
 
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( GetAttributeValue( "DefinedType" ), out guid ) )
             {
                 var definedType = DefinedTypeCache.Read( guid );
-                if (definedType != null)
-                { 
+                if ( definedType != null )
+                {
                     // Get the values
                     var values = definedType.DefinedValues.OrderBy( v => v.Order ).ToList();
 
                     // Find all the unselected values
                     var selectedValues = new List<int>();
-                    foreach( var value in values)
+                    foreach ( var value in values )
                     {
                         bool selected = false;
                         if ( bool.TryParse( value.GetAttributeValue( attributeKey ), out selected ) && selected )
                         {
-                            selectedValues.Add(value.Id);
+                            selectedValues.Add( value.Id );
                         }
                     }
 
@@ -196,6 +187,5 @@ $('.checklist-item label strong, .checklist-desc-toggle').on('click', function (
                 }
             }
         }
-
     }
 }
