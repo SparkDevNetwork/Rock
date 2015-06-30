@@ -139,34 +139,51 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            var controls = new List<Control>();
+            containerControl = new Panel();
+            containerControl.ID = string.Format( "{0}_containerControl", filterControl.ID );
+            filterControl.Controls.Add( containerControl );
 
             // Create the field selection dropdown
             ddlEntityField = new RockDropDownList();
             ddlEntityField.ID = string.Format( "{0}_ddlProperty", filterControl.ID );
-            filterControl.Controls.Add( ddlEntityField );
-            controls.Add( ddlEntityField );
+            containerControl.Controls.Add( ddlEntityField );
 
             // add Empty option first
             ddlEntityField.Items.Add( new ListItem() );
 
-            foreach ( var entityField in EntityHelper.GetEntityFields( entityType ) )
+            this.entityFields = EntityHelper.GetEntityFields( entityType );
+            foreach ( var entityField in entityFields )
             {
-                string controlId = string.Format( "{0}_{1}", filterControl.ID, entityField.Name );
-                var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true );
-                if ( control != null )
-                {
-                    // Add the field to the dropdown of available fields
-                    ddlEntityField.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
-                    filterControl.Controls.Add( control );
-                    controls.Add( control );
-                }
+                ddlEntityField.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
             }
 
-            return controls.ToArray();
+            ddlEntityField.AutoPostBack = true;
+            ddlEntityField.SelectedIndexChanged += ddlEntityField_SelectedIndexChanged;
+
+            return new Control[] { containerControl };
         }
 
+        void ddlEntityField_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var entityField = this.entityFields.FirstOrDefault( a => a.Name == ddlEntityField.SelectedValue );
+            if ( entityField != null )
+            {
+                string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.Name );
+                if ( !containerControl.Controls.OfType<Control>().Any( a => a.ID == controlId ) )
+                {
+                    var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true );
+                    if ( control != null )
+                    {
+                        // Add the field to the dropdown of available fields
+                        containerControl.Controls.Add( control );
+                    }
+                }
+            }
+        }
+
+        private Panel containerControl = null;
         private DropDownList ddlEntityField = null;
+        private List<EntityField> entityFields = null;
 
         /// <summary>
         /// Renders the controls.
@@ -179,9 +196,10 @@ namespace Rock.Reporting.DataFilter
         {
             if ( controls.Length > 0 )
             {
-                ddlEntityField = controls[0] as DropDownList;
+                var container = controls[0] as Panel;
+                ddlEntityField = container.Controls[0] as DropDownList;
                 var entityFields = EntityHelper.GetEntityFields( entityType );
-                RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlEntityField, controls.ToList(), filterControl.ID );
+                RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlEntityField, container.Controls.OfType<Control>().ToList(), container.ID );
             }
         }
 
@@ -211,13 +229,15 @@ namespace Rock.Reporting.DataFilter
 
             if ( controls.Length > 0 )
             {
-                DropDownList ddlProperty = controls[0] as DropDownList;
+                var container = controls[0] as Panel;
+                DropDownList ddlProperty = container.Controls[0] as DropDownList;
+                ddlEntityField_SelectedIndexChanged( ddlProperty, new EventArgs() );
 
                 var entityFields = EntityHelper.GetEntityFields( entityType );
                 var entityField = entityFields.FirstOrDefault( f => f.Name == ddlProperty.SelectedValue );
                 if ( entityField != null )
                 {
-                    var control = controls.ToList().FirstOrDefault( c => c.ID.EndsWith( entityField.Name ) );
+                    var control = container.Controls.OfType<Control>().ToList().FirstOrDefault( c => c.ID.EndsWith( entityField.Name ) );
                     if ( control != null )
                     {
                         values.Add( ddlProperty.SelectedValue );
@@ -239,10 +259,11 @@ namespace Rock.Reporting.DataFilter
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
                 var values = JsonConvert.DeserializeObject<List<string>>( selection );
-
-                DropDownList ddlProperty = controls[0] as DropDownList;
+                var container = controls[0] as Panel;
+                DropDownList ddlProperty = container.Controls[0] as DropDownList;
+                ddlEntityField_SelectedIndexChanged( ddlProperty, new EventArgs() );
                 var entityFields = EntityHelper.GetEntityFields( entityType );
-                SetEntityFieldSelection( entityFields, ddlProperty, values, controls.ToList() );
+                SetEntityFieldSelection( entityFields, ddlProperty, values, container.Controls.OfType<Control>().ToList() );
             }
         }
 
