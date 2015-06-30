@@ -415,9 +415,9 @@ namespace Rock.Field.Types
         public override string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
         {
             string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
-            return string.Format( "var selectedItems = ''; $('input:checked', $selectedContent).each(function() {{ selectedItems += selectedItems == '' ? '' : ' or '; selectedItems += '\\'' + $(this).parent().text() + '\\'' }}); result = '{0} is ' + selectedItems ", titleJs );
+            var format = "return Rock.reporting.formatFilterForSelectSingleField('{0}', $selectedContent);";
+            return string.Format( format, titleJs );
         }
-
 
         /// <summary>
         /// Gets a filter expression for an entity property value.
