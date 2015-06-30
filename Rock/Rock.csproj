@@ -473,6 +473,7 @@
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\Cache\NoteTypeCache.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
+    <Compile Include="Web\UI\Controls\DynamicControlsPanel.cs" />
     <Compile Include="Web\UI\Controls\Event\RegistrationInstanceEditor.cs" />
     <Compile Include="Web\UI\Controls\Event\RegistrantEditor.cs" />
     <Compile Include="Web\UI\Controls\Grid\BoolFromArrayField.cs" />
