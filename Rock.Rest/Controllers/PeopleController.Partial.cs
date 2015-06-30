@@ -137,7 +137,7 @@ namespace Rock.Rest.Controllers
 
             if ( personId != null )
             {
-                return Service.Queryable().Include( a => a.PhoneNumbers).Include(a => a.Aliases )
+                return Service.Queryable().Include( a => a.PhoneNumbers ).Include( a => a.Aliases )
                     .FirstOrDefault( p => p.Id == personId.Value );
             }
 
@@ -264,7 +264,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/Search" )]
-        public IQueryable<PersonSearchResult> Search( string name )
+        public IQueryable<PersonSearchResultBase> Search( string name )
         {
             return Search( name, false, false );
         }
@@ -278,7 +278,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/Search/{name}/{includeHtml}" )]
-        public IQueryable<PersonSearchResult> Search( string name, bool includeHtml )
+        public IQueryable<PersonSearchResultBase> Search( string name, bool includeHtml )
         {
             return Search( name, includeHtml, false );
         }
@@ -293,10 +293,18 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/Search/{name}/{includeHtml}/{includeBusinesses}" )]
-        public IQueryable<PersonSearchResult> Search( string name, bool includeHtml, bool includeBusinesses )
+        public IQueryable<PersonSearchResultBase> Search( string name, bool includeHtml, bool includeBusinesses )
+        {
+            return this.Search( name, includeHtml, true, includeBusinesses, false );
+        }
+
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/Search" )]
+        public IQueryable<PersonSearchResultBase> Search( string name, bool includeHtml, bool includeDetails, bool includeBusinesses = false, bool includeDeceased = false )
         {
             int count = 20;
-            bool reversed;
+            bool showFullNameReversed;
             bool allowFirstNameOnly = false;
 
             var searchComponent = Rock.Search.SearchContainer.GetComponent( typeof( Rock.Search.Person.Name ).FullName );
@@ -305,19 +313,57 @@ namespace Rock.Rest.Controllers
                 allowFirstNameOnly = searchComponent.GetAttributeValue( "FirstNameSearch" ).AsBoolean();
             }
 
-            IOrderedQueryable<Person> sortedPersonQry = ( this.Service as PersonService )
-                .GetByFullNameOrdered( name, true, includeBusinesses, allowFirstNameOnly, out reversed );
+            var activeRecordStatusValue = DefinedValueCache.Read(SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid());
+            int activeRecordStatusValueId = activeRecordStatusValue != null ? activeRecordStatusValue.Id : 0;
 
+            IQueryable<Person> sortedPersonQry = ( this.Service as PersonService )
+                .GetByFullNameOrdered( name, true, includeBusinesses, allowFirstNameOnly, out showFullNameReversed ).Take( count );
+
+            if ( includeDetails == false )
+            {
+                var simpleResultQry = sortedPersonQry.Select( a => new { a.Id, a.FirstName, a.NickName, a.LastName, a.SuffixValueId, a.RecordTypeValueId, a.RecordStatusValueId } );
+                var simpleResult = simpleResultQry.ToList().Select( a => new PersonSearchResultBase
+                {
+                    Id = a.Id,
+                    Name = showFullNameReversed 
+                    ? Person.FormatFullNameReversed(a.LastName, a.NickName, a.SuffixValueId, a.RecordTypeValueId)
+                    : Person.FormatFullName( a.LastName, a.NickName, a.SuffixValueId, a.RecordTypeValueId ),
+                    IsActive = a.RecordStatusValueId.HasValue && a.RecordStatusValueId == activeRecordStatusValueId
+                } );
+
+                return simpleResult.AsQueryable();
+            }
+            else
+            {
+                List<PersonSearchResult> searchResult = SearchWithDetails( sortedPersonQry, showFullNameReversed );
+                return searchResult.AsQueryable();
+            }
+        }
+
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetSearchDetails" )]
+        public string GetSearchDetails( int Id )
+        {
+            return this.GetById( Id ).ToString();
+        }
+
+        /// <summary>
+        /// Searches the with details.
+        /// </summary>
+        /// <param name="reversed">if set to <c>true</c> [reversed].</param>
+        /// <param name="sortedPersonQry">The sorted person qry.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private List<PersonSearchResult> SearchWithDetails( IQueryable<Person> sortedPersonQry, bool showFullNameReversed  )
+        {
             var rockContext = this.Service.Context as Rock.Data.RockContext;
-
             var phoneNumbersQry = new PhoneNumberService( rockContext ).Queryable();
 
             // join with PhoneNumbers to avoid lazy loading
             var joinQry = sortedPersonQry.GroupJoin( phoneNumbersQry, p => p.Id, n => n.PersonId, ( Person, PhoneNumbers ) => new { Person, PhoneNumbers } );
 
-            var topQry = joinQry.Take( count );
-
-            var sortedPersonList = topQry.AsNoTracking().ToList();
+            var sortedPersonList = joinQry.AsNoTracking().ToList();
 
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
             string itemDetailFormat = @"
@@ -343,7 +389,7 @@ namespace Rock.Rest.Controllers
                 var person = item.Person;
                 person.PhoneNumbers = item.PhoneNumbers.ToList();
                 PersonSearchResult personSearchResult = new PersonSearchResult();
-                personSearchResult.Name = reversed ? person.FullNameReversed : person.FullName;
+                personSearchResult.Name = showFullNameReversed ? person.FullNameReversed : person.FullName;
 
                 Guid? recordTypeValueGuid = null;
                 if ( person.RecordTypeValueId.HasValue )
@@ -447,35 +493,32 @@ namespace Rock.Rest.Controllers
                     }
                 }
 
-                if ( includeHtml )
+                // Generate the HTML for Email and PhoneNumbers
+                if ( !string.IsNullOrWhiteSpace( person.Email ) || person.PhoneNumbers.Any() )
                 {
-                    // Generate the HTML for Email and PhoneNumbers
-                    if ( !string.IsNullOrWhiteSpace( person.Email ) || person.PhoneNumbers.Any() )
+                    string emailAndPhoneHtml = "<p class='margin-t-sm'>";
+                    emailAndPhoneHtml += person.Email;
+                    string phoneNumberList = string.Empty;
+                    foreach ( var phoneNumber in person.PhoneNumbers )
                     {
-                        string emailAndPhoneHtml = "<p class='margin-t-sm'>";
-                        emailAndPhoneHtml += person.Email;
-                        string phoneNumberList = string.Empty;
-                        foreach ( var phoneNumber in person.PhoneNumbers )
-                        {
-                            var phoneType = DefinedValueCache.Read( phoneNumber.NumberTypeValueId ?? 0, rockContext );
-                            phoneNumberList += string.Format(
-                                "<br>{0} <small>{1}</small>",
-                                phoneNumber.IsUnlisted ? "Unlisted" : phoneNumber.NumberFormatted,
-                                phoneType != null ? phoneType.Value : string.Empty );
-                        }
-
-                        emailAndPhoneHtml += phoneNumberList + "<p>";
-
-                        personInfoHtml += emailAndPhoneHtml;
+                        var phoneType = DefinedValueCache.Read( phoneNumber.NumberTypeValueId ?? 0, rockContext );
+                        phoneNumberList += string.Format(
+                            "<br>{0} <small>{1}</small>",
+                            phoneNumber.IsUnlisted ? "Unlisted" : phoneNumber.NumberFormatted,
+                            phoneType != null ? phoneType.Value : string.Empty );
                     }
 
-                    personSearchResult.PickerItemDetailsHtml = string.Format( itemDetailFormat, imageHtml, personInfoHtml );
+                    emailAndPhoneHtml += phoneNumberList + "<p>";
+
+                    personInfoHtml += emailAndPhoneHtml;
                 }
+
+                personSearchResult.PickerItemDetailsHtml = string.Format( itemDetailFormat, imageHtml, personInfoHtml );
 
                 searchResult.Add( personSearchResult );
             }
 
-            return searchResult.AsQueryable();
+            return searchResult;
         }
 
         /// <summary>
@@ -561,9 +604,9 @@ namespace Rock.Rest.Controllers
     }
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
-    public class PersonSearchResult
+    public class PersonSearchResultBase
     {
         /// <summary>
         /// Gets or sets the id.
@@ -581,6 +624,20 @@ namespace Rock.Rest.Controllers
         /// </value>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsActive { get; set; }
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    public class PersonSearchResult : PersonSearchResultBase
+    {
         /// <summary>
         /// Gets or sets the image HTML tag.
         /// </summary>
@@ -636,14 +693,6 @@ namespace Rock.Rest.Controllers
         /// The address.
         /// </value>
         public string Address { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is active.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsActive { get; set; }
 
         /// <summary>
         /// Gets or sets the picker item details HTML.

@@ -7,22 +7,22 @@
         var PersonPicker = function (options) {
             this.controlId = options.controlId;
             this.restUrl = options.restUrl;
+            this.restDetailUrl = options.restDetailUrl;
             this.defaultText = options.defaultText || '';
         };
 
         PersonPicker.prototype.initializeEventHandlers = function () {
             var controlId = this.controlId,
                 restUrl = this.restUrl,
+                restDetailUrl = this.restDetailUrl || (Rock.settings.get('baseUrl') + 'api/People/GetSearchDetails'),
                 defaultText = this.defaultText;
 
             var includeBusinesses = $('#' + controlId).find('.js-include-businesses').val() == '1' ? 'true' : 'false';
 
-            // TODO: Can we use TypeHead here (already integrated into BootStrap) instead of jQueryUI?
-            // Might be a good opportunity to break the dependency on jQueryUI.
             $('#' + controlId + '_personPicker').autocomplete({
                 source: function (request, response) {
                     var promise = $.ajax({
-                        url: restUrl + "name/true/true/?name="+ encodeURIComponent(request.term) + "&includeDeceased=true&includeBusinesses=" + includeBusinesses,
+                        url: restUrl + "?name=" + encodeURIComponent(request.term) + "&includeHtml=false&includeDetails=false&includeBusinesses=" + includeBusinesses + "&includeDeceased=true",
                         dataType: 'json'
                     });
 
@@ -82,6 +82,16 @@
                         $el.slideUp();
                     }
                 });
+
+                var $itemDetails = $selectedItem.find('.picker-select-item-details');
+
+                debugger
+
+                if ($itemDetails.attr('data-has-details') == 'false') {
+                    $itemDetails.load(restDetailUrl + '?Id=' + selectedPersonId, function (a, b, c) {
+                        exports.personPickers[controlId].updateScrollbar();
+                    });
+                }
 
                 $selectedItem.find('.picker-select-item-details:hidden').slideDown(function () {
                     exports.personPickers[controlId].updateScrollbar();
@@ -171,7 +181,17 @@
 
                             $resultSection = $(this.options.appendTo);
 
-                        $(item.PickerItemDetailsHtml).appendTo($li);
+                        if (item.PickerItemDetailsHtml) {
+                            $(item.PickerItemDetailsHtml).appendTo($li);
+                        }
+                        else {
+                            var $itemDetailsDiv = $('<div/>')
+                                .addClass('picker-select-item-details clearfix')
+                                .attr('data-has-details', false)
+                                .hide();
+
+                            $itemDetailsDiv.appendTo($li);
+                        }
 
                         if (!item.IsActive) {
                             $li.addClass('inactive');
