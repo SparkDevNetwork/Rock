@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Groups
     [CodeEditorField( "Result Lava Template", "The lava template to use to format result message after user has been registered. Will only display if user is not redirected to a Result Page ( previous setting ).", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"
 ", "", 8 )]
     [CustomRadioListField( "Auto Fill Form", "If set to FALSE then the form will not load the context of the logged in user (default: 'True'.)", "true^True,false^False", true, "true", "", 9 )]
+    [TextField( "Register Button Alt Text", "Alternate text to use for the Register button (default is 'Register').", false, "", "", 10 )]
     public partial class GroupRegistration : RockBlock
     {
         #region Fields
@@ -573,6 +574,13 @@ namespace RockWeb.Blocks.Groups
             _autoFill = GetAttributeValue( "AutoFillForm" ).AsBoolean();
 
             tbEmail.Required = _autoFill;
+
+            string registerButtonText = GetAttributeValue( "RegisterButtonAltText" );
+            if ( string.IsNullOrWhiteSpace( registerButtonText ) )
+            {
+                registerButtonText = "Register";
+            }
+            btnRegister.Text = registerButtonText;
 
             int groupId = PageParameter( "GroupId" ).AsInteger();
             _group = new GroupService( _rockContext )
