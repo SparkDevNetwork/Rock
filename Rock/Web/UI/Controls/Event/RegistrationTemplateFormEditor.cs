@@ -41,11 +41,8 @@ namespace Rock.Web.UI.Controls
         private Grid _gFields;
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="TemplateFormEditor"/> is expanded.
+        /// Gets or sets a value indicating whether this <see cref="RegistrationTemplateFormEditor"/> is expanded.
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if expanded; otherwise, <c>false</c>.
-        /// </value>
         public bool Expanded
         {
             get

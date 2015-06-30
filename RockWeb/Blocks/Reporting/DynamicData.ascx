@@ -51,19 +51,17 @@
                                         </div>
                                     </div>
                                     <Rock:RockTextBox ID="tbParams" runat="server" Label="Parameters" TextMode="MultiLine" Rows="1" CssClass="input-xlarge"
-                                        Help="The parameters that the stored procedure expects in the format of 'param1=value;param2=value'.  Any parameter with the same name as a page parameter (i.e. querystring, 
+                                        Help="The parameters that the stored procedure expects in the format of 'param1=value;param2=value'.  Any parameter with the same name as a page parameter (i.e. querystring,
                                             form, or page route) will have it's value replaced with the page's current value.  A parameter with the name of 'CurrentPersonId' will have it's value replaced with the currently logged in person's id." />
                                     <Rock:RockCheckBox ID="cbPersonReport" runat="server" Text="Person Report"
                                         Help="Does this query return a list of people? If it does, then additional options will be available from the result grid.  (i.e. Communicate, etc).  Note: A column named 'Id' that contains the person's Id is required for a person report." />
-                                    
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockTextBox ID="tbUrlMask" runat="server" Label="Selection Url" CssClass="input-large"
                                         Help="The Url to redirect user to when they click on a row in the grid.  Any column's value can be used in the url by including it in braces.  For example if the grid includes an 'Id' column that contains Person Ids, you can link to the Person view, by specifying a value here of '~/Person/{Id}" />
-                                    
+
                                     <Rock:RockTextBox ID="tbMergeFields" runat="server" Label="Communication Merge Fields" TextMode="MultiLine" Rows="1" CssClass="input-xlarge"
                                         Help="When creating a new communication from a person report, additional fields from the report can be used as merge fields on the communication.  Enter any column names that you'd like to be available for the communication." />
-
                                 </div>
 
                                 <div class="col-md-12">
@@ -76,14 +74,10 @@
                                         Help="Optional Lava for setting the page title. If nothing is provided then the page's title will be used. Example '{{rows[0].FullName}}' or if the query returns multiple result sets '{{table1.rows[0].FullName}}'." />
                                 </div>
                             </div>
-
                         </ContentTemplate>
                     </asp:UpdatePanel>
-
                 </Content>
             </Rock:ModalDialog>
-
         </asp:Panel>
-
     </ContentTemplate>
 </asp:UpdatePanel>

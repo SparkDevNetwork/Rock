@@ -247,7 +247,7 @@ You can view an online version of this email here:
                         recipient.Status = CommunicationRecipientStatus.Failed;
                         recipient.StatusNote = "Email is not active!";
                     }
-                    if ( person.IsDeceased ?? false )
+                    if ( person.IsDeceased )
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
                         recipient.StatusNote = "Person is deceased!";

@@ -120,10 +120,10 @@
                                                     <div class="col-sm-5">
                                                         <div class="row">
                                                             <div class="col-xs-6">
-                                                                <asp:CheckBox ID="cbSms" runat="server" Text="sms" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' CssClass="js-sms-number" />
+                                                                <asp:CheckBox ID="cbSms" runat="server" Text="SMS" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' CssClass="js-sms-number" />
                                                             </div>
                                                             <div class="col-xs-6">
-                                                                <asp:CheckBox ID="cbUnlisted" runat="server" Text="unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' />
+                                                                <asp:CheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' />
                                                             </div>
                                                         </div>
                                                     </div>

@@ -502,7 +502,7 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <param name="onlyIncludeGridColumns">if set to <c>true</c> will only include those attributes with the option to display in grid set to true</param>
-        /// <param name="allowMultiple">if set to <c>true</c> returns the attribute in each of it's categories, if false, only returns attribut in first category.</param>
+        /// <param name="allowMultiple">if set to <c>true</c> returns the attribute in each of its categories, if false, only returns attribut in first category.</param>
         /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
         /// <returns></returns>
         public static List<AttributeCategory> GetAttributeCategories( IHasAttributes entity, bool onlyIncludeGridColumns = false, bool allowMultiple = false, bool supressOrdering = false)
@@ -526,7 +526,7 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="attributes">The attributes.</param>
         /// <param name="onlyIncludeGridColumns">if set to <c>true</c> will only include those attributes with the option to display in grid set to true</param>
-        /// <param name="allowMultiple">if set to <c>true</c> returns the attribute in each of it's categories, if false, only returns attribut in first category.</param>
+        /// <param name="allowMultiple">if set to <c>true</c> returns the attribute in each of its categories, if false, only returns attribut in first category.</param>
         /// <returns></returns>
         public static List<AttributeCategory> GetAttributeCategories( List<Rock.Web.Cache.AttributeCache> attributes, bool onlyIncludeGridColumns = false, bool allowMultiple = false )
         {
@@ -622,7 +622,7 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Saves any attribute edits made to an attribute
+        /// Saves any attribute edits made to an attribute. Note: any attributes will be flushed from the cache. Be sure to either reload the cache or the individual attribute when you are done.
         /// </summary>
         /// <param name="newAttribute">The new attribute.</param>
         /// <param name="entityTypeId">The entity type identifier.</param>

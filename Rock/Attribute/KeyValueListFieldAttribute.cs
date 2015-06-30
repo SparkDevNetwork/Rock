@@ -28,7 +28,7 @@ namespace Rock.Attribute
         private const string DISPLAY_VALUE_FIRST = "displayvaluefirst";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ValueListFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="ValueListFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
@@ -42,6 +42,7 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         /// <param name="fieldTypeClass">The field type class.</param>
+        /// <param name="displayValueFirst">if set to <c>true</c> [display value first].</param>
         public KeyValueListFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", 
             string keyPrompt = "", string valuePrompt = "", string definedTypeGuid = "", string customValues = "",
             string category = "", int order = 0, string key = null, string fieldTypeClass = null, bool displayValueFirst = false )

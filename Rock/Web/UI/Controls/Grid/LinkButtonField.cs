@@ -111,6 +111,22 @@ namespace Rock.Web.UI.Controls
         public Grid ParentGrid { get; internal set; }
 
         /// <summary>
+        /// When exporting a grid with an Export source of ColumnOutput, this property controls whether a column is included
+        /// in the export or not
+        /// </summary>
+        public override ExcelExportBehavior ExcelExportBehavior
+        {
+            get
+            {
+                return ExcelExportBehavior.NeverInclude;
+            }
+            set
+            {
+                base.ExcelExportBehavior = value;
+            }
+        }
+
+        /// <summary>
         /// Occurs when [click].
         /// </summary>
         public event EventHandler<RowEventArgs> Click;

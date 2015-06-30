@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Web.UI.WebControls;
 
@@ -36,6 +37,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to Group.Guid instead of Group.Id for the listitem values (default false)
+        /// NOTE: Make sure you set this before setting .GroupTypes
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [use unique identifier as value]; otherwise, <c>false</c>.
+        /// </value>
+        public bool UseGuidAsValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the group types.
         /// </summary>
         /// <value>
@@ -49,13 +59,38 @@ namespace Rock.Web.UI.Controls
                 this.Items.Add( new ListItem() );
                 foreach ( GroupType groupType in value )
                 {
-                    this.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
+                    this.Items.Add( new ListItem( groupType.Name, UseGuidAsValue ? groupType.Guid.ToString() : groupType.Id.ToString() ) );
                 }
             }
         }
 
         /// <summary>
-        /// Gets or sets the selected groupType ids.
+        /// Gets or sets the selected groupType Guid (only works when UseGuidAsValue = true) 
+        /// </summary>
+        /// <value>
+        /// The selected groupType guids.
+        /// </value>
+        public Guid? SelectedGroupTypeGuid
+        {
+            get
+            {
+                return this.SelectedValue.AsGuidOrNull();
+            }
+
+            set
+            {
+                string itemValue = value.HasValue ? value.ToString() : string.Empty;
+                var li = this.Items.FindByValue( itemValue );
+                if ( li != null )
+                {
+                    li.Selected = true;
+                    this.SelectedValue = itemValue;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the selected groupType ids  (only works when UseGuidAsValue = false)
         /// </summary>
         /// <value>
         /// The selected groupType ids.

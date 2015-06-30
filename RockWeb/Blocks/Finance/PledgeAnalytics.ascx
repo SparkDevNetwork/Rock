@@ -42,12 +42,13 @@
                                 </div>
                             </div>
                             <div class="grid grid-panel">
-                                <Rock:Grid ID="gList" runat="server" AllowSorting="true" PersonIdField="Id">
+                                <Rock:Grid ID="gList" runat="server" AllowSorting="true" PersonIdField="Id" ExportSource="ColumnOutput" ExportFilename="PledgeAnalytics">
                                     <Columns>
                                         <Rock:SelectField />
-                                        <asp:TemplateField HeaderText="Person" SortExpression="LastName,NickName">
+                                        <Rock:RockTemplateField  HeaderText="Person" SortExpression="LastName,NickName">
                                             <ItemTemplate><%# Eval("NickName") %> <%# Eval("LastName") %></ItemTemplate>
-                                        </asp:TemplateField>
+                                        </Rock:RockTemplateField>
+                                        <Rock:RockBoundField DataField="Email" HeaderText="Email" SortExpression="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:CurrencyField DataField="PledgeAmount" HeaderText="Pledge Total" SortExpression="PledgeAmount" />
                                         <Rock:CurrencyField DataField="GiftAmount" HeaderText="Total Giving Amount" SortExpression="GiftAmount" />
                                         <Rock:RockBoundField DataField="GiftCount" HeaderText="Giving Count" SortExpression="GiftCount" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />

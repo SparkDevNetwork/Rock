@@ -116,7 +116,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Person is deceased; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool? IsDeceased
+        public bool IsDeceased
         {
             get
             {
@@ -124,14 +124,7 @@ namespace Rock.Model
             }
             set
             {
-                if ( value.HasValue )
-                {
-                    _isDeceased = value.Value;
-                }
-                else
-                {
-                    _isDeceased = false;
-                }
+                _isDeceased = value;
             }
         }
 
@@ -1026,6 +1019,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [DataMember]
+        [RockClientInclude( "The Grade Offset of the person, which is the number of years until their graduation date" )]
         public virtual int? GradeOffset
         {
             get
@@ -1660,9 +1654,14 @@ namespace Rock.Model
         /// <param name="nickName">The nick name.</param>
         /// <param name="lastName">The last name.</param>
         /// <param name="suffixValueId">The suffix value identifier.</param>
+        /// <param name="recordTypeValueId">The record type value identifier.</param>
         /// <returns></returns>
-        public static string FormatFullName( string nickName, string lastName, int? suffixValueId) {
-            
+        public static string FormatFullName( string nickName, string lastName, int? suffixValueId, int? recordTypeValueId = null ) {
+
+            if ( IsBusiness( recordTypeValueId ) )
+            {
+                return lastName;
+            }
            
             if ( suffixValueId.HasValue )
             {

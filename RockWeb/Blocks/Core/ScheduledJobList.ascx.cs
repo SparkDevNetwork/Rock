@@ -108,7 +108,7 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 // format inactive jobs
-                if ( ! e.Row.DataItem.GetPropertyValue( "IsActive" ).ToStringSafe().AsBoolean( resultIfNullOrEmpty: false ) )
+                if ( ! e.Row.DataItem.GetPropertyValue( "IsActive" ).ToStringSafe().AsBoolean( false ) )
                 {
                     e.Row.AddCssClass( "inactive" );
                 }
