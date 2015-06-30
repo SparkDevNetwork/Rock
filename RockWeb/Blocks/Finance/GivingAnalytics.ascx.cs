@@ -707,11 +707,22 @@ function(item) {
 
             // Add a column for the person's name
             gGiversGifts.Columns.Add(
-                new BoundField
+                new RockBoundField
                 {
                     DataField = "PersonName",
                     HeaderText = "Person",
                     SortExpression = "PersonName"
+                } );
+
+            // add a column for email (but is only included on excel export)
+            gGiversGifts.Columns.Add(
+                new RockBoundField
+                {
+                    DataField = "Email",
+                    HeaderText = "Email",
+                    SortExpression = "Email",
+                    Visible = false,
+                    ExcelExportBehavior = ExcelExportBehavior.AlwaysInclude
                 } );
 
             // Add a column for total amount
@@ -749,7 +760,7 @@ function(item) {
             }
 
             // Add a column for the number of gifts
-            var numberGiftsField = new BoundField
+            var numberGiftsField = new RockBoundField
                 {
                     DataField = "NumberGifts",
                     HeaderText = "Number of Gifts",
@@ -944,7 +955,8 @@ function(item) {
                         p.Id,
                         p.Guid,
                         p.NickName,
-                        p.LastName
+                        p.LastName,
+                        p.Email
                     }))
                 {
                     // Check for a first ever gift date
@@ -959,6 +971,7 @@ function(item) {
                     row["NickName"] = person.NickName;
                     row["LastName"] = person.LastName;
                     row["PersonName"] = person.NickName + " " + person.LastName;
+                    row["Email"] = person.Email;
                     row["IsFirstEverGift"] = false;
                     row["FirstEverGift"] = firstEverGiftDate;
                     dtResults.Rows.Add( row );

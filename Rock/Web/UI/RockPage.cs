@@ -2199,7 +2199,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <returns>A <see cref="System.Collections.Generic.Dictionary{String, List}"/> containing the user preferences 
         /// for the current user. If the current user is anonymous or unknown an empty dictionary will be returned.</returns>
-        private Dictionary<string, string> SessionUserPreferences()
+        public Dictionary<string, string> SessionUserPreferences()
         {
             string sessionKey = string.Format( "{0}_{1}",
                 Person.USER_VALUE_ENTITY, CurrentPerson != null ? CurrentPerson.Id : 0 );

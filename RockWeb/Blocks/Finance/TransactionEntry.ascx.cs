@@ -885,7 +885,7 @@ namespace RockWeb.Blocks.Finance
             var selectedGuids = GetAttributeValues( "Accounts" ).Select( Guid.Parse ).ToList();
             bool showAll = !selectedGuids.Any();
 
-            bool additionalAccounts = GetAttributeValue( "AdditionalAccounts" ).AsBoolean( resultIfNullOrEmpty: true );
+            bool additionalAccounts = GetAttributeValue( "AdditionalAccounts" ).AsBoolean( true );
 
             SelectedAccounts = new List<AccountItem>();
             AvailableAccounts = new List<AccountItem>();

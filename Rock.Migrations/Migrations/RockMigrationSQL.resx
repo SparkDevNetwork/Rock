@@ -151,4 +151,10 @@
   <data name="_201506242325188_GeoSpatialIndexes_AddSystemEmail" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201506242325188_geospatialindexes_addsystememail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201506281615197_GivingAnalyticsEmail_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506281615197_givinganalyticsemail_1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201506281615197_GivingAnalyticsEmail_2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506281615197_givinganalyticsemail_2.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

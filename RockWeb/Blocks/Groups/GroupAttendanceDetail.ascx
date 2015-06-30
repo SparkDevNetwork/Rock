@@ -19,18 +19,21 @@
                 <asp:Panel id="pnlDetails" runat="server">
 
                     <div class="row">
-                        <div class="col-sm-4">
+                        <div class="col-sm-3">
                             <Rock:RockLiteral ID="lOccurrenceDate" runat="server" Label="Attendance For" />
                             <Rock:DatePicker ID="dpOccurrenceDate" runat="server" Label="Attendance For" Required="true" />
                         </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-3">
                             <Rock:RockLiteral ID="lLocation" runat="server" Label="Location" />
                             <Rock:RockDropDownList ID="ddlLocation" runat="server" Label="Location" DataValueField="Key" DataTextField="Value" 
                                 AutoPostBack="true" OnSelectedIndexChanged="ddlLocation_SelectedIndexChanged" />
                         </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-3">
                             <Rock:RockLiteral ID="lSchedule" runat="server" Label="Schedule" />
                             <Rock:RockDropDownList ID="ddlSchedule" runat="server" Label="Schedule" DataValueField="Key" DataTextField="Value" />
+                        </div>
+                        <div class="col-sm-3">
+                            <Rock:RockLiteral ID="lDidAttendCount" runat="server" Label="Attendance Count" />
                         </div>
                     </div>
 
