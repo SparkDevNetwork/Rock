@@ -15,28 +15,18 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 using Humanizer;
 using Newtonsoft.Json;
 
 using Rock;
-using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
-using Rock.Web;
-using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
-using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Event
 {
@@ -52,14 +42,14 @@ namespace RockWeb.Blocks.Event
         #region Fields
 
         // Page (query string) parameter names
-        private readonly const string REGISTRATION_ID_PARAM_NAME = "RegistrationId";
-        private readonly const string REGISTRANT_INSTANCE_ID_PARAM_NAME = "RegistrationInstanceId";
+        private const string REGISTRATION_ID_PARAM_NAME = "RegistrationId";
+        private const string REGISTRANT_INSTANCE_ID_PARAM_NAME = "RegistrationInstanceId";
 
         // Viewstate keys
-        private readonly const string REGISTRATION_STATE_KEY = "RegistrationState";
-        private readonly const string CURRENT_PANEL_KEY = "CurrentPanel";
-        private readonly const string CURRENT_REGISTRANT_INDEX_KEY = "CurrentRegistrantIndex";
-        private readonly const string CURRENT_FORM_INDEX_KEY = "CurrentFormIndex";
+        private const string REGISTRATION_STATE_KEY = "RegistrationState";
+        private const string CURRENT_PANEL_KEY = "CurrentPanel";
+        private const string CURRENT_REGISTRANT_INDEX_KEY = "CurrentRegistrantIndex";
+        private const string CURRENT_FORM_INDEX_KEY = "CurrentFormIndex";
 
         #endregion
 
@@ -181,6 +171,7 @@ namespace RockWeb.Blocks.Event
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            RegisterScript();
         }
 
         /// <summary>
@@ -255,7 +246,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRegistrantPrev_Click( object sender, EventArgs e )
         {
-            if ( CurrentPanel == 2 )
+            if ( CurrentPanel == 1 )
             {
                 CurrentFormIndex--;
                 if ( CurrentFormIndex < 0 )
@@ -278,7 +269,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRegistrantNext_Click( object sender, EventArgs e )
         {
-            if ( CurrentPanel == 2 )
+            if ( CurrentPanel == 1 )
             {
                 CurrentFormIndex++;
                 if ( CurrentFormIndex >= FormCount )
@@ -301,7 +292,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSummaryPrev_Click( object sender, EventArgs e )
         {
-            if ( CurrentPanel == 3 )
+            if ( CurrentPanel == 2 )
             {
                 CurrentRegistrantIndex = RegistrantCount - 1;
                 CurrentFormIndex = FormCount - 1;
@@ -320,7 +311,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSummaryNext_Click( object sender, EventArgs e )
         {
-            if ( CurrentPanel == 4 )
+            if ( CurrentPanel == 2 )
             {
                 ShowSuccess();
             }
@@ -344,38 +335,38 @@ namespace RockWeb.Blocks.Event
             int? RegistrationInstanceId = PageParameter( REGISTRANT_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
             int? RegistrationId = PageParameter( REGISTRATION_ID_PARAM_NAME ).AsIntegerOrNull();
 
-            using ( var rockContext = new RockContext() )
+            // Not inside a "using" due to serialization needing context to still be active
+            var rockContext = new RockContext();
+
+            if ( RegistrationId.HasValue )
             {
-                if ( RegistrationId.HasValue )
-                {
-                    RegistrationState = new RegistrationService( rockContext )
-                        .Queryable( "RegistrationInstance.RegistrationTemplate.Fees,RegistrationInstance.RegistrationTemplate.Discounts,RegistrationInstance.RegistrationTemplate.Forms.Fields.Attribute" )
-                        .AsNoTracking()
-                        .Where( r => r.Id == RegistrationId.Value )
-                        .FirstOrDefault();
-                }
+                RegistrationState = new RegistrationService( rockContext )
+                    .Queryable( "RegistrationInstance.Account,RegistrationInstance.RegistrationTemplate.Fees,RegistrationInstance.RegistrationTemplate.Discounts,RegistrationInstance.RegistrationTemplate.Forms.Fields.Attribute" )
+                    .AsNoTracking()
+                    .Where( r => r.Id == RegistrationId.Value )
+                    .FirstOrDefault();
+            }
 
-                if ( RegistrationState == null && RegistrationInstanceId.HasValue )
-                {
-                    var registrationInstance = new RegistrationInstanceService( rockContext )
-                        .Queryable( "RegistrationTemplate.Fees,RegistrationTemplate.Discounts,RegistrationTemplate.Forms.Fields.Attribute" )
-                        .AsNoTracking()
-                        .Where( r => r.Id == RegistrationInstanceId.Value )
-                        .FirstOrDefault();
+            if ( RegistrationState == null && RegistrationInstanceId.HasValue )
+            {
+                var registrationInstance = new RegistrationInstanceService( rockContext )
+                    .Queryable( "Account,RegistrationTemplate.Fees,RegistrationTemplate.Discounts,RegistrationTemplate.Forms.Fields.Attribute" )
+                    .AsNoTracking()
+                    .Where( r => r.Id == RegistrationInstanceId.Value )
+                    .FirstOrDefault();
 
-                    if ( registrationInstance != null )
-                    {
-                        RegistrationState = new Registration();
-                        RegistrationState.RegistrationInstance = registrationInstance;
-                    }
-                }
-
-                if ( RegistrationState != null && !RegistrationState.Registrants.Any() )
+                if ( registrationInstance != null )
                 {
-                    var registrant = new RegistrationRegistrant();
-                    RegistrationState.Registrants.Add( registrant );
+                    RegistrationState = new Registration();
+                    RegistrationState.RegistrationInstance = registrationInstance;
                 }
             }
+
+            if ( RegistrationState != null && !RegistrationState.Registrants.Any() )
+            {
+                CreateRegistrants( 1 );
+            }
+            
         }
 
         /// <summary>
@@ -417,45 +408,50 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void RegisterScript()
         {
-            var template = RegistrationState.RegistrationInstance.RegistrationTemplate;
-
             string script = string.Format( @"
-    function adjustHowMany( var adjustment ) {{
+    
+    function adjustHowMany( adjustment ) {{
 
-        int minRegistrants = parseInt($('#{0}').val(), 10);
-        int maxRegistrants = parseInt($('#{1}').val(), 10);
+        var minRegistrants = parseInt($('#{0}').val(), 10);
+        var maxRegistrants = parseInt($('#{1}').val(), 10);
 
         var $hfHowMany = $('#{2}');
-        int howMany = parseInt($hfHowMany.val(), 10) + adjustment;
+        var howMany = parseInt($hfHowMany.val(), 10) + adjustment;
 
         var $lblHowMany = $('#{3}');
         if ( howMany > 0 && howMany <= maxRegistrants ) {{
             $hfHowMany.val(howMany);
-            $lblHowMany.val(howMany);
+            $lblHowMany.html(howMany);
         }}
 
-        var $lbHowManyAdd = $('#{4}');
+        var $lbHowManyAdd = $('a.js-how-many-add');
         if ( howMany >= maxRegistrants ) {{
             $lbHowManyAdd.addClass( 'disabled' );
         }} else {{
             $lbHowManyAdd.removeClass( 'disabled' );
         }}
         
-        var $lbHowManySubtract = $('#{5}');
-        if ( howMany <= $hfMinRegistrants ) {{
+        var $lbHowManySubtract = $('a.js-how-many-subtract');
+        if ( howMany <= minRegistrants ) {{
             $lbHowManySubtract.addClass( 'disabled' );
         }} else {{
             $lbHowManySubtract.removeClass( 'disabled' );
         }}
+    }};
 
-    }}
-", 
+    $('a.js-how-many-add').click( function() {{
+        adjustHowMany( 1 );
+    }} );
+
+    $('a.js-how-many-subtract').click( function() {{
+        adjustHowMany( -1 );
+    }} );
+
+",
                 hfMinRegistrants.ClientID,      // {0}
                 hfMaxRegistrants.ClientID,      // {1}
                 hfHowMany.ClientID,             // {2}
-                lblHowMany.ClientID,            // {3}
-                lbHowManyAdd.ClientID,          // {4}
-                lbHowManySubtract.ClientID );   // {5}
+                lblHowMany.ClientID );          // {3}
 
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "adjustHowMany", script, true );
         }
@@ -465,6 +461,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void ShowHowMany()
         {
+
             if ( MaxRegistrants > MinRegistrants )
             {
                 hfMaxRegistrants.Value = MaxRegistrants.ToString();
@@ -496,20 +493,21 @@ namespace RockWeb.Blocks.Event
                 {
                     ShowHowMany();
                 }
-
-                if ( CurrentRegistrantIndex >= RegistrantCount )
+                else if ( CurrentRegistrantIndex >= RegistrantCount )
                 {
                     ShowSummary();
                 }
-
-                string title = RegistrantCount <= 1 ? "Individual" : RegistrantCount.ToOrdinalWords().Humanize(LetterCasing.Title) + " Individual";
-                if ( CurrentFormIndex > 0 )
+                else
                 {
-                    title += " (cont)";
-                }
-                lRegistrantTitle.Text = title;
+                    string title = RegistrantCount <= 1 ? "Individual" : ( CurrentRegistrantIndex + 1 ).ToOrdinalWords().Humanize( LetterCasing.Title ) + " Individual";
+                    if ( CurrentFormIndex > 0 )
+                    {
+                        title += " (cont)";
+                    }
+                    lRegistrantTitle.Text = title;
 
-                SetVisiblePanel( 1 );
+                    SetVisiblePanel( 1 );
+                }
             }
             else
             {
@@ -542,10 +540,10 @@ namespace RockWeb.Blocks.Event
         {
             CurrentPanel = currentPanel;
 
-            pnlHowMany.Visible = CurrentPanel <= 1;
+            pnlHowMany.Visible = CurrentPanel <= 0;
             pnlRegistrant.Visible = CurrentPanel == 1;
-            pnlSummaryAndPayment.Visible = CurrentPanel == 1;
-            pnlSuccess.Visible = CurrentPanel == 1;
+            pnlSummaryAndPayment.Visible = CurrentPanel == 2;
+            pnlSuccess.Visible = CurrentPanel == 3;
         }
 
         #endregion

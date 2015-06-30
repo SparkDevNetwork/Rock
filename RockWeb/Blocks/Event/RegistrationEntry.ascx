@@ -11,8 +11,8 @@
         <asp:HiddenField ID="hfMaxRegistrants" runat="server" />
         <asp:HiddenField ID="hfHowMany" runat="server" />
         <asp:Label ID="lblHowMany" runat="server" Text="1" />
-        <asp:LinkButton id="lbHowManyAdd" runat="server" CssClass="btn btn-default js-how-many-add" OnClick="lbHowManyAdd_Click"><i class=""></i></asp:LinkButton>
-        <asp:LinkButton id="lbHowManySubtract" runat="server" CssClass="btn btn-default js-how-many-subtract" OnClick="lbHowManySubtract_Click"><i class=""></i></asp:LinkButton>
+        <a class="btn btn-default js-how-many-add"><i class="fa fa-plus fa-lg"></i></a>
+        <a class="btn btn-default js-how-many-subtract"><i class="fa fa-minus fa-lg"></i></a>
         <div class="actions">
             <asp:LinkButton ID="lbHowManyNext" runat="server" AccessKey="n" Text="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbHowManyNext_Click" />
         </div>
