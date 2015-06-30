@@ -80,7 +80,7 @@ namespace Rock.Reporting.DataFilter
                 }
                 else
                 {
-                    writer.AddAttribute( "class", "data-view-filter-field-label" );
+                    writer.AddAttribute( "class", "filterfield-label" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Span );
                     writer.Write( ddlEntityField.SelectedItem.Text );
                     writer.RenderEndTag();
