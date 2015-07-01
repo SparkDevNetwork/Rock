@@ -213,6 +213,35 @@ namespace Rock.Rest.Controllers
             return familyResults.DistinctBy(f => f.Id).AsQueryable(); 
         }
 
+
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/Groups/GetFamily/{familyId}" )]
+        public FamilySearchResult GetFamily( int familyId )
+        {
+            RockContext rockContext = new RockContext();
+            Guid homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
+
+            return new GroupService( rockContext ).Queryable().AsNoTracking()
+                                                    .Where( g=> g.Id == familyId)
+                                                    .Select( f => new FamilySearchResult
+                                                        {
+                                                            Id = f.Id,
+                                                            Name = f.Name,
+                                                            FamilyMembers = f.Members.ToList(),
+                                                            HomeLocation = f.GroupLocations
+                                                                            .Where( l => l.GroupLocationTypeValue.Guid == homeAddressGuid )
+                                                                            .OrderByDescending( l => l.IsMailingLocation )
+                                                                            .Select( l => l.Location )
+                                                                            .FirstOrDefault(),
+                                                            MainPhone = f.Members
+                                                                            .OrderBy( m => m.GroupRole.Order )
+                                                                            .ThenBy( m => m.Person.Gender )
+                                                                            .FirstOrDefault()
+                                                                            .Person.PhoneNumbers.OrderBy( p => p.NumberTypeValue.Order ).FirstOrDefault()
+                                                        } ).FirstOrDefault();
+        }
+
         /// <summary>
         /// Gets the guests (known relationship of can check-in) for given family.
         /// </summary>
