@@ -37,34 +37,88 @@ namespace Rock.Model
 
         #region Entity Properties
 
+        /// <summary>
+        /// Gets or sets the connection opportunity identifier.
+        /// </summary>
+        /// <value>
+        /// The connection opportunity identifier.
+        /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int ConnectionOpportunityId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The person alias identifier.
+        /// </value>
         [Required]
         [DataMember]
         public int PersonAliasId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the comments.
+        /// </summary>
+        /// <value>
+        /// The comments.
+        /// </value>
         [DataMember]
         public string Comments { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connection status identifier.
+        /// </summary>
+        /// <value>
+        /// The connection status identifier.
+        /// </value>
         [Required]
         [DataMember]
         public int ConnectionStatusId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the state of the connection.
+        /// </summary>
+        /// <value>
+        /// The state of the connection.
+        /// </value>
         [Required]
         [DataMember]
         public ConnectionState ConnectionState { get; set; }
 
+        /// <summary>
+        /// Gets or sets the followup date.
+        /// </summary>
+        /// <value>
+        /// The followup date.
+        /// </value>
         [DataMember]
         public DateTime? FollowupDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the campus identifier.
+        /// </summary>
+        /// <value>
+        /// The campus identifier.
+        /// </value>
         [DataMember]
         public int? CampusId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the assigned group identifier.
+        /// </summary>
+        /// <value>
+        /// The assigned group identifier.
+        /// </value>
         [DataMember]
         public int? AssignedGroupId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connector person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The connector person alias identifier.
+        /// </value>
         [DataMember]
         public int? ConnectorPersonAliasId { get; set; }
 
@@ -72,24 +126,66 @@ namespace Rock.Model
 
         #region Virtual Properties
 
+        /// <summary>
+        /// Gets or sets the connection status.
+        /// </summary>
+        /// <value>
+        /// The connection status.
+        /// </value>
         [DataMember]
         public virtual ConnectionStatus ConnectionStatus { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connection opportunity.
+        /// </summary>
+        /// <value>
+        /// The connection opportunity.
+        /// </value>
         [DataMember]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
+        /// <summary>
+        /// Gets or sets the person alias.
+        /// </summary>
+        /// <value>
+        /// The person alias.
+        /// </value>
         [DataMember]
         public virtual PersonAlias PersonAlias { get; set; }
 
+        /// <summary>
+        /// Gets or sets the campus.
+        /// </summary>
+        /// <value>
+        /// The campus.
+        /// </value>
         [DataMember]
         public virtual Campus Campus { get; set; }
 
+        /// <summary>
+        /// Gets or sets the assigned group.
+        /// </summary>
+        /// <value>
+        /// The assigned group.
+        /// </value>
         [DataMember]
         public virtual Group AssignedGroup { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connector person alias.
+        /// </summary>
+        /// <value>
+        /// The connector person alias.
+        /// </value>
         [DataMember]
         public virtual PersonAlias ConnectorPersonAlias { get; set; }
 
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionRequestWorkflow">ConnectionRequestWorkflows</see> who are associated with the ConnectionRequest.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.ConnectionRequestWorkflow">ConnectionRequestWorkflows</see> who are associated with the ConnectionRequest.
+        /// </value>
         [DataMember]
         public virtual ICollection<ConnectionRequestWorkflow> ConnectionRequestWorkflows
         {
@@ -99,6 +195,12 @@ namespace Rock.Model
 
         private ICollection<ConnectionRequestWorkflow> _connectionRequestWorkflows;
 
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionRequestActivity">ConnectionRequestActivities</see> who are associated with the ConnectionRequest.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.ConnectionRequestActivity">ConnectionRequestActivities</see> who are associated with the ConnectionRequest.
+        /// </value>
         [DataMember]
         public virtual ICollection<ConnectionRequestActivity> ConnectionRequestActivities
         {

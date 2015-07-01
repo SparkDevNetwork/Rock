@@ -754,14 +754,8 @@ namespace RockWeb.Blocks.Involvement
                     ddlWorkflowType.SelectedValue = connectionOpportunityWorkflow.WorkflowTypeId.ToString();
                 }
 
-                if ( connectionOpportunityWorkflow.TriggerType == null )
-                {
-                    ddlTriggerType.SelectedValue = "0";
-                }
-                else
-                {
-                    ddlTriggerType.SelectedValue = connectionOpportunityWorkflow.TriggerType.ConvertToInt().ToString();
-                }
+                ddlTriggerType.SelectedValue = connectionOpportunityWorkflow.TriggerType.ConvertToInt().ToString();
+
             }
             else
             {

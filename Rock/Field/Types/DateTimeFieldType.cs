@@ -16,8 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
-
+using System.Web.UI.WebControls;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -93,7 +94,7 @@ namespace Rock.Field.Types
                     {
                         if ( days > 0 )
                         {
-                            return string.Format( "Current Time plus {0} minues", days.Value );
+                            return string.Format( "Current Time plus {0} minutes", days.Value );
                         }
                         else
                         {
@@ -130,12 +131,13 @@ namespace Rock.Field.Types
 
                     if ( !condensed )
                     {
-                        if ( configurationValues != null &&
-                            configurationValues.ContainsKey( "displayDiff" ) )
+                        if ( configurationValues != null && configurationValues.ContainsKey( "displayDiff" ) )
                         {
-                            bool displayDiff = false;
-                            if ( bool.TryParse( configurationValues["displayDiff"].Value, out displayDiff ) && displayDiff )
+                            bool displayDiff = configurationValues["displayDiff"].Value.AsBooleanOrNull() ?? false;
+                            if ( displayDiff )
+                            {
                                 formattedValue += " (" + dateValue.ToElapsedString( true, true ) + ")";
+                            }
                         }
                     }
                 }
@@ -234,11 +236,79 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
         {
-            var dtPicker = new DateTimePicker();
-            dtPicker.ID = string.Format( "{0}_dtPicker", id );
-            dtPicker.AddCssClass( "js-filter-control" );
-            dtPicker.DisplayCurrentOption = true;
-            return dtPicker;
+            var dateFiltersPanel = new Panel();
+            dateFiltersPanel.ID = string.Format( "{0}_dtFilterControls", id );
+
+            var datePickerPanel = new Panel();
+            dateFiltersPanel.Controls.Add( datePickerPanel );
+
+            var datePicker = new DateTimePicker();
+            datePicker.ID = string.Format( "{0}_dtPicker", id );
+            datePicker.DisplayCurrentOption = true;
+            datePickerPanel.AddCssClass( "js-filter-control" );
+            datePickerPanel.Controls.Add( datePicker );
+
+            var slidingDateRangePicker = new SlidingDateRangePicker();
+            slidingDateRangePicker.ID = string.Format( "{0}_dtSlidingDateRange", id );
+            slidingDateRangePicker.AddCssClass( "js-filter-control-between" );
+            slidingDateRangePicker.Label = string.Empty;
+            slidingDateRangePicker.PreviewLocation = SlidingDateRangePicker.DateRangePreviewLocation.Right;
+            dateFiltersPanel.Controls.Add( slidingDateRangePicker );
+
+            return dateFiltersPanel;
+        }
+
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var dateFiltersPanel = control as Panel;
+            var datePicker = dateFiltersPanel.ControlsOfTypeRecursive<DateTimePicker>().FirstOrDefault();
+            var slidingDateRangePicker = dateFiltersPanel.ControlsOfTypeRecursive<SlidingDateRangePicker>().FirstOrDefault();
+            string datePickerValue = string.Empty;
+            string slidingDateRangePickerValue = string.Empty;
+            if ( datePicker != null )
+            {
+                datePickerValue = this.GetEditValue( datePicker, configurationValues );
+            }
+
+            if ( slidingDateRangePicker != null )
+            {
+                slidingDateRangePickerValue = slidingDateRangePicker.DelimitedValues;
+            }
+
+            // use Tab Delimited since slidingDateRangePicker is | delimited
+            return string.Format( "{0}\t{1}", datePickerValue, slidingDateRangePickerValue );
+        }
+
+        /// <summary>
+        /// Sets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            // uses Tab Delimited since slidingDateRangePicker is | delimited
+            var filterValues = value.Split( new string[] { "\t" }, StringSplitOptions.None );
+
+            var dateFiltersPanel = control as Panel;
+
+            var dateTimePicker = dateFiltersPanel.ControlsOfTypeRecursive<DateTimePicker>().FirstOrDefault();
+            if ( dateTimePicker != null && filterValues.Length > 0 )
+            {
+                this.SetEditValue( dateTimePicker, configurationValues, filterValues[0] );
+            }
+
+            var slidingDateRangePicker = dateFiltersPanel.ControlsOfTypeRecursive<SlidingDateRangePicker>().FirstOrDefault();
+            if ( slidingDateRangePicker != null && filterValues.Length > 1 )
+            {
+                slidingDateRangePicker.DelimitedValues = filterValues[1];
+            }
         }
 
         /// <summary>
@@ -254,31 +324,8 @@ namespace Rock.Field.Types
         public override string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
         {
             string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
-
-            var format = @"
-var useCurrentDateOffset = $('.js-current-datetime-checkbox', $selectedContent).is(':checked');
-var returnValue = '';
-if (useCurrentDateOffset) {{
-    var minsOffset = $('.js-current-datetime-offset', $selectedContent).val();
-    if (minsOffset > 0) {{
-        returnValue = 'Current Time plus ' + minsOffset + ' minutes'; 
-    }}
-    else if (minsOffset < 0) {{
-        returnValue = 'Current Time minus ' + -minsOffset + ' minutes'; 
-    }}
-    else {{
-        returnValue = 'Current Time';
-    }}
-}}
-else {{
-   var dateValue = ( $('input.js-datetime-date', $selectedContent).filter(':visible').length ?  (' ' +  $('input.js-datetime-date', $selectedContent).filter(':visible').val()  + ' ') : '' );
-   var timeValue = ( $('input.js-datetime-time', $selectedContent).filter(':visible').length ?  (' ' +  $('input.js-datetime-time', $selectedContent).filter(':visible').val()  + ' ') : '' );
-   returnValue = dateValue + ' ' + timeValue;
-}}
-result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' \'' + returnValue + '\''";
-
+            var format = "return Rock.reporting.formatFilterForDateTimeField('{0}', $selectedContent);";
             return string.Format( format, titleJs );
-
         }
 
         /// <summary>

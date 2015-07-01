@@ -36,10 +36,22 @@ namespace Rock.Model
 
         #region Entity Properties
 
+        /// <summary>
+        /// Gets or sets the connection opportunity identifier.
+        /// </summary>
+        /// <value>
+        /// The connection opportunity identifier.
+        /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int ConnectionOpportunityId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group identifier.
+        /// </summary>
+        /// <value>
+        /// The group identifier.
+        /// </value>
         [Required]
         [DataMember]
         public int GroupId { get; set; }
@@ -48,9 +60,21 @@ namespace Rock.Model
 
         #region Virtual Properties
 
+        /// <summary>
+        /// Gets or sets the connection opportunity.
+        /// </summary>
+        /// <value>
+        /// The connection opportunity.
+        /// </value>
         [DataMember]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group.
+        /// </summary>
+        /// <value>
+        /// The group.
+        /// </value>
         [DataMember]
         public virtual Group Group { get; set; }
 
