@@ -339,7 +339,7 @@ namespace Rock.Rest.Controllers
                     Id = a.Id,
                     Name = showFullNameReversed
                     ? Person.FormatFullNameReversed( a.LastName, a.NickName, a.SuffixValueId, a.RecordTypeValueId )
-                    : Person.FormatFullName( a.LastName, a.NickName, a.SuffixValueId, a.RecordTypeValueId ),
+                    : Person.FormatFullName( a.NickName, a.LastName, a.SuffixValueId, a.RecordTypeValueId ),
                     IsActive = a.RecordStatusValueId.HasValue && a.RecordStatusValueId == activeRecordStatusValueId
                 } );
 
