@@ -86,17 +86,27 @@
                 var $itemDetails = $selectedItem.find('.picker-select-item-details');
 
                 if ($itemDetails.attr('data-has-details') == 'false') {
+                    // add a spinner that slides down in case we have to wait on the server for a little bit
+                    var $spinner = $('<i/>').addClass('fa fa-refresh fa-spin margin-l-md').fadeTo(0, 0.2).hide();
+                    $itemDetails.show();
+                    $spinner.appendTo($itemDetails);
+                    $spinner.slideDown(500);
+
                     // fetch the search details from the server
                     $.get(restDetailUrl + '?Id=' + selectedPersonId, function (responseText, textStatus, jqXHR) {
-                        $itemDetails.html(responseText);
                         $itemDetails.attr('data-has-details', true);
+
+                        // hide then set the html so that we can get the slideDown effect
+                        $itemDetails.stop().hide().html(responseText);
+                        $itemDetails.slideDown(function () {
+                            exports.personPickers[controlId].updateScrollbar();
+                        })
+                    });
+                } else {
+                    $selectedItem.find('.picker-select-item-details:hidden').slideDown(function () {
                         exports.personPickers[controlId].updateScrollbar();
                     });
                 }
-
-                $selectedItem.find('.picker-select-item-details:hidden').slideDown(function () {
-                    exports.personPickers[controlId].updateScrollbar();
-                });
             });
 
             $('#' + controlId).hover(
