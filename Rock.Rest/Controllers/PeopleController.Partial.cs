@@ -264,7 +264,8 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/Search" )]
-        public IQueryable<PersonSearchResult> Search( string name )
+        [Obsolete( "use api/People/Search?name=... instead" )]
+        public IQueryable<PersonSearchResultBase> Search( string name )
         {
             return Search( name, false, false );
         }
@@ -278,7 +279,8 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/Search/{name}/{includeHtml}" )]
-        public IQueryable<PersonSearchResult> Search( string name, bool includeHtml )
+        [Obsolete( "use api/People/Search?name=... instead" )]
+        public IQueryable<PersonSearchResultBase> Search( string name, bool includeHtml )
         {
             return Search( name, includeHtml, false );
         }
@@ -293,10 +295,28 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/Search/{name}/{includeHtml}/{includeBusinesses}" )]
-        public IQueryable<PersonSearchResult> Search( string name, bool includeHtml, bool includeBusinesses )
+        [Obsolete( "use api/People/Search?name=... instead" )]
+        public IQueryable<PersonSearchResultBase> Search( string name, bool includeHtml, bool includeBusinesses )
+        {
+            return this.Search( name, includeHtml, true, includeBusinesses, false );
+        }
+
+        /// <summary>
+        /// Returns results to the Person Picker
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="includeHtml">if set to <c>true</c> [include HTML].</param>
+        /// <param name="includeDetails">if set to <c>true</c> [include details].</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/Search" )]
+        public IQueryable<PersonSearchResultBase> Search( string name, bool includeHtml, bool includeDetails, bool includeBusinesses = false, bool includeDeceased = false )
         {
             int count = 20;
-            bool reversed;
+            bool showFullNameReversed;
             bool allowFirstNameOnly = false;
 
             var searchComponent = Rock.Search.SearchContainer.GetComponent( typeof( Rock.Search.Person.Name ).FullName );
@@ -305,58 +325,77 @@ namespace Rock.Rest.Controllers
                 allowFirstNameOnly = searchComponent.GetAttributeValue( "FirstNameSearch" ).AsBoolean();
             }
 
-            IOrderedQueryable<Person> sortedPersonQry = ( this.Service as PersonService )
-                .GetByFullNameOrdered( name, true, includeBusinesses, allowFirstNameOnly, out reversed );
+            var activeRecordStatusValue = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+            int activeRecordStatusValueId = activeRecordStatusValue != null ? activeRecordStatusValue.Id : 0;
 
+            IQueryable<Person> sortedPersonQry = ( this.Service as PersonService )
+                .GetByFullNameOrdered( name, true, includeBusinesses, allowFirstNameOnly, out showFullNameReversed ).Take( count );
+
+            if ( includeDetails == false )
+            {
+                var simpleResultQry = sortedPersonQry.Select( a => new { a.Id, a.FirstName, a.NickName, a.LastName, a.SuffixValueId, a.RecordTypeValueId, a.RecordStatusValueId } );
+                var simpleResult = simpleResultQry.ToList().Select( a => new PersonSearchResultBase
+                {
+                    Id = a.Id,
+                    Name = showFullNameReversed
+                    ? Person.FormatFullNameReversed( a.LastName, a.NickName, a.SuffixValueId, a.RecordTypeValueId )
+                    : Person.FormatFullName( a.LastName, a.NickName, a.SuffixValueId, a.RecordTypeValueId ),
+                    IsActive = a.RecordStatusValueId.HasValue && a.RecordStatusValueId == activeRecordStatusValueId
+                } );
+
+                return simpleResult.AsQueryable();
+            }
+            else
+            {
+                List<PersonSearchResult> searchResult = SearchWithDetails( sortedPersonQry, showFullNameReversed );
+                return searchResult.AsQueryable();
+            }
+        }
+
+        /// <summary>
+        /// Gets the search details (for the person picker)
+        /// </summary>
+        /// <param name="Id">The identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetSearchDetails" )]
+        public string GetSearchDetails( int Id )
+        {
+            PersonSearchResult personSearchResult = new PersonSearchResult();
+            var person = this.Get().Include( a => a.PhoneNumbers ).Where( a => a.Id == Id ).FirstOrDefault();
+            if ( person != null )
+            {
+                GetPersonSearchDetails( personSearchResult, person );
+                string searchDetailsFormat = @"{0}<div class='contents'>{1}</div>";
+                return string.Format( searchDetailsFormat, personSearchResult.PickerItemDetailsImageHtml, personSearchResult.PickerItemDetailsPersonInfoHtml );
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Searches the with details.
+        /// </summary>
+        /// <param name="reversed">if set to <c>true</c> [reversed].</param>
+        /// <param name="sortedPersonQry">The sorted person qry.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private List<PersonSearchResult> SearchWithDetails( IQueryable<Person> sortedPersonQry, bool showFullNameReversed )
+        {
             var rockContext = this.Service.Context as Rock.Data.RockContext;
-
             var phoneNumbersQry = new PhoneNumberService( rockContext ).Queryable();
-
-            // join with PhoneNumbers to avoid lazy loading
-            var joinQry = sortedPersonQry.GroupJoin( phoneNumbersQry, p => p.Id, n => n.PersonId, ( Person, PhoneNumbers ) => new { Person, PhoneNumbers } );
-
-            var topQry = joinQry.Take( count );
-
-            var sortedPersonList = topQry.AsNoTracking().ToList();
-
-            var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-            string itemDetailFormat = @"
-<div class='picker-select-item-details clearfix' style='display: none;'>
-	{0}
-	<div class='contents'>
-        {1}
-	</div>
-</div>
-";
+            var sortedPersonList = sortedPersonQry.Include( a => a.PhoneNumbers ).AsNoTracking().ToList();
             Guid activeRecord = new Guid( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE );
-            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), rockContext );
-            int adultRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
-
-            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), rockContext ).Id;
-
-            // figure out Family, Address, Spouse
-            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
             List<PersonSearchResult> searchResult = new List<PersonSearchResult>();
-            foreach ( var item in sortedPersonList )
+            foreach ( var person in sortedPersonList )
             {
-                var person = item.Person;
-                person.PhoneNumbers = item.PhoneNumbers.ToList();
                 PersonSearchResult personSearchResult = new PersonSearchResult();
-                personSearchResult.Name = reversed ? person.FullNameReversed : person.FullName;
-
-                Guid? recordTypeValueGuid = null;
-                if ( person.RecordTypeValueId.HasValue )
-                {
-                    recordTypeValueGuid = DefinedValueCache.Read( person.RecordTypeValueId.Value, rockContext ).Guid;
-                }
-
-                personSearchResult.ImageHtmlTag = Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, recordTypeValueGuid, 50, 50 );
-                personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
-                personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Read( person.ConnectionStatusValueId.Value, rockContext ).Value : string.Empty;
-                personSearchResult.Gender = person.Gender.ConvertToString();
-                personSearchResult.Email = person.Email;
-
+                personSearchResult.Id = person.Id;
+                personSearchResult.Name = showFullNameReversed ? person.FullNameReversed : person.FullName;
                 if ( person.RecordStatusValueId.HasValue )
                 {
                     var recordStatus = DefinedValueCache.Read( person.RecordStatusValueId.Value, rockContext );
@@ -369,113 +408,152 @@ namespace Rock.Rest.Controllers
                     personSearchResult.IsActive = false;
                 }
 
-                personSearchResult.Id = person.Id;
-
-                string imageHtml = string.Format(
-                    "<div class='person-image' style='background-image:url({0}&width=65);background-size:cover;background-position:50%'></div>",
-                    Person.GetPhotoUrl( person.PhotoId, person.Age, person.Gender, recordTypeValueGuid ) );
-
-                string personInfoHtml = string.Empty;
-                Guid matchLocationGuid;
-                bool isBusiness;
-                if ( recordTypeValueGuid.HasValue && recordTypeValueGuid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
-                {
-                    isBusiness = true;
-                    matchLocationGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid();
-                }
-                else
-                {
-                    isBusiness = false;
-                    matchLocationGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
-                }
-
-                var familyGroupMember = groupMemberService.Queryable()
-                    .Where( a => a.PersonId == person.Id )
-                    .Where( a => a.Group.GroupTypeId == groupTypeFamilyId )
-                    .Select( s => new
-                    {
-                        s.GroupRoleId,
-                        GroupLocation = s.Group.GroupLocations.Where( a => a.GroupLocationTypeValue.Guid == matchLocationGuid ).Select( a => a.Location ).FirstOrDefault()
-                    } ).FirstOrDefault();
-
-                int? personAge = person.Age;
-
-                if ( familyGroupMember != null )
-                {
-                    if ( isBusiness )
-                    {
-                        personInfoHtml += "Business";
-                    }
-                    else
-                    {
-                        personInfoHtml += familyGroupType.Roles.First( a => a.Id == familyGroupMember.GroupRoleId ).Name;
-                    }
-
-                    if ( personAge != null )
-                    {
-                        personInfoHtml += " <em>(" + personAge.ToString() + " yrs old)</em>";
-                    }
-
-                    if ( familyGroupMember.GroupRoleId == adultRoleId )
-                    {
-                        Person spouse = person.GetSpouse( this.Service.Context as Rock.Data.RockContext );
-                        if ( spouse != null )
-                        {
-                            string spouseFullName = spouse.FullName;
-                            personInfoHtml += "<p><strong>Spouse:</strong> " + spouseFullName + "</p>";
-                            personSearchResult.SpouseName = spouseFullName;
-                        }
-                    }
-                }
-                else
-                {
-                    if ( personAge != null )
-                    {
-                        personInfoHtml += personAge.ToString() + " yrs old";
-                    }
-                }
-
-                if ( familyGroupMember != null )
-                {
-                    var location = familyGroupMember.GroupLocation;
-
-                    if ( location != null )
-                    {
-                        string addressHtml = "<h5>Address</h5>" + location.GetFullStreetAddress().ConvertCrLfToHtmlBr();
-                        personSearchResult.Address = location.GetFullStreetAddress();
-                        personInfoHtml += addressHtml;
-                    }
-                }
-
-                if ( includeHtml )
-                {
-                    // Generate the HTML for Email and PhoneNumbers
-                    if ( !string.IsNullOrWhiteSpace( person.Email ) || person.PhoneNumbers.Any() )
-                    {
-                        string emailAndPhoneHtml = "<p class='margin-t-sm'>";
-                        emailAndPhoneHtml += person.Email;
-                        string phoneNumberList = string.Empty;
-                        foreach ( var phoneNumber in person.PhoneNumbers )
-                        {
-                            var phoneType = DefinedValueCache.Read( phoneNumber.NumberTypeValueId ?? 0, rockContext );
-                            phoneNumberList += string.Format(
-                                "<br>{0} <small>{1}</small>",
-                                phoneNumber.IsUnlisted ? "Unlisted" : phoneNumber.NumberFormatted,
-                                phoneType != null ? phoneType.Value : string.Empty );
-                        }
-
-                        emailAndPhoneHtml += phoneNumberList + "<p>";
-
-                        personInfoHtml += emailAndPhoneHtml;
-                    }
-
-                    personSearchResult.PickerItemDetailsHtml = string.Format( itemDetailFormat, imageHtml, personInfoHtml );
-                }
+                GetPersonSearchDetails( personSearchResult, person );
 
                 searchResult.Add( personSearchResult );
             }
 
-            return searchResult.AsQueryable();
+            return searchResult;
+        }
+
+        /// <summary>
+        /// Gets the person search details.
+        /// </summary>
+        /// <param name="personSearchResult">The person search result.</param>
+        /// <param name="person">The person.</param>
+        private void GetPersonSearchDetails( PersonSearchResult personSearchResult, Person person )
+        {
+            var rockContext = this.Service.Context as Rock.Data.RockContext;
+
+            var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
+            string itemDetailFormat = @"
+<div class='picker-select-item-details clearfix' style='display: none;'>
+	{0}
+	<div class='contents'>
+        {1}
+	</div>
+</div>
+";
+
+            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), rockContext );
+            int adultRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+
+            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), rockContext ).Id;
+
+            // figure out Family, Address, Spouse
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+
+            Guid? recordTypeValueGuid = null;
+            if ( person.RecordTypeValueId.HasValue )
+            {
+                recordTypeValueGuid = DefinedValueCache.Read( person.RecordTypeValueId.Value, rockContext ).Guid;
+            }
+
+            personSearchResult.ImageHtmlTag = Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, recordTypeValueGuid, 50, 50 );
+            personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
+            personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Read( person.ConnectionStatusValueId.Value, rockContext ).Value : string.Empty;
+            personSearchResult.Gender = person.Gender.ConvertToString();
+            personSearchResult.Email = person.Email;
+
+            string imageHtml = string.Format(
+                "<div class='person-image' style='background-image:url({0}&width=65);background-size:cover;background-position:50%'></div>",
+                Person.GetPhotoUrl( person.PhotoId, person.Age, person.Gender, recordTypeValueGuid ) );
+
+            string personInfoHtml = string.Empty;
+            Guid matchLocationGuid;
+            bool isBusiness;
+            if ( recordTypeValueGuid.HasValue && recordTypeValueGuid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
+            {
+                isBusiness = true;
+                matchLocationGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid();
+            }
+            else
+            {
+                isBusiness = false;
+                matchLocationGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
+            }
+
+            var familyGroupMember = groupMemberService.Queryable()
+                .Where( a => a.PersonId == person.Id )
+                .Where( a => a.Group.GroupTypeId == groupTypeFamilyId )
+                .Select( s => new
+                {
+                    s.GroupRoleId,
+                    GroupLocation = s.Group.GroupLocations.Where( a => a.GroupLocationTypeValue.Guid == matchLocationGuid ).Select( a => a.Location ).FirstOrDefault()
+                } ).FirstOrDefault();
+
+            int? personAge = person.Age;
+
+            if ( familyGroupMember != null )
+            {
+                if ( isBusiness )
+                {
+                    personInfoHtml += "Business";
+                }
+                else
+                {
+                    personInfoHtml += familyGroupType.Roles.First( a => a.Id == familyGroupMember.GroupRoleId ).Name;
+                }
+
+                if ( personAge != null )
+                {
+                    personInfoHtml += " <em>(" + personAge.ToString() + " yrs old)</em>";
+                }
+
+                if ( familyGroupMember.GroupRoleId == adultRoleId )
+                {
+                    Person spouse = person.GetSpouse( this.Service.Context as Rock.Data.RockContext );
+                    if ( spouse != null )
+                    {
+                        string spouseFullName = spouse.FullName;
+                        personInfoHtml += "<p><strong>Spouse:</strong> " + spouseFullName + "</p>";
+                        personSearchResult.SpouseName = spouseFullName;
+                    }
+                }
+            }
+            else
+            {
+                if ( personAge != null )
+                {
+                    personInfoHtml += personAge.ToString() + " yrs old";
+                }
+            }
+
+            if ( familyGroupMember != null )
+            {
+                var location = familyGroupMember.GroupLocation;
+
+                if ( location != null )
+                {
+                    string addressHtml = "<h5>Address</h5>" + location.GetFullStreetAddress().ConvertCrLfToHtmlBr();
+                    personSearchResult.Address = location.GetFullStreetAddress();
+                    personInfoHtml += addressHtml;
+                }
+            }
+
+            // Generate the HTML for Email and PhoneNumbers
+            if ( !string.IsNullOrWhiteSpace( person.Email ) || person.PhoneNumbers.Any() )
+            {
+                string emailAndPhoneHtml = "<p class='margin-t-sm'>";
+                emailAndPhoneHtml += person.Email;
+                string phoneNumberList = string.Empty;
+                foreach ( var phoneNumber in person.PhoneNumbers )
+                {
+                    var phoneType = DefinedValueCache.Read( phoneNumber.NumberTypeValueId ?? 0, rockContext );
+                    phoneNumberList += string.Format(
+                        "<br>{0} <small>{1}</small>",
+                        phoneNumber.IsUnlisted ? "Unlisted" : phoneNumber.NumberFormatted,
+                        phoneType != null ? phoneType.Value : string.Empty );
+                }
+
+                emailAndPhoneHtml += phoneNumberList + "<p>";
+
+                personInfoHtml += emailAndPhoneHtml;
+            }
+
+            personSearchResult.PickerItemDetailsImageHtml = imageHtml;
+            personSearchResult.PickerItemDetailsPersonInfoHtml = personInfoHtml;
+            personSearchResult.PickerItemDetailsHtml = string.Format( itemDetailFormat, imageHtml, personInfoHtml );
         }
 
         /// <summary>
@@ -561,9 +639,9 @@ namespace Rock.Rest.Controllers
     }
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
-    public class PersonSearchResult
+    public class PersonSearchResultBase
     {
         /// <summary>
         /// Gets or sets the id.
@@ -581,6 +659,20 @@ namespace Rock.Rest.Controllers
         /// </value>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsActive { get; set; }
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    public class PersonSearchResult : PersonSearchResultBase
+    {
         /// <summary>
         /// Gets or sets the image HTML tag.
         /// </summary>
@@ -638,19 +730,27 @@ namespace Rock.Rest.Controllers
         public string Address { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is active.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsActive { get; set; }
-
-        /// <summary>
         /// Gets or sets the picker item details HTML.
         /// </summary>
         /// <value>
         /// The picker item details HTML.
         /// </value>
         public string PickerItemDetailsHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets the picker item details image HTML.
+        /// </summary>
+        /// <value>
+        /// The picker item details image HTML.
+        /// </value>
+        public string PickerItemDetailsImageHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets the picker item details person information HTML.
+        /// </summary>
+        /// <value>
+        /// The picker item details person information HTML.
+        /// </value>
+        public string PickerItemDetailsPersonInfoHtml { get; set; }
     }
 }
