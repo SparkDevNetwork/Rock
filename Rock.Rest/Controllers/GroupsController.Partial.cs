@@ -268,7 +268,7 @@ namespace Rock.Rest.Controllers
                             GuestFamilyMember guestFamilyMember = new GuestFamilyMember();
                             guestFamilyMember.Id = familyMember.PersonId;
                             guestFamilyMember.Guid = familyMember.Person.Guid;
-                            guestFamilyMember.FirstName = familyMember.Person.FirstName;
+                            guestFamilyMember.FirstName = familyMember.Person.NickName;
                             guestFamilyMember.LastName = familyMember.Person.LastName;
                             guestFamilyMember.PhotoUrl = familyMember.Person.PhotoUrl;
                             guestFamilyMember.CanCheckin = guests.Contains(familyMember.PersonId);
