@@ -36,21 +36,51 @@ namespace Rock.Model
 
         #region Entity Properties
 
+        /// <summary>
+        /// Gets or sets the connection request identifier.
+        /// </summary>
+        /// <value>
+        /// The connection request identifier.
+        /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int ConnectionRequestId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connection workflow identifier.
+        /// </summary>
+        /// <value>
+        /// The connection workflow identifier.
+        /// </value>
         [Required]
         [DataMember]
         public int ConnectionWorkflowId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the workflow identifier.
+        /// </summary>
+        /// <value>
+        /// The workflow identifier.
+        /// </value>
         [Required]
         [DataMember]
         public int WorkflowId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the trigger.
+        /// </summary>
+        /// <value>
+        /// The type of the trigger.
+        /// </value>
         [DataMember]
         public ConnectionWorkflowTriggerType TriggerType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the trigger qualifier.
+        /// </summary>
+        /// <value>
+        /// The trigger qualifier.
+        /// </value>
         [DataMember]
         public String TriggerQualifier { get; set; }
 
@@ -58,12 +88,30 @@ namespace Rock.Model
 
         #region Virtual Properties
 
+        /// <summary>
+        /// Gets or sets the connection request.
+        /// </summary>
+        /// <value>
+        /// The connection request.
+        /// </value>
         [DataMember]
         public virtual ConnectionRequest ConnectionRequest { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connection workflow.
+        /// </summary>
+        /// <value>
+        /// The connection workflow.
+        /// </value>
         [DataMember]
         public virtual ConnectionWorkflow ConnectionWorkflow { get; set; }
 
+        /// <summary>
+        /// Gets or sets the workflow.
+        /// </summary>
+        /// <value>
+        /// The workflow.
+        /// </value>
         [DataMember]
         public virtual Workflow Workflow { get; set; }
 

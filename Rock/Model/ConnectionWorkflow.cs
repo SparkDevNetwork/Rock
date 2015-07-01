@@ -36,19 +36,49 @@ namespace Rock.Model
 
         #region Entity Properties
 
+        /// <summary>
+        /// Gets or sets the connection type identifier.
+        /// </summary>
+        /// <value>
+        /// The connection type identifier.
+        /// </value>
         [DataMember]
         public int? ConnectionTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connection opportunity identifier.
+        /// </summary>
+        /// <value>
+        /// The connection opportunity identifier.
+        /// </value>
         [DataMember]
         public int? ConnectionOpportunityId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the workflow type identifier.
+        /// </summary>
+        /// <value>
+        /// The workflow type identifier.
+        /// </value>
         [Required]
         [DataMember]
         public int? WorkflowTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the trigger.
+        /// </summary>
+        /// <value>
+        /// The type of the trigger.
+        /// </value>
         [DataMember]
         public ConnectionWorkflowTriggerType TriggerType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the qualifier value.
+        /// </summary>
+        /// <value>
+        /// The qualifier value.
+        /// </value>
         [DataMember]
         public string QualifierValue { get; set; }
 
@@ -56,12 +86,30 @@ namespace Rock.Model
 
         #region Virtual Properties
 
+        /// <summary>
+        /// Gets or sets the type of the connection.
+        /// </summary>
+        /// <value>
+        /// The type of the connection.
+        /// </value>
         [DataMember]
         public virtual ConnectionType ConnectionType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connection opportunity.
+        /// </summary>
+        /// <value>
+        /// The connection opportunity.
+        /// </value>
         [DataMember]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the workflow.
+        /// </summary>
+        /// <value>
+        /// The type of the workflow.
+        /// </value>
         [DataMember]
         public virtual WorkflowType WorkflowType { get; set; }
 
