@@ -131,9 +131,6 @@ namespace RockWeb.Blocks.Involvement
             gConnectionOpportunityWorkflows.Actions.AddClick += gConnectionOpportunityWorkflows_Add;
             gConnectionOpportunityWorkflows.GridRebind += gConnectionOpportunityWorkflows_GridRebind;
 
-            gConnectionTypeWorkflows.DataKeyNames = new string[] { "Guid" };
-            gConnectionTypeWorkflows.GridRebind += gConnectionTypeWorkflows_GridRebind;
-
             gConnectionOpportunityCampuses.DataKeyNames = new string[] { "Guid" };
             gConnectionOpportunityCampuses.Actions.ShowAdd = true;
             gConnectionOpportunityCampuses.Actions.AddClick += gConnectionOpportunityCampuses_Add;
@@ -304,8 +301,13 @@ namespace RockWeb.Blocks.Involvement
                 connectionOpportunity.GroupMemberRoleId = ddlGroupRole.SelectedValue.AsInteger();
                 connectionOpportunity.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
 
+                int? orphanedPhotoId = null;
                 if ( imgupPhoto.BinaryFileId != null )
                 {
+                    if ( connectionOpportunity.PhotoId != imgupPhoto.BinaryFileId )
+                    {
+                        orphanedPhotoId = connectionOpportunity.PhotoId;
+                    }
                     connectionOpportunity.PhotoId = imgupPhoto.BinaryFileId.Value;
                 }
 
@@ -315,7 +317,7 @@ namespace RockWeb.Blocks.Involvement
                 }
 
                 // remove any workflows that removed in the UI
-                var uiWorkflows = WorkflowsState.Select( l => l.Guid );
+                var uiWorkflows = WorkflowsState.Where( w => w.ConnectionTypeId == null ).Select( l => l.Guid );
                 foreach ( var connectionOpportunityWorkflow in connectionOpportunity.ConnectionWorkflows.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList() )
                 {
                     connectionOpportunity.ConnectionWorkflows.Remove( connectionOpportunityWorkflow );
@@ -323,7 +325,7 @@ namespace RockWeb.Blocks.Involvement
                 }
 
                 // Add or Update workflows from the UI
-                foreach ( ConnectionWorkflow connectionOpportunityWorkflowState in WorkflowsState )
+                foreach ( ConnectionWorkflow connectionOpportunityWorkflowState in WorkflowsState.Where( w => w.ConnectionTypeId == null ) )
                 {
                     ConnectionWorkflow connectionOpportunityWorkflow = connectionOpportunity.ConnectionWorkflows.Where( a => a.Guid == connectionOpportunityWorkflowState.Guid ).FirstOrDefault();
                     if ( connectionOpportunityWorkflow == null )
@@ -396,6 +398,21 @@ namespace RockWeb.Blocks.Involvement
                     connectionOpportunity.LoadAttributes();
                     Rock.Attribute.Helper.GetEditValues( phAttributes, connectionOpportunity );
                     connectionOpportunity.SaveAttributeValues( rockContext );
+
+                    if ( orphanedPhotoId.HasValue )
+                    {
+                        BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                        var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
+                        if ( binaryFile != null )
+                        {
+                            string errorMessage;
+                            if ( binaryFileService.CanDelete( binaryFile, out errorMessage ) )
+                            {
+                                binaryFileService.Delete( binaryFile );
+                                rockContext.SaveChanges();
+                            }
+                        }
+                    }
                 } );
 
                 var qryParams = new Dictionary<string, string>();
@@ -691,6 +708,36 @@ namespace RockWeb.Blocks.Involvement
         }
 
         /// <summary>
+        /// Handles the RowDataBound event of the gConnectionOpportunityWorkflows control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gConnectionOpportunityWorkflows_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                if ( e.Row.DataItem.GetPropertyValue( "ConnectionTypeId" ) as int? != null )
+                {
+                    e.Row.AddCssClass( "inactive" );
+
+                    var deleteField = gConnectionOpportunityWorkflows.Columns.OfType<DeleteField>().First();
+                    var cell = ( e.Row.Cells[gConnectionOpportunityWorkflows.Columns.IndexOf( deleteField )] as DataControlFieldCell ).Controls[0];
+                    if ( cell != null )
+                    {
+                        cell.Visible = false;
+                    }
+
+                    var editField = gConnectionOpportunityWorkflows.Columns.OfType<EditField>().First();
+                    cell = ( e.Row.Cells[gConnectionOpportunityWorkflows.Columns.IndexOf( editField )] as DataControlFieldCell ).Controls[0];
+                    if ( cell != null )
+                    {
+                        cell.Visible = false;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles the Delete event of the gConnectionOpportunityWorkflows control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -924,56 +971,11 @@ namespace RockWeb.Blocks.Involvement
             {
                 c.Id,
                 c.Guid,
-                WorkflowType = c.WorkflowType.Name,
-                Trigger = c.TriggerType.ConvertToString()
+                WorkflowType = c.ConnectionTypeId != null ? c.WorkflowType.Name + " <span class='label label-default'>Inherited</span>" : c.WorkflowType.Name,
+                Trigger = c.TriggerType.ConvertToString(),
+                c.ConnectionTypeId
             } ).ToList();
             gConnectionOpportunityWorkflows.DataBind();
-        }
-
-        #endregion
-
-        #region ConnectionTypeWorkflow Events
-
-        /// <summary>
-        /// Handles the GridRebind event of the gConnectionTypeWorkflows control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void gConnectionTypeWorkflows_GridRebind( object sender, EventArgs e )
-        {
-            BindConnectionTypeWorkflowsGrid();
-        }
-
-        /// <summary>
-        /// Binds the connection type workflows grid.
-        /// </summary>
-        private void BindConnectionTypeWorkflowsGrid()
-        {
-            var inheritedWorkflows = new ConnectionTypeService( new RockContext() ).Get( PageParameter( "ConnectionTypeId" ).AsInteger() ).ConnectionWorkflows.ToList();
-            SetConnectionTypeWorkflowListOrder( inheritedWorkflows );
-            gConnectionTypeWorkflows.DataSource = inheritedWorkflows.Select( c => new
-            {
-                c.Id,
-                c.Guid,
-                WorkflowType = c.WorkflowType.Name,
-                Trigger = c.TriggerType.ConvertToString()
-            } ).ToList();
-            gConnectionTypeWorkflows.DataBind();
-        }
-
-        /// <summary>
-        /// Sets the connection type workflow list order.
-        /// </summary>
-        /// <param name="connectionTypeWorkflowList">The connection type workflow list.</param>
-        private void SetConnectionTypeWorkflowListOrder( List<ConnectionWorkflow> connectionTypeWorkflowList )
-        {
-            if ( connectionTypeWorkflowList != null )
-            {
-                if ( connectionTypeWorkflowList.Any() )
-                {
-                    connectionTypeWorkflowList.OrderBy( c => c.WorkflowType.Name ).ThenBy( c => c.TriggerType.ConvertToString() ).ToList();
-                }
-            }
         }
 
         #endregion
@@ -1041,6 +1043,7 @@ namespace RockWeb.Blocks.Involvement
             if ( connectionOpportunity == null )
             {
                 connectionOpportunity = new ConnectionOpportunity { Id = 0, IsActive = true, Name = "" };
+                connectionOpportunity.ConnectionType = new ConnectionTypeService( rockContext ).Get( PageParameter( "ConnectionTypeId" ).AsInteger() );
             }
 
             // Only users that have Edit rights to block, or edit rights to the calendar (from query string) should be able to edit
@@ -1121,6 +1124,7 @@ namespace RockWeb.Blocks.Involvement
             tglUseAllGroupsOfGroupType.Checked = connectionOpportunity.UseAllGroupsOfType;
 
             WorkflowsState = connectionOpportunity.ConnectionWorkflows.ToList();
+            WorkflowsState.AddRange( connectionOpportunity.ConnectionType.ConnectionWorkflows.ToList() );
             GroupsState = connectionOpportunity.ConnectionOpportunityGroups.ToList();
             CampusesState = connectionOpportunity.ConnectionOpportunityCampuses.ToList();
 
@@ -1133,8 +1137,6 @@ namespace RockWeb.Blocks.Involvement
             BindGroupGrid();
             BindWorkflowGrid();
             BindCampusGrid();
-
-            BindConnectionTypeWorkflowsGrid();
         }
 
         /// <summary>
