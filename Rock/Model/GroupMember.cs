@@ -398,7 +398,12 @@ namespace Rock.Model
         /// <returns></returns>
         public IEnumerable<GroupRequirementStatus> GetGroupRequirementsStatuses()
         {
-            var metRequirements = this.GroupMemberRequirements.Select( a => new { GroupRequirementId = a.GroupRequirement.Id, MeetsGroupRequirement = MeetsGroupRequirement.Meets } );
+            var metRequirements = this.GroupMemberRequirements.Select( a => new { 
+                GroupRequirementId = a.GroupRequirement.Id, 
+                MeetsGroupRequirement = a.RequirementMetDateTime.HasValue 
+                    ? MeetsGroupRequirement.Meets 
+                    : MeetsGroupRequirement.NotMet
+            } );
 
             // get all the group requirements that apply the group member's role
             var allGroupRequirements = this.Group.GroupRequirements.Where( a => !a.GroupRoleId.HasValue || a.GroupRoleId == this.GroupRoleId ).OrderBy( a => a.GroupRequirementType.Name );
