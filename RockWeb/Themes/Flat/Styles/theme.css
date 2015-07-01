@@ -4801,6 +4801,21 @@ a.help {
 .popover-content header h3 small {
   display: block;
 }
+.list-group-item:before,
+.list-group-item:after {
+  content: " ";
+  display: table;
+}
+.list-group-item:after {
+  clear: both;
+}
+.list-group-item .toggle-container {
+  display: inline-block;
+}
+.list-group-item .content {
+  display: block;
+  float: left;
+}
 .panel legend {
   border-color: #acf4e6;
 }
