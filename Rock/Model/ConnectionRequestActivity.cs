@@ -36,21 +36,51 @@ namespace Rock.Model
 
         #region Entity Properties
 
+        /// <summary>
+        /// Gets or sets the connection request identifier.
+        /// </summary>
+        /// <value>
+        /// The connection request identifier.
+        /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int ConnectionRequestId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connection activity type identifier.
+        /// </summary>
+        /// <value>
+        /// The connection activity type identifier.
+        /// </value>
         [Required]
         [DataMember]
         public int ConnectionActivityTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connector person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The connector person alias identifier.
+        /// </value>
         [DataMember]
         public int? ConnectorPersonAliasId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connection opportunity identifier.
+        /// </summary>
+        /// <value>
+        /// The connection opportunity identifier.
+        /// </value>
         [Required]
         [DataMember]
         public int? ConnectionOpportunityId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the note.
+        /// </summary>
+        /// <value>
+        /// The note.
+        /// </value>
         [DataMember]
         public String Note { get; set; }
 
@@ -58,15 +88,39 @@ namespace Rock.Model
 
         #region Virtual Properties
 
+        /// <summary>
+        /// Gets or sets the connection request.
+        /// </summary>
+        /// <value>
+        /// The connection request.
+        /// </value>
         [DataMember]
         public virtual ConnectionRequest ConnectionRequest { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the connection activity.
+        /// </summary>
+        /// <value>
+        /// The type of the connection activity.
+        /// </value>
         [DataMember]
         public virtual ConnectionActivityType ConnectionActivityType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connector person alias.
+        /// </summary>
+        /// <value>
+        /// The connector person alias.
+        /// </value>
         [DataMember]
         public virtual PersonAlias ConnectorPersonAlias { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connection opportunity.
+        /// </summary>
+        /// <value>
+        /// The connection opportunity.
+        /// </value>
         [DataMember]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 

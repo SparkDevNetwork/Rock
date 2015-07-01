@@ -42,13 +42,6 @@ namespace RockWeb.Blocks.Involvement
     [LinkedPage( "Detail Page", "Page used to view details of an requests." )]
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        private bool _canView = false;
-        private bool _canEdit = false;
-
-        #endregion
-
         #region Properties
 
         protected bool? StatusFilter { get; set; }
