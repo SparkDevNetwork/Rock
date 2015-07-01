@@ -405,9 +405,9 @@ namespace RockWeb.Blocks.Groups
                 {
                     lHeading.Text = _group.Name + " Attendance";
 
-                    // Get all the occurrences for this group ( without loading attendance yet )
+                    // Get all the occurrences for this group, and load the attendance so we can show Attendance Count
                     var occurrence = new ScheduleService( _rockContext )
-                        .GetGroupOccurrences( _group, occurrenceDate.Value.Date, occurrenceDate.Value.AddDays( 1 ), locationIds, scheduleIds, false )
+                        .GetGroupOccurrences( _group, occurrenceDate.Value.Date, occurrenceDate.Value.AddDays( 1 ), locationIds, scheduleIds, true )
                         .OrderBy( o => o.Date )
                         .FirstOrDefault();
 
@@ -531,6 +531,9 @@ namespace RockWeb.Blocks.Groups
                     lSchedule.Visible = !string.IsNullOrWhiteSpace( _occurrence.ScheduleName );
                     lSchedule.Text = _occurrence.ScheduleName;
                     ddlSchedule.Visible = false;
+
+                    lDidAttendCount.Visible = true;
+                    lDidAttendCount.Text = _occurrence.DidAttendCount.ToString();
                 }
                 else
                 {
@@ -543,6 +546,8 @@ namespace RockWeb.Blocks.Groups
 
                     lSchedule.Visible = false;
                     ddlSchedule.Visible = ddlSchedule.Items.Count > 1;
+
+                    lDidAttendCount.Visible = false;
                 }
 
                 lMembers.Text = _group.GroupType.GroupMemberTerm.Pluralize();

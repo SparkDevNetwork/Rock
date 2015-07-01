@@ -349,6 +349,15 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return true;
+        }
+
+        /// <summary>
         /// Gets the filter value value.
         /// </summary>
         /// <param name="control">The control.</param>

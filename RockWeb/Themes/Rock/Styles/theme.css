@@ -2795,18 +2795,18 @@ tr.row-highlight td {
 .filter-item div[class*='col'] {
   margin-bottom: 6px;
 }
-.data-view-filter-field-label {
-  font-weight: 900;
-  margin-top: 8px;
-  display: block;
-}
 @media (min-width: 992px) {
   .filter-item div[class*='col'] {
     margin-bottom: 0;
   }
 }
-.filter-row {
+.filterfield {
   margin-bottom: 12px;
+}
+.filterfield-label {
+  font-weight: 700;
+  margin-top: 8px;
+  display: block;
 }
 /*
     Used to manage styles for specific blocks.
@@ -5239,6 +5239,10 @@ h6.condensed {
 div.aspNetDisabled {
   opacity: 0.5;
 }
+.icon-fw {
+  width: 1.28571429em;
+  text-align: center;
+}
 /*
     Used to manage styles related to Rock's store
     /* NOTE: This less file is not included in the core since it is only used
@@ -6099,3 +6103,4 @@ body.navbar-side-close #content-wrapper {
 .title .first-word {
   font-weight: 900;
 }
+/*#endregion */
