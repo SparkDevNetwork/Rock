@@ -19,16 +19,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Web.UI.WebControls;
 
-using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -39,7 +36,7 @@ namespace RockWeb.Blocks.Groups
     [Description( "Lists all the scheduled occurrences for a given group." )]
 
     [LinkedPage( "Detail Page", "", true, "", "", 0 )]
-    [BooleanField("Allow Add", "Should block support adding new attendance dates outside of the group's configured schedule and group type's exclusion dates?", true, "", 1)]
+    [BooleanField( "Allow Add", "Should block support adding new attendance dates outside of the group's configured schedule and group type's exclusion dates?", true, "", 1 )]
     public partial class GroupAttendanceList : RockBlock
     {
         #region Private Variables
@@ -81,7 +78,6 @@ namespace RockWeb.Blocks.Groups
                 bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
                 gOccurrences.Actions.ShowAdd = canEditBlock && GetAttributeValue( "AllowAdd" ).AsBoolean();
                 gOccurrences.IsDeleteEnabled = canEditBlock;
-
             }
         }
 
@@ -111,10 +107,10 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Date Range" ), "Date Range", drpDates.DelimitedValues );
-            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Schedule"), "Schedule", ddlSchedule.SelectedValue );
+            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Schedule" ), "Schedule", ddlSchedule.SelectedValue );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Location" ), "Location", ddlLocation.SelectedValue );
 
             BindGrid();
@@ -137,20 +133,21 @@ namespace RockWeb.Blocks.Groups
                 if ( scheduleId != 0 )
                 {
                     var schedule = new ScheduleService( _rockContext ).Get( scheduleId );
-                    e.Value = schedule != null ? schedule.Name : "";
+                    e.Value = schedule != null ? schedule.Name : string.Empty;
                 }
                 else
                 {
-                    e.Value = "";
+                    e.Value = string.Empty;
                 }
             }
             else if ( e.Key == MakeKeyUniqueToGroup( "Location" ) )
             {
                 string locId = e.Value;
-                if ( locId.StartsWith("P"))
+                if ( locId.StartsWith( "P" ) )
                 {
                     locId = locId.Substring( 1 );
                 }
+
                 int locationId = locId.AsInteger();
                 e.Value = new LocationService( _rockContext ).GetPath( locationId );
             }
@@ -233,6 +230,9 @@ namespace RockWeb.Blocks.Groups
 
         #region Internal Methods
 
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
         private void BindFilter()
         {
             string dateRangePreference = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Date Range" ) );
@@ -251,10 +251,10 @@ namespace RockWeb.Blocks.Groups
                 var grouplocations = _group.GroupLocations
                     .Where( l =>
                         l.Location.Name != null &&
-                        l.Location.Name != "" )
+                        l.Location.Name != string.Empty )
                     .ToList();
 
-                var locations = new Dictionary<string, string> { { "", "" } };
+                var locations = new Dictionary<string, string> { { string.Empty, string.Empty } };
 
                 var locationService = new LocationService( _rockContext );
                 foreach ( var location in grouplocations.Select( l => l.Location ) )
@@ -272,6 +272,7 @@ namespace RockWeb.Blocks.Groups
                         {
                             locations.Add( key, locationService.GetPath( parentLocation.Id ) );
                         }
+
                         parentLocation = parentLocation.ParentLocation;
                     }
                 }
@@ -290,7 +291,7 @@ namespace RockWeb.Blocks.Groups
                     gOccurrences.Columns[2].Visible = false;
                 }
 
-                var schedules = new Dictionary<int, string> { { 0, "" } };
+                var schedules = new Dictionary<int, string> { { 0, string.Empty } };
                 grouplocations.SelectMany( l => l.Schedules ).OrderBy( s => s.Name ).ToList()
                     .ForEach( s => schedules.AddOrIgnore( s.Id, s.Name ) );
 
@@ -307,7 +308,6 @@ namespace RockWeb.Blocks.Groups
                     ddlSchedule.Visible = false;
                     gOccurrences.Columns[1].Visible = false;
                 }
-
             }
         }
 
@@ -326,7 +326,6 @@ namespace RockWeb.Blocks.Groups
                 List<int> scheduleIds = new List<int>();
 
                 // Location Filter
-
                 if ( ddlLocation.Visible )
                 {
                     string locValue = ddlLocation.SelectedValue;
@@ -375,17 +374,21 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        /// <summary>
+        /// Makes the key unique to group.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
         private string MakeKeyUniqueToGroup( string key )
         {
             if ( _group != null )
             {
                 return string.Format( "{0}-{1}", _group.Id, key );
             }
+
             return key;
         }
 
         #endregion
-
     }
-    
 }
