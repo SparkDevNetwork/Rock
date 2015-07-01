@@ -46,6 +46,8 @@
                             </div>
                         </div>
 
+                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.ConnectionOpportunity, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbPublicName" runat="server" SourceTypeName="Rock.Model.ConnectionOpportunity, Rock" PropertyName="PublicName" />
@@ -55,32 +57,15 @@
                             </div>
                         </div>
 
-                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.ConnectionOpportunity, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockDropDownList ID="ddlGroupType" runat="server" Label="Group Type" OnSelectedIndexChanged="ddlGroupType_SelectedIndexChanged" AutoPostBack="true" Help="The group type that the user will be placed in" />
                                 <Rock:RockDropDownList ID="ddlGroupRole" runat="server" Label="Group Member Role" Help="The role that the person will hold after being connected" />
-                            </div>
-                            <div class="col-md-6">
-                                <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
                                 <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Group Member Status" Help="The Status of the person upon being connected" />
-                            </div>
-                            <div class="col-md-6">
-                                <Rock:GroupPicker ID="gpConnectorGroup" runat="server" Label="Connector Group" Help="The group in charge of managing requests for this opportunity" />
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
                                 <Rock:Toggle ID="tglUseAllGroupsOfGroupType" runat="server" Label="Use All Groups Of This Type" ButtonSizeCssClass="btn btn-sm" OnText="Yes" OffText="No" OnCheckedChanged="tglUseAllGroupsOfGroupType_CheckedChanged" Help="All groups of this group type are used for this opportunity" />
                             </div>
                             <div class="col-md-6">
+                                <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />
                             </div>
                         </div>
 
@@ -100,7 +85,10 @@
                             </div>
                         </Rock:PanelWidget>
 
-                        <Rock:PanelWidget ID="wpConnectionOpportunityCampuses" runat="server" Title="Campus-Specific Connector Groups">
+                        <Rock:PanelWidget ID="wpConnectionOpportunityCampuses" runat="server" Title="Connector Groups">
+                            <div class="col-md-6">
+                                <Rock:GroupPicker ID="gpConnectorGroup" runat="server" Label="Global Connector Group" Help="The group in charge of managing requests for this opportunity" />
+                            </div>
                             <div class="grid">
                                 <Rock:Grid ID="gConnectionOpportunityCampuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Campus Connector Group">
                                     <Columns>
@@ -113,22 +101,11 @@
                             </div>
                         </Rock:PanelWidget>
 
-                        <Rock:PanelWidget ID="wpConnectionTypeWorkflow" runat="server" Title="Inherited Workflows">
-                            <div class="grid">
-                                <Rock:Grid ID="gConnectionTypeWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Workflow">
-                                    <Columns>
-                                        <Rock:RockBoundField DataField="WorkflowType" HeaderText="Workflow Type" />
-                                        <Rock:RockBoundField DataField="Trigger" HeaderText="Trigger" />
-                                    </Columns>
-                                </Rock:Grid>
-                            </div>
-                        </Rock:PanelWidget>
-
                         <Rock:PanelWidget ID="wpConnectionOpportunityWorkflow" runat="server" Title="Workflows">
                             <div class="grid">
-                                <Rock:Grid ID="gConnectionOpportunityWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Workflow">
+                                <Rock:Grid ID="gConnectionOpportunityWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Workflow" OnRowDataBound="gConnectionOpportunityWorkflows_RowDataBound">
                                     <Columns>
-                                        <Rock:RockBoundField DataField="WorkflowType" HeaderText="Workflow Type" />
+                                        <Rock:RockBoundField DataField="WorkflowType" HeaderText="Workflow Type" HtmlEncode="false" />
                                         <Rock:RockBoundField DataField="Trigger" HeaderText="Trigger" />
                                         <Rock:EditField OnClick="gConnectionOpportunityWorkflows_Edit" />
                                         <Rock:DeleteField OnClick="gConnectionOpportunityWorkflows_Delete" />
