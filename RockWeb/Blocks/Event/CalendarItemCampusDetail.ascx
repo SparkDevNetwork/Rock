@@ -110,7 +110,7 @@
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
-        <Rock:ModalDialog ID="dlgNewLinkage" runat="server" Title="New Registration Instance" SaveButtonText="Ok" OnSaveClick="dlgNewLinkage_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="NewLinkage">
+        <Rock:ModalDialog ID="dlgNewLinkage" runat="server" Title="New Registration Instance" SaveButtonText="OK" OnSaveClick="dlgNewLinkage_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="NewLinkage">
             <Content>
                 <asp:ValidationSummary ID="vsNewLinkage" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="NewLinkage" />
                 <div class="row">
@@ -125,7 +125,7 @@
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgExistingLinkage" runat="server" Title="Existing Registration Instance" SaveButtonText="Ok" OnSaveClick="dlgExistingLinkage_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ExistingLinkage">
+        <Rock:ModalDialog ID="dlgExistingLinkage" runat="server" Title="Existing Registration Instance" SaveButtonText="OK" OnSaveClick="dlgExistingLinkage_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ExistingLinkage">
             <Content>
                 <asp:ValidationSummary ID="vsExistingLinkage" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="ExistingLinkage" />
                 <div class="row">
@@ -151,7 +151,7 @@
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgSchedule" runat="server" Title="Schedule" OnSaveClick="dlgSchedule_SaveClick" SaveButtonText="Ok" OnCancelScript="clearActiveDialog();" ValidationGroup="Schedule">
+        <Rock:ModalDialog ID="dlgSchedule" runat="server" Title="Schedule" OnSaveClick="dlgSchedule_SaveClick" SaveButtonText="OK" OnCancelScript="clearActiveDialog();" ValidationGroup="Schedule">
             <Content>
                 <asp:ValidationSummary ID="vsSchedule" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Schedule" />
                 <asp:HiddenField ID="hfScheduleGuid" runat="server" />
