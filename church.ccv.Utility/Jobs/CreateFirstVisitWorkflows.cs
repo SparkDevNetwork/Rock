@@ -31,7 +31,7 @@ using Rock.Web.Cache;
 namespace church.ccv.Utility
 {
     /// <summary>
-    /// Sends a birthday email
+    /// Creates workflows for first visit calls
     /// </summary>
     [IntegerField( "Days Back","The number of days back to look for first-time visitors.", true, 5 )]
     [WorkflowTypeField("Workflow Type", "The workflow type to launch.", false, true)]
