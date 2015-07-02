@@ -6,11 +6,19 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-user"></i>&nbsp;ERA Loss Report</h1>
+                <h1 class="panel-title"><i class="fa fa-user"></i>&nbsp;eRA Loss Report</h1>
             </div>
             <div class="panel-body">
 
                 <div class="grid grid-panel">
+                    <Rock:GridFilter ID="gfList" runat="server">
+                        <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" />
+                        <Rock:PersonPicker ID="ppPastor" runat="server" Label="Pastor"/>
+                        <Rock:RockCheckBox ID="cbShowProcessed" runat="server" Text="Show Processed" />
+                    </Rock:GridFilter>
+
+                    <Rock:ModalAlert ID="mdGridWarning" runat="server" />
+
                     <Rock:Grid ID="gList" runat="server" AllowSorting="true" DataKeyNames="Id">
                         <Columns>
                             <Rock:SelectField DataSelectedField="Processed" HeaderText="Processed" SortExpression="Processed" />

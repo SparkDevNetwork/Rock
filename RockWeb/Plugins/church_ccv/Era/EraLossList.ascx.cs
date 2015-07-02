@@ -17,27 +17,23 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using church.ccv.Datamart.Model;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using church.ccv.Datamart.Model;
 
 namespace RockWeb.Plugins.church_ccv.Era
 {
     /// <summary>
-    /// This block lists ERA losses based on filters
+    /// This block lists eRA losses based on filters
     /// </summary>
-    [DisplayName( "ERA Loss List" )]
-    [Category( "CCV > ERA" )]
-    [Description( "This block lists ERA losses based on filters." )]
+    [DisplayName( "eRA Loss List" )]
+    [Category( "CCV > eRA" )]
+    [Description( "This block lists eRA losses based on filters." )]
     public partial class EraLossList : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -50,10 +46,131 @@ namespace RockWeb.Plugins.church_ccv.Era
         {
             base.OnInit( e );
             gList.GridRebind += gList_GridRebind;
+            gfList.ApplyFilterClick += gfList_ApplyFilterClick;
+            gfList.ClearFilterClick += gfList_ClearFilterClick;
+            gfList.DisplayFilterValue += gfList_DisplayFilterValue;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            var btnUpdate = new LinkButton();
+            btnUpdate.ID = "ddlAction";
+            btnUpdate.CssClass = "btn btn-action pull-left";
+            btnUpdate.CausesValidation = false;
+            btnUpdate.Text = "Update";
+            btnUpdate.Click += btnUpdate_Click;
+
+            gList.Actions.AddCustomActionControl( btnUpdate );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnUpdate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnUpdate_Click( object sender, EventArgs e )
+        {
+            BindGrid();
+            var sfProcessed = gList.Columns.OfType<SelectField>().Where( a => a.DataSelectedField == "Processed" ).FirstOrDefault();
+            var sfSendEmail = gList.Columns.OfType<SelectField>().Where( a => a.DataSelectedField == "SendEmail" ).FirstOrDefault();
+            var rockContext = new RockContext();
+            var datamartEraLossService = new DatamartEraLossService( rockContext );
+            var dataSource = ( gList.DataSource as IEnumerable<object> ).ToList();
+            foreach ( var row in gList.Rows.OfType<GridViewRow>() )
+            {
+                if ( row.RowType == DataControlRowType.DataRow )
+                {
+                    var rowData = dataSource[row.DataItemIndex];
+                    if ( rowData != null )
+                    {
+                        var eraLossId = (int)rowData.GetPropertyValue( "Id" );
+                        var processed = (bool)rowData.GetPropertyValue( "Processed" );
+                        var sendEmail = (bool)rowData.GetPropertyValue( "SendEmail" );
+                        var selectedProcessed = sfProcessed.SelectedKeys.OfType<int>().Contains( eraLossId );
+                        var selectedSendEmail = sfSendEmail.SelectedKeys.OfType<int>().Contains( eraLossId );
+                        
+                        // only save ones that have changed
+                        if ( selectedProcessed != processed || selectedSendEmail != sendEmail )
+                        {
+                            var datamartEraLoss = datamartEraLossService.Get( eraLossId );
+                            if ( datamartEraLoss != null )
+                            {
+                                datamartEraLoss.Processed = selectedProcessed;
+                                datamartEraLoss.SendEmail = selectedSendEmail;
+                                rockContext.SaveChanges();
+                            }
+                        }
+                    }
+                }
+            }
+
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Gfs the list_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void gfList_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            switch ( e.Key )
+            {
+                case "DateRange":
+                    e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                    break;
+
+                case "PastorPersonId":
+                    var personId = e.Value.AsIntegerOrNull();
+                    if ( personId.HasValue )
+                    {
+                        var person = new PersonService( new RockContext() ).Get( personId.Value );
+                        e.Value = person != null ? person.ToString() : e.Value;
+                    }
+
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
+        private void BindFilter()
+        {
+            drpDates.DelimitedValues = gfList.GetUserPreference( "DateRange" );
+            var personId = gfList.GetUserPreference( "PastorPersonId" ).AsIntegerOrNull();
+            if ( personId.HasValue )
+            {
+                var person = new PersonService( new RockContext() ).Get( personId.Value );
+                ppPastor.SetValue( person );
+            }
+
+            cbShowProcessed.Checked = gfList.GetUserPreference( "ShowProcessed" ).AsBooleanOrNull() ?? false;
+        }
+
+        /// <summary>
+        /// Handles the ClearFilterClick event of the gfList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gfList_ClearFilterClick( object sender, EventArgs e )
+        {
+            gfList.DeleteUserPreferences();
+            BindFilter();
+        }
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the gfList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gfList_ApplyFilterClick( object sender, EventArgs e )
+        {
+            gfList.SaveUserPreference( "DateRange", "Date Range", drpDates.DelimitedValues );
+            gfList.SaveUserPreference( "PastorPersonId", "Pastor", ppPastor.PersonId.ToString() );
+            gfList.SaveUserPreference( "ShowProcessed", "Show Processed", cbShowProcessed.Checked.ToTrueFalse() );
+            BindGrid();
         }
 
         /// <summary>
@@ -179,6 +296,31 @@ namespace RockWeb.Plugins.church_ccv.Era
                     p.InNeighborhoodGroup
                 } );
 
+            /*Filter*/
+            var drp = new DateRangePicker();
+            drp.DelimitedValues = gfList.GetUserPreference( "DateRange" );
+            if ( drp.LowerValue.HasValue )
+            {
+                joinQry = joinQry.Where( a => a.LossDate >= drp.LowerValue );
+            }
+
+            if ( drp.UpperValue.HasValue )
+            {
+                var upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
+                joinQry = joinQry.Where( a => a.LossDate < upperDate );
+            }
+
+            var pastorPersonId = gfList.GetUserPreference( "PastorPersonId" ).AsIntegerOrNull();
+            if ( pastorPersonId.HasValue )
+            {
+                joinQry = joinQry.Where( a => a.NeighborhoodPastor.Id == pastorPersonId.Value );
+            }
+
+            if ( gfList.GetUserPreference( "ShowProcessed" ).AsBoolean() == false )
+            {
+                joinQry = joinQry.Where( a => a.Processed == false );
+            }
+
             if ( gList.SortProperty != null )
             {
                 joinQry = joinQry.Sort( gList.SortProperty );
@@ -221,7 +363,5 @@ namespace RockWeb.Plugins.church_ccv.Era
         }
 
         #endregion
-
-
     }
 }
