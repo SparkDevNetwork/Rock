@@ -530,6 +530,8 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void RegisterClientScript()
         {
+            RockPage.AddScriptLink( ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
+
             string script = string.Format( @"
     
     function adjustHowMany( adjustment ) {{
@@ -569,6 +571,7 @@ namespace RockWeb.Blocks.Event
         adjustHowMany( -1 );
     }} );
 
+    // Adjust the label of 'is in the same family' based on value of first name entered
     $('input.js-first-name').change( function() {{
         var name = $(this).val();
         if ( name == null || name == '') {{ 
@@ -577,6 +580,10 @@ namespace RockWeb.Blocks.Event
         var $lbl = $('div.js-registration-same-family').find('label.control-label')
         $lbl.text( name + ' is in the same family as');
     }} );
+
+    // Detect credit card type
+    $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card-logos' }});
+
 
 ",
                 hfMinRegistrants.ClientID,      // {0}
@@ -606,6 +613,21 @@ namespace RockWeb.Blocks.Event
                     break;
             }
         }
+
+        private void ParseDynamicControls()
+        {
+            switch ( CurrentPanel )
+            {
+                case 1:
+                    ParseRegistrantControls();
+                    break;
+                case 2:
+                    ParseSummaryControls();
+                    break;
+            }
+        }
+
+        #region Registrant Controls
 
         private void CreateRegistrantControls( bool setValues )
         {
@@ -661,25 +683,10 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        private void CreateFeeControls( bool setValues )
-        {
-            phFees.Controls.Clear();
-        }
-
-        private void CreateSummaryControls( bool setValues )
-        {
-            phSuccessControls.Controls.Clear();
-        }
-
-        private void CreateSuccessControls( bool setValues )
-        {
-            phSuccessControls.Controls.Clear();
-        }
-
         private void CreatePersonField( RegistrationTemplateFormField field, bool setValue, object fieldValue )
         {
 
-            switch( field.PersonFieldType )
+            switch ( field.PersonFieldType )
             {
                 case RegistrationPersonFieldType.Birthdate:
                     {
@@ -815,17 +822,9 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        private void ParseDynamicControls()
+        private void CreateFeeControls( bool setValues )
         {
-            switch ( CurrentPanel )
-            {
-                case 1:
-                    ParseRegistrantControls();
-                    break;
-                case 2:
-                    ParseSummaryControls();
-                    break;
-            }
+            phFees.Controls.Clear();
         }
 
         private void ParseRegistrantControls()
@@ -857,10 +856,6 @@ namespace RockWeb.Blocks.Event
                     }
                 }
             }
-        }
-
-        private void ParseSummaryControls()
-        {
         }
 
         private object ParsePersonField( RegistrationTemplateFormField field )
@@ -938,6 +933,82 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
+        #region Summary/Payment Controls
+
+        private void CreateSummaryControls( bool setValues )
+        {
+            phSuccessControls.Controls.Clear();
+
+            if ( setValues )
+            {
+                // Check to see if any information has already been entered
+                if ( !string.IsNullOrWhiteSpace( RegistrationState.YourFirstName) ||
+                    !string.IsNullOrWhiteSpace( RegistrationState.YourLastName ) ||
+                    !string.IsNullOrWhiteSpace( RegistrationState.ConfirmationEmail ) )
+                {
+                    // If so, use it
+                    tbYourFirstName.Text = RegistrationState.YourFirstName;
+                    tbYourLastName.Text = RegistrationState.YourLastName;
+                    tbConfirmationEmail.Text = RegistrationState.ConfirmationEmail;
+                }
+                else
+                {
+                    // If not, first check for a logged in user
+                    if ( CurrentPerson != null )
+                    {
+                        // if user is logged-in, use their information
+                        tbYourFirstName.Text = CurrentPerson.NickName;
+                        tbYourLastName.Text = CurrentPerson.LastName;
+                        tbConfirmationEmail.Text = CurrentPerson.Email;
+                    }
+                    else
+                    {
+                        // If no logged in user, find the field information from first registrant
+                        if ( RegistrationState.Registrants.Any() )
+                        {
+                            var firstRegistrant = RegistrationState.Registrants.First();
+                            tbYourFirstName.Text = firstRegistrant.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.FirstName );
+                            tbYourLastName.Text = firstRegistrant.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.LastName );
+                            tbConfirmationEmail.Text = firstRegistrant.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.Email );
+                        }
+                        else
+                        {
+                            tbYourFirstName.Text = string.Empty;
+                            tbYourLastName.Text = string.Empty;
+                            tbConfirmationEmail.Text = string.Empty;
+                        }
+                    }
+                }
+
+                divDiscountCode.Visible = RegistrationTemplate != null && RegistrationTemplate.Discounts.Any();
+                tbDiscountCode.Text = RegistrationState.DiscountCode;
+            }
+        }
+
+        private void ParseSummaryControls()
+        {
+            if ( RegistrationState != null )
+            {
+                RegistrationState.YourFirstName = tbYourFirstName.Text;
+                RegistrationState.YourLastName = tbYourLastName.Text;
+                RegistrationState.ConfirmationEmail = tbConfirmationEmail.Text;
+                RegistrationState.DiscountCode = tbDiscountCode.Text;
+            }
+        }
+
+        #endregion
+
+        #region Success Controls 
+
+        private void CreateSuccessControls( bool setValues )
+        {
+            phSuccessControls.Controls.Clear();
+        }
+
+        #endregion
+
+        #endregion
+
         #endregion
 
         #region Helper Class
@@ -945,6 +1016,12 @@ namespace RockWeb.Blocks.Event
         [Serializable]
         public class RegistrationInfo
         {
+            public int? personAliasId { get; set; }
+            public int? personId { get; set; }
+            public string YourFirstName { get; set; }
+            public string YourLastName { get; set; }
+            public string ConfirmationEmail { get; set; }
+            public string DiscountCode { get; set; }
             public List<RegistrantInfo> Registrants { get; set; }
 
             public int RegistrantCount
@@ -964,6 +1041,16 @@ namespace RockWeb.Blocks.Event
 
             public RegistrationInfo( Registration registration ) : this()
             {
+                personAliasId = registration.PersonAliasId;
+                if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
+                {
+                    personId = registration.PersonAlias.Person.Id;
+                    YourFirstName = registration.PersonAlias.Person.NickName;
+                    YourLastName = registration.PersonAlias.Person.LastName;
+                }
+
+                DiscountCode = registration.DiscountCode;
+
                 foreach( var registrant in registration.Registrants )
                 {
                     Registrants.Add( new RegistrantInfo( registrant ) );
@@ -989,6 +1076,23 @@ namespace RockWeb.Blocks.Event
             {
                 Guid = registrant.Guid;
                 Existing = registrant.Id > 0;
+            }
+
+            public string GetPersonFieldValue( RegistrationTemplate template, RegistrationPersonFieldType personFieldType )
+            {
+                if ( template != null && template.Forms != null )
+                {
+                    var value = template.Forms
+                        .SelectMany( t => t.Fields
+                            .Where( f =>
+                                f.FieldSource == RegistrationFieldSource.PersonField &&
+                                f.PersonFieldType == personFieldType )
+                            .Select( f => f.Id ) )
+                        .FirstOrDefault();
+                    return value != null ? value.ToString() : string.Empty;
+                }
+
+                return string.Empty;
             }
         }
         

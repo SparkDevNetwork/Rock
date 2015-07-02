@@ -90,6 +90,34 @@ namespace Rock.Model
         public string ConfirmationEmail { get; set; }
 
         /// <summary>
+        /// Gets or sets the code.
+        /// </summary>
+        /// <value>
+        /// The code.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        public string DiscountCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the discount percentage.
+        /// </summary>
+        /// <value>
+        /// The discount percentage.
+        /// </value>
+        [DataMember]
+        public double DiscountPercentage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the discount amount.
+        /// </summary>
+        /// <value>
+        /// The discount amount.
+        /// </value>
+        [DataMember]
+        public decimal DiscountAmount { get; set; }
+
+        /// <summary>
         /// Gets or sets the group identifier.
         /// </summary>
         /// <value>
