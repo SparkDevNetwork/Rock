@@ -36,7 +36,7 @@ namespace church.ccv.Datamart.Model
         /// Initializes a new instance of the <see cref="DatamartNearestGroupService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public DatamartNearestGroupService(church.ccv.Datamart.Data.DatamartContext context) : base(context)
+        public DatamartNearestGroupService(RockContext context) : base(context)
         {
         }
 

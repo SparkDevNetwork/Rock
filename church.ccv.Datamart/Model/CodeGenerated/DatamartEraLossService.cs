@@ -36,7 +36,7 @@ namespace church.ccv.Datamart.Model
         /// Initializes a new instance of the <see cref="DatamartEraLossService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public DatamartEraLossService(church.ccv.Datamart.Data.DatamartContext context) : base(context)
+        public DatamartEraLossService(RockContext context) : base(context)
         {
         }
 

@@ -36,7 +36,7 @@ namespace church.ccv.Datamart.Model
         /// Initializes a new instance of the <see cref="DatamartFamilyService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public DatamartFamilyService(church.ccv.Datamart.Data.DatamartContext context) : base(context)
+        public DatamartFamilyService(RockContext context) : base(context)
         {
         }
 

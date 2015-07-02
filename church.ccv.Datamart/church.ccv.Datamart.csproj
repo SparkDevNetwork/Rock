@@ -50,7 +50,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\DatamartContext.cs" />
     <Compile Include="Migrations\002_ChangeSomeColumns.cs" />
     <Compile Include="Migrations\001_RebuildTables.cs" />
     <Compile Include="Migrations\003_RemoveAdultxPercentagesColumns.cs" />

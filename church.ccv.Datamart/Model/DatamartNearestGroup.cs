@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
-using church.ccv.Datamart.Data;
 
 namespace church.ccv.Datamart.Model
 {

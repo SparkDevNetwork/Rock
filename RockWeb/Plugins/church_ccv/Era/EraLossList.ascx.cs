@@ -29,7 +29,6 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using church.ccv.Datamart.Model;
-using church.ccv.Datamart.Data;
 
 namespace RockWeb.Plugins.church_ccv.Era
 {
@@ -120,11 +119,11 @@ namespace RockWeb.Plugins.church_ccv.Era
         /// </summary>
         private void BindGrid()
         {
-            DatamartContext datamartContext = new DatamartContext();
-            //DatamartERAService eraService = new DatamartERAService(datamartContext);
+            RockContext rockContext = new RockContext();
+            DatamartERAService eraService = new DatamartERAService(rockContext);
            // DatamartEraLoss
 
-            //DatamartEraLossService lossService = new DatamartEraLossService(datamartContext);
+            //DatamartEraLossService lossService = new DatamartEraLossService(rockContext);
 
             //var qry = dtmtEraService.Queryable().Where( d => d.Los)
 
