@@ -508,7 +508,7 @@ namespace RockWeb.Blocks.Groups
         private void DisplayViewGroup()
         {
 
-            if ( _groupId != -1 )
+            if ( _groupId > 0 )
             {
                 RockContext rockContext = new RockContext();
                 GroupService groupService = new GroupService( rockContext );
