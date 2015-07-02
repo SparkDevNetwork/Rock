@@ -35,10 +35,10 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
 
-namespace RockWeb.Blocks.Involvement
+namespace RockWeb.Blocks.Connection
 {
     [DisplayName( "Connection Type Detail" )]
-    [Category( "Involvement" )]
+    [Category( "Connection" )]
     [Description( "Displays the details of the given Connection Type for editing." )]
     public partial class ConnectionTypeDetail : RockBlock, IDetailBlock
     {

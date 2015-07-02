@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ExternalConnectionOpportunityDetail.ascx.cs" Inherits="RockWeb.Blocks.Involvement.ExternalConnectionOpportunityDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ExternalConnectionOpportunityDetail.ascx.cs" Inherits="RockWeb.Blocks.Connection.ExternalConnectionOpportunityDetail" %>
 
 <script type="text/javascript">
     function clearActiveDialog() {

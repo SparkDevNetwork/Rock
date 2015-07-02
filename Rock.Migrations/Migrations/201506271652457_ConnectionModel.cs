@@ -344,7 +344,7 @@ namespace Rock.Migrations
                 .Index(t => t.Guid, unique: true)
                 .Index(t => t.ForeignId);
 
-            RockMigrationHelper.AddSecurityRoleGroup( "RSR - Involvement Administration", "Group of individuals who can administrate the various parts of the involvement functionality.", Rock.SystemGuid.Group.GROUP_INVOLVEMENT_ADMINISTRATORS );
+            RockMigrationHelper.AddSecurityRoleGroup( "RSR - Involvement Administration", "Group of individuals who can administrate the various parts of the involvement functionality.", Rock.SystemGuid.Group.GROUP_CONNECTION_ADMINISTRATORS );
 
             Sql( @"
             INSERT [dbo].[ConnectionType]

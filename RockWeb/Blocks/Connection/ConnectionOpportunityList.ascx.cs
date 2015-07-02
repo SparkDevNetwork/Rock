@@ -31,10 +31,10 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Involvement
+namespace RockWeb.Blocks.Connection
 {
     [DisplayName( "Connection Opportunity List" )]
-    [Category( "Involvement" )]
+    [Category( "Connection" )]
     [Description( "Lists all the opportunities for a given connection type." )]
     [LinkedPage( "Detail Page" )]
     public partial class ConnectionOpportunityList : RockBlock, ISecondaryBlock
