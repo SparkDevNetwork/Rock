@@ -181,10 +181,6 @@ namespace RockWeb.Blocks.WorkFlow
 
             headingA.Attributes.Add( "href", "#" + divCollapse.ClientID );
 
-            //var divPanelBody = new HtmlGenericControl( "div" );
-            //divPanelBody.AddCssClass( "panel-body" );
-            //divCollapse.Controls.Add( divPanelBody );
-
             if ( category.WorkflowTypes.Any() )
             {
                 var ulGroup = new HtmlGenericControl( "ul" );
