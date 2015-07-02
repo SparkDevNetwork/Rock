@@ -181,20 +181,20 @@ namespace RockWeb.Blocks.WorkFlow
 
             headingA.Attributes.Add( "href", "#" + divCollapse.ClientID );
 
-            var divPanelBody = new HtmlGenericControl( "div" );
-            divPanelBody.AddCssClass( "panel-body" );
-            divCollapse.Controls.Add( divPanelBody );
+            //var divPanelBody = new HtmlGenericControl( "div" );
+            //divPanelBody.AddCssClass( "panel-body" );
+            //divCollapse.Controls.Add( divPanelBody );
 
             if ( category.WorkflowTypes.Any() )
             {
                 var ulGroup = new HtmlGenericControl( "ul" );
-                ulGroup.AddCssClass( "list-unstyled" );
-                divPanelBody.Controls.Add( ulGroup );
+                ulGroup.AddCssClass( "list-group" );
+                divCollapse.Controls.Add( ulGroup );
 
                 foreach ( var workflowType in category.WorkflowTypes )
                 {
                     var li = new HtmlGenericControl( "li" );
-                    li.AddCssClass( "margin-b-sm" );
+                    li.AddCssClass( "list-group-item clickable" );
                     ulGroup.Controls.Add( li );
 
                     var qryParms = new Dictionary<string, string>();
@@ -223,7 +223,9 @@ namespace RockWeb.Blocks.WorkFlow
                         var aManage = new HtmlGenericControl( "a" );
                         aManage.AddCssClass( "pull-right" );
                         aManage.Attributes.Add( "href", LinkedPageUrl( "ManagePage", qryParms ) );
-                        aManage.InnerText = "Manage";
+                        var iManageIcon = new HtmlGenericControl( "i" );
+                        aManage.Controls.Add( iManageIcon );
+                        iManageIcon.AddCssClass( "fa fa-wrench" );
                         li.Controls.Add( aManage );
                     }
                 }
