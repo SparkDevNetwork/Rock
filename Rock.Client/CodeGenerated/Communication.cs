@@ -62,7 +62,7 @@ namespace Rock.Client
         public int? SenderPersonAliasId { get; set; }
 
         /// <summary />
-        public int /* CommunicationStatus*/ Status { get; set; }
+        public Rock.Client.Enums.CommunicationStatus Status { get; set; }
 
         /// <summary />
         public string Subject { get; set; }

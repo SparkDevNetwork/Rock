@@ -56,7 +56,7 @@ namespace Rock.Client
         public int? PersonAliasId { get; set; }
 
         /// <summary />
-        public int /* SpecialRole*/ SpecialRole { get; set; }
+        public Rock.Client.Enums.SpecialRole SpecialRole { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

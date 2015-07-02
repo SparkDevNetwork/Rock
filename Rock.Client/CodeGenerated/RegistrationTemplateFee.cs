@@ -44,7 +44,7 @@ namespace Rock.Client
         public bool DiscountApplies { get; set; }
 
         /// <summary />
-        public int /* RegistrationFeeType*/ FeeType { get; set; }
+        public Rock.Client.Enums.RegistrationFeeType FeeType { get; set; }
 
         /// <summary />
         public string Name { get; set; }

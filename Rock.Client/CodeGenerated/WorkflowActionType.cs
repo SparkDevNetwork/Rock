@@ -41,7 +41,7 @@ namespace Rock.Client
         public Guid? CriteriaAttributeGuid { get; set; }
 
         /// <summary />
-        public int /* ComparisonType*/ CriteriaComparisonType { get; set; }
+        public Rock.Client.Enums.ComparisonType CriteriaComparisonType { get; set; }
 
         /// <summary />
         public string CriteriaValue { get; set; }

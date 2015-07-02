@@ -53,10 +53,10 @@ namespace Rock.Client
         public int? PrinterDeviceId { get; set; }
 
         /// <summary />
-        public int /* PrintFrom*/ PrintFrom { get; set; }
+        public Rock.Client.Enums.PrintFrom PrintFrom { get; set; }
 
         /// <summary />
-        public int /* PrintTo*/ PrintToOverride { get; set; }
+        public Rock.Client.Enums.PrintTo PrintToOverride { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

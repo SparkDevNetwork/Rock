@@ -53,7 +53,7 @@ namespace Rock.Client
         public string WorkflowName { get; set; }
 
         /// <summary />
-        public int /* WorkflowTriggerType*/ WorkflowTriggerType { get; set; }
+        public Rock.Client.Enums.WorkflowTriggerType WorkflowTriggerType { get; set; }
 
         /// <summary />
         public int WorkflowTypeId { get; set; }
