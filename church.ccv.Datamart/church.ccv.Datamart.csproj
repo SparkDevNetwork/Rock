@@ -37,6 +37,10 @@
     <Reference Include="EntityFramework.SqlServer">
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="Quartz, Version=2.0.0.100, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\RockWeb\Bin\Quartz.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -50,6 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Jobs\SendPotentialEraLossEmails.cs" />
     <Compile Include="Migrations\002_ChangeSomeColumns.cs" />
     <Compile Include="Migrations\001_RebuildTables.cs" />
     <Compile Include="Migrations\003_RemoveAdultxPercentagesColumns.cs" />
@@ -88,6 +93,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\church.ccv.Utility\church.ccv.Utility.csproj">
+      <Project>{9199bfe3-3c75-486b-afa0-d043da822afa}</Project>
+      <Name>church.ccv.Utility</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
       <Project>{cb9372cd-9c1d-47ab-92d8-702d4d68324f}</Project>
       <Name>DotLiquid</Name>
