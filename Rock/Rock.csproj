@@ -485,6 +485,7 @@
     <Compile Include="Web\UI\Controls\Grid\CampusField.cs" />
     <Compile Include="Web\UI\Controls\Grid\PhoneNumbersField.cs" />
     <Compile Include="Web\UI\Controls\IDisplayRequiredIndicator.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\GroupTypesPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\FinancialGatewayPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupAndRolePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MergeTemplatePicker.cs" />
