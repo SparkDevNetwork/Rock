@@ -13,7 +13,7 @@
             </div>
             <div class="panel-body">
 
-                <div class="list-as-blocks margin-t-lg clearfix">
+                <div class="list-as-blocks clearfix">
                     <ul class="list-unstyled">
                         <asp:Repeater ID="rptConnectionTypes" runat="server">
                             <ItemTemplate>
