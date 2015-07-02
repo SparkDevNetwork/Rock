@@ -2107,15 +2107,22 @@ ul.rocklist .rocklist-item.selected {
 .contextsetter {
   margin-right: 2px;
 }
-ul.list-group-panel {
+ul.list-group-panel,
+.panel-collapse {
   margin: 0;
 }
-ul.list-group-panel .list-group-item {
+ul.list-group-panel .list-group,
+.panel-collapse .list-group {
+  margin-bottom: 0;
+}
+ul.list-group-panel .list-group-item,
+.panel-collapse .list-group-item {
   border-radius: 0;
   border: 0;
   border-top: 1px solid #dddddd;
 }
-ul.list-group-panel .list-group-item:first-child {
+ul.list-group-panel .list-group-item:first-child,
+.panel-collapse .list-group-item:first-child {
   border: 0;
 }
 .slidingdaterange-select,
