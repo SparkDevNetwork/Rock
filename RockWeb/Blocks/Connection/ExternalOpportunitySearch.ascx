@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ExternalOpportunitySearch.ascx.cs" Inherits="RockWeb.Blocks.Involvement.ExternalOpportunitySearch" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ExternalOpportunitySearch.ascx.cs" Inherits="RockWeb.Blocks.Connection.ExternalOpportunitySearch" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>

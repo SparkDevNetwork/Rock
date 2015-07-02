@@ -34,10 +34,10 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Involvement
+namespace RockWeb.Blocks.Connection
 {
     [DisplayName( "Connection Opportunity Detail" )]
-    [Category( "Involvement" )]
+    [Category( "Connection" )]
     [Description( "Displays the details of the given connection opportunity." )]
     [BooleanField( "Show Edit", "", true, "", 2 )]
     public partial class ConnectionOpportunityDetail : RockBlock, IDetailBlock

@@ -33,10 +33,10 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 
-namespace RockWeb.Blocks.Involvement
+namespace RockWeb.Blocks.Connection
 {
     [DisplayName( "Connection Request Detail" )]
-    [Category( "Involvement" )]
+    [Category( "Connection" )]
     [Description( "Displays the details of the given connection request for editing state, status, etc." )]
     [LinkedPage( "Manual Workflow Page", "Page used to manually start a workflow." )]
     [LinkedPage( "Workflow Configuration Page", "Page used to view and edit configuration of a workflow." )]

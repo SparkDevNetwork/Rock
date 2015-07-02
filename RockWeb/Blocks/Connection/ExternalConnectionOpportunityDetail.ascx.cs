@@ -34,10 +34,10 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
 
-namespace RockWeb.Blocks.Involvement
+namespace RockWeb.Blocks.Connection
 {
     [DisplayName( "External Connection Opportunity Detail" )]
-    [Category( "Involvement" )]
+    [Category( "Connection" )]
     [Description( "Displays the details of the given opportunity for the external website." )]
     [BooleanField( "Display Home Phone", "Whether to display home phone", true )]
     [BooleanField( "Display Mobile Phone", "Whether to display mobile phone", true )]

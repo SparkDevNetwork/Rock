@@ -34,10 +34,10 @@ using Rock.Store;
 using System.Text;
 using Rock.Security;
 
-namespace RockWeb.Blocks.Involvement
+namespace RockWeb.Blocks.Connection
 {
     [DisplayName( "Connection Opportunity Search Lava" )]
-    [Category( "Involvement" )]
+    [Category( "Connection" )]
     [Description( "Allows users to search for an opportunity to join" )]
     [CodeEditorField( "Lava Template", "Lava template to use to display the list of opportunities.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Themes/Stark/Assets/Lava/ExternalOpportunitySearch.lava' %}", "", 2 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
