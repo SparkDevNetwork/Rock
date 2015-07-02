@@ -33,28 +33,14 @@ using church.ccv.Datamart.Model;
 namespace RockWeb.Plugins.church_ccv.Era
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// This block lists ERA losses based on filters
     /// </summary>
-    [DisplayName( "eRA Loss List" )]
-    [Category("CCV > eRA")]
-    [Description( "This block lists eRA losses based on filters." )]
+    [DisplayName( "ERA Loss List" )]
+    [Category( "CCV > ERA" )]
+    [Description( "This block lists ERA losses based on filters." )]
     public partial class EraLossList : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        // used for private variables
-
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
-
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -97,7 +83,7 @@ namespace RockWeb.Plugins.church_ccv.Era
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-
+            //
         }
 
         /// <summary>
@@ -119,18 +105,123 @@ namespace RockWeb.Plugins.church_ccv.Era
         /// </summary>
         private void BindGrid()
         {
-            RockContext rockContext = new RockContext();
-            DatamartERAService eraService = new DatamartERAService(rockContext);
-           // DatamartEraLoss
+            var rockContext = new RockContext();
+            var datamartEraLossQry = new DatamartEraLossService( rockContext ).Queryable();
+            var datamartFamilyQry = new DatamartFamilyService( rockContext ).Queryable();
+            var datamartNeighborhoodQry = new DatamartNeighborhoodService( rockContext ).Queryable();
+            var datamartEraQry = new DatamartERAService( rockContext ).Queryable();
+            var datamartPersonQry = new DatamartPersonService( rockContext ).Queryable();
 
-            //DatamartEraLossService lossService = new DatamartEraLossService(rockContext);
+            var joinEra = datamartEraLossQry.GroupJoin(
+                datamartEraQry,
+                l => l.FamilyId,
+                e => e.FamilyId,
+                ( l, e ) => new
+                {
+                    DatamartEraLoss = l,
+                    DatamartEra = e.Where( x => x.WeekendDate == e.Max( xx => xx.WeekendDate ) ).FirstOrDefault()
+                } );
 
-            //var qry = dtmtEraService.Queryable().Where( d => d.Los)
+            // do outer join in case they aren't in a neighboorhood
+            var joinFamilyNeighboorHood =
+                from f in datamartFamilyQry
+                join n in datamartNeighborhoodQry on f.NeighborhoodId equals n.Id into fn
+                from n in fn.DefaultIfEmpty()
+                select new
+                {
+                    f.Id,
+                    f.HHPersonId,
+                    f.HHFullName,
+                    f.AdultNames,
+                    f.ChildNames,
+                    n.NeighborhoodPastorId,
+                    n.NeighborhoodPastorName
+                };
 
-            //gList.DataSource = qry.ToList();
-            //gList.DataBind();
+            var joinEraFamily = joinEra.Join(
+                joinFamilyNeighboorHood,
+                e => e.DatamartEraLoss.FamilyId,
+                f => f.Id,
+                ( e, f ) => new
+                {
+                    Era = e,
+                    Family = f
+                } );
+
+            var joinQry = joinEraFamily.Join(
+                datamartPersonQry,
+                ef => ef.Family.HHPersonId,
+                p => p.Id,
+                ( ef, p ) => new
+                {
+                    ef.Era.DatamartEraLoss.Id,
+                    ef.Era.DatamartEraLoss.Processed,
+                    ef.Era.DatamartEraLoss.SendEmail,
+                    HHPerson = new
+                    {
+                        Id = ef.Family.HHPersonId,
+                        FullName = ef.Family.HHFullName
+                    },
+                    ef.Family.AdultNames,
+                    ef.Family.ChildNames,
+                    ef.Era.DatamartEraLoss.LossDate,
+                    ef.Era.DatamartEra.FirstAttended,
+                    ef.Era.DatamartEra.LastAttended,
+                    ef.Era.DatamartEra.LastGave,
+                    ef.Era.DatamartEra.TimesGaveLastYear,
+                    p.StartingPointDate,
+                    p.BaptismDate,
+                    NeighborhoodPastor = new
+                    {
+                        Id = ef.Family.NeighborhoodPastorId,
+                        FullName = ef.Family.NeighborhoodPastorName
+                    },
+                    p.InNeighborhoodGroup
+                } );
+
+            if ( gList.SortProperty != null )
+            {
+                joinQry = joinQry.Sort( gList.SortProperty );
+            }
+            else
+            {
+                joinQry = joinQry.OrderByDescending( o => o.LossDate ).ThenBy( o => o.HHPerson.FullName );
+            }
+
+            gList.SetLinqDataSource( joinQry );
+            gList.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the OnFormatDataValue event of the NeighborhoodPastor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="CallbackField.CallbackEventArgs"/> instance containing the event data.</param>
+        protected void NeighborhoodPastor_OnFormatDataValue( object sender, CallbackField.CallbackEventArgs e )
+        {
+            if ( e.DataValue != null )
+            {
+                string url = this.ResolveRockUrl( string.Format( "~/Person/{0}", e.DataValue.GetPropertyValue( "Id" ) ) );
+                e.FormattedValue = string.Format( "<a href='{0}'>{1}</a>", url, e.DataValue.GetPropertyValue( "FullName" ) );
+            }
+        }
+
+        /// <summary>
+        /// Handles the OnFormatDataValue event of the HHPerson control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="CallbackField.CallbackEventArgs"/> instance containing the event data.</param>
+        protected void HHPerson_OnFormatDataValue( object sender, CallbackField.CallbackEventArgs e )
+        {
+            if ( e.DataValue != null )
+            {
+                string url = this.ResolveRockUrl( string.Format( "~/Person/{0}", e.DataValue.GetPropertyValue( "Id" ) ) );
+                e.FormattedValue = string.Format( "<a href='{0}'>{1}</a>", url, e.DataValue.GetPropertyValue( "FullName" ) );
+            }
         }
 
         #endregion
+
+
     }
 }
