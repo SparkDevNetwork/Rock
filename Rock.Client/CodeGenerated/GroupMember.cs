@@ -41,7 +41,7 @@ namespace Rock.Client
         public int GroupId { get; set; }
 
         /// <summary />
-        public int /* GroupMemberStatus*/ GroupMemberStatus { get; set; }
+        public Rock.Client.Enums.GroupMemberStatus GroupMemberStatus { get; set; }
 
         /// <summary />
         public int GroupRoleId { get; set; }

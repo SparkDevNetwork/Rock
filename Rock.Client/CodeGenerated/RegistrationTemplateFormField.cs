@@ -38,7 +38,7 @@ namespace Rock.Client
         public int? AttributeId { get; set; }
 
         /// <summary />
-        public int /* RegistrationFieldSource*/ FieldSource { get; set; }
+        public Rock.Client.Enums.RegistrationFieldSource FieldSource { get; set; }
 
         /// <summary />
         public bool IsGridField { get; set; }
@@ -53,7 +53,7 @@ namespace Rock.Client
         public int Order { get; set; }
 
         /// <summary />
-        public int /* RegistrationPersonFieldType*/ PersonFieldType { get; set; }
+        public Rock.Client.Enums.RegistrationPersonFieldType PersonFieldType { get; set; }
 
         /// <summary />
         public string PostText { get; set; }

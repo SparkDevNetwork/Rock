@@ -62,7 +62,7 @@ namespace Rock.Client
         public DateTime StartDateTime { get; set; }
 
         /// <summary />
-        public int /* ContentChannelItemStatus*/ Status { get; set; }
+        public Rock.Client.Enums.ContentChannelItemStatus Status { get; set; }
 
         /// <summary />
         public string Title { get; set; }

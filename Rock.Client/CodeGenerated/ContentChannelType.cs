@@ -35,7 +35,7 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public int /* ContentChannelDateType*/ DateRangeType { get; set; }
+        public Rock.Client.Enums.ContentChannelDateType DateRangeType { get; set; }
 
         /// <summary />
         public bool DisablePriority { get; set; }
