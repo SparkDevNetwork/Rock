@@ -53,6 +53,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EntitySet.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EntitySetItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EntityType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Enums\RockEnums.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EventCalendar.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EventCalendarItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EventItem.cs" />
