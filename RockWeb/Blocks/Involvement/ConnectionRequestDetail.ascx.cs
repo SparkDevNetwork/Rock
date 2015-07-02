@@ -931,8 +931,10 @@ namespace RockWeb.Blocks.Involvement
             }
 
             btnSave.Visible = !readOnly;
-
-            ppConnectionRequestPerson.SetValue( _connectionRequest.ConnectorPersonAlias.Person );
+            if ( _connectionRequest.ConnectorPersonAlias != null )
+            {
+                ppConnectionRequestPerson.SetValue( _connectionRequest.ConnectorPersonAlias.Person );
+            }
             ppConnectionRequestPerson.Enabled = !readOnly;
 
             rblStatus.SetValue( (int)_connectionRequest.ConnectionStatus.Id );
