@@ -20,7 +20,10 @@
 
     <asp:Panel ID="pnlRegistrant" runat="server" Visible="false">
         <h1><asp:Literal ID="lRegistrantTitle" runat="server" /></h1>
-        <asp:PlaceHolder ID="phRegistrantForm" runat="server" />
+        <div class="js-registration-same-family">
+            <Rock:RockCheckBoxList ID="cblFamilyOptions" runat="server" Label="Individual is in the same family as" RepeatDirection="Vertical" />
+        </div>
+        <asp:PlaceHolder ID="phRegistrantControls" runat="server" />
         <asp:PlaceHolder ID="phFees" runat="server" />
         <div class="actions">
             <asp:LinkButton ID="lbRegistrantPrev" runat="server" AccessKey="p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbRegistrantPrev_Click"  />
@@ -30,6 +33,7 @@
 
     <asp:Panel ID="pnlSummaryAndPayment" runat="server" Visible="false" >
         <h1>Summary</h1>
+        <asp:PlaceHolder ID="phSummaryControls" runat="server" />
         <div class="actions">
             <asp:LinkButton ID="lbSummaryPrev" runat="server" AccessKey="p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbSummaryPrev_Click" />
             <asp:LinkButton ID="lbSummaryNext" runat="server" AccessKey="n" Text="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbSummaryNext_Click" />
@@ -38,6 +42,7 @@
 
     <asp:Panel ID="pnlSuccess" runat="server" Visible="false" >
         <h1>Success</h1>
+        <asp:PlaceHolder ID="phSuccessControls" runat="server" />
     </asp:Panel>
 
 </ContentTemplate>
