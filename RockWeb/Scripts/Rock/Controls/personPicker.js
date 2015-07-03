@@ -86,11 +86,9 @@
                 var $itemDetails = $selectedItem.find('.picker-select-item-details');
 
                 if ($itemDetails.attr('data-has-details') == 'false') {
-                    // add a spinner that slides down in case we have to wait on the server for a little bit
-                    var $spinner = $('<i/>').addClass('fa fa-refresh fa-spin margin-l-md').fadeTo(0, 0.2).hide();
-                    $itemDetails.show();
-                    $spinner.appendTo($itemDetails);
-                    $spinner.slideDown(500);
+                    // add a spinner in case we have to wait on the server for a little bit
+                    var $spinner = $selectedItem.find('.loading-notification');
+                    $spinner.fadeIn(800);
 
                     // fetch the search details from the server
                     $.get(restDetailUrl + '?Id=' + selectedPersonId, function (responseText, textStatus, jqXHR) {
@@ -100,7 +98,9 @@
                         $itemDetails.stop().hide().html(responseText);
                         $itemDetails.slideDown(function () {
                             exports.personPickers[controlId].updateScrollbar();
-                        })
+                        });
+
+                        $spinner.stop().fadeOut(200);
                     });
                 } else {
                     $selectedItem.find('.picker-select-item-details:hidden').slideDown(function () {
@@ -177,7 +177,7 @@
                         var $div = $('<div/>').attr('class', 'radio'),
 
                             $label = $('<label/>')
-                                .text(item.Name)
+                                .html(item.Name + ' <i class="fa fa-refresh fa-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
                                 .prependTo($div),
 
                             $radio = $('<input type="radio" name="person-id" />')
