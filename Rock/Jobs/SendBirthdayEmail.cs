@@ -113,6 +113,10 @@ namespace Rock.Jobs
             {
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Person", person );
+
+                var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+                globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+
                 recipients.Add( new RecipientData( person.Email, mergeFields ) );
             }
 
