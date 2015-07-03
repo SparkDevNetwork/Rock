@@ -128,6 +128,11 @@
                         <Rock:NumberBox ID="numbExample" runat="server" Label="Rock:NumberBox" />
                     </div>
 
+                    <a id="NumberUpDown"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:NumberUpDown ID="nudExample" runat="server" Label="Rock:NumberUpDown" Minimum="0" Maximum="5" />
+                    </div>
+
                     <a id="RockCheckBox"></a>
                     <div runat="server" class="r-example">
                         <Rock:RockCheckBox ID="cbExample" runat="server" Label="Rock:RockCheckBox" />
