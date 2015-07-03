@@ -138,6 +138,11 @@
                         <Rock:RockCheckBox ID="cbExample" runat="server" Label="Rock:RockCheckBox" />
                     </div>
 
+                    <a id="RockCheckBox"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:RockCheckBox ID="cbExample2" runat="server" Label="Rock:RockCheckBox" SelectedIconCssClass="fa fa-check-square-o fa-lg" UnSelectedIconCssClass="fa fa-square-o fa-lg" />
+                    </div>
+
                     <a id="RockCheckBoxList"></a>
                     <div runat="server" class="r-example">
                         <Rock:RockCheckBoxList ID="cblExample" runat="server" Label="Rock:RockCheckBoxList" />
