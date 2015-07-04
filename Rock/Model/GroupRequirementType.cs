@@ -99,6 +99,24 @@ namespace Rock.Model
         public int? DataViewId { get; set; }
 
         /// <summary>
+        /// Gets or sets the warning SQL expression.
+        /// </summary>
+        /// <value>
+        /// The warning SQL expression.
+        /// </value>
+        [DataMember]
+        public string WarningSqlExpression { get; set; }
+
+        /// <summary>
+        /// Gets or sets the warning data view identifier.
+        /// </summary>
+        /// <value>
+        /// The warning data view identifier.
+        /// </value>
+        [DataMember]
+        public int? WarningDataViewId { get; set; }
+
+        /// <summary>
         /// Gets or sets the positive label. This is the text that is displayed when the requirement is met.
         /// </summary>
         /// <value>
@@ -117,6 +135,15 @@ namespace Rock.Model
         [MaxLength( 150 )]
         [DataMember]
         public string NegativeLabel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the warning label.
+        /// </summary>
+        /// <value>
+        /// The warning label.
+        /// </value>
+        [DataMember]
+        public string WarningLabel { get; set; }
 
         /// <summary>
         /// Gets or sets the checkbox label. This is the text that is used for the checkbox if this is a manually set requirement
@@ -139,6 +166,14 @@ namespace Rock.Model
         /// The data view.
         /// </value>
         public virtual DataView DataView { get; set; }
+
+        /// <summary>
+        /// Gets or sets the warning data view.
+        /// </summary>
+        /// <value>
+        /// The warning data view.
+        /// </value>
+        public virtual DataView WarningDataView { get; set; }
 
         #endregion
 
@@ -210,6 +245,7 @@ namespace Rock.Model
         public GroupRequirementTypeConfiguration()
         {
             this.HasOptional( a => a.DataView ).WithMany().HasForeignKey( a => a.DataViewId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.WarningDataView ).WithMany().HasForeignKey( a => a.WarningDataViewId ).WillCascadeOnDelete( false );
         }
     }
 

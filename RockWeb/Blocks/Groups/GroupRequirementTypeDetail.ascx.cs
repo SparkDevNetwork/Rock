@@ -116,6 +116,7 @@ namespace RockWeb.Blocks.Groups
             tbDescription.Text = groupRequirementType.Description;
             tbPositiveLabel.Text = groupRequirementType.PositiveLabel;
             tbNegativeLabel.Text = groupRequirementType.NegativeLabel;
+            tbWarningLabel.Text = groupRequirementType.WarningLabel;
             tbCheckboxLabel.Text = groupRequirementType.CheckboxLabel;
             cbCanExpire.Checked = groupRequirementType.CanExpire;
             nbExpireInDays.Text = groupRequirementType.ExpireInDays.ToString();
@@ -126,8 +127,13 @@ The SQL can include Lava merge fields:";
 
             ceSqlExpression.Help += groupRequirementType.GetMergeObjects( new Group() ).lavaDebugInfo();
 
+            ceWarningSqlExpression.Text = groupRequirementType.WarningSqlExpression;
+
             dpDataView.EntityTypeId = EntityTypeCache.Read<Person>().Id;
             dpDataView.SelectedValue = groupRequirementType.DataViewId.ToString();
+
+            dpWarningDataView.EntityTypeId = EntityTypeCache.Read<Person>().Id;
+            dpWarningDataView.SelectedValue = groupRequirementType.WarningDataViewId.ToString();
 
             hfRequirementCheckType.Value = groupRequirementType.RequirementCheckType.ConvertToInt().ToString();
         }
@@ -174,23 +180,28 @@ The SQL can include Lava merge fields:";
             if ( groupRequirementType.RequirementCheckType == RequirementCheckType.Sql)
             {
                 groupRequirementType.SqlExpression = ceSqlExpression.Text;
+                groupRequirementType.WarningSqlExpression = ceWarningSqlExpression.Text;
             }
             else
             {
                 groupRequirementType.SqlExpression = null;
+                groupRequirementType.WarningSqlExpression = null;
             }
 
             if (groupRequirementType.RequirementCheckType == RequirementCheckType.Dataview)
             {
                 groupRequirementType.DataViewId = dpDataView.SelectedValue.AsIntegerOrNull();
+                groupRequirementType.WarningDataViewId = dpWarningDataView.SelectedValue.AsIntegerOrNull();
             }
             else
             {
                 groupRequirementType.DataViewId = null;
+                groupRequirementType.WarningDataViewId = null;
             }
             
             groupRequirementType.PositiveLabel = tbPositiveLabel.Text;
             groupRequirementType.NegativeLabel = tbNegativeLabel.Text;
+            groupRequirementType.WarningLabel = tbWarningLabel.Text;
             groupRequirementType.CheckboxLabel = tbCheckboxLabel.Text;
 
             if ( !Page.IsValid )
