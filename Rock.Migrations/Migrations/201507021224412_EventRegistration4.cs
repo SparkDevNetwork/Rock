@@ -32,6 +32,8 @@ namespace Rock.Migrations
             AddColumn("dbo.Registration", "DiscountCode", c => c.String(nullable: false, maxLength: 100));
             AddColumn("dbo.Registration", "DiscountPercentage", c => c.Double(nullable: false));
             AddColumn("dbo.Registration", "DiscountAmount", c => c.Decimal(nullable: false, precision: 18, scale: 2));
+
+            CreateIndex( "dbo.FinancialTransactionDetail", new string[] { "EntityTypeId", "EntityId" } );
         }
         
         /// <summary>
@@ -39,6 +41,8 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            DropIndex( "dbo.FinancialTransactionDetail", new string[] { "EntityTypeId", "EntityId" }  );
+
             DropColumn("dbo.Registration", "DiscountAmount");
             DropColumn("dbo.Registration", "DiscountPercentage");
             DropColumn("dbo.Registration", "DiscountCode");

@@ -106,7 +106,7 @@ namespace Rock.Model
         /// The discount percentage.
         /// </value>
         [DataMember]
-        public double DiscountPercentage { get; set; }
+        public decimal DiscountPercentage { get; set; }
 
         /// <summary>
         /// Gets or sets the discount amount.

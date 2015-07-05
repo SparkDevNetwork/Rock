@@ -329,16 +329,19 @@ namespace Rock.Web.UI.Controls
             _hfMin = new HiddenFieldWithClass();
             _hfMin.ID = string.Format( "{0}_hfMin", this.ID );
             _hfMin.CssClass = "js-number-up-down-min";
+            _hfMin.Value = int.MinValue.ToString();
             Controls.Add( _hfMin );
 
             _hfMax = new HiddenFieldWithClass();
             _hfMax.ID = string.Format( "{0}_hfMax", this.ID );
             _hfMax.CssClass = "js-number-up-down-max";
+            _hfMax.Value = int.MaxValue.ToString();
             Controls.Add( _hfMax );
 
             _hfNumber = new HiddenFieldWithClass();
             _hfNumber.ID = string.Format( "{0}_hfNumber", this.ID );
             _hfNumber.CssClass = "js-number-up-down-value";
+            _hfNumber.Value = "0";
             Controls.Add( _hfNumber );
 
             _lblNumber = new Label();

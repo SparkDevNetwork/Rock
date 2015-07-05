@@ -22,7 +22,7 @@
                 var numValue = parseInt($value.val(), 10) + adjustment;
 
                 // If new value is valid, set the hf and lbl
-                if (numValue > 0 && numValue <= maxValue) {
+                if (numValue >= minValue && numValue <= maxValue) {
                     $value.val(numValue);
                     $lbl.html(numValue);
                 }

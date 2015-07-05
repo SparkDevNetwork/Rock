@@ -24,6 +24,7 @@
             <div class="panel-body container-fluid">
 
                 <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <Rock:NotificationBox ID="nbValidationError" runat="server" NotificationBoxType="Danger" Heading="Please Correct the Following" Visible="false" />
 
                 <div id="pnlEditDetails" runat="server">
 
@@ -67,7 +68,7 @@
                                 <Rock:CurrencyBox ID="cbCost" runat="server" Label="Cost"
                                     Help="The cost per registrant." />
                                 <Rock:CurrencyBox ID="cbMinimumInitialPayment" runat="server" Label="Minimum Initial Payment"
-                                    Help="The minimum amount required per registrant." />
+                                    Help="The minimum amount required per registrant. Leave value blank if full amount is required." />
                                 <Rock:FinancialGatewayPicker ID="fgpFinancialGateway" runat="server" Label="Financial Gateway"
                                     Help="The financial gateway to use for processing registration payments." />
                             </div>
