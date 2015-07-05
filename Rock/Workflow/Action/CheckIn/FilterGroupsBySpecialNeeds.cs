@@ -65,6 +65,11 @@ namespace Rock.Workflow.Action.CheckIn
 
                 foreach ( var person in family.People )
                 {
+                    if ( person.Person.Attributes == null )
+                    {
+                        person.Person.LoadAttributes( rockContext );
+                    }
+
                     bool isSNPerson = person.Person.GetAttributeValue( "IsSpecialNeeds" ).AsBoolean();
                     foreach ( var groupType in person.GroupTypes.ToList() )
                     {
