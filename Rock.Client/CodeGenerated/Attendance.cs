@@ -71,7 +71,7 @@ namespace Rock.Client
         public int? QualifierValueId { get; set; }
 
         /// <summary />
-        public int /* RSVP*/ RSVP { get; set; }
+        public Rock.Client.Enums.RSVP RSVP { get; set; }
 
         /// <summary />
         public int? ScheduleId { get; set; }

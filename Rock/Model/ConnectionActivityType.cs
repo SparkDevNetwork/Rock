@@ -36,14 +36,32 @@ namespace Rock.Model
 
         #region Entity Properties
 
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connection type identifier.
+        /// </summary>
+        /// <value>
+        /// The connection type identifier.
+        /// </value>
         [DataMember]
         public int? ConnectionTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
         [DataMember]
         public bool IsActive { get; set; }
 
@@ -51,6 +69,13 @@ namespace Rock.Model
 
         #region Virtual Properties
 
+
+        /// <summary>
+        /// Gets or sets the type of the connection.
+        /// </summary>
+        /// <value>
+        /// The type of the connection.
+        /// </value>
         [DataMember]
         public virtual ConnectionType ConnectionType { get; set; }
 

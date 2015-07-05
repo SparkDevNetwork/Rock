@@ -62,6 +62,24 @@ namespace Rock.Model
         public DateTime? RequirementMetDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the requirement fail date time.
+        /// </summary>
+        /// <value>
+        /// The requirement fail date time.
+        /// </value>
+        [DataMember]
+        public DateTime? RequirementFailDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the requirement warning date time.
+        /// </summary>
+        /// <value>
+        /// The requirement warning date time.
+        /// </value>
+        [DataMember]
+        public DateTime? RequirementWarningDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the last requirement check date time.
         /// </summary>
         /// <value>

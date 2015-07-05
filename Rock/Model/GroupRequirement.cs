@@ -151,18 +151,12 @@ namespace Rock.Model
                     var dataViewQry = personService.Get( paramExpression, dataViewWhereExpression );
                     if ( dataViewQry != null )
                     {
-                        var join = personQry.Join(
-                            dataViewQry.DefaultIfEmpty(),
-                            pr => pr.Id,
-                            pq => pq.Id,
-                            ( pr, pq ) =>
-                            new
-                            {
-                                PersonId = pq.Id,
-                                Included = pr != null
-                            } );
+                        var outerJoin = from p in personQry
+                                        join d in dataViewQry on p equals d into oj
+                                        from d in oj.DefaultIfEmpty()
+                                        select new { PersonId = p.Id, Included = d != null };
 
-                        var result = join.ToList().Select( a =>
+                        var result = outerJoin.ToList().Select( a =>
                             new PersonGroupRequirementStatus
                             {
                                 PersonId = a.PersonId,
@@ -172,6 +166,10 @@ namespace Rock.Model
 
                         return result;
                     }
+                }
+                else
+                {
+                    throw new Exception( "No dataview assigned to Group Requirement Type: " + this.GroupRequirementType.Name );
                 }
             }
             else if ( this.GroupRequirementType.RequirementCheckType == RequirementCheckType.Sql )

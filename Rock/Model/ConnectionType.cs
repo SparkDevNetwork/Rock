@@ -36,26 +36,62 @@ namespace Rock.Model
 
         #region Entity Properties
 
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public string Description { get; set; }
 
+        /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
         [DataMember]
         public string IconCssClass { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether future follow-ups are enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if future follow-ups are enabled; otherwise, <c>false</c>.
+        /// </value>
         [Required]
         [DataMember]
         public bool EnableFutureFollowup { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether full activity lists are enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if full activity lists are enabled; otherwise, <c>false</c>.
+        /// </value>
         [Required]
         [DataMember]
         public bool EnableFullActivityList { get; set; }
 
+        /// <summary>
+        /// Gets or sets the owner person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The owner person alias identifier.
+        /// </value>
         [DataMember]
         public int? OwnerPersonAliasId {get;set;}
 
@@ -63,9 +99,21 @@ namespace Rock.Model
 
         #region Virtual Properties
 
+        /// <summary>
+        /// Gets or sets the owner person alias.
+        /// </summary>
+        /// <value>
+        /// The owner person alias.
+        /// </value>
         [DataMember]
         public virtual PersonAlias OwnerPersonAlias { get; set; }
 
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionStatus">ConnectionStatuses</see> who are associated with the ConnectionType.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.ConnectionStatus">ConnectionStatuses</see> who are associated with the ConnectionType.
+        /// </value>
         [DataMember]
         public virtual ICollection<ConnectionStatus> ConnectionStatuses
         {
@@ -75,6 +123,13 @@ namespace Rock.Model
 
         private ICollection<ConnectionStatus> _connectionStatuses;
 
+
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionWorkflow">ConnectionWorkflows</see> who are associated with the ConnectionType.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.ConnectionWorkflow">ConnectionWorkflows</see> who are associated with the ConnectionType.
+        /// </value>
         [DataMember]
         public virtual ICollection<ConnectionWorkflow> ConnectionWorkflows
         {
@@ -84,6 +139,12 @@ namespace Rock.Model
 
         private ICollection<ConnectionWorkflow> _connectionWorkflows;
 
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionActivityType">ConnectionActivityTypes</see> who are associated with the ConnectionType.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.ConnectionActivityType">ConnectionActivityTypes</see> who are associated with the ConnectionType.
+        /// </value>
         [DataMember]
         public virtual ICollection<ConnectionActivityType> ConnectionActivityTypes
         {
@@ -93,6 +154,12 @@ namespace Rock.Model
 
         private ICollection<ConnectionActivityType> _connectionActivityTypes;
 
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionOpportunity">ConnectionOpportunities</see> who are associated with the ConnectionType.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.ConnectionOpportunity">ConnectionOpportunities</see> who are associated with the ConnectionType.
+        /// </value>
         [DataMember]
         public virtual ICollection<ConnectionOpportunity> ConnectionOpportunities
         {

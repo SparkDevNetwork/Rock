@@ -400,6 +400,14 @@ namespace Rock.Field.Types
             return base.FilterValueControl( overrideConfigValues, id, required );
         }
 
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return true;
+        }
 
         /// <summary>
         /// Gets the filter value.
@@ -497,7 +505,8 @@ namespace Rock.Field.Types
             }
 
             string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
-            return string.Format( "var selectedItems = ''; $('input:checked', $selectedContent).each(function() {{ selectedItems += selectedItems == '' ? '' : ' or '; selectedItems += '\\'' + $(this).parent().text() + '\\'' }}); result = '{0} is ' + selectedItems ", titleJs );
+            var format = "return Rock.reporting.formatFilterForDefinedValueField('{0}', $selectedContent);";
+            return string.Format( format, titleJs );
         }
 
         /// <summary>

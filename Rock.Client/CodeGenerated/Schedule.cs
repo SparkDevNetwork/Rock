@@ -47,6 +47,12 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public DateTime? EffectiveEndDate { get; set; }
+
+        /// <summary />
+        public DateTime? EffectiveStartDate { get; set; }
+
+        /// <summary />
         public string iCalendarContent { get; set; }
 
         /// <summary />
@@ -73,12 +79,6 @@ namespace Rock.Client
     {
         /// <summary />
         public Category Category { get; set; }
-
-        /// <summary />
-        public DateTime? EffectiveEndDate { get; set; }
-
-        /// <summary />
-        public DateTime? EffectiveStartDate { get; set; }
 
         /// <summary />
         public string FriendlyScheduleText { get; set; }

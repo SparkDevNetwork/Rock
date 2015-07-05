@@ -50,7 +50,7 @@ namespace Rock.Client
         public int Order { get; set; }
 
         /// <summary />
-        public int /* GroupMemberWorkflowTriggerType*/ TriggerType { get; set; }
+        public Rock.Client.Enums.GroupMemberWorkflowTriggerType TriggerType { get; set; }
 
         /// <summary />
         public string TypeQualifier { get; set; }

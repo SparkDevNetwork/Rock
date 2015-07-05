@@ -953,29 +953,31 @@ namespace RockWeb.Blocks.Groups
                     {
                         // Start by setting the group type to the same as the parent
                         group.ParentGroup = parentGroup;
-                        group.GroupTypeId = parentGroup.GroupTypeId;
-                        group.GroupType = parentGroup.GroupType;
 
-                        if ( !editAllowed )
+                        // If the parent group type is allowed, first set that as the selected group type and check security
+                        var allowedGroupTypes = GetAllowedGroupTypes( parentGroup, rockContext ).ToList();
+                        if ( allowedGroupTypes.Any( t => t.Id == parentGroup.Id ) )
                         {
-                            // If user is not allowed to edit this new group (with paren't group type),
-                            // check to see if they'd be allowed to edit any other of the allowed
-                            // child group types
-                            editAllowed = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                            if ( !editAllowed )
+                            group.GroupTypeId = parentGroup.GroupTypeId;
+                            group.GroupType = parentGroup.GroupType;
+
+                            editAllowed = editAllowed || group.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                        }
+
+                        // parent group type was not allowed, or user is not allowed to edit
+                        if ( !editAllowed || group.GroupType == null )
+                        {
+                            // Loop through the other allowed group types to determine if user is allowed to edit any
+                            foreach ( var groupType in allowedGroupTypes.Where( g => g.Id != parentGroup.GroupTypeId ) )
                             {
-                                foreach( var groupType in GetAllowedGroupTypes( parentGroup, rockContext )
-                                    .Where( g => g.Id != parentGroup.GroupTypeId ) )
+                                group.GroupTypeId = groupType.Id;
+                                group.GroupType = groupType;
+                                if ( group.IsAuthorized(Authorization.EDIT, CurrentPerson))
                                 {
-                                    group.GroupTypeId = groupType.Id;
-                                    group.GroupType = groupType;
-                                    if ( group.IsAuthorized(Authorization.EDIT, CurrentPerson))
-                                    {
-                                        // Once a group type is found that allows user to edit, keep that
-                                        // group type by default
-                                        editAllowed = true;
-                                        break;
-                                    }
+                                    // Once a group type is found that allows user to edit, keep that
+                                    // group type by default
+                                    editAllowed = true;
+                                    break;
                                 }
                             }
                         }
@@ -994,7 +996,7 @@ namespace RockWeb.Blocks.Groups
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed  )
+            if ( !editAllowed || group.GroupType == null )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
@@ -2426,6 +2428,9 @@ namespace RockWeb.Blocks.Groups
         protected void gMemberWorkflowTriggers_ShowEdit( Guid memberWorkflowTriggersGuid )
         {
             ddlTriggerType.BindToEnum<GroupMemberWorkflowTriggerType>( false );
+
+            ddlTriggerFromStatus.BindToEnum<GroupMemberStatus>( false );
+            ddlTriggerFromStatus.Items.Insert( 0, new ListItem( "Any", "" ) );
 
             ddlTriggerToStatus.BindToEnum<GroupMemberStatus>( false );
             ddlTriggerToStatus.Items.Insert( 0, new ListItem( "Any", "" ) );

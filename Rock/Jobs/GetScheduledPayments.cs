@@ -64,40 +64,36 @@ namespace Rock.Jobs
                 // get the job map
                 JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-                Guid? financialGatewayGuid = dataMap.GetString( "PaymentGateway" ).AsGuidOrNull();
-                if ( financialGatewayGuid.HasValue )
+                using ( var rockContext = new RockContext() )
                 {
-                    using ( var rockContext = new RockContext() )
+                    foreach ( var financialGateway in new FinancialGatewayService( rockContext )
+                        .Queryable()
+                        .Where( g => g.IsActive ) )
                     {
-                        foreach ( var financialGateway in new FinancialGatewayService( rockContext )
-                            .Queryable()
-                            .Where( g => g.IsActive ) )
+                        financialGateway.LoadAttributes( rockContext );
+
+                        var gateway = financialGateway.GetGatewayComponent();
+                        if ( gateway != null )
                         {
-                            financialGateway.LoadAttributes( rockContext );
+                            int daysBack = dataMap.GetString( "DaysBack" ).AsIntegerOrNull() ?? 1;
 
-                            var gateway = financialGateway.GetGatewayComponent();
-                            if ( gateway != null )
+                            DateTime today = RockDateTime.Today;
+                            TimeSpan days = new TimeSpan( daysBack, 0, 0, 0 );
+                            DateTime endDateTime = today.Add( financialGateway.GetBatchTimeOffset() );
+                            endDateTime = RockDateTime.Now.CompareTo( endDateTime ) < 0 ? endDateTime.AddDays( -1 ) : today;
+                            DateTime startDateTime = endDateTime.Subtract( days );
+
+                            string errorMessage = string.Empty;
+                            var payments = gateway.GetPayments( financialGateway, startDateTime, endDateTime, out errorMessage );
+
+                            if ( string.IsNullOrWhiteSpace( errorMessage ) )
                             {
-                                int daysBack = dataMap.GetString( "DaysBack" ).AsIntegerOrNull() ?? 1;
-
-                                DateTime today = RockDateTime.Today;
-                                TimeSpan days = new TimeSpan( daysBack, 0, 0, 0 );
-                                DateTime endDateTime = today.Add( financialGateway.GetBatchTimeOffset() );
-                                endDateTime = RockDateTime.Now.CompareTo( endDateTime ) < 0 ? endDateTime.AddDays( -1 ) : today;
-                                DateTime startDateTime = endDateTime.Subtract( days );
-
-                                string errorMessage = string.Empty;
-                                var payments = gateway.GetPayments( financialGateway, startDateTime, endDateTime, out errorMessage );
-
-                                if ( string.IsNullOrWhiteSpace( errorMessage ) )
-                                {
-                                    string batchNamePrefix = dataMap.GetString( "BatchNamePrefix" );
-                                    FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments );
-                                }
-                                else
-                                {
-                                    throw new Exception( errorMessage );
-                                }
+                                string batchNamePrefix = dataMap.GetString( "BatchNamePrefix" );
+                                FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments );
+                            }
+                            else
+                            {
+                                throw new Exception( errorMessage );
                             }
                         }
                     }
