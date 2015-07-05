@@ -44,7 +44,7 @@ namespace Rock.Client
         public int? DataSelectComponentEntityTypeId { get; set; }
 
         /// <summary />
-        public int /* ReportFieldType*/ ReportFieldType { get; set; }
+        public Rock.Client.Enums.ReportFieldType ReportFieldType { get; set; }
 
         /// <summary />
         public int ReportId { get; set; }

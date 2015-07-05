@@ -44,7 +44,7 @@ namespace Rock.Client
         public DateTime? MetricValueDateTime { get; set; }
 
         /// <summary />
-        public int /* MetricValueType*/ MetricValueType { get; set; }
+        public Rock.Client.Enums.MetricValueType MetricValueType { get; set; }
 
         /// <summary />
         public string Note { get; set; }

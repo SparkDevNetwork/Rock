@@ -217,6 +217,11 @@
                         <Rock:DateRangePicker ID="drpExample" runat="server" Label="Rock:DateRangePicker" LowerValue="1/1/2012" UpperValue="12/31/2014" />
                     </div>
 
+                    <a id="SlidingDateRangePicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:SlidingDateRangePicker ID="sdrpExample" runat="server" Label="Rock:SlidingDateRangePicker" />
+                    </div>
+
                     <a id="BirthdayPicker"></a>
                     <div id="Div4" runat="server" class="r-example">
                         <Rock:BirthdayPicker ID="bdaypExample" runat="server" Label="Rock:BirthdayPicker" OnSelectedBirthdayChanged="birthdayPicker_SelectedBirthdayChanged" />
@@ -227,9 +232,24 @@
                         <Rock:GroupPicker ID="gpExample" runat="server" Label="Rock:GroupPicker" />
                     </div>
 
+                    <a id="GroupTypePicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:GroupTypePicker ID="gpGroupType" runat="server" Label="Rock:GroupTypePicker" />
+                    </div>
+                    
+                    <a id="GroupTypesPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:GroupTypesPicker ID="gpGroupTypes" runat="server" Label="Rock:GroupTypesPicker" />
+                    </div>
+
                     <a id="CampusPicker"></a>
                     <div runat="server" class="r-example">
                         <Rock:CampusPicker ID="campExample" runat="server" Label="Rock:CampusPicker" />
+                    </div>
+
+                    <a id="CampusesPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:CampusesPicker ID="campsExample" runat="server" Label="Rock:CampusesPicker" />
                     </div>
 
                     <a id="PagePicker"></a>

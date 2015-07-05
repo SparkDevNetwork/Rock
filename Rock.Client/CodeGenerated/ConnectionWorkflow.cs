@@ -41,6 +41,9 @@ namespace Rock.Client
         public int? ConnectionTypeId { get; set; }
 
         /// <summary />
+        public string QualifierValue { get; set; }
+
+        /// <summary />
         public int /* ConnectionWorkflowTriggerType*/ TriggerType { get; set; }
 
         /// <summary />

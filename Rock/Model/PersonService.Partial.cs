@@ -101,14 +101,15 @@ namespace Rock.Model
             var qry = base.Queryable( includes );
             if ( !includeBusinesses )
             {
-                var definedValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
-                if ( definedValue != null )
+                var definedValuePersonType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() );
+                if ( definedValuePersonType != null )
                 {
-                    qry = qry.Where( p => p.RecordTypeValueId != definedValue.Id );
+                    int recordTypePerson = definedValuePersonType.Id;
+                    qry = qry.Where( p => p.RecordTypeValueId == recordTypePerson );
                 }
             }
 
-            if (!includeDeceased)
+            if ( !includeDeceased )
             {
                 qry = qry.Where( p => p.IsDeceased == false );
             }
@@ -362,15 +363,28 @@ namespace Rock.Model
             }
             else
             {
-                int recordTypeBusinessId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
-
-                return Queryable( includeDeceased, includeBusinesses )
-                    .Where( p =>
-                        ( includeBusinesses && p.RecordTypeValueId.HasValue && p.RecordTypeValueId.Value == recordTypeBusinessId && p.LastName.Contains( fullName ) )
+                var qry = Queryable( includeDeceased, includeBusinesses );
+                if ( includeBusinesses )
+                {
+                    int recordTypeBusinessId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                    
+                    // if a we are including businesses, compare fullname against the Business Name (Person.LastName)
+                    qry = qry.Where( p =>
+                        ( p.RecordTypeValueId.HasValue && p.RecordTypeValueId.Value == recordTypeBusinessId && p.LastName.Contains( fullName ) )
                         ||
                         ( ( p.LastName.StartsWith( lastName ) || previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( lastName ) ) ) &&
                         ( p.FirstName.StartsWith( firstName ) ||
                         p.NickName.StartsWith( firstName ) ) ) );
+                }
+                else
+                {
+                    qry = qry.Where( p =>
+                        ( ( p.LastName.StartsWith( lastName ) || previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( lastName ) ) ) &&
+                        ( p.FirstName.StartsWith( firstName ) ||
+                        p.NickName.StartsWith( firstName ) ) ) );
+                }
+
+                return qry;
             }
         }
 
@@ -852,7 +866,7 @@ namespace Rock.Model
             /// </value>
             public IEnumerable<Person> Children { get; set; }
         }
-        
+
         /// <summary>
         /// Gets a Queryable of Parents with their Children
         /// </summary>

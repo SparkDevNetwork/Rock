@@ -47,7 +47,7 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
-        public int /* DisplayInNavWhen*/ DisplayInNavWhen { get; set; }
+        public Rock.Client.Enums.DisplayInNavWhen DisplayInNavWhen { get; set; }
 
         /// <summary />
         public bool EnableViewState { get; set; }

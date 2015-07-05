@@ -35,16 +35,19 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public int? ConnectionRequestId { get; set; }
+        public int ConnectionRequestId { get; set; }
 
         /// <summary />
-        public int? ConnectionWorkflowId { get; set; }
+        public int ConnectionWorkflowId { get; set; }
+
+        /// <summary />
+        public string TriggerQualifier { get; set; }
 
         /// <summary />
         public int /* ConnectionWorkflowTriggerType*/ TriggerType { get; set; }
 
         /// <summary />
-        public int? WorkflowId { get; set; }
+        public int WorkflowId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

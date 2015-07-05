@@ -86,17 +86,27 @@
                 var $itemDetails = $selectedItem.find('.picker-select-item-details');
 
                 if ($itemDetails.attr('data-has-details') == 'false') {
+                    // add a spinner in case we have to wait on the server for a little bit
+                    var $spinner = $selectedItem.find('.loading-notification');
+                    $spinner.fadeIn(800);
+
                     // fetch the search details from the server
                     $.get(restDetailUrl + '?Id=' + selectedPersonId, function (responseText, textStatus, jqXHR) {
-                        $itemDetails.html(responseText);
                         $itemDetails.attr('data-has-details', true);
+
+                        // hide then set the html so that we can get the slideDown effect
+                        $itemDetails.stop().hide().html(responseText);
+                        $itemDetails.slideDown(function () {
+                            exports.personPickers[controlId].updateScrollbar();
+                        });
+
+                        $spinner.stop().fadeOut(200);
+                    });
+                } else {
+                    $selectedItem.find('.picker-select-item-details:hidden').slideDown(function () {
                         exports.personPickers[controlId].updateScrollbar();
                     });
                 }
-
-                $selectedItem.find('.picker-select-item-details:hidden').slideDown(function () {
-                    exports.personPickers[controlId].updateScrollbar();
-                });
             });
 
             $('#' + controlId).hover(
@@ -167,7 +177,7 @@
                         var $div = $('<div/>').attr('class', 'radio'),
 
                             $label = $('<label/>')
-                                .text(item.Name)
+                                .html(item.Name + ' <i class="fa fa-refresh fa-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
                                 .prependTo($div),
 
                             $radio = $('<input type="radio" name="person-id" />')
