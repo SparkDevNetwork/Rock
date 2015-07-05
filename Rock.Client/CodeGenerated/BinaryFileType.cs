@@ -56,16 +56,16 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public int /* ColorDepth*/ PreferredColorDepth { get; set; }
+        public Rock.Client.Enums.ColorDepth PreferredColorDepth { get; set; }
 
         /// <summary />
-        public int /* Format*/ PreferredFormat { get; set; }
+        public Rock.Client.Enums.Format PreferredFormat { get; set; }
 
         /// <summary />
         public bool PreferredRequired { get; set; }
 
         /// <summary />
-        public int /* Resolution*/ PreferredResolution { get; set; }
+        public Rock.Client.Enums.Resolution PreferredResolution { get; set; }
 
         /// <summary />
         public bool RequiresViewSecurity { get; set; }

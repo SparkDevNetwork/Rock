@@ -23,7 +23,8 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Select multiple campuses
+    /// NOTE: Campuses must be set first (it doesn't automatically load campuses). Hint: Use CampusCache.All()
     /// </summary>
     public class CampusesPicker : RockCheckBoxList
     {
@@ -54,7 +55,6 @@ namespace Rock.Web.UI.Controls
                     campusItem.Text = campus.Name;
                     this.Items.Add( campusItem );
                 }
-
             }
         }
 
@@ -68,7 +68,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return this.Items.OfType<ListItem>().Select( a => int.Parse( a.Value ) ).ToList();
+                return this.Items.OfType<ListItem>().Select( a => a.Value ).AsIntegerList();
             }
         }
 
@@ -82,16 +82,16 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => int.Parse( a.Value ) ).ToList();
+                return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value ).AsIntegerList();
             }
+
             set
             {
                 foreach ( ListItem campusItem in this.Items )
                 {
-                    campusItem.Selected = value.Exists( a => a.Equals( int.Parse( campusItem.Value ) ) );
+                    campusItem.Selected = value.Exists( a => a.Equals( campusItem.Value.AsInteger() ) );
                 }
             }
         }
-
     }
 }

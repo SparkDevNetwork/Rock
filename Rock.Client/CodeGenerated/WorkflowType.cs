@@ -53,7 +53,7 @@ namespace Rock.Client
         public bool IsSystem { get; set; }
 
         /// <summary />
-        public int /* WorkflowLoggingLevel*/ LoggingLevel { get; set; }
+        public Rock.Client.Enums.WorkflowLoggingLevel LoggingLevel { get; set; }
 
         /// <summary />
         public string Name { get; set; }

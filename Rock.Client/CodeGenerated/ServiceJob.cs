@@ -77,7 +77,7 @@ namespace Rock.Client
         public string NotificationEmails { get; set; }
 
         /// <summary />
-        public int /* JobNotificationStatus*/ NotificationStatus { get; set; }
+        public Rock.Client.Enums.JobNotificationStatus NotificationStatus { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

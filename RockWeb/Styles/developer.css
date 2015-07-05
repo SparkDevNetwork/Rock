@@ -125,13 +125,6 @@ span.data-view-filter-label {
 }
 
 
-/* TC Commented out to make the toggle work */
-div.toggle-container {   /* ???? JME */
-    /*display: inline-block;*/
-}
-
-
-
 /* DT If th has a required class, render the required field indicator after the column heading */
 .table thead th.required:after {
   font-family: FontAwesome;

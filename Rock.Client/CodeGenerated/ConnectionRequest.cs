@@ -44,13 +44,13 @@ namespace Rock.Client
         public string Comments { get; set; }
 
         /// <summary />
-        public int? ConnectionOpportunityId { get; set; }
+        public int ConnectionOpportunityId { get; set; }
 
         /// <summary />
         public int /* ConnectionState*/ ConnectionState { get; set; }
 
         /// <summary />
-        public int? ConnectionStatusId { get; set; }
+        public int ConnectionStatusId { get; set; }
 
         /// <summary />
         public int? ConnectorPersonAliasId { get; set; }
@@ -59,7 +59,7 @@ namespace Rock.Client
         public DateTime? FollowupDate { get; set; }
 
         /// <summary />
-        public int? PersonAliasId { get; set; }
+        public int PersonAliasId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

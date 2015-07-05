@@ -35,7 +35,7 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public int /* AuditType*/ AuditType { get; set; }
+        public Rock.Client.Enums.AuditType AuditType { get; set; }
 
         /// <summary />
         public DateTime? DateTime { get; set; }

@@ -53,7 +53,7 @@ namespace Rock.Client
         public string ResponseCode { get; set; }
 
         /// <summary />
-        public int /* CommunicationRecipientStatus*/ Status { get; set; }
+        public Rock.Client.Enums.CommunicationRecipientStatus Status { get; set; }
 
         /// <summary />
         public string StatusNote { get; set; }

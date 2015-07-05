@@ -56,13 +56,13 @@ namespace Rock.Client
         public string EmailNote { get; set; }
 
         /// <summary />
-        public int /* EmailPreference*/ EmailPreference { get; set; }
+        public Rock.Client.Enums.EmailPreference EmailPreference { get; set; }
 
         /// <summary />
         public string FirstName { get; set; }
 
         /// <summary />
-        public int /* Gender*/ Gender { get; set; }
+        public Rock.Client.Enums.Gender Gender { get; set; }
 
         /// <summary />
         public int? GivingGroupId { get; set; }

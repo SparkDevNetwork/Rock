@@ -1036,6 +1036,7 @@ ul.rocktree ul {
 .list-as-blocks ul {
   padding: 0;
   list-style: none;
+  margin-top: 16px;
 }
 .list-as-blocks ul li {
   border-radius: 4px;
@@ -2107,15 +2108,22 @@ ul.rocklist .rocklist-item.selected {
 .contextsetter {
   margin-right: 2px;
 }
-ul.list-group-panel {
+ul.list-group-panel,
+.panel-collapse {
   margin: 0;
 }
-ul.list-group-panel .list-group-item {
+ul.list-group-panel .list-group,
+.panel-collapse .list-group {
+  margin-bottom: 0;
+}
+ul.list-group-panel .list-group-item,
+.panel-collapse .list-group-item {
   border-radius: 0;
   border: 0;
   border-top: 1px solid #dddddd;
 }
-ul.list-group-panel .list-group-item:first-child {
+ul.list-group-panel .list-group-item:first-child,
+.panel-collapse .list-group-item:first-child {
   border: 0;
 }
 .slidingdaterange-select,
@@ -2795,11 +2803,6 @@ tr.row-highlight td {
 .filter-item div[class*='col'] {
   margin-bottom: 6px;
 }
-.data-view-filter-field-label {
-  font-weight: 700;
-  margin-top: 8px;
-  display: block;
-}
 @media (min-width: 992px) {
   .filter-item div[class*='col'] {
     margin-bottom: 0;
@@ -2807,6 +2810,11 @@ tr.row-highlight td {
 }
 .filterfield {
   margin-bottom: 12px;
+}
+.filterfield-label {
+  font-weight: 700;
+  margin-top: 8px;
+  display: block;
 }
 /*
     Used to manage styles for specific blocks.
@@ -4798,6 +4806,21 @@ a.help {
 }
 .popover-content header h3 small {
   display: block;
+}
+.list-group-item:before,
+.list-group-item:after {
+  content: " ";
+  display: table;
+}
+.list-group-item:after {
+  clear: both;
+}
+.list-group-item .toggle-container {
+  display: inline-block;
+}
+.list-group-item .content {
+  display: block;
+  float: left;
 }
 .panel legend {
   border-color: #d5d5d5;

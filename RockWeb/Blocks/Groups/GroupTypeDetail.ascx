@@ -145,6 +145,7 @@
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                                     <Rock:BoolField DataField="IsLeader" HeaderText="Is Leader" />
+                                    <Rock:BoolField DataField="ReceiveRequirementsNotifications" HeaderText="Receives Requirements Notifications" />
                                     <Rock:BoolField DataField="CanView" HeaderText="Can View" />
                                     <Rock:BoolField DataField="CanEdit" HeaderText="Can Edit" />
                                     <Rock:RockBoundField DataField="MinCount" HeaderText="Minimum Required" DataFormatString="{0:N0}" />
@@ -328,6 +329,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbIsLeader" runat="server" Label="Is Leader" Text="Yes" Help="Are people with this role in group considered a 'Leader' of the group?" />
+                        <Rock:RockCheckBox ID="cbReceiveRequirementsNotifications" runat="server" Label="Receive Requirements Notifications" Text="Yes" Help="Should this role receive notifications of group members who do not meet their requirements? In order for these notifications to be emailed you will need to setup a 'Process Group Requirements Notification Job'." />
                         <Rock:RockCheckBox ID="cbCanView" runat="server" Label="Can View" Text="Yes" Help="Should users with this role be able to view this group regardless of the security settings on the group?" />
                         <Rock:RockCheckBox ID="cbCanEdit" runat="server" Label="Can Edit" Text="Yes" Help="Should users with this role be able to edit the details and members of this group regardless of the security settings on the group?" />
                      </div>

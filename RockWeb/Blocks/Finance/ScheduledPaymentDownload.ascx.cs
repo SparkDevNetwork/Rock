@@ -173,12 +173,12 @@ namespace RockWeb.Blocks.Finance
 
         private FinancialGateway GetSelectedGateway()
         {
-            Guid? gatewayGuid = gpGateway.SelectedValueAsGuid();
-            if ( gatewayGuid.HasValue )
+            int? gatewayId = gpGateway.SelectedValueAsInt();
+            if ( gatewayId.HasValue )
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var financialGateway = new FinancialGatewayService( rockContext ).Get( gatewayGuid.Value );
+                    var financialGateway = new FinancialGatewayService( rockContext ).Get( gatewayId.Value );
                     if ( financialGateway != null )
                     {
                         financialGateway.LoadAttributes( rockContext );

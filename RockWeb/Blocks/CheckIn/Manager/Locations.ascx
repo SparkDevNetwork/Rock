@@ -48,13 +48,13 @@
                     <asp:Repeater ID="rptNavItems" runat="server">
                         <ItemTemplate>
                             <li id="liNavItem" runat="server" class="list-group-item clickable" >
-                                <%# Eval("Name") %>
-                                <span class="pull-right">
+                                <div class="content margin-v-sm"><%# Eval("Name") %></div>
+                                <div class="pull-right margin-v-sm">
                                     <span class='badge<%# (int)Eval("CurrentCount") > 0 ? " badge-success" : "" %> '><%# ((int)Eval("CurrentCount")).ToString("N0") %></span>
                                     &nbsp;&nbsp;
                                     <Rock:Toggle ID="tglRoom" runat="server" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tglRoom_CheckedChanged"  />
                                     <i class='fa fa-fw fa-chevron-right'></i>
-                                </span>
+                                </div>
                             </li>
                         </ItemTemplate>
                     </asp:Repeater>

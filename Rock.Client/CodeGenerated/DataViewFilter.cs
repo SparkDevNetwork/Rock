@@ -38,7 +38,7 @@ namespace Rock.Client
         public int? EntityTypeId { get; set; }
 
         /// <summary />
-        public int /* FilterExpressionType*/ ExpressionType { get; set; }
+        public Rock.Client.Enums.FilterExpressionType ExpressionType { get; set; }
 
         /// <summary />
         public int? ParentId { get; set; }

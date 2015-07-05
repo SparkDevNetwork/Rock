@@ -59,7 +59,7 @@ namespace Rock.Client
         public string PositiveLabel { get; set; }
 
         /// <summary />
-        public int /* RequirementCheckType*/ RequirementCheckType { get; set; }
+        public Rock.Client.Enums.RequirementCheckType RequirementCheckType { get; set; }
 
         /// <summary />
         public string SqlExpression { get; set; }

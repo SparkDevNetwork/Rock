@@ -38,6 +38,7 @@
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbPositiveLabel" runat="server" SourceTypeName="Rock.Model.GroupRequirementType, Rock" PropertyName="PositiveLabel" Help="The text that is displayed when the requirement is met."/>
                             <Rock:DataTextBox ID="tbNegativeLabel" runat="server" SourceTypeName="Rock.Model.GroupRequirementType, Rock" PropertyName="NegativeLabel" Help="The text that is displayed when the requirement is not met." />
+                            <Rock:DataTextBox ID="tbWarningLabel" runat="server" SourceTypeName="Rock.Model.GroupRequirementType, Rock" PropertyName="WarningLabel" Help="The text that is displayed when the requirement in a warning state." />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbCanExpire" runat="server" Label="Can Expire" CssClass="js-can-expire-checkbox" />
@@ -64,9 +65,11 @@
                         <div class="col-md-12">
                             <div class="js-dataview-mode-div">
                                 <Rock:DataViewPicker ID="dpDataView" runat="server" Label="Dataview" Help="The dataview that will return a list of people that meet the criteria." />
+                                <Rock:DataViewPicker ID="dpWarningDataView" runat="server" Label="Warning Dataview" Help="Optional dataview that will return a list of people that should be marked as in a warning status." />
                             </div>
                             <div class="js-sql-mode-div">
                                 <Rock:CodeEditor ID="ceSqlExpression" runat="server" Label="SQL Expression" Help="A SQL expression that returns a list of Person Ids that meet the criteria." EditorMode="Sql" />
+                                <Rock:CodeEditor ID="ceWarningSqlExpression" runat="server" Label="Warning SQL Expression" Help="Optional SQL expression that returns a list of Person Ids that should be marked as in a warning status." EditorMode="Sql" />
                             </div>
                             <div class="js-manual-mode-div">
                                 <Rock:DataTextBox ID="tbCheckboxLabel" runat="server" SourceTypeName="Rock.Model.GroupRequirementType, Rock" PropertyName="CheckboxLabel" Help="The label that is used for the checkbox when the requirement is manually set." />
