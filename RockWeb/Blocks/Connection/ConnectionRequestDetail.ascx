@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ConnectionRequestDetail.ascx.cs" Inherits="RockWeb.Blocks.Involvement.ConnectionRequestDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ConnectionRequestDetail.ascx.cs" Inherits="RockWeb.Blocks.Connection.ConnectionRequestDetail" %>
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
@@ -29,7 +29,7 @@
                             </div>
                         </div>
                         <div class="col-md-8">
-                            <Rock:RockLiteral ID="lContactInfo" runat="server" />
+                            <Rock:RockLiteral ID="lContactInfo" runat="server" Label="Contact Info" />
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -47,7 +47,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="col-md-6">
-                            <asp:Label ID="lblSomething" Text="Available Workflows" Font-Bold="true" runat="server" />
+                            <asp:Label ID="lblWorkflows" Text="Available Workflows" Font-Bold="true" runat="server" />
                             </br>
                             <asp:Repeater ID="rptRequestWorkflows" runat="server">
                                 <ItemTemplate>
@@ -111,7 +111,7 @@
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:PersonPicker runat="server" ID="ppConnectionRequestPerson" Label="Person" Required="true" />
+                        <Rock:PersonPicker runat="server" ID="ppConnectionRequestPerson" Label="Connector" Required="true" />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockRadioButtonList ID="rblState" runat="server" Label="State" RepeatDirection="Horizontal" OnSelectedIndexChanged="rblState_SelectedIndexChanged" AutoPostBack="true" />
@@ -184,13 +184,13 @@
                         <Rock:RockBoundField DataField="WorkflowType" HeaderText="Workflow Type" />
                         <Rock:RockBoundField DataField="Trigger" HeaderText="Trigger" />
                         <Rock:RockBoundField DataField="CurrentActivity" HeaderText="Current Activity" />
-                        <Rock:RockBoundField DataField="Date" HeaderText="Date" />
+                        <Rock:RockBoundField DataField="Date" HeaderText="Start Date" />
                         <Rock:RockBoundField DataField="Status" HeaderText="Status" HtmlEncode="false" />
                     </Columns>
                 </Rock:Grid>
             </div>
         </Rock:PanelWidget>
-        <Rock:PanelWidget ID="wpConnectionRequestActivities" runat="server" Title="Activities">
+        <Rock:PanelWidget ID="wpConnectionRequestActivities" runat="server" Title="Activities" Expanded="true">
             <div class="grid">
                 <Rock:Grid ID="gConnectionRequestActivities" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Activity" OnRowDataBound="gConnectionRequestActivities_RowDataBound">
                     <Columns>
@@ -221,37 +221,40 @@
 
         <Rock:ModalDialog ID="dlgSearch" runat="server" ValidationGroup="Search" SaveButtonText="Search" OnSaveClick="dlgSearch_SaveClick" Title="Search Opportunities">
             <Content>
-                <div class="col-md-6">
-                    <Rock:RockTextBox ID="tbSearchName" runat="server" Label="Name" />
-                </div>
-                <div class="col-md-6">
-                    <div class='scroll-container scroll-container-vertical'>
-                        <div class='scrollbar'>
-                            <div class='track'>
-                                <div class='thumb'>
-                                    <div class='end'></div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbSearchName" runat="server" Label="Name" />
+                        <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
+                    </div>
+                    <div class="col-md-6">
+                        <div class='scroll-container scroll-container-vertical'>
+                            <div class='scrollbar'>
+                                <div class='track margin-l-sm'>
+                                    <div class='thumb'>
+                                        <div class='end'></div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class='viewport'>
-                            <div class='overview'>
-                                <asp:Repeater ID="rptSearchResult" runat="server">
-                                    <ItemTemplate>
-                                        <Rock:PanelWidget ID="SearchTermPanel" runat="server" CssClass="panel panel-block" TitleIconCssClass='<%# Eval("IconCssClass") %>' Title='<%# Eval("Name") %>'>
-                                            <div class="row">
-                                                <div class="col-md-4">
-                                                    <div class="photo">
-                                                        <img src='<%# Eval("PhotoUrl") %>'></img>
+                            <div class='viewport'>
+                                <div class='overview'>
+                                    <asp:Repeater ID="rptSearchResult" runat="server">
+                                        <ItemTemplate>
+                                            <Rock:PanelWidget ID="SearchTermPanel" runat="server" CssClass="panel panel-block" TitleIconCssClass='<%# Eval("IconCssClass") %>' Title='<%# Eval("Name") %>'>
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                        <div class="photo">
+                                                            <img src='<%# Eval("PhotoUrl") %>'></img>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <%# Eval("Description") %>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-8">
-                                                    <%# Eval("Description") %>
-                                                </div>
-                                            </div>
-                                            <Rock:BootstrapButton ID="btnSearchSelect" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display" Text="Select" CssClass="btn btn-default" />
-                                        </Rock:PanelWidget>
-                                    </ItemTemplate>
-                                </asp:Repeater>
+                                                <Rock:BootstrapButton ID="btnSearchSelect" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display" Text="Select" CssClass="btn btn-default" />
+                                            </Rock:PanelWidget>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -35,16 +35,19 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public int? ConnectionActivityTypeId { get; set; }
+        public int ConnectionActivityTypeId { get; set; }
 
         /// <summary />
         public int? ConnectionOpportunityId { get; set; }
 
         /// <summary />
-        public int? ConnectionRequestId { get; set; }
+        public int ConnectionRequestId { get; set; }
 
         /// <summary />
         public int? ConnectorPersonAliasId { get; set; }
+
+        /// <summary />
+        public string Note { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

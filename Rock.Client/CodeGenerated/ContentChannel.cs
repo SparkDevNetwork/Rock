@@ -41,7 +41,7 @@ namespace Rock.Client
         public int ContentChannelTypeId { get; set; }
 
         /// <summary />
-        public int /* ContentControlType*/ ContentControlType { get; set; }
+        public Rock.Client.Enums.ContentControlType ContentControlType { get; set; }
 
         /// <summary />
         public string Description { get; set; }

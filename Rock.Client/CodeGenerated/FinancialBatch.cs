@@ -53,7 +53,7 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public int /* BatchStatus*/ Status { get; set; }
+        public Rock.Client.Enums.BatchStatus Status { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

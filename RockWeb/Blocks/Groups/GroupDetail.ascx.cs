@@ -2429,6 +2429,9 @@ namespace RockWeb.Blocks.Groups
         {
             ddlTriggerType.BindToEnum<GroupMemberWorkflowTriggerType>( false );
 
+            ddlTriggerFromStatus.BindToEnum<GroupMemberStatus>( false );
+            ddlTriggerFromStatus.Items.Insert( 0, new ListItem( "Any", "" ) );
+
             ddlTriggerToStatus.BindToEnum<GroupMemberStatus>( false );
             ddlTriggerToStatus.Items.Insert( 0, new ListItem( "Any", "" ) );
 

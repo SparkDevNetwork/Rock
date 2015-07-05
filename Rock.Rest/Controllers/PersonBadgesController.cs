@@ -89,7 +89,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets the attendance summary data for the 24 month attenance badge 
+        /// Returns groups that are a specified type and geofence a given person
         /// </summary>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
@@ -107,7 +107,7 @@ namespace Rock.Rest.Controllers
             foreach ( var group in groups.OrderBy( g => g.Name ) )
             {
                 var info = new GroupAndLeaderInfo();
-                info.GroupName = group.Name;
+                info.GroupName = group.Name.Trim();
                 info.LeaderNames = groupMemberService
                     .Queryable().AsNoTracking()
                     .Where( m => 

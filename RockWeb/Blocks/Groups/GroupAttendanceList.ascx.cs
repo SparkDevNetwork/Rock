@@ -117,6 +117,17 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Handles the ClearFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rFilter_ClearFilterClick( object sender, EventArgs e )
+        {
+            rFilter.DeleteUserPreferences();
+            BindFilter();
+        }
+
+        /// <summary>
         /// Rs the filter_ display filter value.
         /// </summary>
         /// <param name="sender">The sender.</param>
@@ -125,7 +136,8 @@ namespace RockWeb.Blocks.Groups
         {
             if ( e.Key == MakeKeyUniqueToGroup( "Date Range" ) )
             {
-                e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                // show the date range pickers current value, instead of the user preference since we set it to a default value if blank
+                e.Value = DateRangePicker.FormatDelimitedValues( drpDates.DelimitedValues );
             }
             else if ( e.Key == MakeKeyUniqueToGroup( "Schedule" ) )
             {
@@ -236,15 +248,18 @@ namespace RockWeb.Blocks.Groups
         private void BindFilter()
         {
             string dateRangePreference = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Date Range" ) );
-            if ( !string.IsNullOrWhiteSpace( dateRangePreference ) )
+            if ( string.IsNullOrWhiteSpace( dateRangePreference ) )
             {
-                drpDates.DelimitedValues = dateRangePreference;
+                // set the dateRangePreference to force rFilter_DisplayFilterValue to show our default one year limit
+                dateRangePreference = ",";
+                rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Date Range" ), "Date Range", dateRangePreference );
             }
-            else
-            {
-                drpDates.LowerValue = new DateTime( RockDateTime.Today.Year, 1, 1 );
-                drpDates.UpperValue = null;
-            }
+
+            var dateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( dateRangePreference );
+
+            // if there is no start date, default to a year ago to minimize the chance of loading too much data
+            drpDates.LowerValue = dateRange.Start ?? RockDateTime.Today.AddYears( -1 );
+            drpDates.UpperValue = dateRange.End;
 
             if ( _group != null )
             {
@@ -390,5 +405,6 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
-    }
+        
+}
 }

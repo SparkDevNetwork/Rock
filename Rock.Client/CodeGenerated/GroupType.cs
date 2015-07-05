@@ -35,16 +35,16 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public int /* ScheduleType*/ AllowedScheduleTypes { get; set; }
+        public Rock.Client.Enums.ScheduleType AllowedScheduleTypes { get; set; }
 
         /// <summary />
         public bool AllowMultipleLocations { get; set; }
 
         /// <summary />
-        public int /* PrintTo*/ AttendancePrintTo { get; set; }
+        public Rock.Client.Enums.PrintTo AttendancePrintTo { get; set; }
 
         /// <summary />
-        public int /* AttendanceRule*/ AttendanceRule { get; set; }
+        public Rock.Client.Enums.AttendanceRule AttendanceRule { get; set; }
 
         /// <summary />
         public int? DefaultGroupRoleId { get; set; }
@@ -74,7 +74,7 @@ namespace Rock.Client
         public bool IsSystem { get; set; }
 
         /// <summary />
-        public int /* GroupLocationPickerMode*/ LocationSelectionMode { get; set; }
+        public Rock.Client.Enums.GroupLocationPickerMode LocationSelectionMode { get; set; }
 
         /// <summary />
         public string Name { get; set; }

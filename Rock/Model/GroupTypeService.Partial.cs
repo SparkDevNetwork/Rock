@@ -217,5 +217,16 @@ namespace Rock.Model
         /// Full path of the ancestor group type associations. 
         /// </value>
         public string Path { get; set; }
+
+        /// <summary>
+        /// Returns the Path of the GroupTypePath
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Path;
+        }
     }
 }

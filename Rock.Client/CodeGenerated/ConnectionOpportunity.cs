@@ -35,7 +35,7 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public int? ConnectionTypeId { get; set; }
+        public int ConnectionTypeId { get; set; }
 
         /// <summary />
         public int? ConnectorGroupId { get; set; }
@@ -50,7 +50,7 @@ namespace Rock.Client
         public int? GroupMemberStatusId { get; set; }
 
         /// <summary />
-        public int? GroupTypeId { get; set; }
+        public int GroupTypeId { get; set; }
 
         /// <summary />
         public string IconCssClass { get; set; }
@@ -105,10 +105,13 @@ namespace Rock.Client
         public GroupTypeRole GroupMemberRole { get; set; }
 
         /// <summary />
-        public int /* GroupMemberStatus*/ GroupMemberStatus { get; set; }
+        public Rock.Client.Enums.GroupMemberStatus GroupMemberStatus { get; set; }
 
         /// <summary />
         public GroupType GroupType { get; set; }
+
+        /// <summary />
+        public BinaryFile Photo { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

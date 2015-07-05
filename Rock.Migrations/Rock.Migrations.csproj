@@ -241,6 +241,22 @@
     <Compile Include="Migrations\201506281615197_GivingAnalyticsEmail.Designer.cs">
       <DependentUpon>201506281615197_GivingAnalyticsEmail.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201507022028551_InvolvementSignup.cs" />
+    <Compile Include="Migrations\201507022028551_InvolvementSignup.Designer.cs">
+      <DependentUpon>201507022028551_InvolvementSignup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201507022137466_AddReceiveRequirementsNotificationField.cs" />
+    <Compile Include="Migrations\201507022137466_AddReceiveRequirementsNotificationField.Designer.cs">
+      <DependentUpon>201507022137466_AddReceiveRequirementsNotificationField.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201507022249057_ConnectionRename.cs" />
+    <Compile Include="Migrations\201507022249057_ConnectionRename.Designer.cs">
+      <DependentUpon>201507022249057_ConnectionRename.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201507040004588_GroupRequirementsCommunicationApproval.cs" />
+    <Compile Include="Migrations\201507040004588_GroupRequirementsCommunicationApproval.Designer.cs">
+      <DependentUpon>201507040004588_GroupRequirementsCommunicationApproval.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1835,6 +1851,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201506281615197_GivingAnalyticsEmail.resx">
       <DependentUpon>201506281615197_GivingAnalyticsEmail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507022028551_InvolvementSignup.resx">
+      <DependentUpon>201507022028551_InvolvementSignup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507022137466_AddReceiveRequirementsNotificationField.resx">
+      <DependentUpon>201507022137466_AddReceiveRequirementsNotificationField.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507022249057_ConnectionRename.resx">
+      <DependentUpon>201507022249057_ConnectionRename.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507040004588_GroupRequirementsCommunicationApproval.resx">
+      <DependentUpon>201507040004588_GroupRequirementsCommunicationApproval.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>

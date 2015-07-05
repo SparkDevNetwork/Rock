@@ -238,6 +238,7 @@
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
     <Compile Include="Field\Types\NoteTypesFieldType.cs" />
     <Compile Include="Field\Types\NoteTypeFieldType.cs" />
+    <Compile Include="Jobs\SendGroupRequirementsNotification.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionActivityTypeService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionOpportunityCampusService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionOpportunityGroupService.cs" />
@@ -461,6 +462,7 @@
     <Compile Include="Transactions\GroupAttendedTransaction.cs" />
     <Compile Include="Transactions\ConnectionRequestChangeTransaction.cs" />
     <Compile Include="Transactions\GroupMemberChangeTransaction.cs" />
+    <Compile Include="Transactions\SendCommunicationApprovalEmail.cs" />
     <Compile Include="Transactions\RunJobNowTransaction.cs" />
     <Compile Include="Transactions\DeleteAttributeBinaryFile.cs" />
     <Compile Include="Transactions\UpdateFacebookFriends.cs" />
@@ -488,6 +490,7 @@
     <Compile Include="Web\UI\Controls\Grid\PhoneNumbersField.cs" />
     <Compile Include="Web\UI\Controls\IDisplayRequiredIndicator.cs" />
     <Compile Include="Web\UI\Controls\NumberUpDown.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\GroupTypesPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\FinancialGatewayPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupAndRolePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MergeTemplatePicker.cs" />

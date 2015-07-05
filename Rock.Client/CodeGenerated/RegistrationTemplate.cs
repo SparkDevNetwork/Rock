@@ -59,7 +59,7 @@ namespace Rock.Client
         public int? GroupMemberRoleId { get; set; }
 
         /// <summary />
-        public int /* GroupMemberStatus*/ GroupMemberStatus { get; set; }
+        public Rock.Client.Enums.GroupMemberStatus GroupMemberStatus { get; set; }
 
         /// <summary />
         public int? GroupTypeId { get; set; }
@@ -83,7 +83,7 @@ namespace Rock.Client
         public bool NotifyGroupLeaders { get; set; }
 
         /// <summary />
-        public int /* RegistrantsSameFamily*/ RegistrantsSameFamily { get; set; }
+        public Rock.Client.Enums.RegistrantsSameFamily RegistrantsSameFamily { get; set; }
 
         /// <summary />
         public string RegistrantTerm { get; set; }

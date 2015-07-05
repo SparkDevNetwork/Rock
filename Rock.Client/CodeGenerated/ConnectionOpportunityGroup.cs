@@ -35,10 +35,10 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public int? ConnectionOpportunityId { get; set; }
+        public int ConnectionOpportunityId { get; set; }
 
         /// <summary />
-        public int? GroupId { get; set; }
+        public int GroupId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
