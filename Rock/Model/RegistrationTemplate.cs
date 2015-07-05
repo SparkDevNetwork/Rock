@@ -286,6 +286,7 @@ namespace Rock.Model
         /// <value>
         /// The financial gateway.
         /// </value>
+        [DataMember]
         public virtual FinancialGateway FinancialGateway { get; set; }
 
         /// <summary>
