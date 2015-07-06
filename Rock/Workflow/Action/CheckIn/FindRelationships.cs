@@ -87,12 +87,12 @@ namespace Rock.Workflow.Action.CheckIn
                 var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
                 {
-                    var service = new GroupMemberService( rockContext );
+                    var groupMemberService = new GroupMemberService( rockContext );
 
                     var familyMemberIds = family.People.Select( p => p.Person.Id ).ToList();
 
                     // Get the Known Relationship group id's for each person in the family
-                    var relationshipGroups = service
+                    var relationshipGroups = groupMemberService
                         .Queryable().AsNoTracking()
                         .Where( g =>
                             g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) &&
@@ -100,7 +100,7 @@ namespace Rock.Workflow.Action.CheckIn
                         .Select( g => g.GroupId );
 
                     // Get anyone in any of those groups that has a role with the canCheckIn attribute set
-                    foreach ( var person in service
+                    foreach ( var person in groupMemberService
                         .Queryable().AsNoTracking()
                         .Where( g =>
                             relationshipGroups.Contains( g.GroupId ) &&
