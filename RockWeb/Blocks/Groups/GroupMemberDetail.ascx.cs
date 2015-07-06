@@ -498,15 +498,23 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-                    bool meets = requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets;
                     string labelText;
-                    if ( meets )
+                    string labelType;
+                    if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets )
                     {
                         labelText = requirementResult.GroupRequirement.GroupRequirementType.PositiveLabel;
+                        labelType = "success";
                     }
                     else
                     {
                         labelText = requirementResult.GroupRequirement.GroupRequirementType.NegativeLabel;
+                        labelType = "danger";
+                    }
+
+                    if ( requirementResult.WarningIncluded )
+                    {
+                        labelText = requirementResult.GroupRequirement.GroupRequirementType.WarningLabel;
+                        labelType = "warning";
                     }
 
                     if ( string.IsNullOrEmpty( labelText ) )
@@ -518,7 +526,7 @@ namespace RockWeb.Blocks.Groups
                         @"<span class='label label-{1}'>{0}</span>
                         ",
                         labelText,
-                        meets ? "success" : "danger" );
+                        labelType );
                 }
             }
 
