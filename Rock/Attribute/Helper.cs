@@ -520,7 +520,7 @@ namespace Rock.Attribute
                 }
 
                 entity.Attributes = new Dictionary<string, Web.Cache.AttributeCache>();
-                allAttributes.ForEach( a => entity.Attributes.Add( a.Key, a ) );
+                allAttributes.ForEach( a => entity.Attributes.AddOrIgnore( a.Key, a ) );
 
                 entity.AttributeValues = attributeValues;
             }
