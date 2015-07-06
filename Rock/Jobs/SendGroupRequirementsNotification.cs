@@ -82,9 +82,11 @@ namespace Rock.Jobs
 
                 var notificationOption = dataMap.GetString( "NotifyParentLeaders" ).ConvertToEnum<NotificationOption>( NotificationOption.None );
 
+                var accountAbilityGroupGuid = dataMap.GetString("AccountabilityGroup").AsGuid();
+
                 // get groups matching of the types provided
                 GroupService groupService = new GroupService( rockContext );
-                var groups = groupService.Queryable( "GroupType, Members.Person" ).AsNoTracking()
+                var groups = groupService.Queryable( "GroupType, Members.Person, Members.GroupRole" ).AsNoTracking()
                                 .Where( g => selectedGroupTypes.Contains( g.GroupType.Guid ) && g.IsActive == true );
 
                 foreach ( var group in groups )
@@ -125,33 +127,38 @@ namespace Rock.Jobs
                             groupMember.FullName = groupMemberIssue.Key.Person.FullName;
                             groupMember.Id = groupMemberIssue.Key.Id;
                             groupMember.PersonId = groupMemberIssue.Key.PersonId;
+                            groupMember.GroupMemberRole = groupMemberIssue.Key.GroupRole.Name;
 
                             List<MissingRequirement> missingRequirements = new List<MissingRequirement>();
                             foreach ( var issue in groupMemberIssue.Value )
                             {
                                 MissingRequirement missingRequirement = new MissingRequirement();
-                                missingRequirement.Id = issue.GroupRequirement.GroupRequirementType.Id;
-                                missingRequirement.Name = issue.GroupRequirement.GroupRequirementType.Name;
-                                missingRequirement.Status = issue.MeetsGroupRequirement;
+                                missingRequirement.Id = issue.Key.GroupRequirement.GroupRequirementType.Id;
+                                missingRequirement.Name = issue.Key.GroupRequirement.GroupRequirementType.Name;
+                                missingRequirement.Status = issue.Key.MeetsGroupRequirement;
+                                missingRequirement.OccurrenceDate = issue.Value;
 
-                                switch ( issue.MeetsGroupRequirement )
+                                switch ( issue.Key.MeetsGroupRequirement )
                                 {
                                     case MeetsGroupRequirement.Meets:
-                                        missingRequirement.Message = issue.GroupRequirement.GroupRequirementType.PositiveLabel;
+                                        missingRequirement.Message = issue.Key.GroupRequirement.GroupRequirementType.PositiveLabel;
                                         break;
                                     case MeetsGroupRequirement.MeetsWithWarning:
-                                        missingRequirement.Message = issue.GroupRequirement.GroupRequirementType.WarningLabel;
+                                        missingRequirement.Message = issue.Key.GroupRequirement.GroupRequirementType.WarningLabel;
                                         break;
                                     case MeetsGroupRequirement.NotMet:
-                                        missingRequirement.Message = issue.GroupRequirement.GroupRequirementType.NegativeLabel;
+                                        missingRequirement.Message = issue.Key.GroupRequirement.GroupRequirementType.NegativeLabel;
                                         break;
                                 }
 
                                 missingRequirements.Add( missingRequirement );
                             }
 
+                            groupMember.MissingRequirements = missingRequirements;
+
                             groupMembers.Add( groupMember );
                         }
+                        groupMissingRequirements.GroupMembersMissingRequirements = groupMembers;
 
                         _groupsMissingRequriements.Add( groupMissingRequirements );
 
@@ -196,13 +203,15 @@ namespace Rock.Jobs
                 // send out notificatons
                 var recipients = new List<RecipientData>();
 
-                foreach ( var recipient in _notificationList.GroupBy( p => p.Person ) )
+                foreach ( var recipientId in _notificationList.GroupBy( p => p.Person.Id ) )
                 {
+                    var recipient = _notificationList.Where( n => n.Person.Id == recipientId.Key ).Select( n => n.Person ).FirstOrDefault();
+                    
                     var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "Person", recipient.Key );
+                    mergeFields.Add( "Person", recipient );
 
                     var notificationGroupIds = _notificationList
-                                                    .Where( n => n.Person.Id == recipient.Key.Id )
+                                                    .Where( n => n.Person.Id == recipient.Id )
                                                     .Select( n => n.GroupId )
                                                     .ToList();
 
@@ -212,8 +221,28 @@ namespace Rock.Jobs
                     globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
 
-                    recipients.Add( new RecipientData( recipient.Key.Email, mergeFields ) );
+                    recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
                 }
+
+                // add accountability group members
+                if ( !accountAbilityGroupGuid.IsEmpty() )
+                {
+                    var accountabilityGroupMembers = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
+                                                        .Where( m => m.Group.Guid == accountAbilityGroupGuid )
+                                                        .Select( m => m.Person );
+
+                    foreach ( var person in accountabilityGroupMembers )
+                    {
+                        var mergeFields = new Dictionary<string, object>();
+                        mergeFields.Add( "Person", person );
+                        mergeFields.Add( "GroupsMissingRequirements", _groupsMissingRequriements );
+
+                        var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+                        globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+                        recipients.Add( new RecipientData( person.Email, mergeFields ) );
+                    }
+                }
+
 
                 var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
                 Email.Send( systemEmailGuid.Value, recipients, appRoot );
@@ -222,6 +251,7 @@ namespace Rock.Jobs
         }
     }
 
+    #region Helper Classes
     public enum NotificationOption
     {
         None = 0,
@@ -260,27 +290,29 @@ namespace Rock.Jobs
         public List<GroupMemberResult> Leaders { get; set; }
     }
 
-    [DotLiquid.LiquidType( "Id", "PersonId", "FullName", "MissingRequirements" )]
+    [DotLiquid.LiquidType( "Id", "PersonId", "FullName", "GroupMemberRole", "MissingRequirements" )]
     public class GroupMembersMissingRequirements: GroupMemberResult
     {
         public List<MissingRequirement> MissingRequirements { get; set; }
     }
 
-    [DotLiquid.LiquidType( "Id", "Name", "Status", "Message" )]
+    [DotLiquid.LiquidType( "Id", "Name", "Status", "Message", "OccurrenceDate" )]
     public class MissingRequirement
     {
         public int Id { get; set; }
         public string Name { get; set; }
         public MeetsGroupRequirement Status { get; set; }
         public string Message { get; set; }
+        public DateTime OccurrenceDate { get; set; }
     }
 
-    [DotLiquid.LiquidType( "Id", "PersonId", "FullName" )]
+    [DotLiquid.LiquidType( "Id", "PersonId", "FullName", "GroupMemberRole" )]
     public class GroupMemberResult
     {
         public int Id { get; set; }
         public int PersonId { get; set; }
         public string FullName { get; set; }
+        public string GroupMemberRole { get; set; }
     }
-
+#endregion
 }
