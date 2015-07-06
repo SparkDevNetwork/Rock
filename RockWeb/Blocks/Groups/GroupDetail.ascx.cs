@@ -1159,8 +1159,11 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 CurrentGroupTypeId = group.GroupTypeId;
-                ddlGroupType.SetValue( group.GroupTypeId );
-                var groupType = GroupTypeCache.Read( group.GroupTypeId, rockContext );
+                if ( CurrentGroupTypeId == 0)
+                {
+                    CurrentGroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0;
+                }
+                var groupType = GroupTypeCache.Read( CurrentGroupTypeId, rockContext );
                 lGroupType.Text = groupType != null ? groupType.Name : "";
             }
 
