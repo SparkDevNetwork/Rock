@@ -77,8 +77,8 @@
                 <Rock:Grid ID="gFeeSummary" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Fees" GridLines="None" OnRowDataBound="gFeeSummary_RowDataBound" >
                     <Columns>
                         <Rock:RockBoundField DataField="Description" HtmlEncode="false" HeaderText="Description" ItemStyle-BorderStyle="None" />
-                        <Rock:CurrencyField DataField="Cost" HeaderText="Amount" ItemStyle-BorderStyle="None"  />
-                        <Rock:CurrencyField DataField="DiscountedCost" HeaderText="Discounted Amount" ItemStyle-BorderStyle="None" />
+                        <Rock:CurrencyField DataField="Cost" HeaderText="Amount" ItemStyle-BorderStyle="None" HeaderStyle-HorizontalAlign="Right" />
+                        <Rock:CurrencyField DataField="DiscountedCost" HeaderText="Discounted Amount" ItemStyle-BorderStyle="None" HeaderStyle-HorizontalAlign="Right" />
                     </Columns>
                 </Rock:Grid>
             </div>

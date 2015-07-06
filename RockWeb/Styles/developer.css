@@ -232,3 +232,9 @@ table.calendar {
         table.calendar td.calendar-today a:hover {  
             background-color: #fcf8e3;  
         }
+
+
+/* DT 2015-07-06 Fee grid on registration */
+table th[align='right'] {
+    text-align: right;
+}
