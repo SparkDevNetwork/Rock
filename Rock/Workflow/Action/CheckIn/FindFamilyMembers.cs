@@ -15,12 +15,11 @@
 // </copyright>
 //
 using System;
-using System.Data.Entity;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity;
 using System.Linq;
-
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
@@ -30,8 +29,8 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Finds family members in a given family
     /// </summary>
-    [Description("Finds family members in a given family")]
-    [Export(typeof(ActionComponent))]
+    [Description( "Finds family members in a given family" )]
+    [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Find Family Members" )]
     public class FindFamilyMembers : CheckInActionComponent
     {
