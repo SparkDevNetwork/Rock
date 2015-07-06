@@ -205,7 +205,7 @@ namespace RockWeb.Blocks.Groups
                         groupMemberService.Add( groupMember );
                     }
 
-                    foreach ( var deletedRequirement in groupMember.GroupMemberRequirements.Where( a => a.RequirementMetDateTime == null ) )
+                    foreach ( var deletedRequirement in groupMember.GroupMemberRequirements.Where( a => a.RequirementMetDateTime == null ).ToList() )
                     {
                         // remove any requirements that they no longer meet (manual ones that were un-checked)
                         groupMemberRequirementService.Delete( deletedRequirement );
