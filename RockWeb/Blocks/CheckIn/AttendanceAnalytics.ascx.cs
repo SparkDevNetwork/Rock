@@ -752,10 +752,12 @@ function(item) {
                     k2 => k2.Id,
                     ( a, pa ) => new
                     {
-                        a.CampusId,
-                        a.GroupId,
-                        a.StartDateTime,
-                        PersonAlias = pa,
+                        CampusId = a.CampusId,
+                        GroupId = a.GroupId,
+                        ScheduleId = a.ScheduleId,
+                        StartDateTime = a.StartDateTime,
+                        PersonAliasId = pa.Id,
+                        PersonAliasPersonId = pa.PersonId
                     } );
 
                 var qryJoinFinal = qryJoinPerson.Join(
@@ -767,16 +769,17 @@ function(item) {
                         CampusId = a.CampusId,
                         GroupId = a.GroupId,
                         GroupName = g.Name,
+                        ScheduleId = a.ScheduleId,
                         StartDateTime = a.StartDateTime,
-                        PersonAlias = a.PersonAlias
+                        PersonAliasId = a.PersonAliasId,
+                        PersonAliasPersonId = a.PersonAliasPersonId
                     } );
 
-                var qryByPerson = qryJoinFinal.GroupBy( a => a.PersonAlias.PersonId ).Select( a => new
+                var qryByPerson = qryJoinFinal.GroupBy( a => a.PersonAliasPersonId ).Select( a => new
                 {
                     PersonId = a.Key,
                     Attendances = a
                 } );
-
 
                 int? attendedMinCount = null;
                 int? attendedMissedCount = null;
@@ -1268,12 +1271,13 @@ function(item) {
                     }
                 }
 
-                var lastVisit = dataItem.GetPropertyValue( "LastVisit" ) as Attendance;
-                if ( lastVisit != null && lastVisit.ScheduleId.HasValue )
+                var lastVisit = dataItem.GetPropertyValue( "LastVisit" ) as object;
+                if ( lastVisit != null )
                 {
-                    if ( _scheduleNameLookup.ContainsKey( lastVisit.ScheduleId.Value ) )
+                    int? scheduleId = lastVisit.GetPropertyValue( "ScheduleId" ) as int?;
+                    if ( _scheduleNameLookup.ContainsKey( scheduleId.Value ) )
                     {
-                        lServiceTime.Text = _scheduleNameLookup[lastVisit.ScheduleId.Value];
+                        lServiceTime.Text = _scheduleNameLookup[scheduleId.Value];
                     }
                 }
 
@@ -1572,8 +1576,10 @@ function(item) {
             public int? CampusId { get; set; }
             public int? GroupId { get; set; }
             public string GroupName { get; set; }
+            public int? ScheduleId { get; set; }
             public DateTime? StartDateTime { get; set; }
-            public PersonAlias PersonAlias { get; set; }
+            public int PersonAliasPersonId { get; set; }
+            public int PersonAliasId { get; set; }
         }
 
         public class PersonWithSummary

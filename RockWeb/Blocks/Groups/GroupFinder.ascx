@@ -116,7 +116,7 @@
                                         <Rock:RockCheckBox ID="cbShowFence" runat="server" Label="Show Fence(s)" Text="Yes" 
                                             Help="If a Geofence group type was selected, should that group's boundary be displayed on the map?" ValidationGroup="GroupFinderSettings" />
                                         <Rock:ValueList ID="vlPolygonColors" runat="server" Label="Fence Polygon Colors"
-                                            Help="The list of colors to use when displaying multiple fences ( their should normally be only one fence)." ValidationGroup="GroupFinderSettings" />
+                                            Help="The list of colors to use when displaying multiple fences ( there should normally be only one fence)." ValidationGroup="GroupFinderSettings" />
                                     </div>
                                 </div>
                                 <div class="row">
