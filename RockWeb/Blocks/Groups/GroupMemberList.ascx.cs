@@ -602,6 +602,19 @@ namespace RockWeb.Blocks.Groups
 
                     SortProperty sortProperty = gGroupMembers.SortProperty;
 
+                    // If there are group requirements that that member doesn't meet, show a warning in the grid
+                    
+                    List<int> groupMemberIdsThatLackGroupRequirements = null;
+                    var qryGroupRequirementIds = new GroupRequirementService( rockContext ).Queryable().Where( a => a.GroupId == _group.Id ).Select( a => a.Id );
+                    bool hasGroupRequirements = qryGroupRequirementIds.Any();
+                    if ( hasGroupRequirements )
+                    {
+                        var groupMemberIdsThatLackGroupRequirementsQry = qry.Where(
+                            a => !qryGroupRequirementIds.All( r => a.GroupMemberRequirements.Where( mr => mr.RequirementMetDateTime.HasValue ).Select( x => x.GroupRequirementId ).Contains( r ) ) ).Select( a => a.Id );
+
+                        groupMemberIdsThatLackGroupRequirements = groupMemberIdsThatLackGroupRequirementsQry.ToList();
+                    }
+
                     List<GroupMember> groupMembers = null;
 
                     if ( sortProperty != null )
@@ -624,7 +637,10 @@ namespace RockWeb.Blocks.Groups
                         m.Id,
                         m.Guid,
                         m.PersonId,
-                        Name = m.Person.NickName + " " + m.Person.LastName,
+                        Name = m.Person.NickName + " " + m.Person.LastName + ( 
+                            hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains(m.Id)
+                            ? " <i class='fa fa-exclamation-triangle text-warning'></i>" 
+                            : string.Empty ),
                         GroupRole = m.GroupRole.Name,
                         m.GroupMemberStatus,
                         RecordStatusValueId = m.Person.RecordStatusValueId,
