@@ -126,7 +126,7 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // if group is being sync'ed remove ability to add/delete members 
-                if ( _group.SyncDataViewId.HasValue )
+                if ( _group != null && _group.SyncDataViewId.HasValue )
                 {
                     gGroupMembers.IsDeleteEnabled = false;
                     gGroupMembers.Actions.ShowAdd = false;
