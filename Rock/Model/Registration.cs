@@ -95,7 +95,6 @@ namespace Rock.Model
         /// <value>
         /// The code.
         /// </value>
-        [Required]
         [MaxLength( 100 )]
         public string DiscountCode { get; set; }
 

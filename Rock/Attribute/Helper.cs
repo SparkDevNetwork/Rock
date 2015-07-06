@@ -372,6 +372,24 @@ namespace Rock.Attribute
 
                 }
 
+                // Check for registration template type attributes
+                int? registrationTemplateId = null;
+                if ( entity is RegistrationRegistrant )
+                {
+                    RegistrationInstance registrationInstance = null;
+                    var registration = ( (RegistrationRegistrant)entity ).Registration ?? new RegistrationService( rockContext )
+                        .Queryable().AsNoTracking().FirstOrDefault( r => r.Id == ( (RegistrationRegistrant)entity ).RegistrationId );
+                    if ( registration != null )
+                    {
+                        registrationInstance = registration.RegistrationInstance ?? new RegistrationInstanceService( rockContext )
+                            .Queryable().AsNoTracking().FirstOrDefault( r => r.Id == registration.RegistrationInstanceId );
+                        if ( registrationInstance != null )
+                        {
+                            registrationTemplateId = registrationInstance.RegistrationTemplateId;
+                        }
+                    }
+                }
+
                 foreach ( PropertyInfo propertyInfo in entityType.GetProperties() )
                     properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
 
@@ -410,6 +428,17 @@ namespace Rock.Attribute
                                 {
                                     inheritedAttributes[groupTypeIdValue].Add( Rock.Web.Cache.AttributeCache.Read( attributeId ) );
                                 }
+                            }
+                        }
+
+                        // Registrant attribute ( by RegistrationTemplateId )
+                        else if ( entity is RegistrationRegistrant && 
+                            registrationTemplateId.HasValue &&
+                            entityAttributes.EntityTypeQualifierValue.AsInteger() == registrationTemplateId.Value )
+                        {
+                            foreach ( int attributeId in entityAttributes.AttributeIds )
+                            {
+                                attributes.Add( Rock.Web.Cache.AttributeCache.Read( attributeId ) );
                             }
                         }
 
