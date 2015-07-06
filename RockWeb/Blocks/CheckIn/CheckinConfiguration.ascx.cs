@@ -700,6 +700,8 @@ namespace RockWeb.Blocks.CheckIn
 
             groupTypeEditor.CheckinLabels.Add( checkinLabelAttributeInfo );
 
+            mdAddCheckinLabel.Hide();
+
             pnlDetails.Visible = true;
         }
 
