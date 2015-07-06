@@ -277,9 +277,7 @@ namespace RockWeb.Blocks.Groups
         public void ShowDetail( int groupMemberId, int? groupId )
         {
             // autoexpand the person picker if this is an add
-            this.Page.ClientScript.RegisterStartupScript(
-                this.GetType(),
-                "StartupScript", @"Sys.Application.add_load(function () {
+            var personPickerStartupScript = @"Sys.Application.add_load(function () {
 
                 // if the person picker is empty then open it for quick entry
                 var personPicker = $('.js-authorizedperson');
@@ -288,7 +286,9 @@ namespace RockWeb.Blocks.Groups
                     $(personPicker).find('a.picker-label').trigger('click');
                 }
 
-            });", true );
+            });";
+
+            this.Page.ClientScript.RegisterStartupScript( this.GetType(), "StartupScript", personPickerStartupScript, true );
 
             var rockContext = new RockContext();
             GroupMember groupMember = null;
@@ -388,7 +388,7 @@ namespace RockWeb.Blocks.Groups
             ppGroupMemberPerson.SetValue( groupMember.Person );
             ppGroupMemberPerson.Enabled = !readOnly;
 
-            if (groupMember.Id != 0)
+            if ( groupMember.Id != 0 )
             {
                 // once a group member record is saved, don't let them change the person
                 ppGroupMemberPerson.Enabled = false;
@@ -404,7 +404,7 @@ namespace RockWeb.Blocks.Groups
             groupMember.LoadAttributes();
             phAttributes.Controls.Clear();
 
-            Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, true, "", true );
+            Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, true, string.Empty, true );
             if ( readOnly )
             {
                 Rock.Attribute.Helper.AddDisplayControls( groupMember, phAttributesReadOnly );
@@ -429,12 +429,12 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void ShowGroupRequirementsStatuses()
         {
-            if (!pnlRequirements.Visible)
+            if ( !pnlRequirements.Visible )
             {
                 // group doesn't have any requirements
                 return;
             }
-            
+
             var rockContext = new RockContext();
             int groupMemberId = hfGroupMemberId.Value.AsInteger();
             var groupId = hfGroupId.Value.AsInteger();
@@ -460,8 +460,8 @@ namespace RockWeb.Blocks.Groups
 
             cblManualRequirements.Items.Clear();
             lRequirementsLabels.Text = string.Empty;
-            
-            if (groupMember == null)
+
+            if ( groupMember == null )
             {
                 // no person selected yet, so don't show anything
                 rcwRequirements.Visible = false;
@@ -469,7 +469,6 @@ namespace RockWeb.Blocks.Groups
             }
 
             rcwRequirements.Visible = true;
-            
 
             IEnumerable<GroupRequirementStatus> requirementsResults;
 
