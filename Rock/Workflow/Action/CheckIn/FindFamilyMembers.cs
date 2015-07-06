@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Data.Entity;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -52,7 +53,7 @@ namespace Rock.Workflow.Action.CheckIn
                 if ( family != null )
                 {
                     var service = new GroupMemberService( rockContext );
-                    foreach ( var groupMember in service.GetByGroupId( family.Group.Id ).ToList() )
+                    foreach ( var groupMember in service.GetByGroupId( family.Group.Id ).AsNoTracking().ToList() )
                     {
                         if ( !family.People.Any( p => p.Person.Id == groupMember.PersonId ) )
                         {
