@@ -1037,6 +1037,9 @@ namespace RockWeb.Blocks.Event
                         }
                 }
 
+                // Hide the current value option for now as it's not yet supported by any registration block
+                attributeForm.ShowCurrentValue = false;
+
                 if ( attributeId.HasValue )
                 {
                     using ( var rockContext = new RockContext() )
