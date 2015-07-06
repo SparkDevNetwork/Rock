@@ -307,6 +307,11 @@ namespace Rock.Model
         NotMet,
 
         /// <summary>
+        /// The meets with warning
+        /// </summary>
+        MeetsWithWarning,
+
+        /// <summary>
         /// The Requirement doesn't apply for the GroupRole we are checking against
         /// </summary>
         NotApplicable,
