@@ -137,7 +137,9 @@
                     setActiveButtonGroupButton($(this));
                 });
 
-                setActiveButtonGroupButton($('.js-requirement-check-type').find("[data-val='" + $('.js-requirement-check-type .js-hidden-selected').val() + "']"));
+                setTimeout(function () {
+                    setActiveButtonGroupButton($('.js-requirement-check-type').find("[data-val='" + $('.js-requirement-check-type .js-hidden-selected').val() + "']"));
+                })
 
                 $('.js-can-expire-checkbox').change(setExpireDaysVisibility);
 
