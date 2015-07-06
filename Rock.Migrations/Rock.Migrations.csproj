@@ -261,6 +261,12 @@
     <Compile Include="Migrations\201507051315095_GroupRequirementsCommunicationApproval2.Designer.cs">
       <DependentUpon>201507051315095_GroupRequirementsCommunicationApproval2.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201507051852159_EventRegistration3.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Migrations\201507051852159_EventRegistration3.Designer.cs">
+      <DependentUpon>201507051852159_EventRegistration3.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1870,6 +1876,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201507051315095_GroupRequirementsCommunicationApproval2.resx">
       <DependentUpon>201507051315095_GroupRequirementsCommunicationApproval2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507051852159_EventRegistration3.resx">
+      <DependentUpon>201507051852159_EventRegistration3.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>

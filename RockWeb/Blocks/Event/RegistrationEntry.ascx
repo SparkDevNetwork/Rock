@@ -7,6 +7,9 @@
 
     <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
+    <Rock:NotificationBox ID="nbMain" runat="server" Visible="false" NotificationBoxType="Warning"
+        Heading="Sorry" Text="<p>The selected registration could not be found or is no longer active.</p>"></Rock:NotificationBox>
+
     <asp:Panel ID="pnlHowMany" runat="server" Visible="false">
 
         <h1>How many people will you be registering?</h1>
@@ -93,9 +96,7 @@
             
             <Rock:RockLiteral ID="lRemainingDue" runat="server" Label="Amount Remaining" />
 
-            <asp:PlaceHolder ID="phSummaryControls" runat="server" />
-        
-            <div class="well">
+            <div id="divPaymentInfo" runat="server" class="well">
 
                 <h4>Payment Information</h4>
 
@@ -131,6 +132,15 @@
             <asp:LinkButton ID="lbSummaryPrev" runat="server" AccessKey="p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbSummaryPrev_Click" />
             <asp:LinkButton ID="lbSummaryNext" runat="server" AccessKey="n" Text="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbSummaryNext_Click" />
         </div>
+
+        <asp:Panel ID="pnlDupWarning" runat="server" CssClass="alert alert-block" Visible="true">
+            <h4>Warning!</h4>
+            <p>
+                You have already submitted a similar transaction that has been processed.  Are you sure you want
+            to submit another possible duplicate transaction?
+            </p>
+            <asp:LinkButton ID="btnConfirm" runat="server" Text="Yes, submit another transaction" CssClass="btn btn-danger margin-t-sm" OnClick="lbConfirm_Click"/>
+        </asp:Panel>
 
     </asp:Panel>
 
