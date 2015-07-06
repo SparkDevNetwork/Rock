@@ -429,6 +429,12 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void ShowGroupRequirementsStatuses()
         {
+            if (!pnlRequirements.Visible)
+            {
+                // group doesn't have any requirements
+                return;
+            }
+            
             var rockContext = new RockContext();
             int groupMemberId = hfGroupMemberId.Value.AsInteger();
             var groupId = hfGroupId.Value.AsInteger();
@@ -440,16 +446,30 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                // only create a new one if parent was specified
-                groupMember = new GroupMember { Id = 0 };
-                groupMember.GroupId = groupId;
-                groupMember.Group = new GroupService( rockContext ).Get( groupMember.GroupId );
-                groupMember.GroupRoleId = groupMember.Group.GroupType.DefaultGroupRoleId ?? 0;
-                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                // only create a new one if person is selected
+                if ( ppGroupMemberPerson.PersonId.HasValue )
+                {
+                    groupMember = new GroupMember { Id = 0 };
+                    groupMember.GroupId = groupId;
+                    groupMember.Group = new GroupService( rockContext ).Get( groupMember.GroupId );
+                    groupMember.GroupRoleId = groupMember.Group.GroupType.DefaultGroupRoleId ?? 0;
+                    groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                    groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
+                }
             }
 
             cblManualRequirements.Items.Clear();
             lRequirementsLabels.Text = string.Empty;
+            
+            if (groupMember == null)
+            {
+                // no person selected yet, so don't show anything
+                rcwRequirements.Visible = false;
+                return;
+            }
+
+            rcwRequirements.Visible = true;
+            
 
             IEnumerable<GroupRequirementStatus> requirementsResults;
 
