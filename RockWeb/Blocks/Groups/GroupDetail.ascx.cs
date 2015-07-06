@@ -1814,8 +1814,7 @@ namespace RockWeb.Blocks.Groups
         {
             var rockContext = new RockContext();
             ddlMember.Items.Clear();
-
-            int? groupTypeId = ddlGroupType.SelectedValueAsId();
+            int? groupTypeId = this.CurrentGroupTypeId;
             if ( groupTypeId.HasValue )
             {
                 var groupType = GroupTypeCache.Read( groupTypeId.Value );
@@ -2105,7 +2104,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             var selectedGroupRequirement = this.GroupRequirementsState.FirstOrDefault( a => a.Guid == groupRequirementGuid );
-            grpGroupRequirementGroupRole.GroupTypeId = ddlGroupType.SelectedValue.AsIntegerOrNull();
+            grpGroupRequirementGroupRole.GroupTypeId = this.CurrentGroupTypeId;
             if (selectedGroupRequirement != null)
             {
                 ddlGroupRequirementType.SelectedValue = selectedGroupRequirement.GroupRequirementTypeId.ToString();
