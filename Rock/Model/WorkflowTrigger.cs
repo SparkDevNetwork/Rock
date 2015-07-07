@@ -84,6 +84,16 @@ namespace Rock.Model
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the EntityTypeQualifierValuePrevious in the <see cref="EntityTypeQualifierColumn"/> that is used to filter the scope of the WorkflowTrigger.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> containing the EntityTypeQualifierValuePrevious that is used to filter the scope of the WorkflowTrigger.
+        /// </value>
+        [MaxLength( 200 )]
+        [DataMember]
+        public string EntityTypeQualifierValuePrevious { get; set; }
+
+        /// <summary>
         /// Gets or sets the WorkflowTypeId of the <see cref="Rock.Model.WorkflowType"/> that is executed by this WorkflowTrigger. This property is required.
         /// </summary>
         /// <value>
