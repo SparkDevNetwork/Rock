@@ -5,12 +5,12 @@
         <Rock:ModalAlert ID="maWarning" runat="server" />
         <div class="row">
             <div class="col-md-3">
-                <div class="calendarWrapper">
-                    <asp:Calendar ID="calEventCalendar" runat="server" DayNameFormat="FirstLetter" SelectionMode="Day" BorderColor="#999999"
-                        TitleStyle-BackColor="#ffffff" NextPrevStyle-ForeColor="#333333" FirstDayOfWeek="Sunday" Width="100%" CssClass="calendar" OnSelectionChanged="calEventCalendar_SelectionChanged" OnDayRender="calEventCalendar_DayRender">
+                <div class="calendar">
+                    <asp:Calendar ID="calEventCalendar" runat="server" DayNameFormat="FirstLetter" SelectionMode="Day" BorderStyle="None"
+                        TitleStyle-BackColor="#ffffff" NextPrevStyle-ForeColor="#333333" FirstDayOfWeek="Sunday" Width="100%" CssClass="calendar-month" OnSelectionChanged="calEventCalendar_SelectionChanged" OnDayRender="calEventCalendar_DayRender">
                         <DayStyle CssClass="calendar-day" />
                         <TodayDayStyle CssClass="calendar-today" />
-                        <SelectedDayStyle CssClass="calendar-selected" />
+                        <SelectedDayStyle CssClass="calendar-selected" BackColor="Transparent" />
                         <OtherMonthDayStyle CssClass="calendar-last-month" />
                         <DayHeaderStyle CssClass="calendar-day-header" />
                         <NextPrevStyle CssClass="calendar-next-prev" />
