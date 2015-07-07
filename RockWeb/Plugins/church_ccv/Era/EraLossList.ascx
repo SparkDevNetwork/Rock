@@ -34,7 +34,7 @@
                             <Rock:DateField DataField="StartingPointDate" HeaderText="Starting Point Date" SortExpression="StartingPointDate" />
                             <Rock:DateField DataField="BaptismDate" HeaderText="Baptism Date" SortExpression="BaptismDate" />
                             <Rock:CallbackField DataField="NeighborhoodPastor" HeaderText="Neighborhood Pastor" SortExpression="NeighborhoodPastor.FullName" OnOnFormatDataValue="NeighborhoodPastor_OnFormatDataValue" />
-                            <Rock:DateField DataField="InNeighborhoodGroup" HeaderText="In Neighborhood Group" SortExpression="InNeighborhoodGroup" />
+                            <Rock:BoolField DataField="InNeighborhoodGroup" HeaderText="In Neighborhood Group" SortExpression="InNeighborhoodGroup" />
                         </Columns>
                     </Rock:Grid>
                 </div>
