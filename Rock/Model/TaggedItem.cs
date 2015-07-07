@@ -97,7 +97,10 @@ namespace Rock.Model
         /// </value>
         public override Security.ISecured ParentAuthority
         {
-            get { return this.Tag; }
+            get 
+            {
+                return this.Tag != null ? this.Tag : base.ParentAuthority;
+            }
         }
 
         /// <summary>

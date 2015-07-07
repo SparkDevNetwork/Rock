@@ -178,7 +178,7 @@ namespace Rock.Model
         {
             get
             {
-                return ContentChannel;
+                return ContentChannel != null ? ContentChannel : base.ParentAuthority;
             }
         }
 

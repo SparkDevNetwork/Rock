@@ -387,7 +387,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.ParentGroup;
+                return this.ParentGroup != null ? this.ParentGroup : base.ParentAuthority;
             }
         }
 
