@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MyConnectionOpportunities.ascx.cs" Inherits="RockWeb.Blocks.Involvement.MyConnectionOpportunities" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MyConnectionOpportunities.ascx.cs" Inherits="RockWeb.Blocks.Connection.MyConnectionOpportunities" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -54,7 +54,6 @@
                         <Rock:RockCheckBoxList ID="cblState" runat="server" Label="State" RepeatDirection="Horizontal" />
                         <Rock:RockCheckBoxList ID="cblStatus" runat="server" Label="Status" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                         <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
-                        <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                     </Rock:GridFilter>
                     <Rock:Grid ID="gConnectionRequests" runat="server" OnRowSelected="gConnectionRequests_Edit">
                         <Columns>

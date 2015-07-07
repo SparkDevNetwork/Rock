@@ -54,26 +54,32 @@ namespace Rock.Jobs
             var groupMemberService = new GroupMemberService( rockContext );
 
             // we only need to consider group requirements that are based on a DataView or SQL
-            // and we only need to look at the ones that can expire
             var groupRequirementQry = groupRequirementService.Queryable()
                 .Where( a => a.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual )
-                .Where( a => a.GroupRequirementType.CanExpire == true && a.GroupRequirementType.ExpireInDays.HasValue )
                 .AsNoTracking();
 
             var calculationExceptions = new List<Exception>();
 
-            foreach ( var groupRequirement in groupRequirementQry.AsNoTracking().ToList() )
+            foreach ( var groupRequirement in groupRequirementQry.Include( i => i.GroupRequirementType ).AsNoTracking().ToList() )
             {
                 try
                 {
                     var groupMemberQry = groupMemberService.Queryable().Where( a => a.GroupId == groupRequirement.GroupId ).AsNoTracking();
                     var personQry = groupMemberQry.Select( a => a.Person );
-
-                    // don't recalculate members that already met the requirement within the expiredays
                     var currentDateTime = RockDateTime.Now;
                     var expireDaysCount = groupRequirement.GroupRequirementType.ExpireInDays.Value;
-                    var qryGroupMemberRequirementsAlreadyOK = groupMemberRequirementService.Queryable()
-                         .Where( a => a.RequirementMetDateTime.HasValue && SqlFunctions.DateDiff( "day", a.RequirementMetDateTime, currentDateTime ) < expireDaysCount );
+                    var qryGroupMemberRequirementsAlreadyOK = groupMemberRequirementService.Queryable().Where( a => a.GroupRequirementId == groupRequirement.Id );
+
+                    if ( groupRequirement.GroupRequirementType.CanExpire && groupRequirement.GroupRequirementType.ExpireInDays.HasValue )
+                    {
+                        // Expirable: don't recalculate members that already met the requirement within the expiredays
+                        qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => a.RequirementMetDateTime.HasValue && SqlFunctions.DateDiff( "day", a.RequirementMetDateTime, currentDateTime ) < expireDaysCount );
+                    }
+                    else
+                    {
+                        // No Expiration: don't recalculate members that already met the requirement
+                        qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => a.RequirementMetDateTime.HasValue );
+                    }
 
                     personQry = personQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMember.PersonId == a.Id ) );
 
@@ -104,6 +110,20 @@ namespace Rock.Jobs
                         {
                             // they don't meet the requirement so set the Requirement Met Date/Time to null
                             groupMemberRequirement.RequirementMetDateTime = null;
+                        }
+
+                        if ( result.WarningIncluded )
+                        {
+                            if ( !groupMemberRequirement.RequirementWarningDateTime.HasValue )
+                            {
+                                // they have a warning for the requirement, and didn't have a warning already
+                                groupMemberRequirement.RequirementWarningDateTime = currentDateTime;
+                            }
+                        }
+                        else
+                        {
+                            // no warning, so set to null
+                            groupMemberRequirement.RequirementWarningDateTime = null;
                         }
 
                         rockContext.SaveChanges();

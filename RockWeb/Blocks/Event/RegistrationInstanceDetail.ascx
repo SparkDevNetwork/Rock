@@ -102,13 +102,13 @@
                                         <asp:Literal ID="lRegistrants" runat="server"></asp:Literal></ItemTemplate>
                                 </Rock:RockTemplateField>
                                 <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="When" SortExpression="CreatedDateTime" />
-                                <Rock:RockTemplateField HeaderText="Total Cost">
+                                <Rock:RockTemplateField HeaderText="Total Cost" ItemStyle-HorizontalAlign="Right" SortExpression="TotalCost">
                                     <ItemTemplate>
-                                        <asp:Literal ID="lCost" runat="server"></asp:Literal></ItemTemplate>
+                                        <asp:Label ID="lCost" runat="server" CssClass="label label-info"></asp:Label></ItemTemplate>
                                 </Rock:RockTemplateField>
-                                <Rock:RockTemplateField HeaderText="Paid">
+                                <Rock:RockTemplateField HeaderText="Balance Due" ItemStyle-HorizontalAlign="Right" SortExpression="BalanceDue">
                                     <ItemTemplate>
-                                        <asp:Label ID="lblPaid" runat="server"></asp:Label></ItemTemplate>
+                                        <asp:Label ID="lBalance" runat="server" CssClass="label"></asp:Label></ItemTemplate>
                                 </Rock:RockTemplateField>
                                 <Rock:DeleteField OnClick="gRegistrations_Delete" />
                             </Columns>

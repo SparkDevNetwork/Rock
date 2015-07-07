@@ -149,19 +149,39 @@ namespace Rock.Model
                     var paramExpression = personService.ParameterExpression;
                     var dataViewWhereExpression = this.GroupRequirementType.DataView.GetExpression( personService, paramExpression, out errorMessages );
                     var dataViewQry = personService.Get( paramExpression, dataViewWhereExpression );
+
+                    IQueryable<Person> warningDataViewQry = null;
+                    if ( this.GroupRequirementType.WarningDataViewId.HasValue )
+                    {
+                        var warningDataViewWhereExpression = this.GroupRequirementType.WarningDataView.GetExpression( personService, paramExpression, out errorMessages );
+                        warningDataViewQry = personService.Get( paramExpression, warningDataViewWhereExpression );
+                    }
+
                     if ( dataViewQry != null )
                     {
-                        var outerJoin = from p in personQry
-                                        join d in dataViewQry on p equals d into oj
-                                        from d in oj.DefaultIfEmpty()
-                                        select new { PersonId = p.Id, Included = d != null };
+                        var personWithRequirements = from p in personQry
+                                                     join d in dataViewQry on p equals d into oj
+                                                     from d in oj.DefaultIfEmpty()
+                                                     select new { PersonId = p.Id, Included = d != null, WarningIncluded = false };
 
-                        var result = outerJoin.ToList().Select( a =>
+                        // if a Warning Database was specified, set the WarningIncluded flag to true if they are included in the Warning Dataview
+                        if ( warningDataViewQry != null )
+                        {
+                            personWithRequirements = personWithRequirements.Select( a => new
+                            {
+                                a.PersonId,
+                                a.Included,
+                                WarningIncluded = warningDataViewQry.Any( w => w.Id == a.PersonId )
+                            } );
+                        }
+
+                        var result = personWithRequirements.ToList().Select( a =>
                             new PersonGroupRequirementStatus
                             {
                                 PersonId = a.PersonId,
                                 GroupRequirement = this,
-                                MeetsGroupRequirement = a.Included ? MeetsGroupRequirement.Meets : MeetsGroupRequirement.NotMet
+                                MeetsGroupRequirement = a.Included ? MeetsGroupRequirement.Meets : MeetsGroupRequirement.NotMet,
+                                WarningIncluded = a.WarningIncluded
                             } );
 
                         return result;
@@ -175,28 +195,41 @@ namespace Rock.Model
             else if ( this.GroupRequirementType.RequirementCheckType == RequirementCheckType.Sql )
             {
                 string formattedSql = this.GroupRequirementType.SqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( this.Group ) );
+                string warningFormattedSql = this.GroupRequirementType.WarningSqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( this.Group ) );
                 try
                 {
                     var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null );
                     if ( tableResult.Columns.Count > 0 )
                     {
-                        var personIds = tableResult.Rows.OfType<System.Data.DataRow>().Select( r => Convert.ToInt32( r[0] ) );
+                        IEnumerable<int> personIds = tableResult.Rows.OfType<System.Data.DataRow>().Select( r => Convert.ToInt32( r[0] ) );
+                        IEnumerable<int> warningPersonIds = null;
+                        
+                        // if a Warning SQL was specified, get a list of PersonIds that should have a warning with their status
+                        if ( !string.IsNullOrWhiteSpace( warningFormattedSql ) )
+                        {
+                            var warningTableResult = DbService.GetDataTable( warningFormattedSql, System.Data.CommandType.Text, null );
+                            if ( warningTableResult.Columns.Count > 0 )
+                            {
+                                warningPersonIds = warningTableResult.Rows.OfType<System.Data.DataRow>().Select( r => Convert.ToInt32( r[0] ) );
+                            }
+                        }
 
                         var result = personQry.Select( a => a.Id ).ToList().Select( a => new PersonGroupRequirementStatus
                             {
                                 PersonId = a,
                                 GroupRequirement = this,
-                                MeetsGroupRequirement = personIds.Contains( a ) ? MeetsGroupRequirement.Meets : MeetsGroupRequirement.NotMet
+                                MeetsGroupRequirement = personIds.Contains( a ) ? MeetsGroupRequirement.Meets : MeetsGroupRequirement.NotMet,
+                                WarningIncluded = warningPersonIds != null && warningPersonIds.Contains( a )
                             } );
 
                         return result;
                     }
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
                 {
                     // Exception occurred (probably due to bad SQL)
                     ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
-                    
+
                     var result = personQry.Select( a => a.Id ).ToList().Select( a => new PersonGroupRequirementStatus
                     {
                         PersonId = a,
@@ -231,7 +264,7 @@ namespace Rock.Model
         /// <param name="personId">The person identifier.</param>
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
-        public MeetsGroupRequirement PersonMeetsGroupRequirement( int personId, int? groupRoleId )
+        public PersonGroupRequirementStatus PersonMeetsGroupRequirement( int personId, int? groupRoleId )
         {
             var rockContext = new RockContext();
             var personQuery = new PersonService( rockContext ).Queryable().Where( a => a.Id == personId );
@@ -239,11 +272,17 @@ namespace Rock.Model
             if ( result == null )
             {
                 // no result. probably because personId was zero
-                return MeetsGroupRequirement.NotMet;
+                return new PersonGroupRequirementStatus
+                {
+                    GroupRequirement = this,
+                    MeetsGroupRequirement = MeetsGroupRequirement.NotMet,
+                    PersonId = personId,
+                    WarningIncluded = false
+                };
             }
             else
             {
-                return result.MeetsGroupRequirement;
+                return result;
             }
         }
 
@@ -266,6 +305,11 @@ namespace Rock.Model
         /// Doesn't meet requirements
         /// </summary>
         NotMet,
+
+        /// <summary>
+        /// The meets with warning
+        /// </summary>
+        MeetsWithWarning,
 
         /// <summary>
         /// The Requirement doesn't apply for the GroupRole we are checking against
@@ -323,6 +367,14 @@ namespace Rock.Model
         public MeetsGroupRequirement MeetsGroupRequirement { get; set; }
 
         /// <summary>
+        /// Gets or sets whether the Person is also included in the Warning dataview/sql
+        /// </summary>
+        /// <value>
+        /// The requirement warning included
+        /// </value>
+        public bool WarningIncluded { get; set; }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -330,7 +382,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return string.Format( "{0}:{1}", this.GroupRequirement, this.MeetsGroupRequirement );
+            return string.Format( "{0}:{1}: Warning:{2}", this.GroupRequirement, this.MeetsGroupRequirement, this.WarningIncluded );
         }
     }
 

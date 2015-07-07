@@ -82,6 +82,28 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// pluralizes string based on the value for quantity
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="quantity">The quantity.</param>
+        /// <returns></returns>
+        public static string PluralizeForQuantity( string input, int quantity )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            if ( quantity > 1 )
+            {
+                return input.Pluralize();
+            }
+            else {
+                return input;
+            }
+        }
+
+        /// <summary>
         /// convert a integer to a string
         /// </summary>
         /// <param name="input"></param>
@@ -352,8 +374,15 @@ namespace Rock.Lava
                 return inputAsString;
 
             int place = inputAsString.LastIndexOf( search );
-            string result = inputAsString.Remove( place, search.Length ).Insert( place, replacement );
-            return result;
+            if ( place > 0 )
+            {
+                return inputAsString.Remove( place, search.Length ).Insert( place, replacement );
+            }
+            else
+            {
+                return input.ToString();
+            }
+            
         }
 
         /// <summary>

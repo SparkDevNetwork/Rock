@@ -36,14 +36,32 @@ namespace Rock.Model
 
         #region Entity Properties
 
+        /// <summary>
+        /// Gets or sets the connection opportunity identifier.
+        /// </summary>
+        /// <value>
+        /// The connection opportunity identifier.
+        /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int ConnectionOpportunityId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the campus identifier.
+        /// </summary>
+        /// <value>
+        /// The campus identifier.
+        /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int CampusId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connector group identifier.
+        /// </summary>
+        /// <value>
+        /// The connector group identifier.
+        /// </value>
         [DataMember]
         public int? ConnectorGroupId { get; set; }
 
@@ -51,12 +69,30 @@ namespace Rock.Model
 
         #region Virtual Properties
 
+        /// <summary>
+        /// Gets or sets the connection opportunity.
+        /// </summary>
+        /// <value>
+        /// The connection opportunity.
+        /// </value>
         [DataMember]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
+        /// <summary>
+        /// Gets or sets the campus.
+        /// </summary>
+        /// <value>
+        /// The campus.
+        /// </value>
         [DataMember]
         public virtual Campus Campus { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connector group.
+        /// </summary>
+        /// <value>
+        /// The connector group.
+        /// </value>
         [DataMember]
         public virtual Group ConnectorGroup { get; set; }
 

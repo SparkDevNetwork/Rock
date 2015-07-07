@@ -398,18 +398,27 @@ namespace Rock.Model
         /// <returns></returns>
         public IEnumerable<GroupRequirementStatus> GetGroupRequirementsStatuses()
         {
-            var metRequirements = this.GroupMemberRequirements.Select( a => new { GroupRequirementId = a.GroupRequirement.Id, MeetsGroupRequirement = MeetsGroupRequirement.Meets } );
+            var metRequirements = this.GroupMemberRequirements.Select( a => new
+            {
+                GroupRequirementId = a.GroupRequirement.Id,
+                MeetsGroupRequirement = a.RequirementMetDateTime.HasValue
+                    ? MeetsGroupRequirement.Meets
+                    : MeetsGroupRequirement.NotMet,
+                a.RequirementWarningDateTime
+            } );
 
             // get all the group requirements that apply the group member's role
             var allGroupRequirements = this.Group.GroupRequirements.Where( a => !a.GroupRoleId.HasValue || a.GroupRoleId == this.GroupRoleId ).OrderBy( a => a.GroupRequirementType.Name );
 
+            // outer join on group requirements
             var result = from groupRequirement in allGroupRequirements
                          join metRequirement in metRequirements on groupRequirement.Id equals metRequirement.GroupRequirementId into j
                          from metRequirement in j.DefaultIfEmpty()
                          select new GroupRequirementStatus
                          {
                              GroupRequirement = groupRequirement,
-                             MeetsGroupRequirement = metRequirement != null ? metRequirement.MeetsGroupRequirement : MeetsGroupRequirement.NotMet
+                             MeetsGroupRequirement = metRequirement != null ? metRequirement.MeetsGroupRequirement : MeetsGroupRequirement.NotMet,
+                             WarningIncluded = metRequirement != null ? metRequirement.RequirementWarningDateTime.HasValue : false
                          };
 
             return result;
@@ -438,6 +447,7 @@ namespace Rock.Model
                 groupMemberRequirementsService.Delete( calculatedRequirement );
             }
 
+            var currentDateTime = RockDateTime.Now;
             foreach ( var updatedRequirement in updatedRequirements )
             {
                 var existingRequirement = this.GroupMemberRequirements.FirstOrDefault( a => a.GroupRequirementId == updatedRequirement.GroupRequirement.Id );
@@ -447,8 +457,9 @@ namespace Rock.Model
                         new GroupMemberRequirement
                         {
                             GroupRequirementId = updatedRequirement.GroupRequirement.Id,
-                            LastRequirementCheckDateTime = RockDateTime.Now,
-                            RequirementMetDateTime = RockDateTime.Now
+                            LastRequirementCheckDateTime = currentDateTime,
+                            RequirementMetDateTime = currentDateTime,
+                            RequirementWarningDateTime = updatedRequirement.WarningIncluded ? currentDateTime : (DateTime?)null
                         } );
                 }
             }

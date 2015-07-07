@@ -65,6 +65,7 @@ namespace Rock.Web.UI.Adapters
                     }
 
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, containerCssClass );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Style, cb.Style.Value );
 
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
 

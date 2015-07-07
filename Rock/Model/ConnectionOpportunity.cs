@@ -37,47 +37,119 @@ namespace Rock.Model
 
         #region Entity Properties
 
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name of the public.
+        /// </summary>
+        /// <value>
+        /// The name of the public.
+        /// </value>
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         public string PublicName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public string Description { get; set; }
 
+        /// <summary>
+        /// Gets or sets the photo identifier.
+        /// </summary>
+        /// <value>
+        /// The photo identifier.
+        /// </value>
         [DataMember]
         public int? PhotoId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connection type identifier.
+        /// </summary>
+        /// <value>
+        /// The connection type identifier.
+        /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int ConnectionTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group type identifier.
+        /// </summary>
+        /// <value>
+        /// The group type identifier.
+        /// </value>
         [Required]
         [DataMember]
         public int GroupTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connector group identifier.
+        /// </summary>
+        /// <value>
+        /// The connector group identifier.
+        /// </value>
         [DataMember]
         public int? ConnectorGroupId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
         [DataMember]
         public string IconCssClass { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
         [Required]
         [DataMember]
         public bool IsActive { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group member role identifier.
+        /// </summary>
+        /// <value>
+        /// The group member role identifier.
+        /// </value>
         [DataMember]
         public int? GroupMemberRoleId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group member status identifier.
+        /// </summary>
+        /// <value>
+        /// The group member status identifier.
+        /// </value>
         [DataMember]
         public int? GroupMemberStatusId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [use all groups of type].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [use all groups of type]; otherwise, <c>false</c>.
+        /// </value>
         [Required]
         [DataMember]
         public bool UseAllGroupsOfType { get; set; }
@@ -86,18 +158,48 @@ namespace Rock.Model
 
         #region Virtual Properties
 
+        /// <summary>
+        /// Gets or sets the type of the connection.
+        /// </summary>
+        /// <value>
+        /// The type of the connection.
+        /// </value>
         [DataMember]
         public virtual ConnectionType ConnectionType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connector group.
+        /// </summary>
+        /// <value>
+        /// The connector group.
+        /// </value>
         [DataMember]
         public virtual Group ConnectorGroup { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the group.
+        /// </summary>
+        /// <value>
+        /// The type of the group.
+        /// </value>
         [DataMember]
         public virtual GroupType GroupType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group member role.
+        /// </summary>
+        /// <value>
+        /// The group member role.
+        /// </value>
         [DataMember]
         public virtual GroupTypeRole GroupMemberRole { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group member status.
+        /// </summary>
+        /// <value>
+        /// The group member status.
+        /// </value>
         [DataMember]
         public virtual GroupMemberStatus GroupMemberStatus { get; set; }
 
@@ -127,6 +229,13 @@ namespace Rock.Model
         [DataMember]
         public virtual BinaryFile Photo { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionOpportunityGroup">ConnectionOpportunityGroups</see> who are associated with the ConnectionOpportunity.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.ConnectionOpportunityGroup">ConnectionOpportunityGroups</see> who are associated with the ConnectionOpportunity.
+        /// </value>
         [DataMember]
         public virtual ICollection<ConnectionOpportunityGroup> ConnectionOpportunityGroups
         {
@@ -136,6 +245,12 @@ namespace Rock.Model
 
         private ICollection<ConnectionOpportunityGroup> _connectionOpportunityGroups;
 
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionWorkflow">ConnectionWorkflows</see> who are associated with the ConnectionOpportunity.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.ConnectionWorkflow">ConnectionWorkflows</see> who are associated with the ConnectionOpportunity.
+        /// </value>
         [DataMember]
         public virtual ICollection<ConnectionWorkflow> ConnectionWorkflows
         {
@@ -145,6 +260,12 @@ namespace Rock.Model
 
         private ICollection<ConnectionWorkflow> _connectionWorkflows;
 
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionRequest">ConnectionRequests</see> who are associated with the ConnectionOpportunity.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.ConnectionRequest">ConnectionRequests</see> who are associated with the ConnectionOpportunity.
+        /// </value>
         [DataMember]
         public virtual ICollection<ConnectionRequest> ConnectionRequests
         {
@@ -154,6 +275,12 @@ namespace Rock.Model
 
         private ICollection<ConnectionRequest> _connectionRequests;
 
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionOpportunityCampus">ConnectionOpportunityCampuses</see> who are associated with the ConnectionOpportunity.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.ConnectionOpportunityCampus">ConnectionOpportunityCampuses</see> who are associated with the ConnectionOpportunity.
+        /// </value>
         [DataMember]
         public virtual ICollection<ConnectionOpportunityCampus> ConnectionOpportunityCampuses
         {
@@ -167,13 +294,12 @@ namespace Rock.Model
 
         #region Methods
 
+
+
         /// <summary>
-        /// Returns a URL for the person's photo.
+        /// Gets the photo URL.
         /// </summary>
         /// <param name="photoId">The photo identifier.</param>
-        /// <param name="gender">The gender.</param>
-        /// <param name="age">The age.</param>
-        /// <param name="RecordTypeValueGuid">The record type value unique identifier.</param>
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
         /// <returns></returns>

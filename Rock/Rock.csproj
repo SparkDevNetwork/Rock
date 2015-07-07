@@ -238,6 +238,7 @@
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
     <Compile Include="Field\Types\NoteTypesFieldType.cs" />
     <Compile Include="Field\Types\NoteTypeFieldType.cs" />
+    <Compile Include="Jobs\SendGroupRequirementsNotification.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionActivityTypeService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionOpportunityCampusService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionOpportunityGroupService.cs" />
@@ -394,6 +395,7 @@
     <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PersonPreviousName.cs" />
     <Compile Include="Model\PluginMigration.cs" />
+    <Compile Include="Model\RegistrationService.partial.cs" />
     <Compile Include="Model\RestActionService.partial.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
@@ -460,6 +462,7 @@
     <Compile Include="Transactions\GroupAttendedTransaction.cs" />
     <Compile Include="Transactions\ConnectionRequestChangeTransaction.cs" />
     <Compile Include="Transactions\GroupMemberChangeTransaction.cs" />
+    <Compile Include="Transactions\SendCommunicationApprovalEmail.cs" />
     <Compile Include="Transactions\RunJobNowTransaction.cs" />
     <Compile Include="Transactions\DeleteAttributeBinaryFile.cs" />
     <Compile Include="Transactions\UpdateFacebookFriends.cs" />
@@ -473,6 +476,7 @@
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\Cache\NoteTypeCache.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
+    <Compile Include="Web\UI\Controls\Event\RegistrantFee.cs" />
     <Compile Include="Web\UI\Controls\DynamicControlsPanel.cs" />
     <Compile Include="Web\UI\Controls\Event\RegistrationInstanceEditor.cs" />
     <Compile Include="Web\UI\Controls\Event\RegistrantEditor.cs" />
@@ -485,6 +489,8 @@
     <Compile Include="Web\UI\Controls\Grid\CampusField.cs" />
     <Compile Include="Web\UI\Controls\Grid\PhoneNumbersField.cs" />
     <Compile Include="Web\UI\Controls\IDisplayRequiredIndicator.cs" />
+    <Compile Include="Web\UI\Controls\NumberUpDown.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\GroupTypesPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\FinancialGatewayPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupAndRolePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MergeTemplatePicker.cs" />
@@ -1383,7 +1389,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Auth\" />
-    <Folder Include="Web\UI\Controls\Registration\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">

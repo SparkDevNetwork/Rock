@@ -27,13 +27,13 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 
-namespace RockWeb.Blocks.Involvement
+namespace RockWeb.Blocks.Connection
 {
     /// <summary>
     /// Block to display the connection types.
     /// </summary>
     [DisplayName( "Connection Type List" )]
-    [Category( "Involvement" )]
+    [Category( "Connection" )]
     [Description( "Block to display the connection types." )]
     [LinkedPage( "Detail Page", "Page used to view details of a connection type." )]
     public partial class ConnectionTypeList : Rock.Web.UI.RockBlock

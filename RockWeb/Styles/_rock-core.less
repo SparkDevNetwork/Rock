@@ -35,6 +35,7 @@
 @import "_blocks-checkinadmin.less";
 @import "_blocks-workflow.less";
 @import "_blocks-prayer.less";
+@import "_blocks-events.less";
 
 @import "_page-specific.less";
 
@@ -194,6 +195,21 @@ a.help {
     }
 }
 
+
+// list group additions
+
+.list-group-item {
+    .clearfix;
+
+    .toggle-container {   
+        display: inline-block;
+    }
+
+    .content {
+        display: block;
+        float: left;
+    }
+}
 
 
 // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
@@ -583,7 +599,8 @@ div.aspNetDisabled {
 //--------------------------------
 
 // abstracted fixed width icon element
-.icon-fw {
+.icon-fw { 
       width: (18em / 14); // font-awesome
       text-align: center;
 }
+

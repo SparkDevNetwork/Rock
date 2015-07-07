@@ -115,7 +115,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.NoteType;
+                return this.NoteType != null ? this.NoteType : base.ParentAuthority;
             }
         }
 

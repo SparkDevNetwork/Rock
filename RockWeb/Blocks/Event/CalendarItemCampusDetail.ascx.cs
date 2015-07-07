@@ -82,7 +82,6 @@ namespace RockWeb.Blocks.Event
             {
                 SchedulesState = JsonConvert.DeserializeObject<List<EventItemSchedule>>( json );
             }
-
         }
 
         /// <summary>
@@ -312,6 +311,54 @@ namespace RockWeb.Blocks.Event
         #endregion Edit Events
 
         #region Control Events
+
+        /// <summary>
+        /// Handles the Click event of the lbCalendarDetail control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void lbCalendarDetail_Click( object sender, EventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var eventItem = new EventCalendarItemService( rockContext )
+                    .Get( PageParameter( "EventItemId" ).AsInteger() );
+
+                if ( eventItem != null )
+                {
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams.Add( "EventCalendarId", eventItem.EventCalendarId.ToString() );
+
+                    var pageCache = PageCache.Read( RockPage.PageId );
+                    if ( pageCache != null && pageCache.ParentPage != null && pageCache.ParentPage.ParentPage != null )
+                    {
+                        NavigateToPage( pageCache.ParentPage.ParentPage.Guid, qryParams );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbCalendarItem control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void lbCalendarItem_Click( object sender, EventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var eventItem = new EventCalendarItemService( rockContext )
+                    .Get( PageParameter( "EventItemId" ).AsInteger() );
+
+                if ( eventItem != null )
+                {
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams.Add( "EventItemId", eventItem.Id.ToString() );
+                    qryParams.Add( "EventCalendarId", eventItem.EventCalendarId.ToString() );
+                    NavigateToParentPage( qryParams );
+                }
+            }
+        }
 
         #endregion
 
@@ -916,7 +963,6 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion
-
 
 }
 }

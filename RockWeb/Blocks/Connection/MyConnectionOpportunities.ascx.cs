@@ -29,26 +29,19 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Involvement
+namespace RockWeb.Blocks.Connection
 {
     /// <summary>
     /// Block to display the connectionOpportunities that user is authorized to view, and the activities that are currently assigned to the user.
     /// </summary>
     [DisplayName( "My Connection Opportunities" )]
-    [Category( "Involvement" )]
+    [Category( "Connection" )]
     [Description( "Block to display the connection opportunities that user is authorized to view, and the opportunities that are currently assigned to the user." )]
     [IntegerField( "Connection Type Id", "The Id of the connection type that determines the opportunities listed.", true, 1 )]
     [LinkedPage( "Configuration Page", "Page used to modify and create connection opportunities." )]
     [LinkedPage( "Detail Page", "Page used to view details of an requests." )]
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        private bool _canView = false;
-        private bool _canEdit = false;
-
-        #endregion
-
         #region Properties
 
         protected bool? StatusFilter { get; set; }
@@ -403,14 +396,14 @@ namespace RockWeb.Blocks.Involvement
                 // Get the Ids of the groups the user is in
                 var userGroupIds = CurrentPerson.Members.Select( m => m.GroupId ).ToList();
                 GroupService groupService = new GroupService( rockContext );
-                //TODO var involvementAdminGroupId = groupService.Get( Rock.SystemGuid.Group.GROUP_INVOLVEMENT_ADMINISTRATORS.AsGuid() ).Id;
+                var connectionAdminGroupId = groupService.Get( Rock.SystemGuid.Group.GROUP_CONNECTION_ADMINISTRATORS.AsGuid() ).Id;
                 var rockAdminGroupId = groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).Id;
                 // Get the connectionOpportunities that have connector groups the user is in.
                 var connectionOpportunityIds = allConnectionOpportunities
                     .Where( o =>
                         ( o.ConnectorGroupId.HasValue && userGroupIds.Contains( o.ConnectorGroupId.Value ) )
                         || o.ConnectionOpportunityCampuses.Any( c => userGroupIds.Contains( c.ConnectorGroupId.Value ) )
-                        //|| userGroupIds.Contains( involvementAdminGroupId )
+                        || userGroupIds.Contains( connectionAdminGroupId )
                         || userGroupIds.Contains( rockAdminGroupId ) )//TODO Redo Roles
                     .Select( o => o.Id )//
                     .Distinct()

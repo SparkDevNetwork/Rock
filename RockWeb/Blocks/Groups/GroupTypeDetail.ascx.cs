@@ -1212,6 +1212,7 @@ namespace RockWeb.Blocks.Groups
             string memberTerm = string.IsNullOrWhiteSpace( tbGroupMemberTerm.Text ) ? "Member" : tbGroupMemberTerm.Text;
 
             cbIsLeader.Checked = groupTypeRole.IsLeader;
+            cbReceiveRequirementsNotifications.Checked = groupTypeRole.ReceiveRequirementsNotifications;
             cbCanView.Checked = groupTypeRole.CanView;
             cbCanEdit.Checked = groupTypeRole.CanEdit;
 
@@ -1288,6 +1289,7 @@ namespace RockWeb.Blocks.Groups
             groupTypeRole.Name = tbRoleName.Text;
             groupTypeRole.Description = tbRoleDescription.Text;
             groupTypeRole.IsLeader = cbIsLeader.Checked;
+            groupTypeRole.ReceiveRequirementsNotifications = cbReceiveRequirementsNotifications.Checked;
             groupTypeRole.CanView = cbCanView.Checked;
             groupTypeRole.CanEdit = cbCanEdit.Checked;
 

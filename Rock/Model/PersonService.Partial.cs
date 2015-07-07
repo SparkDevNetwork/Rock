@@ -101,14 +101,15 @@ namespace Rock.Model
             var qry = base.Queryable( includes );
             if ( !includeBusinesses )
             {
-                var definedValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
-                if ( definedValue != null )
+                var definedValuePersonType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() );
+                if ( definedValuePersonType != null )
                 {
-                    qry = qry.Where( p => p.RecordTypeValueId != definedValue.Id );
+                    int recordTypePerson = definedValuePersonType.Id;
+                    qry = qry.Where( p => p.RecordTypeValueId == recordTypePerson );
                 }
             }
 
-            if (!includeDeceased)
+            if ( !includeDeceased )
             {
                 qry = qry.Where( p => p.IsDeceased == false );
             }
@@ -149,11 +150,15 @@ namespace Rock.Model
         /// </returns>
         public IEnumerable<Person> GetByMatch( string firstName, string lastName, string email, bool includeDeceased = false, bool includeBusinesses = false )
         {
+            firstName = firstName ?? string.Empty;
+            lastName = lastName ?? string.Empty;
+            email = email ?? string.Empty;
+
             return Queryable( includeDeceased, includeBusinesses )
                 .Where( p =>
-                    p.Email == email &&
-                    ( p.FirstName == firstName || p.NickName == firstName ) &&
-                    p.LastName == lastName )
+                    email != "" && p.Email == email &&
+                    firstName != "" && ( p.FirstName == firstName || p.NickName == firstName ) &&
+                    lastName != "" && p.LastName == lastName )
                 .ToList();
         }
 
@@ -362,15 +367,28 @@ namespace Rock.Model
             }
             else
             {
-                int recordTypeBusinessId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
-
-                return Queryable( includeDeceased, includeBusinesses )
-                    .Where( p =>
-                        ( includeBusinesses && p.RecordTypeValueId.HasValue && p.RecordTypeValueId.Value == recordTypeBusinessId && p.LastName.Contains( fullName ) )
+                var qry = Queryable( includeDeceased, includeBusinesses );
+                if ( includeBusinesses )
+                {
+                    int recordTypeBusinessId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                    
+                    // if a we are including businesses, compare fullname against the Business Name (Person.LastName)
+                    qry = qry.Where( p =>
+                        ( p.RecordTypeValueId.HasValue && p.RecordTypeValueId.Value == recordTypeBusinessId && p.LastName.Contains( fullName ) )
                         ||
                         ( ( p.LastName.StartsWith( lastName ) || previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( lastName ) ) ) &&
                         ( p.FirstName.StartsWith( firstName ) ||
                         p.NickName.StartsWith( firstName ) ) ) );
+                }
+                else
+                {
+                    qry = qry.Where( p =>
+                        ( ( p.LastName.StartsWith( lastName ) || previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( lastName ) ) ) &&
+                        ( p.FirstName.StartsWith( firstName ) ||
+                        p.NickName.StartsWith( firstName ) ) ) );
+                }
+
+                return qry;
             }
         }
 
@@ -852,7 +870,7 @@ namespace Rock.Model
             /// </value>
             public IEnumerable<Person> Children { get; set; }
         }
-        
+
         /// <summary>
         /// Gets a Queryable of Parents with their Children
         /// </summary>
@@ -1230,11 +1248,20 @@ namespace Rock.Model
                 var adultRole = familyGroupType.Roles
                     .FirstOrDefault( r =>
                         r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
-                if ( adultRole != null )
+
+                var childRole = familyGroupType.Roles
+                    .FirstOrDefault( r =>
+                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) );
+
+                var age = person.Age;
+
+                var familyRole = age.HasValue && age < 18 ? childRole : adultRole;
+
+                if ( familyRole != null )
                 {
                     var groupMember = new GroupMember();
                     groupMember.Person = person;
-                    groupMember.GroupRoleId = adultRole.Id;
+                    groupMember.GroupRoleId = familyRole.Id;
 
                     var groupMembers = new List<GroupMember>();
                     groupMembers.Add( groupMember );

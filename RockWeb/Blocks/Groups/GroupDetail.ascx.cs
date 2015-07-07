@@ -996,7 +996,7 @@ namespace RockWeb.Blocks.Groups
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed || group.GroupType == null )
+            if ( !editAllowed )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
@@ -1159,8 +1159,11 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 CurrentGroupTypeId = group.GroupTypeId;
-                ddlGroupType.SetValue( group.GroupTypeId );
-                var groupType = GroupTypeCache.Read( group.GroupTypeId, rockContext );
+                if ( CurrentGroupTypeId == 0)
+                {
+                    CurrentGroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0;
+                }
+                var groupType = GroupTypeCache.Read( CurrentGroupTypeId, rockContext );
                 lGroupType.Text = groupType != null ? groupType.Name : "";
             }
 
@@ -1384,7 +1387,7 @@ namespace RockWeb.Blocks.Groups
             var pageParams = new Dictionary<string, string>();
             pageParams.Add("GroupId", group.Id.ToString());
 
-            hlAttendance.Visible = group.GroupType.TakesAttendance;
+            hlAttendance.Visible = group.GroupType != null && group.GroupType.TakesAttendance;
             hlAttendance.NavigateUrl = LinkedPageUrl( "AttendancePage", pageParams );
 
             string groupMapUrl = LinkedPageUrl("GroupMapPage", pageParams);
@@ -1814,8 +1817,7 @@ namespace RockWeb.Blocks.Groups
         {
             var rockContext = new RockContext();
             ddlMember.Items.Clear();
-
-            int? groupTypeId = ddlGroupType.SelectedValueAsId();
+            int? groupTypeId = this.CurrentGroupTypeId;
             if ( groupTypeId.HasValue )
             {
                 var groupType = GroupTypeCache.Read( groupTypeId.Value );
@@ -2105,7 +2107,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             var selectedGroupRequirement = this.GroupRequirementsState.FirstOrDefault( a => a.Guid == groupRequirementGuid );
-            grpGroupRequirementGroupRole.GroupTypeId = ddlGroupType.SelectedValue.AsIntegerOrNull();
+            grpGroupRequirementGroupRole.GroupTypeId = this.CurrentGroupTypeId;
             if (selectedGroupRequirement != null)
             {
                 ddlGroupRequirementType.SelectedValue = selectedGroupRequirement.GroupRequirementTypeId.ToString();

@@ -88,7 +88,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.EventCalendar;
+                return this.EventCalendar != null ? this.EventCalendar : base.ParentAuthority;
             }
         }
         #endregion

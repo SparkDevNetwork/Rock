@@ -36,23 +36,59 @@ namespace Rock.Model
 
         #region Entity Properties
 
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public string Description { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connection type identifier.
+        /// </summary>
+        /// <value>
+        /// The connection type identifier.
+        /// </value>
         public int? ConnectionTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is critical.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is critical; otherwise, <c>false</c>.
+        /// </value>
         [DataMember]
         public bool IsCritical { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is default.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is default; otherwise, <c>false</c>.
+        /// </value>
         [DataMember]
         public bool IsDefault { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
         [DataMember]
         public bool IsActive { get; set; }
 
@@ -60,6 +96,12 @@ namespace Rock.Model
 
         #region Virtual Properties
 
+        /// <summary>
+        /// Gets or sets the type of the connection.
+        /// </summary>
+        /// <value>
+        /// The type of the connection.
+        /// </value>
         [DataMember]
         public virtual ConnectionType ConnectionType { get; set; }
 

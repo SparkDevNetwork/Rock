@@ -250,14 +250,14 @@ namespace Rock.Model
         LastName = 1,
 
         /// <summary>
-        /// The home campus
+        /// The person's campus
         /// </summary>
-        HomeCampus = 2,
+        Campus = 2,
 
         /// <summary>
-        /// The phone
+        /// The Address
         /// </summary>
-        Phone = 3,
+        Address = 3,
 
         /// <summary>
         /// The email
@@ -277,8 +277,24 @@ namespace Rock.Model
         /// <summary>
         /// The marital status
         /// </summary>
-        MaritalStatus = 7
+        MaritalStatus = 7,
+
+        /// <summary>
+        /// The mobile phone
+        /// </summary>
+        MobilePhone = 8,
+
+        /// <summary>
+        /// The home phone
+        /// </summary>
+        HomePhone = 9,
+
+        /// <summary>
+        /// The work phone
+        /// </summary>
+        WorkPhone = 10,
     }
 
     #endregion
+
 }

@@ -126,15 +126,19 @@ namespace RockWeb.Blocks.Administration
                 {
                     // If the entity is a block, get any actions that were updated or added by the block type using
                     // one or more SecurityActionAttributes.
-                    foreach ( var action in BlockCache.Read( block.Id ).BlockType.SecurityActions )
+                    var blockCache = BlockCache.Read( block.Id );
+                    if ( blockCache != null && blockCache.BlockType != null )
                     {
-                        if ( block.SupportedActions.ContainsKey( action.Key ) )
+                        foreach ( var action in BlockCache.Read( block.Id ).BlockType.SecurityActions )
                         {
-                            block.SupportedActions[action.Key] = action.Value;
-                        }
-                        else
-                        {
-                            block.SupportedActions.Add( action.Key, action.Value );
+                            if ( block.SupportedActions.ContainsKey( action.Key ) )
+                            {
+                                block.SupportedActions[action.Key] = action.Value;
+                            }
+                            else
+                            {
+                                block.SupportedActions.Add( action.Key, action.Value );
+                            }
                         }
                     }
 

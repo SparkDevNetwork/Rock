@@ -406,6 +406,68 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Groups the members not meeting requirements.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="includeWarnings">if set to <c>true</c> [include warnings].</param>
+        /// <returns></returns>
+        public Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> GroupMembersNotMeetingRequirements( int groupId, bool includeWarnings )
+        {
+            Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> results = new Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>>();
+
+            var qry = new GroupMemberRequirementService( (RockContext)Context ).Queryable().AsNoTracking()
+                                        .Where( r => r.GroupMember.GroupId == groupId);
+            if (includeWarnings) {
+                qry = qry.Where(r => r.RequirementWarningDateTime != null || r.RequirementFailDateTime != null);
+            }
+            else
+            {
+                qry = qry.Where( r => r.RequirementFailDateTime != null );
+            }
+
+            var groupmembersWithIssues = qry.Select( r => new { 
+                                                r.GroupMember, 
+                                                r.GroupRequirement, 
+                                                r.RequirementFailDateTime,
+                                                r.RequirementWarningDateTime})
+                                            .ToList();
+
+            foreach ( var groupMember in groupmembersWithIssues.GroupBy( g => g.GroupMember ) )
+            {
+                var issues = groupmembersWithIssues
+                        .Where(g => g.GroupMember.Id == groupMember.Key.Id)
+                        .Select( r => new {r.GroupRequirement, r.RequirementFailDateTime, r.RequirementWarningDateTime});
+
+                Dictionary<PersonGroupRequirementStatus, DateTime> statuses = new Dictionary<PersonGroupRequirementStatus,DateTime>();
+                foreach ( var issue in issues )
+                {
+                    PersonGroupRequirementStatus status = new PersonGroupRequirementStatus();
+                    status.GroupRequirement = issue.GroupRequirement;
+                    status.PersonId = groupMember.Key.PersonId;
+
+                    DateTime occuranceDate = new DateTime();
+
+                    if ( issue.RequirementFailDateTime != null )
+                    {
+                        status.MeetsGroupRequirement = MeetsGroupRequirement.NotMet;
+                        occuranceDate = issue.RequirementFailDateTime.Value;
+                    }
+                    else
+                    {
+                        status.MeetsGroupRequirement = MeetsGroupRequirement.MeetsWithWarning;
+                        occuranceDate = issue.RequirementWarningDateTime.Value;
+                    }
+
+                    statuses.Add( status, occuranceDate );
+                }
+
+                results.Add( groupMember.Key, statuses );
+            }
+
+            return results;
+        }
+
+        /// <summary>
         /// Saves the new family.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>

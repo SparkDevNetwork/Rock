@@ -12,6 +12,38 @@
     </Triggers>
     <ContentTemplate>
 
+        <div class="wizard">
+
+            <div class="wizard-item complete">
+                <asp:LinkButton ID="lbCalendarDetail" runat="server" OnClick="lbCalendarDetail_Click" >
+                    <div class="wizard-item-icon">
+                        <i class="fa fa-fw fa-calendar"></i>
+                    </div>
+                    <div class="wizard-item-label">
+                        Calendar
+                    </div>
+                </asp:LinkButton>
+            </div>
+    
+            <div class="wizard-item active">
+                <div class="wizard-item-icon">
+                    <i class="fa fa-fw fa-calendar-o"></i>
+                </div>
+                <div class="wizard-item-label">
+                     Calendar Item
+                </div>
+            </div>
+    
+            <div class="wizard-item">
+                <div class="wizard-item-icon">
+                    <i class="fa fa-fw fa-building-o"></i>
+                </div>
+                <div class="wizard-item-label">
+                    Campus Detail
+                </div>
+            </div>
+        </div>
+
         <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block" >
 
             <asp:HiddenField ID="hfEventItemId" runat="server" />
