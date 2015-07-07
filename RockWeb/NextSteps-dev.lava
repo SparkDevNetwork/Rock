@@ -1,0 +1,112 @@
+<script src="~~/Scripts/Vendor/greensock/TweenMax.min.js"></script>
+<script src="~~/Scripts/Vendor/scrollmagic/uncompressed/ScrollMagic.js"></script>
+<script src="~~/Scripts/Vendor/scrollmagic/uncompressed/plugins/animation.gsap.js"></script>
+<script src="~~/Scripts/Vendor/scrollmagic/uncompressed/plugins/debug.addIndicators.js"></script>
+
+<script>
+	// init controller
+	var controller = new ScrollMagic.Controller();
+</script>
+
+<style media="screen">
+	.mainfooter {
+		min-height: 500px;
+	}
+</style>
+
+<div class="row">
+	<div class="col-xs-3">
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+		<p class="hidden-md hidden-lg">&nbsp;</p>
+		<div id="pin1" class="imgstack">
+			<img id="hide4" src="http://www.ccvonline.com/Arena/content/v6/img/next-step/neighborhoods.png" alt="" />
+			<img id="hide3" src="http://www.ccvonline.com/Arena/content/v6/img/next-step/serve.png" alt="" />
+			<img id="hide2" src="http://www.ccvonline.com/Arena/content/v6/img/next-step/attend.png" alt="" />
+			<img id="hide1" src="http://www.ccvonline.com/Arena/content/v6/img/next-step/starting-point.png" alt="" />
+		</div>
+	</div>
+	<div class="col-xs-9 js-pin-height">
+		<div id="triggerpin"></div>
+		<div class="bigblock bigblock-lg">
+			<h2>Starting Point</h2>
+			<p>
+				Sign up for the next Starting Point class to find out what CCV is all about, take a deep look at the Christian faith and learn how you can get involved. Take the next step and register today.
+			</p>
+			<p class="text-muted">
+				Childcare is available for attending parents.
+			</p>
+			<p>
+				<a href="#" class="btn btn-default">Register Now</a>
+			</p>
+		</div>
+		<div id="trigger1"></div>
+		<div class="bigblock bigblock-lg">
+			<h2>Attend</h2>
+			<p>
+				CCV is one church in many locations. Find the campus closest to home and join the family by attending regularly. Our exciting weekend programs for all ages are experiences you won't want to miss.
+			</p>
+			<p>
+				<a href="#" class="btn btn-default">Locations & Times</a>
+			</p>
+		</div>
+		<div id="trigger2"></div>
+		<div class="bigblock bigblock-lg">
+			<h2>Serve</h2>
+			<p>
+				Serving is a great way to get involved in the CCV community. We have opportunities for every age and interest. Behind the scenes or upfront and personal, you can find the perfect fit for yourself and your family. Sign up today and experience first-hand the impact our volunteer teams have on our local, national and international ministry.
+			</p>
+			<p>
+				<a class="btn btn-default">Serve at CCV</a>
+				<a class="btn text-muted">Serve Globally</a>
+			</p>
+		</div>
+		<div id="trigger3"></div>
+		<div class="bigblock bigblock-lg js-pin-height-trim">
+			<h2>Neighborhoods</h2>
+			<p>
+				Life was not meant to be lived alone. Gather weekly with people from your neighborhood to build a community and impact it for the better. At CCV, neighborhood groups are vital to our church. They provide a sense of connection and security as we all tackle life together. Make neighborhood groups a priority by meeting weekly with those physically closest to you. Our neighborhood groups draw out the relevance of Biblical principles discussed in the weekend services.
+			</p>
+			<p>
+				<a class="btn btn-default">Find a Group</a>
+			</p>
+		</div>
+	</div>
+</div>
+
+<p>
+	&nbsp;
+</p>
+<p>
+	&nbsp;
+</p>
+<p>
+	&nbsp;
+</p>
+
+<script>
+	$(function () {
+		var pinHeight = function() {
+			var r = $('.js-pin-height').height()
+			r -= $('.js-pin-height-trim').height()
+			r -= 40*5
+			return r
+		}
+		new ScrollMagic.Scene({triggerElement: "#triggerpin", duration: pinHeight, offset: 200})
+			.setPin("#pin1")
+			.addIndicators() // add indicators (requires plugin)
+			.addTo(controller);
+		new ScrollMagic.Scene({triggerElement: "#trigger1", duration: 100, offset: -50})
+			.setTween("#hide1", { opacity: 0 } )
+			.addIndicators() // add indicators (requires plugin)
+			.addTo(controller);
+		new ScrollMagic.Scene({triggerElement: "#trigger2", duration: 100, offset: -50})
+			.setTween("#hide2", { opacity: 0 } )
+			.addIndicators() // add indicators (requires plugin)
+			.addTo(controller);
+		new ScrollMagic.Scene({triggerElement: "#trigger3", duration: 100, offset: -50})
+			.setTween("#hide3", { opacity: 0 } )
+			.addIndicators() // add indicators (requires plugin)
+			.addTo(controller);
+	});
+</script>

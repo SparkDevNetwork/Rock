@@ -5877,6 +5877,11 @@ h6,
 .bigblock-stacking {
   margin-bottom: 0;
 }
+.bigblock-lg {
+  padding-top: 60px;
+  padding-bottom: 60px;
+  margin-bottom: 60px;
+}
 .bigblock-flexbg {
   background-size: cover;
   background-position: center center;
@@ -6104,6 +6109,12 @@ h6,
 }
 .gridlist-inverse > li:nth-child(odd) {
   border-right: 1px solid #333333;
+}
+.imgstack {
+  position: relative;
+}
+.imgstack > img {
+  position: absolute;
 }
 .infowindow .name {
   font-weight: 800;
