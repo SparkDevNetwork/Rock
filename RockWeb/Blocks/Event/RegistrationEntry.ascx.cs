@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.Event
         private int? GroupId { get; set; }
 
         // Info about each current registration
-        private RegistrationInfo RegistrationState { get; set; }
+        protected RegistrationInfo RegistrationState { get; set; }
 
         // The current panel to display ( HowMany
         private int CurrentPanel { get; set; }
@@ -456,26 +456,6 @@ namespace RockWeb.Blocks.Event
             {
                 RegistrationState.DiscountCode = tbDiscountCode.Text;
                 CreateDynamicControls( true );
-            }
-        }
-
-        /// <summary>
-        /// Handles the RowDataBound event of the gFeeSummary control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        protected void gFeeSummary_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
-            if ( e.Row.RowType == DataControlRowType.DataRow )
-            {
-                var costSummary = e.Row.DataItem as CostSummaryInfo;
-                if ( costSummary != null )
-                {
-                    string typeCss = costSummary.Type.ConvertToString().ToLower();
-                    e.Row.Cells[0].AddCssClass( typeCss + "-description" );
-                    e.Row.Cells[1].AddCssClass( typeCss + "-amount" );
-                    e.Row.Cells[2].AddCssClass( typeCss + "-discounted-amount" );
-                }
             }
         }
 
@@ -2263,7 +2243,6 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // Get the cost/fee summary
-                gFeeSummary.Columns[2].Visible = RegistrationState.DiscountPercentage > 0.0m;
                 var costs = new List<CostSummaryInfo>();
                 foreach( var registrant in RegistrationState.Registrants )
                 {
@@ -2363,9 +2342,8 @@ namespace RockWeb.Blocks.Event
                         DiscountedCost = RegistrationState.TotalCost,
                     } );
 
-                    // Bind the cost/fee summary grid
-                    gFeeSummary.DataSource = costs;
-                    gFeeSummary.DataBind();
+                    rptFeeSummary.DataSource = costs;
+                    rptFeeSummary.DataBind();
 
                     // Set the total cost
                     hfTotalCost.Value = RegistrationState.TotalCost.ToString( "N2" );

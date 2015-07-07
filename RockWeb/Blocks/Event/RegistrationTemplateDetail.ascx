@@ -255,8 +255,8 @@
                     <asp:ListItem Text="Percentage" Value="Percentage" />
                     <asp:ListItem Text="Amount" Value="Amount" />
                 </Rock:RockRadioButtonList>
-                <Rock:NumberBox ID="nbDiscountPercentage" runat="server" Label="Discount Percentage" NumberType="Integer" ValidationGroup="Discount"  />
-                <Rock:CurrencyBox ID="cbDiscountAmount" runat="server" Label="Discount Amount" ValidationGroup="Discount" />
+                <Rock:NumberBox ID="nbDiscountPercentage" runat="server" AppendText="%" CssClass="input-width-md" Label="Discount Percentage" NumberType="Integer" ValidationGroup="Discount"  />
+                <Rock:CurrencyBox ID="cbDiscountAmount" runat="server" CssClass="input-width-md" Label="Discount Amount" ValidationGroup="Discount" />
             </Content>
         </Rock:ModalDialog>
 

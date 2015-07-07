@@ -750,7 +750,8 @@ Copyright (c) 2012 Dan Eden*/
   30. Paneled List Group - extends the bootstrap list group to behave in a panel
   31. Sliding Date Range
   32. Photo Round
-  33, Wizard
+  33. Wizard
+  34. Checkbox
 
   xx. Misc
 */
@@ -2212,6 +2213,9 @@ ul.list-group-panel .list-group-item:first-child,
 }
 .wizard-item:last-child:before {
   right: 110px;
+}
+.rock-checkbox-icon {
+  cursor: pointer;
 }
 /*
     Used to manage styles related to Rock's forms
@@ -4134,7 +4138,7 @@ iframe.email-body {
     Used to manage styles for specific blocks.
 
     1. Calendar - Styles for the calendar blocks
-    2. 
+    2. Event Entry - The event registration entry screen
 
 */
 .calendar {
@@ -4193,6 +4197,24 @@ iframe.email-body {
 }
 .calendar-month .calendar-last-month a {
   opacity: .2;
+}
+.registrationentry-intro {
+  text-align: center;
+}
+.registrationentry-intro h1 {
+  margin-top: 24px;
+  margin-bottom: 48px;
+}
+.registrationentry-intro .input-group {
+  margin: 0 auto 48px auto;
+}
+.registrationentry-summary .fee-table > .row {
+  padding: 8px 0;
+}
+.registrationentry-summary .row.fee-header {
+  border-bottom: 1px solid #ffffff;
+  padding-bottom: 2px;
+  margin-bottom: 6px;
 }
 /*
     
