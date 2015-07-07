@@ -84,7 +84,8 @@ namespace Rock.Lava
         /// <summary>
         /// pluralizes string based on the value for quantity
         /// </summary>
-        /// <param name="input"></param>
+        /// <param name="input">The input.</param>
+        /// <param name="quantity">The quantity.</param>
         /// <returns></returns>
         public static string PluralizeForQuantity( string input, int quantity )
         {

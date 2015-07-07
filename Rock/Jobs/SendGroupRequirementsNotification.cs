@@ -252,13 +252,31 @@ namespace Rock.Jobs
     }
 
     #region Helper Classes
+
+    /// <summary>
+    /// Notification Option Enum
+    /// </summary>
     public enum NotificationOption
     {
+        /// <summary>
+        /// None
+        /// </summary>
         None = 0,
+
+        /// <summary>
+        /// The direct parent
+        /// </summary>
         DirectParent = 1,
+
+        /// <summary>
+        /// All parents
+        /// </summary>
         AllParents =2
     }
 
+    /// <summary>
+    /// Notification Item
+    /// </summary>
     public class NotificationItem
     {
         /// <summary>
@@ -278,41 +296,169 @@ namespace Rock.Jobs
         public int GroupId { get; set; }
     }
 
+    /// <summary>
+    /// Group Missing Requirements
+    /// </summary>
     [DotLiquid.LiquidType( "Id", "Name", "GroupMembersMissingRequirements", "AncestorPathName", "GroupTypeId", "GroupTypeName", "Leaders" )]
     public class GroupsMissingRequirements
     {
+        /// <summary>
+        /// Gets or sets the identifier.
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
         public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group members missing requirements.
+        /// </summary>
+        /// <value>
+        /// The group members missing requirements.
+        /// </value>
         public List<GroupMembersMissingRequirements> GroupMembersMissingRequirements { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the ancestor path.
+        /// </summary>
+        /// <value>
+        /// The name of the ancestor path.
+        /// </value>
         public string AncestorPathName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group type identifier.
+        /// </summary>
+        /// <value>
+        /// The group type identifier.
+        /// </value>
         public int GroupTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the group type.
+        /// </summary>
+        /// <value>
+        /// The name of the group type.
+        /// </value>
         public string GroupTypeName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the leaders.
+        /// </summary>
+        /// <value>
+        /// The leaders.
+        /// </value>
         public List<GroupMemberResult> Leaders { get; set; }
     }
 
+    /// <summary>
+    /// Group Member Missing Requirements
+    /// </summary>
     [DotLiquid.LiquidType( "Id", "PersonId", "FullName", "GroupMemberRole", "MissingRequirements" )]
     public class GroupMembersMissingRequirements: GroupMemberResult
     {
+        /// <summary>
+        /// Gets or sets the missing requirements.
+        /// </summary>
+        /// <value>
+        /// The missing requirements.
+        /// </value>
         public List<MissingRequirement> MissingRequirements { get; set; }
     }
 
+    /// <summary>
+    /// Missing Requirement
+    /// </summary>
     [DotLiquid.LiquidType( "Id", "Name", "Status", "Message", "OccurrenceDate" )]
     public class MissingRequirement
     {
+        /// <summary>
+        /// Gets or sets the identifier.
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
         public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status.
+        /// </summary>
+        /// <value>
+        /// The status.
+        /// </value>
         public MeetsGroupRequirement Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message.
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
         public string Message { get; set; }
+
+        /// <summary>
+        /// Gets or sets the occurrence date.
+        /// </summary>
+        /// <value>
+        /// The occurrence date.
+        /// </value>
         public DateTime OccurrenceDate { get; set; }
     }
 
+    /// <summary>
+    /// Group Member Result
+    /// </summary>
     [DotLiquid.LiquidType( "Id", "PersonId", "FullName", "GroupMemberRole" )]
     public class GroupMemberResult
     {
+        /// <summary>
+        /// Gets or sets the identifier.
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
         public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person identifier.
+        /// </summary>
+        /// <value>
+        /// The person identifier.
+        /// </value>
         public int PersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the full name.
+        /// </summary>
+        /// <value>
+        /// The full name.
+        /// </value>
         public string FullName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member role.
+        /// </summary>
+        /// <value>
+        /// The group member role.
+        /// </value>
         public string GroupMemberRole { get; set; }
     }
-#endregion
+
+    #endregion
 }
