@@ -155,6 +155,8 @@
                                             Help="Should a grid be displayed showing the matching groups?" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbShowSchedule" runat="server" Label="Show Schedule" Text="Yes" 
                                             Help="Should the schedule for each group be displayed?" ValidationGroup="GroupFinderSettings" />
+                                        <Rock:RockCheckBox ID="cbShowDescription" runat="server" Label="Show Description" Text="Yes" 
+                                            Help="Should the description for each group be displayed?" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbShowCount" runat="server" Label="Show Member Count" Text="Yes" 
                                             Help="Should the number of members in each group be displayed in the result grid?" ValidationGroup="GroupFinderSettings" />
                                     </div>
