@@ -13,8 +13,8 @@
 .calendar {
     padding: 0 10px 10px 10px;
     display:inline-block;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    border: 1px solid @panel-default-border;
+    border-radius: @border-radius-base;
     width: 100%;
 }
 
@@ -25,10 +25,15 @@
 
     a {
         text-decoration: none;
+        color: @text-color !important;
     }
 
     th {
         text-align: center;
+    }
+
+    td {
+        color: @text-color !important;
     }
 
     table.calendar-title td {
@@ -39,10 +44,28 @@
         padding: 5px;
     }
 
+    table.calendar-title,
+    table.calendar-title a {
+        font-weight: @font-weight-semibold;
+    }
+
+    .calendar-today {
+        border-radius: @border-radius-base;
+    }
+
     .calendar-today, 
     .calendar-selecteditem {
         background-color: @alert-info-bg !important;
         color: @alert-info-text !important;
+        border-radius: 0;
+    }
+
+    .calendar-selecteditem:first-child {
+        border-radius: @border-radius-base 0 0 @border-radius-base;
+    }
+
+    .calendar-selecteditem:last-child {
+        border-radius: 0 @border-radius-base @border-radius-base 0;
     }
 
     .calendar-selected {
@@ -53,14 +76,13 @@
             color: @label-color !important
         }
     }
+
+    .calendar-last-month a {
+        opacity: .2;
+    }
 }
 /*
-    table.calendar table.calendar-title,
-    table.calendar table.calendar-title a {
-        font-weight: bold;
-        font-size: 14px;
-        color: #6a6a6a;
-    }
+    
 
     table.calendar th.calendar-day-header {
         text-align: center;
