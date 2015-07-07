@@ -170,7 +170,10 @@ namespace Rock.Model
         /// </summary>
         public override Security.ISecured ParentAuthority
         {
-            get { return this.Metric; }
+            get 
+            {
+                return this.Metric != null ? this.Metric : base.ParentAuthority;
+            }
         }
 
         /// <summary>

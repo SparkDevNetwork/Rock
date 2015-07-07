@@ -108,7 +108,10 @@ namespace Rock.Model
         /// </value>
         public override Security.ISecured ParentAuthority
         {
-            get { return this.DefinedType; }
+            get 
+            {
+                return this.DefinedType != null ? this.DefinedType : base.ParentAuthority;
+            }
         }
 
         /// <summary>

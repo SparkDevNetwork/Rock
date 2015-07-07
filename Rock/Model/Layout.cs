@@ -151,7 +151,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.Site;
+                return this.Site != null ? this.Site : base.ParentAuthority;
             }
         }
 
