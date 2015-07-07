@@ -60,7 +60,7 @@ namespace Rock.Jobs
 
             var calculationExceptions = new List<Exception>();
 
-            foreach ( var groupRequirement in groupRequirementQry.Include(i => i.GroupRequirementType).AsNoTracking().ToList() )
+            foreach ( var groupRequirement in groupRequirementQry.Include( i => i.GroupRequirementType ).AsNoTracking().ToList() )
             {
                 try
                 {
@@ -110,6 +110,20 @@ namespace Rock.Jobs
                         {
                             // they don't meet the requirement so set the Requirement Met Date/Time to null
                             groupMemberRequirement.RequirementMetDateTime = null;
+                        }
+
+                        if ( result.WarningIncluded )
+                        {
+                            if ( !groupMemberRequirement.RequirementWarningDateTime.HasValue )
+                            {
+                                // they have a warning for the requirement, and didn't have a warning already
+                                groupMemberRequirement.RequirementWarningDateTime = currentDateTime;
+                            }
+                        }
+                        else
+                        {
+                            // no warning, so set to null
+                            groupMemberRequirement.RequirementWarningDateTime = null;
                         }
 
                         rockContext.SaveChanges();

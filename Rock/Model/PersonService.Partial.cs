@@ -150,11 +150,15 @@ namespace Rock.Model
         /// </returns>
         public IEnumerable<Person> GetByMatch( string firstName, string lastName, string email, bool includeDeceased = false, bool includeBusinesses = false )
         {
+            firstName = firstName ?? string.Empty;
+            lastName = lastName ?? string.Empty;
+            email = email ?? string.Empty;
+
             return Queryable( includeDeceased, includeBusinesses )
                 .Where( p =>
-                    p.Email == email &&
-                    ( p.FirstName == firstName || p.NickName == firstName ) &&
-                    p.LastName == lastName )
+                    email != "" && p.Email == email &&
+                    firstName != "" && ( p.FirstName == firstName || p.NickName == firstName ) &&
+                    lastName != "" && p.LastName == lastName )
                 .ToList();
         }
 
@@ -1244,11 +1248,20 @@ namespace Rock.Model
                 var adultRole = familyGroupType.Roles
                     .FirstOrDefault( r =>
                         r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
-                if ( adultRole != null )
+
+                var childRole = familyGroupType.Roles
+                    .FirstOrDefault( r =>
+                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) );
+
+                var age = person.Age;
+
+                var familyRole = age.HasValue && age < 18 ? childRole : adultRole;
+
+                if ( familyRole != null )
                 {
                     var groupMember = new GroupMember();
                     groupMember.Person = person;
-                    groupMember.GroupRoleId = adultRole.Id;
+                    groupMember.GroupRoleId = familyRole.Id;
 
                     var groupMembers = new List<GroupMember>();
                     groupMembers.Add( groupMember );

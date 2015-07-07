@@ -234,7 +234,7 @@ namespace Rock.Model
         {
             get
             {
-                return RegistrationTemplate;
+                return RegistrationTemplate != null ? RegistrationTemplate : base.ParentAuthority;
             }
         }
 

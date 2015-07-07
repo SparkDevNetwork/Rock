@@ -205,7 +205,7 @@ namespace RockWeb.Blocks.Groups
                         groupMemberService.Add( groupMember );
                     }
 
-                    foreach ( var deletedRequirement in groupMember.GroupMemberRequirements.Where( a => a.RequirementMetDateTime == null ) )
+                    foreach ( var deletedRequirement in groupMember.GroupMemberRequirements.Where( a => a.RequirementMetDateTime == null ).ToList() )
                     {
                         // remove any requirements that they no longer meet (manual ones that were un-checked)
                         groupMemberRequirementService.Delete( deletedRequirement );
@@ -277,9 +277,7 @@ namespace RockWeb.Blocks.Groups
         public void ShowDetail( int groupMemberId, int? groupId )
         {
             // autoexpand the person picker if this is an add
-            this.Page.ClientScript.RegisterStartupScript(
-                this.GetType(),
-                "StartupScript", @"Sys.Application.add_load(function () {
+            var personPickerStartupScript = @"Sys.Application.add_load(function () {
 
                 // if the person picker is empty then open it for quick entry
                 var personPicker = $('.js-authorizedperson');
@@ -288,7 +286,9 @@ namespace RockWeb.Blocks.Groups
                     $(personPicker).find('a.picker-label').trigger('click');
                 }
 
-            });", true );
+            });";
+
+            this.Page.ClientScript.RegisterStartupScript( this.GetType(), "StartupScript", personPickerStartupScript, true );
 
             var rockContext = new RockContext();
             GroupMember groupMember = null;
@@ -388,7 +388,7 @@ namespace RockWeb.Blocks.Groups
             ppGroupMemberPerson.SetValue( groupMember.Person );
             ppGroupMemberPerson.Enabled = !readOnly;
 
-            if (groupMember.Id != 0)
+            if ( groupMember.Id != 0 )
             {
                 // once a group member record is saved, don't let them change the person
                 ppGroupMemberPerson.Enabled = false;
@@ -404,7 +404,7 @@ namespace RockWeb.Blocks.Groups
             groupMember.LoadAttributes();
             phAttributes.Controls.Clear();
 
-            Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, true, "", true );
+            Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, true, string.Empty, true );
             if ( readOnly )
             {
                 Rock.Attribute.Helper.AddDisplayControls( groupMember, phAttributesReadOnly );
@@ -429,6 +429,12 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void ShowGroupRequirementsStatuses()
         {
+            if ( !pnlRequirements.Visible )
+            {
+                // group doesn't have any requirements
+                return;
+            }
+
             var rockContext = new RockContext();
             int groupMemberId = hfGroupMemberId.Value.AsInteger();
             var groupId = hfGroupId.Value.AsInteger();
@@ -440,16 +446,29 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                // only create a new one if parent was specified
-                groupMember = new GroupMember { Id = 0 };
-                groupMember.GroupId = groupId;
-                groupMember.Group = new GroupService( rockContext ).Get( groupMember.GroupId );
-                groupMember.GroupRoleId = groupMember.Group.GroupType.DefaultGroupRoleId ?? 0;
-                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                // only create a new one if person is selected
+                if ( ppGroupMemberPerson.PersonId.HasValue )
+                {
+                    groupMember = new GroupMember { Id = 0 };
+                    groupMember.GroupId = groupId;
+                    groupMember.Group = new GroupService( rockContext ).Get( groupMember.GroupId );
+                    groupMember.GroupRoleId = groupMember.Group.GroupType.DefaultGroupRoleId ?? 0;
+                    groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                    groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
+                }
             }
 
             cblManualRequirements.Items.Clear();
             lRequirementsLabels.Text = string.Empty;
+
+            if ( groupMember == null )
+            {
+                // no person selected yet, so don't show anything
+                rcwRequirements.Visible = false;
+                return;
+            }
+
+            rcwRequirements.Visible = true;
 
             IEnumerable<GroupRequirementStatus> requirementsResults;
 
@@ -478,15 +497,23 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-                    bool meets = requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets;
                     string labelText;
-                    if ( meets )
+                    string labelType;
+                    if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets )
                     {
                         labelText = requirementResult.GroupRequirement.GroupRequirementType.PositiveLabel;
+                        labelType = "success";
                     }
                     else
                     {
                         labelText = requirementResult.GroupRequirement.GroupRequirementType.NegativeLabel;
+                        labelType = "danger";
+                    }
+
+                    if ( requirementResult.WarningIncluded )
+                    {
+                        labelText = requirementResult.GroupRequirement.GroupRequirementType.WarningLabel;
+                        labelType = "warning";
                     }
 
                     if ( string.IsNullOrEmpty( labelText ) )
@@ -498,7 +525,7 @@ namespace RockWeb.Blocks.Groups
                         @"<span class='label label-{1}'>{0}</span>
                         ",
                         labelText,
-                        meets ? "success" : "danger" );
+                        labelType );
                 }
             }
 

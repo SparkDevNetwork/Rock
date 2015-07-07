@@ -165,7 +165,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.Activity;
+                return this.Activity != null ? this.Activity : base.ParentAuthority;
             }
         }
 

@@ -24,6 +24,7 @@
             <div class="panel-body container-fluid">
 
                 <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <Rock:NotificationBox ID="nbValidationError" runat="server" NotificationBoxType="Danger" Heading="Please Correct the Following" Visible="false" />
 
                 <div id="pnlEditDetails" runat="server">
 
@@ -67,7 +68,7 @@
                                 <Rock:CurrencyBox ID="cbCost" runat="server" Label="Cost"
                                     Help="The cost per registrant." />
                                 <Rock:CurrencyBox ID="cbMinimumInitialPayment" runat="server" Label="Minimum Initial Payment"
-                                    Help="The minimum amount required per registrant." />
+                                    Help="The minimum amount required per registrant. Leave value blank if full amount is required." />
                                 <Rock:FinancialGatewayPicker ID="fgpFinancialGateway" runat="server" Label="Financial Gateway"
                                     Help="The financial gateway to use for processing registration payments." />
                             </div>
@@ -105,7 +106,7 @@
                                 <Rock:RockBoundField DataField="Name" HeaderText="Fee" />
                                 <Rock:EnumField DataField="FeeType" HeaderText="Options" />
                                 <Rock:RockBoundField DataField="Cost" HeaderText="Cost" />
-                                <Rock:BoolField DataField="AllowMultiple" HeaderText="Allow Multiple" />
+                                <Rock:BoolField DataField="AllowMultiple" HeaderText="Enable Quantity" />
                                 <Rock:BoolField DataField="DiscountApplies" HeaderText="Discount Applies" />
                                 <Rock:EditField OnClick="gFees_Edit" />
                                 <Rock:DeleteField OnClick="gFees_Delete" />
@@ -267,7 +268,7 @@
                 <Rock:RockRadioButtonList ID="rblFeeType" runat="server" Label="Options" ValidationGroup="Fee" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="rblFeeType_SelectedIndexChanged" />
                 <Rock:CurrencyBox ID="cCost" runat="server" Label="Cost" ValidationGroup="Fee" />
                 <Rock:KeyValueList ID="kvlMultipleFees" runat="server" Label="Costs" ValidationGroup="Fee" KeyPrompt="Option" ValuePrompt="Cost" />
-                <Rock:RockCheckBox ID="cbAllowMultiple" runat="server" Label="Allow Multiple" ValidationGroup="Fee" Text="Yes"
+                <Rock:RockCheckBox ID="cbAllowMultiple" runat="server" Label="Enable Quantity" ValidationGroup="Fee" Text="Yes"
                     Help="Should registrants be able to select more than one of this item?" />
                 <Rock:RockCheckBox ID="cbDiscountApplies" runat="server" Label="Discount Applies" ValidationGroup="Fee" Text="Yes"
                     Help="Should discounts be applied to this fee?" />

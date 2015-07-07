@@ -4135,6 +4135,119 @@ iframe.email-body {
 /*
     Used to manage styles for specific blocks.
 
+    1. Calendar - Styles for the calendar blocks
+    2. 
+
+*/
+.calendar {
+  padding: 0 10px 10px 10px;
+  display: inline-block;
+  border: 1px solid #ecf0f1;
+  border-radius: 4px;
+  width: 100%;
+}
+.calendar-month {
+  border: none;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.calendar-month a {
+  text-decoration: none;
+  color: #2c3e50 !important;
+}
+.calendar-month th {
+  text-align: center;
+}
+.calendar-month td {
+  color: #2c3e50 !important;
+}
+.calendar-month table.calendar-title td {
+  padding: 10px 5px;
+}
+.calendar-month td.calendar-day {
+  padding: 5px;
+}
+.calendar-month table.calendar-title,
+.calendar-month table.calendar-title a {
+  font-weight: 600;
+}
+.calendar-month .calendar-today {
+  border-radius: 4px;
+}
+.calendar-month .calendar-today,
+.calendar-month .calendar-selecteditem {
+  background-color: #3498db !important;
+  color: #ffffff !important;
+  border-radius: 0;
+}
+.calendar-month .calendar-selecteditem:first-child {
+  border-radius: 4px 0 0 4px;
+}
+.calendar-month .calendar-selecteditem:last-child {
+  border-radius: 0 4px 4px 0;
+}
+.calendar-month .calendar-selected {
+  background-color: #3498db !important;
+  color: #ffffff !important;
+}
+.calendar-month .calendar-selected a {
+  color: #ffffff !important;
+}
+.calendar-month .calendar-last-month a {
+  opacity: .2;
+}
+/*
+    
+
+    table.calendar th.calendar-day-header {
+        text-align: center;
+        color: #6a6a6a !important;
+    }
+
+    
+    table.calendar td.calendar-last-month,
+    table.calendar td.calendar-day {
+        padding: 5px;
+    }
+    
+        table.calendar td.calendar-last-month a {
+            color: #dfdfdf !important;
+            font-size: 12px;
+        }
+        
+        table.calendar td.calendar-day a,
+        table.calendar td.calendar-today a,
+        table.calendar td.calendar-selected a {
+            font-size: 14px;
+            color: #6a6a6a;
+        }
+
+        table.calendar td.calendar-today {  
+            background-color: #FCF8E3!important; 
+        }
+
+        table.calendar td.calendar-today a {
+            color:#c09853 !important;
+            font-weight:bold;
+        }
+
+        table.calendar td.calendar-today a:after {
+            content:"TODAY"; 
+            color:#000; 
+            font-size:0.5em;
+            pointer-events:none; 
+            width:100%; 
+            float:left;
+        }
+
+        table.calendar td.calendar-today a:hover {  
+            background-color: #fcf8e3;  
+        }
+
+    */
+/*
+    Used to manage styles for specific blocks.
+
     1. Error Page 
     2. Blank Page
     3. Exception Page

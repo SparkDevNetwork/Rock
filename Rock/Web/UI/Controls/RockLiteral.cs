@@ -72,6 +72,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();  // label
 
                 writer.AddAttribute("class", "form-control-static");
+                writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
                 writer.RenderBeginTag( HtmlTextWriterTag.P );
                 base.RenderControl( writer );
                 writer.RenderEndTag();

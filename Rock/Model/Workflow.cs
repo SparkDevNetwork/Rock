@@ -234,7 +234,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.WorkflowType;
+                return this.WorkflowType != null ? this.WorkflowType : base.ParentAuthority;
             }
         }
 
