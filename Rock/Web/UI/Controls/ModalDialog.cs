@@ -34,9 +34,9 @@ namespace Rock.Web.UI.Controls
         private Panel _headerPanel;
         private HtmlGenericControl _closeLink;
         private HtmlGenericControl _titleH3;
-        private LiteralControl _title;
+        private Literal _title;
         private HtmlGenericControl _subtitleSmall;
-        private LiteralControl _subtitle;
+        private Literal _subtitle;
 
         private Panel _bodyPanel;
         private Panel _contentPanel;
@@ -279,14 +279,14 @@ namespace Rock.Web.UI.Controls
             _headerPanel.Controls.Add( _titleH3 );
 
             // _title control for public this.Title
-            _title = new LiteralControl();
+            _title = new Literal();
             _title.Text = string.Empty;
             _titleH3.Controls.Add( _title );
 
             // _subtitle controls for public this.Subtitle
             _subtitleSmall = new HtmlGenericControl( "small" );
             _headerPanel.Controls.Add( _subtitleSmall );
-            _subtitle = new LiteralControl();
+            _subtitle = new Literal();
             _subtitle.Text = string.Empty;
             _subtitleSmall.Controls.Add( _subtitle );
 
