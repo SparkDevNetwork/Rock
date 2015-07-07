@@ -83,6 +83,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the title.
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
         public string Title
         {
             get
@@ -97,6 +103,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="RegistrantEditor"/> is expanded.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if expanded; otherwise, <c>false</c>.
+        /// </value>
         public bool Expanded
         {
             get
@@ -237,11 +249,18 @@ namespace Rock.Web.UI.Controls
 
         #region Control Methods
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegistrantEditor"/> class.
+        /// </summary>
         public RegistrantEditor()
         {
             Forms = new List<RegistrantEditorForm>();
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -383,6 +402,10 @@ $('.js-stop-immediate-propagation').click(function (event) {
             }
         }
 
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
             if ( this.Visible )
@@ -491,6 +514,10 @@ $('.js-stop-immediate-propagation').click(function (event) {
             writer.RenderEndTag();
         }
 
+        /// <summary>
+        /// Sets the forms.
+        /// </summary>
+        /// <param name="template">The template.</param>
         public void SetForms( RegistrationTemplate template )
         {
             Forms = new List<RegistrantEditorForm>();
@@ -768,18 +795,48 @@ $('.js-stop-immediate-propagation').click(function (event) {
 
     #region Helper Classes
 
+    /// <summary>
+    /// 
+    /// </summary>
     [Serializable]
     public class RegistrantEditorForm
     {
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
         public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the fields.
+        /// </summary>
+        /// <value>
+        /// The fields.
+        /// </value>
         public List<RegistrantEditorFormField> Fields { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegistrantEditorForm"/> class.
+        /// </summary>
         public RegistrantEditorForm()
         {
             Fields = new List<RegistrantEditorFormField>();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegistrantEditorForm"/> class.
+        /// </summary>
+        /// <param name="form">The form.</param>
         public RegistrantEditorForm( RegistrationTemplateForm form ) : this()
         {
             Name = form.Name;
@@ -789,19 +846,56 @@ $('.js-stop-immediate-propagation').click(function (event) {
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     [Serializable]
     public class RegistrantEditorFormField
     {
+        /// <summary>
+        /// Gets or sets the field source.
+        /// </summary>
+        /// <value>
+        /// The field source.
+        /// </value>
         public RegistrationFieldSource FieldSource { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the person field.
+        /// </summary>
+        /// <value>
+        /// The type of the person field.
+        /// </value>
         public RegistrationPersonFieldType PersonFieldType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute identifier.
+        /// </summary>
+        /// <value>
+        /// The attribute identifier.
+        /// </value>
         public int? AttributeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
         public int Order { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegistrantEditorFormField"/> class.
+        /// </summary>
         public RegistrantEditorFormField()
         {
 
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegistrantEditorFormField"/> class.
+        /// </summary>
+        /// <param name="field">The field.</param>
         public RegistrantEditorFormField( RegistrationTemplateFormField field ) : this()
         {
             FieldSource = field.FieldSource;

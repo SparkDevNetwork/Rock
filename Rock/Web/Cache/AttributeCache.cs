@@ -322,6 +322,7 @@ namespace Rock.Web.Cache
         /// <param name="setId">if set to <c>true</c> [set id].</param>
         /// <param name="required">The required.</param>
         /// <param name="labelText">The label text.</param>
+        /// <param name="helpText">The help text.</param>
         /// <returns></returns>
         public Control AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null, string labelText = null, string helpText = null )
         {

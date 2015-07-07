@@ -27,6 +27,9 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class GroupTypesPicker : RockCheckBoxList
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupTypesPicker"/> class.
+        /// </summary>
         public GroupTypesPicker()
             : base()
         {
