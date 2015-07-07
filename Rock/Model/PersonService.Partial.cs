@@ -101,11 +101,11 @@ namespace Rock.Model
             var qry = base.Queryable( includes );
             if ( !includeBusinesses )
             {
-                var definedValuePersonType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() );
-                if ( definedValuePersonType != null )
+                var definedValueBusinessType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
+                if ( definedValueBusinessType != null )
                 {
-                    int recordTypePerson = definedValuePersonType.Id;
-                    qry = qry.Where( p => p.RecordTypeValueId == recordTypePerson );
+                    int recordTypeBusiness = definedValueBusinessType.Id;
+                    qry = qry.Where( p => p.RecordTypeValueId != recordTypeBusiness );
                 }
             }
 
