@@ -432,7 +432,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.BinaryFileType;
+                return this.BinaryFileType != null ? this.BinaryFileType : base.ParentAuthority;
             }
         }
 

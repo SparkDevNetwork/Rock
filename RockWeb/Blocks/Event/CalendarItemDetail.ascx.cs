@@ -458,6 +458,18 @@ namespace RockWeb.Blocks.Event
 
         #region Control Events
 
+        /// <summary>
+        /// Handles the Click event of the lbCalendarDetail control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void lbCalendarDetail_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "EventCalendarId", PageParameter( "EventCalendarId" ) );
+            NavigateToParentPage( qryParams );
+        }
+
         #region Audience Grid/Dialog Events
 
         /// <summary>
@@ -873,7 +885,6 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion
-
 
 }
 }

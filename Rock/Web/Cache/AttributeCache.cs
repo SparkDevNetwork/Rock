@@ -322,12 +322,18 @@ namespace Rock.Web.Cache
         /// <param name="setId">if set to <c>true</c> [set id].</param>
         /// <param name="required">The required.</param>
         /// <param name="labelText">The label text.</param>
+        /// <param name="helpText">The help text.</param>
         /// <returns></returns>
-        public Control AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null, string labelText = null )
+        public Control AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null, string labelText = null, string helpText = null )
         {
             if ( labelText == null )
             {
                 labelText = this.Name;
+            }
+
+            if ( helpText == null )
+            {
+                helpText = this.Description;
             }
 
             Control attributeControl = this.FieldType.Field.EditControl( QualifierValues, setId ? string.Format( "attribute_field_{0}", this.Id ) : string.Empty );
@@ -345,14 +351,14 @@ namespace Rock.Web.Cache
                     controls.Add( attributeControl );
 
                     rockControl.Label = labelText;
-                    rockControl.Help = this.Description;
+                    rockControl.Help = helpText;
                     rockControl.Required = required.HasValue ? required.Value : this.IsRequired;
                     rockControl.ValidationGroup = validationGroup;
                 }
                 else
                 {
                     bool renderLabel = !string.IsNullOrEmpty( labelText );
-                    bool renderHelp = !string.IsNullOrWhiteSpace( Description );
+                    bool renderHelp = !string.IsNullOrWhiteSpace( helpText );
 
                     if ( renderLabel || renderHelp )
                     {
@@ -383,7 +389,7 @@ namespace Rock.Web.Cache
                             var helpBlock = new Rock.Web.UI.Controls.HelpBlock();
                             div.Controls.Add( helpBlock );
                             helpBlock.ClientIDMode = ClientIDMode.AutoID;
-                            helpBlock.Text = this.Description;
+                            helpBlock.Text = helpText;
                         }
 
                         div.Controls.Add( attributeControl );

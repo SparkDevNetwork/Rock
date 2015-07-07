@@ -39,7 +39,7 @@ namespace Rock.Model
         /// <value>
         /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EventItem"/> that the EventItemCampus is associated with.
         /// </value>
-        [DataMember( IsRequired = true )]
+        [DataMember]
         public int? EventItemCampusId { get; set; }
 
         /// <summary>

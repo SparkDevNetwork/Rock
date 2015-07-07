@@ -155,7 +155,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.Category;
+                return this.Category != null ? this.Category : base.ParentAuthority;
             }
         }
 

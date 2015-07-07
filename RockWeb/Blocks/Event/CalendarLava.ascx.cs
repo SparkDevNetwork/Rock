@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.Event
             }
             else if ( day == calEventCalendar.SelectedDate )
             {
-                e.Cell.AddCssClass( "alert-success" );
+                e.Cell.AddCssClass( "calendar-selecteditem" );
             }
             if ( _eventDates != null && _eventDates.Any( d => d.Date.Equals( day.Date ) ) )
             {
@@ -179,14 +179,14 @@ namespace RockWeb.Blocks.Event
                 var weekStartDay = GetAttributeValue( "StartofWeekDay" ).AsType<DayOfWeek>();
                 if ( day.StartOfWeek( weekStartDay ) == calEventCalendar.SelectedDate.StartOfWeek( weekStartDay ) )
                 {
-                    e.Cell.AddCssClass( "alert-success" );
+                    e.Cell.AddCssClass( "calendar-selecteditem" );
                 }
             }
             if ( CurrentViewMode == "Month" )
             {
                 if ( day.Month == calEventCalendar.SelectedDate.Month )
                 {
-                    e.Cell.AddCssClass( "alert-success" );
+                    e.Cell.AddCssClass( "calendar-selecteditem" );
                 }
             }
 

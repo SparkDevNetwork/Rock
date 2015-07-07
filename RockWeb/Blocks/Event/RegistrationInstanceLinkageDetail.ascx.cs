@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Event
                     service.Add( linkage );
                 }
 
-                linkage.EventItemCampusId = hfLinkageEventItemCampusId.ValueAsInt();
+                linkage.EventItemCampusId = hfLinkageEventItemCampusId.Value.AsIntegerOrNull();
                 linkage.GroupId = gpLinkageGroup.SelectedValueAsInt();
                 linkage.PublicName = tbLinkagePublicName.Text;
                 linkage.UrlSlug = tbLinkageUrlSlug.Text;

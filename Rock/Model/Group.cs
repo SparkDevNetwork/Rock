@@ -387,7 +387,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.ParentGroup;
+                return this.ParentGroup != null ? this.ParentGroup : base.ParentAuthority;
             }
         }
 
@@ -475,8 +475,8 @@ namespace Rock.Model
             var result = new List<PersonGroupRequirementStatus>();
             foreach ( var groupRequirement in this.GroupRequirements.OrderBy( a => a.GroupRequirementType.Name ) )
             {
-                var meetsRequirement = groupRequirement.PersonMeetsGroupRequirement( personId, groupRoleId );
-                result.Add( new PersonGroupRequirementStatus { PersonId = personId, GroupRequirement = groupRequirement, MeetsGroupRequirement = meetsRequirement } );
+                var requirementStatus = groupRequirement.PersonMeetsGroupRequirement( personId, groupRoleId );
+                result.Add( requirementStatus );
             }
 
             return result;
