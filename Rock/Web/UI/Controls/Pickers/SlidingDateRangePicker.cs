@@ -399,6 +399,16 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            // set display on render (vs waiting for the javascript to do it after the page is loaded)
+            bool isLast = _ddlLastCurrent.SelectedValue == "0";
+            bool isCurrent = _ddlLastCurrent.SelectedValue == "1";
+            bool isDateRange = _ddlLastCurrent.SelectedValue == "2";
+            bool isPrevious = _ddlLastCurrent.SelectedValue == "4";
+            _nbNumber.Style[HtmlTextWriterStyle.Display] = ( isLast|| isPrevious ) ? "block" : "none";
+            _ddlTimeUnitTypeSingular.Style[HtmlTextWriterStyle.Display] = ( isCurrent ) ? "block" : "none";
+            _ddlTimeUnitTypePlural.Style[HtmlTextWriterStyle.Display] = ( isLast || isPrevious ) ? "block" : "none";
+            _drpDateRange.Style[HtmlTextWriterStyle.Display] = ( isDateRange ) ? "block" : "none";
+            
             bool needsAutoPostBack = SelectedDateRangeChanged != null;
             _ddlLastCurrent.AutoPostBack = needsAutoPostBack;
             _ddlTimeUnitTypeSingular.AutoPostBack = needsAutoPostBack;
