@@ -507,6 +507,7 @@ namespace RockWeb.Blocks.Groups
             } );
 
             GroupTypeCache.Flush( groupType.Id );
+            AttributeCache.FlushEntityAttributes();
 
             if ( triggersUpdated )
             {
@@ -1158,8 +1159,6 @@ namespace RockWeb.Blocks.Groups
             {
                 Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
-
-            AttributeCache.FlushEntityAttributes();
         }
 
         #endregion
