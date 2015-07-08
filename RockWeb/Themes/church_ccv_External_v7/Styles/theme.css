@@ -5877,6 +5877,11 @@ h6,
 .bigblock-stacking {
   margin-bottom: 0;
 }
+.bigblock-lg {
+  padding-top: 60px;
+  padding-bottom: 60px;
+  margin-bottom: 60px;
+}
 .bigblock-flexbg {
   background-size: cover;
   background-position: center center;
