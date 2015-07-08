@@ -66,6 +66,11 @@ namespace Rock.Reporting.DataFilter
                 ddlEntityField.RenderControl( writer );
                 writer.RenderEndTag();
             }
+            else
+            {
+                // render it as hidden (we'll need the postback value)
+                ddlEntityField.RenderControl( writer );
+            }
 
             writer.AddAttribute( "class", entityFieldPickerIsHidden ? "col-md-12" : "col-md-9" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
