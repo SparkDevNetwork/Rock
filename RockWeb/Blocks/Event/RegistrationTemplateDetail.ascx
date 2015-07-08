@@ -136,17 +136,19 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbRegistrationTerm" runat="server" Label="Registration Term" Placeholder="Registration" />
-                                <Rock:RockTextBox ID="tbRegistrantTerm" runat="server" Label="Registrant Term" Placeholder="Registrant" />
+                                <Rock:RockTextBox ID="tbRegistrantTerm" runat="server" Label="Registrant Term" Placeholder="Person" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbFeeTerm" runat="server" Label="Fee Term" Placeholder="Fee" />
-                                <Rock:RockTextBox ID="tbDiscountCodeTerm" runat="server" Label="Discount Code Term" Placeholder="Discount" />
+                                <Rock:RockTextBox ID="tbFeeTerm" runat="server" Label="Fee Term" Placeholder="Additional Options" />
+                                <Rock:RockTextBox ID="tbDiscountCodeTerm" runat="server" Label="Discount Code Term" Placeholder="Discount Code" />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:RockTextBox ID="tbSuccessTitle" runat="server" Label="Success Title" />
-                                <Rock:RockTextBox ID="tbSuccessText" runat="server" Label="Success Text" TextMode="MultiLine" Rows="4" />
+                                <Rock:RockTextBox ID="tbSuccessTitle" runat="server" Label="Success Title" 
+                                    Help="The heading to display to user after succesfully completing a registration of this type." />
+                                <Rock:RockTextBox ID="tbSuccessText" runat="server" Label="Success Text" TextMode="MultiLine" Rows="4" 
+                                    Help="The text to display to user after succesfully completing a registration of this type. If there are costs or fees for this registration, a summary of those will be displayed after this text." />
                             </div>
                         </div>
                     </Rock:PanelWidget>
@@ -255,8 +257,8 @@
                     <asp:ListItem Text="Percentage" Value="Percentage" />
                     <asp:ListItem Text="Amount" Value="Amount" />
                 </Rock:RockRadioButtonList>
-                <Rock:NumberBox ID="nbDiscountPercentage" runat="server" Label="Discount Percentage" NumberType="Integer" ValidationGroup="Discount"  />
-                <Rock:CurrencyBox ID="cbDiscountAmount" runat="server" Label="Discount Amount" ValidationGroup="Discount" />
+                <Rock:NumberBox ID="nbDiscountPercentage" runat="server" AppendText="%" CssClass="input-width-md" Label="Discount Percentage" NumberType="Integer" ValidationGroup="Discount"  />
+                <Rock:CurrencyBox ID="cbDiscountAmount" runat="server" CssClass="input-width-md" Label="Discount Amount" ValidationGroup="Discount" />
             </Content>
         </Rock:ModalDialog>
 

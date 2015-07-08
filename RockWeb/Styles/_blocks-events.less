@@ -2,7 +2,7 @@
     Used to manage styles for specific blocks.
 
     1. Calendar - Styles for the calendar blocks
-    2. 
+    2. Event Entry - The event registration entry screen
 
 */
 
@@ -81,6 +81,40 @@
         opacity: .2;
     }
 }
+
+
+// 2. Event Entry
+// -------------------------
+
+.registrationentry-intro {
+    
+    text-align: center;
+    
+    h1 {
+        margin-top: 24px;
+        margin-bottom: 48px;
+    }
+
+    .input-group {
+        margin: 0 auto 48px auto;
+    }
+}
+
+.registrationentry-summary {
+    .fee-table {
+        > .row {
+            padding: 8px 0;
+        }
+    }
+    
+    .row.fee-header {
+        border-bottom: 1px solid lighten(@text-color, 60%);
+        padding-bottom: 2px;
+        margin-bottom: 6px;
+    }
+}
+
+
 /*
     
 

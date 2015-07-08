@@ -57,7 +57,7 @@
                                              
                                                  <p>
                                                     <%# string.Format(Eval("Location").ToString().Length > 0 ? "Location: {0}" : "", Eval("Location").ToString())  %>
-                                                     <%# string.Format(Eval("StartDate").ToString().Length > 0 ? "Start Time: {0}" : "", Eval("StartDate", "{0:h:mm tt}"))  %>
+                                                    <%# string.Format(Eval("StartDate").ToString().Length > 0 ? "Start Time: {0}" : "", Eval("StartDate", "{0:h:mm tt}"))  %>
                                                  </p>
                                             </div>
                                             <div class="col-md-4 col-sm-8">
