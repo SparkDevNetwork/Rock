@@ -109,7 +109,6 @@ namespace RockWeb.Blocks.Event
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -123,6 +122,7 @@ namespace RockWeb.Blocks.Event
         {
             base.OnLoad( e );
             calEventCalendar.SelectedDate = SelectedDate.Value;
+            calEventCalendar.FirstDayOfWeek = (FirstDayOfWeek)GetAttributeValue( "StartofWeekDay" ).AsInteger();
             if ( !Page.IsPostBack )
             {
                 CheckValidConfiguration();
@@ -168,15 +168,17 @@ namespace RockWeb.Blocks.Event
             {
                 e.Cell.AddCssClass( "calendar-selecteditem" );
             }
-            if ( _eventDates != null && _eventDates.Any( d => d.Date.Equals( day.Date ) ) )
+            if ( _eventDates == null )
+            {
+                GrabData();
+            }
+            if ( _eventDates.Any( d => d.Date.Equals( day.Date ) ) )
             {
                 e.Cell.Style.Add( "font-weight", "bold" );
-                e.Cell.AddCssClass( "alert-info" );
             }
-
             if ( CurrentViewMode == "Week" )
             {
-                var weekStartDay = GetAttributeValue( "StartofWeekDay" ).AsType<DayOfWeek>();
+                var weekStartDay = (DayOfWeek)GetAttributeValue( "StartofWeekDay" ).AsInteger();
                 if ( day.StartOfWeek( weekStartDay ) == calEventCalendar.SelectedDate.StartOfWeek( weekStartDay ) )
                 {
                     e.Cell.AddCssClass( "calendar-selecteditem" );
@@ -190,6 +192,72 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
+        }
+
+        protected void calEventCalendar_VisibleMonthChanged( object sender, MonthChangedEventArgs e )
+        {
+            if ( e.NewDate.Year > e.PreviousDate.Year )
+            {
+                calEventCalendar.SelectedDate = calEventCalendar.SelectedDate.AddMonths( 1 );
+            }
+            else if ( e.NewDate.Year < e.PreviousDate.Year )
+            {
+                calEventCalendar.SelectedDate = calEventCalendar.SelectedDate.AddMonths( -1 );
+            }
+            else if ( e.NewDate.Month > e.PreviousDate.Month )
+            {
+                try
+                {
+                    calEventCalendar.SelectedDate = calEventCalendar.SelectedDate.AddMonths( 1 );
+                }
+                catch
+                {
+                    try
+                    {
+                        calEventCalendar.SelectedDate = calEventCalendar.SelectedDate.AddDays( -1 ).AddMonths( 1 );
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            calEventCalendar.SelectedDate = calEventCalendar.SelectedDate.AddDays( -2 ).AddMonths( 1 );
+                        }
+                        catch
+                        {
+                            calEventCalendar.SelectedDate = calEventCalendar.SelectedDate.AddDays( -3 ).AddMonths( 1 );
+                        }
+                    }
+                }
+            }
+            else
+            {
+                try
+                {
+                    calEventCalendar.SelectedDate = calEventCalendar.SelectedDate.AddMonths( -1 );
+                }
+                catch
+                {
+                    try
+                    {
+                        calEventCalendar.SelectedDate = calEventCalendar.SelectedDate.AddDays( -1 ).AddMonths( -1 );
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            calEventCalendar.SelectedDate = calEventCalendar.SelectedDate.AddDays( -2 ).AddMonths( -1 );
+                        }
+                        catch
+                        {
+                            calEventCalendar.SelectedDate = calEventCalendar.SelectedDate.AddDays( -3 ).AddMonths( -1 );
+                        }
+                    }
+                }
+            }
+            SelectedDate = calEventCalendar.SelectedDate;
+            drpDateRange.UpperValue = null;
+            drpDateRange.LowerValue = null;
+            DisplayCalendarItemList();
         }
 
         protected void cblCampus_SelectedIndexChanged( object sender, EventArgs e )
@@ -228,7 +296,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void CheckValidConfiguration()
         {
-            if ( !GetAttributeValue( string.Format( "Show{0}Filter", GetAttributeValue( "DefaultViewOption" ) ) ).AsBoolean() )
+            if ( !GetAttributeValue( string.Format( "Show{0}View", GetAttributeValue( "DefaultViewOption" ) ) ).AsBoolean() )
             {
                 maWarning.Show( "The default view option is one that is not enabled.", ModalAlertType.Warning );
             }
@@ -257,6 +325,33 @@ namespace RockWeb.Blocks.Event
                 btnWeek.Visible = false;
                 btnMonth.Visible = false;
             }
+            var events = GrabData();
+
+            var mergeFields = new Dictionary<string, object>();
+            mergeFields.Add( "Events", events );
+            mergeFields.Add( "CurrentPerson", CurrentPerson );
+            mergeFields.Add( "TimeFrame", CurrentViewMode );
+
+            lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
+
+            if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() )
+            {
+                string pageTitle = "Calendar";
+                RockPage.PageTitle = pageTitle;
+                RockPage.BrowserTitle = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
+                RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
+            }
+
+            // show debug info
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+            {
+                lDebug.Visible = true;
+                lDebug.Text = mergeFields.lavaDebugInfo();
+            }
+        }
+
+        private List<EventSummary> GrabData()
+        {
             // get package id
             int eventCalendarId = -1;
 
@@ -299,8 +394,8 @@ namespace RockWeb.Blocks.Event
             var items = qry.ToList();
 
             //Daterange 
-            DateTime beginDateTime = drpDateRange.LowerValue ?? RockDateTime.Today.AddMonths( -1 );
-            DateTime endDateTime = drpDateRange.UpperValue ?? RockDateTime.Today.AddMonths( 1 );
+            DateTime beginDateTime = drpDateRange.LowerValue ?? calEventCalendar.SelectedDate.AddMonths( -1 );
+            DateTime endDateTime = drpDateRange.UpperValue ?? calEventCalendar.SelectedDate.AddMonths( 1 );
 
             var itemsWithDates = items
                 .Select( i => new
@@ -310,6 +405,19 @@ namespace RockWeb.Blocks.Event
                 } )
                 .Where( i => i.Dates.Any() )
                 .ToList();
+
+            if ( _eventDates == null )
+            {
+                _eventDates = new List<DateTime>();
+            }
+            foreach ( var itemWithDates in itemsWithDates )
+            {
+                foreach ( var datetime in itemWithDates.Dates )
+                {
+                    _eventDates.Add( datetime.Date );
+                }
+            }
+            _eventDates = _eventDates.Distinct().ToList();
 
             //Calendar filter
             if ( CurrentViewMode == "Day" )
@@ -324,7 +432,7 @@ namespace RockWeb.Blocks.Event
             {
                 itemsWithDates = itemsWithDates
                     .Where( i => i.Dates
-                        .Any( d => d.Date.StartOfWeek( DayOfWeek.Sunday ).Equals( calEventCalendar.SelectedDate.StartOfWeek( DayOfWeek.Sunday ) ) ) )
+                        .Any( d => d.Date.StartOfWeek( (DayOfWeek)GetAttributeValue( "StartofWeekDay" ).AsInteger() ).Equals( calEventCalendar.SelectedDate.StartOfWeek( (DayOfWeek)GetAttributeValue( "StartofWeekDay" ).AsInteger() ) ) ) )
                     .ToList();
             }
             if ( CurrentViewMode == "Month" )
@@ -361,34 +469,11 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            var _eventDates = eventSummaries.Select( e => e.DateTime.Date ).Distinct().ToList();
-
             var events = eventSummaries
                 .OrderBy( e => e.DateTime )
                 .ThenBy( e => e.Event.Name )
                 .ToList();
-
-            var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "Events", events );
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
-            mergeFields.Add( "TimeFrame", CurrentViewMode );
-
-            lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
-
-            if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() )
-            {
-                string pageTitle = "Calendar";
-                RockPage.PageTitle = pageTitle;
-                RockPage.BrowserTitle = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
-                RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
-            }
-
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
+            return events;
         }
 
         [DotLiquid.LiquidType( "Event", "DateTime", "Date", "Time", "Location", "Description", "DetailPage" )]
@@ -404,5 +489,6 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion
+
     }
 }
