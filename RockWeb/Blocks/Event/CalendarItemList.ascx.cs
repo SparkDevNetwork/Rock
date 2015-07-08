@@ -658,8 +658,8 @@ namespace RockWeb.Blocks.Event
 
                 gEventCalendarItems.DataSource = calendarItemsWithDates.Select( i => new
                 {
-                    i.EventCalendarItem.Id,
-                    i.EventCalendarItem.Guid,
+                    i.EventCalendarItem.EventItem.Id,
+                    i.EventCalendarItem.EventItem.Guid,
                     Date = i.NextStartDateTime.HasValue ? i.NextStartDateTime.Value.ToShortDateString() : "N/A",
                     Name = i.EventCalendarItem.EventItem.Name,
                     Campus = i.EventCalendarItem.EventItem.EventItemCampuses.ToList().Select( c => c.Campus != null ? c.Campus.Name : "All Campuses" ).ToList().AsDelimited( "<br>" ),
