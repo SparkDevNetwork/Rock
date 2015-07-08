@@ -51,10 +51,16 @@
             <div class="row">
                 <div class="col-md-6">
                     <Rock:RockTextBox ID="tbYourFirstName" runat="server" Label="First Name" />
+                </div>
+                <div class="col-md-6">
+                    <Rock:RockTextBox ID="tbYourLastName" runat="server" Label="Last Name" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
                     <Rock:EmailBox ID="tbConfirmationEmail" runat="server" Label="Send Confirmation Emails To" />
                 </div>
                 <div class="col-md-6">
-                    <Rock:RockTextBox ID="tbYourLastName" runat="server" Label="First Name" />
                 </div>
             </div>
         </div>
