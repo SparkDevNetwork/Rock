@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -56,7 +57,7 @@ namespace RockWeb.Plugins.church_ccv.Era
 
             var btnUpdate = new LinkButton();
             btnUpdate.ID = "ddlAction";
-            btnUpdate.CssClass = "btn btn-action pull-left";
+            btnUpdate.CssClass = "btn btn-primary pull-left";
             btnUpdate.CausesValidation = false;
             btnUpdate.Text = "Update";
             btnUpdate.Click += btnUpdate_Click;
@@ -243,7 +244,7 @@ namespace RockWeb.Plugins.church_ccv.Era
             var joinFamilyNeighboorHood =
                 from f in datamartFamilyQry
                 join n in datamartNeighborhoodQry on f.NeighborhoodId equals n.NeighborhoodId into fn
-                from n in fn.DefaultIfEmpty()
+                from n in fn
                 select new
                 {
                     f.FamilyId,
@@ -254,6 +255,8 @@ namespace RockWeb.Plugins.church_ccv.Era
                     n.NeighborhoodPastorId,
                     n.NeighborhoodPastorName
                 };
+
+            joinFamilyNeighboorHood = joinFamilyNeighboorHood.Where( a => a.NeighborhoodPastorId.HasValue );
 
             var joinEraFamily = joinEra.Join(
                 joinFamilyNeighboorHood,
@@ -330,7 +333,7 @@ namespace RockWeb.Plugins.church_ccv.Era
                 joinQry = joinQry.OrderByDescending( o => o.LossDate ).ThenBy( o => o.HHPerson.FullName );
             }
 
-            gList.SetLinqDataSource( joinQry );
+            gList.SetLinqDataSource( joinQry.AsNoTracking() );
             gList.DataBind();
         }
 
