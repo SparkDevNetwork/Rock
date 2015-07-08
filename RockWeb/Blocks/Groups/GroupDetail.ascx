@@ -4,6 +4,21 @@
     function clearActiveDialog() {
         $('#<%=hfActiveDialog.ClientID %>').val('');
     }
+
+    Sys.Application.add_load( function () {
+        $('.js-follow-status').on("click", function () {
+            $(this).toggleClass('following');
+            
+            if ($(this).hasClass('following')){
+                $(this).attr("data-original-title", 'You are following this group.');
+            } else {
+                $(this).attr("data-original-title", 'Click to follow.');
+            }
+            
+        });
+
+        $('.js-follow-status').tooltip();
+    });
 </script>
 
 <asp:UpdatePanel ID="upnlGroupDetail" runat="server">
@@ -14,18 +29,20 @@
 
             <div class="panel panel-block">
 
-                <div class="panel-heading clearfix">
+                <div class="panel-heading panel-follow clearfix">
                     <h1 class="panel-title pull-left">
                         <asp:Literal ID="lGroupIconHtml" runat="server" />
                         <asp:Literal ID="lReadOnlyTitle" runat="server" />
                     </h1>
 
-                    <div class="panel-labels">
+                    <div class="panel-labels"> 
                         <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
                         <Rock:HighlightLabel ID="hlIsPrivate" runat="server" LabelType="Default" Text="Private" />
                         <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                         <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
                     </div>
+
+                    <div class="panel-follow-status js-follow-status" data-toggle="tooltip" data-placement="top" title="Click to Follow"></div>
                 </div>
                 
                 <div class="panel-body">
