@@ -7,12 +7,11 @@
 
     <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-    <Rock:NotificationBox ID="nbMain" runat="server" Visible="false" NotificationBoxType="Warning"
-        Heading="Sorry" Text="<p>The selected registration could not be found or is no longer active.</p>"></Rock:NotificationBox>
+    <Rock:NotificationBox ID="nbMain" runat="server" Visible="false"></Rock:NotificationBox>
 
     <asp:Panel ID="pnlHowMany" runat="server" Visible="false" CssClass="registrationentry-intro">
 
-        <h1>How many people will you be registering?</h1>
+        <h1>How many <asp:Literal ID="lRegistrantTerm" runat="server" /> will you be registering?</h1>
         <Rock:NumberUpDown ID="numHowMany" NumberDisplayCssClass="input-lg form-control input-width-xs" ButtonCssClass="btn btn-lg btn-default margin-l-sm" runat="server" CssClass="text-center" />
 
         <div class="actions">
@@ -32,7 +31,7 @@
         <asp:PlaceHolder ID="phRegistrantControls" runat="server" />
         
         <div id="divFees" runat="server" class="well registration-additional-options">
-            <h4>Additional Options</h4>
+            <h4><asp:Literal ID="lRegistrantFeeCaption" runat="server" /></h4>
             <asp:PlaceHolder ID="phFees" runat="server" />
         </div>
 
@@ -65,11 +64,11 @@
         <asp:Panel ID="pnlMoney" runat="server">
 
             <div class="well">
-                <h4>Summary of Fees</h4>
+                <h4>Summary of <asp:Literal ID="lSummaryFeeCaption" runat="server" /></h4>
                 
                 <Rock:NotificationBox ID="nbDiscountCode" runat="server" Visible="false" NotificationBoxType="Warning"></Rock:NotificationBox>
                 <div id="divDiscountCode" runat="server" class="form-group pull-right">
-                    <label class="control-label">Discount Code</label>
+                    <label class="control-label"><asp:Literal ID="lDiscountCodeLabel" runat="server" /></label>
                     <div class="input-group">
                         <asp:TextBox ID="tbDiscountCode" runat="server" CssClass="form-control input-width-md input-sm"></asp:TextBox>
                         <asp:LinkButton ID="lbDiscountApply" runat="server" CssClass="btn btn-default btn-sm margin-l-sm" Text="Apply" OnClick="lbDiscountApply_Click" CausesValidation="false"></asp:LinkButton>
@@ -179,9 +178,9 @@
 
     <asp:Panel ID="pnlSuccess" runat="server" Visible="false" >
         
-        <h1>Success</h1>
-        
-        <asp:PlaceHolder ID="phSuccessControls" runat="server" />
+        <h1><asp:Literal ID="lSuccessTitle" runat="server" /></h1>
+        <asp:Literal ID="lSuccess" runat="server" />
+        <asp:Literal ID="lSuccessDebug" runat="server" Visible="false" />
 
     </asp:Panel>
 

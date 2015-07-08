@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Event
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING, "", 1 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE, "", 2 )]
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Event Registration", "", 3 )]
-
+    [BooleanField( "Enable Debug", "Display the merge fields that are available for lava ( Success Page ).", false, "", 4 )]
     public partial class RegistrationEntry : RockBlock
     {
         #region Fields
@@ -91,6 +91,78 @@ namespace RockWeb.Blocks.Event
             get
             {
                 return RegistrationInstanceState != null ? RegistrationInstanceState.RegistrationTemplate : null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the registration term.
+        /// </summary>
+        /// <value>
+        /// The registration term.
+        /// </value>
+        private string RegistrationTerm
+        {
+            get
+            {
+                if ( RegistrationTemplate != null && !string.IsNullOrWhiteSpace( RegistrationTemplate.RegistrationTerm ) )
+                {
+                    return RegistrationTemplate.RegistrantTerm;
+                }
+                return "Registration";
+            }
+        }
+
+        /// <summary>
+        /// Gets the registrant term.
+        /// </summary>
+        /// <value>
+        /// The registrant term.
+        /// </value>
+        private string RegistrantTerm
+        {
+            get
+            {
+                if ( RegistrationTemplate != null && !string.IsNullOrWhiteSpace( RegistrationTemplate.RegistrantTerm ) )
+                {
+                    return RegistrationTemplate.RegistrantTerm;
+                }
+                return "Person";
+            }
+        }
+
+        /// <summary>
+        /// Gets the fee term.
+        /// </summary>
+        /// <value>
+        /// The fee term.
+        /// </value>
+        private string FeeTerm
+        {
+            get
+            {
+                if ( RegistrationTemplate != null && !string.IsNullOrWhiteSpace( RegistrationTemplate.FeeTerm ) )
+                {
+                    return RegistrationTemplate.FeeTerm;
+                }
+                return "Additional Option";
+            }
+        }
+
+        /// <summary>
+        /// Gets the discount code term.
+        /// </summary>
+        /// <value>
+        /// The discount code term.
+        /// </value>
+        private string DiscountCodeTerm
+        {
+            get
+            {
+                if ( RegistrationTemplate != null && !string.IsNullOrWhiteSpace( RegistrationTemplate.DiscountCodeTerm ) )
+                {
+                    return RegistrationTemplate.DiscountCodeTerm;
+                }
+                return "Discount Code";
             }
         }
 
@@ -237,12 +309,28 @@ namespace RockWeb.Blocks.Event
 
                 if ( RegistrationTemplate != null )
                 {
-                    // show the panel for asking how many registrants ( it may be skipped )
-                    ShowHowMany();
+                    // Check Login Requirement
+                    if ( RegistrationTemplate.LoginRequired && CurrentUser == null )
+                    {
+                        var site = RockPage.Site;
+                        if ( site.LoginPageId.HasValue )
+                        {
+                            site.RedirectToLoginPage( true );
+                        }
+                        else
+                        {
+                            System.Web.Security.FormsAuthentication.RedirectToLoginPage();
+                        }
+                    }
+                    else
+                    {
+                        // show the panel for asking how many registrants ( it may be skipped )
+                        ShowHowMany();
+                    }
                 }
                 else
                 {
-                    ShowWarning( "Sorry", "The selected registration could not be found or is no longer active." );
+                    ShowWarning( "Sorry", string.Format( "The selected {0} could not be found or is no longer active.", RegistrationTerm ) );
                 }
             }
             else
@@ -402,9 +490,10 @@ namespace RockWeb.Blocks.Event
         {
             if ( CurrentPanel == 2 )
             {
-                if ( SaveChanges() )
+                var registration = SaveChanges();
+                if ( registration != null )
                 {
-                    ShowSuccess();
+                    ShowSuccess( registration );
                 }
                 else
                 {
@@ -430,9 +519,10 @@ namespace RockWeb.Blocks.Event
             {
                 TransactionCode = string.Empty;
 
-                if ( SaveChanges() )
+                var registration = SaveChanges();
+                if ( registration != null )
                 {
-                    ShowSuccess();
+                    ShowSuccess( registration );
                 }
                 else
                 {
@@ -592,13 +682,14 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        private bool SaveChanges()
+        private Registration SaveChanges()
         {
-            bool result = false;
+            Registration registration = null;
 
             try
             {
-                if ( RegistrationState != null && RegistrationTemplate != null )
+
+                if ( RegistrationState != null && RegistrationState.Registrants.Any() && RegistrationTemplate != null )
                 {
                     using ( var rockContext = new RockContext() )
                     {
@@ -606,21 +697,19 @@ namespace RockWeb.Blocks.Event
                         {
                             if ( !RegistrationState.RegistrationId.HasValue )
                             {
-                                var registration = SaveRegistration( rockContext );
+                                bool hasPayment = RegistrationState.PaymentAmount > 0.0m;
+
+                                registration = SaveRegistration( rockContext, hasPayment );
                                 if ( registration != null )
                                 {
-                                    if ( RegistrationState.PaymentAmount > 0.0m )
+                                    if ( hasPayment )
                                     {
                                         string errorMessage = string.Empty;
-                                        result = ProcessPayment( rockContext, registration.Id, out errorMessage );
-                                        if ( !result )
+                                        if ( !ProcessPayment( rockContext, registration, out errorMessage ) )
                                         {
-                                            ShowError( "An Error Occurred Processing Your Registration", errorMessage );
+                                            registration = null;
+                                            ShowError( "An Error Occurred Processing Your " + RegistrationTerm, errorMessage );
                                         }
-                                    }
-                                    else
-                                    {
-                                        result = true;
                                     }
                                 }
                             }
@@ -631,10 +720,10 @@ namespace RockWeb.Blocks.Event
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
-                ShowError( "An Error Occurred Processing Your Registration", ex.Message );
+                ShowError( "An Error Occurred Processing Your " + RegistrationTerm, ex.Message );
             }
 
-            return result;
+            return registration;
         }
 
 
@@ -642,13 +731,30 @@ namespace RockWeb.Blocks.Event
         /// Saves the registration.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
+        /// <param name="hasPayment">if set to <c>true</c> [has payment].</param>
         /// <returns></returns>
-        private Registration SaveRegistration( RockContext rockContext )
+        private Registration SaveRegistration( RockContext rockContext, bool hasPayment )
         {
             var registrationService = new RegistrationService( rockContext );
             var registrantService = new RegistrationRegistrantService( rockContext );
             var personService = new PersonService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
+
+            // variables to keep track of the family that new people should be added to
+            int? singleFamilyId = null;
+            var multipleFamilyGroupIds = new Dictionary<Guid, int>();
+
+            var dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+            var dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            var adultRoleId = familyGroupType.Roles
+                .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
+            var childRoleId = familyGroupType.Roles
+                .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
 
             var registration = new Registration();
             registrationService.Add( registration );
@@ -679,6 +785,29 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
+            // If the registration includes a payment, make sure there's an actual person associated to registration
+            if ( hasPayment && !registration.PersonAliasId.HasValue )
+            {
+                // If a match was not found, create a new person
+                var person = new Person();
+                person.FirstName = registration.FirstName;
+                person.LastName = registration.LastName;
+                person.IsEmailActive = true;
+                person.Email = registration.ConfirmationEmail;
+                person.EmailPreference = EmailPreference.EmailAllowed;
+                person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                if ( dvcConnectionStatus != null )
+                {
+                    person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                }
+                if ( dvcRecordStatus != null )
+                {
+                    person.RecordStatusValueId = dvcRecordStatus.Id;
+                }
+
+                registration.PersonAliasId = SavePerson( rockContext, person, Guid.NewGuid(), null, null, adultRoleId, childRoleId, multipleFamilyGroupIds, singleFamilyId );
+            }
+
             // Save the registration ( so we can get an id )
             rockContext.SaveChanges();
 
@@ -689,26 +818,12 @@ namespace RockWeb.Blocks.Event
                 group = new GroupService( rockContext ).Get( GroupId.Value );
             }
 
-            var dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
-            var dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
-
-            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-            var adultRoleId = familyGroupType.Roles
-                .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) )
-                .Select( r => r.Id )
-                .FirstOrDefault();
-
-            var childRoleId = familyGroupType.Roles
-                .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) )
-                .Select( r => r.Id )
-                .FirstOrDefault();
-
-            // Dictionary to keep record of the family that each registrant should be added to
-            var familyGroupIds = new Dictionary<Guid, int>();
-
             // Get each registrant
             foreach ( var registrantInfo in RegistrationState.Registrants )
             {
+                var changes = new List<string>();
+                var familyChanges = new List<string>();
+
                 Person person = null;
 
                 // Try to find a matching person based on name and email address
@@ -740,191 +855,149 @@ namespace RockWeb.Blocks.Event
                     {
                         person.RecordStatusValueId = dvcRecordStatus.Id;
                     }
-
-                    int? campusId = null;
-                    Location location = null;
-
-                    // Set any of the template's person fields
-                    foreach ( var field in RegistrationTemplate.Forms
-                        .SelectMany( f => f.Fields
-                            .Where( t => t.FieldSource == RegistrationFieldSource.PersonField ) ) )
-                    {
-                        // Find the registrant's value
-                        var fieldValue = registrantInfo.FieldValues
-                            .Where( f => f.Key == field.Id )
-                            .Select( f => f.Value )
-                            .FirstOrDefault();
-
-
-                        if ( fieldValue != null )
-                        {
-                            switch ( field.PersonFieldType )
-                            {
-                                case RegistrationPersonFieldType.Campus:
-                                    {
-                                        if ( fieldValue != null )
-                                        {
-                                            campusId = fieldValue.ToString().AsIntegerOrNull();
-                                        } 
-                                        break;
-                                    }
-
-                                case RegistrationPersonFieldType.Address:
-                                    {
-                                        location = fieldValue.ToString().FromJsonOrNull<Location>();
-                                        break;
-                                    }
-
-                                case RegistrationPersonFieldType.Birthdate:
-                                    {
-                                        person.SetBirthDate( fieldValue as DateTime? );
-                                        break;
-                                    }
-
-                                case RegistrationPersonFieldType.Gender:
-                                    {
-                                        person.Gender = fieldValue.ToString().ConvertToEnumOrNull<Gender>() ?? Gender.Unknown;
-                                        break;
-                                    }
-
-                                case RegistrationPersonFieldType.MaritalStatus:
-                                    {
-                                        if ( fieldValue != null  )
-                                        {
-                                            person.MaritalStatusValueId = fieldValue.ToString().AsIntegerOrNull();
-                                        }
-                                        break;
-                                    }
-
-                                case RegistrationPersonFieldType.MobilePhone:
-                                    {
-                                        var phoneNumber = fieldValue.ToString().FromJsonOrNull<PhoneNumber>();
-                                        if ( phoneNumber != null )
-                                        {
-                                            var numberType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
-                                            if ( numberType != null )
-                                            {
-                                                var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );
-                                                if ( phone == null )
-                                                {
-                                                    phone = new PhoneNumber();
-                                                    person.PhoneNumbers.Add( phone );
-                                                    phone.NumberTypeValueId = numberType.Id;
-                                                }
-                                                phone.CountryCode = PhoneNumber.CleanNumber( phoneNumber.CountryCode );
-                                                phone.Number = PhoneNumber.CleanNumber( phoneNumber.Number );
-                                            }
-                                        }
-                                        break;
-                                    }
-
-                                case RegistrationPersonFieldType.HomePhone:
-                                    {
-                                        var phoneNumber = fieldValue.ToString().FromJsonOrNull<PhoneNumber>();
-                                        if ( phoneNumber != null )
-                                        {
-                                            var numberType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) );
-                                            if ( numberType != null )
-                                            {
-                                                var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );
-                                                if ( phone == null )
-                                                {
-                                                    phone = new PhoneNumber();
-                                                    person.PhoneNumbers.Add( phone );
-                                                    phone.NumberTypeValueId = numberType.Id;
-                                                }
-                                                phone.CountryCode = PhoneNumber.CleanNumber( phoneNumber.CountryCode );
-                                                phone.Number = PhoneNumber.CleanNumber( phoneNumber.Number );
-                                            }
-                                        }
-                                        break;
-                                    }
-
-                                case RegistrationPersonFieldType.WorkPhone:
-                                    {
-                                        var phoneNumber = fieldValue.ToString().FromJsonOrNull<PhoneNumber>();
-                                        if ( phoneNumber != null )
-                                        {
-                                            var numberType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) );
-                                            if ( numberType != null )
-                                            {
-                                                var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );
-                                                if ( phone == null )
-                                                {
-                                                    phone = new PhoneNumber();
-                                                    person.PhoneNumbers.Add( phone );
-                                                    phone.NumberTypeValueId = numberType.Id;
-                                                }
-                                                phone.CountryCode = PhoneNumber.CleanNumber( phoneNumber.CountryCode );
-                                                phone.Number = PhoneNumber.CleanNumber( phoneNumber.Number );
-                                            }
-                                        }
-                                        break;
-                                    }
-                            }
-                        }
-                    }
-
-                    // If we've created the family aready for this registrant, add them to it
-                    if ( familyGroupIds.ContainsKey( registrantInfo.FamilyGuid ) )
-                    {
-                        // Add person to existing family
-                        var age = person.Age;
-                        int familyRoleId = age.HasValue && age < 18 ? childRoleId : adultRoleId;
-                        PersonService.AddPersonToFamily( person, true, familyGroupIds[registrantInfo.FamilyGuid], familyRoleId, rockContext );
-                    }
-
-                    // otherwise create a new family
-                    else
-                    {
-                        // Create Person/Family
-                        var familyGroup = PersonService.SaveNewPerson( person, rockContext, campusId, false );
-                        if ( familyGroup != null )
-                        {
-                            familyGroupIds.Add( registrantInfo.FamilyGuid, familyGroup.Id );
-                            if ( location != null )
-                            {
-                                GroupService.AddNewFamilyAddress(
-                                    rockContext,
-                                    familyGroup,
-                                    Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-                                    location.Street1, location.Street2, location.City, location.State, location.PostalCode, location.Country );
-                            }
-                        }
-                    }
-
-                    // Load the person's attributes
-                    person.LoadAttributes();
-
-                    // Set any of the template's person fields
-                    foreach ( var field in RegistrationTemplate.Forms
-                        .SelectMany( f => f.Fields
-                            .Where( t => 
-                                t.FieldSource == RegistrationFieldSource.PersonAttribute &&
-                                t.AttributeId.HasValue ) ) )
-                    {
-                        // Find the registrant's value
-                        var fieldValue = registrantInfo.FieldValues
-                            .Where( f => f.Key == field.Id )
-                            .Select( f => f.Value )
-                            .FirstOrDefault();
-
-                        if ( fieldValue != null )
-                        {
-                            var attribute = AttributeCache.Read( field.AttributeId.Value );
-                            if ( attribute != null )
-                            {
-                                person.SetAttributeValue( attribute.Key, fieldValue.ToString() );
-                            }
-                        }
-                    }
-
-                    person.SaveAttributeValues( rockContext );
                 }
+
+                int? campusId = null;
+                Location location = null;
+
+                // Set any of the template's person fields
+                foreach ( var field in RegistrationTemplate.Forms
+                    .SelectMany( f => f.Fields
+                        .Where( t => t.FieldSource == RegistrationFieldSource.PersonField ) ) )
+                {
+                    // Find the registrant's value
+                    var fieldValue = registrantInfo.FieldValues
+                        .Where( f => f.Key == field.Id )
+                        .Select( f => f.Value )
+                        .FirstOrDefault();
+
+
+                    if ( fieldValue != null )
+                    {
+                        switch ( field.PersonFieldType )
+                        {
+                            case RegistrationPersonFieldType.Campus:
+                                {
+                                    if ( fieldValue != null )
+                                    {
+                                        campusId = fieldValue.ToString().AsIntegerOrNull();
+                                    } 
+                                    break;
+                                }
+
+                            case RegistrationPersonFieldType.Address:
+                                {
+                                    location = fieldValue.ToString().FromJsonOrNull<Location>();
+                                    break;
+                                }
+
+                            case RegistrationPersonFieldType.Birthdate:
+                                {
+                                    var birthMonth = person.BirthMonth;
+                                    var birthDay = person.BirthDay;
+                                    var birthYear = person.BirthYear;
+
+                                    person.SetBirthDate( fieldValue as DateTime? );
+
+                                    History.EvaluateChange( changes, "Birth Month", birthMonth, person.BirthMonth );
+                                    History.EvaluateChange( changes, "Birth Day", birthDay, person.BirthDay );
+                                    History.EvaluateChange( changes, "Birth Year", birthYear, person.BirthYear );
+
+                                    break;
+                                }
+
+                            case RegistrationPersonFieldType.Gender:
+                                {
+                                    var newGender = fieldValue.ToString().ConvertToEnumOrNull<Gender>() ?? Gender.Unknown;
+                                    History.EvaluateChange( changes, "Gender", person.Gender, newGender );
+                                    break;
+                                }
+
+                            case RegistrationPersonFieldType.MaritalStatus:
+                                {
+                                    if ( fieldValue != null  )
+                                    {
+                                        int? newMaritalStatusId = fieldValue.ToString().AsIntegerOrNull();
+                                        History.EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
+                                        person.MaritalStatusValueId = newMaritalStatusId;
+                                    }
+                                    break;
+                                }
+
+                            case RegistrationPersonFieldType.MobilePhone:
+                                {
+                                    SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), changes );
+                                    break;
+                                }
+
+                            case RegistrationPersonFieldType.HomePhone:
+                                {
+                                    SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), changes );
+                                    break;
+                                }
+
+                            case RegistrationPersonFieldType.WorkPhone:
+                                {
+                                    SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid(), changes );
+                                    break;
+                                }
+                        }
+                    }
+                }
+
+                // Save the person ( and family if needed )
+                SavePerson( rockContext, person, registrantInfo.FamilyGuid, campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, singleFamilyId );
+
+                // Load the person's attributes
+                person.LoadAttributes();
+
+                // Set any of the template's person fields
+                foreach ( var field in RegistrationTemplate.Forms
+                    .SelectMany( f => f.Fields
+                        .Where( t => 
+                            t.FieldSource == RegistrationFieldSource.PersonAttribute &&
+                            t.AttributeId.HasValue ) ) )
+                {
+                    // Find the registrant's value
+                    var fieldValue = registrantInfo.FieldValues
+                        .Where( f => f.Key == field.Id )
+                        .Select( f => f.Value )
+                        .FirstOrDefault();
+
+                    if ( fieldValue != null )
+                    {
+                        var attribute = AttributeCache.Read( field.AttributeId.Value );
+                        if ( attribute != null )
+                        {
+                            string originalValue = person.GetAttributeValue( attribute.Key );
+                            string newValue = fieldValue.ToString();
+                            person.SetAttributeValue( attribute.Key, fieldValue.ToString() );
+
+                            if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
+                            {
+                                string formattedOriginalValue = string.Empty;
+                                if ( !string.IsNullOrWhiteSpace( originalValue ) )
+                                {
+                                    formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
+                                }
+
+                                string formattedNewValue = string.Empty;
+                                if ( !string.IsNullOrWhiteSpace( newValue ) )
+                                {
+                                    formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
+                                }
+
+                                History.EvaluateChange( changes, attribute.Name, formattedOriginalValue, formattedNewValue );
+                            }
+                        }
+                    }
+                }
+
+                person.SaveAttributeValues( rockContext );
 
                 GroupMember groupMember = null;
 
-                // If the registration instance linkage specified a group to add registrant to, add them if theire not already
+                // If the registration instance linkage specified a group to add registrant to, add them if there not already
                 // part of that group
                 if ( group != null )
                 {
@@ -1033,10 +1106,113 @@ namespace RockWeb.Blocks.Event
 
         }
 
+        private int? SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId,
+            Dictionary<Guid, int> multipleFamilyGroupIds, int? singleFamilyId )
+        {
+            if ( person.Id > 0 )
+            {
+                rockContext.SaveChanges();
+            }
+            else
+            {
+                // If we've created the family aready for this registrant, add them to it
+                if (
+                        ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask && multipleFamilyGroupIds.ContainsKey( familyGuid ) ) ||
+                        ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes && singleFamilyId.HasValue )
+                    )
+                {
+
+                    // Add person to existing family
+                    var age = person.Age;
+                    int familyRoleId = age.HasValue && age < 18 ? childRoleId : adultRoleId;
+
+                    int familyId = RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask ?
+                        multipleFamilyGroupIds[familyGuid] :
+                        singleFamilyId.Value;
+                    PersonService.AddPersonToFamily( person, true, multipleFamilyGroupIds[familyGuid], familyRoleId, rockContext );
+
+                    if ( location != null )
+                    {
+                        Guid locTypeGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
+                        var familyGroup = new GroupService( rockContext ).Get( familyId );
+
+                        // Do not update existing location on an existing family ( only update when creating new family or location doesn't already exist )
+                        if ( familyGroup != null && !familyGroup.GroupLocations.Any( l => l.GroupLocationTypeValue.Guid.Equals( locTypeGuid ) ) )
+                        {
+                            GroupService.AddNewFamilyAddress(
+                                rockContext,
+                                familyGroup,
+                                Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+                                location.Street1, location.Street2, location.City, location.State, location.PostalCode, location.Country );
+                        }
+                    }
+                }
+
+                // otherwise create a new family
+                else
+                {
+                    // Create Person/Family
+                    var familyGroup = PersonService.SaveNewPerson( person, rockContext, campusId, false );
+                    if ( familyGroup != null )
+                    {
+                        if ( location != null )
+                        {
+                            GroupService.AddNewFamilyAddress(
+                                rockContext,
+                                familyGroup,
+                                Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+                                location.Street1, location.Street2, location.City, location.State, location.PostalCode, location.Country );
+                        }
+
+                        // Store the family id for next person 
+                        multipleFamilyGroupIds.Add( familyGuid, familyGroup.Id );
+                        if ( !singleFamilyId.HasValue )
+                        {
+                            singleFamilyId = familyGroup.Id;
+                        }
+                    }
+                }
+            }
+
+            var newPerson = new PersonService( rockContext ).Get( person.Id );
+            return newPerson != null ? newPerson.PrimaryAliasId : (int?)null;
+        }
+
+        private void SavePhone( object fieldValue, Person person, Guid phoneTypeGuid, List<string> changes )
+        {
+            var phoneNumber = fieldValue.ToString().FromJsonOrNull<PhoneNumber>();
+            if ( phoneNumber != null )
+            {
+                var numberType = DefinedValueCache.Read( phoneTypeGuid );
+                if ( numberType != null )
+                {
+                    var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );
+                    string oldPhoneNumber = string.Empty;
+                    if ( phone == null )
+                    {
+                        phone = new PhoneNumber();
+                        person.PhoneNumbers.Add( phone );
+                        phone.NumberTypeValueId = numberType.Id;
+                    }
+                    else
+                    {
+                        oldPhoneNumber = phone.NumberFormattedWithCountryCode;
+                    }
+                    phone.CountryCode = PhoneNumber.CleanNumber( phoneNumber.CountryCode );
+                    phone.Number = PhoneNumber.CleanNumber( phoneNumber.Number );
+
+                    History.EvaluateChange(
+                        changes,
+                        string.Format( "{0} Phone", numberType.Value ),
+                        oldPhoneNumber,
+                        phoneNumber.NumberFormattedWithCountryCode );
+                }
+            }
+        }
 
         #endregion
 
-        private bool ProcessPayment( RockContext rockContext, int registrationId, out string errorMessage )
+        private bool ProcessPayment( RockContext rockContext, Registration registration, out string errorMessage )
         {
             if ( string.IsNullOrWhiteSpace( TransactionCode ) )
             {
@@ -1054,7 +1230,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( RegistrationInstanceState.Account == null )
                 {
-                    errorMessage = "There was a problem with the account configuration for this registration";
+                    errorMessage = "There was a problem with the account configuration for this " + RegistrationTerm.ToLower();
                     return false;
                 }
 
@@ -1082,6 +1258,8 @@ namespace RockWeb.Blocks.Event
                     txnChanges.Add( "Created Transaction" );
 
                     History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
+
+                    transaction.AuthorizedPersonAliasId = registration.PersonAliasId;
 
                     transaction.TransactionDateTime = RockDateTime.Now;
                     History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );
@@ -1118,7 +1296,7 @@ namespace RockWeb.Blocks.Event
                     transactionDetail.Amount = RegistrationState.PaymentAmount;
                     transactionDetail.AccountId = RegistrationInstanceState.AccountId;
                     transactionDetail.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Registration ) ).Id;
-                    transactionDetail.EntityId = registrationId;
+                    transactionDetail.EntityId = registration.Id;
                     transaction.TransactionDetails.Add( transactionDetail );
 
                     History.EvaluateChange( txnChanges, RegistrationInstanceState.Account.Name, 0.0M.ToString( "C2" ), transactionDetail.Amount.ToString( "C2" ) );
@@ -1196,6 +1374,8 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void ShowHowMany()
         {
+            lRegistrantTerm.Text =RegistrantTerm.Pluralize();
+
             // If this is an existing registration, go directly to the summary
             if ( RegistrationState != null && RegistrationState.RegistrationId.HasValue )
             {
@@ -1237,8 +1417,8 @@ namespace RockWeb.Blocks.Event
             if ( RegistrationState != null && RegistrationState.RegistrantCount > 0 )
             {
                 string title = RegistrationState.RegistrantCount <= 1 ? 
-                    "Individual" : 
-                    ( CurrentRegistrantIndex + 1 ).ToOrdinalWords().Humanize( LetterCasing.Title ) + " Individual";
+                    RegistrantTerm : 
+                    ( CurrentRegistrantIndex + 1 ).ToOrdinalWords().Humanize( LetterCasing.Title ) + " " + RegistrantTerm;
 
                 if ( CurrentFormIndex > 0 )
                 {
@@ -1266,8 +1446,37 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Shows the success panel
         /// </summary>
-        private void ShowSuccess()
+        private void ShowSuccess( Registration registration )
         {
+            var mergeFields = new Dictionary<string, object>();
+            mergeFields.Add( "CurrentPerson", CurrentPerson );
+            mergeFields.Add( "RegistrationTemplate", RegistrationTemplate );
+            mergeFields.Add( "Registration", registration );
+
+            if ( RegistrationTemplate != null && !string.IsNullOrWhiteSpace( RegistrationTemplate.SuccessTitle ))
+            {
+                lSuccessTitle.Text = RegistrationTemplate.SuccessTitle.ResolveMergeFields( mergeFields );
+            }
+            else
+            {
+                lSuccessTitle.Text = "Congratulations";
+            }
+
+            if ( RegistrationTemplate != null && !string.IsNullOrWhiteSpace( RegistrationTemplate.SuccessText ) )
+            {
+                lSuccess.Text = RegistrationTemplate.SuccessText.ResolveMergeFields( mergeFields );
+            }
+            else
+            {
+                lSuccess.Text = "You have succesfully completed this " + RegistrationTerm.ToLower();
+            }
+            // show debug info
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && UserCanEdit )
+            {
+                lSuccessDebug.Visible = true;
+                lSuccessDebug.Text = mergeFields.lavaDebugInfo();
+            }
+
             SetPanel( 3 );
         }
 
@@ -1388,9 +1597,6 @@ namespace RockWeb.Blocks.Event
                 case 2:
                     CreateSummaryControls( setValues );
                     break;
-                case 3:
-                    CreateSuccessControls( setValues );
-                    break;
             }
         }
 
@@ -1418,6 +1624,8 @@ namespace RockWeb.Blocks.Event
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void CreateRegistrantControls( bool setValues )
         {
+            lRegistrantFeeCaption.Text = RegistrantTerm.Pluralize();
+
             phRegistrantControls.Controls.Clear();
             phFees.Controls.Clear();
 
@@ -2182,7 +2390,8 @@ namespace RockWeb.Blocks.Event
 
         private void CreateSummaryControls( bool setValues )
         {
-            phSuccessControls.Controls.Clear();
+            lDiscountCodeLabel.Text = DiscountCodeTerm;
+            lSummaryFeeCaption.Text = FeeTerm.Pluralize();
 
             if ( setValues && RegistrationState != null )
             {
@@ -2231,7 +2440,7 @@ namespace RockWeb.Blocks.Event
                             .FirstOrDefault();
                         if ( discount == null )
                         {
-                            nbDiscountCode.Text = string.Format( "Discount Code '{0}' is not a valid discount code.", discountCode );
+                            nbDiscountCode.Text = string.Format( "'{1}' is not a valid {1}.", discountCode, DiscountCodeTerm );
                             nbDiscountCode.Visible = true;
                         }
 
@@ -2279,7 +2488,7 @@ namespace RockWeb.Blocks.Event
                             {
                                 decimal cost = feeInfo.PreviousCost > 0.0m ? feeInfo.PreviousCost : feeInfo.Cost;
                                 string desc = string.Format( "{0}{1} ({2:N0} @ {3:C2})",
-                                    templateFee != null ? templateFee.Name : "Previous Fee",
+                                    templateFee != null ? templateFee.Name : "(Previous Cost)",
                                     string.IsNullOrWhiteSpace( feeInfo.Option ) ? "" : "-" + feeInfo.Option,
                                     feeInfo.Quantity,
                                     cost );
@@ -2447,15 +2656,6 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
-        #region Success Controls 
-
-        private void CreateSuccessControls( bool setValues )
-        {
-            phSuccessControls.Controls.Clear();
-        }
-
-        #endregion
-
         #endregion
 
         #endregion
@@ -2581,8 +2781,11 @@ namespace RockWeb.Blocks.Event
             /// <param name="person">The person.</param>
             public RegistrationInfo ( Person person ) : this()
             {
-                YourFirstName = person.NickName;
-                YourLastName = person.LastName;
+                if ( person != null )
+                {
+                    YourFirstName = person.NickName;
+                    YourLastName = person.LastName;
+                }
             }
 
             /// <summary>

@@ -493,8 +493,12 @@ namespace RockWeb.Blocks.Event
                     if ( lBalance != null )
                     {
                         lBalance.Visible = registration.TotalCost > 0.0M;
-                        lBalance.Text = registration.BalanceDue.ToString( "C2" );
-                        if ( registration.BalanceDue > 0 )
+
+                        decimal paid = RegistrationPayments.Where( p => p.EntityId == registration.Id ).Sum( p => p.Amount );
+                        decimal balanceDue = registration.TotalCost - paid;
+
+                        lBalance.Text = balanceDue.ToString( "C2" );
+                        if ( balanceDue > 0 )
                         {
                             lBalance.AddCssClass( "label-danger" );
                             lBalance.RemoveCssClass( "label-success" );
