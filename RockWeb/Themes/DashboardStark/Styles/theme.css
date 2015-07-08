@@ -4281,7 +4281,7 @@ ul.list-group-panel .list-group-item:first-child,
   opacity: .4;
   color: #428bca;
   transition: 1s;
-  border: 1px solid #428bca;
+  border-left: 1px solid #92bce0;
 }
 .panel-follow-status:before {
   font-family: FontAwesome;
