@@ -716,6 +716,2054 @@ Copyright (c) 2012 Dan Eden*/
   border: none;
 }
 /*
+    Used to manage styles related to Rock's forms
+    
+    1. Bootstrap Overrides / Additions
+    2. Data Lists
+    3. Input Sizing
+    4. Control Specific Styles
+    5. Validation
+    6. Custom Controls
+    7. Static Control
+*/
+.form-actions {
+  padding: 12px 16px;
+  background-color: #dbd5cb;
+  color: #524c43;
+}
+legend {
+  font-weight: 300;
+  color: #6a6a6a;
+  border-width: 0;
+}
+.checkbox-inline:first-child,
+.radio-inline:first-child {
+  padding-left: 30px;
+}
+a.aspNetDisabled {
+  opacity: 0.5;
+}
+.form-group.rock-literal label,
+.rock-control-wrapper label {
+  margin-bottom: 0;
+}
+.form-group.rock-literal p.form-control-static,
+.rock-control-wrapper p.form-control-static {
+  padding-top: 0;
+}
+.form-group {
+  font-size: 14px;
+  line-height: 1.42857143;
+}
+.form-group .checkbox:last-child {
+  margin-bottom: 30px;
+}
+.form-group > .form-group {
+  margin-top: 12px;
+}
+.form-horizontal .form-group {
+  margin-right: 0;
+}
+.form-horizontal .form-group label {
+  float: left;
+  padding-right: 12px;
+}
+.form-horizontal .form-group .form-control-group,
+.form-horizontal .form-group .form-control {
+  float: left;
+}
+.controls .checkbox:first-child {
+  margin-top: 0;
+}
+.form-group.required .control-label:after {
+  font-family: FontAwesome;
+  content: '\f111';
+  margin-left: 4px;
+  font-size: 6px;
+  color: #eca9a7;
+  vertical-align: super;
+}
+dl:not(.dl-horizontal) {
+  margin-bottom: 0;
+}
+dl:not(.dl-horizontal) dt {
+  font-weight: 900;
+  margin-top: 16px;
+  margin-bottom: 2px;
+}
+dl:not(.dl-horizontal) dt:first-child {
+  margin-top: 0;
+}
+dl:not(.dl-horizontal) dd {
+  margin-left: 0;
+}
+.form-control.input-width-xs,
+.input-group.input-width-xs {
+  width: 60px;
+}
+.form-control.input-width-sm,
+.input-group.input-width-sm {
+  width: 90px;
+}
+.form-control.input-width-md,
+.input-group.input-width-md {
+  width: 140px;
+}
+.form-control.input-width-lg,
+.input-group.input-width-lg {
+  width: 210px;
+}
+.form-control.input-width-xl,
+.input-group.input-width-xl {
+  width: 270px;
+}
+.form-control.input-width-xxl,
+.input-group.input-width-xxl {
+  width: 530px;
+}
+.form-control-group:before,
+.form-control-group:after {
+  content: " ";
+  display: table;
+}
+.form-control-group:after {
+  clear: both;
+}
+.form-control-group .form-control,
+.form-control-group .input-group {
+  margin-right: 6px;
+  float: left;
+}
+.form-control-group > span {
+  float: left;
+  margin: 8px 6px 0 0;
+}
+.form-control-group > label {
+  float: left;
+  margin-top: 8px;
+}
+.month-year-picker .separator,
+.month-day-picker .separator {
+  float: left;
+  font-size: 20px;
+  margin: 4px 8px 0 -2px;
+  color: #c3c3c3;
+}
+.rock-check-box .checkbox {
+  margin-top: 0;
+}
+.validation-error {
+  color: #c84b4b;
+  font-weight: 300;
+  float: left;
+}
+.btn-controlaligned {
+  margin-top: 24px;
+}
+.form-group.static-control label {
+  margin-bottom: 0;
+}
+.form-group.static-control .form-control-static {
+  padding-top: 0;
+}
+/*
+    Used to manage styles related to Rock's dashboard
+    
+    1. Basic Widgets
+    2. 
+    3. 
+    4. 
+    5. 
+
+*/
+.panel-dashboard {
+  margin: 24px 0 0 ;
+  height: 220px;
+  border-color: #dbd5cb;
+}
+.panel-dashboard > .panel-heading {
+  color: #524c43;
+  background-color: #dbd5cb;
+  border-color: #dbd5cb;
+}
+.panel-dashboard > .panel-heading + .panel-collapse > .panel-body {
+  border-top-color: #dbd5cb;
+}
+.panel-dashboard > .panel-heading .badge {
+  color: #dbd5cb;
+  background-color: #524c43;
+}
+.panel-dashboard > .panel-footer + .panel-collapse > .panel-body {
+  border-bottom-color: #dbd5cb;
+}
+/*
+    Used to manage styles related to Rock's internal grid component
+    
+    1. Bootstrap Overrides
+    2. Core Table
+    3. Filter
+    4. Column Header
+    5. Footer
+    6. Light Style - Used for small grids
+    7. Reusable classes
+    8. Column Types
+    9. Row Types
+    10. Responsive Columns
+
+*/
+/*.table-responsive > .table-bordered,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered {
+    border: 1px solid @table-border-color;
+}*/
+.table-hover tbody tr:hover td,
+.table-hover tbody tr:hover th {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+td.grid-select-cell {
+  cursor: pointer;
+}
+td.wrap-contents {
+  -ms-word-break: break-all;
+  word-break: break-all;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphens: auto;
+}
+.table {
+  margin-bottom: 0;
+}
+.grid {
+  margin-bottom: 20px;
+}
+.grid .grid-table {
+  border: 1px solid #dddddd;
+}
+.grid .grid-table.table-light {
+  border: none;
+}
+.grid.grid-panel .grid-table {
+  border: none !important;
+}
+.grid.grid-panel th:first-child,
+.grid.grid-panel td:first-child {
+  border-left: 0;
+}
+.grid.grid-panel th:last-child,
+.grid.grid-panel td:last-child {
+  border-right: 0;
+}
+.grid-panel .table-responsive[data-pattern="priority-columns"],
+.table-responsive.table-no-border {
+  border: 0;
+}
+.table-responsive[data-pattern="priority-columns"] {
+  position: static;
+}
+/*.table-responsive[data-pattern="priority-columns"] {
+    margin-bottom: inherit;
+    border: inherit;
+    border-radius: inherit;
+}*/
+.table-wrapper .btn-toolbar {
+  display: none;
+}
+.grid-filter {
+  background-color: #efefef;
+  border-radius: 4px;
+  padding: 6px 12px;
+  border-bottom: 1px solid #dddddd;
+}
+.grid-filter header {
+  border-radius: 4px 4px 0 0;
+  padding: 4px;
+  cursor: pointer;
+  height: 24px;
+  text-align: right;
+}
+.grid-filter header h3 {
+  font-size: 12px;
+  margin: 0 2px 0 2px;
+  line-height: 16px;
+  display: inline;
+  font-weight: 300;
+}
+.grid-filter header i {
+  color: #9d9d9d;
+}
+.grid-filter header fieldset {
+  margin-bottom: 0;
+}
+.grid-filter h4 {
+  margin: 12px 0 20px;
+  padding-bottom: 8px;
+  font-weight: 300;
+}
+.grid-filter .grid-filter-entry {
+  margin-bottom: 12px;
+}
+.grid-filter .picker .picker-label {
+  background-color: #efefef;
+  color: #6a6a6a;
+  border-color: #d6d6d6;
+}
+/*.grid-filter +  div .grid-table {
+    margin-top: -12px;   
+}*/
+.grid-filter-entry legend + .control-group {
+  margin-top: 0;
+}
+.grid-filter-overview fieldset {
+  margin-bottom: 12px;
+}
+.table thead th {
+  background-color: #efefef;
+  font-size: 14px;
+  color: #524c43;
+  font-weight: 700;
+}
+.table thead th a {
+  color: #524c43;
+  display: block;
+}
+.table thead th.ascending a::before {
+  padding-right: 5px;
+  content: "\f0d8";
+  font-family: FontAwesome;
+}
+.table thead th.descending a::before {
+  padding-right: 5px;
+  content: "\f0d7";
+  font-family: FontAwesome;
+}
+.grid-paging {
+  background-color: #efefef;
+}
+.grid-paging .pagination {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.grid-paging .grid-pager {
+  float: right;
+}
+.grid-paging .grid-pagesize {
+  float: left;
+}
+.grid-paging .grid-itemcount {
+  float: left;
+  font-size: 11px;
+  margin-left: 10px;
+  margin-top: 7px;
+}
+td.grid-col-actions {
+  text-align: right;
+}
+.grid-actions {
+  text-align: right;
+  background-color: #ffffff;
+}
+.grid-actions .btn {
+  margin-left: 8px;
+}
+.table-light thead th {
+  background-color: inherit;
+  color: #6a6a6a;
+  font-weight: 900;
+}
+.table-light tfoot td {
+  background-color: inherit;
+}
+.table-light tfoot td .grid-actions a {
+  border-radius: 0;
+  border-style: none;
+  border-width: 0;
+  box-shadow: none;
+  border-color: none;
+}
+.table-light .grid-columncommand {
+  text-align: right;
+  width: 42px;
+  min-width: 42px;
+}
+.table-padded td,
+.table-padded th {
+  padding: 12px !important;
+}
+.grid-select-field {
+  text-align: center;
+  min-width: 40px;
+}
+.grid-select-field .checkbox,
+.grid-select-field .radio {
+  padding-left: 0;
+  margin: 0;
+}
+.grid-select-field .checkbox input,
+.grid-select-field .radio input {
+  float: none;
+  margin: 0;
+}
+.grid-select-field .checkbox:last-child,
+.grid-select-field .radio:last-child {
+  margin-bottom: 0px;
+  margin-left: -12px;
+}
+.grid-select-field .checkbox label,
+.grid-select-field .radio label {
+  padding: 0;
+}
+.table > tbody > tr > th,
+.table > tbody > tr > td {
+  padding: 12px;
+}
+.table > tbody > tr > th.grid-columncommand,
+.table > tbody > tr > td.grid-columncommand {
+  padding: 6px;
+  padding-top: 12px;
+  min-width: 48px;
+}
+.table > tbody > tr > th.grid-columnreorder,
+.table > tbody > tr > td.grid-columnreorder {
+  padding-top: 12px;
+  min-width: 48px;
+  width: 48px;
+}
+.table .color-field {
+  padding: 0;
+  width: 4px;
+}
+.table .color-field + th {
+  border-left-width: 0px;
+}
+.table .grid-icon img {
+  width: 72px;
+  height: 72px;
+}
+.table > tbody > tr.grid-section-header > td {
+  background-color: #e3ded7;
+  color: #817b72;
+}
+.table > tbody > tr.grid-section-header:hover > td {
+  background-color: #e3ded7 !important;
+}
+tr.row-highlight td {
+  background-color: #282526 !important;
+  color: #d3cec5 !important;
+}
+.table-responsive {
+  position: relative;
+  width: 100%;
+  overflow-y: hidden;
+  overflow-x: auto;
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+  -webkit-overflow-scrolling: touch;
+}
+.table-responsive th[data-priority],
+.table-responsive td[data-priority] {
+  display: none;
+}
+.table-responsive th[data-priority="1"],
+.table-responsive td[data-priority="1"] {
+  display: table-cell;
+}
+@media screen and (min-width: 480px) {
+  .table-responsive th[data-priority="2"],
+  .table-responsive td[data-priority="2"] {
+    display: table-cell;
+  }
+}
+@media screen and (min-width: 640px) {
+  .table-responsive th[data-priority="3"],
+  .table-responsive td[data-priority="3"] {
+    display: table-cell;
+  }
+}
+@media screen and (min-width: 800px) {
+  .table-responsive th[data-priority="4"],
+  .table-responsive td[data-priority="4"] {
+    display: table-cell;
+  }
+}
+@media screen and (min-width: 960px) {
+  .table-responsive th[data-priority="5"],
+  .table-responsive td[data-priority="5"] {
+    display: table-cell;
+  }
+}
+@media screen and (min-width: 1120px) {
+  .table-responsive th[data-priority="6"],
+  .table-responsive td[data-priority="6"] {
+    display: table-cell;
+  }
+}
+/*
+    Used to manage styles for specific blocks.
+
+    1. HTML Content - block to edit HTML on a page
+    2. My Account - Used on external sites for setting person details
+    3. Lava Debug - Used to style the lava debug panel
+*/
+.htmlcontent-edit-header {
+  padding: 7.5px 15px 0 15px;
+}
+.htmlcontent-edit-header .html-content-approve {
+  float: right;
+  margin-top: 4px;
+}
+.codeeditor-header .picker-mergefield {
+  float: right;
+}
+.my-account {
+  margin-bottom: 15px;
+}
+.my-account .photo img {
+  width: 100%;
+}
+.lava-debug {
+  clear: both;
+  margin-top: 24px;
+}
+.lava-debug code {
+  background-color: #c4e3f3;
+  color: #3a87ad;
+}
+.lava-debug p {
+  margin-bottom: 10px;
+  font-weight: normal !important;
+}
+.lava-debug p.attributes {
+  margin-bottom: 0;
+}
+.lava-debug .lava-debug-key {
+  font-weight: 700;
+}
+.lava-debug .panel.panel-lavadebug {
+  border: 0;
+}
+.lava-debug .panel.panel-lavadebug .panel-heading {
+  background-color: #cce7f4;
+  color: #3a87ad;
+  border: 0;
+  cursor: pointer;
+}
+.lava-debug .panel.panel-lavadebug .panel-heading.collapsed i:before {
+  content: "\f078";
+}
+.lava-debug .panel.panel-lavadebug .panel-body {
+  background-color: #e6f3fa;
+}
+/*
+    Used to manage styles for specific blocks.
+
+    1. User Registration - Styling for the user registration blocks
+    2. Security Popup - Styling for the security pop-up window)
+
+*/
+.not-me {
+  margin-left: 21px;
+}
+.security-inherited {
+  margin-top: 12px;
+}
+.security .nav.nav-pagelist .nav.nav-pills li {
+  float: left;
+}
+/*
+    Used to manage styles for specific blocks.
+
+    1. SQL Command - block to query database directly
+    2. Data Views - block for creating data views
+    3. Dynamic Report - block for making reports dynamically updated
+*/
+.sql-comand .panel {
+  margin-bottom: 24px;
+}
+/* data views */
+.filter-toggle {
+  margin-top: 5px;
+}
+.filter-toggle > span {
+  float: left;
+}
+.filter-toggle .panel-title {
+  margin-top: 4px;
+}
+.filter-toggle .btn-toggle {
+  margin: 0 6px;
+}
+.filter-item-select span {
+  float: left;
+  padding: 8px 6px 0 0;
+}
+.filter-item-select select {
+  float: left;
+  width: 250px;
+}
+.field-criteria .checkbox-inline {
+  margin-top: 8px;
+}
+.filter-item div[class*='col'] {
+  margin-bottom: 6px;
+}
+@media (min-width: 992px) {
+  .filter-item div[class*='col'] {
+    margin-bottom: 0;
+  }
+}
+.filterfield {
+  margin-bottom: 12px;
+}
+.filterfield-label {
+  font-weight: 700;
+  margin-top: 8px;
+  display: block;
+}
+/*
+    Used to manage styles for specific blocks.
+
+    1. Notes - block to display, add, edit, delete notes
+    2. Schedule Builder - block for building schedules
+    3. Workflow - styles for workflow blocks
+
+*/
+.panel-note {
+  border-color: #e2e2e2;
+}
+.panel-note > .panel-heading {
+  color: #6a6a6a;
+  background-color: #efefef;
+  border-color: #e2e2e2;
+}
+.panel-note > .panel-heading + .panel-collapse > .panel-body {
+  border-top-color: #e2e2e2;
+}
+.panel-note > .panel-heading .badge {
+  color: #efefef;
+  background-color: #6a6a6a;
+}
+.panel-note > .panel-footer + .panel-collapse > .panel-body {
+  border-bottom-color: #e2e2e2;
+}
+.panel-note .panel-body {
+  background-color: #fffs;
+}
+.panel-note .panel-heading h3 {
+  float: left;
+  margin-top: 4px;
+}
+.panel-note .panel-heading .btn {
+  float: right;
+  margin: 0;
+}
+.panel-note article {
+  border-radius: 4px;
+  border: 1px solid #d6d6d6;
+  padding: 15px;
+  margin-bottom: 15px;
+  background-color: #efefef;
+  position: relative;
+}
+.panel-note article .date {
+  font-size: 13px;
+  font-weight: 300;
+  margin-left: 8px;
+}
+.panel-note article > i {
+  position: absolute;
+  width: 28px;
+  font-size: 28px;
+  margin: 0 12px 0 4px;
+  opacity: .2;
+}
+.panel-note article .details {
+  margin-left: 50px;
+}
+.panel-note article .details h5 {
+  margin-top: 0;
+  margin-bottom: 6px;
+  max-width: 70%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.panel-note article .actions {
+  position: absolute;
+  right: 15px;
+  top: 10px;
+}
+.panel-note article .actions a {
+  float: right;
+  margin-left: 8px;
+  font-size: 14px;
+}
+.panel-note article.highlight {
+  background-color: #f2dede;
+  border: 1px solid #eed3d7;
+  color: #b94a48;
+}
+.panel-note article.highlight a {
+  color: #b94a48;
+}
+.panel-note article.personal {
+  background-color: #c2b8a7;
+  border: 1px solid #bcac9e;
+  color: #616161;
+}
+.panel-note article > img {
+  float: left;
+  margin: 0 12px 0 4px;
+}
+.panel-note .load-more {
+  margin: 0 40%;
+  min-width: 150px;
+  width: 20%;
+}
+.panel-note .load-more span {
+  margin: 0 12px;
+}
+.note-deny article,
+.note-danger article,
+.note-security article {
+  border-color: #eed3d7;
+  background-color: #f2dede;
+  color: #b94a48;
+}
+.note-deny .actions a,
+.note-danger .actions a,
+.note-security .actions a {
+  color: #b94a48;
+}
+.note-approve article,
+.note-success article {
+  border-color: #d6e9c6;
+  background-color: #dff0d8;
+  color: #468847;
+}
+.note-approve .actions a,
+.note-success .actions a {
+  color: #468847;
+}
+.note-info article {
+  border-color: #bce8f1;
+  background-color: #d9edf7;
+  color: #3a87ad;
+}
+.note-info .actions a {
+  color: #3a87ad;
+}
+.note-warning article {
+  border-color: #fbeed5;
+  background-color: #fcf8e3;
+  color: #c09853;
+}
+.note-warning .actions a {
+  color: #c09853;
+}
+.panel-note-light {
+  border: 0;
+  background: none;
+}
+.panel-note-light .panel-body {
+  background: none;
+}
+.panel-note-light article {
+  background: none;
+  border-radius: 0;
+  border-width: 0 0 1px 0;
+  padding-left: 0;
+}
+.panel-note-light article .details {
+  margin-left: 0;
+}
+.panel-note-light article .note-author,
+.panel-note-light article .note-created {
+  font-size: 13px;
+  opacity: 0.7;
+}
+.panel-noteentry {
+  border-color: #dbd5cb;
+}
+.panel-noteentry > .panel-heading {
+  color: #524c43;
+  background-color: #524c43;
+  border-color: #524c43;
+}
+.panel-noteentry > .panel-heading + .panel-collapse > .panel-body {
+  border-top-color: #dbd5cb;
+}
+.panel-noteentry > .panel-heading .badge {
+  color: #524c43;
+  background-color: #524c43;
+}
+.panel-noteentry > .panel-footer + .panel-collapse > .panel-body {
+  border-bottom-color: #dbd5cb;
+}
+.panel-noteentry .createDate {
+  margin-top: 10px;
+  width: 50%;
+}
+.panel-noteentry .settings {
+  margin-top: 4px;
+}
+.panel-noteentry .settings .options input {
+  margin-right: 4px;
+}
+.panel-noteentry .panel-body .noteentry-control {
+  overflow: hidden;
+}
+.panel-noteentry .panel-body .noteentry-notetype {
+  margin-bottom: 4px;
+}
+.panel-noteentry .panel-body img {
+  float: left;
+  margin: 0 12px 0 4px;
+}
+.panel-noteentry .options .checkbox {
+  float: left;
+  margin: 0 15px 0 5px;
+}
+.panel-noteentry .panel-footer {
+  background-color: #dbd5cb;
+}
+.recurrence-pattern-type {
+  margin-top: 12px;
+  padding-left: 30px;
+}
+.recurrence-pattern-specific-date:before,
+.recurrence-pattern-specific-date:after {
+  content: " ";
+  display: table;
+}
+.recurrence-pattern-specific-date:after {
+  clear: both;
+}
+.recurrence-pattern-specific-date .input-group {
+  float: left;
+}
+.recurrence-pattern-specific-date .actions {
+  float: left;
+  margin-left: 12px;
+  margin-top: 4px;
+}
+.recurrence-pattern-daily .form-control-group {
+  min-height: 30px;
+}
+.recurrence-pattern-weekly .week-days {
+  margin-top: 15px;
+}
+.recurrence-pattern-weekly .week-days:before,
+.recurrence-pattern-weekly .week-days:after {
+  content: " ";
+  display: table;
+}
+.recurrence-pattern-weekly .week-days:after {
+  clear: both;
+}
+.recurrence-pattern-weekly .week-days .checkbox {
+  float: left;
+  margin: 0 15px;
+}
+.recurrence-pattern-monthly .form-control-group {
+  min-height: 40px;
+  display: block;
+}
+.continue-until .form-control-group {
+  min-height: 40px;
+}
+.exclusions .add-exclusion .form-control-group {
+  float: left;
+}
+.exclusions .add-exclusion .actions {
+  float: left;
+  margin-top: 5px;
+}
+.workflow-section-activities {
+  margin-top: 64px;
+}
+.workflow-activities-readonly-header {
+  color: #515151;
+  left: auto;
+  top: auto;
+  padding-top: 8px;
+  padding-right: 8px;
+  padding-bottom: 8px;
+}
+.workflow-activities-readonly-header:hover {
+  color: inherit;
+  text-decoration: none;
+}
+.panel.workflow-activity.activated-with-workflow > .panel-heading {
+  background-color: #dff0d8;
+  color: #468847;
+}
+.panel.workflow-activity.activated-with-workflow > .panel-heading a.btn-link {
+  color: #468847;
+}
+.panel.workflow-activity .panel-title:before {
+  content: "\f1b3";
+  font-family: FontAwesome;
+  font-weight: normal;
+  margin-right: 4px;
+}
+.workflow-action .workflow-action-name:before {
+  content: "\f1b2";
+  font-family: FontAwesome;
+  font-weight: normal;
+}
+.workflow-action .criteria-exists {
+  background-color: #f3d066;
+  color: #ffffff;
+  border: 1px solid #f1c94e;
+}
+.workflow-action .conditional-run-criteria {
+  margin-top: -15px;
+  margin-bottom: 15px;
+  padding-top: 15px;
+  border-width: 1px;
+  border-style: solid;
+}
+.workflow-action .form-action-rows .row {
+  margin-bottom: 12px;
+}
+.panel-group .panel-workflowitem {
+  border-color: #e2e2e2;
+  margin-bottom: 30px;
+}
+.panel-group .panel-workflowitem > .panel-heading {
+  color: #6a6a6a;
+  background-color: #efefef;
+  border-color: #e2e2e2;
+}
+.panel-group .panel-workflowitem > .panel-heading + .panel-collapse > .panel-body {
+  border-top-color: #e2e2e2;
+}
+.panel-group .panel-workflowitem > .panel-heading .badge {
+  color: #efefef;
+  background-color: #6a6a6a;
+}
+.panel-group .panel-workflowitem > .panel-footer + .panel-collapse > .panel-body {
+  border-bottom-color: #e2e2e2;
+}
+.panel-group .panel-workflowitem:hover {
+  background-color: #fff;
+}
+.panel-group .panel-workflowitem .panel-heading {
+  padding: 30px;
+  background-color: #efefef;
+}
+.panel-group .panel-workflowitem .panel-heading a {
+  display: block;
+}
+.panel-group .panel-workflowitem .panel-heading a .panel-title {
+  width: 100%;
+}
+.panel-group .panel-workflowitem .panel-heading a .panel-title h3 {
+  margin: 0;
+}
+.panel-group .panel-workflowitem .panel-heading a .panel-title h3 i {
+  font-size: 35px;
+  margin-right: 12px;
+}
+.panel-group .panel-workflowitem .panel-heading a i.panel-navigation {
+  margin-top: 8px;
+}
+.panel-group .panel-workflowitem .panel-heading a i.panel-navigation:before {
+  margin-top: 6px;
+  font-family: FontAwesome;
+  content: "\f077";
+  font-size: 20px;
+}
+.panel-group .panel-workflowitem .panel-heading a.collapsed i.panel-navigation:before {
+  content: "\f078";
+}
+/*
+    Used to manage styles for specific blocks.
+
+    1. Group Viewer - styles for the group viewer block.
+
+*/
+.group-location-map {
+  float: right;
+}
+.group-location-map img {
+  border: 1px solid #c2b8a7;
+}
+@media (max-width: 992px) {
+  .group-location-map {
+    float: left;
+  }
+}
+section.group-type-attribute-panel label {
+  padding-left: 46px;
+}
+table.inherited-attribute-grid tr td:first-child {
+  padding-left: 46px;
+  width: 141px;
+}
+table.attribute-grid tr th:first-child {
+  width: 31px;
+}
+table.attribute-grid tr th:nth-child(2) {
+  width: 100px;
+}
+table.inherited-attribute-grid tr td:nth-child(2),
+table.attribute-grid tr th:nth-child(3) {
+  width: 550px;
+}
+.group-detail .panel-heading {
+  cursor: pointer;
+}
+/*
+    Used to manage styles for specific blocks.
+
+    1. Contributions - block add a contribution transaction
+    2. Scheduled Transactions - Styles for the scheduled transaction blocks
+    3. Transaction Matching
+
+*/
+.contribution-payment .tab-content {
+  margin-top: 15px;
+}
+.card-visa,
+.card-mastercard,
+.card-amex,
+.card-discover,
+.card-diners,
+.card-jcb {
+  display: inline-block;
+  width: 50px;
+  height: 30px;
+  overflow: hidden;
+  text-align: left;
+  text-indent: -999px;
+  background: url(../../../Assets/Images/sprite-cards.png) 0 0 no-repeat;
+}
+.card-mastercard {
+  background-position: -55px 0;
+}
+.card-amex {
+  background-position: -110px 0;
+}
+.card-discover {
+  background-position: -165px 0;
+}
+.card-diners {
+  background-position: -220px 0;
+}
+.card-jcb {
+  background-position: -660px 0;
+}
+.is-visa li,
+.is-mastercard li,
+.is-amex li,
+.is-discover li,
+.is-diners li,
+.is-jcb li,
+.is-nothing li {
+  opacity: .2;
+}
+.is-visa li.card-visa,
+.is-mastercard li.card-mastercard,
+.is-amex li.card-amex,
+.is-discover li.card-discover,
+.is-diners li.card-diners,
+.is-jcb li.card-jcb {
+  opacity: 1;
+}
+.scheduledtransaction-item {
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #efefef;
+}
+.scheduledtransaction-item:last-child {
+  border-bottom: 0;
+}
+.scheduledtransaction-item .actions {
+  margin: 6px 0;
+}
+.transaction-image {
+  width: 100%;
+  margin-bottom: 12px;
+  border: 2px solid #282526;
+}
+.transaction-image-thumbnail {
+  max-width: 200px;
+  max-height: 100px;
+  margin: 5px;
+  cursor: pointer;
+  border: 2px solid #282526;
+}
+.transaction-matching .progress {
+  width: 30%;
+  float: left;
+  margin-bottom: 0;
+}
+/*
+    Used to manage styles related to the person details page
+    
+    1. Page Styles
+    2. Header
+    3. Badge Bar
+    4. Family Bar
+    5. Page Tabs
+    6. Styles to Tab Pages
+    7. Edit Family Page
+    8. Add Family Page
+    9. Fluidbox
+    10. Responsive Overrides
+    11. Person Merge
+    12. Person Page Views
+    13. Deceased / Inactive Styles
+    14. Bulk Update
+    15. Photo Upload
+    16. Duplicate Pages
+    17. DISC
+    19. Edit Person
+*/
+.personprofile {
+  margin-top: -15px;
+}
+.personprofile small {
+  color: #a1998d;
+}
+.personprofilebar-bio {
+  background-color: #dbd5cb;
+  border-bottom: 1px solid #c6bdad;
+  padding: 15px 15px 0 15px;
+  color: #524c43;
+}
+.personprofilebar-bio .name {
+  text-align: center;
+  margin-top: 0;
+}
+.personprofilebar-bio .name .full-name,
+.personprofilebar-bio .name .previous-names {
+  font-size: 18px;
+  display: none;
+}
+.personprofilebar-bio .labels {
+  margin-bottom: 7.5px;
+  text-align: center;
+}
+.personprofilebar-bio .nav li .persondetails-actions {
+  padding: 2px 0 0 15px;
+}
+.personprofilebar-bio .nav li .persondetails-actions:hover,
+.personprofilebar-bio .nav li .persondetails-actions:focus {
+  background-color: transparent;
+}
+.personprofilebar-bio .actions {
+  position: absolute;
+  right: 50%;
+  bottom: 6px;
+  z-index: 10;
+  margin-right: -52px;
+}
+.personprofilebar-bio .actions a.btn-action {
+  color: #d3cec5;
+  background-color: #282526;
+  border-color: #1b1919;
+}
+.personprofilebar-bio .photo {
+  padding: 5px 5px 5px 5px;
+  background-color: #c2b8a7;
+  border: 1px solid #bdbdbd;
+  display: table;
+  max-width: 200px;
+  margin: 0 auto;
+  position: relative;
+}
+.personprofilebar-bio .photo .following-status {
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  z-index: 500;
+  border-top: 70px solid #817b72;
+  border-right: 70px solid transparent;
+  transition: 1s;
+  opacity: .4;
+}
+.personprofilebar-bio .photo .following-status i {
+  position: absolute;
+  top: -60px;
+  left: 10px;
+  color: #fff;
+  font-size: 24px;
+  transition: 1s;
+  opacity: 0;
+}
+.personprofilebar-bio .photo .following-status.following {
+  opacity: 1;
+}
+.personprofilebar-bio .photo .following-status.following i {
+  opacity: 1;
+}
+.personprofilebar-bio .photo a.fluidbox-opened + .following-status {
+  opacity: 0 !important;
+}
+.personprofilebar-bio .photo img {
+  width: 100%;
+  height: auto;
+}
+.personprofilebar-bio .photo .fluidbox-ghost {
+  cursor: -webkit-zoom-in;
+  cursor: -moz-zoom-in;
+}
+.personprofilebar-bio .photo .fluidbox-opened .fluidbox-ghost {
+  cursor: -webkit-zoom-out;
+  cursor: -moz-zoom-out;
+}
+.personprofilebar-bio .social-icons {
+  text-align: center;
+}
+.personprofilebar-bio .social-icons .icon {
+  background-color: #282526;
+  margin: 0 2px;
+  border-radius: 4px;
+  font-size: 16px;
+  display: inline-block;
+}
+.personprofilebar-bio .social-icons .icon a {
+  color: #fff;
+}
+.personprofilebar-bio .social-icons .icon a:hover {
+  opacity: .6;
+}
+.personprofilebar-bio .social-icons .icon i {
+  margin: 4px;
+}
+.personprofilebar-bio .social-icons .icon.icon-facebook {
+  background-color: #44619d;
+  color: #fff;
+}
+.personprofilebar-bio .social-icons .icon.icon-twitter {
+  background-color: #55acee;
+  color: #fff;
+}
+.personprofilebar-bio .social-icons .icon.icon-instagram {
+  background-color: #39688f;
+  color: #fff;
+}
+.personprofilebar-bio .social-icons .icon:first-child {
+  margin-left: 0;
+}
+.personprofilebar-bio .taglist {
+  margin-top: 7.5px;
+}
+.personprofilebar-bio .demographics {
+  margin-top: 30px;
+  text-align: center;
+}
+.personprofilebar-bio .personcontact {
+  text-align: center;
+  margin-top: 15px;
+  padding-bottom: 30px;
+}
+.personprofilebar-bio .personcontact .email .email-status i {
+  color: #c2b8a7;
+}
+.personprofilebar-bio .personcontact .email .email-status.do-not-email i {
+  color: #c84b4b;
+}
+.personprofilebar-bio .personcontact .email .email-status.not-active i {
+  color: #f3d066;
+}
+.personprofilebar-badge {
+  background-color: #e3ded7;
+  min-height: 64px;
+  border-bottom: 1px solid #cec5b9;
+  color: #817b72;
+}
+.personprofilebar-badge .badge-group {
+  margin: 7.5px 0;
+  text-align: center;
+}
+.personprofilebar-badge .badge-group .badge {
+  background-color: inherit;
+  padding: 3px 7px 0;
+  display: inline-block;
+}
+.personprofilebar-badge .badge-group .badge-debug {
+  text-align: left;
+  position: absolute;
+  z-index: 9999;
+  width: 900px;
+  right: 12px;
+}
+.badge-baptism {
+  color: #23a5c5;
+}
+.badge-icon {
+  font-size: 45px;
+}
+.badge-icon.badge-disabled {
+  opacity: 0.2;
+  color: #939393;
+}
+.badge-attendance ul.badge-attendance-chart {
+  display: table;
+  table-layout: fixed;
+  height: 40px;
+  margin: 0 auto;
+  width: 220px;
+}
+.badge-attendance ul.badge-attendance-chart li {
+  position: relative;
+  display: table-cell;
+  vertical-align: bottom;
+  height: 40px;
+  width: 10px;
+}
+.badge-attendance ul.badge-attendance-chart li span {
+  display: block;
+  background: #817b72;
+  width: 8px;
+  min-height: 1px;
+}
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .badge-attendance ul.badge-attendance-chart li span {
+    position: absolute;
+    bottom: 0;
+  }
+}
+.badge-attendance.annimate ul.badge-attendance-chart li span {
+  -webkit-animation: bar-grow 1s ease-in-out;
+  -moz-animation: bar-grow 1s ease-in-out;
+  -o-animation: bar-grow 1s ease-in-out;
+  animation: bar-grow 1s ease-in-out;
+}
+.badge-disc ul.badge-disc-chart {
+  display: table;
+  table-layout: fixed;
+  height: 40px;
+  margin: 0 auto;
+  width: 45px;
+}
+.badge-disc ul.badge-disc-chart li {
+  position: relative;
+  display: table-cell;
+  vertical-align: bottom;
+  height: 40px;
+  width: 3px;
+}
+.badge-disc ul.badge-disc-chart li span {
+  display: block;
+  background: #99bbd9;
+  width: 10px;
+  min-height: 2px;
+}
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .badge-disc ul.badge-disc-chart li span {
+    position: absolute;
+    bottom: 0;
+  }
+}
+.badge-disc ul.badge-disc-chart li.badge-disc-primary span {
+  background: #4f89bd;
+}
+.badge-disc.annimate ul.badge-disc-chart li span {
+  -webkit-animation: bar-grow 1s ease-in-out;
+  -moz-animation: bar-grow 1s ease-in-out;
+  -o-animation: bar-grow 1s ease-in-out;
+  animation: bar-grow 1s ease-in-out;
+}
+.badge-attendingduration {
+  position: relative;
+  color: #686576;
+}
+.badge-attendingduration .duration-metric:before {
+  font-family: FontAwesome;
+  content: "\f111";
+  color: #d0db25;
+  font-size: 45px;
+}
+.badge-attendingduration .duration-metric.duration-months:before {
+  color: #49b039;
+}
+.badge-attendingduration .duration-metric.duration-years:before {
+  color: #3971b0;
+}
+.badge-attendingduration .duration-metric.duration-new:before {
+  color: #db2525;
+}
+.badge-attendingduration .duration-metric .metric-value {
+  font-size: 20px;
+  position: absolute;
+  left: 11px;
+  top: 14px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 12px;
+  width: 30px;
+  text-align: center;
+}
+.badge-attendingduration .duration-metric .metric-unit {
+  font-size: 11px;
+  font-weight: normal;
+  display: block;
+}
+.badge-attendingduration .duration-metric.duration-new .metric-value {
+  font-size: 14px;
+  font-weight: 700;
+  top: 18px;
+}
+.badge-weeksattendanceduration .weeks-metric {
+  position: relative;
+  color: #686576;
+}
+.badge-weeksattendanceduration .weeks-metric:before {
+  font-family: FontAwesome;
+  content: "\f0c8";
+  color: #f3d066;
+  font-size: 45px;
+}
+.badge-weeksattendanceduration .weeks-metric .weeks-attended {
+  position: absolute;
+  top: 7px;
+  left: 3px;
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: -2px;
+  display: block;
+  width: 18px;
+  text-align: center;
+}
+.badge-weeksattendanceduration .weeks-metric .week-duration {
+  position: absolute;
+  bottom: 10px;
+  right: 4px;
+  font-weight: 700;
+  font-size: 11px;
+}
+.badge-lastvisitonsite .badge-content {
+  position: relative;
+  color: #4f89bd;
+}
+.badge-lastvisitonsite .badge-content.today .duration {
+  font-size: 11px;
+  top: 6px;
+}
+.badge-lastvisitonsite .badge-content.recent {
+  opacity: .8;
+}
+.badge-lastvisitonsite .badge-content.moderate {
+  opacity: .6;
+}
+.badge-lastvisitonsite .badge-content.not-recent {
+  opacity: .4;
+}
+.badge-lastvisitonsite .badge-content.old {
+  opacity: .2;
+}
+.badge-lastvisitonsite .badge-content i {
+  font-size: 40px;
+}
+.badge-lastvisitonsite .badge-content span.duration {
+  position: absolute;
+  top: 5px;
+  font-size: 16px;
+  font-weight: 900;
+  text-align: center;
+  right: 50%;
+  width: 36px;
+  margin-right: -17px;
+}
+@-webkit-keyframes bar-grow {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+}
+@-moz-keyframes bar-grow {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+}
+@-o-keyframes bar-grow {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+}
+@keyframes bar-grow {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+}
+.personprofilebar-family {
+  background: #f3f3f4;
+  padding: 12px 0;
+  border-bottom: 1px solid #d8d8dc;
+  color: #6a6a6a;
+  min-height: 60px;
+}
+.personprofilebar-family a {
+  color: #6a6a6a;
+}
+.personprofilebar-family .groupmembers .member a {
+  border-radius: 4px;
+  padding: 8px;
+  display: block;
+}
+.personprofilebar-family .groupmembers .member a:before,
+.personprofilebar-family .groupmembers .member a:after {
+  content: " ";
+  display: table;
+}
+.personprofilebar-family .groupmembers .member a:after {
+  clear: both;
+}
+.personprofilebar-family .groupmembers .member .person-image {
+  /* For Webkit browsers */
+  /* For IE 6 - 9 */
+  /* Fade to color for Chrome and Safari */
+  /* Firefox 10+, Firefox on Android */
+  filter: grayscale(100%);
+  -webkit-filter: grayscale(100%);
+  /* For Webkit browsers */
+  filter: gray;
+  /* For IE 6 - 9 */
+  -webkit-transition: all .6s ease;
+  /* Fade to color for Chrome and Safari */
+  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
+  /* Firefox 10+, Firefox on Android */
+  transition: .5s;
+}
+.personprofilebar-family .groupmembers .member:hover {
+  background-color: #dedee0;
+  border-radius: 4px;
+}
+.personprofilebar-family .groupmembers .member:hover .person-image {
+  filter: grayscale(0%);
+  -webkit-filter: grayscale(0%);
+  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 1 0\'/></filter></svg>#grayscale");
+}
+.personprofilebar-family .actions {
+  position: absolute;
+  right: 12px;
+  z-index: 999;
+}
+.personprofilebar-family .actions a.btn-action {
+  color: #524c43;
+  background-color: #dbd5cb;
+  border-color: #d1c9bc;
+}
+.personprofilebar-family header {
+  font-size: 16px;
+  margin-bottom: 7.5px;
+}
+.personprofilebar-family .addresses ul {
+  list-style: none;
+  margin: 0;
+}
+.personprofilebar-family .addresses ul li {
+  display: block;
+  clear: both;
+  margin-bottom: 15px;
+}
+.personprofilebar-family .addresses ul li:last-child {
+  margin-bottom: 0;
+}
+.personprofilebar-family .addresses ul h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+.personprofilebar-family .addresses ul .address .actions a {
+  padding: 1px;
+}
+.personprofilebar-family .addresses ul a.map,
+.personprofilebar-family .addresses ul div.actions,
+.personprofilebar-family .addresses ul div.address {
+  float: left;
+  margin-right: 12px;
+}
+.pagetabs {
+  margin-top: 12px;
+}
+.editfamily-list li.member {
+  min-width: 200px;
+}
+.editfamily-list li.member .radio {
+  margin: 0;
+}
+.editfamily-list .groupmembers h4 {
+  margin-bottom: 4px;
+}
+span.field-name {
+  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+  padding: 2px 4px;
+  font-size: 90%;
+  color: #515151;
+  background-color: #d9e1e8;
+  white-space: nowrap;
+  border-radius: 4px;
+}
+span.field-value {
+  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+  padding: 2px 4px;
+  font-size: 90%;
+  color: #515151;
+  background-color: #d9e1e8;
+  white-space: nowrap;
+  border-radius: 4px;
+}
+.table-familymembers .radio:first-child {
+  margin-top: 0;
+}
+#fluidbox-overlay {
+  background: rgba(255, 255, 255, 0.5);
+}
+/* Small devices (tablets, 768px and up) */
+@media (min-width: 768px), print {
+  .personprofilebar-bio {
+    padding: 15px;
+  }
+  .personprofilebar-bio .actions {
+    right: 12px;
+    margin-right: 0;
+  }
+  .personprofilebar-bio .name {
+    text-align: left;
+  }
+  .personprofilebar-bio .name .full-name,
+  .personprofilebar-bio .name .previous-names {
+    display: inline;
+  }
+  .personprofilebar-bio .labels {
+    text-align: right;
+  }
+  .personprofilebar-bio .photo {
+    margin: 0;
+  }
+  .personprofilebar-bio .taglist {
+    margin-top: 0;
+  }
+  .personprofilebar-bio .demographics {
+    text-align: left;
+  }
+  .personprofilebar-bio .personcontact {
+    text-align: left;
+    padding-bottom: 0;
+  }
+  .personprofilebar-bio .social-icons {
+    text-align: left;
+  }
+  .personprofilebar-bio .social-icons .icon {
+    float: left;
+  }
+  .personprofilebar-badge .badge-group {
+    text-align: left;
+  }
+  .personprofilebar-badge .badge-group:last-child {
+    text-align: right;
+  }
+}
+/* Medium devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+  .personprofilebar-bio .personcontact {
+    margin-top: 0;
+  }
+}
+/* Large devices (large desktops, 1200px and up) */
+.table thead th.merge-personselect {
+  background-color: #282526;
+  color: #d3cec5;
+  border-color: #353133;
+  vertical-align: top !important;
+}
+.table thead th.merge-personselect .merge-header-summary {
+  margin-left: 20px;
+}
+.table thead th.merge-personselect .merge-header-summary i {
+  margin-right: 12px;
+  float: left;
+}
+.table thead th.merge-personselect .btn-danger {
+  color: #fff;
+}
+.table thead th.merge-personselect small {
+  color: #b2a99a;
+}
+.table thead th.merge-personselect .merge-heading-family {
+  margin-bottom: 12px;
+}
+.table thead th.merge-personselect .merge-heading-family span {
+  display: block;
+}
+.merge-photo {
+  border: 3px solid #c2b8a7;
+}
+.panel-widget.pageviewsession .pageviewsession-client {
+  color: #282526;
+  text-align: right;
+  line-height: 1;
+}
+.person-bio div.deceased h1.title.name:after {
+  content: 'Deceased';
+  font-size: 14px;
+  margin-left: 12px;
+  color: #c84b4b;
+}
+.groupmembers .member.deceased:hover {
+  background-color: #d8d8dc;
+}
+.groupmembers .member.deceased .person-info:after {
+  content: 'Deceased';
+  font-size: 10px;
+  color: #c84b4b;
+}
+tr.inactive td {
+  color: #b7b7b7;
+}
+.bulk-update .no-select .form-group {
+  opacity: 1;
+}
+.bulk-update .fade-inactive .form-group {
+  opacity: 0.5;
+}
+.bulk-update .fade-inactive .form-group .control-label {
+  cursor: pointer;
+}
+.bulk-update .form-group.bulk-item-selected {
+  opacity: 1;
+  background-color: #f3f3f4;
+  padding: 12px;
+  border-radius: 4px;
+}
+.photoupload-photo .image-editor {
+  float: left;
+  margin-right: 48px;
+}
+.photoupload-photo .image-editor label {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 150px;
+  overflow: hidden;
+}
+.grid-table tbody tr.duplicate-source td,
+.grid-table tbody tr.duplicate-source:hover > td {
+  background-color: #f3f3f4;
+  color: #333333;
+}
+.disc-assessment th {
+  padding: 6px;
+}
+.disc-assessment th:last-child {
+  border-radius: 0 4px 0 0;
+}
+.disc-assessment th.disc-question {
+  font-weight: 700;
+  padding: 6px;
+  border-radius: 4px 0 0 0;
+}
+.disc-assessment .disc-question {
+  width: 100%;
+}
+.disc-assessment .disc-answer {
+  width: 100px;
+}
+.disc-heading {
+  text-align: center;
+}
+.discchart {
+  clear: both;
+  padding: 0;
+  width: 80%;
+  height: 425px;
+  margin: 0 auto;
+  max-width: 650px;
+  position: relative;
+}
+.discchart li {
+  display: inline-block;
+  height: 425px;
+  margin: 0 2% 0 0;
+  width: 20%;
+  padding: 0;
+  position: relative;
+  text-align: center;
+  vertical-align: bottom;
+  border-radius: 6px 6px 0 0;
+  background-color: #282526;
+  color: #d3cec5;
+}
+.discchart li.discchart-midpoint {
+  height: 70%;
+  width: 100%;
+  background-color: transparent;
+  position: absolute;
+  bottom: 0;
+  border-top: 2px solid red;
+  border-radius: 0;
+}
+.discchart .discbar-label {
+  font-weight: 500;
+  overflow: hidden;
+  text-transform: uppercase;
+  width: 100%;
+  font-size: 28px;
+  bottom: 20px;
+  position: absolute;
+}
+.discchart .discbar {
+  border: 1px solid #ddd;
+}
+.discchart .discbar:before {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 5%;
+  letter-spacing: -3px;
+  font-size: 20px;
+  padding: 5px 1em 0;
+  display: block;
+  text-align: center;
+  content: attr(title);
+  word-wrap: break-word;
+  line-height: 1em;
+}
+.discchart .discbar.discbar-primary {
+  background: #000000;
+}
+.disc-chart .discbar-value {
+  letter-spacing: -3px;
+  opacity: .4;
+  width: 100%;
+  font-size: 30px;
+  position: absolute;
+}
+.phonegroup-label {
+  margin-bottom: 5px;
+}
+@media (min-width: 768px) {
+  .phonegroup-label {
+    padding-top: 4px;
+  }
+}
+/*
+    Used to manage styles for specific blocks.
+
+    1. Communication Blocks - styles for the communication blocks
+
+*/
+.recipients .recipient {
+  float: left;
+  width: 100%;
+}
+.recipients .recipient.failed {
+  color: #c84b4b;
+}
+.recipients .recipient.opened {
+  color: #43be81;
+}
+iframe.email-body {
+  width: 100%;
+  border: 1px solid #c2b8a7;
+  background-color: #fff;
+  height: 300px;
+}
+@media (min-width: 768px) {
+  .recipients .recipient {
+    width: 50%;
+  }
+}
+@media (min-width: 992px) {
+  .recipients .recipient {
+    width: 25%;
+  }
+}
+/*
+    Used to manage styles for check-in administration.
+
+    1. Group / Location
+    2. Attendance Analysis
+*/
+.panel.panel-widget.checkin-group {
+  border-top-color: #afd074;
+}
+.panel.panel-widget.checkin-grouptype {
+  border-top-color: #5593a4;
+}
+.attendance-reporting .panel-body {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.attendance-reporting .panel-body > .row > [class*="col-"]:first-child {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+@media (min-width: 992px) {
+  .attendance-reporting .panel-body .row {
+    margin-left: -16px;
+  }
+}
+.attendance-reporting .analysis-types {
+  padding: 15px 0;
+  background-color: #efefef;
+  margin-bottom: 24px;
+}
+/*
+    Used to manage styles for specific blocks.
+
+    1. User Entry
+    2. 
+
+*/
+.workflow-entry-panel > h1:first-of-type {
+  margin-top: 0;
+}
+/*
+    Used to manage styles for specific blocks.
+
+    1. Prayer Session
+    2. 
+
+*/
+.prayer-session .panel-note {
+  border: 0;
+  box-shadow: none;
+}
+.prayer-session .panel-note > .panel-body {
+  padding: 0;
+}
+/*
+    Used to manage styles for specific blocks.
+
+    1. Calendar - Styles for the calendar blocks
+    2. Event Entry - The event registration entry screen
+
+*/
+.calendar {
+  padding: 0 10px 10px 10px;
+  display: inline-block;
+  border: 1px solid #dbd5cb;
+  border-radius: 4px;
+  width: 100%;
+}
+.calendar-month {
+  border: none;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.calendar-month a {
+  text-decoration: none;
+  color: #6a6a6a !important;
+}
+.calendar-month th {
+  text-align: center;
+}
+.calendar-month td {
+  color: #6a6a6a !important;
+}
+.calendar-month table.calendar-title td {
+  padding: 10px 5px;
+}
+.calendar-month td.calendar-day {
+  padding: 5px;
+}
+.calendar-month table.calendar-title,
+.calendar-month table.calendar-title a {
+  font-weight: 700;
+}
+.calendar-month .calendar-today {
+  border-radius: 4px;
+}
+.calendar-month .calendar-today,
+.calendar-month .calendar-selecteditem {
+  background-color: #d9edf7 !important;
+  color: #3a87ad !important;
+  border-radius: 0;
+}
+.calendar-month .calendar-selecteditem:first-child {
+  border-radius: 4px 0 0 4px;
+}
+.calendar-month .calendar-selecteditem:last-child {
+  border-radius: 0 4px 4px 0;
+}
+.calendar-month .calendar-selected {
+  background-color: #3bc2df !important;
+  color: #ffffff !important;
+}
+.calendar-month .calendar-selected a {
+  color: #ffffff !important;
+}
+.calendar-month .calendar-last-month a {
+  opacity: .2;
+}
+.registrationentry-intro {
+  text-align: center;
+}
+.registrationentry-intro h1 {
+  margin-top: 24px;
+  margin-bottom: 48px;
+}
+.registrationentry-intro .input-group {
+  margin: 0 auto 48px auto;
+}
+.registrationentry-summary .fee-table > .row {
+  padding: 8px 0;
+}
+.registrationentry-summary .row.fee-header {
+  border-bottom: 1px solid #ffffff;
+  padding-bottom: 2px;
+  margin-bottom: 6px;
+}
+/*
+    
+
+    table.calendar th.calendar-day-header {
+        text-align: center;
+        color: #6a6a6a !important;
+    }
+
+    
+    table.calendar td.calendar-last-month,
+    table.calendar td.calendar-day {
+        padding: 5px;
+    }
+    
+        table.calendar td.calendar-last-month a {
+            color: #dfdfdf !important;
+            font-size: 12px;
+        }
+        
+        table.calendar td.calendar-day a,
+        table.calendar td.calendar-today a,
+        table.calendar td.calendar-selected a {
+            font-size: 14px;
+            color: #6a6a6a;
+        }
+
+        table.calendar td.calendar-today {  
+            background-color: #FCF8E3!important; 
+        }
+
+        table.calendar td.calendar-today a {
+            color:#c09853 !important;
+            font-weight:bold;
+        }
+
+        table.calendar td.calendar-today a:after {
+            content:"TODAY"; 
+            color:#000; 
+            font-size:0.5em;
+            pointer-events:none; 
+            width:100%; 
+            float:left;
+        }
+
+        table.calendar td.calendar-today a:hover {  
+            background-color: #fcf8e3;  
+        }
+
+    */
+/*
   Used to manage styles related to reusable components / widgets.
 
   1. Pickers - used to pick complex data types
@@ -752,6 +2800,7 @@ Copyright (c) 2012 Dan Eden*/
   32. Photo Round
   33. Wizard
   34. Checkbox
+  35. Follow button
 
   xx. Misc
 */
@@ -2217,2054 +4266,35 @@ ul.list-group-panel .list-group-item:first-child,
 .rock-checkbox-icon {
   cursor: pointer;
 }
-/*
-    Used to manage styles related to Rock's forms
-    
-    1. Bootstrap Overrides / Additions
-    2. Data Lists
-    3. Input Sizing
-    4. Control Specific Styles
-    5. Validation
-    6. Custom Controls
-    7. Static Control
-*/
-.form-actions {
-  padding: 12px 16px;
-  background-color: #dbd5cb;
-  color: #524c43;
-}
-legend {
-  font-weight: 300;
-  color: #6a6a6a;
-  border-width: 0;
-}
-.checkbox-inline:first-child,
-.radio-inline:first-child {
-  padding-left: 30px;
-}
-a.aspNetDisabled {
-  opacity: 0.5;
-}
-.form-group.rock-literal label,
-.rock-control-wrapper label {
-  margin-bottom: 0;
-}
-.form-group.rock-literal p.form-control-static,
-.rock-control-wrapper p.form-control-static {
-  padding-top: 0;
-}
-.form-group {
-  font-size: 14px;
-  line-height: 1.42857143;
-}
-.form-group .checkbox:last-child {
-  margin-bottom: 30px;
-}
-.form-group > .form-group {
-  margin-top: 12px;
-}
-.form-horizontal .form-group {
-  margin-right: 0;
-}
-.form-horizontal .form-group label {
-  float: left;
-  padding-right: 12px;
-}
-.form-horizontal .form-group .form-control-group,
-.form-horizontal .form-group .form-control {
-  float: left;
-}
-.controls .checkbox:first-child {
-  margin-top: 0;
-}
-.form-group.required .control-label:after {
-  font-family: FontAwesome;
-  content: '\f111';
-  margin-left: 4px;
-  font-size: 6px;
-  color: #eca9a7;
-  vertical-align: super;
-}
-dl:not(.dl-horizontal) {
-  margin-bottom: 0;
-}
-dl:not(.dl-horizontal) dt {
-  font-weight: 900;
-  margin-top: 16px;
-  margin-bottom: 2px;
-}
-dl:not(.dl-horizontal) dt:first-child {
-  margin-top: 0;
-}
-dl:not(.dl-horizontal) dd {
-  margin-left: 0;
-}
-.form-control.input-width-xs,
-.input-group.input-width-xs {
-  width: 60px;
-}
-.form-control.input-width-sm,
-.input-group.input-width-sm {
-  width: 90px;
-}
-.form-control.input-width-md,
-.input-group.input-width-md {
-  width: 140px;
-}
-.form-control.input-width-lg,
-.input-group.input-width-lg {
-  width: 210px;
-}
-.form-control.input-width-xl,
-.input-group.input-width-xl {
-  width: 270px;
-}
-.form-control.input-width-xxl,
-.input-group.input-width-xxl {
-  width: 530px;
-}
-.form-control-group:before,
-.form-control-group:after {
-  content: " ";
-  display: table;
-}
-.form-control-group:after {
-  clear: both;
-}
-.form-control-group .form-control,
-.form-control-group .input-group {
-  margin-right: 6px;
-  float: left;
-}
-.form-control-group > span {
-  float: left;
-  margin: 8px 6px 0 0;
-}
-.form-control-group > label {
-  float: left;
-  margin-top: 8px;
-}
-.month-year-picker .separator,
-.month-day-picker .separator {
-  float: left;
-  font-size: 20px;
-  margin: 4px 8px 0 -2px;
-  color: #c3c3c3;
-}
-.rock-check-box .checkbox {
-  margin-top: 0;
-}
-.validation-error {
-  color: #c84b4b;
-  font-weight: 300;
-  float: left;
-}
-.btn-controlaligned {
-  margin-top: 24px;
-}
-.form-group.static-control label {
-  margin-bottom: 0;
-}
-.form-group.static-control .form-control-static {
-  padding-top: 0;
-}
-/*
-    Used to manage styles related to Rock's dashboard
-    
-    1. Basic Widgets
-    2. 
-    3. 
-    4. 
-    5. 
-
-*/
-.panel-dashboard {
-  margin: 24px 0 0 ;
-  height: 220px;
-  border-color: #dbd5cb;
-}
-.panel-dashboard > .panel-heading {
-  color: #524c43;
-  background-color: #dbd5cb;
-  border-color: #dbd5cb;
-}
-.panel-dashboard > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #dbd5cb;
-}
-.panel-dashboard > .panel-heading .badge {
-  color: #dbd5cb;
-  background-color: #524c43;
-}
-.panel-dashboard > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #dbd5cb;
-}
-/*
-    Used to manage styles related to Rock's internal grid component
-    
-    1. Bootstrap Overrides
-    2. Core Table
-    3. Filter
-    4. Column Header
-    5. Footer
-    6. Light Style - Used for small grids
-    7. Reusable classes
-    8. Column Types
-    9. Row Types
-    10. Responsive Columns
-
-*/
-/*.table-responsive > .table-bordered,
-.table-responsive[data-pattern="priority-columns"] > .table-bordered {
-    border: 1px solid @table-border-color;
-}*/
-.table-hover tbody tr:hover td,
-.table-hover tbody tr:hover th {
-  background-color: rgba(0, 0, 0, 0.03);
-}
-td.grid-select-cell {
-  cursor: pointer;
-}
-td.wrap-contents {
-  -ms-word-break: break-all;
-  word-break: break-all;
-  -webkit-hyphens: auto;
-  -moz-hyphens: auto;
-  -ms-hyphens: auto;
-  hyphens: auto;
-}
-.table {
-  margin-bottom: 0;
-}
-.grid {
-  margin-bottom: 20px;
-}
-.grid .grid-table {
-  border: 1px solid #dddddd;
-}
-.grid .grid-table.table-light {
-  border: none;
-}
-.grid.grid-panel .grid-table {
-  border: none !important;
-}
-.grid.grid-panel th:first-child,
-.grid.grid-panel td:first-child {
-  border-left: 0;
-}
-.grid.grid-panel th:last-child,
-.grid.grid-panel td:last-child {
-  border-right: 0;
-}
-.grid-panel .table-responsive[data-pattern="priority-columns"],
-.table-responsive.table-no-border {
-  border: 0;
-}
-.table-responsive[data-pattern="priority-columns"] {
-  position: static;
-}
-/*.table-responsive[data-pattern="priority-columns"] {
-    margin-bottom: inherit;
-    border: inherit;
-    border-radius: inherit;
-}*/
-.table-wrapper .btn-toolbar {
-  display: none;
-}
-.grid-filter {
-  background-color: #efefef;
-  border-radius: 4px;
-  padding: 6px 12px;
-  border-bottom: 1px solid #dddddd;
-}
-.grid-filter header {
-  border-radius: 4px 4px 0 0;
-  padding: 4px;
-  cursor: pointer;
-  height: 24px;
-  text-align: right;
-}
-.grid-filter header h3 {
-  font-size: 12px;
-  margin: 0 2px 0 2px;
-  line-height: 16px;
-  display: inline;
-  font-weight: 300;
-}
-.grid-filter header i {
-  color: #9d9d9d;
-}
-.grid-filter header fieldset {
-  margin-bottom: 0;
-}
-.grid-filter h4 {
-  margin: 12px 0 20px;
-  padding-bottom: 8px;
-  font-weight: 300;
-}
-.grid-filter .grid-filter-entry {
-  margin-bottom: 12px;
-}
-.grid-filter .picker .picker-label {
-  background-color: #efefef;
-  color: #6a6a6a;
-  border-color: #d6d6d6;
-}
-/*.grid-filter +  div .grid-table {
-    margin-top: -12px;   
-}*/
-.grid-filter-entry legend + .control-group {
-  margin-top: 0;
-}
-.grid-filter-overview fieldset {
-  margin-bottom: 12px;
-}
-.table thead th {
-  background-color: #efefef;
-  font-size: 14px;
-  color: #524c43;
-  font-weight: 700;
-}
-.table thead th a {
-  color: #524c43;
-  display: block;
-}
-.table thead th.ascending a::before {
-  padding-right: 5px;
-  content: "\f0d8";
-  font-family: FontAwesome;
-}
-.table thead th.descending a::before {
-  padding-right: 5px;
-  content: "\f0d7";
-  font-family: FontAwesome;
-}
-.grid-paging {
-  background-color: #efefef;
-}
-.grid-paging .pagination {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-.grid-paging .grid-pager {
-  float: right;
-}
-.grid-paging .grid-pagesize {
-  float: left;
-}
-.grid-paging .grid-itemcount {
-  float: left;
-  font-size: 11px;
-  margin-left: 10px;
-  margin-top: 7px;
-}
-td.grid-col-actions {
-  text-align: right;
-}
-.grid-actions {
-  text-align: right;
-  background-color: #ffffff;
-}
-.grid-actions .btn {
-  margin-left: 8px;
-}
-.table-light thead th {
-  background-color: inherit;
-  color: #6a6a6a;
-  font-weight: 900;
-}
-.table-light tfoot td {
-  background-color: inherit;
-}
-.table-light tfoot td .grid-actions a {
-  border-radius: 0;
-  border-style: none;
-  border-width: 0;
-  box-shadow: none;
-  border-color: none;
-}
-.table-light .grid-columncommand {
-  text-align: right;
-  width: 42px;
-  min-width: 42px;
-}
-.table-padded td,
-.table-padded th {
-  padding: 12px !important;
-}
-.grid-select-field {
-  text-align: center;
-  min-width: 40px;
-}
-.grid-select-field .checkbox,
-.grid-select-field .radio {
-  padding-left: 0;
-  margin: 0;
-}
-.grid-select-field .checkbox input,
-.grid-select-field .radio input {
-  float: none;
-  margin: 0;
-}
-.grid-select-field .checkbox:last-child,
-.grid-select-field .radio:last-child {
-  margin-bottom: 0px;
-  margin-left: -12px;
-}
-.grid-select-field .checkbox label,
-.grid-select-field .radio label {
-  padding: 0;
-}
-.table > tbody > tr > th,
-.table > tbody > tr > td {
-  padding: 12px;
-}
-.table > tbody > tr > th.grid-columncommand,
-.table > tbody > tr > td.grid-columncommand {
-  padding: 6px;
-  padding-top: 12px;
-  min-width: 48px;
-}
-.table > tbody > tr > th.grid-columnreorder,
-.table > tbody > tr > td.grid-columnreorder {
-  padding-top: 12px;
-  min-width: 48px;
-  width: 48px;
-}
-.table .color-field {
-  padding: 0;
-  width: 4px;
-}
-.table .color-field + th {
-  border-left-width: 0px;
-}
-.table .grid-icon img {
-  width: 72px;
-  height: 72px;
-}
-.table > tbody > tr.grid-section-header > td {
-  background-color: #e3ded7;
-  color: #817b72;
-}
-.table > tbody > tr.grid-section-header:hover > td {
-  background-color: #e3ded7 !important;
-}
-tr.row-highlight td {
-  background-color: #282526 !important;
-  color: #d3cec5 !important;
-}
-.table-responsive {
+.panel .panel-heading.panel-follow {
   position: relative;
-  width: 100%;
-  overflow-y: hidden;
-  overflow-x: auto;
-  -ms-overflow-style: -ms-autohiding-scrollbar;
-  -webkit-overflow-scrolling: touch;
+  padding-right: 40px;
 }
-.table-responsive th[data-priority],
-.table-responsive td[data-priority] {
-  display: none;
-}
-.table-responsive th[data-priority="1"],
-.table-responsive td[data-priority="1"] {
-  display: table-cell;
-}
-@media screen and (min-width: 480px) {
-  .table-responsive th[data-priority="2"],
-  .table-responsive td[data-priority="2"] {
-    display: table-cell;
-  }
-}
-@media screen and (min-width: 640px) {
-  .table-responsive th[data-priority="3"],
-  .table-responsive td[data-priority="3"] {
-    display: table-cell;
-  }
-}
-@media screen and (min-width: 800px) {
-  .table-responsive th[data-priority="4"],
-  .table-responsive td[data-priority="4"] {
-    display: table-cell;
-  }
-}
-@media screen and (min-width: 960px) {
-  .table-responsive th[data-priority="5"],
-  .table-responsive td[data-priority="5"] {
-    display: table-cell;
-  }
-}
-@media screen and (min-width: 1120px) {
-  .table-responsive th[data-priority="6"],
-  .table-responsive td[data-priority="6"] {
-    display: table-cell;
-  }
-}
-/*
-    Used to manage styles for specific blocks.
-
-    1. HTML Content - block to edit HTML on a page
-    2. My Account - Used on external sites for setting person details
-    3. Lava Debug - Used to style the lava debug panel
-*/
-.htmlcontent-edit-header {
-  padding: 7.5px 15px 0 15px;
-}
-.htmlcontent-edit-header .html-content-approve {
-  float: right;
-  margin-top: 4px;
-}
-.codeeditor-header .picker-mergefield {
-  float: right;
-}
-.my-account {
-  margin-bottom: 15px;
-}
-.my-account .photo img {
-  width: 100%;
-}
-.lava-debug {
-  clear: both;
-  margin-top: 24px;
-}
-.lava-debug code {
-  background-color: #c4e3f3;
-  color: #3a87ad;
-}
-.lava-debug p {
-  margin-bottom: 10px;
-  font-weight: normal !important;
-}
-.lava-debug p.attributes {
-  margin-bottom: 0;
-}
-.lava-debug .lava-debug-key {
-  font-weight: 700;
-}
-.lava-debug .panel.panel-lavadebug {
-  border: 0;
-}
-.lava-debug .panel.panel-lavadebug .panel-heading {
-  background-color: #cce7f4;
-  color: #3a87ad;
-  border: 0;
-  cursor: pointer;
-}
-.lava-debug .panel.panel-lavadebug .panel-heading.collapsed i:before {
-  content: "\f078";
-}
-.lava-debug .panel.panel-lavadebug .panel-body {
-  background-color: #e6f3fa;
-}
-/*
-    Used to manage styles for specific blocks.
-
-    1. User Registration - Styling for the user registration blocks
-    2. Security Popup - Styling for the security pop-up window)
-
-*/
-.not-me {
-  margin-left: 21px;
-}
-.security-inherited {
-  margin-top: 12px;
-}
-.security .nav.nav-pagelist .nav.nav-pills li {
-  float: left;
-}
-/*
-    Used to manage styles for specific blocks.
-
-    1. SQL Command - block to query database directly
-    2. Data Views - block for creating data views
-    3. Dynamic Report - block for making reports dynamically updated
-*/
-.sql-comand .panel {
-  margin-bottom: 24px;
-}
-/* data views */
-.filter-toggle {
-  margin-top: 5px;
-}
-.filter-toggle > span {
-  float: left;
-}
-.filter-toggle .panel-title {
-  margin-top: 4px;
-}
-.filter-toggle .btn-toggle {
-  margin: 0 6px;
-}
-.filter-item-select span {
-  float: left;
-  padding: 8px 6px 0 0;
-}
-.filter-item-select select {
-  float: left;
-  width: 250px;
-}
-.field-criteria .checkbox-inline {
-  margin-top: 8px;
-}
-.filter-item div[class*='col'] {
-  margin-bottom: 6px;
-}
-@media (min-width: 992px) {
-  .filter-item div[class*='col'] {
-    margin-bottom: 0;
-  }
-}
-.filterfield {
-  margin-bottom: 12px;
-}
-.filterfield-label {
-  font-weight: 700;
-  margin-top: 8px;
-  display: block;
-}
-/*
-    Used to manage styles for specific blocks.
-
-    1. Notes - block to display, add, edit, delete notes
-    2. Schedule Builder - block for building schedules
-    3. Workflow - styles for workflow blocks
-
-*/
-.panel-note {
-  border-color: #e2e2e2;
-}
-.panel-note > .panel-heading {
-  color: #6a6a6a;
-  background-color: #efefef;
-  border-color: #e2e2e2;
-}
-.panel-note > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #e2e2e2;
-}
-.panel-note > .panel-heading .badge {
-  color: #efefef;
-  background-color: #6a6a6a;
-}
-.panel-note > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #e2e2e2;
-}
-.panel-note .panel-body {
-  background-color: #fffs;
-}
-.panel-note .panel-heading h3 {
-  float: left;
-  margin-top: 4px;
-}
-.panel-note .panel-heading .btn {
-  float: right;
-  margin: 0;
-}
-.panel-note article {
-  border-radius: 4px;
-  border: 1px solid #d6d6d6;
-  padding: 15px;
-  margin-bottom: 15px;
-  background-color: #efefef;
-  position: relative;
-}
-.panel-note article .date {
-  font-size: 13px;
-  font-weight: 300;
-  margin-left: 8px;
-}
-.panel-note article > i {
+.panel-follow-status {
   position: absolute;
-  width: 28px;
-  font-size: 28px;
-  margin: 0 12px 0 4px;
-  opacity: .2;
-}
-.panel-note article .details {
-  margin-left: 50px;
-}
-.panel-note article .details h5 {
-  margin-top: 0;
-  margin-bottom: 6px;
-  max-width: 70%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.panel-note article .actions {
-  position: absolute;
-  right: 15px;
-  top: 10px;
-}
-.panel-note article .actions a {
-  float: right;
-  margin-left: 8px;
-  font-size: 14px;
-}
-.panel-note article.highlight {
-  background-color: #f2dede;
-  border: 1px solid #eed3d7;
-  color: #b94a48;
-}
-.panel-note article.highlight a {
-  color: #b94a48;
-}
-.panel-note article.personal {
-  background-color: #c2b8a7;
-  border: 1px solid #bcac9e;
-  color: #616161;
-}
-.panel-note article > img {
-  float: left;
-  margin: 0 12px 0 4px;
-}
-.panel-note .load-more {
-  margin: 0 40%;
-  min-width: 150px;
-  width: 20%;
-}
-.panel-note .load-more span {
-  margin: 0 12px;
-}
-.note-deny article,
-.note-danger article,
-.note-security article {
-  border-color: #eed3d7;
-  background-color: #f2dede;
-  color: #b94a48;
-}
-.note-deny .actions a,
-.note-danger .actions a,
-.note-security .actions a {
-  color: #b94a48;
-}
-.note-approve article,
-.note-success article {
-  border-color: #d6e9c6;
-  background-color: #dff0d8;
-  color: #468847;
-}
-.note-approve .actions a,
-.note-success .actions a {
-  color: #468847;
-}
-.note-info article {
-  border-color: #bce8f1;
-  background-color: #d9edf7;
-  color: #3a87ad;
-}
-.note-info .actions a {
-  color: #3a87ad;
-}
-.note-warning article {
-  border-color: #fbeed5;
-  background-color: #fcf8e3;
-  color: #c09853;
-}
-.note-warning .actions a {
-  color: #c09853;
-}
-.panel-note-light {
-  border: 0;
-  background: none;
-}
-.panel-note-light .panel-body {
-  background: none;
-}
-.panel-note-light article {
-  background: none;
-  border-radius: 0;
-  border-width: 0 0 1px 0;
-  padding-left: 0;
-}
-.panel-note-light article .details {
-  margin-left: 0;
-}
-.panel-note-light article .note-author,
-.panel-note-light article .note-created {
-  font-size: 13px;
-  opacity: 0.7;
-}
-.panel-noteentry {
-  border-color: #dbd5cb;
-}
-.panel-noteentry > .panel-heading {
-  color: #524c43;
-  background-color: #524c43;
-  border-color: #524c43;
-}
-.panel-noteentry > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #dbd5cb;
-}
-.panel-noteentry > .panel-heading .badge {
-  color: #524c43;
-  background-color: #524c43;
-}
-.panel-noteentry > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #dbd5cb;
-}
-.panel-noteentry .createDate {
-  margin-top: 10px;
-  width: 50%;
-}
-.panel-noteentry .settings {
-  margin-top: 4px;
-}
-.panel-noteentry .settings .options input {
-  margin-right: 4px;
-}
-.panel-noteentry .panel-body .noteentry-control {
-  overflow: hidden;
-}
-.panel-noteentry .panel-body .noteentry-notetype {
-  margin-bottom: 4px;
-}
-.panel-noteentry .panel-body img {
-  float: left;
-  margin: 0 12px 0 4px;
-}
-.panel-noteentry .options .checkbox {
-  float: left;
-  margin: 0 15px 0 5px;
-}
-.panel-noteentry .panel-footer {
-  background-color: #dbd5cb;
-}
-.recurrence-pattern-type {
-  margin-top: 12px;
-  padding-left: 30px;
-}
-.recurrence-pattern-specific-date:before,
-.recurrence-pattern-specific-date:after {
-  content: " ";
-  display: table;
-}
-.recurrence-pattern-specific-date:after {
-  clear: both;
-}
-.recurrence-pattern-specific-date .input-group {
-  float: left;
-}
-.recurrence-pattern-specific-date .actions {
-  float: left;
-  margin-left: 12px;
-  margin-top: 4px;
-}
-.recurrence-pattern-daily .form-control-group {
-  min-height: 30px;
-}
-.recurrence-pattern-weekly .week-days {
-  margin-top: 15px;
-}
-.recurrence-pattern-weekly .week-days:before,
-.recurrence-pattern-weekly .week-days:after {
-  content: " ";
-  display: table;
-}
-.recurrence-pattern-weekly .week-days:after {
-  clear: both;
-}
-.recurrence-pattern-weekly .week-days .checkbox {
-  float: left;
-  margin: 0 15px;
-}
-.recurrence-pattern-monthly .form-control-group {
-  min-height: 40px;
-  display: block;
-}
-.continue-until .form-control-group {
-  min-height: 40px;
-}
-.exclusions .add-exclusion .form-control-group {
-  float: left;
-}
-.exclusions .add-exclusion .actions {
-  float: left;
-  margin-top: 5px;
-}
-.workflow-section-activities {
-  margin-top: 64px;
-}
-.workflow-activities-readonly-header {
-  color: #515151;
-  left: auto;
-  top: auto;
-  padding-top: 8px;
-  padding-right: 8px;
-  padding-bottom: 8px;
-}
-.workflow-activities-readonly-header:hover {
-  color: inherit;
-  text-decoration: none;
-}
-.panel.workflow-activity.activated-with-workflow > .panel-heading {
-  background-color: #dff0d8;
-  color: #468847;
-}
-.panel.workflow-activity.activated-with-workflow > .panel-heading a.btn-link {
-  color: #468847;
-}
-.panel.workflow-activity .panel-title:before {
-  content: "\f1b3";
-  font-family: FontAwesome;
-  font-weight: normal;
-  margin-right: 4px;
-}
-.workflow-action .workflow-action-name:before {
-  content: "\f1b2";
-  font-family: FontAwesome;
-  font-weight: normal;
-}
-.workflow-action .criteria-exists {
-  background-color: #f3d066;
-  color: #ffffff;
-  border: 1px solid #f1c94e;
-}
-.workflow-action .conditional-run-criteria {
-  margin-top: -15px;
-  margin-bottom: 15px;
-  padding-top: 15px;
-  border-width: 1px;
-  border-style: solid;
-}
-.workflow-action .form-action-rows .row {
-  margin-bottom: 12px;
-}
-.panel-group .panel-workflowitem {
-  border-color: #e2e2e2;
-  margin-bottom: 30px;
-}
-.panel-group .panel-workflowitem > .panel-heading {
-  color: #6a6a6a;
-  background-color: #efefef;
-  border-color: #e2e2e2;
-}
-.panel-group .panel-workflowitem > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #e2e2e2;
-}
-.panel-group .panel-workflowitem > .panel-heading .badge {
-  color: #efefef;
-  background-color: #6a6a6a;
-}
-.panel-group .panel-workflowitem > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #e2e2e2;
-}
-.panel-group .panel-workflowitem:hover {
-  background-color: #fff;
-}
-.panel-group .panel-workflowitem .panel-heading {
-  padding: 30px;
-  background-color: #efefef;
-}
-.panel-group .panel-workflowitem .panel-heading a {
-  display: block;
-}
-.panel-group .panel-workflowitem .panel-heading a .panel-title {
-  width: 100%;
-}
-.panel-group .panel-workflowitem .panel-heading a .panel-title h3 {
-  margin: 0;
-}
-.panel-group .panel-workflowitem .panel-heading a .panel-title h3 i {
-  font-size: 35px;
-  margin-right: 12px;
-}
-.panel-group .panel-workflowitem .panel-heading a i.panel-navigation {
-  margin-top: 8px;
-}
-.panel-group .panel-workflowitem .panel-heading a i.panel-navigation:before {
-  margin-top: 6px;
-  font-family: FontAwesome;
-  content: "\f077";
-  font-size: 20px;
-}
-.panel-group .panel-workflowitem .panel-heading a.collapsed i.panel-navigation:before {
-  content: "\f078";
-}
-/*
-    Used to manage styles for specific blocks.
-
-    1. Group Viewer - styles for the group viewer block.
-
-*/
-.group-location-map {
-  float: right;
-}
-.group-location-map img {
-  border: 1px solid #c2b8a7;
-}
-@media (max-width: 992px) {
-  .group-location-map {
-    float: left;
-  }
-}
-section.group-type-attribute-panel label {
-  padding-left: 46px;
-}
-table.inherited-attribute-grid tr td:first-child {
-  padding-left: 46px;
-  width: 141px;
-}
-table.attribute-grid tr th:first-child {
-  width: 31px;
-}
-table.attribute-grid tr th:nth-child(2) {
-  width: 100px;
-}
-table.inherited-attribute-grid tr td:nth-child(2),
-table.attribute-grid tr th:nth-child(3) {
-  width: 550px;
-}
-.group-detail .panel-heading {
-  cursor: pointer;
-}
-/*
-    Used to manage styles for specific blocks.
-
-    1. Contributions - block add a contribution transaction
-    2. Scheduled Transactions - Styles for the scheduled transaction blocks
-    3. Transaction Matching
-
-*/
-.contribution-payment .tab-content {
-  margin-top: 15px;
-}
-.card-visa,
-.card-mastercard,
-.card-amex,
-.card-discover,
-.card-diners,
-.card-jcb {
-  display: inline-block;
-  width: 50px;
-  height: 30px;
-  overflow: hidden;
-  text-align: left;
-  text-indent: -999px;
-  background: url(../../../Assets/Images/sprite-cards.png) 0 0 no-repeat;
-}
-.card-mastercard {
-  background-position: -55px 0;
-}
-.card-amex {
-  background-position: -110px 0;
-}
-.card-discover {
-  background-position: -165px 0;
-}
-.card-diners {
-  background-position: -220px 0;
-}
-.card-jcb {
-  background-position: -660px 0;
-}
-.is-visa li,
-.is-mastercard li,
-.is-amex li,
-.is-discover li,
-.is-diners li,
-.is-jcb li,
-.is-nothing li {
-  opacity: .2;
-}
-.is-visa li.card-visa,
-.is-mastercard li.card-mastercard,
-.is-amex li.card-amex,
-.is-discover li.card-discover,
-.is-diners li.card-diners,
-.is-jcb li.card-jcb {
-  opacity: 1;
-}
-.scheduledtransaction-item {
-  margin-bottom: 12px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #efefef;
-}
-.scheduledtransaction-item:last-child {
-  border-bottom: 0;
-}
-.scheduledtransaction-item .actions {
-  margin: 6px 0;
-}
-.transaction-image {
-  width: 100%;
-  margin-bottom: 12px;
-  border: 2px solid #282526;
-}
-.transaction-image-thumbnail {
-  max-width: 200px;
-  max-height: 100px;
-  margin: 5px;
-  cursor: pointer;
-  border: 2px solid #282526;
-}
-.transaction-matching .progress {
-  width: 30%;
-  float: left;
-  margin-bottom: 0;
-}
-/*
-    Used to manage styles related to the person details page
-    
-    1. Page Styles
-    2. Header
-    3. Badge Bar
-    4. Family Bar
-    5. Page Tabs
-    6. Styles to Tab Pages
-    7. Edit Family Page
-    8. Add Family Page
-    9. Fluidbox
-    10. Responsive Overrides
-    11. Person Merge
-    12. Person Page Views
-    13. Deceased / Inactive Styles
-    14. Bulk Update
-    15. Photo Upload
-    16. Duplicate Pages
-    17. DISC
-    19. Edit Person
-*/
-.personprofile {
-  margin-top: -15px;
-}
-.personprofile small {
-  color: #a1998d;
-}
-.personprofilebar-bio {
-  background-color: #dbd5cb;
-  border-bottom: 1px solid #c6bdad;
-  padding: 15px 15px 0 15px;
-  color: #524c43;
-}
-.personprofilebar-bio .name {
-  text-align: center;
-  margin-top: 0;
-}
-.personprofilebar-bio .name .full-name,
-.personprofilebar-bio .name .previous-names {
-  font-size: 18px;
-  display: none;
-}
-.personprofilebar-bio .labels {
-  margin-bottom: 7.5px;
-  text-align: center;
-}
-.personprofilebar-bio .nav li .persondetails-actions {
-  padding: 2px 0 0 15px;
-}
-.personprofilebar-bio .nav li .persondetails-actions:hover,
-.personprofilebar-bio .nav li .persondetails-actions:focus {
-  background-color: transparent;
-}
-.personprofilebar-bio .actions {
-  position: absolute;
-  right: 50%;
-  bottom: 6px;
-  z-index: 10;
-  margin-right: -52px;
-}
-.personprofilebar-bio .actions a.btn-action {
-  color: #d3cec5;
-  background-color: #282526;
-  border-color: #1b1919;
-}
-.personprofilebar-bio .photo {
-  padding: 5px 5px 5px 5px;
-  background-color: #c2b8a7;
-  border: 1px solid #bdbdbd;
-  display: table;
-  max-width: 200px;
-  margin: 0 auto;
-  position: relative;
-}
-.personprofilebar-bio .photo .following-status {
-  position: absolute;
-  top: 0;
-  left: 0;
-  cursor: pointer;
-  width: 40px;
-  height: 40px;
-  z-index: 500;
-  border-top: 70px solid #478bae;
-  border-right: 70px solid transparent;
-  transition: 1s;
-  opacity: .4;
-}
-.personprofilebar-bio .photo .following-status i {
-  position: absolute;
-  top: -60px;
-  left: 10px;
-  color: #fff;
-  font-size: 24px;
-  transition: 1s;
-  opacity: 0;
-}
-.personprofilebar-bio .photo .following-status.following {
-  opacity: 1;
-}
-.personprofilebar-bio .photo .following-status.following i {
-  opacity: 1;
-}
-.personprofilebar-bio .photo a.fluidbox-opened + .following-status {
-  opacity: 0 !important;
-}
-.personprofilebar-bio .photo img {
-  width: 100%;
-  height: auto;
-}
-.personprofilebar-bio .photo .fluidbox-ghost {
-  cursor: -webkit-zoom-in;
-  cursor: -moz-zoom-in;
-}
-.personprofilebar-bio .photo .fluidbox-opened .fluidbox-ghost {
-  cursor: -webkit-zoom-out;
-  cursor: -moz-zoom-out;
-}
-.personprofilebar-bio .social-icons {
-  text-align: center;
-}
-.personprofilebar-bio .social-icons .icon {
-  background-color: #282526;
-  margin: 0 2px;
-  border-radius: 4px;
-  font-size: 16px;
-  display: inline-block;
-}
-.personprofilebar-bio .social-icons .icon a {
-  color: #fff;
-}
-.personprofilebar-bio .social-icons .icon a:hover {
-  opacity: .6;
-}
-.personprofilebar-bio .social-icons .icon i {
-  margin: 4px;
-}
-.personprofilebar-bio .social-icons .icon.icon-facebook {
-  background-color: #44619d;
-  color: #fff;
-}
-.personprofilebar-bio .social-icons .icon.icon-twitter {
-  background-color: #55acee;
-  color: #fff;
-}
-.personprofilebar-bio .social-icons .icon.icon-instagram {
-  background-color: #39688f;
-  color: #fff;
-}
-.personprofilebar-bio .social-icons .icon:first-child {
-  margin-left: 0;
-}
-.personprofilebar-bio .taglist {
-  margin-top: 7.5px;
-}
-.personprofilebar-bio .demographics {
-  margin-top: 30px;
-  text-align: center;
-}
-.personprofilebar-bio .personcontact {
-  text-align: center;
-  margin-top: 15px;
-  padding-bottom: 30px;
-}
-.personprofilebar-bio .personcontact .email .email-status i {
-  color: #c2b8a7;
-}
-.personprofilebar-bio .personcontact .email .email-status.do-not-email i {
-  color: #c84b4b;
-}
-.personprofilebar-bio .personcontact .email .email-status.not-active i {
-  color: #f3d066;
-}
-.personprofilebar-badge {
-  background-color: #e3ded7;
-  min-height: 64px;
-  border-bottom: 1px solid #cec5b9;
-  color: #817b72;
-}
-.personprofilebar-badge .badge-group {
-  margin: 7.5px 0;
-  text-align: center;
-}
-.personprofilebar-badge .badge-group .badge {
-  background-color: inherit;
-  padding: 3px 7px 0;
-  display: inline-block;
-}
-.personprofilebar-badge .badge-group .badge-debug {
-  text-align: left;
-  position: absolute;
-  z-index: 9999;
-  width: 900px;
-  right: 12px;
-}
-.badge-baptism {
-  color: #23a5c5;
-}
-.badge-icon {
-  font-size: 45px;
-}
-.badge-icon.badge-disabled {
-  opacity: 0.2;
-  color: #939393;
-}
-.badge-attendance ul.badge-attendance-chart {
-  display: table;
-  table-layout: fixed;
-  height: 40px;
-  margin: 0 auto;
-  width: 220px;
-}
-.badge-attendance ul.badge-attendance-chart li {
-  position: relative;
-  display: table-cell;
-  vertical-align: bottom;
-  height: 40px;
-  width: 10px;
-}
-.badge-attendance ul.badge-attendance-chart li span {
-  display: block;
-  background: #817b72;
-  width: 8px;
-  min-height: 1px;
-}
-@media screen and (-webkit-min-device-pixel-ratio: 0) {
-  .badge-attendance ul.badge-attendance-chart li span {
-    position: absolute;
-    bottom: 0;
-  }
-}
-.badge-attendance.annimate ul.badge-attendance-chart li span {
-  -webkit-animation: bar-grow 1s ease-in-out;
-  -moz-animation: bar-grow 1s ease-in-out;
-  -o-animation: bar-grow 1s ease-in-out;
-  animation: bar-grow 1s ease-in-out;
-}
-.badge-disc ul.badge-disc-chart {
-  display: table;
-  table-layout: fixed;
-  height: 40px;
-  margin: 0 auto;
-  width: 45px;
-}
-.badge-disc ul.badge-disc-chart li {
-  position: relative;
-  display: table-cell;
-  vertical-align: bottom;
-  height: 40px;
-  width: 3px;
-}
-.badge-disc ul.badge-disc-chart li span {
-  display: block;
-  background: #99bbd9;
-  width: 10px;
-  min-height: 2px;
-}
-@media screen and (-webkit-min-device-pixel-ratio: 0) {
-  .badge-disc ul.badge-disc-chart li span {
-    position: absolute;
-    bottom: 0;
-  }
-}
-.badge-disc ul.badge-disc-chart li.badge-disc-primary span {
-  background: #4f89bd;
-}
-.badge-disc.annimate ul.badge-disc-chart li span {
-  -webkit-animation: bar-grow 1s ease-in-out;
-  -moz-animation: bar-grow 1s ease-in-out;
-  -o-animation: bar-grow 1s ease-in-out;
-  animation: bar-grow 1s ease-in-out;
-}
-.badge-attendingduration {
-  position: relative;
-  color: #686576;
-}
-.badge-attendingduration .duration-metric:before {
-  font-family: FontAwesome;
-  content: "\f111";
-  color: #d0db25;
-  font-size: 45px;
-}
-.badge-attendingduration .duration-metric.duration-months:before {
-  color: #49b039;
-}
-.badge-attendingduration .duration-metric.duration-years:before {
-  color: #3971b0;
-}
-.badge-attendingduration .duration-metric.duration-new:before {
-  color: #db2525;
-}
-.badge-attendingduration .duration-metric .metric-value {
-  font-size: 20px;
-  position: absolute;
-  left: 11px;
-  top: 14px;
-  font-weight: 900;
-  color: #fff;
-  line-height: 12px;
-  width: 30px;
-  text-align: center;
-}
-.badge-attendingduration .duration-metric .metric-unit {
-  font-size: 11px;
-  font-weight: normal;
-  display: block;
-}
-.badge-attendingduration .duration-metric.duration-new .metric-value {
-  font-size: 14px;
-  font-weight: 700;
-  top: 18px;
-}
-.badge-weeksattendanceduration .weeks-metric {
-  position: relative;
-  color: #686576;
-}
-.badge-weeksattendanceduration .weeks-metric:before {
-  font-family: FontAwesome;
-  content: "\f0c8";
-  color: #f3d066;
-  font-size: 45px;
-}
-.badge-weeksattendanceduration .weeks-metric .weeks-attended {
-  position: absolute;
-  top: 7px;
-  left: 3px;
-  font-weight: 900;
-  font-size: 20px;
-  letter-spacing: -2px;
-  display: block;
-  width: 18px;
-  text-align: center;
-}
-.badge-weeksattendanceduration .weeks-metric .week-duration {
-  position: absolute;
-  bottom: 10px;
-  right: 4px;
-  font-weight: 700;
-  font-size: 11px;
-}
-.badge-lastvisitonsite .badge-content {
-  position: relative;
-  color: #4f89bd;
-}
-.badge-lastvisitonsite .badge-content.today .duration {
-  font-size: 11px;
-  top: 6px;
-}
-.badge-lastvisitonsite .badge-content.recent {
-  opacity: .8;
-}
-.badge-lastvisitonsite .badge-content.moderate {
-  opacity: .6;
-}
-.badge-lastvisitonsite .badge-content.not-recent {
-  opacity: .4;
-}
-.badge-lastvisitonsite .badge-content.old {
-  opacity: .2;
-}
-.badge-lastvisitonsite .badge-content i {
-  font-size: 40px;
-}
-.badge-lastvisitonsite .badge-content span.duration {
-  position: absolute;
-  top: 5px;
-  font-size: 16px;
-  font-weight: 900;
-  text-align: center;
-  right: 50%;
-  width: 36px;
-  margin-right: -17px;
-}
-@-webkit-keyframes bar-grow {
-  0% {
-    height: 0;
-    opacity: 0;
-  }
-}
-@-moz-keyframes bar-grow {
-  0% {
-    height: 0;
-    opacity: 0;
-  }
-}
-@-o-keyframes bar-grow {
-  0% {
-    height: 0;
-    opacity: 0;
-  }
-}
-@keyframes bar-grow {
-  0% {
-    height: 0;
-    opacity: 0;
-  }
-}
-.personprofilebar-family {
-  background: #f3f3f4;
-  padding: 12px 0;
-  border-bottom: 1px solid #d8d8dc;
-  color: #6a6a6a;
-  min-height: 60px;
-}
-.personprofilebar-family a {
-  color: #6a6a6a;
-}
-.personprofilebar-family .groupmembers .member a {
-  border-radius: 4px;
-  padding: 8px;
-  display: block;
-}
-.personprofilebar-family .groupmembers .member a:before,
-.personprofilebar-family .groupmembers .member a:after {
-  content: " ";
-  display: table;
-}
-.personprofilebar-family .groupmembers .member a:after {
-  clear: both;
-}
-.personprofilebar-family .groupmembers .member .person-image {
-  /* For Webkit browsers */
-  /* For IE 6 - 9 */
-  /* Fade to color for Chrome and Safari */
-  /* Firefox 10+, Firefox on Android */
-  filter: grayscale(100%);
-  -webkit-filter: grayscale(100%);
-  /* For Webkit browsers */
-  filter: gray;
-  /* For IE 6 - 9 */
-  -webkit-transition: all .6s ease;
-  /* Fade to color for Chrome and Safari */
-  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
-  /* Firefox 10+, Firefox on Android */
-  transition: .5s;
-}
-.personprofilebar-family .groupmembers .member:hover {
-  background-color: #dedee0;
-  border-radius: 4px;
-}
-.personprofilebar-family .groupmembers .member:hover .person-image {
-  filter: grayscale(0%);
-  -webkit-filter: grayscale(0%);
-  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 1 0\'/></filter></svg>#grayscale");
-}
-.personprofilebar-family .actions {
-  position: absolute;
-  right: 12px;
-  z-index: 999;
-}
-.personprofilebar-family .actions a.btn-action {
-  color: #524c43;
-  background-color: #dbd5cb;
-  border-color: #d1c9bc;
-}
-.personprofilebar-family header {
-  font-size: 16px;
-  margin-bottom: 7.5px;
-}
-.personprofilebar-family .addresses ul {
-  list-style: none;
-  margin: 0;
-}
-.personprofilebar-family .addresses ul li {
-  display: block;
-  clear: both;
-  margin-bottom: 15px;
-}
-.personprofilebar-family .addresses ul li:last-child {
-  margin-bottom: 0;
-}
-.personprofilebar-family .addresses ul h4 {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 700;
-}
-.personprofilebar-family .addresses ul .address .actions a {
-  padding: 1px;
-}
-.personprofilebar-family .addresses ul a.map,
-.personprofilebar-family .addresses ul div.actions,
-.personprofilebar-family .addresses ul div.address {
-  float: left;
-  margin-right: 12px;
-}
-.pagetabs {
-  margin-top: 12px;
-}
-.editfamily-list li.member {
-  min-width: 200px;
-}
-.editfamily-list li.member .radio {
-  margin: 0;
-}
-.editfamily-list .groupmembers h4 {
-  margin-bottom: 4px;
-}
-span.field-name {
-  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
-  padding: 2px 4px;
-  font-size: 90%;
-  color: #515151;
-  background-color: #d9e1e8;
-  white-space: nowrap;
-  border-radius: 4px;
-}
-span.field-value {
-  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
-  padding: 2px 4px;
-  font-size: 90%;
-  color: #515151;
-  background-color: #d9e1e8;
-  white-space: nowrap;
-  border-radius: 4px;
-}
-.table-familymembers .radio:first-child {
-  margin-top: 0;
-}
-#fluidbox-overlay {
-  background: rgba(255, 255, 255, 0.5);
-}
-/* Small devices (tablets, 768px and up) */
-@media (min-width: 768px), print {
-  .personprofilebar-bio {
-    padding: 15px;
-  }
-  .personprofilebar-bio .actions {
-    right: 12px;
-    margin-right: 0;
-  }
-  .personprofilebar-bio .name {
-    text-align: left;
-  }
-  .personprofilebar-bio .name .full-name,
-  .personprofilebar-bio .name .previous-names {
-    display: inline;
-  }
-  .personprofilebar-bio .labels {
-    text-align: right;
-  }
-  .personprofilebar-bio .photo {
-    margin: 0;
-  }
-  .personprofilebar-bio .taglist {
-    margin-top: 0;
-  }
-  .personprofilebar-bio .demographics {
-    text-align: left;
-  }
-  .personprofilebar-bio .personcontact {
-    text-align: left;
-    padding-bottom: 0;
-  }
-  .personprofilebar-bio .social-icons {
-    text-align: left;
-  }
-  .personprofilebar-bio .social-icons .icon {
-    float: left;
-  }
-  .personprofilebar-badge .badge-group {
-    text-align: left;
-  }
-  .personprofilebar-badge .badge-group:last-child {
-    text-align: right;
-  }
-}
-/* Medium devices (desktops, 992px and up) */
-@media (min-width: 992px) {
-  .personprofilebar-bio .personcontact {
-    margin-top: 0;
-  }
-}
-/* Large devices (large desktops, 1200px and up) */
-.table thead th.merge-personselect {
-  background-color: #282526;
-  color: #d3cec5;
-  border-color: #353133;
-  vertical-align: top !important;
-}
-.table thead th.merge-personselect .merge-header-summary {
-  margin-left: 20px;
-}
-.table thead th.merge-personselect .merge-header-summary i {
-  margin-right: 12px;
-  float: left;
-}
-.table thead th.merge-personselect .btn-danger {
-  color: #fff;
-}
-.table thead th.merge-personselect small {
-  color: #b2a99a;
-}
-.table thead th.merge-personselect .merge-heading-family {
-  margin-bottom: 12px;
-}
-.table thead th.merge-personselect .merge-heading-family span {
-  display: block;
-}
-.merge-photo {
-  border: 3px solid #c2b8a7;
-}
-.panel-widget.pageviewsession .pageviewsession-client {
-  color: #282526;
-  text-align: right;
-  line-height: 1;
-}
-.person-bio div.deceased h1.title.name:after {
-  content: 'Deceased';
-  font-size: 14px;
-  margin-left: 12px;
-  color: #c84b4b;
-}
-.groupmembers .member.deceased:hover {
-  background-color: #d8d8dc;
-}
-.groupmembers .member.deceased .person-info:after {
-  content: 'Deceased';
-  font-size: 10px;
-  color: #c84b4b;
-}
-tr.inactive td {
-  color: #b7b7b7;
-}
-.bulk-update .no-select .form-group {
-  opacity: 1;
-}
-.bulk-update .fade-inactive .form-group {
-  opacity: 0.5;
-}
-.bulk-update .fade-inactive .form-group .control-label {
-  cursor: pointer;
-}
-.bulk-update .form-group.bulk-item-selected {
-  opacity: 1;
-  background-color: #f3f3f4;
-  padding: 12px;
-  border-radius: 4px;
-}
-.photoupload-photo .image-editor {
-  float: left;
-  margin-right: 48px;
-}
-.photoupload-photo .image-editor label {
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  width: 150px;
-  overflow: hidden;
-}
-.grid-table tbody tr.duplicate-source td,
-.grid-table tbody tr.duplicate-source:hover > td {
-  background-color: #f3f3f4;
-  color: #333333;
-}
-.disc-assessment th {
-  padding: 6px;
-}
-.disc-assessment th:last-child {
-  border-radius: 0 4px 0 0;
-}
-.disc-assessment th.disc-question {
-  font-weight: 700;
-  padding: 6px;
-  border-radius: 4px 0 0 0;
-}
-.disc-assessment .disc-question {
-  width: 100%;
-}
-.disc-assessment .disc-answer {
-  width: 100px;
-}
-.disc-heading {
-  text-align: center;
-}
-.discchart {
-  clear: both;
-  padding: 0;
-  width: 80%;
-  height: 425px;
-  margin: 0 auto;
-  max-width: 650px;
-  position: relative;
-}
-.discchart li {
-  display: inline-block;
-  height: 425px;
-  margin: 0 2% 0 0;
-  width: 20%;
-  padding: 0;
-  position: relative;
-  text-align: center;
-  vertical-align: bottom;
-  border-radius: 6px 6px 0 0;
-  background-color: #282526;
-  color: #d3cec5;
-}
-.discchart li.discchart-midpoint {
-  height: 70%;
-  width: 100%;
-  background-color: transparent;
-  position: absolute;
-  bottom: 0;
-  border-top: 2px solid red;
-  border-radius: 0;
-}
-.discchart .discbar-label {
-  font-weight: 500;
-  overflow: hidden;
-  text-transform: uppercase;
-  width: 100%;
-  font-size: 28px;
-  bottom: 20px;
-  position: absolute;
-}
-.discchart .discbar {
-  border: 1px solid #ddd;
-}
-.discchart .discbar:before {
-  position: absolute;
-  left: 0;
   right: 0;
-  top: 5%;
-  letter-spacing: -3px;
-  font-size: 20px;
-  padding: 5px 1em 0;
-  display: block;
+  top: 0;
+  bottom: 0;
+  width: 35px;
   text-align: center;
-  content: attr(title);
-  word-wrap: break-word;
-  line-height: 1em;
-}
-.discchart .discbar.discbar-primary {
-  background: #000000;
-}
-.disc-chart .discbar-value {
-  letter-spacing: -3px;
+  padding-top: 8px;
   opacity: .4;
-  width: 100%;
-  font-size: 30px;
-  position: absolute;
+  color: #817b72;
+  transition: 1s;
+  border-left: 1px solid #b2aea7;
 }
-.phonegroup-label {
-  margin-bottom: 5px;
+.panel-follow-status:before {
+  font-family: FontAwesome;
+  content: "\f006";
 }
-@media (min-width: 768px) {
-  .phonegroup-label {
-    padding-top: 4px;
-  }
+.panel-follow-status.following {
+  opacity: 1;
+  background-color: #817b72;
+  color: #fff;
 }
-/*
-    Used to manage styles for specific blocks.
-
-    1. Communication Blocks - styles for the communication blocks
-
-*/
-.recipients .recipient {
-  float: left;
-  width: 100%;
+.panel-follow-status.following:before {
+  content: "\f005";
 }
-.recipients .recipient.failed {
-  color: #c84b4b;
-}
-.recipients .recipient.opened {
-  color: #43be81;
-}
-iframe.email-body {
-  width: 100%;
-  border: 1px solid #c2b8a7;
-  background-color: #fff;
-  height: 300px;
-}
-@media (min-width: 768px) {
-  .recipients .recipient {
-    width: 50%;
-  }
-}
-@media (min-width: 992px) {
-  .recipients .recipient {
-    width: 25%;
-  }
-}
-/*
-    Used to manage styles for check-in administration.
-
-    1. Group / Location
-    2. Attendance Analysis
-*/
-.panel.panel-widget.checkin-group {
-  border-top-color: #afd074;
-}
-.panel.panel-widget.checkin-grouptype {
-  border-top-color: #5593a4;
-}
-.attendance-reporting .panel-body {
-  padding-top: 0;
-  padding-bottom: 0;
-}
-.attendance-reporting .panel-body > .row > [class*="col-"]:first-child {
-  padding-top: 15px;
-  padding-bottom: 15px;
-}
-@media (min-width: 992px) {
-  .attendance-reporting .panel-body .row {
-    margin-left: -16px;
-  }
-}
-.attendance-reporting .analysis-types {
-  padding: 15px 0;
-  background-color: #efefef;
-  margin-bottom: 24px;
-}
-/*
-    Used to manage styles for specific blocks.
-
-    1. User Entry
-    2. 
-
-*/
-.workflow-entry-panel > h1:first-of-type {
-  margin-top: 0;
-}
-/*
-    Used to manage styles for specific blocks.
-
-    1. Prayer Session
-    2. 
-
-*/
-.prayer-session .panel-note {
-  border: 0;
-  box-shadow: none;
-}
-.prayer-session .panel-note > .panel-body {
-  padding: 0;
-}
-/*
-    Used to manage styles for specific blocks.
-
-    1. Calendar - Styles for the calendar blocks
-    2. Event Entry - The event registration entry screen
-
-*/
-.calendar {
-  padding: 0 10px 10px 10px;
-  display: inline-block;
-  border: 1px solid #dbd5cb;
-  border-radius: 4px;
-  width: 100%;
-}
-.calendar-month {
-  border: none;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-.calendar-month a {
-  text-decoration: none;
-  color: #6a6a6a !important;
-}
-.calendar-month th {
-  text-align: center;
-}
-.calendar-month td {
-  color: #6a6a6a !important;
-}
-.calendar-month table.calendar-title td {
-  padding: 10px 5px;
-}
-.calendar-month td.calendar-day {
-  padding: 5px;
-}
-.calendar-month table.calendar-title,
-.calendar-month table.calendar-title a {
-  font-weight: 700;
-}
-.calendar-month .calendar-today {
-  border-radius: 4px;
-}
-.calendar-month .calendar-today,
-.calendar-month .calendar-selecteditem {
-  background-color: #d9edf7 !important;
-  color: #3a87ad !important;
-  border-radius: 0;
-}
-.calendar-month .calendar-selecteditem:first-child {
-  border-radius: 4px 0 0 4px;
-}
-.calendar-month .calendar-selecteditem:last-child {
-  border-radius: 0 4px 4px 0;
-}
-.calendar-month .calendar-selected {
-  background-color: #3bc2df !important;
-  color: #ffffff !important;
-}
-.calendar-month .calendar-selected a {
-  color: #ffffff !important;
-}
-.calendar-month .calendar-last-month a {
-  opacity: .2;
-}
-.registrationentry-intro {
-  text-align: center;
-}
-.registrationentry-intro h1 {
-  margin-top: 24px;
-  margin-bottom: 48px;
-}
-.registrationentry-intro .input-group {
-  margin: 0 auto 48px auto;
-}
-.registrationentry-summary .fee-table > .row {
-  padding: 8px 0;
-}
-.registrationentry-summary .row.fee-header {
-  border-bottom: 1px solid #ffffff;
-  padding-bottom: 2px;
-  margin-bottom: 6px;
-}
-/*
-    
-
-    table.calendar th.calendar-day-header {
-        text-align: center;
-        color: #6a6a6a !important;
-    }
-
-    
-    table.calendar td.calendar-last-month,
-    table.calendar td.calendar-day {
-        padding: 5px;
-    }
-    
-        table.calendar td.calendar-last-month a {
-            color: #dfdfdf !important;
-            font-size: 12px;
-        }
-        
-        table.calendar td.calendar-day a,
-        table.calendar td.calendar-today a,
-        table.calendar td.calendar-selected a {
-            font-size: 14px;
-            color: #6a6a6a;
-        }
-
-        table.calendar td.calendar-today {  
-            background-color: #FCF8E3!important; 
-        }
-
-        table.calendar td.calendar-today a {
-            color:#c09853 !important;
-            font-weight:bold;
-        }
-
-        table.calendar td.calendar-today a:after {
-            content:"TODAY"; 
-            color:#000; 
-            font-size:0.5em;
-            pointer-events:none; 
-            width:100%; 
-            float:left;
-        }
-
-        table.calendar td.calendar-today a:hover {  
-            background-color: #fcf8e3;  
-        }
-
-    */
 /*
     Used to manage styles for specific blocks.
 
@@ -4787,13 +4817,13 @@ a.cke_dialog_ui_button span {
 }
 a.cke_dialog_ui_button.cke_dialog_ui_button_cancel {
   background-color: transparent !important;
-  color: #478bae !important;
+  color: #817b72 !important;
   font-weight: normal !important;
   border: none !important;
 }
 a.cke_dialog_ui_button.cke_dialog_ui_button_cancel:hover,
 a.cke_dialog_ui_button.cke_dialog_ui_button_cancel:focus {
-  color: #316078;
+  color: #58544e;
   text-decoration: underline;
   background-color: transparent;
 }
