@@ -1,3 +1,5 @@
+{{ "../Styles/pages/next-steps.css" | AddLinkTagToHead:'rel','stylesheet' }}
+
 <script src="~~/Scripts/Vendor/greensock/TweenMax.min.js"></script>
 <script src="~~/Scripts/Vendor/scrollmagic/uncompressed/ScrollMagic.js"></script>
 <script src="~~/Scripts/Vendor/scrollmagic/uncompressed/plugins/animation.gsap.js"></script>
@@ -15,18 +17,17 @@
 </style>
 
 <div class="row">
-	<div class="col-xs-3">
-		<p>&nbsp;</p>
-		<p class="hidden-md hidden-lg">&nbsp;</p>
-		<div id="pin1" class="imgstack">
-			<img id="hide4" src="http://www.ccvonline.com/Arena/content/v6/img/next-step/neighborhoods.png" alt="" />
-			<img id="hide3" src="http://www.ccvonline.com/Arena/content/v6/img/next-step/serve.png" alt="" />
-			<img id="hide2" src="http://www.ccvonline.com/Arena/content/v6/img/next-step/attend.png" alt="" />
-			<img id="hide1" src="http://www.ccvonline.com/Arena/content/v6/img/next-step/starting-point.png" alt="" />
+	<div class="col-xs-3 nextsteps-icon-holder">
+		<div id="pin1" class="nextsteps-icon">
+			<img src="https://s3.amazonaws.com/media.ccvonline.com/external_site_v7/nextsteps/blank.png" alt="" class="active"/>
+			<img id="hide1" src="https://s3.amazonaws.com/media.ccvonline.com/external_site_v7/nextsteps/sp.png" alt="" class="active"/>
+			<img id="hide2" src="https://s3.amazonaws.com/media.ccvonline.com/external_site_v7/nextsteps/attend.png" alt="" />
+			<img id="hide3" src="https://s3.amazonaws.com/media.ccvonline.com/external_site_v7/nextsteps/serve.png" alt="" />
+			<img id="hide4" src="https://s3.amazonaws.com/media.ccvonline.com/external_site_v7/nextsteps/nh.png" alt="" />
 		</div>
 	</div>
 	<div class="col-xs-9 js-pin-height">
-		<div id="triggerpin"></div>
+		<div id="trigger1"></div>
 		<div class="bigblock">
 			<h2>Starting Point</h2>
 			<p>
@@ -39,7 +40,7 @@
 				<a href="#" class="btn btn-default">Register Now</a>
 			</p>
 		</div>
-		<div id="trigger1"></div>
+		<div id="trigger2"></div>
 		<div class="bigblock">
 			<h2>Attend</h2>
 			<p>
@@ -49,7 +50,7 @@
 				<a href="#" class="btn btn-default">Locations & Times</a>
 			</p>
 		</div>
-		<div id="trigger2"></div>
+		<div id="trigger3"></div>
 		<div class="bigblock">
 			<h2>Serve</h2>
 			<p>
@@ -60,7 +61,7 @@
 				<a class="btn text-muted">Serve Globally</a>
 			</p>
 		</div>
-		<div id="trigger3"></div>
+		<div id="trigger4"></div>
 		<div class="bigblock js-pin-height-trim">
 			<h2>Neighborhoods</h2>
 			<p>
@@ -83,33 +84,101 @@
 	&nbsp;
 </p>
 
+<p>
+	&nbsp;
+</p>
+<p>
+	&nbsp;
+</p>
+<p>
+	&nbsp;
+</p>
+
 <script>
-	$(function () {
-		var pinHeight = function() {
+	// $(function () {
+	$(document).ready(function(){
+		var pinDurationCache = 0
+		function pinDuration () {
+			return pinDurationCache
+		}
+		function calcPinDuration () {
 			var r = $('.js-pin-height').height()
 			r -= $('.js-pin-height-trim').height()
-			r -= 40*3
-			return r
+			r -= 40*2
+			if (window.innerWidth >= 1200) {
+				r -= 40
+			}
+			pinDurationCache = r
 		}
-		new ScrollMagic.Scene({triggerElement: "#triggerpin", duration: pinHeight})
+		calcPinDuration()
+		$(window).on("resize", calcPinDuration)
+		var pinScene = new ScrollMagic.Scene({triggerElement: "#trigger1", duration: pinDuration})
 			.setPin("#pin1")
-			.addIndicators() // add indicators (requires plugin)
+			// .addIndicators({name: "pin"})
 			.triggerHook("onLeave")
 			.addTo(controller);
-		new ScrollMagic.Scene({triggerElement: "#trigger1", offset: -100})
-			.setTween("#hide1", .5, { opacity: 0 } )
-			.addIndicators() // add indicators (requires plugin)
+
+		var t1DurationCache
+		function t1Duration () {
+			return t1DurationCache
+		}
+		function calcT1Duration () {
+			t1DurationCache = $("#trigger1").next(".bigblock").height() + 90
+		}
+		var t2DurationCache
+		function t2Duration () {
+			return t2DurationCache
+		}
+		function calcT2Duration () {
+			t2DurationCache = $("#trigger2").next(".bigblock").height() + 90
+		}
+		var t3DurationCache
+		function t3Duration () {
+			return t3DurationCache
+		}
+		function calcT3Duration () {
+			t3DurationCache = $("#trigger3").next(".bigblock").height() + 90
+		}
+		var t4DurationCache
+		function t4Duration () {
+			return t4DurationCache
+		}
+		function calcT4Duration () {
+			t4DurationCache = $("#trigger4").next(".bigblock").height() + 90
+		}
+
+		function calcAllSizes () {
+			calcT1Duration()
+			calcT2Duration()
+			calcT3Duration()
+			calcT4Duration()
+		}
+
+		calcAllSizes()
+		$(window).on("resize", calcAllSizes)
+
+		new ScrollMagic.Scene({triggerElement: "#trigger2", duration: t2Duration, offset: -100})
+			// .setTween("#hide1", .5, { opacity: 0 } )
+			.setClassToggle("#hide2", "active")
+			// .addIndicators()
+			.triggerHook("onLeave")
+			.on("start", function(e){
+				if (e.scrollDirection === "FORWARD") $("#hide1").removeClass("active")
+				if (e.scrollDirection === "REVERSE") $("#hide1").addClass("active")
+			})
+			.addTo(controller);
+		new ScrollMagic.Scene({triggerElement: "#trigger3", duration: t3Duration, offset: -100})
+			// .setTween("#hide2", .5, { opacity: 0 } )
+			.setClassToggle("#hide3", "active")
+			// .addIndicators()
 			.triggerHook("onLeave")
 			.addTo(controller);
-		new ScrollMagic.Scene({triggerElement: "#trigger2", offset: -100})
-			.setTween("#hide2", .5, { opacity: 0 } )
-			.addIndicators() // add indicators (requires plugin)
+		new ScrollMagic.Scene({triggerElement: "#trigger4", offset: -100})
+			// .setTween("#hide3", .5, { opacity: 0 } )
+			.setClassToggle("#hide4", "active")
+			// .addIndicators()
 			.triggerHook("onLeave")
 			.addTo(controller);
-		new ScrollMagic.Scene({triggerElement: "#trigger3", offset: -100})
-			.setTween("#hide3", .5, { opacity: 0 } )
-			.addIndicators() // add indicators (requires plugin)
-			.triggerHook("onLeave")
-			.addTo(controller);
-	});
+	})
+	// });
 </script>

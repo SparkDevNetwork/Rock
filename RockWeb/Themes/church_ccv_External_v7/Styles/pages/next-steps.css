@@ -1,0 +1,21 @@
+.nextsteps-icon {
+  position: relative;
+}
+.nextsteps-icon > img {
+  position: absolute;
+  opacity: 0;
+  -webkit-transition: 0.5s opacity;
+  -o-transition: 0.5s opacity;
+  transition: 0.5s opacity;
+}
+.nextsteps-icon > img.active {
+  opacity: 1;
+}
+.nextsteps-icon {
+  margin-top: 30px;
+}
+@media (max-width: 767px) {
+  .nextsteps-icon-holder {
+    padding-right: 0;
+  }
+}

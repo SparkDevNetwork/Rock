@@ -6110,12 +6110,6 @@ h6,
 .gridlist-inverse > li:nth-child(odd) {
   border-right: 1px solid #333333;
 }
-.imgstack {
-  position: relative;
-}
-.imgstack > img {
-  position: absolute;
-}
 .infowindow .name {
   font-weight: 800;
   margin-bottom: .5em;
