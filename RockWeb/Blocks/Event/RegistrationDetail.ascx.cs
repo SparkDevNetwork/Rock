@@ -659,7 +659,7 @@ namespace RockWeb.Blocks.Event
 
             if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
             {
-                lName.Text = registration.PersonAlias.Person.FullName;
+                lName.Text = registration.PersonAlias.Person.GetAnchorTag( ResolveRockUrl( "/" ) );
             }
             else
             {
@@ -696,8 +696,14 @@ namespace RockWeb.Blocks.Event
                 hlCost.Text = registration.TotalCost.ToString( "C2" );
 
                 hlBalance.Visible = true;
-                hlBalance.Text = registration.BalanceDue.ToString( "C2" );
-                hlBalance.LabelType = registration.BalanceDue > 0 ? LabelType.Danger : LabelType.Success;
+
+                using ( var rockContext = new RockContext() )
+                {
+                    decimal totalPaid = new RegistrationService( rockContext ).GetTotalPayments( registration.Id );
+                    decimal balanceDue = registration.TotalCost - totalPaid;
+                    hlBalance.Text = balanceDue.ToString( "C2" );
+                    hlBalance.LabelType = balanceDue > 0 ? LabelType.Danger : LabelType.Success;
+                }
             }
             else
             {

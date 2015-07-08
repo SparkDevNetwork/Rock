@@ -325,7 +325,7 @@ namespace Rock.Web.UI.Controls
                 {
                     base.Style.Add( HtmlTextWriterStyle.Display, "none" );
                     writer.WriteLine( string.Format(
-                        "<div><i onclick=\"$('#{0}').prop('checked', !$('#{0}').prop('checked')); $(this).toggleClass('{1}').toggleClass('{2}'); \" class=\"{3}\"></i> {4}</div>", 
+                        "<div class='rock-checkbox-icon'><i onclick=\"$('#{0}').prop('checked', !$('#{0}').prop('checked')); $(this).toggleClass('{1}').toggleClass('{2}'); \" class=\"{3}\"></i> {4}</div>", 
                             this.ClientID,
                             SelectedIconCssClass,
                             UnSelectedIconCssClass,

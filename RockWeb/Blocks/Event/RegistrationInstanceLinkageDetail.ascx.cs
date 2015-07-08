@@ -224,7 +224,7 @@ namespace RockWeb.Blocks.Event
                     BindLinkageCalendarItemCampus();
 
                     nbNoLinkage.Visible = false;
-                    dlgAddCalendarItemPage3.SaveButtonText = "Ok";
+                    dlgAddCalendarItemPage3.SaveButtonText = "OK";
                 }
                 else
                 {

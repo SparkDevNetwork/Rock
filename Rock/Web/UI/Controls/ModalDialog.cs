@@ -342,7 +342,7 @@ namespace Rock.Web.UI.Controls
 
             if ( !_serverSaveLink.Visible && !_saveLink.Visible )
             {
-                _cancelLink.InnerText = "Ok";
+                _cancelLink.InnerText = "OK";
             }
 
             base.OnPreRender( e );

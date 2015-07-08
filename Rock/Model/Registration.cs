@@ -188,37 +188,6 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Gets the total paid.
-        /// </summary>
-        /// <value>
-        /// The total paid.
-        /// </value>
-        [NotMapped]
-        public virtual decimal TotalPaid
-        {
-            get
-            {
-                // TODO: Calculate payments
-                return 0.0M;
-            }
-        }
-
-        /// <summary>
-        /// Gets the balance due.
-        /// </summary>
-        /// <value>
-        /// The balance due.
-        /// </value>
-        [NotMapped]
-        public virtual decimal BalanceDue
-        {
-            get
-            {
-                return TotalCost - TotalPaid;
-            }
-        }
-
         #endregion
 
         #region Methods

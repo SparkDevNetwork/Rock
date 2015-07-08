@@ -1054,6 +1054,7 @@ function(item) {
             }
             catch ( Exception exception )
             {
+                LogException( exception );
                 string errorMessage = null;
                 string stackTrace = string.Empty;
                 while ( exception != null )
@@ -1275,9 +1276,12 @@ function(item) {
                 if ( lastVisit != null )
                 {
                     int? scheduleId = lastVisit.GetPropertyValue( "ScheduleId" ) as int?;
-                    if ( _scheduleNameLookup.ContainsKey( scheduleId.Value ) )
+                    if ( scheduleId.HasValue )
                     {
-                        lServiceTime.Text = _scheduleNameLookup[scheduleId.Value];
+                        if ( _scheduleNameLookup.ContainsKey( scheduleId.Value ) )
+                        {
+                            lServiceTime.Text = _scheduleNameLookup[scheduleId.Value];
+                        }
                     }
                 }
 
