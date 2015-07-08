@@ -381,7 +381,7 @@ namespace Rock.Reporting
             if ( filterField.FilterEntityTypeName != null )
             {
                 filter.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( filterField.FilterEntityTypeName ).Id;
-                filter.Selection = filterField.Selection;
+                filter.Selection = filterField.GetSelection();
             }
 
             return filter;

@@ -359,31 +359,50 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The selection.
         /// </value>
+        [Obsolete("Use GetSelection or SetSelection instead")]
         public string Selection
         {
             get
             {
-                EnsureChildControls();
-
-                var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
-                if ( component != null )
-                {
-                    return component.GetSelection( FilteredEntityType, filterControls );
-                }
-
-                return string.Empty;
+                return GetSelection();
             }
-
+            
             set
             {
-                EnsureChildControls();
-
-                var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
-                if ( component != null )
-                {
-                    component.SetSelection( FilteredEntityType, filterControls, value );
-                }
+                SetSelection( value );
             }
+        }
+
+        /// <summary>
+        /// Sets the selection.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        public void SetSelection( string value )
+        {
+            EnsureChildControls();
+
+            var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
+            if ( component != null )
+            {
+                component.SetSelection( FilteredEntityType, filterControls, value );
+            }
+        }
+
+        /// <summary>
+        /// Gets the selection.
+        /// </summary>
+        /// <returns></returns>
+        public string GetSelection()
+        {
+            EnsureChildControls();
+
+            var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
+            if ( component != null )
+            {
+                return component.GetSelection( FilteredEntityType, filterControls );
+            }
+
+            return string.Empty;
         }
 
         /// <summary>
@@ -514,7 +533,7 @@ namespace Rock.Web.UI.Controls
                     writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
                 }
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.Write( component != null ? component.FormatSelection( FilteredEntityType, Selection ) : "Select Filter" );
+                writer.Write( component != null ? component.FormatSelection( FilteredEntityType, this.GetSelection() ) : "Select Filter" );
                 writer.RenderEndTag();
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-select" );
