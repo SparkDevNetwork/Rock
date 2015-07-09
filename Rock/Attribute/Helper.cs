@@ -945,7 +945,16 @@ namespace Rock.Attribute
         /// <param name="exclude">The exclude.</param>
         public static void AddEditControls( string category, List<string> attributeKeys, IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude )
         {
-            HtmlGenericControl fieldSet = new HtmlGenericControl( "fieldset" );
+            HtmlGenericControl fieldSet;
+            if ( parentControl is DynamicControlsPanel )
+            {
+                fieldSet = new DynamicControlsHtmlGenericControl( "fieldset" );
+            }
+            else
+            {
+                fieldSet = new HtmlGenericControl( "fieldset" );
+            }
+
             parentControl.Controls.Add( fieldSet );
             fieldSet.Controls.Clear();
 

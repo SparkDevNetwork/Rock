@@ -70,7 +70,7 @@ namespace Rock.Model
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the value that the DataViewFitler is filtering by.
+        /// Gets or sets the value that the DataViewFilter is filtering by.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> containing the value to be used as a filter.
