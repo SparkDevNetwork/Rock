@@ -38,6 +38,15 @@ namespace Rock.Client
         public string ConfirmationEmail { get; set; }
 
         /// <summary />
+        public decimal DiscountAmount { get; set; }
+
+        /// <summary />
+        public string DiscountCode { get; set; }
+
+        /// <summary />
+        public decimal DiscountPercentage { get; set; }
+
+        /// <summary />
         public string FirstName { get; set; }
 
         /// <summary />
@@ -65,6 +74,12 @@ namespace Rock.Client
     /// </summary>
     public partial class Registration : RegistrationEntity
     {
+        /// <summary />
+        public ICollection<RegistrationRegistrant> Registrants { get; set; }
+
+        /// <summary />
+        public RegistrationInstance RegistrationInstance { get; set; }
+
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 

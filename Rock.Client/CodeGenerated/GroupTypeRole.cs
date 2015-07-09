@@ -65,6 +65,9 @@ namespace Rock.Client
         public int Order { get; set; }
 
         /// <summary />
+        public bool ReceiveRequirementsNotifications { get; set; }
+
+        /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />

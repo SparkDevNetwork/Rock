@@ -44,7 +44,13 @@ namespace Rock.Client
         public DateTime? LastRequirementCheckDateTime { get; set; }
 
         /// <summary />
+        public DateTime? RequirementFailDateTime { get; set; }
+
+        /// <summary />
         public DateTime? RequirementMetDateTime { get; set; }
+
+        /// <summary />
+        public DateTime? RequirementWarningDateTime { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

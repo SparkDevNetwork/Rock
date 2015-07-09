@@ -269,9 +269,10 @@ namespace Rock.Client.Enums
     {
         Meets = 0x0,
         NotMet = 0x1,
-        NotApplicable = 0x2,
-        ManualCheckRequired = 0x3,
-        Error = 0x4,
+        MeetsWithWarning = 0x2,
+        NotApplicable = 0x3,
+        ManualCheckRequired = 0x4,
+        Error = 0x5,
     }
 
     /// <summary>
@@ -341,12 +342,15 @@ namespace Rock.Client.Enums
     {
         FirstName = 0x0,
         LastName = 0x1,
-        HomeCampus = 0x2,
-        Phone = 0x3,
+        Campus = 0x2,
+        Address = 0x3,
         Email = 0x4,
         Birthdate = 0x5,
         Gender = 0x6,
         MaritalStatus = 0x7,
+        MobilePhone = 0x8,
+        HomePhone = 0x9,
+        WorkPhone = 0xa,
     }
 
     /// <summary>
