@@ -18,7 +18,11 @@
                             url: Rock.settings.get('baseUrl') + 'api/followings/' + entityTypeId + '/' + entityId + '/' + personId,
                             success: function (data, status, xhr) {
                                 $followingDiv.removeClass('following');
-                                $followingDiv.attr("data-original-title", 'Click to follow.');
+
+                                // update the tooltip (if one was configured)
+                                if ($followingDiv.attr("data-original-title")) {
+                                    $followingDiv.attr("data-original-title", 'Click to follow');
+                                }
                             },
                         });
 
@@ -37,7 +41,11 @@
                             statusCode: {
                                 201: function () {
                                     $followingDiv.addClass('following');
-                                    $followingDiv.attr("data-original-title", 'following');
+
+                                    // update the tooltip (if one was configured)
+                                    if ($followingDiv.attr("data-original-title")) {
+                                        $followingDiv.attr("data-original-title", 'Currently following');
+                                    }
                                 }
                             }
                         });
