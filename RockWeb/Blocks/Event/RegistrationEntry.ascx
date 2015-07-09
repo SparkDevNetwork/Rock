@@ -73,65 +73,73 @@
                 <h4>Summary of <asp:Literal ID="lSummaryFeeCaption" runat="server" /></h4>
                 
                 <Rock:NotificationBox ID="nbDiscountCode" runat="server" Visible="false" NotificationBoxType="Warning"></Rock:NotificationBox>
-                <div id="divDiscountCode" runat="server" class="form-group pull-right">
-                    <label class="control-label"><asp:Literal ID="lDiscountCodeLabel" runat="server" /></label>
-                    <div class="input-group">
-                        <asp:TextBox ID="tbDiscountCode" runat="server" CssClass="form-control input-width-md input-sm"></asp:TextBox>
-                        <asp:LinkButton ID="lbDiscountApply" runat="server" CssClass="btn btn-default btn-sm margin-l-sm" Text="Apply" OnClick="lbDiscountApply_Click" CausesValidation="false"></asp:LinkButton>
+                
+                <div class="clearfix">
+                    <div id="divDiscountCode" runat="server" class="form-group pull-right">
+                        <label class="control-label"><asp:Literal ID="lDiscountCodeLabel" runat="server" /></label>
+                        <div class="input-group">
+                            <asp:TextBox ID="tbDiscountCode" runat="server" CssClass="form-control input-width-md input-sm"></asp:TextBox>
+                            <asp:LinkButton ID="lbDiscountApply" runat="server" CssClass="btn btn-default btn-sm margin-l-sm" Text="Apply" OnClick="lbDiscountApply_Click" CausesValidation="false"></asp:LinkButton>
+                        </div>
                     </div>
                 </div>
 
                 <div class="fee-table">
                     <asp:Repeater ID="rptFeeSummary" runat="server">
                         <HeaderTemplate>
-                            <div class="row fee-header">
-                                <div class="col-md-6">
+                            <div class="row hidden-xs fee-header">
+                                <div class="col-sm-6">
                                     <strong>Description</strong>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="row">
-                                        <div runat="server" class="col-sm-6 pull-right text-right" visible='<%# (RegistrationState.DiscountPercentage > 0.0m) %>'>
-                                            <strong>Discounted Amount</strong>
-                                        </div>
-                                        <div class="col-sm-6 pull-right text-right">
-                                            <strong>Amount</strong>
-                                        </div>
-                                    </div>
+                                
+                                <div runat="server" class="col-sm-3 fee-value" visible='<%# (RegistrationState.DiscountPercentage > 0.0m) %>'>
+                                    <strong>Discounted Amount</strong>
                                 </div>
+
+                                <div class="col-sm-3 fee-value">
+                                    <strong>Amount</strong>
+                                </div>
+                                
                             </div>
                         </HeaderTemplate>
                         <ItemTemplate>
                             <div class="row fee-row-<%# Eval("Type").ToString().ToLower() %>">
-                                <div class="col-md-6">
+                                <div class="col-sm-6 fee-caption">
                                     <%# Eval("Description") %>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="row">
-                                        <div runat="server" class="col-sm-6 pull-right text-right" visible='<%# (RegistrationState.DiscountPercentage > 0.0m) %>'>
-                                            <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("DiscountedCost")) %> 
-                                        </div>
-                                        <div class="col-sm-6 pull-right text-right">
-                                            <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("Cost")) %> 
-                                        </div>
-                                    </div>
+                                
+                                <div runat="server" class="col-sm-3 fee-value" visible='<%# (RegistrationState.DiscountPercentage > 0.0m) %>'>
+                                    <span class="visible-xs-inline">Discounted Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("DiscountedCost")) %> 
                                 </div>
+
+                                <div class="col-sm-3 fee-value">
+                                    <span class="visible-xs-inline">Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("Cost")) %> 
+                                </div>
+                                    
                             </div>
                         </ItemTemplate>
                     </asp:Repeater>
                 </div>
 
-                <asp:HiddenField ID="hfTotalCost" runat="server" />
-                <Rock:RockLiteral ID="lTotalCost" runat="server" Label="Total Cost" />
+                <div class="row fee-totals">
+                    <div class="col-sm-offset-8 col-sm-4 fee-totals-options">
+                        <asp:HiddenField ID="hfTotalCost" runat="server" />
+                        <Rock:RockLiteral ID="lTotalCost" runat="server" Label="Total Cost" />
 
-                <asp:HiddenField ID="hfPreviouslyPaid" runat="server" />
-                <Rock:RockLiteral ID="lPreviouslyPaid" runat="server" Label="Previously Paid" />
+                        <asp:HiddenField ID="hfPreviouslyPaid" runat="server" />
+                        <Rock:RockLiteral ID="lPreviouslyPaid" runat="server" Label="Previously Paid" />
 
-                <asp:HiddenField ID="hfMinimumDue" runat="server" />
-                <Rock:RockLiteral ID="lMinimumDue" runat="server" Label="Minimum Due Today" />
+                        <asp:HiddenField ID="hfMinimumDue" runat="server" />
+                        <Rock:RockLiteral ID="lMinimumDue" runat="server" Label="Minimum Due Today" />
 
-                <Rock:NumberBox ID="nbAmountPaid" runat="server" NumberType="Currency" Label="Amount To Pay Today" Required="true" />
-            
-                <Rock:RockLiteral ID="lRemainingDue" runat="server" Label="Amount Remaining" />
+                        <div class="form-right">
+                            <Rock:CurrencyBox ID="nbAmountPaid" runat="server" CssClass="input-width-md amount-to-pay" NumberType="Currency" Label="Amount To Pay Today" Required="true" />
+                        </div>
+                                 
+                        <Rock:RockLiteral ID="lRemainingDue" runat="server" Label="Amount Remaining" />
+                    </div>
+                </div>
+                
             </div>
 
             <div id="divPaymentInfo" runat="server" class="well">

@@ -2706,13 +2706,49 @@ iframe.email-body {
 .registrationentry-intro .input-group {
   margin: 0 auto 48px auto;
 }
+.registrationentry-summary .fee-table {
+  margin: 0 24px;
+}
 .registrationentry-summary .fee-table > .row {
-  padding: 8px 0;
+  padding: 6px 0;
+}
+.registrationentry-summary .fee-table > .row div[class^='col-'] {
+  padding-right: 0;
+  padding-left: 0;
 }
 .registrationentry-summary .row.fee-header {
-  border-bottom: 1px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
   padding-bottom: 2px;
   margin-bottom: 6px;
+  font-size: 16px;
+}
+.registrationentry-summary .fee-row-cost,
+.registrationentry-summary .fee-row-total {
+  font-weight: 700;
+}
+.registrationentry-summary .fee-row-total {
+  margin-top: 6px;
+  border-top: 1px solid #ffffff;
+}
+.registrationentry-summary .row.fee-row-fee {
+  font-weight: 300;
+}
+@media (min-width: 768px) {
+  .registrationentry-summary .row.fee-row-fee > div.fee-caption {
+    padding-left: 20px;
+  }
+}
+@media (min-width: 768px) {
+  .registrationentry-summary div.fee-value {
+    text-align: right;
+    float: right;
+  }
+}
+.fee-totals {
+  margin-top: 24px;
+}
+.fee-totals .fee-totals-options {
+  text-align: right;
 }
 /*
     
@@ -4922,6 +4958,24 @@ a.help {
 .well > h3,
 .well > h4 {
   margin-top: 0;
+}
+.form-right {
+  text-align: right;
+  margin-bottom: 12px;
+}
+.form-right:before,
+.form-right:after {
+  content: " ";
+  display: table;
+}
+.form-right:after {
+  clear: both;
+}
+.form-right .control-label {
+  display: block;
+}
+.form-right .input-group {
+  float: right;
 }
 .btn-tabled a:hover {
   text-decoration: underline;
