@@ -2,10 +2,10 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        <Rock:ModalAlert ID="maWarning" runat="server" />
+        <Rock:NotificationBox ID="nbConfiguration" NotificationBoxType="Danger" runat="server" Visible="false" />
         <div class="row">
-            <div class="col-md-3">
-                <div class="calendar">
+            <asp:Panel ID="pnlFilters" CssClass="col-md-3" runat="server">
+                <asp:Panel ID="pnlCalendar" CssClass="calendar" runat="server">
                     <asp:Calendar ID="calEventCalendar" runat="server" DayNameFormat="FirstLetter" SelectionMode="Day" BorderStyle="None"
                         TitleStyle-BackColor="#ffffff" NextPrevStyle-ForeColor="#333333" FirstDayOfWeek="Sunday" Width="100%" CssClass="calendar-month" OnSelectionChanged="calEventCalendar_SelectionChanged" OnDayRender="calEventCalendar_DayRender" OnVisibleMonthChanged="calEventCalendar_VisibleMonthChanged">
                         <DayStyle CssClass="calendar-day" />
@@ -16,15 +16,15 @@
                         <NextPrevStyle CssClass="calendar-next-prev" />
                         <TitleStyle CssClass="calendar-title" />
                     </asp:Calendar>
-                </div>
+                </asp:Panel>
 
                 <Rock:RockCheckBoxList ID="cblCampus" RepeatDirection="Vertical" runat="server" Label="Filter by Campus" DataTextField="Name" DataValueField="Id" OnSelectedIndexChanged="cblCampus_SelectedIndexChanged" />
 
                 <Rock:RockCheckBoxList ID="cblCategory" RepeatDirection="Vertical" runat="server" Label="Filter by Category" DataTextField="Name" DataValueField="Id" OnSelectedIndexChanged="cblCategory_SelectedIndexChanged" />
 
                 <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Select Range" />
-            </div>
-            <div class="col-md-9">
+            </asp:Panel>
+            <asp:Panel ID="pnlList" CssClass="col-md-9" runat="server">
 
                 <div class="btn-group" role="group">
                     <Rock:BootstrapButton ID="btnDay" runat="server" CssClass="btn btn-default" Text="Day" OnClick="btnDay_Click" />
@@ -36,7 +36,7 @@
 
                 <asp:Literal ID="lDebug" Visible="false" runat="server"></asp:Literal>
 
-            </div>
+            </asp:Panel>
         </div>
     </ContentTemplate>
 </asp:UpdatePanel>
