@@ -1033,6 +1033,8 @@ namespace RockWeb.Blocks.Groups
             nbRoleLimitWarning.Text = roleLimitWarnings.ToString();
             nbRoleLimitWarning.Visible = roleLimitWarnings.Length > 0;
 
+            FollowingsHelper.SetFollowing( group, pnlFollowing, this.CurrentPerson );
+
             if ( readOnly )
             {
                 btnEdit.Visible = false;
