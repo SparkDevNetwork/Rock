@@ -65,6 +65,15 @@ namespace Rock.Client
         public string SqlExpression { get; set; }
 
         /// <summary />
+        public int? WarningDataViewId { get; set; }
+
+        /// <summary />
+        public string WarningLabel { get; set; }
+
+        /// <summary />
+        public string WarningSqlExpression { get; set; }
+
+        /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />

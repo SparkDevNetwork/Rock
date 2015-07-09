@@ -63,6 +63,9 @@ namespace Rock.Client
         public ICollection<RegistrationRegistrantFee> Fees { get; set; }
 
         /// <summary />
+        public PersonAlias PersonAlias { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

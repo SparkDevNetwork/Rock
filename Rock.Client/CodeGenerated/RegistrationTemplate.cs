@@ -126,6 +126,9 @@ namespace Rock.Client
         public ICollection<RegistrationTemplateFee> Fees { get; set; }
 
         /// <summary />
+        public FinancialGateway FinancialGateway { get; set; }
+
+        /// <summary />
         public ICollection<RegistrationTemplateForm> Forms { get; set; }
 
         /// <summary />

@@ -38,6 +38,9 @@ namespace Rock.Client
         public decimal Cost { get; set; }
 
         /// <summary />
+        public string Option { get; set; }
+
+        /// <summary />
         public int Quantity { get; set; }
 
         /// <summary />

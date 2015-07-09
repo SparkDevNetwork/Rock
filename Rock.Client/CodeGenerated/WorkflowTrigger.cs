@@ -44,6 +44,9 @@ namespace Rock.Client
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary />
+        public string EntityTypeQualifierValuePrevious { get; set; }
+
+        /// <summary />
         public bool? IsActive { get; set; }
 
         /// <summary />

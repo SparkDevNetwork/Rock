@@ -41,7 +41,7 @@ namespace Rock.Client
         public decimal DiscountAmount { get; set; }
 
         /// <summary />
-        public double DiscountPercentage { get; set; }
+        public decimal DiscountPercentage { get; set; }
 
         /// <summary />
         public int Order { get; set; }
