@@ -119,5 +119,26 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source ConnectionRequest object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( ConnectionRequest source )
+        {
+            this.Id = source.Id;
+            this.AssignedGroupId = source.AssignedGroupId;
+            this.CampusId = source.CampusId;
+            this.Comments = source.Comments;
+            this.ConnectionOpportunityId = source.ConnectionOpportunityId;
+            this.ConnectionState = source.ConnectionState;
+            this.ConnectionStatusId = source.ConnectionStatusId;
+            this.ConnectorPersonAliasId = source.ConnectorPersonAliasId;
+            this.FollowupDate = source.FollowupDate;
+            this.PersonAliasId = source.PersonAliasId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 }

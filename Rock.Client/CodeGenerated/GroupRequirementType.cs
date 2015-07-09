@@ -107,5 +107,30 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source GroupRequirementType object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( GroupRequirementType source )
+        {
+            this.Id = source.Id;
+            this.CanExpire = source.CanExpire;
+            this.CheckboxLabel = source.CheckboxLabel;
+            this.DataViewId = source.DataViewId;
+            this.Description = source.Description;
+            this.ExpireInDays = source.ExpireInDays;
+            this.Name = source.Name;
+            this.NegativeLabel = source.NegativeLabel;
+            this.PositiveLabel = source.PositiveLabel;
+            this.RequirementCheckType = source.RequirementCheckType;
+            this.SqlExpression = source.SqlExpression;
+            this.WarningDataViewId = source.WarningDataViewId;
+            this.WarningLabel = source.WarningLabel;
+            this.WarningSqlExpression = source.WarningSqlExpression;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 }

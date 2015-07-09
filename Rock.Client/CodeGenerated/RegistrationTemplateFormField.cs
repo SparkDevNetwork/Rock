@@ -104,5 +104,28 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source RegistrationTemplateFormField object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( RegistrationTemplateFormField source )
+        {
+            this.Id = source.Id;
+            this.AttributeId = source.AttributeId;
+            this.FieldSource = source.FieldSource;
+            this.IsGridField = source.IsGridField;
+            this.IsRequired = source.IsRequired;
+            this.IsSharedValue = source.IsSharedValue;
+            this.Order = source.Order;
+            this.PersonFieldType = source.PersonFieldType;
+            this.PostText = source.PostText;
+            this.PreText = source.PreText;
+            this.RegistrationTemplateFormId = source.RegistrationTemplateFormId;
+            this.ShowCurrentValue = source.ShowCurrentValue;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 }

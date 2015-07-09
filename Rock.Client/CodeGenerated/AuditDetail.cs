@@ -59,5 +59,21 @@ namespace Rock.Client
     /// </summary>
     public partial class AuditDetail : AuditDetailEntity
     {
+
+        /// <summary>
+        /// Copies the base properties from a source AuditDetail object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( AuditDetail source )
+        {
+            this.Id = source.Id;
+            this.AuditId = source.AuditId;
+            this.CurrentValue = source.CurrentValue;
+            this.OriginalValue = source.OriginalValue;
+            this.Property = source.Property;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 }

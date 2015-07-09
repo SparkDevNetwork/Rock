@@ -101,5 +101,28 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source GroupTypeRole object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( GroupTypeRole source )
+        {
+            this.Id = source.Id;
+            this.CanEdit = source.CanEdit;
+            this.CanView = source.CanView;
+            this.Description = source.Description;
+            this.GroupTypeId = source.GroupTypeId;
+            this.IsLeader = source.IsLeader;
+            this.IsSystem = source.IsSystem;
+            this.MaxCount = source.MaxCount;
+            this.MinCount = source.MinCount;
+            this.Name = source.Name;
+            this.Order = source.Order;
+            this.ReceiveRequirementsNotifications = source.ReceiveRequirementsNotifications;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 }

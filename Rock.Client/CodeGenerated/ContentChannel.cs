@@ -104,5 +104,28 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source ContentChannel object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( ContentChannel source )
+        {
+            this.Id = source.Id;
+            this.ChannelUrl = source.ChannelUrl;
+            this.ContentChannelTypeId = source.ContentChannelTypeId;
+            this.ContentControlType = source.ContentControlType;
+            this.Description = source.Description;
+            this.EnableRss = source.EnableRss;
+            this.IconCssClass = source.IconCssClass;
+            this.ItemUrl = source.ItemUrl;
+            this.Name = source.Name;
+            this.RequiresApproval = source.RequiresApproval;
+            this.RootImageDirectory = source.RootImageDirectory;
+            this.TimeToLive = source.TimeToLive;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 }

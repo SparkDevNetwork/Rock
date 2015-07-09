@@ -152,5 +152,33 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source Site object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Site source )
+        {
+            this.Id = source.Id;
+            this.CommunicationPageId = source.CommunicationPageId;
+            this.CommunicationPageRouteId = source.CommunicationPageRouteId;
+            this.DefaultPageId = source.DefaultPageId;
+            this.DefaultPageRouteId = source.DefaultPageRouteId;
+            this.Description = source.Description;
+            this.ErrorPage = source.ErrorPage;
+            this.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
+            this.IsSystem = source.IsSystem;
+            this.LoginPageId = source.LoginPageId;
+            this.LoginPageRouteId = source.LoginPageRouteId;
+            this.Name = source.Name;
+            this.PageNotFoundPageId = source.PageNotFoundPageId;
+            this.PageNotFoundPageRouteId = source.PageNotFoundPageRouteId;
+            this.RegistrationPageId = source.RegistrationPageId;
+            this.RegistrationPageRouteId = source.RegistrationPageRouteId;
+            this.Theme = source.Theme;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 }

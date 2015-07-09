@@ -164,5 +164,41 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source Location object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Location source )
+        {
+            this.Id = source.Id;
+            this.AssessorParcelId = source.AssessorParcelId;
+            this.City = source.City;
+            this.Country = source.Country;
+            this.GeocodeAttemptedDateTime = source.GeocodeAttemptedDateTime;
+            this.GeocodeAttemptedResult = source.GeocodeAttemptedResult;
+            this.GeocodeAttemptedServiceType = source.GeocodeAttemptedServiceType;
+            this.GeocodedDateTime = source.GeocodedDateTime;
+            this.GeoFence = source.GeoFence;
+            this.GeoPoint = source.GeoPoint;
+            this.ImageId = source.ImageId;
+            this.IsActive = source.IsActive;
+            this.IsGeoPointLocked = source.IsGeoPointLocked;
+            this.LocationTypeValueId = source.LocationTypeValueId;
+            this.Name = source.Name;
+            this.ParentLocationId = source.ParentLocationId;
+            this.PostalCode = source.PostalCode;
+            this.PrinterDeviceId = source.PrinterDeviceId;
+            this.StandardizeAttemptedDateTime = source.StandardizeAttemptedDateTime;
+            this.StandardizeAttemptedResult = source.StandardizeAttemptedResult;
+            this.StandardizeAttemptedServiceType = source.StandardizeAttemptedServiceType;
+            this.StandardizedDateTime = source.StandardizedDateTime;
+            this.State = source.State;
+            this.Street1 = source.Street1;
+            this.Street2 = source.Street2;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 }
