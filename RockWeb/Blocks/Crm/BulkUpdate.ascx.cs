@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Activities.Statements;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
@@ -1045,15 +1044,13 @@ namespace RockWeb.Blocks.Crm
                     {
                         var groupMemberService = new GroupMemberService( rockContext );
 
-                        var existingMembers = groupMemberService.Queryable("Group")
-                                                                .Where(m =>
-                                                                       m.GroupId == group.Id &&
-                                                                       ids.Contains(m.PersonId));
+                        var existingMembersQuery = groupMemberService.Queryable("Group")
+                                                                     .Where(m => m.GroupId == group.Id && ids.Contains(m.PersonId));
 
                         string action = ddlGroupAction.SelectedValue;
                         if ( action == "Remove" )
                         {
-                            var existingIds = existingMembers.Select( gm => gm.Id ).Distinct().ToList();
+                            var existingIds = existingMembersQuery.Select( gm => gm.Id ).Distinct().ToList();
 
                             Action<RockContext, List<int>> deleteAction = (context, items) =>
                                                                                   {
@@ -1098,7 +1095,7 @@ namespace RockWeb.Blocks.Crm
                                 {
                                     var newGroupMembers = new List<GroupMember>();
 
-                                    var existingIds = existingMembers.Select( m => m.PersonId ).Distinct().ToList();
+                                    var existingIds = existingMembersQuery.Select( m => m.PersonId ).Distinct().ToList();
                                     
                                     var personKeys = ids.Where(id => !existingIds.Contains(id)).ToList();
 
@@ -1137,11 +1134,14 @@ namespace RockWeb.Blocks.Crm
                             }
                             else // Update
                             {
+                                // Materialize the Query result so we can iterate over the collection without holding the database connection open.
+                                var existingMembers = existingMembersQuery.ToList();
+
                                 if ( SelectedFields.Contains( ddlGroupRole.ClientID ) && roleId.HasValue )
                                 {
                                     foreach ( var member in existingMembers.Where( m => m.GroupRoleId != roleId.Value ) )
                                     {
-                                        if ( !existingMembers.Where( m => m.PersonId == member.PersonId && m.GroupRoleId == roleId.Value ).Any() )
+                                        if ( !existingMembers.Any( m => m.PersonId == member.PersonId && m.GroupRoleId == roleId.Value ) )
                                         {
                                             member.GroupRoleId = roleId.Value;
                                         }
