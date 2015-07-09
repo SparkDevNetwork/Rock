@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( ConnectionActivityType item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<ConnectionRequestActivity>( Context ).Queryable().Any( a => a.ConnectionActivityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", ConnectionActivityType.FriendlyTypeName, ConnectionRequestActivity.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
