@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Event
     [BooleanField( "Show Campus Filter", "Determines whether the campus filters are shown", false )]
     [BooleanField( "Show Category Filter", "Determines whether the campus filters are shown", false )]
     [BooleanField( "Show Date Range Filter", "Determines whether the campus filters are shown", false )]
+    [BooleanField( "Show Small Calendar", "Determines whether the calendar widget is shown", true )]
     [BooleanField( "Show Day View", "Determines whether the day view option is shown", false )]
     [BooleanField( "Show Week View", "Determines whether the week view option is shown", true )]
     [BooleanField( "Show Month View", "Determines whether the month view option is shown", true )]
@@ -52,7 +53,7 @@ namespace RockWeb.Blocks.Event
     [CustomDropdownListField( "Default View Option", "Determines the default view option", "Day,Week,Month", true, "Week" )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar name.", false )]
-    [IntegerField( "Event Calendar Id", "The Id of the event calendar to be displayed", true, 1 )]
+    [EventCalendarField( "Event Calendar", "The event calendar to be displayed", true, "1" )]
     public partial class CalendarLava : Rock.Web.UI.RockBlock
     {
         #region Properties
@@ -121,6 +122,7 @@ namespace RockWeb.Blocks.Event
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+            nbConfiguration.Visible = false;
             calEventCalendar.SelectedDate = SelectedDate.Value;
             calEventCalendar.FirstDayOfWeek = (FirstDayOfWeek)GetAttributeValue( "StartofWeekDay" ).AsInteger();
             if ( !Page.IsPostBack )
@@ -144,6 +146,8 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            nbConfiguration.Visible = false;
+            CheckValidConfiguration();
             DisplayCalendarItemList();
         }
 
@@ -298,7 +302,8 @@ namespace RockWeb.Blocks.Event
         {
             if ( !GetAttributeValue( string.Format( "Show{0}View", GetAttributeValue( "DefaultViewOption" ) ) ).AsBoolean() )
             {
-                maWarning.Show( "The default view option is one that is not enabled.", ModalAlertType.Warning );
+                nbConfiguration.Text = "The default view option is one that is not enabled.";
+                nbConfiguration.Visible = true;
             }
         }
 
@@ -311,12 +316,27 @@ namespace RockWeb.Blocks.Event
 
         private void DisplayCalendarItemList()
         {
+            pnlFilters.Visible = true;
+            pnlList.CssClass = "col-md-9";
             cblCampus.Visible = GetAttributeValue( "ShowCampusFilter" ).AsBoolean();
             cblCategory.Visible = GetAttributeValue( "ShowCategoryFilter" ).AsBoolean();
             drpDateRange.Visible = GetAttributeValue( "ShowDateRangeFilter" ).AsBoolean();
             btnDay.Visible = GetAttributeValue( "ShowDayView" ).AsBoolean();
             btnWeek.Visible = GetAttributeValue( "ShowWeekView" ).AsBoolean();
             btnMonth.Visible = GetAttributeValue( "ShowMonthView" ).AsBoolean();
+            if ( !GetAttributeValue( "ShowSmallCalendar" ).AsBoolean() )
+            {
+                pnlCalendar.Visible = false;
+                if ( !cblCampus.Visible && !cblCategory.Visible && !drpDateRange.Visible )
+                {
+                    pnlFilters.Visible = false;
+                    pnlList.CssClass = "col-md-12";
+                }
+            }
+            else
+            {
+                pnlCalendar.Visible = true;
+            }
 
             //This hides all buttons if only one view is enabled. Logic is based off of http://stackoverflow.com/questions/5343772, and was verified by truth table
             if ( ( btnDay.Visible != btnWeek.Visible ) != btnMonth.Visible )
@@ -354,11 +374,20 @@ namespace RockWeb.Blocks.Event
         {
             // get package id
             int eventCalendarId = -1;
-
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "EventCalendarId" ) ) )
+            var rockContext = new RockContext();
+            try
             {
-                eventCalendarId = Convert.ToInt32( GetAttributeValue( "EventCalendarId" ) );
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "EventCalendar" ) ) )
+                {
+                    eventCalendarId = new EventCalendarService( rockContext ).Get( GetAttributeValue( "EventCalendar" ).AsGuid() ).Id;
+                }
             }
+            catch
+            {
+                nbConfiguration.Text = "No event calendar selected";
+                nbConfiguration.Visible = true;
+            }
+
 
             EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( new RockContext() );
 
