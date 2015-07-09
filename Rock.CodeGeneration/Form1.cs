@@ -980,6 +980,24 @@ order by [parentTable], [columnName]
                 sb.AppendLine( "" );
             }
 
+            sb.AppendFormat( 
+@"        /// <summary>
+        /// Copies the base properties from a source {0} object
+        /// </summary>
+        /// <param name=""source"">The source.</param>
+        public void CopyPropertiesFrom( {0} source )
+        {{
+", type.Name );
+
+            foreach ( var keyVal in entityProperties )
+            {
+                sb.AppendFormat( "            this.{0} = source.{0};" + Environment.NewLine, keyVal.Key );
+            }
+
+            sb.Append( @"
+        }
+" );
+
             sb.AppendLine( "    }" );
 
             sb.AppendLine( "" );
@@ -1038,25 +1056,8 @@ order by [parentTable], [columnName]
                 sb.AppendLine( "        /// </summary>" );
                 sb.AppendLine( "        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }" );
             }
-         
-            sb.AppendFormat( @"
-        /// <summary>
-        /// Copies the base properties from a source {0} object
-        /// </summary>
-        /// <param name=""source"">The source.</param>
-        public void CopyPropertiesFrom( {0} source )
-        {{
-", type.Name );
 
-            foreach ( var keyVal in entityProperties )
-            {
-                sb.AppendFormat( "            this.{0} = source.{0};" + Environment.NewLine, keyVal.Key );
-            }
-
-            sb.Append( @"
-        }
-    }
-" );
+            sb.AppendLine( "    }" );
             sb.AppendLine( "}" );
 
             //var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, "CodeGenerated", type.Name + "Dto.cs" ) );

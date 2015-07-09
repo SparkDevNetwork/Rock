@@ -58,20 +58,6 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
-    }
-
-    /// <summary>
-    /// Client model for Audit that includes all the fields that are available for GETs. Use this for GETs (use AuditEntity for POST/PUTs)
-    /// </summary>
-    public partial class Audit : AuditEntity
-    {
-        /// <summary />
-        public ICollection<AuditDetail> Details { get; set; }
-
-        /// <summary />
-        public EntityType EntityType { get; set; }
-
-
         /// <summary>
         /// Copies the base properties from a source Audit object
         /// </summary>
@@ -89,5 +75,18 @@ namespace Rock.Client
             this.ForeignId = source.ForeignId;
 
         }
+    }
+
+    /// <summary>
+    /// Client model for Audit that includes all the fields that are available for GETs. Use this for GETs (use AuditEntity for POST/PUTs)
+    /// </summary>
+    public partial class Audit : AuditEntity
+    {
+        /// <summary />
+        public ICollection<AuditDetail> Details { get; set; }
+
+        /// <summary />
+        public EntityType EntityType { get; set; }
+
     }
 }

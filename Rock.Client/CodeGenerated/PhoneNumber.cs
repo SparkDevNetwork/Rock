@@ -70,6 +70,27 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source PhoneNumber object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( PhoneNumber source )
+        {
+            this.Id = source.Id;
+            this.CountryCode = source.CountryCode;
+            this.Description = source.Description;
+            this.Extension = source.Extension;
+            this.IsMessagingEnabled = source.IsMessagingEnabled;
+            this.IsSystem = source.IsSystem;
+            this.IsUnlisted = source.IsUnlisted;
+            this.Number = source.Number;
+            this.NumberFormatted = source.NumberFormatted;
+            this.NumberTypeValueId = source.NumberTypeValueId;
+            this.PersonId = source.PersonId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>
@@ -101,27 +122,5 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
-        /// <summary>
-        /// Copies the base properties from a source PhoneNumber object
-        /// </summary>
-        /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( PhoneNumber source )
-        {
-            this.Id = source.Id;
-            this.CountryCode = source.CountryCode;
-            this.Description = source.Description;
-            this.Extension = source.Extension;
-            this.IsMessagingEnabled = source.IsMessagingEnabled;
-            this.IsSystem = source.IsSystem;
-            this.IsUnlisted = source.IsUnlisted;
-            this.Number = source.Number;
-            this.NumberFormatted = source.NumberFormatted;
-            this.NumberTypeValueId = source.NumberTypeValueId;
-            this.PersonId = source.PersonId;
-            this.Guid = source.Guid;
-            this.ForeignId = source.ForeignId;
-
-        }
     }
 }

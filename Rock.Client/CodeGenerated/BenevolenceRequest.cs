@@ -85,6 +85,32 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source BenevolenceRequest object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( BenevolenceRequest source )
+        {
+            this.Id = source.Id;
+            this.CaseWorkerPersonAliasId = source.CaseWorkerPersonAliasId;
+            this.CellPhoneNumber = source.CellPhoneNumber;
+            this.ConnectionStatusValueId = source.ConnectionStatusValueId;
+            this.Email = source.Email;
+            this.FirstName = source.FirstName;
+            this.GovernmentId = source.GovernmentId;
+            this.HomePhoneNumber = source.HomePhoneNumber;
+            this.LastName = source.LastName;
+            this.LocationId = source.LocationId;
+            this.RequestDateTime = source.RequestDateTime;
+            this.RequestedByPersonAliasId = source.RequestedByPersonAliasId;
+            this.RequestStatusValueId = source.RequestStatusValueId;
+            this.RequestText = source.RequestText;
+            this.ResultSummary = source.ResultSummary;
+            this.WorkPhoneNumber = source.WorkPhoneNumber;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>
@@ -131,32 +157,5 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
-        /// <summary>
-        /// Copies the base properties from a source BenevolenceRequest object
-        /// </summary>
-        /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( BenevolenceRequest source )
-        {
-            this.Id = source.Id;
-            this.CaseWorkerPersonAliasId = source.CaseWorkerPersonAliasId;
-            this.CellPhoneNumber = source.CellPhoneNumber;
-            this.ConnectionStatusValueId = source.ConnectionStatusValueId;
-            this.Email = source.Email;
-            this.FirstName = source.FirstName;
-            this.GovernmentId = source.GovernmentId;
-            this.HomePhoneNumber = source.HomePhoneNumber;
-            this.LastName = source.LastName;
-            this.LocationId = source.LocationId;
-            this.RequestDateTime = source.RequestDateTime;
-            this.RequestedByPersonAliasId = source.RequestedByPersonAliasId;
-            this.RequestStatusValueId = source.RequestStatusValueId;
-            this.RequestText = source.RequestText;
-            this.ResultSummary = source.ResultSummary;
-            this.WorkPhoneNumber = source.WorkPhoneNumber;
-            this.Guid = source.Guid;
-            this.ForeignId = source.ForeignId;
-
-        }
     }
 }

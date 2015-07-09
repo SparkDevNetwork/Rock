@@ -73,6 +73,28 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source ContentChannelItem object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( ContentChannelItem source )
+        {
+            this.Id = source.Id;
+            this.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
+            this.ApprovedDateTime = source.ApprovedDateTime;
+            this.Content = source.Content;
+            this.ContentChannelId = source.ContentChannelId;
+            this.ContentChannelTypeId = source.ContentChannelTypeId;
+            this.ExpireDateTime = source.ExpireDateTime;
+            this.Permalink = source.Permalink;
+            this.Priority = source.Priority;
+            this.StartDateTime = source.StartDateTime;
+            this.Status = source.Status;
+            this.Title = source.Title;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>
@@ -107,28 +129,5 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
-        /// <summary>
-        /// Copies the base properties from a source ContentChannelItem object
-        /// </summary>
-        /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( ContentChannelItem source )
-        {
-            this.Id = source.Id;
-            this.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
-            this.ApprovedDateTime = source.ApprovedDateTime;
-            this.Content = source.Content;
-            this.ContentChannelId = source.ContentChannelId;
-            this.ContentChannelTypeId = source.ContentChannelTypeId;
-            this.ExpireDateTime = source.ExpireDateTime;
-            this.Permalink = source.Permalink;
-            this.Priority = source.Priority;
-            this.StartDateTime = source.StartDateTime;
-            this.Status = source.Status;
-            this.Title = source.Title;
-            this.Guid = source.Guid;
-            this.ForeignId = source.ForeignId;
-
-        }
     }
 }

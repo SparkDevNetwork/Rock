@@ -67,6 +67,26 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source Workflow object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Workflow source )
+        {
+            this.Id = source.Id;
+            this.ActivatedDateTime = source.ActivatedDateTime;
+            this.CompletedDateTime = source.CompletedDateTime;
+            this.Description = source.Description;
+            this.InitiatorPersonAliasId = source.InitiatorPersonAliasId;
+            this.IsProcessing = source.IsProcessing;
+            this.LastProcessedDateTime = source.LastProcessedDateTime;
+            this.Name = source.Name;
+            this.Status = source.Status;
+            this.WorkflowTypeId = source.WorkflowTypeId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>
@@ -101,26 +121,5 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
-        /// <summary>
-        /// Copies the base properties from a source Workflow object
-        /// </summary>
-        /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( Workflow source )
-        {
-            this.Id = source.Id;
-            this.ActivatedDateTime = source.ActivatedDateTime;
-            this.CompletedDateTime = source.CompletedDateTime;
-            this.Description = source.Description;
-            this.InitiatorPersonAliasId = source.InitiatorPersonAliasId;
-            this.IsProcessing = source.IsProcessing;
-            this.LastProcessedDateTime = source.LastProcessedDateTime;
-            this.Name = source.Name;
-            this.Status = source.Status;
-            this.WorkflowTypeId = source.WorkflowTypeId;
-            this.Guid = source.Guid;
-            this.ForeignId = source.ForeignId;
-
-        }
     }
 }

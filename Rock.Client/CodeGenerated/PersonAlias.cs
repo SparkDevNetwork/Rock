@@ -52,17 +52,6 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
-    }
-
-    /// <summary>
-    /// Client model for PersonAlias that includes all the fields that are available for GETs. Use this for GETs (use PersonAliasEntity for POST/PUTs)
-    /// </summary>
-    public partial class PersonAlias : PersonAliasEntity
-    {
-        /// <summary />
-        public Person Person { get; set; }
-
-
         /// <summary>
         /// Copies the base properties from a source PersonAlias object
         /// </summary>
@@ -78,5 +67,15 @@ namespace Rock.Client
             this.ForeignId = source.ForeignId;
 
         }
+    }
+
+    /// <summary>
+    /// Client model for PersonAlias that includes all the fields that are available for GETs. Use this for GETs (use PersonAliasEntity for POST/PUTs)
+    /// </summary>
+    public partial class PersonAlias : PersonAliasEntity
+    {
+        /// <summary />
+        public Person Person { get; set; }
+
     }
 }

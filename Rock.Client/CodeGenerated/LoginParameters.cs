@@ -40,14 +40,6 @@ namespace Rock.Client
         /// <summary />
         public string Username { get; set; }
 
-    }
-
-    /// <summary>
-    /// Use this as the Content of a api/Auth/Login POST
-    /// </summary>
-    public partial class LoginParameters : LoginParametersEntity
-    {
-
         /// <summary>
         /// Copies the base properties from a source LoginParameters object
         /// </summary>
@@ -59,5 +51,12 @@ namespace Rock.Client
             this.Username = source.Username;
 
         }
+    }
+
+    /// <summary>
+    /// Use this as the Content of a api/Auth/Login POST
+    /// </summary>
+    public partial class LoginParameters : LoginParametersEntity
+    {
     }
 }

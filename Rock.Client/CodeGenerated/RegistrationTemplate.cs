@@ -112,6 +112,41 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source RegistrationTemplate object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( RegistrationTemplate source )
+        {
+            this.Id = source.Id;
+            this.AllowMultipleRegistrants = source.AllowMultipleRegistrants;
+            this.CategoryId = source.CategoryId;
+            this.ConfirmationEmailTemplate = source.ConfirmationEmailTemplate;
+            this.Cost = source.Cost;
+            this.DiscountCodeTerm = source.DiscountCodeTerm;
+            this.FeeTerm = source.FeeTerm;
+            this.FinancialGatewayId = source.FinancialGatewayId;
+            this.GroupMemberRoleId = source.GroupMemberRoleId;
+            this.GroupMemberStatus = source.GroupMemberStatus;
+            this.GroupTypeId = source.GroupTypeId;
+            this.IsActive = source.IsActive;
+            this.LoginRequired = source.LoginRequired;
+            this.MaxRegistrants = source.MaxRegistrants;
+            this.MinimumInitialPayment = source.MinimumInitialPayment;
+            this.Name = source.Name;
+            this.NotifyGroupLeaders = source.NotifyGroupLeaders;
+            this.RegistrantsSameFamily = source.RegistrantsSameFamily;
+            this.RegistrantTerm = source.RegistrantTerm;
+            this.RegistrationTerm = source.RegistrationTerm;
+            this.ReminderEmailTemplate = source.ReminderEmailTemplate;
+            this.RequestEntryName = source.RequestEntryName;
+            this.SuccessText = source.SuccessText;
+            this.SuccessTitle = source.SuccessTitle;
+            this.UseDefaultConfirmationEmail = source.UseDefaultConfirmationEmail;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>
@@ -152,41 +187,5 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
-        /// <summary>
-        /// Copies the base properties from a source RegistrationTemplate object
-        /// </summary>
-        /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( RegistrationTemplate source )
-        {
-            this.Id = source.Id;
-            this.AllowMultipleRegistrants = source.AllowMultipleRegistrants;
-            this.CategoryId = source.CategoryId;
-            this.ConfirmationEmailTemplate = source.ConfirmationEmailTemplate;
-            this.Cost = source.Cost;
-            this.DiscountCodeTerm = source.DiscountCodeTerm;
-            this.FeeTerm = source.FeeTerm;
-            this.FinancialGatewayId = source.FinancialGatewayId;
-            this.GroupMemberRoleId = source.GroupMemberRoleId;
-            this.GroupMemberStatus = source.GroupMemberStatus;
-            this.GroupTypeId = source.GroupTypeId;
-            this.IsActive = source.IsActive;
-            this.LoginRequired = source.LoginRequired;
-            this.MaxRegistrants = source.MaxRegistrants;
-            this.MinimumInitialPayment = source.MinimumInitialPayment;
-            this.Name = source.Name;
-            this.NotifyGroupLeaders = source.NotifyGroupLeaders;
-            this.RegistrantsSameFamily = source.RegistrantsSameFamily;
-            this.RegistrantTerm = source.RegistrantTerm;
-            this.RegistrationTerm = source.RegistrationTerm;
-            this.ReminderEmailTemplate = source.ReminderEmailTemplate;
-            this.RequestEntryName = source.RequestEntryName;
-            this.SuccessText = source.SuccessText;
-            this.SuccessTitle = source.SuccessTitle;
-            this.UseDefaultConfirmationEmail = source.UseDefaultConfirmationEmail;
-            this.Guid = source.Guid;
-            this.ForeignId = source.ForeignId;
-
-        }
     }
 }

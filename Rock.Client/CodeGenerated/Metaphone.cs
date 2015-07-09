@@ -40,14 +40,6 @@ namespace Rock.Client
         /// <summary />
         public string Name { get; set; }
 
-    }
-
-    /// <summary>
-    /// Client model for Metaphone that includes all the fields that are available for GETs. Use this for GETs (use MetaphoneEntity for POST/PUTs)
-    /// </summary>
-    public partial class Metaphone : MetaphoneEntity
-    {
-
         /// <summary>
         /// Copies the base properties from a source Metaphone object
         /// </summary>
@@ -59,5 +51,12 @@ namespace Rock.Client
             this.Name = source.Name;
 
         }
+    }
+
+    /// <summary>
+    /// Client model for Metaphone that includes all the fields that are available for GETs. Use this for GETs (use MetaphoneEntity for POST/PUTs)
+    /// </summary>
+    public partial class Metaphone : MetaphoneEntity
+    {
     }
 }
