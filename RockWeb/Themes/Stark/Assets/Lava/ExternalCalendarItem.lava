@@ -1,0 +1,24 @@
+<div>
+  <center>
+    <img src="/GetImage.ashx?Guid={{ Event.Photo.Guid }}" class="title-image img-responsive"></img>
+  </center>
+  <div class="panel panel-default">
+    <div class="panel-heading">{{Event.Name}} </div>
+    {{Event.Description}}
+
+    {% for campus in Event.EventItemCampuses %}
+      {% if campus.Linkages | Size > 0 %}
+        {% if campus.Campus == null %}
+          <h3> All Campuses</h3>
+        {% else %}
+          <h3>{{campus.Campus.Name}}</h3>
+        {% endif %}
+        {% for linkage in campus.Linkages %}
+          <div class="item">
+            <a href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}" class="btn btn-primary">Sign Up</a>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>

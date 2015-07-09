@@ -54,6 +54,7 @@ namespace RockWeb.Blocks.Event
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar name.", false )]
     [EventCalendarField( "Event Calendar", "The event calendar to be displayed", true, "1" )]
+    [LinkedPage( "Details Page", "Detail page for events" )]
     public partial class CalendarLava : Rock.Web.UI.RockBlock
     {
         #region Properties
@@ -351,6 +352,8 @@ namespace RockWeb.Blocks.Event
             mergeFields.Add( "Events", events );
             mergeFields.Add( "CurrentPerson", CurrentPerson );
             mergeFields.Add( "TimeFrame", CurrentViewMode );
+            mergeFields.Add( "DetailsPage", LinkedPageUrl( "DetailsPage", null ) );
+
 
             lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 

@@ -18,6 +18,10 @@
         <a href="{{ event.DetailPage }}">
           <i> View page -> </i>
         </a>
+		{% else %}
+		<a href="{{ DetailsPage }}?EventId={{ event.Event.Id }}">
+          <i> View page -> </i>
+        </a>
         {% endif %}
       </div>
     </div>
