@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Humanizer;
 using Newtonsoft.Json;
@@ -1374,7 +1375,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void ShowHowMany()
         {
-            lRegistrantTerm.Text =RegistrantTerm.Pluralize();
+            lRegistrantTerm.Text =RegistrantTerm.Pluralize().ToLower();
 
             // If this is an existing registration, go directly to the summary
             if ( RegistrationState != null && RegistrationState.RegistrationId.HasValue )
@@ -1624,7 +1625,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void CreateRegistrantControls( bool setValues )
         {
-            lRegistrantFeeCaption.Text = RegistrantTerm.Pluralize();
+            lRegistrantFeeCaption.Text = FeeTerm.Pluralize();
 
             phRegistrantControls.Controls.Clear();
             phFees.Controls.Clear();
@@ -2062,13 +2063,24 @@ namespace RockWeb.Blocks.Event
 
                 if ( fee.AllowMultiple )
                 {
+                    HtmlGenericControl feeAllowMultiple = new HtmlGenericControl( "div" );
+                    phFees.Controls.Add( feeAllowMultiple );
+
+                    feeAllowMultiple.AddCssClass( "feetype-allowmultiples" );
+
+                    Label titleLabel = new Label();
+                    feeAllowMultiple.Controls.Add( titleLabel );
+                    titleLabel.CssClass = "control-label";
+                    titleLabel.Text = fee.Name;
+
                     foreach( var optionKeyVal in options )
                     {
                         var numUpDown = new NumberUpDown();
                         numUpDown.ID = string.Format( "fee_{0}_{1}", fee.Id, optionKeyVal.Key );
-                        numUpDown.Label = string.Format( "{0} - {1}", fee.Name, optionKeyVal.Value );
+                        numUpDown.Label = string.Format( "{0}", optionKeyVal.Value );
                         numUpDown.Minimum = 0;
-                        phFees.Controls.Add( numUpDown );
+                        numUpDown.CssClass = "fee-allowmultiple";
+                        feeAllowMultiple.Controls.Add( numUpDown );
 
                         if ( setValues && feeValues != null && feeValues.Any() )
                         {
@@ -2391,7 +2403,6 @@ namespace RockWeb.Blocks.Event
         private void CreateSummaryControls( bool setValues )
         {
             lDiscountCodeLabel.Text = DiscountCodeTerm;
-            lSummaryFeeCaption.Text = FeeTerm.Pluralize();
 
             if ( setValues && RegistrationState != null )
             {

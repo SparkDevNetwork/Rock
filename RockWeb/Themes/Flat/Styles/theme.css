@@ -2708,6 +2708,13 @@ iframe.email-body {
 .registrationentry-intro .input-group {
   margin: 0 auto 48px auto;
 }
+.registration-entry .feetype-allowmultiples > .control-label {
+  margin-bottom: 8px;
+  display: block;
+}
+.registration-entry .feetype-allowmultiples .form-group {
+  margin-left: 19px;
+}
 .registrationentry-summary .fee-table {
   margin: 0 24px;
 }
