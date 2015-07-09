@@ -76,6 +76,29 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source ConnectionOpportunity object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( ConnectionOpportunity source )
+        {
+            this.Id = source.Id;
+            this.ConnectionTypeId = source.ConnectionTypeId;
+            this.ConnectorGroupId = source.ConnectorGroupId;
+            this.Description = source.Description;
+            this.GroupMemberRoleId = source.GroupMemberRoleId;
+            this.GroupMemberStatusId = source.GroupMemberStatusId;
+            this.GroupTypeId = source.GroupTypeId;
+            this.IconCssClass = source.IconCssClass;
+            this.IsActive = source.IsActive;
+            this.Name = source.Name;
+            this.PhotoId = source.PhotoId;
+            this.PublicName = source.PublicName;
+            this.UseAllGroupsOfType = source.UseAllGroupsOfType;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>
@@ -134,29 +157,5 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
-        /// <summary>
-        /// Copies the base properties from a source ConnectionOpportunity object
-        /// </summary>
-        /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( ConnectionOpportunity source )
-        {
-            this.Id = source.Id;
-            this.ConnectionTypeId = source.ConnectionTypeId;
-            this.ConnectorGroupId = source.ConnectorGroupId;
-            this.Description = source.Description;
-            this.GroupMemberRoleId = source.GroupMemberRoleId;
-            this.GroupMemberStatusId = source.GroupMemberStatusId;
-            this.GroupTypeId = source.GroupTypeId;
-            this.IconCssClass = source.IconCssClass;
-            this.IsActive = source.IsActive;
-            this.Name = source.Name;
-            this.PhotoId = source.PhotoId;
-            this.PublicName = source.PublicName;
-            this.UseAllGroupsOfType = source.UseAllGroupsOfType;
-            this.Guid = source.Guid;
-            this.ForeignId = source.ForeignId;
-
-        }
     }
 }

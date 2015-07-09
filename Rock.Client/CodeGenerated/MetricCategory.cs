@@ -49,20 +49,6 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
-    }
-
-    /// <summary>
-    /// Client model for MetricCategory that includes all the fields that are available for GETs. Use this for GETs (use MetricCategoryEntity for POST/PUTs)
-    /// </summary>
-    public partial class MetricCategory : MetricCategoryEntity
-    {
-        /// <summary />
-        public Category Category { get; set; }
-
-        /// <summary />
-        public Metric Metric { get; set; }
-
-
         /// <summary>
         /// Copies the base properties from a source MetricCategory object
         /// </summary>
@@ -77,5 +63,18 @@ namespace Rock.Client
             this.ForeignId = source.ForeignId;
 
         }
+    }
+
+    /// <summary>
+    /// Client model for MetricCategory that includes all the fields that are available for GETs. Use this for GETs (use MetricCategoryEntity for POST/PUTs)
+    /// </summary>
+    public partial class MetricCategory : MetricCategoryEntity
+    {
+        /// <summary />
+        public Category Category { get; set; }
+
+        /// <summary />
+        public Metric Metric { get; set; }
+
     }
 }

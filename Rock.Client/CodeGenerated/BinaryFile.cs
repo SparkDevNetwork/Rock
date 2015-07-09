@@ -67,6 +67,26 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source BinaryFile object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( BinaryFile source )
+        {
+            this.Id = source.Id;
+            this.BinaryFileTypeId = source.BinaryFileTypeId;
+            this.ContentLastModified = source.ContentLastModified;
+            this.Description = source.Description;
+            this.FileName = source.FileName;
+            this.IsSystem = source.IsSystem;
+            this.IsTemporary = source.IsTemporary;
+            this.MimeType = source.MimeType;
+            this.Path = source.Path;
+            this.StorageEntitySettings = source.StorageEntitySettings;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>
@@ -101,26 +121,5 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
-        /// <summary>
-        /// Copies the base properties from a source BinaryFile object
-        /// </summary>
-        /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( BinaryFile source )
-        {
-            this.Id = source.Id;
-            this.BinaryFileTypeId = source.BinaryFileTypeId;
-            this.ContentLastModified = source.ContentLastModified;
-            this.Description = source.Description;
-            this.FileName = source.FileName;
-            this.IsSystem = source.IsSystem;
-            this.IsTemporary = source.IsTemporary;
-            this.MimeType = source.MimeType;
-            this.Path = source.Path;
-            this.StorageEntitySettings = source.StorageEntitySettings;
-            this.Guid = source.Guid;
-            this.ForeignId = source.ForeignId;
-
-        }
     }
 }

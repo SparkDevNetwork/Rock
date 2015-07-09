@@ -67,20 +67,6 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
-    }
-
-    /// <summary>
-    /// Client model for WorkflowTrigger that includes all the fields that are available for GETs. Use this for GETs (use WorkflowTriggerEntity for POST/PUTs)
-    /// </summary>
-    public partial class WorkflowTrigger : WorkflowTriggerEntity
-    {
-        /// <summary />
-        public EntityType EntityType { get; set; }
-
-        /// <summary />
-        public WorkflowType WorkflowType { get; set; }
-
-
         /// <summary>
         /// Copies the base properties from a source WorkflowTrigger object
         /// </summary>
@@ -101,5 +87,18 @@ namespace Rock.Client
             this.ForeignId = source.ForeignId;
 
         }
+    }
+
+    /// <summary>
+    /// Client model for WorkflowTrigger that includes all the fields that are available for GETs. Use this for GETs (use WorkflowTriggerEntity for POST/PUTs)
+    /// </summary>
+    public partial class WorkflowTrigger : WorkflowTriggerEntity
+    {
+        /// <summary />
+        public EntityType EntityType { get; set; }
+
+        /// <summary />
+        public WorkflowType WorkflowType { get; set; }
+
     }
 }

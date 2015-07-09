@@ -46,14 +46,6 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
-    }
-
-    /// <summary>
-    /// Client model for AttendanceCode that includes all the fields that are available for GETs. Use this for GETs (use AttendanceCodeEntity for POST/PUTs)
-    /// </summary>
-    public partial class AttendanceCode : AttendanceCodeEntity
-    {
-
         /// <summary>
         /// Copies the base properties from a source AttendanceCode object
         /// </summary>
@@ -67,5 +59,12 @@ namespace Rock.Client
             this.ForeignId = source.ForeignId;
 
         }
+    }
+
+    /// <summary>
+    /// Client model for AttendanceCode that includes all the fields that are available for GETs. Use this for GETs (use AttendanceCodeEntity for POST/PUTs)
+    /// </summary>
+    public partial class AttendanceCode : AttendanceCodeEntity
+    {
     }
 }

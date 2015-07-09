@@ -52,14 +52,6 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
-    }
-
-    /// <summary>
-    /// Client model for AuditDetail that includes all the fields that are available for GETs. Use this for GETs (use AuditDetailEntity for POST/PUTs)
-    /// </summary>
-    public partial class AuditDetail : AuditDetailEntity
-    {
-
         /// <summary>
         /// Copies the base properties from a source AuditDetail object
         /// </summary>
@@ -75,5 +67,12 @@ namespace Rock.Client
             this.ForeignId = source.ForeignId;
 
         }
+    }
+
+    /// <summary>
+    /// Client model for AuditDetail that includes all the fields that are available for GETs. Use this for GETs (use AuditDetailEntity for POST/PUTs)
+    /// </summary>
+    public partial class AuditDetail : AuditDetailEntity
+    {
     }
 }

@@ -52,14 +52,6 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
-    }
-
-    /// <summary>
-    /// Client model for AttributeQualifier that includes all the fields that are available for GETs. Use this for GETs (use AttributeQualifierEntity for POST/PUTs)
-    /// </summary>
-    public partial class AttributeQualifier : AttributeQualifierEntity
-    {
-
         /// <summary>
         /// Copies the base properties from a source AttributeQualifier object
         /// </summary>
@@ -75,5 +67,12 @@ namespace Rock.Client
             this.ForeignId = source.ForeignId;
 
         }
+    }
+
+    /// <summary>
+    /// Client model for AttributeQualifier that includes all the fields that are available for GETs. Use this for GETs (use AttributeQualifierEntity for POST/PUTs)
+    /// </summary>
+    public partial class AttributeQualifier : AttributeQualifierEntity
+    {
     }
 }

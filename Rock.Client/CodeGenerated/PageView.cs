@@ -70,17 +70,6 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
-    }
-
-    /// <summary>
-    /// Client model for PageView that includes all the fields that are available for GETs. Use this for GETs (use PageViewEntity for POST/PUTs)
-    /// </summary>
-    public partial class PageView : PageViewEntity
-    {
-        /// <summary />
-        public PersonAlias PersonAlias { get; set; }
-
-
         /// <summary>
         /// Copies the base properties from a source PageView object
         /// </summary>
@@ -102,5 +91,15 @@ namespace Rock.Client
             this.ForeignId = source.ForeignId;
 
         }
+    }
+
+    /// <summary>
+    /// Client model for PageView that includes all the fields that are available for GETs. Use this for GETs (use PageViewEntity for POST/PUTs)
+    /// </summary>
+    public partial class PageView : PageViewEntity
+    {
+        /// <summary />
+        public PersonAlias PersonAlias { get; set; }
+
     }
 }

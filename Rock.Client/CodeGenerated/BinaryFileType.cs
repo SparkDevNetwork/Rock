@@ -79,6 +79,30 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source BinaryFileType object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( BinaryFileType source )
+        {
+            this.Id = source.Id;
+            this.AllowCaching = source.AllowCaching;
+            this.Description = source.Description;
+            this.IconCssClass = source.IconCssClass;
+            this.IsSystem = source.IsSystem;
+            this.MaxHeight = source.MaxHeight;
+            this.MaxWidth = source.MaxWidth;
+            this.Name = source.Name;
+            this.PreferredColorDepth = source.PreferredColorDepth;
+            this.PreferredFormat = source.PreferredFormat;
+            this.PreferredRequired = source.PreferredRequired;
+            this.PreferredResolution = source.PreferredResolution;
+            this.RequiresViewSecurity = source.RequiresViewSecurity;
+            this.StorageEntityTypeId = source.StorageEntityTypeId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>
@@ -110,30 +134,5 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
-        /// <summary>
-        /// Copies the base properties from a source BinaryFileType object
-        /// </summary>
-        /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( BinaryFileType source )
-        {
-            this.Id = source.Id;
-            this.AllowCaching = source.AllowCaching;
-            this.Description = source.Description;
-            this.IconCssClass = source.IconCssClass;
-            this.IsSystem = source.IsSystem;
-            this.MaxHeight = source.MaxHeight;
-            this.MaxWidth = source.MaxWidth;
-            this.Name = source.Name;
-            this.PreferredColorDepth = source.PreferredColorDepth;
-            this.PreferredFormat = source.PreferredFormat;
-            this.PreferredRequired = source.PreferredRequired;
-            this.PreferredResolution = source.PreferredResolution;
-            this.RequiresViewSecurity = source.RequiresViewSecurity;
-            this.StorageEntityTypeId = source.StorageEntityTypeId;
-            this.Guid = source.Guid;
-            this.ForeignId = source.ForeignId;
-
-        }
     }
 }

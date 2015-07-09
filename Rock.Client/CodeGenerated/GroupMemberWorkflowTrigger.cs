@@ -67,23 +67,6 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
-    }
-
-    /// <summary>
-    /// Client model for GroupMemberWorkflowTrigger that includes all the fields that are available for GETs. Use this for GETs (use GroupMemberWorkflowTriggerEntity for POST/PUTs)
-    /// </summary>
-    public partial class GroupMemberWorkflowTrigger : GroupMemberWorkflowTriggerEntity
-    {
-        /// <summary />
-        public Group Group { get; set; }
-
-        /// <summary />
-        public GroupType GroupType { get; set; }
-
-        /// <summary />
-        public WorkflowType WorkflowType { get; set; }
-
-
         /// <summary>
         /// Copies the base properties from a source GroupMemberWorkflowTrigger object
         /// </summary>
@@ -104,5 +87,21 @@ namespace Rock.Client
             this.ForeignId = source.ForeignId;
 
         }
+    }
+
+    /// <summary>
+    /// Client model for GroupMemberWorkflowTrigger that includes all the fields that are available for GETs. Use this for GETs (use GroupMemberWorkflowTriggerEntity for POST/PUTs)
+    /// </summary>
+    public partial class GroupMemberWorkflowTrigger : GroupMemberWorkflowTriggerEntity
+    {
+        /// <summary />
+        public Group Group { get; set; }
+
+        /// <summary />
+        public GroupType GroupType { get; set; }
+
+        /// <summary />
+        public WorkflowType WorkflowType { get; set; }
+
     }
 }
