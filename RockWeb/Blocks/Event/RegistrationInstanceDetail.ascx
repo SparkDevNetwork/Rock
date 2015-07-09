@@ -127,15 +127,14 @@
                         </Rock:GridFilter>
                         <Rock:Grid ID="gRegistrants" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gRegistrants_RowSelected" RowItemText="Registrant">
                             <Columns>
-                                <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="Date" SortExpression="CreatedDateTime" />
                                 <Rock:RockTemplateField HeaderText="Registrant">
                                     <ItemTemplate>
                                         <asp:Literal ID="lRegistrant" runat="server"></asp:Literal></ItemTemplate>
                                 </Rock:RockTemplateField>
-                                <Rock:RockTemplateField HeaderText="Group">
+                                <Rock:RockTemplateFieldUnselected HeaderText="Group" >
                                     <ItemTemplate>
                                         <asp:Literal ID="lGroup" runat="server"></asp:Literal></ItemTemplate>
-                                </Rock:RockTemplateField>
+                                </Rock:RockTemplateFieldUnselected>
                             </Columns>
                         </Rock:Grid>
                     </div>
