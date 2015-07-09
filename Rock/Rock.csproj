@@ -476,6 +476,7 @@
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\Cache\NoteTypeCache.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
+    <Compile Include="Web\UI\Controls\DynamicControlsHtmlGenericControl.cs" />
     <Compile Include="Web\UI\Controls\Event\RegistrantFee.cs" />
     <Compile Include="Web\UI\Controls\DynamicControlsPanel.cs" />
     <Compile Include="Web\UI\Controls\Event\RegistrationInstanceEditor.cs" />

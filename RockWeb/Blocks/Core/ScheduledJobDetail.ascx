@@ -45,8 +45,8 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
-                        <asp:PlaceHolder ID="phAttributesReadOnly" runat="server" Visible="false" EnableViewState="false"></asp:PlaceHolder>
+                        <Rock:DynamicControlsPanel ID="phAttributes" runat="server" ></Rock:DynamicControlsPanel>
+                        <Rock:DynamicControlsPanel ID="phAttributesReadOnly" runat="server" Visible="false" ></Rock:DynamicControlsPanel>
                     </div>
                 </div>
 
