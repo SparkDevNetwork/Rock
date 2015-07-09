@@ -1044,17 +1044,27 @@ namespace RockWeb.Blocks.Crm
                     {
                         var groupMemberService = new GroupMemberService( rockContext );
 
-                        var existingMembers = groupMemberService.Queryable( "Group" )
-                            .Where( m =>
-                                m.GroupId == group.Id &&
-                                ids.Contains( m.PersonId ) )
-                            .ToList();
+                        var existingMembersQuery = groupMemberService.Queryable("Group")
+                                                                     .Where(m => m.GroupId == group.Id && ids.Contains(m.PersonId));
 
                         string action = ddlGroupAction.SelectedValue;
                         if ( action == "Remove" )
                         {
-                            groupMemberService.DeleteRange( existingMembers );
-                            rockContext.SaveChanges();
+                            var existingIds = existingMembersQuery.Select( gm => gm.Id ).Distinct().ToList();
+
+                            Action<RockContext, List<int>> deleteAction = (context, items) =>
+                                                                                  {
+                                                                                      // Load the batch of GroupMember items into the context and delete them.
+                                                                                      groupMemberService = new GroupMemberService(context);
+
+                                                                                      var batchGroupMembers = groupMemberService.Queryable().Where(x => items.Contains(x.Id)).ToList();
+
+                                                                                      groupMemberService.DeleteRange( batchGroupMembers );
+                                                                                      
+                                                                                      context.SaveChanges();
+                                                                                  };
+
+                            ProcessBatchUpdate( existingIds, 50, deleteAction );
                         }
                         else
                         {
@@ -1085,19 +1095,30 @@ namespace RockWeb.Blocks.Crm
                                 {
                                     var newGroupMembers = new List<GroupMember>();
 
-                                    var existingIds = existingMembers.Select( m => m.PersonId ).Distinct().ToList();
-                                    foreach ( int id in ids.Where( id => !existingIds.Contains( id ) ) )
-                                    {
-                                        var groupMember = new GroupMember();
-                                        groupMember.GroupId = group.Id;
-                                        groupMember.GroupRoleId = roleId.Value;
-                                        groupMember.GroupMemberStatus = status;
-                                        groupMember.PersonId = id;
-                                        groupMemberService.Add( groupMember );
-                                        newGroupMembers.Add( groupMember );
-                                    }
+                                    var existingIds = existingMembersQuery.Select( m => m.PersonId ).Distinct().ToList();
+                                    
+                                    var personKeys = ids.Where(id => !existingIds.Contains(id)).ToList();
 
-                                    rockContext.SaveChanges();
+                                    Action<RockContext, List<int>> addAction = ( context, items ) =>
+                                    {
+                                        groupMemberService = new GroupMemberService( context );
+                                        
+                                        foreach ( int id in items )
+                                        {
+                                            var groupMember = new GroupMember();
+                                            groupMember.GroupId = group.Id;
+                                            groupMember.GroupRoleId = roleId.Value;
+                                            groupMember.GroupMemberStatus = status;
+                                            groupMember.PersonId = id;
+                                            groupMemberService.Add(groupMember);
+                                            
+                                            newGroupMembers.Add(groupMember);
+                                        }
+
+                                        context.SaveChanges();
+                                    };
+
+                                    ProcessBatchUpdate( personKeys, 50, addAction );
 
                                     if ( selectedGroupAttributes.Any() )
                                     {
@@ -1113,11 +1134,14 @@ namespace RockWeb.Blocks.Crm
                             }
                             else // Update
                             {
+                                // Materialize the Query result so we can iterate over the collection without holding the database connection open.
+                                var existingMembers = existingMembersQuery.ToList();
+
                                 if ( SelectedFields.Contains( ddlGroupRole.ClientID ) && roleId.HasValue )
                                 {
                                     foreach ( var member in existingMembers.Where( m => m.GroupRoleId != roleId.Value ) )
                                     {
-                                        if ( !existingMembers.Where( m => m.PersonId == member.PersonId && m.GroupRoleId == roleId.Value ).Any() )
+                                        if ( !existingMembers.Any( m => m.PersonId == member.PersonId && m.GroupRoleId == roleId.Value ) )
                                         {
                                             member.GroupRoleId = roleId.Value;
                                         }
@@ -1154,9 +1178,36 @@ namespace RockWeb.Blocks.Crm
                 pnlEntry.Visible = false;
                 pnlConfirm.Visible = false;
 
-                nbResult.Text = string.Format( "{0} {1} succesfully updated.",
+                nbResult.Text = string.Format( "{0} {1} successfully updated.",
                     ids.Count().ToString( "N0" ), ( ids.Count() > 1 ? "people were" : "person was" ) ); ;
                 pnlResult.Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Process database updates for the supplied list of items in batches to improve performance for large datasets.
+        /// </summary>
+        /// <param name="itemsToProcess"></param>
+        /// <param name="batchSize"></param>
+        /// <param name="processingAction"></param>
+        private void ProcessBatchUpdate<TListItem>( List<TListItem> itemsToProcess, int batchSize, Action<RockContext, List<TListItem>> processingAction )
+        {
+            int remainingCount = itemsToProcess.Count();
+
+            int batchesProcessed = 0;
+
+            while (remainingCount > 0)
+            {
+                var batchItems = itemsToProcess.Skip(batchesProcessed * batchSize).Take( batchSize ).ToList();
+                                
+                using (var batchContext = new RockContext())
+                {
+                    processingAction.Invoke(batchContext, batchItems);
+                }
+
+                batchesProcessed++;
+
+                remainingCount -= batchItems.Count();
             }
         }
 
