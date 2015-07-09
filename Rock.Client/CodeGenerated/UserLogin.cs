@@ -116,5 +116,32 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source UserLogin object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( UserLogin source )
+        {
+            this.Id = source.Id;
+            this.ApiKey = source.ApiKey;
+            this.EntityTypeId = source.EntityTypeId;
+            this.FailedPasswordAttemptCount = source.FailedPasswordAttemptCount;
+            this.FailedPasswordAttemptWindowStartDateTime = source.FailedPasswordAttemptWindowStartDateTime;
+            this.IsConfirmed = source.IsConfirmed;
+            this.IsLockedOut = source.IsLockedOut;
+            this.IsOnLine = source.IsOnLine;
+            this.LastActivityDateTime = source.LastActivityDateTime;
+            this.LastLockedOutDateTime = source.LastLockedOutDateTime;
+            this.LastLoginDateTime = source.LastLoginDateTime;
+            this.LastPasswordChangedDateTime = source.LastPasswordChangedDateTime;
+            this.LastPasswordExpirationWarningDateTime = source.LastPasswordExpirationWarningDateTime;
+            this.Password = source.Password;
+            this.PersonId = source.PersonId;
+            this.UserName = source.UserName;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 }

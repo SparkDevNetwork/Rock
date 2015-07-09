@@ -77,5 +77,20 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source WorkflowLog object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( WorkflowLog source )
+        {
+            this.Id = source.Id;
+            this.LogDateTime = source.LogDateTime;
+            this.LogText = source.LogText;
+            this.WorkflowId = source.WorkflowId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 }

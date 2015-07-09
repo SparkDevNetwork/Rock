@@ -80,5 +80,27 @@ namespace Rock.Client
         /// <summary />
         public PersonAlias PersonAlias { get; set; }
 
+
+        /// <summary>
+        /// Copies the base properties from a source PageView object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( PageView source )
+        {
+            this.Id = source.Id;
+            this.ClientType = source.ClientType;
+            this.DateTimeViewed = source.DateTimeViewed;
+            this.IpAddress = source.IpAddress;
+            this.PageId = source.PageId;
+            this.PageTitle = source.PageTitle;
+            this.PersonAliasId = source.PersonAliasId;
+            this.SessionId = source.SessionId;
+            this.SiteId = source.SiteId;
+            this.Url = source.Url;
+            this.UserAgent = source.UserAgent;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 }

@@ -50,5 +50,16 @@ namespace Rock.Client
         /// <summary />
         public DefinedValue LocationTypeValue { get; set; }
 
+
+        /// <summary>
+        /// Copies the base properties from a source GroupTypeLocationType object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( GroupTypeLocationType source )
+        {
+            this.GroupTypeId = source.GroupTypeId;
+            this.LocationTypeValueId = source.LocationTypeValueId;
+
+        }
     }
 }

@@ -125,5 +125,33 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source Metric object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Metric source )
+        {
+            this.Id = source.Id;
+            this.AdminPersonAliasId = source.AdminPersonAliasId;
+            this.DataViewId = source.DataViewId;
+            this.Description = source.Description;
+            this.EntityTypeId = source.EntityTypeId;
+            this.IconCssClass = source.IconCssClass;
+            this.IsCumulative = source.IsCumulative;
+            this.IsSystem = source.IsSystem;
+            this.LastRunDateTime = source.LastRunDateTime;
+            this.MetricChampionPersonAliasId = source.MetricChampionPersonAliasId;
+            this.ScheduleId = source.ScheduleId;
+            this.SourceSql = source.SourceSql;
+            this.SourceValueTypeId = source.SourceValueTypeId;
+            this.Subtitle = source.Subtitle;
+            this.Title = source.Title;
+            this.XAxisLabel = source.XAxisLabel;
+            this.YAxisLabel = source.YAxisLabel;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 }

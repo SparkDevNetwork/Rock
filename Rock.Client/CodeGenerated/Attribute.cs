@@ -125,5 +125,32 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source Attribute object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Attribute source )
+        {
+            this.Id = source.Id;
+            this.AllowSearch = source.AllowSearch;
+            this.DefaultValue = source.DefaultValue;
+            this.Description = source.Description;
+            this.EntityTypeId = source.EntityTypeId;
+            this.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+            this.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            this.FieldTypeId = source.FieldTypeId;
+            this.IconCssClass = source.IconCssClass;
+            this.IsGridColumn = source.IsGridColumn;
+            this.IsMultiValue = source.IsMultiValue;
+            this.IsRequired = source.IsRequired;
+            this.IsSystem = source.IsSystem;
+            this.Key = source.Key;
+            this.Name = source.Name;
+            this.Order = source.Order;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 }

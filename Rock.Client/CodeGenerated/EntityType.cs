@@ -71,5 +71,25 @@ namespace Rock.Client
     /// </summary>
     public partial class EntityType : EntityTypeEntity
     {
+
+        /// <summary>
+        /// Copies the base properties from a source EntityType object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( EntityType source )
+        {
+            this.Id = source.Id;
+            this.AssemblyName = source.AssemblyName;
+            this.FriendlyName = source.FriendlyName;
+            this.IsCommon = source.IsCommon;
+            this.IsEntity = source.IsEntity;
+            this.IsSecured = source.IsSecured;
+            this.MultiValueFieldTypeId = source.MultiValueFieldTypeId;
+            this.Name = source.Name;
+            this.SingleValueFieldTypeId = source.SingleValueFieldTypeId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 }

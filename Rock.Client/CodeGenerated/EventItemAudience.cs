@@ -80,5 +80,19 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source EventItemAudience object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( EventItemAudience source )
+        {
+            this.Id = source.Id;
+            this.DefinedValueId = source.DefinedValueId;
+            this.EventItemId = source.EventItemId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 }

@@ -62,5 +62,22 @@ namespace Rock.Client
     /// </summary>
     public partial class PersonViewed : PersonViewedEntity
     {
+
+        /// <summary>
+        /// Copies the base properties from a source PersonViewed object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( PersonViewed source )
+        {
+            this.Id = source.Id;
+            this.IpAddress = source.IpAddress;
+            this.Source = source.Source;
+            this.TargetPersonAliasId = source.TargetPersonAliasId;
+            this.ViewDateTime = source.ViewDateTime;
+            this.ViewerPersonAliasId = source.ViewerPersonAliasId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 }

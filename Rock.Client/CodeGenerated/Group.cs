@@ -149,5 +149,34 @@ namespace Rock.Client
         /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source Group object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Group source )
+        {
+            this.Id = source.Id;
+            this.AddUserAccountsDuringSync = source.AddUserAccountsDuringSync;
+            this.AllowGuests = source.AllowGuests;
+            this.CampusId = source.CampusId;
+            this.Description = source.Description;
+            this.ExitSystemEmailId = source.ExitSystemEmailId;
+            this.GroupTypeId = source.GroupTypeId;
+            this.IsActive = source.IsActive;
+            this.IsPublic = source.IsPublic;
+            this.IsSecurityRole = source.IsSecurityRole;
+            this.IsSystem = source.IsSystem;
+            this.MustMeetRequirementsToAddMember = source.MustMeetRequirementsToAddMember;
+            this.Name = source.Name;
+            this.Order = source.Order;
+            this.ParentGroupId = source.ParentGroupId;
+            this.ScheduleId = source.ScheduleId;
+            this.SyncDataViewId = source.SyncDataViewId;
+            this.WelcomeSystemEmailId = source.WelcomeSystemEmailId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 }

@@ -47,5 +47,17 @@ namespace Rock.Client
     /// </summary>
     public partial class Metaphone : MetaphoneEntity
     {
+
+        /// <summary>
+        /// Copies the base properties from a source Metaphone object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Metaphone source )
+        {
+            this.Metaphone1 = source.Metaphone1;
+            this.Metaphone2 = source.Metaphone2;
+            this.Name = source.Name;
+
+        }
     }
 }
