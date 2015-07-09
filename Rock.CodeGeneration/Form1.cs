@@ -188,7 +188,7 @@ namespace Rock.CodeGeneration
                 dbContextFullName = dbContextFullName.Replace( "Rock.Data.", "" );
             }
 
-            var properties = GetEntityProperties( type );
+            var properties = GetEntityProperties( type, false );
 
             var sb = new StringBuilder();
 
@@ -667,22 +667,20 @@ order by [parentTable], [columnName]
             }
         }
 
-        private Dictionary<Type, Dictionary<string, string>> _entityProperties { get; set; }
-
-        private Dictionary<string, string> GetEntityProperties( Type type )
+        private Dictionary<string, PropertyInfo> GetEntityProperties( Type type, bool includeRockClientIncludes )
         {
-            _entityProperties = _entityProperties ?? new Dictionary<Type, Dictionary<string, string>>();
-            if ( _entityProperties.ContainsKey( type ) )
-            {
-                return _entityProperties[type];
-            }
-
-            var properties = new Dictionary<string, string>();
+            var properties = new Dictionary<string, PropertyInfo>();
 
             var interfaces = type.GetInterfaces();
 
             foreach ( var property in type.GetProperties().SortByStandardOrder() )
             {
+                bool include = false;
+                if (includeRockClientIncludes && property.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null)
+                {
+                    include = true;
+                }
+                
                 var getMethod = property.GetGetMethod();
                 if (getMethod == null)
                 {
@@ -691,7 +689,7 @@ order by [parentTable], [columnName]
 
                 if ( getMethod.IsVirtual )
                 {
-                    if ( !getMethod.IsFinal )
+                    if ( !include && !getMethod.IsFinal )
                     {
                         continue;
                     }
@@ -705,7 +703,7 @@ order by [parentTable], [columnName]
                             break;
                         }
                     }
-                    if ( !interfaceProperty )
+                    if ( !include && !interfaceProperty )
                     {
                         continue;
                     }
@@ -717,13 +715,11 @@ order by [parentTable], [columnName]
                     {
                         if ( property.SetMethod != null && property.SetMethod.IsPublic && property.GetMethod.IsPublic )
                         {
-                            properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
+                            properties.Add( property.Name, property );
                         }
                     }
                 }
             }
-
-            _entityProperties[type] = properties;
 
             return properties;
         }
@@ -881,7 +877,8 @@ order by [parentTable], [columnName]
         /// <param name="type"></param>
         private void WriteRockClientFile( string rootFolder, Type type )
         {
-            var entityProperties = GetEntityProperties( type );
+            // make a copy of the EntityProperties since we are deleting some for this method
+            var entityProperties = GetEntityProperties( type, true ).ToDictionary( k => k.Key, v => v.Value);
             entityProperties.Remove( "CreatedDateTime" );
             entityProperties.Remove( "ModifiedDateTime" );
             entityProperties.Remove( "CreatedByPersonAliasId" );
@@ -961,8 +958,25 @@ order by [parentTable], [columnName]
 
             foreach ( var keyVal in entityProperties )
             {
-                sb.AppendLine( "        /// <summary />" );
-                sb.AppendFormat( "        public {0} {1} {{ get; set; }}" + Environment.NewLine, keyVal.Value, keyVal.Key );
+                var propertyRockClientIncludeAttribute = keyVal.Value.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>();
+                string propertyComments = null;
+
+                if ( propertyRockClientIncludeAttribute != null )
+                {
+                    propertyComments = propertyRockClientIncludeAttribute.DocumentationMessage;
+                }
+
+                if ( !string.IsNullOrWhiteSpace( propertyComments ) )
+                {
+                    sb.AppendLine( "        /// <summary>" );
+                    sb.AppendFormat( "        /// {0}" + Environment.NewLine, propertyComments );
+                    sb.AppendLine( "        /// </summary>" );
+                }
+                else
+                {
+                    sb.AppendLine( "        /// <summary />" );
+                }
+                sb.AppendFormat( "        public {0} {1} {{ get; set; }}" + Environment.NewLine, this.PropertyTypeName( keyVal.Value.PropertyType ), keyVal.Key );
                 sb.AppendLine( "" );
             }
 
