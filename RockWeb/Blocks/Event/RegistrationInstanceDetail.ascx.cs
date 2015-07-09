@@ -74,6 +74,14 @@ namespace RockWeb.Blocks.Event
         private Dictionary<int, List<int>> PersonCampusIds { get; set; }
 
         /// <summary>
+        /// Gets or sets the group links.
+        /// </summary>
+        /// <value>
+        /// The group links.
+        /// </value>
+        private Dictionary<int, string> GroupLinks { get; set; }
+
+        /// <summary>
         /// Gets or sets the active tab.
         /// </summary>
         /// <value>
@@ -792,7 +800,15 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                // TODO Set the Group Name
+                // Set the Group Name
+                if ( registrant.GroupMember != null && GroupLinks.ContainsKey( registrant.GroupMember.GroupId ) )
+                {
+                    var lGroup = e.Row.FindControl( "lGroup" ) as Literal;
+                    if ( lGroup != null )
+                    {
+                        lGroup.Text = GroupLinks[registrant.GroupMember.GroupId];
+                    }
+                }
 
                 // Set the campus
                 var lCampus = e.Row.FindControl( "lCampus" ) as Literal;
@@ -1497,7 +1513,7 @@ namespace RockWeb.Blocks.Event
                 {
                     // Start query for registrants
                     var qry = new RegistrationRegistrantService( rockContext )
-                        .Queryable( "PersonAlias.Person.PhoneNumbers.NumberTypeValue,Fees.RegistrationTemplateFee" ).AsNoTracking()
+                        .Queryable( "PersonAlias.Person.PhoneNumbers.NumberTypeValue,Fees.RegistrationTemplateFee,GroupMember.Group" ).AsNoTracking()
                         .Where( r =>
                             r.Registration.RegistrationInstanceId == instanceId.Value &&
                             r.PersonAlias != null &&
@@ -1799,12 +1815,21 @@ namespace RockWeb.Blocks.Event
                                 .Distinct()
                                 .ToList();
 
-                            // Get all the group member ids in current page of query results
-                            var groupMemberIds = currentPageRegistrants
-                                .Where( r => r.GroupMemberId.HasValue )
-                                .Select( r => r.GroupMemberId.Value )
-                                .Distinct()
-                                .ToList();
+                            // Get all the group member ids and the group id in current page of query results
+                            var groupMemberIds = new List<int>();
+                            GroupLinks = new Dictionary<int,string>();
+                            foreach( var groupMember in currentPageRegistrants
+                                .Where( m => 
+                                    m.GroupMember != null &&
+                                    m.GroupMember.Group != null )
+                                .Select( m => m.GroupMember ) )
+                            {
+                                groupMemberIds.Add( groupMember.Id );
+                                GroupLinks.AddOrIgnore( groupMember.GroupId, 
+                                    string.Format( "<a href='{0}'>{1}</a>",
+                                        LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } ),
+                                        groupMember.Group.Name ) );
+                            }
 
                             // If the campus column was selected to be displayed on grid, preload all the people's
                             // campuses so that the databind does not need to query each row
