@@ -149,6 +149,7 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\EventCalendarFieldAttribute.cs" />
     <Compile Include="Attribute\IHasAttributesWrapper.cs" />
     <Compile Include="Attribute\NoteTypeFieldAttribute.cs" />
     <Compile Include="Attribute\FinancialGatewayFieldAttribute.cs" />
@@ -244,6 +245,7 @@
     <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
+    <Compile Include="Field\Types\EventCalendarFieldType.cs" />
     <Compile Include="Field\Types\NoteTypesFieldType.cs" />
     <Compile Include="Field\Types\NoteTypeFieldType.cs" />
     <Compile Include="Jobs\SendGroupRequirementsNotification.cs" />
@@ -482,8 +484,10 @@
     <Compile Include="Utility\RockSemanticVersion.cs" />
     <Compile Include="Utility\SimpleModeJsonConverter.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
+    <Compile Include="Web\Cache\EventCalendarCache.cs" />
     <Compile Include="Web\Cache\NoteTypeCache.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
+    <Compile Include="Web\UI\Controls\DynamicControlsHtmlGenericControl.cs" />
     <Compile Include="Web\UI\Controls\Event\RegistrantFee.cs" />
     <Compile Include="Web\UI\Controls\DynamicControlsPanel.cs" />
     <Compile Include="Web\UI\Controls\Event\RegistrationInstanceEditor.cs" />
@@ -498,6 +502,7 @@
     <Compile Include="Web\UI\Controls\Grid\PhoneNumbersField.cs" />
     <Compile Include="Web\UI\Controls\IDisplayRequiredIndicator.cs" />
     <Compile Include="Web\UI\Controls\NumberUpDown.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\EventCalendarPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupTypesPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\FinancialGatewayPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupAndRolePicker.cs" />

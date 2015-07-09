@@ -83,6 +83,17 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            try
+            {
+                ExpressionDescriptor.GetDescription( tbCronExpression.Text );
+            }
+            catch (Exception ex)
+            {
+                tbCronExpression.ShowErrorMessage( "Invalid Cron Expression: " + ex.Message );
+                return;
+            }
+            
+            
             ServiceJob job;
             var rockContext = new RockContext();
             ServiceJobService jobService = new ServiceJobService( rockContext );
@@ -185,7 +196,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                lCronExpressionDesc.Text = ExpressionDescriptor.GetDescription( job.CronExpression );
+                lCronExpressionDesc.Text = ExpressionDescriptor.GetDescription( job.CronExpression, new Options { ThrowExceptionOnParseError = false } );
                 lCronExpressionDesc.Visible = true;
             }
 

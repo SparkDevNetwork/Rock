@@ -367,30 +367,34 @@ namespace RockWeb.Blocks.Reporting
                         propertyFilter.HideEntityFieldPicker();
                         if ( setSelection )
                         {
-                            filterControl.Selection = filter.Selection;
+                            var selection = filter.Selection;
 
                             if ( !string.IsNullOrWhiteSpace( selectionUserPreference ) )
                             {
-                                filterControl.Selection = propertyFilter.UpdateSelectionFromUserPreferenceSelection( filterControl.Selection, selectionUserPreference );
+                                selection = propertyFilter.UpdateSelectionFromUserPreferenceSelection( selection, selectionUserPreference );
                             }
 
-                            filterControl.Selection = propertyFilter.UpdateSelectionFromPageParameters( filterControl.Selection, this );
+                            selection = propertyFilter.UpdateSelectionFromPageParameters( selection, this );
+
+                            filterControl.SetSelection(selection);
                         }
                     }
                     else
                     {
                         if ( setSelection )
                         {
-                            filterControl.Selection = filter.Selection;
+                            var selection = filter.Selection;
                             if ( !string.IsNullOrWhiteSpace( selectionUserPreference ) )
                             {
-                                filterControl.Selection = selectionUserPreference;
+                                selection = selectionUserPreference;
                             }
 
                             if ( component is Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters )
                             {
-                                filterControl.Selection = ( component as Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters ).UpdateSelectionFromPageParameters( filterControl.Selection, this );
+                                selection = ( component as Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters ).UpdateSelectionFromPageParameters( selection, this );
                             }
+
+                            filterControl.SetSelection( selection );
                         }
 
                         // a configurable data filter
@@ -437,9 +441,10 @@ namespace RockWeb.Blocks.Reporting
                     {
                         // only save the preference if it is different from the original
                         var origFilter = dataViewFilterService.Get( filterControl.DataViewFilterGuid );
-                        if ( origFilter != null && origFilter.Selection != filterControl.Selection )
+                        var selection = filterControl.GetSelection();
+                        if ( origFilter != null && origFilter.Selection != selection )
                         {
-                            this.SetUserPreference( selectionKey, filterControl.Selection );
+                            this.SetUserPreference( selectionKey, selection );
                         }
                         else
                         {
