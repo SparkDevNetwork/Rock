@@ -7,6 +7,9 @@ CCV.findCampusById = function (campusId) {
 
 CCV.locations = [
 {% for campus in Campuses %}
+  {% assign renderedTimes = "" %}
+  {% assign hasSaturday = false %}
+  {% assign hasSunday = false %}
   {
     id: '{{ campus.Id }}',
     name: '{{ campus.Name }}',
@@ -22,7 +25,43 @@ CCV.locations = [
     state: '{{ campus.Location.State }}',
     zip: '{{ campus.Location.PostalCode }}',
     photo: '{{ campus.Location.ImageUrl }}',
-    serviceTimes: {{ campus.ServiceTimes | ToJSON }}
+    serviceTimes: {
+      {% capture renderedTimes %}
+      {% assign times = campus.RawServiceTimes | Split: '|' %}
+      {% for time in times %}
+        {% assign split = time | Split: '^' %}
+        {% if split[0] == 'Saturday' %}
+          {% assign hasSaturday = true %}
+        {% endif %}
+        {% if split[0] == 'Sunday' %}
+          {% assign hasSunday = true %}
+        {% endif %}
+      {% endfor %}
+
+      {% if hasSaturday %}
+        saturday: [
+        {% for time in times %}
+          {% assign split = time | Split: '^' %}
+          {% if split[0] == 'Saturday' %}
+            '{{ split[1] }}',
+          {% endif %}
+        {% endfor %}
+        ],
+      {% endif %}
+
+      {% if hasSunday %}
+        sunday: [
+        {% for time in times %}
+          {% assign split = time | Split: '^' %}
+          {% if split[0] == 'Sunday' %}
+            '{{ split[1] }}',
+          {% endif %}
+        {% endfor %}
+        ],
+      {% endif %}
+      {% endcapture %}
+      {{ renderedTimes | StripNewlines | Remove: '  ' }}
+    },
   }{% unless forloop.last %},{% endunless %}
 {% endfor %}
 ]
