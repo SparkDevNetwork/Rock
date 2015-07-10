@@ -119,6 +119,8 @@
                                             Help="Check this option if more than one location should be allowed for groups of this type." />
                                         <Rock:RockCheckBox ID="cbEnableLocationSchedules" runat="server" Label="Enable Location Schedules" Text="Yes" 
                                             Help="Check this option if group locations should be associated with one or more pre-defined schedules." />
+                                        <Rock:RockCheckBox ID="cbEnableAlternatePlacements" runat="server" Label="Enable Alternate Placements" Text="Yes" 
+                                            Help="Check this option if groups of this type can use the Alternate Placements feature" />
                                     </div>
                                 </div>
                                 <Rock:RockControlWrapper ID="rcLocationTypes" runat="server" Label="Location Types"
