@@ -185,16 +185,12 @@ namespace Rock.Field.Types
                 }
 
                 var names = new List<string>();
-                foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
                 {
-                    Guid guid = Guid.Empty;
-                    if ( Guid.TryParse( guidValue, out guid ) )
+                    var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                    if ( definedValue != null )
                     {
-                        var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
-                        if ( definedValue != null )
-                        {
-                            names.Add( useDescription ? definedValue.Description : definedValue.Value );
-                        }
+                        names.Add( useDescription ? definedValue.Description : definedValue.Value );
                     }
                 }
 
@@ -263,36 +259,32 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            var ids = new List<string>();
+            var definedValueIdList = new List<int>();
 
             if ( control != null && control is ListControl )
             {
                 if ( control is Rock.Web.UI.Controls.RockDropDownList )
                 {
-                    ids.Add( ( (ListControl)control ).SelectedValue );
+                    definedValueIdList.Add( ( (ListControl)control ).SelectedValue.AsInteger() );
                 }
                 else if ( control is Rock.Web.UI.Controls.RockCheckBoxList )
                 {
                     var cblControl = control as Rock.Web.UI.Controls.RockCheckBoxList;
 
-                    ids.AddRange( cblControl.Items.Cast<ListItem>()
+                    definedValueIdList.AddRange( cblControl.Items.Cast<ListItem>()
                         .Where( i => i.Selected )
-                        .Select( i => i.Value ) );
+                        .Select( i => i.Value ).AsIntegerList() );
                 }
             }
 
-            var guids = new List<string>();
+            var guids = new List<Guid>();
 
-            foreach ( string id in ids )
+            foreach ( int definedValueId in definedValueIdList )
             {
-                int definedValueId = int.MinValue;
-                if ( int.TryParse( id, out definedValueId ) )
+                var definedValue = Rock.Web.Cache.DefinedValueCache.Read( definedValueId );
+                if ( definedValue != null )
                 {
-                    var definedValue = Rock.Web.Cache.DefinedValueCache.Read( definedValueId );
-                    if ( definedValue != null )
-                    {
-                        guids.Add( definedValue.Guid.ToString() );
-                    }
+                    guids.Add( definedValue.Guid );
                 }
             }
 
@@ -312,16 +304,12 @@ namespace Rock.Field.Types
                 if ( control != null && control is ListControl )
                 {
                     var ids = new List<string>();
-                    foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                    foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
                     {
-                        Guid guid = Guid.Empty;
-                        if ( Guid.TryParse( guidValue, out guid ) )
+                        var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                        if ( definedValue != null )
                         {
-                            var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
-                            if ( definedValue != null )
-                            {
-                                ids.Add( definedValue.Id.ToString() );
-                            }
+                            ids.Add( definedValue.Id.ToString() );
                         }
                     }
 
@@ -471,16 +459,12 @@ namespace Rock.Field.Types
             }
 
             var values = new List<string>();
-            foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+            foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
             {
-                Guid guid = Guid.Empty;
-                if ( Guid.TryParse( guidValue, out guid ) )
+                var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                if ( definedValue != null )
                 {
-                    var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
-                    if ( definedValue != null )
-                    {
-                        values.Add( useDescription ? definedValue.Description : definedValue.Value );
-                    }
+                    values.Add( useDescription ? definedValue.Description : definedValue.Value );
                 }
             }
 
