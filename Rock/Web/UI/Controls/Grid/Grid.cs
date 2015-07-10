@@ -2557,7 +2557,16 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public IEnumerable<T> ColumnsOfType<T>() where T : DataControlField
         {
-            return this.Columns.Cast<T>().Where( a => a != null );
+            var result = new List<T>();
+            foreach (var col in Columns)
+            {
+                if (col is T)
+                {
+                    result.Add( col as T );
+                }
+                
+            }
+            return result;
         }
 
         /// <summary>
