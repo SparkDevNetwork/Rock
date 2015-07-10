@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Event
         {
             get
             {
-                var SelectedDate = ViewState["SelectedDate"] as DateTime?;
+                var SelectedDate = Session["SelectedDate"] as DateTime?;
                 if ( SelectedDate == null )
                 {
                     SelectedDate = DateTime.Today;
@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Event
 
             set
             {
-                ViewState["SelectedDate"] = value;
+                Session["SelectedDate"] = value;
             }
         }
         #endregion
