@@ -205,6 +205,12 @@ namespace Rock.SystemGuid
         public const string BUSINESSES = "F4DF4899-2D44-4997-BA9B-9D2C64958A20";
 
         /// <summary>
+        /// Gets the Calendars page guid
+        /// ParentPage: Website
+        /// </summary>
+        public const string CALENDARS = "63990874-0DFF-45FC-9F09-81B0B0D375B4";
+
+        /// <summary>
         /// Gets the Campus Detail page guid
         /// ParentPage: Campuses
         /// </summary>
@@ -347,6 +353,12 @@ namespace Rock.SystemGuid
         /// ParentPage: Security
         /// </summary>
         public const string CONFIRM = "D73F83B4-E20E-4F95-9A2C-511FB669F44C";
+
+        /// <summary>
+        /// Gets the Connections page guid
+        /// ParentPage: Manage
+        /// </summary>
+        public const string CONNECTIONS = "530860ED-BC73-4A43-8E7C-69533EF2B6AD";
 
         /// <summary>
         /// Gets the Contact Us page guid
