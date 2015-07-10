@@ -293,7 +293,7 @@ namespace Rock.Lava
         /// <param name="string"></param>
         /// <param name="replacement"></param>
         /// <returns></returns>
-        public static string Replace( object input, string @string, string replacement = "" )
+        public static string Replace( object input, object @string, object replacement = null )
         {
             if ( input == null )
             {
@@ -302,19 +302,22 @@ namespace Rock.Lava
             
             string inputAsString = input.ToString();
 
-            // escape common regex meta characters
+            string replacementString = replacement.ToString();
+            string pattern = Regex.Escape( @string.ToString() );
+
+            /*// escape common regex meta characters
             var listOfRegExChars = new List<string> { ".", "$", "{", "}", "^", "[", "]", "*", @"\", "+", "|", "?", "<", ">" };
             if ( listOfRegExChars.Contains( @string ) )
             {
                 @string = @"\" + @string;
-            }
+            }*/
 
-            if ( string.IsNullOrEmpty( inputAsString ) || string.IsNullOrEmpty( @string ) )
+            if ( string.IsNullOrEmpty( inputAsString ) || string.IsNullOrEmpty( pattern ) )
                 return inputAsString;
 
             return string.IsNullOrEmpty( inputAsString )
                 ? inputAsString
-                : Regex.Replace( inputAsString, @string, replacement );
+                : Regex.Replace( inputAsString, pattern, replacementString );
         }
 
         /// <summary>
