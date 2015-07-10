@@ -7,36 +7,41 @@
 
 .brandlist {
   list-style: none;
-  padding-left: 1em;
+  padding-left: 0;
+  .din();
 }
   .brandlist-item {
+    padding-left: @line-height-computed;
     font-size: @font-size-h4;
-
     line-height: @headings-line-height;
-
     margin-top: (@line-height-computed / 2);
     margin-bottom: (@line-height-computed / 2);
-
     text-transform: uppercase;
     font-weight: 800;
     position: relative;
     color: @gray-light;
+
     a { color: inherit; }
+
     &:before {
       .fa-icon();
       content: @fa-var-caret-right;
-      // margin-left: -2em;
-      // margin-right: .25em;
-      // margin-left: -2em;
       opacity: .25;
       font-size: 1.175em;
       position: absolute;
-      left: -.5em;
-      // top: .07em;
+      left: .125em;
     }
   }
   .brandlist-item-sub {
     font-size: @font-size-h5;
     opacity: .5;
     &:before { display: none; }
+  }
+
+.brandlist-inline {
+  margin-left: -@line-height-computed;
+}
+  .brandlist-inline .brandlist-item {
+    display: inline-block;
+    margin-left: @line-height-computed;
   }

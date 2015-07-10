@@ -48,3 +48,43 @@
     padding-right: 0;
   }
 }
+
+.nsbtn {
+  display: block;
+  background: #333;
+  color: #fff;
+  padding: @grid-gutter-width/2;
+  border-radius: @border-radius-large;
+  height: @grid-gutter-width*3;
+  position: relative;
+  text-align: center;
+
+  -webkit-transform-style: preserve-3d;
+     -moz-transform-style: preserve-3d;
+          transform-style: preserve-3d;
+
+  @media @md {
+    height: @grid-gutter-width*4;
+  }
+
+  &:hover {
+    color: #fff;
+    background: #777;
+    text-decoration: none;
+    .nsbtn-title {
+      // opacity: .5;
+      // color: inherit;
+    }
+  }
+}
+  .nsbtn-title {
+    position: relative;
+    top: 50%;
+    .translate(0; -50%);
+    margin: 0;
+    // margin: @grid-gutter-width/2 0;
+    // position: absolute;
+    // bottom: 0;
+    // vertical-align: middle;
+    // display: inline-block;
+  }

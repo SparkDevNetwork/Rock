@@ -19,3 +19,35 @@
     padding-right: 0;
   }
 }
+.nsbtn {
+  display: block;
+  background: #333;
+  color: #fff;
+  padding: 15px;
+  border-radius: 6px;
+  height: 90px;
+  position: relative;
+  text-align: center;
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+}
+@media (min-width: 992px) {
+  .nsbtn {
+    height: 120px;
+  }
+}
+.nsbtn:hover {
+  color: #fff;
+  background: #777;
+  text-decoration: none;
+}
+.nsbtn-title {
+  position: relative;
+  top: 50%;
+  -webkit-transform: translate(0, -50%);
+  -ms-transform: translate(0, -50%);
+  -o-transform: translate(0, -50%);
+  transform: translate(0, -50%);
+  margin: 0;
+}
