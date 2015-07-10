@@ -15,11 +15,6 @@
             <BooleanProperty Name="Enabled">False</BooleanProperty>
           </RuleSettings>
         </Rule>
-        <Rule Name="ElementsMustBeDocumented">
-          <RuleSettings>
-            <BooleanProperty Name="Enabled">False</BooleanProperty>
-          </RuleSettings>
-        </Rule>
         <Rule Name="PartialElementsMustBeDocumented">
           <RuleSettings>
             <BooleanProperty Name="Enabled">False</BooleanProperty>
@@ -218,6 +213,8 @@
       </Rules>
       <AnalyzerSettings>
         <StringProperty Name="CompanyName">company</StringProperty>
+        <BooleanProperty Name="IgnorePrivates">True</BooleanProperty>
+        <BooleanProperty Name="IncludeFields">False</BooleanProperty>
       </AnalyzerSettings>
     </Analyzer>
     <Analyzer AnalyzerId="StyleCop.CSharp.OrderingRules">
@@ -315,6 +312,11 @@
           </RuleSettings>
         </Rule>
         <Rule Name="FieldNamesMustNotUseHungarianNotation">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+        <Rule Name="FieldNamesMustNotContainUnderscore">
           <RuleSettings>
             <BooleanProperty Name="Enabled">False</BooleanProperty>
           </RuleSettings>
