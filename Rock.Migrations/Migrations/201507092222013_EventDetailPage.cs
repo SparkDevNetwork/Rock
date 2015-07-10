@@ -30,6 +30,7 @@ namespace Rock.Migrations
         public override void Up()
         {
             CreateIndex("dbo.EventItem", "PhotoId");
+            Sql( "Update EventItem set PhotoId = null where PhotoId not in (select Id from BinaryFile)" );
             AddForeignKey("dbo.EventItem", "PhotoId", "dbo.BinaryFile", "Id");
 
             RockMigrationHelper.AddBlockTypeAttribute( "8760D668-8ADF-48C8-9D90-09461FB75B88", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Details Page", "DetailsPage", "", "Detail page for events", 0, @"", "ABFA11BD-19AF-4F8D-BE41-F667C928EB50" );
