@@ -33,6 +33,10 @@ namespace Rock.Web.UI.Controls
     [ViewStateModeById]
     public class DynamicControlsHtmlGenericControl : HtmlGenericControl
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DynamicControlsHtmlGenericControl"/> class.
+        /// </summary>
+        /// <param name="tag">The name of the element for which this instance of the class is created.</param>
         public DynamicControlsHtmlGenericControl( string tag ) : base( tag ) { }
     }
 }
