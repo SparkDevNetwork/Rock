@@ -65,7 +65,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the CSS class.
+        /// Gets or sets the CSS class of the button
         /// </summary>
         /// <value>
         /// The CSS class.
@@ -84,7 +84,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the text.
+        /// Gets or sets the tooltip of the button
+        /// </summary>
+        /// <value>
+        /// The tooltip.
+        /// </value>
+        public string ToolTip
+        {
+            get
+            {
+                return ( ViewState["ToolTip"] as string ) ?? string.Empty;
+
+            }
+            set
+            {
+                ViewState["ToolTip"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the text of the button
         /// </summary>
         /// <value>
         /// The text.
@@ -164,6 +183,7 @@ namespace Rock.Web.UI.Controls
                 linkButton.CausesValidation = false;
                 linkButton.CssClass = linkButtonField.CssClass;
                 linkButton.Text = linkButtonField.Text;
+                linkButton.ToolTip = linkButtonField.ToolTip;
 
                 linkButton.Click += linkButton_Click;
 
