@@ -232,10 +232,10 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                Guid newDefaultRole = Guid.Empty;
-                if ( Guid.TryParse( Request.Form["GroupTypeDefaultRole"], out newDefaultRole ) )
+                Guid? newDefaultRole = Request.Form["GroupTypeDefaultRole"].AsGuidOrNull();
+                if ( newDefaultRole.HasValue )
                 {
-                    DefaultRoleGuid = newDefaultRole;
+                    DefaultRoleGuid = newDefaultRole.Value;
                 }
 
                 nbInvalidWorkflowType.Visible = false;
@@ -335,7 +335,7 @@ namespace RockWeb.Blocks.Groups
             CategoryService categoryService = new CategoryService( rockContext );
             GroupScheduleExclusionService scheduleExclusionService = new GroupScheduleExclusionService( rockContext );
 
-            int groupTypeId = int.Parse( hfGroupTypeId.Value );
+            int groupTypeId = hfGroupTypeId.Value.AsInteger();
 
             if ( groupTypeId == 0 )
             {
@@ -1311,22 +1311,10 @@ namespace RockWeb.Blocks.Groups
             groupTypeRole.ReceiveRequirementsNotifications = cbReceiveRequirementsNotifications.Checked;
             groupTypeRole.CanView = cbCanView.Checked;
             groupTypeRole.CanEdit = cbCanEdit.Checked;
-
-            int result;
-
-            groupTypeRole.MinCount = null;
-            if ( int.TryParse( nbMinimumRequired.Text, out result ) )
-            {
-                groupTypeRole.MinCount = result;
-            }
-
-            groupTypeRole.MaxCount = null;
-            if ( int.TryParse( nbMaximumAllowed.Text, out result ) )
-            {
-                groupTypeRole.MaxCount = result;
-            }
-
+            groupTypeRole.MinCount = nbMinimumRequired.Text.AsIntegerOrNull();
+            groupTypeRole.MaxCount = nbMaximumAllowed.Text.AsIntegerOrNull();
             groupTypeRole.LoadAttributes();
+
             Helper.GetEditValues( phGroupTypeRoleAttributes, groupTypeRole );
 
             // Controls will show warnings
@@ -1363,19 +1351,8 @@ namespace RockWeb.Blocks.Groups
         /// <param name="args">The <see cref="System.Web.UI.WebControls.ServerValidateEventArgs"/> instance containing the event data.</param>
         protected void cvAllowed_ServerValidate( object source, System.Web.UI.WebControls.ServerValidateEventArgs args )
         {
-            int? lowerValue = null;
-            int value = int.MinValue;
-            if ( int.TryParse( nbMinimumRequired.Text, out value ) )
-            {
-                lowerValue = value;
-            }
-
-            int? upperValue = null;
-            value = int.MinValue;
-            if ( int.TryParse( nbMaximumAllowed.Text, out value ) )
-            {
-                upperValue = value;
-            }
+            int? lowerValue = nbMinimumRequired.Text.AsIntegerOrNull();
+            int? upperValue = nbMaximumAllowed.Text.AsIntegerOrNull();
 
             if ( lowerValue.HasValue && upperValue.HasValue && upperValue.Value < lowerValue.Value )
             {
@@ -1627,7 +1604,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgLocationType_SaveClick( object sender, EventArgs e )
         {
-            LocationTypesDictionary.Add( int.Parse( ddlLocationType.SelectedValue ), ddlLocationType.SelectedItem.Text );
+            LocationTypesDictionary.Add( ddlLocationType.SelectedValue.AsInteger(), ddlLocationType.SelectedItem.Text );
             BindLocationTypesGrid();
             HideDialog();
         }

@@ -348,7 +348,7 @@ namespace RockWeb.Blocks.Groups
 
             GroupService groupService = new GroupService( rockContext );
             AuthService authService = new AuthService( rockContext );
-            Group group = groupService.Get( int.Parse( hfGroupId.Value ) );
+            Group group = groupService.Get( hfGroupId.Value.AsInteger() );
 
             if ( group != null )
             {
@@ -437,7 +437,7 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            int groupId = int.Parse( hfGroupId.Value );
+            int groupId = hfGroupId.Value.AsInteger();
 
             if ( groupId == 0 )
             {
@@ -544,9 +544,9 @@ namespace RockWeb.Blocks.Groups
 
             group.Name = tbName.Text;
             group.Description = tbDescription.Text;
-            group.CampusId = ddlCampus.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( ddlCampus.SelectedValue );
+            group.CampusId = ddlCampus.SelectedValueAsInt();
             group.GroupTypeId = CurrentGroupTypeId;
-            group.ParentGroupId = gpParentGroup.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( gpParentGroup.SelectedValue );
+            group.ParentGroupId = gpParentGroup.SelectedValueAsInt();
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
             group.IsPublic = cbIsPublic.Checked;
@@ -1989,17 +1989,19 @@ namespace RockWeb.Blocks.Groups
             {
                 if ( ddlMember.SelectedValue != null )
                 {
-                    var ids = ddlMember.SelectedValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                    var ids = ddlMember.SelectedValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).AsIntegerList().ToArray();
                     if ( ids.Length == 2 )
                     {
-                        var dbLocation = new LocationService( rockContext ).Get( int.Parse( ids[0] ) );
+                        int locationId = ids[0];
+                        int primaryAliasId = ids[1];
+                        var dbLocation = new LocationService( rockContext ).Get( locationId );
                         if ( dbLocation != null )
                         {
                             location = new Location();
                             location.CopyPropertiesFrom( dbLocation );
                         }
 
-                        memberPersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( int.Parse( ids[1] ) );
+                        memberPersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( primaryAliasId );
                     }
                 }
             }
