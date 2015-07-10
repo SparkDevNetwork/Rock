@@ -435,6 +435,7 @@ namespace RockWeb.Blocks.Groups
             groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
             groupType.InheritedGroupTypeId = gtpInheritedGroupType.SelectedGroupTypeId;
             groupType.EnableLocationSchedules = cbEnableLocationSchedules.Checked;
+            groupType.EnableAlternatePlacements = cbEnableAlternatePlacements.Checked;
 
             groupType.ChildGroupTypes = new List<GroupType>();
             groupType.ChildGroupTypes.Clear();
@@ -715,6 +716,10 @@ namespace RockWeb.Blocks.Groups
             // Support Location Schedules
             cbEnableLocationSchedules.Enabled = !groupType.IsSystem;
             cbEnableLocationSchedules.Checked = groupType.EnableLocationSchedules ?? false;
+
+            // Enable Alternate Placements
+            cbEnableAlternatePlacements.Enabled = !groupType.IsSystem;
+            cbEnableAlternatePlacements.Checked = groupType.EnableAlternatePlacements;
 
             // Check In
             cbTakesAttendance.Checked = groupType.TakesAttendance;
