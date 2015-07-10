@@ -44,6 +44,8 @@ namespace RockWeb.Blocks.Event
     [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Themes/Stark/Assets/Lava/ExternalCalendar.lava' %}", "", 2 )]
     [BooleanField( "Show Campus Filter", "Determines whether the campus filters are shown", false )]
     [BooleanField( "Show Category Filter", "Determines whether the campus filters are shown", false )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Show Category fil", "Determines whether the campus filters are shown", false, true )]
+
     [BooleanField( "Show Date Range Filter", "Determines whether the campus filters are shown", false )]
     [BooleanField( "Show Small Calendar", "Determines whether the calendar widget is shown", true )]
     [BooleanField( "Show Day View", "Determines whether the day view option is shown", false )]
@@ -149,6 +151,7 @@ namespace RockWeb.Blocks.Event
         {
             nbConfiguration.Visible = false;
             CheckValidConfiguration();
+            LoadDropDowns();
             DisplayCalendarItemList();
         }
 
@@ -310,7 +313,20 @@ namespace RockWeb.Blocks.Event
 
         private void LoadDropDowns()
         {
-            cblCategory.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() ) );
+            var categoryStringList = GetAttributeValue( "ShowCategoryfil" ).SplitDelimitedValues( true );
+            var categoryList = new List<DefinedValueCache>();
+            foreach ( var category in categoryStringList )
+            {
+                categoryList.Add( DefinedValueCache.Read( category.AsGuid() ) );
+            }
+            cblCategory.DataSource = categoryList.Select( v => new
+            {
+                Name = v.Value,
+                v.Id
+            } );
+            cblCategory.DataTextField =  "Name";
+            cblCategory.DataValueField = "Id";
+            cblCategory.DataBind();
             cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
         }
@@ -320,7 +336,7 @@ namespace RockWeb.Blocks.Event
             pnlFilters.Visible = true;
             pnlList.CssClass = "col-md-9";
             cblCampus.Visible = GetAttributeValue( "ShowCampusFilter" ).AsBoolean();
-            cblCategory.Visible = GetAttributeValue( "ShowCategoryFilter" ).AsBoolean();
+            cblCategory.Visible = !String.IsNullOrWhiteSpace( GetAttributeValue( "ShowCategoryfil" ) );
             drpDateRange.Visible = GetAttributeValue( "ShowDateRangeFilter" ).AsBoolean();
             btnDay.Visible = GetAttributeValue( "ShowDayView" ).AsBoolean();
             btnWeek.Visible = GetAttributeValue( "ShowWeekView" ).AsBoolean();
