@@ -43,22 +43,43 @@ namespace RockWeb.Blocks.Groups
         #region Properties
 
         private List<int> ChildGroupTypesList { get; set; }
+
         private Dictionary<Guid, DateRange> ScheduleExclusionDictionary { get; set; }
+
         private Dictionary<int, string> LocationTypesDictionary { get; set; }
+
         private List<InheritedAttribute> GroupTypeAttributesInheritedState { get; set; }
+
         private List<InheritedAttribute> GroupAttributesInheritedState { get; set; }
+
         private List<InheritedAttribute> GroupMemberAttributesInheritedState { get; set; }
+
         private List<Attribute> GroupTypeAttributesState { get; set; }
+
         private List<Attribute> GroupAttributesState { get; set; }
+
         private List<Attribute> GroupMemberAttributesState { get; set; }
+
         private List<GroupTypeRole> GroupTypeRolesState { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default role unique identifier.
+        /// </summary>
+        /// <value>
+        /// The default role unique identifier.
+        /// </value>
         protected Guid DefaultRoleGuid { get; set; }
+
         private List<GroupMemberWorkflowTrigger> MemberWorkflowTriggersState { get; set; }
 
         #endregion
 
         #region Control Methods
 
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
@@ -230,7 +251,6 @@ namespace RockWeb.Blocks.Groups
         /// </returns>
         protected override object SaveViewState()
         {
-
             ViewState["ChildGroupTypeList"] = ChildGroupTypesList;
             ViewState["ScheduleExclusionDictionary"] = ScheduleExclusionDictionary;
             ViewState["LocationTypesDictionary"] = LocationTypesDictionary;
@@ -751,6 +771,7 @@ namespace RockWeb.Blocks.Groups
             {
                 MemberWorkflowTriggersState.Add( trigger );
             }
+
             BindMemberWorkflowTriggersGrid();
         }
 
@@ -825,7 +846,6 @@ namespace RockWeb.Blocks.Groups
             {
                 ddlGroupTypePurpose.Items.Add( new ListItem( item.Value, item.Id.ToString() ) );
             }
-
         }
 
         /// <summary>
@@ -1336,6 +1356,11 @@ namespace RockWeb.Blocks.Groups
             gGroupTypeRoles.DataBind();
         }
 
+        /// <summary>
+        /// Handles the ServerValidate event of the cvAllowed control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="args">The <see cref="System.Web.UI.WebControls.ServerValidateEventArgs"/> instance containing the event data.</param>
         protected void cvAllowed_ServerValidate( object source, System.Web.UI.WebControls.ServerValidateEventArgs args )
         {
             int? lowerValue = null;
@@ -1487,6 +1512,7 @@ namespace RockWeb.Blocks.Groups
             {
                 ScheduleExclusionDictionary.Remove( guid );
             }
+
             BindScheduleExclusionsGrid();
         }
 
@@ -1526,6 +1552,7 @@ namespace RockWeb.Blocks.Groups
             {
                 ScheduleExclusionDictionary.Add( guid, new DateRange( drpScheduleExclusion.LowerValue, drpScheduleExclusion.UpperValue ) );
             }
+
             BindScheduleExclusionsGrid();
             HideDialog();
         }
@@ -1882,6 +1909,7 @@ namespace RockWeb.Blocks.Groups
             {
                 attribute.Order = GroupAttributesState.Any() ? GroupAttributesState.Max( a => a.Order ) + 1 : 0;
             }
+
             GroupAttributesState.Add( attribute );
 
             BindGroupAttributesGrid();
@@ -2034,6 +2062,7 @@ namespace RockWeb.Blocks.Groups
             {
                 attribute.Order = GroupMemberAttributesState.Any() ? GroupMemberAttributesState.Max( a => a.Order ) + 1 : 0;
             }
+
             GroupMemberAttributesState.Add( attribute );
 
             BindGroupMemberAttributesGrid();
@@ -2096,18 +2125,18 @@ namespace RockWeb.Blocks.Groups
             ddlTriggerType.BindToEnum<GroupMemberWorkflowTriggerType>( false );
 
             ddlTriggerFromStatus.BindToEnum<GroupMemberStatus>( false );
-            ddlTriggerFromStatus.Items.Insert( 0, new ListItem( "Any", "" ) );
+            ddlTriggerFromStatus.Items.Insert( 0, new ListItem( "Any", string.Empty ) );
 
             ddlTriggerToStatus.BindToEnum<GroupMemberStatus>( false );
-            ddlTriggerToStatus.Items.Insert( 0, new ListItem(  "Any", "" ) );
+            ddlTriggerToStatus.Items.Insert( 0, new ListItem( "Any", string.Empty ) );
 
             ddlTriggerFromRole.DataSource = GroupTypeRolesState;
             ddlTriggerFromRole.DataBind();
-            ddlTriggerFromRole.Items.Insert( 0, new ListItem( "Any", "" ) );
+            ddlTriggerFromRole.Items.Insert( 0, new ListItem( "Any", string.Empty ) );
 
             ddlTriggerToRole.DataSource = GroupTypeRolesState;
             ddlTriggerToRole.DataBind();
-            ddlTriggerToRole.Items.Insert( 0, new ListItem( "Any", "" ) );
+            ddlTriggerToRole.Items.Insert( 0, new ListItem( "Any", string.Empty ) );
 
             GroupMemberWorkflowTrigger memberWorkflowTrigger = MemberWorkflowTriggersState.FirstOrDefault( a => a.Guid.Equals( memberWorkflowTriggersGuid ) );
             if ( memberWorkflowTrigger == null )
@@ -2136,7 +2165,7 @@ namespace RockWeb.Blocks.Groups
 
             ddlTriggerType.SetValue( memberWorkflowTrigger.TriggerType.ConvertToInt() );
 
-            var qualifierParts = ( memberWorkflowTrigger.TypeQualifier ?? "").Split( new char[] { '|' } );
+            var qualifierParts = ( memberWorkflowTrigger.TypeQualifier ?? string.Empty ).Split( new char[] { '|' } );
             ddlTriggerToStatus.SetValue( qualifierParts.Length > 0 ? qualifierParts[0] : string.Empty );
             ddlTriggerToRole.SetValue( qualifierParts.Length > 1 ? qualifierParts[1] : string.Empty );
             ddlTriggerFromStatus.SetValue( qualifierParts.Length > 2 ? qualifierParts[2] : string.Empty );
@@ -2147,6 +2176,9 @@ namespace RockWeb.Blocks.Groups
             ShowDialog( "MemberWorkflowTriggers", true );
         }
 
+        /// <summary>
+        /// Shows the trigger qualifier controls.
+        /// </summary>
         protected void ShowTriggerQualifierControls()
         {
             var triggerType = ddlTriggerType.SelectedValueAsEnum<GroupMemberWorkflowTriggerType>();
@@ -2167,6 +2199,7 @@ namespace RockWeb.Blocks.Groups
 
                         break;
                     }
+
                 case GroupMemberWorkflowTriggerType.MemberAttendedGroup:
                     {
                         ddlTriggerFromStatus.Visible = false;
@@ -2179,6 +2212,7 @@ namespace RockWeb.Blocks.Groups
 
                         break;
                     }
+
                 case GroupMemberWorkflowTriggerType.MemberRoleChanged:
                     {
                         ddlTriggerFromStatus.Visible = false;
@@ -2192,6 +2226,7 @@ namespace RockWeb.Blocks.Groups
 
                         break;
                     }
+
                 case GroupMemberWorkflowTriggerType.MemberStatusChanged:
                     {
                         ddlTriggerFromStatus.Visible = true;
@@ -2207,6 +2242,7 @@ namespace RockWeb.Blocks.Groups
                     }
             }
         }
+
         /// <summary>
         /// Handles the GridReorder event of the gMemberWorkflowTriggers control.
         /// </summary>
@@ -2242,6 +2278,11 @@ namespace RockWeb.Blocks.Groups
             BindMemberWorkflowTriggersGrid();
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlTriggerType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlTriggerType_SelectedIndexChanged( object sender, EventArgs e )
         {
             ShowTriggerQualifierControls();
@@ -2298,13 +2339,13 @@ namespace RockWeb.Blocks.Groups
 
             memberWorkflowTrigger.TriggerType = ddlTriggerType.SelectedValueAsEnum<GroupMemberWorkflowTriggerType>();
 
-            memberWorkflowTrigger.TypeQualifier = string.Format( "{0}|{1}|{2}|{3}|{4}",
+            memberWorkflowTrigger.TypeQualifier = string.Format(
+                "{0}|{1}|{2}|{3}|{4}",
                 ddlTriggerToStatus.SelectedValue,
                 ddlTriggerToRole.SelectedValue,
                 ddlTriggerFromStatus.SelectedValue,
                 ddlTriggerFromRole.SelectedValue,
-                cbTriggerFirstTime.Checked.ToString()
-            );
+                cbTriggerFirstTime.Checked.ToString() );
 
             // Controls will show warnings
             if ( !memberWorkflowTrigger.IsValid )
@@ -2329,13 +2370,19 @@ namespace RockWeb.Blocks.Groups
             gMemberWorkflowTriggers.DataBind();
         }
 
+        /// <summary>
+        /// Formats the type of the trigger.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="qualifier">The qualifier.</param>
+        /// <returns></returns>
         protected string FormatTriggerType( object type, object qualifier )
         {
             var triggerType = type.ToString().ConvertToEnum<GroupMemberWorkflowTriggerType>();
             var typeQualifer = qualifier.ToString();
 
             var qualiferText = new List<string>();
-            var qualifierParts = ( typeQualifer ?? "" ).Split( new char[] { '|' } );
+            var qualifierParts = ( typeQualifer ?? string.Empty ).Split( new char[] { '|' } );
 
             if ( qualifierParts.Length > 2 && !string.IsNullOrWhiteSpace( qualifierParts[2] ) )
             {
