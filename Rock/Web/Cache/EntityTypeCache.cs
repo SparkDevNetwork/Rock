@@ -220,6 +220,16 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the id.
         /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        public static int? GetId<T>()
+        {
+            return GetId( typeof( T ) );
+        }
+
+        /// <summary>
+        /// Gets the id.
+        /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
         public static int? GetId( string name )
