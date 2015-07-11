@@ -303,6 +303,11 @@ namespace RockWeb.Blocks.Event
             nbMain.Visible = false;
             pnlDupWarning.Visible = false;
 
+            // register navigation event to enable support for the back button
+            var sm = ScriptManager.GetCurrent( Page );
+            //sm.EnableSecureHistoryState = false;
+            sm.Navigate += sm_Navigate;
+
             if ( !Page.IsPostBack )
             {
                 // Get the a registration (either by reading existing, or creating new one
@@ -377,6 +382,57 @@ namespace RockWeb.Blocks.Event
         #region Navigation Events
 
         /// <summary>
+        /// Handles the Navigate event of the sm control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="HistoryEventArgs"/> instance containing the event data.</param>
+        void sm_Navigate( object sender, HistoryEventArgs e )
+        {
+            var state = e.State["event"];
+
+            if ( state != null )
+            {
+                string[] commands = state.Split( ',' );
+
+                int panelId = 0;
+                int registrantId = 0;
+                int formId = 0;
+
+                if ( commands.Count() == 3 )
+                {
+                    panelId = Int32.Parse( commands[0] );
+                    registrantId = Int32.Parse( commands[1] );
+                    formId = Int32.Parse( commands[2] );
+                }
+
+                switch ( panelId )
+                {
+                    case 1:
+                        {
+                            CurrentRegistrantIndex = registrantId;
+                            CurrentFormIndex = formId;
+                            ShowRegistrant();
+                            break;
+                        }
+                    case 2:
+                        {
+                            ShowSummary();
+                            break;
+                        }
+                    default:
+                        {
+                            ShowHowMany();
+                            break;
+                        }
+                }
+            }
+            else
+            {
+                ShowHowMany();
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the lbHowManyNext control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -392,6 +448,8 @@ namespace RockWeb.Blocks.Event
             ShowRegistrant();
 
             hfTriggerScroll.Value = "true";
+
+            this.AddHistory( "event", "1,0,0" );
         }
 
         /// <summary>
@@ -413,10 +471,12 @@ namespace RockWeb.Blocks.Event
                 if ( CurrentRegistrantIndex < 0 )
                 {
                     ShowHowMany();
+                    this.AddHistory( "event", "0,0,0" );
                 }
                 else
                 {
                     ShowRegistrant();
+                    this.AddHistory( "event", string.Format("1,{0},{1}", CurrentRegistrantIndex.ToString(), CurrentFormIndex.ToString()) );
                 }
             }
             else
@@ -446,15 +506,18 @@ namespace RockWeb.Blocks.Event
                 if ( CurrentRegistrantIndex >= RegistrationState.RegistrantCount )
                 {
                     ShowSummary();
+                    this.AddHistory( "event", "2,0,0" );
                 }
                 else
                 {
                     ShowRegistrant();
+                    this.AddHistory( "event", string.Format( "1,{0},{1}", CurrentRegistrantIndex.ToString(), CurrentFormIndex.ToString() ) );
                 }
             }
             else
             {
                 ShowHowMany();
+                this.AddHistory( "event", "0,0,0" );
             }
 
             hfTriggerScroll.Value = "true";
@@ -473,10 +536,12 @@ namespace RockWeb.Blocks.Event
                 CurrentFormIndex = FormCount - 1;
 
                 ShowRegistrant();
+                this.AddHistory( "event", string.Format( "1,{0},{1}", CurrentRegistrantIndex.ToString(), CurrentFormIndex.ToString() ) );
             }
             else
             {
                 ShowHowMany();
+                this.AddHistory( "event", "0,0,0" );
             }
 
             hfTriggerScroll.Value = "true";
@@ -495,10 +560,12 @@ namespace RockWeb.Blocks.Event
                 if ( registration != null )
                 {
                     ShowSuccess( registration );
+                    this.AddHistory( "event", "2,0,0" );
                 }
                 else
                 {
                     ShowSummary();
+                    this.AddHistory( "event", "2,0,0" );
                 }
             }
             else
@@ -528,6 +595,7 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     ShowSummary();
+                    this.AddHistory( "event", "2,0,0" );
                 }
             }
         }
