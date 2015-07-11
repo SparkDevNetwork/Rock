@@ -377,6 +377,7 @@
     <Compile Include="Model\EntitySetItem.cs" />
     <Compile Include="Model\FinancialTransactionDetailService.Partial.cs" />
     <Compile Include="Model\FinancialPledgeService.Partial.cs" />
+    <Compile Include="Model\FollowingService.partial.cs" />
     <Compile Include="Model\GroupMemberRequirement.cs" />
     <Compile Include="Model\ConnectionWorkflowService.Partial.cs" />
     <Compile Include="Model\GroupRequirement.cs" />
