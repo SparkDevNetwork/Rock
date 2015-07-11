@@ -482,6 +482,11 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            if ( _group.GroupType != null && _group.GroupType.EnableAlternatePlacements )
+            {
+                AddAlternatePlacementColumn();
+            }
+
             // Add Link to Profile Page Column
             if ( !string.IsNullOrEmpty( GetAttributeValue( "PersonProfilePage" ) ) )
             {
@@ -508,6 +513,113 @@ namespace RockWeb.Blocks.Groups
             hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default'><i class='fa fa-user'></i></div>";
             hlPersonProfileLink.DataTextField = "PersonId";
             gGroupMembers.Columns.Add( hlPersonProfileLink );
+        }
+
+        /// <summary>
+        /// Adds the Alternate Placement column
+        /// </summary>
+        private void AddAlternatePlacementColumn()
+        {
+            LinkButtonField btnAlternatePlacement = new LinkButtonField();
+            btnAlternatePlacement.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            btnAlternatePlacement.HeaderStyle.CssClass = "grid-columncommand";
+            btnAlternatePlacement.ItemStyle.CssClass = "grid-columncommand";
+            btnAlternatePlacement.Text = "<i class='fa fa-share'></i>";
+            btnAlternatePlacement.CssClass = "btn btn-default";
+            btnAlternatePlacement.ToolTip = "Alternate Placment";
+            btnAlternatePlacement.Click += btnAlternatePlacement_Click;
+
+            gGroupMembers.Columns.Add( btnAlternatePlacement );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnAlternatePlacement control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void btnAlternatePlacement_Click( object sender, RowEventArgs e )
+        {
+            var rockContext = new RockContext();
+
+            Group targetGroup = null;
+            if ( _group != null )
+            {
+                var groupService = new GroupService( rockContext );
+                var ancestorGroupIdList = groupService.GetAllAncestorIds( _group.Id );
+
+                // get first ancestor Group that accepts Alternate Placements. 
+                // If we get all the way to the top without finding one, use the top group, even if it doesn't accept alternate placements
+                foreach ( var ancestorGroupId in ancestorGroupIdList )
+                {
+                    targetGroup = groupService.Get( ancestorGroupId );
+                    if ( targetGroup.AcceptAlternatePlacements )
+                    {
+                        break;
+                    }
+                }
+            }
+
+            var groupMemberPerson = new GroupMemberService( rockContext ).GetPerson( e.RowKeyId );
+            if ( groupMemberPerson != null && targetGroup != null )
+            {
+                nbAlternatePlacementWarning.Text = string.Empty;
+                hfAlternatePlacementTargetGroupId.Value = targetGroup.Id.ToString();
+                hfAlternatePlacementGroupMemberId.Value = e.RowKeyId.ToString();
+                lAlternatePlacementGroupMemberName.Text = groupMemberPerson.ToString();
+                lAlternatePlacementTargetGroupName.Text = targetGroup.ToString();
+                mdAlternatePlacement.Visible = true;
+                mdAlternatePlacement.Show();
+            }
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdAlternatePlacement control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdAlternatePlacement_SaveClick( object sender, EventArgs e )
+        {
+            // TODO
+            var rockContext = new RockContext();
+            var groupService = new GroupService( rockContext );
+            var groupMemberService = new GroupMemberService( rockContext );
+            var targetGroup = groupService.Get( hfAlternatePlacementTargetGroupId.Value.AsInteger() );
+            var groupMember = groupMemberService.Get( hfAlternatePlacementGroupMemberId.Value.AsInteger() );
+            if ( targetGroup != null && groupMember != null )
+            {
+                //// delete from the old groupmember record and create a new groupmember record for the targetgroup
+                //// NOTE: we'll delete and add vs. just change the groupMember.GroupId to avoid having anything attached 
+                //// to the groupmember record thaat doesn't make sense in the new group
+
+                string errorMessage;
+                if ( !groupMemberService.CanDelete( groupMember, out errorMessage ) )
+                {
+                    nbAlternatePlacementWarning.Text = errorMessage;
+                    return;
+                }
+
+                var groupTypeCache = GroupTypeCache.Read( targetGroup.GroupTypeId );
+                if ( !groupTypeCache.DefaultGroupRoleId.HasValue )
+                {
+                    nbAlternatePlacementWarning.Text = "Target group does not have a default role";
+                    return;
+                }
+
+                var placedGroupMember = new GroupMember();
+                placedGroupMember.GroupId = targetGroup.Id;
+                placedGroupMember.GroupRoleId = groupTypeCache.DefaultGroupRoleId.Value;
+                placedGroupMember.PersonId = groupMember.PersonId;
+                placedGroupMember.GroupMemberStatus = GroupMemberStatus.Pending;
+                placedGroupMember.Note = tbAlternatePlacementNote.Text;
+
+                groupMemberService.Delete( groupMember );
+                groupMemberService.Add( placedGroupMember );
+                rockContext.SaveChanges();
+            }
+
+            mdAlternatePlacement.Hide();
+            mdAlternatePlacement.Visible = false;
+            BindGroupMembersGrid();
         }
 
         /// <summary>
@@ -625,31 +737,34 @@ namespace RockWeb.Blocks.Groups
                         groupMemberIdsThatLackGroupRequirements = groupMemberIdsThatLackGroupRequirementsQry.ToList();
                     }
 
-                    List<GroupMember> groupMembers = null;
+                    List<GroupMember> groupMembersList = null;
 
                     if ( sortProperty != null )
                     {
-                        groupMembers = qry.Sort( sortProperty ).ToList();
+                        groupMembersList = qry.Sort( sortProperty ).ToList();
                     }
                     else
                     {
-                        groupMembers = qry.OrderBy( a => a.GroupRole.Order ).ThenBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName ).ToList();
+                        groupMembersList = qry.OrderBy( a => a.GroupRole.Order ).ThenBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName ).ToList();
                     }
 
                     // Since we're not binding to actual group member list, but are using AttributeField columns,
                     // we need to save the workflows into the grid's object list
                     gGroupMembers.ObjectList = new Dictionary<string, object>();
-                    groupMembers.ForEach( m => gGroupMembers.ObjectList.Add( m.Id.ToString(), m ) );
+                    groupMembersList.ForEach( m => gGroupMembers.ObjectList.Add( m.Id.ToString(), m ) );
                     gGroupMembers.EntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
 
-                    gGroupMembers.DataSource = groupMembers.Select( m => new
+                    gGroupMembers.DataSource = groupMembersList.Select( m => new
                     {
                         m.Id,
                         m.Guid,
                         m.PersonId,
-                        Name = m.Person.NickName + " " + m.Person.LastName + (
-                            hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id )
-                            ? " <i class='fa fa-exclamation-triangle text-warning'></i>"
+                        Name = m.Person.NickName + " " + m.Person.LastName
+                            + ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id )
+                                ? " <i class='fa fa-exclamation-triangle text-warning'></i>"
+                                : string.Empty )
+                            + ( !string.IsNullOrEmpty( m.Note )
+                            ? " <i class='fa fa-file-text-o text-info'></i>"
                             : string.Empty ),
                         GroupRole = m.GroupRole.Name,
                         m.GroupMemberStatus,

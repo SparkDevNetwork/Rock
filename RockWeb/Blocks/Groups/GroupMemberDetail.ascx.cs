@@ -140,6 +140,7 @@ namespace RockWeb.Blocks.Groups
 
                 groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
                 groupMember.GroupRoleId = role.Id;
+                groupMember.Note = tbNote.Text;
                 groupMember.GroupMemberStatus = rblStatus.SelectedValueAsEnum<GroupMemberStatus>();
 
                 if ( cbIsNotified.Visible )
@@ -396,6 +397,9 @@ namespace RockWeb.Blocks.Groups
 
             ddlGroupRole.SetValue( groupMember.GroupRoleId );
             ddlGroupRole.Enabled = !readOnly;
+
+            tbNote.Text = groupMember.Note;
+            tbNote.ReadOnly = readOnly;
 
             rblStatus.SetValue( (int)groupMember.GroupMemberStatus );
             rblStatus.Enabled = !readOnly;
