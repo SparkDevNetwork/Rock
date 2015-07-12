@@ -64,6 +64,25 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source PersonDuplicate object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( PersonDuplicate source )
+        {
+            this.Id = source.Id;
+            this.Capacity = source.Capacity;
+            this.DuplicatePersonAliasId = source.DuplicatePersonAliasId;
+            this.IgnoreUntilScoreChanges = source.IgnoreUntilScoreChanges;
+            this.IsConfirmedAsNotDuplicate = source.IsConfirmedAsNotDuplicate;
+            this.PersonAliasId = source.PersonAliasId;
+            this.Score = source.Score;
+            this.ScoreDetail = source.ScoreDetail;
+            this.TotalCapacity = source.TotalCapacity;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

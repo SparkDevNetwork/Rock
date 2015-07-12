@@ -115,6 +115,16 @@
     <Compile Include="Controllers\CodeGenerated\CampusesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationRecipientActivitiesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplatesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionActivityTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionOpportunitiesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionOpportunityCampusController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionOpportunityGroupsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionRequestActivitiesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionRequestsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionRequestWorkflowsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionStatusController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionWorkflowsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelTypesController.cs" />
@@ -141,6 +151,7 @@
     <Compile Include="Controllers\CodeGenerated\PersonPreviousNamesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PluginMigrationsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationInstancesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RegistrationRegistrantFeesController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationRegistrantsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplateDiscountsController.cs" />

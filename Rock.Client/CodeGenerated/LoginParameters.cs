@@ -40,6 +40,17 @@ namespace Rock.Client
         /// <summary />
         public string Username { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source LoginParameters object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( LoginParameters source )
+        {
+            this.Password = source.Password;
+            this.Persisted = source.Persisted;
+            this.Username = source.Username;
+
+        }
     }
 
     /// <summary>

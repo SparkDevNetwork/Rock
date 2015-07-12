@@ -67,6 +67,26 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source GroupMemberWorkflowTrigger object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( GroupMemberWorkflowTrigger source )
+        {
+            this.Id = source.Id;
+            this.GroupId = source.GroupId;
+            this.GroupTypeId = source.GroupTypeId;
+            this.IsActive = source.IsActive;
+            this.Name = source.Name;
+            this.Order = source.Order;
+            this.TriggerType = source.TriggerType;
+            this.TypeQualifier = source.TypeQualifier;
+            this.WorkflowName = source.WorkflowName;
+            this.WorkflowTypeId = source.WorkflowTypeId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

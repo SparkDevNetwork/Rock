@@ -38,6 +38,15 @@ namespace Rock.Client
         public string ConfirmationEmail { get; set; }
 
         /// <summary />
+        public decimal DiscountAmount { get; set; }
+
+        /// <summary />
+        public string DiscountCode { get; set; }
+
+        /// <summary />
+        public decimal DiscountPercentage { get; set; }
+
+        /// <summary />
         public string FirstName { get; set; }
 
         /// <summary />
@@ -58,6 +67,26 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source Registration object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Registration source )
+        {
+            this.Id = source.Id;
+            this.ConfirmationEmail = source.ConfirmationEmail;
+            this.DiscountAmount = source.DiscountAmount;
+            this.DiscountCode = source.DiscountCode;
+            this.DiscountPercentage = source.DiscountPercentage;
+            this.FirstName = source.FirstName;
+            this.GroupId = source.GroupId;
+            this.LastName = source.LastName;
+            this.PersonAliasId = source.PersonAliasId;
+            this.RegistrationInstanceId = source.RegistrationInstanceId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>
@@ -65,6 +94,12 @@ namespace Rock.Client
     /// </summary>
     public partial class Registration : RegistrationEntity
     {
+        /// <summary />
+        public ICollection<RegistrationRegistrant> Registrants { get; set; }
+
+        /// <summary />
+        public RegistrationInstance RegistrationInstance { get; set; }
+
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 

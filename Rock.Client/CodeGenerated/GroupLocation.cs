@@ -58,6 +58,23 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source GroupLocation object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( GroupLocation source )
+        {
+            this.Id = source.Id;
+            this.GroupId = source.GroupId;
+            this.GroupLocationTypeValueId = source.GroupLocationTypeValueId;
+            this.GroupMemberPersonAliasId = source.GroupMemberPersonAliasId;
+            this.IsMailingLocation = source.IsMailingLocation;
+            this.IsMappedLocation = source.IsMappedLocation;
+            this.LocationId = source.LocationId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

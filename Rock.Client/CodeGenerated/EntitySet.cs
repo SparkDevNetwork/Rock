@@ -55,6 +55,22 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source EntitySet object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( EntitySet source )
+        {
+            this.Id = source.Id;
+            this.EntityTypeId = source.EntityTypeId;
+            this.ExpireDateTime = source.ExpireDateTime;
+            this.Name = source.Name;
+            this.Order = source.Order;
+            this.ParentEntitySetId = source.ParentEntitySetId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

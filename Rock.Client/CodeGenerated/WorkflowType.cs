@@ -73,6 +73,28 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source WorkflowType object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( WorkflowType source )
+        {
+            this.Id = source.Id;
+            this.CategoryId = source.CategoryId;
+            this.Description = source.Description;
+            this.IconCssClass = source.IconCssClass;
+            this.IsActive = source.IsActive;
+            this.IsPersisted = source.IsPersisted;
+            this.IsSystem = source.IsSystem;
+            this.LoggingLevel = source.LoggingLevel;
+            this.Name = source.Name;
+            this.Order = source.Order;
+            this.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
+            this.WorkTerm = source.WorkTerm;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

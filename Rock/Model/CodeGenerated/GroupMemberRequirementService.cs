@@ -91,7 +91,9 @@ namespace Rock.Model
             target.GroupMemberId = source.GroupMemberId;
             target.GroupRequirementId = source.GroupRequirementId;
             target.LastRequirementCheckDateTime = source.LastRequirementCheckDateTime;
+            target.RequirementFailDateTime = source.RequirementFailDateTime;
             target.RequirementMetDateTime = source.RequirementMetDateTime;
+            target.RequirementWarningDateTime = source.RequirementWarningDateTime;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

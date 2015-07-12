@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<ConnectionOpportunity>( Context ).Queryable().Any( a => a.PhotoId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, ConnectionOpportunity.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<FinancialAccount>( Context ).Queryable().Any( a => a.ImageBinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, FinancialAccount.FriendlyTypeName );

@@ -38,6 +38,9 @@ namespace Rock.Client
         public decimal Cost { get; set; }
 
         /// <summary />
+        public string Option { get; set; }
+
+        /// <summary />
         public int Quantity { get; set; }
 
         /// <summary />
@@ -52,6 +55,22 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source RegistrationRegistrantFee object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( RegistrationRegistrantFee source )
+        {
+            this.Id = source.Id;
+            this.Cost = source.Cost;
+            this.Option = source.Option;
+            this.Quantity = source.Quantity;
+            this.RegistrationRegistrantId = source.RegistrationRegistrantId;
+            this.RegistrationTemplateFeeId = source.RegistrationTemplateFeeId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

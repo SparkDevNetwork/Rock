@@ -110,6 +110,8 @@ namespace Rock.Model
             target.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;
             target.CheckInStartOffsetMinutes = source.CheckInStartOffsetMinutes;
             target.Description = source.Description;
+            target.EffectiveEndDate = source.EffectiveEndDate;
+            target.EffectiveStartDate = source.EffectiveStartDate;
             target.iCalendarContent = source.iCalendarContent;
             target.Name = source.Name;
             target.WeeklyDayOfWeek = source.WeeklyDayOfWeek;

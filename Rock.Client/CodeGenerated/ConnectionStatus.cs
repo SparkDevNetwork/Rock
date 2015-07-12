@@ -58,6 +58,23 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source ConnectionStatus object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( ConnectionStatus source )
+        {
+            this.Id = source.Id;
+            this.ConnectionTypeId = source.ConnectionTypeId;
+            this.Description = source.Description;
+            this.IsActive = source.IsActive;
+            this.IsCritical = source.IsCritical;
+            this.IsDefault = source.IsDefault;
+            this.Name = source.Name;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

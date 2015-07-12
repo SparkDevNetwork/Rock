@@ -52,6 +52,21 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source TaggedItem object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( TaggedItem source )
+        {
+            this.Id = source.Id;
+            this.EntityGuid = source.EntityGuid;
+            this.IsSystem = source.IsSystem;
+            this.Quantity = source.Quantity;
+            this.TagId = source.TagId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

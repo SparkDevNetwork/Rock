@@ -385,6 +385,7 @@
     <Compile Include="Model\EntitySetItem.cs" />
     <Compile Include="Model\FinancialTransactionDetailService.Partial.cs" />
     <Compile Include="Model\FinancialPledgeService.Partial.cs" />
+    <Compile Include="Model\FollowingService.partial.cs" />
     <Compile Include="Model\GroupMemberRequirement.cs" />
     <Compile Include="Model\ConnectionWorkflowService.Partial.cs" />
     <Compile Include="Model\GroupRequirement.cs" />
@@ -492,6 +493,7 @@
     <Compile Include="Web\UI\Controls\DynamicControlsPanel.cs" />
     <Compile Include="Web\UI\Controls\Event\RegistrationInstanceEditor.cs" />
     <Compile Include="Web\UI\Controls\Event\RegistrantEditor.cs" />
+    <Compile Include="Web\UI\Controls\FollowingsHelper.cs" />
     <Compile Include="Web\UI\Controls\Grid\BoolFromArrayField.cs" />
     <Compile Include="Web\UI\Controls\Grid\IRockGridField.cs" />
     <Compile Include="Web\UI\Controls\Grid\RockLiteralField.cs" />

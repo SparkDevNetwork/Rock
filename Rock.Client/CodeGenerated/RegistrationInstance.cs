@@ -82,6 +82,31 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source RegistrationInstance object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( RegistrationInstance source )
+        {
+            this.Id = source.Id;
+            this.AccountId = source.AccountId;
+            this.AdditionalConfirmationDetails = source.AdditionalConfirmationDetails;
+            this.AdditionalReminderDetails = source.AdditionalReminderDetails;
+            this.ConfirmationSentDateTime = source.ConfirmationSentDateTime;
+            this.ContactEmail = source.ContactEmail;
+            this.ContactName = source.ContactName;
+            this.Details = source.Details;
+            this.EndDateTime = source.EndDateTime;
+            this.IsActive = source.IsActive;
+            this.MaxAttendees = source.MaxAttendees;
+            this.Name = source.Name;
+            this.RegistrationTemplateId = source.RegistrationTemplateId;
+            this.ReminderSentDateTime = source.ReminderSentDateTime;
+            this.StartDateTime = source.StartDateTime;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

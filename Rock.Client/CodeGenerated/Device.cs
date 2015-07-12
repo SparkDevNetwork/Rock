@@ -64,6 +64,25 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source Device object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Device source )
+        {
+            this.Id = source.Id;
+            this.Description = source.Description;
+            this.DeviceTypeValueId = source.DeviceTypeValueId;
+            this.IPAddress = source.IPAddress;
+            this.LocationId = source.LocationId;
+            this.Name = source.Name;
+            this.PrinterDeviceId = source.PrinterDeviceId;
+            this.PrintFrom = source.PrintFrom;
+            this.PrintToOverride = source.PrintToOverride;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

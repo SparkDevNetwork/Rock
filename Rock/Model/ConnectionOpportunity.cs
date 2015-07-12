@@ -204,7 +204,7 @@ namespace Rock.Model
         public virtual GroupMemberStatus GroupMemberStatus { get; set; }
 
         /// <summary>
-        /// Gets the URL of the person's photo.
+        /// Gets the URL of the Opportunity's photo.
         /// </summary>
         /// <value>
         /// URL of the photo
@@ -221,10 +221,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that contains the Person's photo.
+        /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that contains the Opportunity's photo.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.BinaryFile"/> that contains the Person's photo.
+        /// The <see cref="Rock.Model.BinaryFile"/> that contains the Opportunity's photo.
         /// </value>
         [DataMember]
         public virtual BinaryFile Photo { get; set; }
