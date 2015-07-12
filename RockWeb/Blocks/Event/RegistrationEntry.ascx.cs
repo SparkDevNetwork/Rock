@@ -638,6 +638,8 @@ namespace RockWeb.Blocks.Event
             // Not inside a "using" due to serialization needing context to still be active
             var rockContext = new RockContext();
 
+
+            // An existing registration id was specified
             if ( registrationId.HasValue )
             {
                 var registrationService = new RegistrationService( rockContext );
@@ -654,6 +656,7 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
+            // A registration slug was specified
             if ( RegistrationState == null && !string.IsNullOrWhiteSpace( registrationSlug ) )
             {
                 var dateTime = RockDateTime.Now;
@@ -678,6 +681,7 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
+            // A registratio instance id was specified
             if ( RegistrationState == null && registrationInstanceId.HasValue )
             {
                 var dateTime = RockDateTime.Now;
@@ -2865,6 +2869,7 @@ namespace RockWeb.Blocks.Event
                 {
                     YourFirstName = person.NickName;
                     YourLastName = person.LastName;
+                    ConfirmationEmail = person.Email;
                 }
             }
 
