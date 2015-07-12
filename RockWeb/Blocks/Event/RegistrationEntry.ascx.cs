@@ -1127,6 +1127,7 @@ namespace RockWeb.Blocks.Event
                 registrant.RegistrationId = registration.Id;
                 registrant.PersonAliasId = person.PrimaryAliasId;
                 registrant.Cost = registrantInfo.Cost;
+                registrant.GroupMemberId = groupMember != null ? groupMember.Id : (int?)null;
 
                 // Add or Update fees
                 foreach ( var feeValue in registrantInfo.FeeValues.Where( f => f.Value != null ) )

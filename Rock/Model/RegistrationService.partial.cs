@@ -47,7 +47,7 @@ namespace Rock.Model
         public decimal GetTotalPayments( int registrationId )
         {
             return GetPayments( registrationId )
-                .Select( p => p.Amount )
+                .Select( p => p.Amount ).DefaultIfEmpty()
                 .Sum();
         }
 
