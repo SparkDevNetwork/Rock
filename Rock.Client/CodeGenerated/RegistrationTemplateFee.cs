@@ -61,6 +61,24 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source RegistrationTemplateFee object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( RegistrationTemplateFee source )
+        {
+            this.Id = source.Id;
+            this.AllowMultiple = source.AllowMultiple;
+            this.CostValue = source.CostValue;
+            this.DiscountApplies = source.DiscountApplies;
+            this.FeeType = source.FeeType;
+            this.Name = source.Name;
+            this.Order = source.Order;
+            this.RegistrationTemplateId = source.RegistrationTemplateId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

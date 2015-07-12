@@ -92,6 +92,7 @@ namespace Rock.Model
             target.ConnectionOpportunityId = source.ConnectionOpportunityId;
             target.ConnectionRequestId = source.ConnectionRequestId;
             target.ConnectorPersonAliasId = source.ConnectorPersonAliasId;
+            target.Note = source.Note;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

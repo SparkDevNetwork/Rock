@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( Workflow item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<ConnectionRequestWorkflow>( Context ).Queryable().Any( a => a.WorkflowId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Workflow.FriendlyTypeName, ConnectionRequestWorkflow.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

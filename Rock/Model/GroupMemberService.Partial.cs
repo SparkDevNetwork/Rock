@@ -39,6 +39,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the person.
+        /// </summary>
+        /// <param name="groupMemberId">The group member identifier.</param>
+        /// <returns></returns>
+        public Person GetPerson( int groupMemberId )
+        {
+            return this.Queryable( true ).Where( m => m.Id == groupMemberId ).Select( a => a.Person ).FirstOrDefault();
+        }
+
+        /// <summary>
         /// Gets the specified unique identifier.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>

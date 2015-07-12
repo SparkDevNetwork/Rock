@@ -693,7 +693,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the selected value as int.
+        /// Gets the selected value as an integer, returning NULL if the selected value is "0"
         /// </summary>
         /// <param name="noneAsNull">if set to <c>true</c> [none as null].</param>
         /// <returns></returns>

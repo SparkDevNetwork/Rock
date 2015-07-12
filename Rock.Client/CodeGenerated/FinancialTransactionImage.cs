@@ -49,6 +49,20 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source FinancialTransactionImage object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( FinancialTransactionImage source )
+        {
+            this.Id = source.Id;
+            this.BinaryFileId = source.BinaryFileId;
+            this.Order = source.Order;
+            this.TransactionId = source.TransactionId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

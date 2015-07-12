@@ -100,6 +100,37 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source GroupType object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( GroupType source )
+        {
+            this.Id = source.Id;
+            this.AllowedScheduleTypes = source.AllowedScheduleTypes;
+            this.AllowMultipleLocations = source.AllowMultipleLocations;
+            this.AttendancePrintTo = source.AttendancePrintTo;
+            this.AttendanceRule = source.AttendanceRule;
+            this.DefaultGroupRoleId = source.DefaultGroupRoleId;
+            this.Description = source.Description;
+            this.EnableLocationSchedules = source.EnableLocationSchedules;
+            this.GroupMemberTerm = source.GroupMemberTerm;
+            this.GroupTerm = source.GroupTerm;
+            this.GroupTypePurposeValueId = source.GroupTypePurposeValueId;
+            this.IconCssClass = source.IconCssClass;
+            this.InheritedGroupTypeId = source.InheritedGroupTypeId;
+            this.IsSystem = source.IsSystem;
+            this.LocationSelectionMode = source.LocationSelectionMode;
+            this.Name = source.Name;
+            this.Order = source.Order;
+            this.SendAttendanceReminder = source.SendAttendanceReminder;
+            this.ShowInGroupList = source.ShowInGroupList;
+            this.ShowInNavigation = source.ShowInNavigation;
+            this.TakesAttendance = source.TakesAttendance;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

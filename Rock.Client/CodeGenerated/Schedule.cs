@@ -70,6 +70,27 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source Schedule object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Schedule source )
+        {
+            this.Id = source.Id;
+            this.CategoryId = source.CategoryId;
+            this.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;
+            this.CheckInStartOffsetMinutes = source.CheckInStartOffsetMinutes;
+            this.Description = source.Description;
+            this.EffectiveEndDate = source.EffectiveEndDate;
+            this.EffectiveStartDate = source.EffectiveStartDate;
+            this.iCalendarContent = source.iCalendarContent;
+            this.Name = source.Name;
+            this.WeeklyDayOfWeek = source.WeeklyDayOfWeek;
+            this.WeeklyTimeOfDay = source.WeeklyTimeOfDay;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

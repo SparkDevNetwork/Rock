@@ -46,6 +46,19 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source PersonPreviousName object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( PersonPreviousName source )
+        {
+            this.Id = source.Id;
+            this.LastName = source.LastName;
+            this.PersonAliasId = source.PersonAliasId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

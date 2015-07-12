@@ -126,6 +126,15 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that contains the EventItem's photo.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.BinaryFile"/> that contains the EventItem's photo.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile Photo { get; set; }
+
+        /// <summary>
         /// Gets or sets a collection of the <see cref="Rock.Model.EventCalendarItem">EventCalendarItems</see> that belong to this EventItem.
         /// </summary>
         /// <value>
@@ -145,6 +154,7 @@ namespace Rock.Model
         /// <value>
         /// A collection containing a collection of the <see cref="Rock.Model.EventItemCampus">EventItemCampuses</see> that belong to this EventItem.
         /// </value>
+        [DataMember]
         public virtual ICollection<EventItemCampus> EventItemCampuses
         {
             get { return _eventItemCampuses ?? ( _eventItemCampuses = new Collection<EventItemCampus>() ); }
@@ -237,6 +247,7 @@ namespace Rock.Model
         public EventItemConfiguration()
         {
             this.HasOptional( i => i.ApprovedByPersonAlias ).WithMany().HasForeignKey( i => i.ApprovedByPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
         }
     }
 

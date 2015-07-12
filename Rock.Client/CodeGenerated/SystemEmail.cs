@@ -70,6 +70,27 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source SystemEmail object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( SystemEmail source )
+        {
+            this.Id = source.Id;
+            this.Bcc = source.Bcc;
+            this.Body = source.Body;
+            this.CategoryId = source.CategoryId;
+            this.Cc = source.Cc;
+            this.From = source.From;
+            this.FromName = source.FromName;
+            this.IsSystem = source.IsSystem;
+            this.Subject = source.Subject;
+            this.Title = source.Title;
+            this.To = source.To;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

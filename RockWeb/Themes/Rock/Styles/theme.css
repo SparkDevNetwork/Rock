@@ -2706,6 +2706,13 @@ iframe.email-body {
 .registrationentry-intro .input-group {
   margin: 0 auto 48px auto;
 }
+.registration-entry .feetype-allowmultiples > .control-label {
+  margin-bottom: 8px;
+  display: block;
+}
+.registration-entry .feetype-allowmultiples .form-group {
+  margin-left: 19px;
+}
 .registrationentry-summary .fee-table {
   margin: 0 24px;
 }
@@ -6029,9 +6036,13 @@ a.link-block,
 }
 #content-wrapper {
   background-color: #f3f3f4;
-  min-height: 900px;
   z-index: 30;
   min-width: 320px;
+}
+@media screen {
+  #content-wrapper {
+    min-height: 1100px;
+  }
 }
 #content-wrapper header .navbar-default {
   background-color: #282526;

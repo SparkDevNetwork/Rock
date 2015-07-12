@@ -44,7 +44,13 @@ namespace Rock.Client
         public DateTime? LastRequirementCheckDateTime { get; set; }
 
         /// <summary />
+        public DateTime? RequirementFailDateTime { get; set; }
+
+        /// <summary />
         public DateTime? RequirementMetDateTime { get; set; }
+
+        /// <summary />
+        public DateTime? RequirementWarningDateTime { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -52,6 +58,23 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source GroupMemberRequirement object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( GroupMemberRequirement source )
+        {
+            this.Id = source.Id;
+            this.GroupMemberId = source.GroupMemberId;
+            this.GroupRequirementId = source.GroupRequirementId;
+            this.LastRequirementCheckDateTime = source.LastRequirementCheckDateTime;
+            this.RequirementFailDateTime = source.RequirementFailDateTime;
+            this.RequirementMetDateTime = source.RequirementMetDateTime;
+            this.RequirementWarningDateTime = source.RequirementWarningDateTime;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

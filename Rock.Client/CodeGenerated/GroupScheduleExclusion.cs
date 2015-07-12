@@ -49,6 +49,20 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source GroupScheduleExclusion object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( GroupScheduleExclusion source )
+        {
+            this.Id = source.Id;
+            this.EndDate = source.EndDate;
+            this.GroupTypeId = source.GroupTypeId;
+            this.StartDate = source.StartDate;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

@@ -238,6 +238,15 @@ namespace Rock.Web.Cache
         public bool? EnableLocationSchedules { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable alternate placements].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [enable alternate placements]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableAlternatePlacements { get; set; }
+
+        /// <summary>
         /// Gets or sets the group type purpose value identifier.
         /// </summary>
         /// <value>
@@ -424,6 +433,7 @@ namespace Rock.Web.Cache
                 this.InheritedGroupTypeId = groupType.InheritedGroupTypeId;
                 this.LocationSelectionMode = groupType.LocationSelectionMode;
                 this.EnableLocationSchedules = groupType.EnableLocationSchedules;
+                this.EnableAlternatePlacements = groupType.EnableAlternatePlacements;
                 this.GroupTypePurposeValueId = groupType.GroupTypePurposeValueId;
                 this.locationTypeValueIDs = groupType.LocationTypes.Select( l => l.LocationTypeValueId ).ToList();
 

@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Humanizer;
 using Newtonsoft.Json;
@@ -302,6 +303,11 @@ namespace RockWeb.Blocks.Event
             nbMain.Visible = false;
             pnlDupWarning.Visible = false;
 
+            // register navigation event to enable support for the back button
+            var sm = ScriptManager.GetCurrent( Page );
+            //sm.EnableSecureHistoryState = false;
+            sm.Navigate += sm_Navigate;
+
             if ( !Page.IsPostBack )
             {
                 // Get the a registration (either by reading existing, or creating new one
@@ -376,6 +382,57 @@ namespace RockWeb.Blocks.Event
         #region Navigation Events
 
         /// <summary>
+        /// Handles the Navigate event of the sm control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="HistoryEventArgs"/> instance containing the event data.</param>
+        void sm_Navigate( object sender, HistoryEventArgs e )
+        {
+            var state = e.State["event"];
+
+            if ( state != null )
+            {
+                string[] commands = state.Split( ',' );
+
+                int panelId = 0;
+                int registrantId = 0;
+                int formId = 0;
+
+                if ( commands.Count() == 3 )
+                {
+                    panelId = Int32.Parse( commands[0] );
+                    registrantId = Int32.Parse( commands[1] );
+                    formId = Int32.Parse( commands[2] );
+                }
+
+                switch ( panelId )
+                {
+                    case 1:
+                        {
+                            CurrentRegistrantIndex = registrantId;
+                            CurrentFormIndex = formId;
+                            ShowRegistrant();
+                            break;
+                        }
+                    case 2:
+                        {
+                            ShowSummary();
+                            break;
+                        }
+                    default:
+                        {
+                            ShowHowMany();
+                            break;
+                        }
+                }
+            }
+            else
+            {
+                ShowHowMany();
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the lbHowManyNext control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -391,6 +448,8 @@ namespace RockWeb.Blocks.Event
             ShowRegistrant();
 
             hfTriggerScroll.Value = "true";
+
+            this.AddHistory( "event", "1,0,0" );
         }
 
         /// <summary>
@@ -412,10 +471,12 @@ namespace RockWeb.Blocks.Event
                 if ( CurrentRegistrantIndex < 0 )
                 {
                     ShowHowMany();
+                    this.AddHistory( "event", "0,0,0" );
                 }
                 else
                 {
                     ShowRegistrant();
+                    this.AddHistory( "event", string.Format("1,{0},{1}", CurrentRegistrantIndex.ToString(), CurrentFormIndex.ToString()) );
                 }
             }
             else
@@ -445,15 +506,18 @@ namespace RockWeb.Blocks.Event
                 if ( CurrentRegistrantIndex >= RegistrationState.RegistrantCount )
                 {
                     ShowSummary();
+                    this.AddHistory( "event", "2,0,0" );
                 }
                 else
                 {
                     ShowRegistrant();
+                    this.AddHistory( "event", string.Format( "1,{0},{1}", CurrentRegistrantIndex.ToString(), CurrentFormIndex.ToString() ) );
                 }
             }
             else
             {
                 ShowHowMany();
+                this.AddHistory( "event", "0,0,0" );
             }
 
             hfTriggerScroll.Value = "true";
@@ -472,10 +536,12 @@ namespace RockWeb.Blocks.Event
                 CurrentFormIndex = FormCount - 1;
 
                 ShowRegistrant();
+                this.AddHistory( "event", string.Format( "1,{0},{1}", CurrentRegistrantIndex.ToString(), CurrentFormIndex.ToString() ) );
             }
             else
             {
                 ShowHowMany();
+                this.AddHistory( "event", "0,0,0" );
             }
 
             hfTriggerScroll.Value = "true";
@@ -494,10 +560,12 @@ namespace RockWeb.Blocks.Event
                 if ( registration != null )
                 {
                     ShowSuccess( registration );
+                    this.AddHistory( "event", "2,0,0" );
                 }
                 else
                 {
                     ShowSummary();
+                    this.AddHistory( "event", "2,0,0" );
                 }
             }
             else
@@ -527,6 +595,7 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     ShowSummary();
+                    this.AddHistory( "event", "2,0,0" );
                 }
             }
         }
@@ -1058,6 +1127,7 @@ namespace RockWeb.Blocks.Event
                 registrant.RegistrationId = registration.Id;
                 registrant.PersonAliasId = person.PrimaryAliasId;
                 registrant.Cost = registrantInfo.Cost;
+                registrant.GroupMemberId = groupMember != null ? groupMember.Id : (int?)null;
 
                 // Add or Update fees
                 foreach ( var feeValue in registrantInfo.FeeValues.Where( f => f.Value != null ) )
@@ -1374,7 +1444,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void ShowHowMany()
         {
-            lRegistrantTerm.Text =RegistrantTerm.Pluralize();
+            lRegistrantTerm.Text =RegistrantTerm.Pluralize().ToLower();
 
             // If this is an existing registration, go directly to the summary
             if ( RegistrationState != null && RegistrationState.RegistrationId.HasValue )
@@ -1624,7 +1694,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void CreateRegistrantControls( bool setValues )
         {
-            lRegistrantFeeCaption.Text = RegistrantTerm.Pluralize();
+            lRegistrantFeeCaption.Text = FeeTerm.Pluralize();
 
             phRegistrantControls.Controls.Clear();
             phFees.Controls.Clear();
@@ -2062,13 +2132,24 @@ namespace RockWeb.Blocks.Event
 
                 if ( fee.AllowMultiple )
                 {
+                    HtmlGenericControl feeAllowMultiple = new HtmlGenericControl( "div" );
+                    phFees.Controls.Add( feeAllowMultiple );
+
+                    feeAllowMultiple.AddCssClass( "feetype-allowmultiples" );
+
+                    Label titleLabel = new Label();
+                    feeAllowMultiple.Controls.Add( titleLabel );
+                    titleLabel.CssClass = "control-label";
+                    titleLabel.Text = fee.Name;
+
                     foreach( var optionKeyVal in options )
                     {
                         var numUpDown = new NumberUpDown();
                         numUpDown.ID = string.Format( "fee_{0}_{1}", fee.Id, optionKeyVal.Key );
-                        numUpDown.Label = string.Format( "{0} - {1}", fee.Name, optionKeyVal.Value );
+                        numUpDown.Label = string.Format( "{0}", optionKeyVal.Value );
                         numUpDown.Minimum = 0;
-                        phFees.Controls.Add( numUpDown );
+                        numUpDown.CssClass = "fee-allowmultiple";
+                        feeAllowMultiple.Controls.Add( numUpDown );
 
                         if ( setValues && feeValues != null && feeValues.Any() )
                         {
@@ -2391,7 +2472,6 @@ namespace RockWeb.Blocks.Event
         private void CreateSummaryControls( bool setValues )
         {
             lDiscountCodeLabel.Text = DiscountCodeTerm;
-            lSummaryFeeCaption.Text = FeeTerm.Pluralize();
 
             if ( setValues && RegistrationState != null )
             {

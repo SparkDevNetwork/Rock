@@ -61,6 +61,24 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source FinancialBatch object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( FinancialBatch source )
+        {
+            this.Id = source.Id;
+            this.AccountingSystemCode = source.AccountingSystemCode;
+            this.BatchEndDateTime = source.BatchEndDateTime;
+            this.BatchStartDateTime = source.BatchStartDateTime;
+            this.CampusId = source.CampusId;
+            this.ControlAmount = source.ControlAmount;
+            this.Name = source.Name;
+            this.Status = source.Status;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

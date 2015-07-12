@@ -1044,7 +1044,7 @@ $(document).ready(function() {
                 filterControl.Expanded = filter.Expanded;
                 if ( setSelection )
                 {
-                    filterControl.Selection = filter.Selection;
+                    filterControl.SetSelection( filter.Selection );
                 }
 
                 filterControl.DeleteClick += filterControl_DeleteClick;
@@ -1125,7 +1125,7 @@ $(document).ready(function() {
             if ( filterField.FilterEntityTypeName != null )
             {
                 filter.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( filterField.FilterEntityTypeName ).Id;
-                filter.Selection = filterField.Selection;
+                filter.Selection = filterField.GetSelection();
             }
 
             return filter;

@@ -67,6 +67,26 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source EventItem object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( EventItem source )
+        {
+            this.Id = source.Id;
+            this.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
+            this.ApprovedOnDateTime = source.ApprovedOnDateTime;
+            this.Description = source.Description;
+            this.DetailsUrl = source.DetailsUrl;
+            this.IsActive = source.IsActive;
+            this.IsApproved = source.IsApproved;
+            this.Name = source.Name;
+            this.PhotoId = source.PhotoId;
+            this.Summary = source.Summary;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

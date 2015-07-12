@@ -46,6 +46,19 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source ConnectionOpportunityGroup object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( ConnectionOpportunityGroup source )
+        {
+            this.Id = source.Id;
+            this.ConnectionOpportunityId = source.ConnectionOpportunityId;
+            this.GroupId = source.GroupId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>
