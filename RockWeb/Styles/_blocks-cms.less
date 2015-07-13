@@ -4,6 +4,7 @@
     1. HTML Content - block to edit HTML on a page
     2. My Account - Used on external sites for setting person details
     3. Lava Debug - Used to style the lava debug panel
+    4. Social Tools - Used for showing social media links
 */
 
 
@@ -80,4 +81,38 @@
         }
     }
 
+}
+
+// 4. Social Tools
+// -------------------------
+.socialsharing {
+    margin-top: 12px;
+    padding: 0;
+
+    li {
+        display: inline-block;
+
+        .socialicon {
+            color: #fff;
+            padding: 8px 6px;
+            border-radius: 20px;
+            font-family: FontAwesome;
+
+            &:hover {
+                text-decoration: none;
+            }
+        }
+
+        .socialicon-facebook {
+            background-color: #4C66A4;
+        }
+
+        .socialicon-twitter {
+            background-color: #2C77BA;
+        }
+
+        .socialicon-email {
+            background-color: #209904;
+        }
+    }
 }
