@@ -47,6 +47,9 @@ namespace RockWeb.Blocks.WorkFlow
     {
         #region Fields
 
+        private const string ROLE_TOGGLE_SETTING = "MyWorkflows_RoleToggle";
+        private const string DISPLAY_TOGGLE_SETTING = "MyWorkflows_DisplayToggle";
+
         #endregion
 
         #region Properties
@@ -70,8 +73,6 @@ namespace RockWeb.Blocks.WorkFlow
             StatusFilter = ViewState["StatusFilter"] as bool?;
             RoleFilter = ViewState["RoleFilter"] as bool?;
             SelectedWorkflowTypeId = ViewState["SelectedWorkflowTypeId"] as int?;
-
-            GetData();
         }
 
         protected override void OnInit( EventArgs e )
@@ -79,12 +80,17 @@ namespace RockWeb.Blocks.WorkFlow
             base.OnInit( e );
 
             rptWorkflowTypes.ItemCommand += rptWorkflowTypes_ItemCommand;
-
+            rptWorkflowTypes.ItemCreated += rptWorkflowTypes_ItemCreated;
             gWorkflows.DataKeyNames = new string[] { "Id" };
             gWorkflows.Actions.ShowAdd = false;
             gWorkflows.IsDeleteEnabled = false;
             gWorkflows.GridRebind += gWorkflows_GridRebind;
-             
+
+            if ( SelectedWorkflowTypeId.HasValue )
+            {
+                WorkflowType workflowType = new WorkflowTypeService( new RockContext() ).Get( SelectedWorkflowTypeId.Value );
+                AddAttributeColumns( workflowType );
+            }
         }
 
         /// <summary>
@@ -97,6 +103,12 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( !Page.IsPostBack )
             {
+                tglDisplay.Checked = GetUserPreference( DISPLAY_TOGGLE_SETTING ).AsBoolean();
+                tglRole.Checked = GetUserPreference( ROLE_TOGGLE_SETTING ).AsBoolean();
+                
+                StatusFilter = tglDisplay.Checked;
+                RoleFilter = tglRole.Checked;
+
                 GetData();
             }
         }
@@ -138,6 +150,10 @@ namespace RockWeb.Blocks.WorkFlow
         {
             StatusFilter = tglDisplay.Checked;
             RoleFilter = tglRole.Checked;
+
+            SetUserPreference( DISPLAY_TOGGLE_SETTING, tglDisplay.Checked.ToString() );
+            SetUserPreference( ROLE_TOGGLE_SETTING, tglRole.Checked.ToString() );
+
             GetData();
         }
 
@@ -155,6 +171,20 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             GetData();
+        }
+
+        /// <summary>
+        /// Handles the ItemCreated event of the rptWorkflowTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        void rptWorkflowTypes_ItemCreated( object sender, RepeaterItemEventArgs e )
+        {
+            var lbWorkflowType = e.Item.FindControl( "lbWorkflowType" ) as LinkButton;
+            if ( lbWorkflowType != null )
+            {
+                ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( lbWorkflowType );
+            }
         }
 
         /// <summary>
@@ -300,22 +330,19 @@ namespace RockWeb.Blocks.WorkFlow
             if ( SelectedWorkflowTypeId.HasValue )
             {
                 selectedWorkflowType = allWorkflowTypes
-                    .Where( w => 
-                        w.Id == SelectedWorkflowTypeId.Value &&
-                        workflowTypeCounts.Keys.Contains( SelectedWorkflowTypeId.Value ) )
+                    .Where( w =>  w.Id == SelectedWorkflowTypeId.Value )
                     .FirstOrDefault();
+
+                AddAttributeColumns( selectedWorkflowType );
             }
 
-            if ( selectedWorkflowType != null )
+            if ( selectedWorkflowType != null && workflowTypeCounts.Keys.Contains( selectedWorkflowType.Id ) )
             {
-                AddAttributeColumns( selectedWorkflowType );
-
                 gWorkflows.DataSource = workflows.Where( w => w.WorkflowTypeId == selectedWorkflowType.Id ).ToList();
                 gWorkflows.DataBind();
                 gWorkflows.Visible = true;
 
                 lWorkflow.Text = workflows.Where( w => w.WorkflowTypeId == selectedWorkflowType.Id ).Select( w => w.WorkflowType.Name ).FirstOrDefault() + " Workflows";
-
             }
             else
             {
