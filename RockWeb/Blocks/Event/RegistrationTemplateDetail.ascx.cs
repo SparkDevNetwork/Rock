@@ -446,8 +446,6 @@ namespace RockWeb.Blocks.Event
             if ( RegistrationTemplate == null )
             {
                 RegistrationTemplate = new RegistrationTemplate();
-                RegistrationTemplate.SuccessTitle = "Congratulations {{ Registration.FirstName }}";
-                RegistrationTemplate.SuccessText = GetAttributeValue( "DefaultSuccessText" );
             }
 
             RegistrationNotify notify = RegistrationNotify.None;
@@ -1518,6 +1516,8 @@ namespace RockWeb.Blocks.Event
                 registrationTemplate.CategoryId = parentCategoryId;
                 registrationTemplate.UseDefaultConfirmationEmail = true;
                 registrationTemplate.Notify = RegistrationNotify.None;
+                registrationTemplate.SuccessTitle = "Congratulations {{ Registration.FirstName }}";
+                registrationTemplate.SuccessText = GetAttributeValue( "DefaultSuccessText" );
             }
 
             pnlDetails.Visible = true;
