@@ -36,12 +36,15 @@
                     <asp:ValidationSummary ID="valAccountDetail" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <Rock:DataTextBox ID="tbName" runat="server"
                                 SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Name" />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
+                        </div>
+                        <div class="col-md-4">
+                            <Rock:RockCheckBox ID="cbIsPublic" runat="server" Label="Is Public" />
                         </div>
                     </div>
 
@@ -49,6 +52,13 @@
                         <div class="col-md-12">
                             <Rock:DataTextBox ID="tbDescription" runat="server"
                                 SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:CodeEditor ID="cePublicDescription" runat="server" Label="Public description HTML" EditorMode="Html" EditorTheme="Rock" EditorHeight="250"
+                                Help="Additional HTML content to include with the account." />
                         </div>
                     </div>
 
