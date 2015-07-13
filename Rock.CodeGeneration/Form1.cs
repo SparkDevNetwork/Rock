@@ -38,12 +38,13 @@ namespace Rock.CodeGeneration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void btnLoad_Click( object sender, EventArgs e )
         {
-            if ( lblAssemblyPath.Text == string.Empty )
+            if ( !Directory.Exists( lblAssemblyPath.Text ) || lblAssemblyPath.Text == string.Empty )
             {
                 rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
                 FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
                 lblAssemblyPath.Text = fi.FullName;
-                toolTip1.SetToolTip(lblAssemblyPath, fi.LastWriteTime.ToString());
+                lblAssemblyDateTime.Text = fi.LastWriteTime.ToElapsedString();
+                toolTip1.SetToolTip( lblAssemblyDateTime, fi.LastWriteTime.ToString() );
             }
 
             ofdAssembly.InitialDirectory = Path.GetDirectoryName( lblAssemblyPath.Text );
@@ -151,6 +152,7 @@ namespace Rock.CodeGeneration
                     {
                         WriteRockClientIncludeClientFiles( rockClientFolder, cblModels.CheckedItems.OfType<Type>().ToList() );
                         WriteRockClientSystemGuidFiles( rockClientFolder );
+                        WriteRockClientEnumsFile( rockClientFolder );
                     }
                 }
             }
@@ -186,7 +188,7 @@ namespace Rock.CodeGeneration
                 dbContextFullName = dbContextFullName.Replace( "Rock.Data.", "" );
             }
 
-            var properties = GetEntityProperties( type );
+            var properties = GetEntityProperties( type, false );
 
             var sb = new StringBuilder();
 
@@ -650,7 +652,14 @@ order by [parentTable], [columnName]
         {
             if ( type.IsEnum )
             {
-                return GetKeyName( "Int32" ) + " /* " + type.Name + "*/";
+                if ( type.Namespace == "Rock.Model" )
+                {
+                    return "Rock.Client.Enums." + type.Name;
+                }
+                else
+                {
+                    return GetKeyName( "Int32" ) + " /* " + type.Name + "*/";
+                }
             }
             else
             {
@@ -658,26 +667,29 @@ order by [parentTable], [columnName]
             }
         }
 
-        private Dictionary<Type, Dictionary<string, string>> _entityProperties { get; set; }
-
-        private Dictionary<string, string> GetEntityProperties( Type type )
+        private Dictionary<string, PropertyInfo> GetEntityProperties( Type type, bool includeRockClientIncludes )
         {
-            _entityProperties = _entityProperties ?? new Dictionary<Type, Dictionary<string, string>>();
-            if ( _entityProperties.ContainsKey( type ) )
-            {
-                return _entityProperties[type];
-            }
-
-            var properties = new Dictionary<string, string>();
+            var properties = new Dictionary<string, PropertyInfo>();
 
             var interfaces = type.GetInterfaces();
 
             foreach ( var property in type.GetProperties().SortByStandardOrder() )
             {
+                bool include = false;
+                if (includeRockClientIncludes && property.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null)
+                {
+                    include = true;
+                }
+                
                 var getMethod = property.GetGetMethod();
+                if (getMethod == null)
+                {
+                    continue;
+                }
+
                 if ( getMethod.IsVirtual )
                 {
-                    if ( !getMethod.IsFinal )
+                    if ( !include && !getMethod.IsFinal )
                     {
                         continue;
                     }
@@ -691,7 +703,7 @@ order by [parentTable], [columnName]
                             break;
                         }
                     }
-                    if ( !interfaceProperty )
+                    if ( !include && !interfaceProperty )
                     {
                         continue;
                     }
@@ -699,18 +711,93 @@ order by [parentTable], [columnName]
 
                 if ( !property.GetCustomAttributes( typeof( DatabaseGeneratedAttribute ) ).Any() )
                 {
-                    if ( property.SetMethod != null && property.SetMethod.IsPublic && property.GetMethod.IsPublic )
+                    if ( (property.GetCustomAttribute<ObsoleteAttribute>() == null) )
                     {
-                        properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
+                        if ( property.SetMethod != null && property.SetMethod.IsPublic && property.GetMethod.IsPublic )
+                        {
+                            properties.Add( property.Name, property );
+                        }
                     }
                 }
             }
 
-            _entityProperties[type] = properties;
-
             return properties;
         }
 
+        /// <summary>
+        /// Writes the rock client model enums file.
+        /// </summary>
+        /// <param name="rootFolder">The root folder.</param>
+        private void WriteRockClientEnumsFile( string rootFolder )
+        {
+            rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine( "//------------------------------------------------------------------------------" );
+            sb.AppendLine( "// <auto-generated>" );
+            sb.AppendLine( "//     This code was generated by the Rock.CodeGeneration project" );
+            sb.AppendLine( "//     Changes to this file will be lost when the code is regenerated." );
+            sb.AppendLine( "// </auto-generated>" );
+            sb.AppendLine( "//------------------------------------------------------------------------------" );
+            sb.AppendLine( "// <copyright>" );
+            sb.AppendLine( "// Copyright 2013 by the Spark Development Network" );
+            sb.AppendLine( "//" );
+            sb.AppendLine( "// Licensed under the Apache License, Version 2.0 (the \"License\");" );
+            sb.AppendLine( "// you may not use this file except in compliance with the License." );
+            sb.AppendLine( "// You may obtain a copy of the License at" );
+            sb.AppendLine( "//" );
+            sb.AppendLine( "// http://www.apache.org/licenses/LICENSE-2.0" );
+            sb.AppendLine( "//" );
+            sb.AppendLine( "// Unless required by applicable law or agreed to in writing, software" );
+            sb.AppendLine( "// distributed under the License is distributed on an \"AS IS\" BASIS," );
+            sb.AppendLine( "// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied." );
+            sb.AppendLine( "// See the License for the specific language governing permissions and" );
+            sb.AppendLine( "// limitations under the License." );
+            sb.AppendLine( "// </copyright>" );
+            sb.AppendLine( "//" );
+            sb.AppendLine( "using System;" );
+            sb.AppendLine( "using System.Collections.Generic;" );
+            sb.AppendLine( "" );
+
+            sb.AppendLine( "namespace Rock.Client.Enums" );
+            sb.AppendLine( "{" );
+
+            foreach ( var enumType in rockAssembly.GetTypes().Where( a => a.IsEnum ).OrderBy( a => a.Name ) )
+            {
+                if ( enumType.Namespace == "Rock.Model" )
+                {
+                    sb.AppendLine( "    /// <summary>" );
+                    sb.AppendLine( "    /// </summary>" );
+                    if (enumType.GetCustomAttribute<FlagsAttribute>() != null)
+                    {
+                        sb.AppendLine( "    [Flags]");
+                    }
+                    sb.AppendFormat( "    public enum {0}" + Environment.NewLine, enumType.Name );
+                    sb.AppendLine( "    {" );
+                    var enumValues = Enum.GetValues( enumType);
+                    foreach ( var enumValueName in Enum.GetNames( enumType ) )
+                    {
+                        int enumValue = (int)Convert.ChangeType( Enum.Parse( enumType, enumValueName ), typeof( int ) );
+                        string enumValueParam = enumValue >= 0 ? " = 0x" + enumValue.ToString( "x" ) : " = " + enumValue.ToString();
+                        sb.AppendFormat( "        {0}{1},", enumValueName, enumValueParam );
+                        sb.AppendLine( "" );
+                    }
+
+                    sb.AppendLine( "    }" );
+                    sb.AppendLine( "" );
+                }
+            }
+
+
+            sb.AppendLine( "}" );
+
+            var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated\\Enums", "RockEnums.cs" ) );
+            WriteFile( file, sb );
+        }
+
+        /// <summary>
+        /// Writes the rock client system unique identifier files.
+        /// </summary>
+        /// <param name="rootFolder">The root folder.</param>
         private void WriteRockClientSystemGuidFiles( string rootFolder )
         {
             rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
@@ -790,15 +877,17 @@ order by [parentTable], [columnName]
         /// <param name="type"></param>
         private void WriteRockClientFile( string rootFolder, Type type )
         {
-            var entityProperties = GetEntityProperties( type );
+            // make a copy of the EntityProperties since we are deleting some for this method
+            var entityProperties = GetEntityProperties( type, true ).ToDictionary( k => k.Key, v => v.Value);
             entityProperties.Remove( "CreatedDateTime" );
             entityProperties.Remove( "ModifiedDateTime" );
             entityProperties.Remove( "CreatedByPersonAliasId" );
             entityProperties.Remove( "ModifiedByPersonAliasId" );
 
             var dataMembers = type.GetProperties().SortByStandardOrder()
-                .Where( a => a.GetCustomAttribute( typeof( DataMemberAttribute ) ) != null )
-                .Where( a => (a.GetCustomAttribute( typeof( NotMappedAttribute ) ) == null || a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null) )
+                .Where( a => a.GetCustomAttribute<DataMemberAttribute>() != null )
+                .Where( a => a.GetCustomAttribute<ObsoleteAttribute>() == null )
+                .Where( a => (a.GetCustomAttribute<NotMappedAttribute>() == null || a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null) )
                 .Where( a => !entityProperties.Keys.Contains( a.Name ) );
 
             var rockClientIncludeAttribute = type.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>();
@@ -869,10 +958,45 @@ order by [parentTable], [columnName]
 
             foreach ( var keyVal in entityProperties )
             {
-                sb.AppendLine( "        /// <summary />" );
-                sb.AppendFormat( "        public {0} {1} {{ get; set; }}" + Environment.NewLine, keyVal.Value, keyVal.Key );
+                var propertyRockClientIncludeAttribute = keyVal.Value.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>();
+                string propertyComments = null;
+
+                if ( propertyRockClientIncludeAttribute != null )
+                {
+                    propertyComments = propertyRockClientIncludeAttribute.DocumentationMessage;
+                }
+
+                if ( !string.IsNullOrWhiteSpace( propertyComments ) )
+                {
+                    sb.AppendLine( "        /// <summary>" );
+                    sb.AppendFormat( "        /// {0}" + Environment.NewLine, propertyComments );
+                    sb.AppendLine( "        /// </summary>" );
+                }
+                else
+                {
+                    sb.AppendLine( "        /// <summary />" );
+                }
+                sb.AppendFormat( "        public {0} {1} {{ get; set; }}" + Environment.NewLine, this.PropertyTypeName( keyVal.Value.PropertyType ), keyVal.Key );
                 sb.AppendLine( "" );
             }
+
+            sb.AppendFormat( 
+@"        /// <summary>
+        /// Copies the base properties from a source {0} object
+        /// </summary>
+        /// <param name=""source"">The source.</param>
+        public void CopyPropertiesFrom( {0} source )
+        {{
+", type.Name );
+
+            foreach ( var keyVal in entityProperties )
+            {
+                sb.AppendFormat( "            this.{0} = source.{0};" + Environment.NewLine, keyVal.Key );
+            }
+
+            sb.Append( @"
+        }
+" );
 
             sb.AppendLine( "    }" );
 

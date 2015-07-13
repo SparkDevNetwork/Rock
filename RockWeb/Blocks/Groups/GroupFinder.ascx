@@ -116,7 +116,7 @@
                                         <Rock:RockCheckBox ID="cbShowFence" runat="server" Label="Show Fence(s)" Text="Yes" 
                                             Help="If a Geofence group type was selected, should that group's boundary be displayed on the map?" ValidationGroup="GroupFinderSettings" />
                                         <Rock:ValueList ID="vlPolygonColors" runat="server" Label="Fence Polygon Colors"
-                                            Help="The list of colors to use when displaying multiple fences ( their should normally be only one fence)." ValidationGroup="GroupFinderSettings" />
+                                            Help="The list of colors to use when displaying multiple fences ( there should normally be only one fence)." ValidationGroup="GroupFinderSettings" />
                                     </div>
                                 </div>
                                 <div class="row">
@@ -155,6 +155,8 @@
                                             Help="Should a grid be displayed showing the matching groups?" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbShowSchedule" runat="server" Label="Show Schedule" Text="Yes" 
                                             Help="Should the schedule for each group be displayed?" ValidationGroup="GroupFinderSettings" />
+                                        <Rock:RockCheckBox ID="cbShowDescription" runat="server" Label="Show Description" Text="Yes" 
+                                            Help="Should the description for each group be displayed?" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbShowCount" runat="server" Label="Show Member Count" Text="Yes" 
                                             Help="Should the number of members in each group be displayed in the result grid?" ValidationGroup="GroupFinderSettings" />
                                     </div>

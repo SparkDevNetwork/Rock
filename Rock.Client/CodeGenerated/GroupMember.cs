@@ -41,13 +41,16 @@ namespace Rock.Client
         public int GroupId { get; set; }
 
         /// <summary />
-        public int /* GroupMemberStatus*/ GroupMemberStatus { get; set; }
+        public Rock.Client.Enums.GroupMemberStatus GroupMemberStatus { get; set; }
 
         /// <summary />
         public int GroupRoleId { get; set; }
 
         /// <summary />
         public int? GuestCount { get; set; }
+
+        /// <summary />
+        public bool IsNotified { get; set; }
 
         /// <summary />
         public bool IsSystem { get; set; }
@@ -61,6 +64,25 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source GroupMember object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( GroupMember source )
+        {
+            this.Id = source.Id;
+            this.DateTimeAdded = source.DateTimeAdded;
+            this.GroupId = source.GroupId;
+            this.GroupMemberStatus = source.GroupMemberStatus;
+            this.GroupRoleId = source.GroupRoleId;
+            this.GuestCount = source.GuestCount;
+            this.IsNotified = source.IsNotified;
+            this.IsSystem = source.IsSystem;
+            this.PersonId = source.PersonId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

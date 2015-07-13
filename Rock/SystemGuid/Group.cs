@@ -37,9 +37,19 @@ namespace Rock.SystemGuid
         public const string GROUP_BENEVOLENCE = "02FA0881-3552-42B8-A519-D021139B800F";
 
         /// <summary>
+        /// The Calendar Administrators Group guid
+        /// </summary>
+        public const string GROUP_CALENDAR_ADMINISTRATORS = "FDA9D63F-B0B1-43E8-8B82-0255E5D99F26";
+
+        /// <summary>
         /// The Communication Administrators Group guid
         /// </summary>
         public const string GROUP_COMMUNICATION_ADMINISTRATORS = "B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B";
+        
+        /// <summary>
+        /// The Connection Administrators Group guid
+        /// </summary>
+        public const string GROUP_CONNECTION_ADMINISTRATORS = "060971D2-EAF9-4C0D-B6F6-F01725CAA5AC";
 
         /// <summary>
         /// The Finance Administrators Group guid
@@ -70,5 +80,10 @@ namespace Rock.SystemGuid
         /// Gets the staff-like member group guid (Staff Users)
         /// </summary>
         public const string GROUP_STAFF_LIKE_MEMBERS = "300BA2C8-49A3-44BA-A82A-82E3FD8C3745";
+        
+        /// <summary>
+        /// The group of communication approvers
+        /// </summary>
+        public const string GROUP_COMMUNICATION_APPROVERS = "74B1B26E-1955-49A7-4C59-ABCD7543FF71";
     }
 }

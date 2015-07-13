@@ -52,6 +52,21 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source PageContext object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( PageContext source )
+        {
+            this.Id = source.Id;
+            this.Entity = source.Entity;
+            this.IdParameter = source.IdParameter;
+            this.IsSystem = source.IsSystem;
+            this.PageId = source.PageId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

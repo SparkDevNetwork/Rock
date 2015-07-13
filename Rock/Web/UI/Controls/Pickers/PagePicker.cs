@@ -231,7 +231,7 @@ namespace Rock.Web.UI.Controls
                 InitialItemParentIds = parentPageIds.TrimEnd( new char[] { ',' } );
                 if ( pageRoute.Id != 0 )
                 {
-                    // PageRoute is selected, so show the Page and it's PageRoute and don't show the PageRoute picker
+                    // PageRoute is selected, so show the Page and its PageRoute and don't show the PageRoute picker
                     ItemName = page.InternalName + " (" + pageRoute.Route + ")";
 
                     _rblSelectPageRoute.Visible = false;

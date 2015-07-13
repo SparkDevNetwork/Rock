@@ -23,6 +23,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -529,7 +530,7 @@ function(item) {
             this.SetUserPreference( keyPrefix + "GiversFilterByType", giversFilterBy.ConvertToInt().ToString(), false );
             this.SetUserPreference( keyPrefix + "GiversFilterByPattern", string.Format( "{0}|{1}|{2}", tbPatternXTimes.Text, cbPatternAndMissed.Checked, drpPatternDateRange.DelimitedValues ), false );
 
-            this.SaveUserPreferences();
+            this.SaveUserPreferences( keyPrefix );
         }
 
         /// <summary>
@@ -674,10 +675,7 @@ function(item) {
         /// </summary>
         private void BindGiversGrid()
         {
-            var transactionService = new FinancialTransactionDetailService( _rockContext );
-            var personService = new PersonService( _rockContext );
-
-            // Date Range Filter
+            // Get all the selected criteria values
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
             var start = dateRange.Start;
             var end = dateRange.End;
@@ -697,18 +695,37 @@ function(item) {
                 accountIds.AddRange( cblAccounts.SelectedValuesAsInt );
             }
 
+            var dataViewId = dvpDataView.SelectedValueAsInt();
+
+            GiversViewBy viewBy = hfViewBy.Value.ConvertToEnumOrNull<GiversViewBy>() ?? GiversViewBy.Giver;
+
+            // Clear all the existing grid columns
             gGiversGifts.Columns.Clear();
 
+            // Add a column for selecting rows
             gGiversGifts.Columns.Add( new SelectField() );
 
+            // Add a column for the person's name
             gGiversGifts.Columns.Add(
-                new BoundField
+                new RockBoundField
                 {
                     DataField = "PersonName",
                     HeaderText = "Person",
                     SortExpression = "PersonName"
                 } );
 
+            // add a column for email (but is only included on excel export)
+            gGiversGifts.Columns.Add(
+                new RockBoundField
+                {
+                    DataField = "Email",
+                    HeaderText = "Email",
+                    SortExpression = "Email",
+                    Visible = false,
+                    ExcelExportBehavior = ExcelExportBehavior.AlwaysInclude
+                } );
+
+            // Add a column for total amount
             gGiversGifts.Columns.Add(
                 new CurrencyField
                 {
@@ -718,6 +735,7 @@ function(item) {
                 } );
 
 
+            // Add columns for the selected account totals
             if ( accountIds.Any() )
             {
                 var accounts = new FinancialAccountService( _rockContext )
@@ -741,7 +759,8 @@ function(item) {
                 }
             }
 
-            var numberGiftsField = new BoundField
+            // Add a column for the number of gifts
+            var numberGiftsField = new RockBoundField
                 {
                     DataField = "NumberGifts",
                     HeaderText = "Number of Gifts",
@@ -751,6 +770,7 @@ function(item) {
             numberGiftsField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
             gGiversGifts.Columns.Add( numberGiftsField );
 
+            // Add a column to indicate if this is a first time giver
             gGiversGifts.Columns.Add(
                 new BoolField
                 {
@@ -759,6 +779,7 @@ function(item) {
                     SortExpression = "IsFirstEverGift"
                 } );
 
+            // Add a column for the first gift date ( that matches criteria )
             gGiversGifts.Columns.Add(
                 new DateField
                 {
@@ -767,14 +788,7 @@ function(item) {
                     SortExpression = "FirstGift"
                 } );
 
-            //gGiversGifts.Columns.Add(
-            //    new DateField
-            //    {
-            //        DataField = "LastGift",
-            //        HeaderText = "Last Gift",
-            //        SortExpression = "LastGift"
-            //    } );
-
+            // Add a column for the first-ever gift date ( to any tax-deductible account )
             gGiversGifts.Columns.Add(
                 new DateField
                 {
@@ -783,57 +797,215 @@ function(item) {
                     SortExpression = "FirstEverGift"
                 } );
 
-            var dataViewId = dvpDataView.SelectedValueAsInt();
 
-            GiversViewBy viewBy = hfViewBy.Value.ConvertToEnumOrNull<GiversViewBy>() ?? GiversViewBy.Giver;
+            var transactionDetailService = new FinancialTransactionDetailService( _rockContext );
+            var personService = new PersonService( _rockContext );
 
+            // If dataview was selected get the person id's returned by the dataview
+            var dataViewPersonIds = new List<int>();
+            if ( dataViewId.HasValue )
+            {
+                var dataView = new DataViewService( _rockContext ).Get( dataViewId.Value );
+                if ( dataView != null )
+                {
+                    var errorMessages = new List<string>();
+                    ParameterExpression paramExpression = personService.ParameterExpression;
+                    Expression whereExpression = dataView.GetExpression( personService, paramExpression, out errorMessages );
+
+                    SortProperty sortProperty = null;
+                    var dataViewPersonIdQry = personService
+                        .Queryable().AsNoTracking()
+                        .Where( paramExpression, whereExpression, sortProperty )
+                        .Select( p => p.Id );
+                    dataViewPersonIds = dataViewPersonIdQry.ToList();
+                }
+            }
+
+            // Check to see if grid should display only people who gave a certain number of times and if so
+            // set the min value
+            int minCount = 0;
+            var previousPersonIds = new List<int>();
+            if ( radByPattern.Checked )
+            {
+                minCount = tbPatternXTimes.Text.AsInteger();
+                var missedStart = drpPatternDateRange.LowerValue;
+                var missedEnd = drpPatternDateRange.UpperValue;
+                if ( missedStart.HasValue && missedEnd.HasValue )
+                {
+                    // Get the givingids that gave any amount during the pattern's date range. These
+                    // are needed so that we know who to exclude from the result set
+                    var previousGivingIds = transactionDetailService
+                        .Queryable().AsNoTracking()
+                        .Where( d =>
+                            d.Transaction.TransactionDateTime.HasValue &&
+                            d.Transaction.TransactionDateTime.Value >= missedStart.Value &&
+                            d.Transaction.TransactionDateTime.Value < missedEnd.Value &&
+                            accountIds.Contains( d.AccountId ) &&
+                            d.Amount != 0.0M )
+                        .Select( d => d.Transaction.AuthorizedPersonAlias.Person.GivingId );
+
+                    // Now get the person ids from the givingids
+                    previousPersonIds = personService
+                        .Queryable().AsNoTracking()
+                        .Where( p => previousGivingIds.Contains( p.GivingId ) )
+                        .Select( p => p.Id )
+                        .ToList();
+                }                    
+            }
+
+            // Call the stored procedure to get all the giving data that matches the selected criteria.
+            // The stored procedure returns two tables. First is a list of all matching transaction summary 
+            // information and the second table is each giving leader's first-ever gift date to a tax-deductible account
             DataSet ds = FinancialTransactionDetailService.GetGivingAnalytics( start, end, minAmount, maxAmount, 
                 accountIds, currencyTypeIds, sourceTypeIds, dataViewId, viewBy );
 
+            // Get the results table
             DataTable dtResults = ds.Tables[0];
+
+            // Get the first-ever gift dates and load them into a dictionary for faster matching
             DataTable dtFirstEver = ds.Tables[1];
             var firstEverVals = new Dictionary<int, DateTime>();
-
             foreach( DataRow row in ds.Tables[1].Rows )
             {
                 firstEverVals.Add( (int)row["PersonId"], (DateTime)row["FirstEverGift"] );
             }
 
+            // Add columns to the result set for the first-ever data
             dtResults.Columns.Add( new DataColumn( "IsFirstEverGift", typeof( bool ) ) );
             dtResults.Columns.Add( new DataColumn( "FirstEverGift", typeof( DateTime ) ) );
 
             foreach( DataRow row in dtResults.Rows )
             {
+                bool rowValid = true;
+
+                // Get the person id
                 int personId = (int)row["Id"];
-                DateTime firstGift = (DateTime)row["FirstGift"];
-                int numberGifts = (int)row["NumberGifts"];
-                bool isFirstEverGift = false;
 
-                if ( firstEverVals.ContainsKey( personId ) )
+                if ( radByPattern.Checked )
                 {
-                    DateTime firstEverGift = firstEverVals[personId];
-                    isFirstEverGift = firstEverGift.Equals( firstGift );
-
-                    row["FirstEverGift"] = firstEverGift;
+                    // If pattern was specified check minimum gifts and other date range
+                    int numberGifts = (int)row["NumberGifts"];
+                    if ( numberGifts < minCount )
+                    {
+                        rowValid = false;
+                    }
+                    else
+                    {
+                        // If this giving leader gave during the pattern date, remove the row since we 
+                        // only want those who did not 
+                        if ( previousPersonIds.Contains( personId ) )
+                        {
+                            rowValid = false;
+                        }
+                    }
                 }
 
-                if ( radFirstTime.Checked && !isFirstEverGift )
+                if ( dataViewId.HasValue )
+                {
+                    // If a dataview filter was specified, and this row is not part of dataview, 
+                    // remove it
+                    if ( !dataViewPersonIds.Contains(personId))
+                    {
+                        rowValid = false;
+
+                        // Remove person id from list so that list can be used later to optionally 
+                        // add rows for remaining people who were in the dataview, but not in the
+                        // result set
+                        dataViewPersonIds.Remove( personId );
+                    }
+                }
+
+                if ( rowValid )
+                {
+                    // Set the first ever information for each row
+                    bool isFirstEverGift = false;
+                    DateTime firstGift = (DateTime)row["FirstGift"];
+                    if ( firstEverVals.ContainsKey( personId ) )
+                    {
+                        DateTime firstEverGift = firstEverVals[personId];
+                        isFirstEverGift = firstEverGift.Equals( firstGift );
+
+                        row["FirstEverGift"] = firstEverGift;
+                    }
+
+                    // If only first time givers should be included, remove any that are not
+                    if ( radFirstTime.Checked && !isFirstEverGift )
+                    {
+                        rowValid = false;
+                    }
+                    else
+                    {
+                        row["IsFirstEverGift"] = isFirstEverGift;
+                    }
+                }
+
+                if ( !rowValid )
                 {
                     row.Delete();
                 }
-                else
+            }
+
+            // if dataview was selected and it includes people not in the result set, 
+            if ( dataViewId.HasValue && rblDataViewAction.SelectedValue == "All" && dataViewPersonIds.Any() )
+            {
+                // Query for the names of each of these people
+                foreach( var person in personService
+                    .Queryable().AsNoTracking()
+                    .Select( p => new {
+                        p.Id,
+                        p.Guid,
+                        p.NickName,
+                        p.LastName,
+                        p.Email
+                    }))
                 {
-                    row["IsFirstEverGift"] = isFirstEverGift;
+                    // Check for a first ever gift date
+                    var firstEverGiftDate = firstEverVals
+                        .Where( f => f.Key == person.Id )
+                        .Select( f => f.Value )
+                        .FirstOrDefault();
+
+                    DataRow row = dtResults.NewRow();
+                    row["Id"] = person.Id;
+                    row["Guid"] = person.Guid;
+                    row["NickName"] = person.NickName;
+                    row["LastName"] = person.LastName;
+                    row["PersonName"] = person.NickName + " " + person.LastName;
+                    row["Email"] = person.Email;
+                    row["IsFirstEverGift"] = false;
+                    row["FirstEverGift"] = firstEverGiftDate;
+                    dtResults.Rows.Add( row );
                 }
             }
 
+            // Update the changes (deletes) in the datatable
             dtResults.AcceptChanges();
 
-            gGiversGifts.DataSource = dtResults;
+            // Sort the results
+            System.Data.DataView dv = dtResults.DefaultView;
+            if ( gGiversGifts.SortProperty != null )
+            {
+                dv.Sort = string.Format( "[{0}] {1}", gGiversGifts.SortProperty.Property, gGiversGifts.SortProperty.DirectionString );
+            }
+            else
+            {
+                dv.Sort = "[LastName] ASC, [NickName] ASC";
+            }
+
+            gGiversGifts.DataSource = dv;
             gGiversGifts.DataBind();
         }
 
         #endregion
+
+        public class PersonInfo
+        {
+            public int Id { get; set; }
+            public Guid Guid { get; set; }
+            public string NickName { get; set; }
+            public string LastName { get; set; }
+            public DateTime? FirstEverGift { get; set; }
+        }
 
         #region Enums
 

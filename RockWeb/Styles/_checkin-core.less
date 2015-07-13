@@ -9,6 +9,7 @@
   4. Components
   5. Specific Page Styles
   6. Scroll container
+  7. Kiosk Manager
 
 */
 
@@ -153,33 +154,6 @@ body {
   margin-top: 6px;
 }
 
-
-// checkin counts
-
-.checkin-count h3,
-.checkin-count li
-{
-  color: @text-color;
-}
-
-.checkin-count-locations,
-.checkin-count-groups,
-.checkin-count-schedules
-{
-  list-style: none;
-}
-
-.checkin-count-locations > li
-{
-  float: left;
-}
-
-.checkin-counts ul li
-{
-  float: left;
-  margin-right: 24px;
-}
-
 .checkin-actions {
 
   a {
@@ -320,7 +294,35 @@ input.checkin-phone-entry
   }
 }
 
-// --------------------------------------
+// closed page
+.checkin-closed-header {
+  > h1 {
+    font-size: 5em;
+    line-height: 1;
+    margin-bottom: 0;
+    @media @sm {
+      font-size: 9em;
+    }
+    @media @md {
+      font-size: 14em;
+    }
+    @media @lg {
+      font-size: 17em;
+    }
+  }
+}
+.checkin-closed-body {
+  padding-left: .5em;
+  @media @sm {
+    padding-left: 1em;
+  }
+  @media @md {
+    padding-left: 2em;
+  }
+}
+
+
+//
 // 6. Scroll Container
 // --------------------------------------
 
@@ -381,4 +383,91 @@ input.checkin-phone-entry
   top: 2px;
   right: 1px;
   overflow: hidden;
+}
+
+//
+// 7. Kiosk Manager
+// --------------------------------------
+
+.kioskmanager-activate {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    opacity: .5;
+    color: @text-color;
+
+    &:hover {
+        color: @text-color;
+    }
+}
+
+.kioskmanager-locations {
+    max-width: 75%;
+}
+
+.kioskmanager-location {
+    margin: 0 60px 0 0;
+    padding: 16px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: @border-radius-base;
+    position: relative;
+    .clearfix();
+
+    .kioskmanager-location-toggle {
+        float: left;
+        margin-top: 4px;
+    }
+
+    .kioskmanager-location-label{
+        font-weight: 600;
+        font-size: 36px;
+        padding-left: 8px;
+        float: left;
+    }
+
+    .kioskmanager-location-count {
+        font-weight: 600;
+        font-size: 24px;
+        position: absolute;
+        right: 12px;
+        margin-top: 12px;
+    }
+}
+
+.kioskmanager-actions {
+                position: absolute;
+                bottom: 0px;
+                left: 75%;
+            }
+
+.kioskmanager-counts {
+    .kioskmanager-count-locations {
+
+    }
+
+    .kioskmanager-count h3,
+    .kioskmanager-count li
+    {
+        color: @text-color;
+    }
+
+    .kioskmanager-count-locations,
+    .kioskmanager-count-groups,
+    .kioskmanager-count-schedules
+    {
+        list-style: none;
+        padding: 0;
+    }
+
+    .kioskmanager-count-locations > li
+    {
+        float: left;
+        margin-right: 12px;
+    }
+
+    .kioskmanager-counts ul li
+    {
+        float: left;
+        margin-right: 24px;
+    }
 }

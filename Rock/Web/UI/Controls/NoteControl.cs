@@ -132,11 +132,17 @@ namespace Rock.Web.UI.Controls
         {
             get 
             {
-                EnsureChildControls();
-                return _ddlNoteType.SelectedValueAsInt();
+                int? noteTypeId = ViewState["NoteTypeId"] as int?;
+                if ( !noteTypeId.HasValue && NoteTypes.Any() )
+                {
+                    noteTypeId = NoteTypes.First().Id;
+                }
+                return noteTypeId ?? 0;
             }
             set 
             {
+                ViewState["NoteTypeId"] = value;
+
                 EnsureChildControls();
                 if ( value.HasValue )
                 {
@@ -502,6 +508,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            if ( Page.IsPostBack )
+            {
+                EnsureChildControls();
+                if ( CanEdit && _ddlNoteType.Visible )
+                {
+                    NoteTypeId = _ddlNoteType.SelectedValueAsInt();
+                }
+            }
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -848,7 +872,7 @@ namespace Rock.Web.UI.Controls
                 if ( NoteId.HasValue )
                 {
                     note = service.Get( NoteId.Value );
-                    if ( note != null && note.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                    if ( note != null && note.NoteType.UserSelectable && note.IsAuthorized( Authorization.EDIT, currentPerson ) )
                     {
                         service.Delete( note );
                         rockContext.SaveChanges();

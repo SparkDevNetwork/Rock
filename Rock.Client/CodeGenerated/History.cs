@@ -64,6 +64,25 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source History object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( History source )
+        {
+            this.Id = source.Id;
+            this.Caption = source.Caption;
+            this.CategoryId = source.CategoryId;
+            this.EntityId = source.EntityId;
+            this.EntityTypeId = source.EntityTypeId;
+            this.IsSystem = source.IsSystem;
+            this.RelatedEntityId = source.RelatedEntityId;
+            this.RelatedEntityTypeId = source.RelatedEntityTypeId;
+            this.Summary = source.Summary;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

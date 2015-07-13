@@ -79,11 +79,19 @@ namespace Rock.Search.Person
 
             bool reversed = false;
             var qry = new PersonService( new RockContext() ).GetByFullNameOrdered( searchterm, true, false, allowFirstNameSearch, out reversed );
-            return qry
-                .Select( p => ( reversed ?
-                    p.LastName + ", " + p.NickName:
-                    p.NickName + " " + p.LastName) )
-                .Distinct();
+
+            IQueryable<string> resultQry;
+
+            if ( reversed )
+            {
+                resultQry = qry.Select( p => p.LastName + ", " + p.NickName).Distinct();
+            }
+            else
+            {
+                resultQry = qry.Select( p => p.NickName + " " + p.LastName ).Distinct();
+            }
+
+            return resultQry;
         }
     }
 }

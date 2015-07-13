@@ -67,6 +67,26 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source FinancialPersonSavedAccount object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( FinancialPersonSavedAccount source )
+        {
+            this.Id = source.Id;
+            this.CreditCardTypeValueId = source.CreditCardTypeValueId;
+            this.CurrencyTypeValueId = source.CurrencyTypeValueId;
+            this.FinancialGatewayId = source.FinancialGatewayId;
+            this.GroupId = source.GroupId;
+            this.MaskedAccountNumber = source.MaskedAccountNumber;
+            this.Name = source.Name;
+            this.PersonAliasId = source.PersonAliasId;
+            this.ReferenceNumber = source.ReferenceNumber;
+            this.TransactionCode = source.TransactionCode;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

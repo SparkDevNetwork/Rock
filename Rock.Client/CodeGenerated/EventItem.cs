@@ -35,13 +35,22 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int? ApprovedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public DateTime? ApprovedOnDateTime { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
         public string DetailsUrl { get; set; }
 
         /// <summary />
-        public bool? IsActive { get; set; }
+        public bool IsActive { get; set; }
+
+        /// <summary />
+        public bool IsApproved { get; set; }
 
         /// <summary />
         public string Name { get; set; }
@@ -58,6 +67,26 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source EventItem object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( EventItem source )
+        {
+            this.Id = source.Id;
+            this.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
+            this.ApprovedOnDateTime = source.ApprovedOnDateTime;
+            this.Description = source.Description;
+            this.DetailsUrl = source.DetailsUrl;
+            this.IsActive = source.IsActive;
+            this.IsApproved = source.IsApproved;
+            this.Name = source.Name;
+            this.PhotoId = source.PhotoId;
+            this.Summary = source.Summary;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>
@@ -65,6 +94,9 @@ namespace Rock.Client
     /// </summary>
     public partial class EventItem : EventItemEntity
     {
+        /// <summary />
+        public PersonAlias ApprovedByPersonAlias { get; set; }
+
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 

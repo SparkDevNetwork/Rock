@@ -41,7 +41,7 @@ namespace Rock.Client
         public string IconCssClass { get; set; }
 
         /// <summary />
-        public bool? IsActive { get; set; }
+        public bool IsActive { get; set; }
 
         /// <summary />
         public string Name { get; set; }
@@ -52,6 +52,21 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source EventCalendar object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( EventCalendar source )
+        {
+            this.Id = source.Id;
+            this.Description = source.Description;
+            this.IconCssClass = source.IconCssClass;
+            this.IsActive = source.IsActive;
+            this.Name = source.Name;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

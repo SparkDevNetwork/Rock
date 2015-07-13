@@ -53,7 +53,7 @@ namespace Rock.Client
         public string ResponseCode { get; set; }
 
         /// <summary />
-        public int /* CommunicationRecipientStatus*/ Status { get; set; }
+        public Rock.Client.Enums.CommunicationRecipientStatus Status { get; set; }
 
         /// <summary />
         public string StatusNote { get; set; }
@@ -70,6 +70,27 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source CommunicationRecipient object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( CommunicationRecipient source )
+        {
+            this.Id = source.Id;
+            this.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
+            this.CommunicationId = source.CommunicationId;
+            this.OpenedClient = source.OpenedClient;
+            this.OpenedDateTime = source.OpenedDateTime;
+            this.PersonAliasId = source.PersonAliasId;
+            this.ResponseCode = source.ResponseCode;
+            this.Status = source.Status;
+            this.StatusNote = source.StatusNote;
+            this.TransportEntityTypeName = source.TransportEntityTypeName;
+            this.UniqueMessageId = source.UniqueMessageId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

@@ -47,7 +47,7 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
-        public int /* DisplayInNavWhen*/ DisplayInNavWhen { get; set; }
+        public Rock.Client.Enums.DisplayInNavWhen DisplayInNavWhen { get; set; }
 
         /// <summary />
         public bool EnableViewState { get; set; }
@@ -115,6 +115,42 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source Page object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Page source )
+        {
+            this.Id = source.Id;
+            this.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
+            this.BreadCrumbDisplayName = source.BreadCrumbDisplayName;
+            this.BrowserTitle = source.BrowserTitle;
+            this.Description = source.Description;
+            this.DisplayInNavWhen = source.DisplayInNavWhen;
+            this.EnableViewState = source.EnableViewState;
+            this.HeaderContent = source.HeaderContent;
+            this.IconCssClass = source.IconCssClass;
+            this.IncludeAdminFooter = source.IncludeAdminFooter;
+            this.InternalName = source.InternalName;
+            this.IsSystem = source.IsSystem;
+            this.KeyWords = source.KeyWords;
+            this.LayoutId = source.LayoutId;
+            this.MenuDisplayChildPages = source.MenuDisplayChildPages;
+            this.MenuDisplayDescription = source.MenuDisplayDescription;
+            this.MenuDisplayIcon = source.MenuDisplayIcon;
+            this.Order = source.Order;
+            this.OutputCacheDuration = source.OutputCacheDuration;
+            this.PageDisplayBreadCrumb = source.PageDisplayBreadCrumb;
+            this.PageDisplayDescription = source.PageDisplayDescription;
+            this.PageDisplayIcon = source.PageDisplayIcon;
+            this.PageDisplayTitle = source.PageDisplayTitle;
+            this.PageTitle = source.PageTitle;
+            this.ParentPageId = source.ParentPageId;
+            this.RequiresEncryption = source.RequiresEncryption;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

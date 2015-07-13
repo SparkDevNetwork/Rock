@@ -28,7 +28,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// abstract field that lets you pick multiple items from a CheckListBox
     /// </summary>
     public abstract class SelectFromListFieldType : FieldType
     {

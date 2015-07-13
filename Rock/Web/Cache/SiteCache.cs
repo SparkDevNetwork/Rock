@@ -334,6 +334,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The facebook app id.
         /// </value>
+        [Obsolete( "Attribute value of Facebook Authentication provider are used instead." )]
         public string FacebookAppId { get; set; }
 
         /// <summary>
@@ -342,6 +343,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The facebook app secret.
         /// </value>
+        [Obsolete( "Attribute value of Facebook Authentication provider are used instead." )]
         public string FacebookAppSecret { get; set; }
 
         /// <summary>
@@ -389,8 +391,6 @@ namespace Rock.Web.Cache
                 this.RegistrationPageRouteId = site.RegistrationPageRouteId;
                 this.ErrorPage = site.ErrorPage;
                 this.GoogleAnalyticsCode = site.GoogleAnalyticsCode;
-                this.FacebookAppId = site.FacebookAppId;
-                this.FacebookAppSecret = site.FacebookAppSecret;
                 this.PageNotFoundPageId = site.PageNotFoundPageId;
                 this.PageNotFoundPageRouteId = site.PageNotFoundPageRouteId;
 

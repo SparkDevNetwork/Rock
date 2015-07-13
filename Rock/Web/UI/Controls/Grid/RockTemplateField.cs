@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column to display a boolean value.
     /// </summary>
     [ToolboxData( "<{0}:RockTemplateField runat=server></{0}:RockTemplateField>" )]
-    public class RockTemplateField : TemplateField, IPriorityColumn
+    public class RockTemplateField : TemplateField, IPriorityColumn, IRockGridField
     {
 
         /// <summary>
@@ -41,5 +41,17 @@ namespace Rock.Web.UI.Controls
             }
             set { ViewState["ColumnPriority"] = value; }
         }
+
+        /// <summary>
+        /// When exporting a grid with an Export source of ColumnOutput, this property controls whether a column is included
+        /// in the export or not
+        /// </summary>
+        public virtual ExcelExportBehavior ExcelExportBehavior
+        {
+            get { return _excelExportBehavior; }
+            set { _excelExportBehavior = value; }
+        }
+        private ExcelExportBehavior _excelExportBehavior = ExcelExportBehavior.IncludeIfVisible;
+
     }
 }

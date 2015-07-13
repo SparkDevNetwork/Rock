@@ -42,15 +42,26 @@ namespace Rock.Rest.Filters
         {
             ModelStateDictionary modelState = actionContext.ModelState;
 
+            //// Remove any model errors that should be ignored based on IgnoreModelErrorsAttribute
+            // determine the entity parameter so we can clear the model errors on the ignored properties
             IEntity valueArg = null;
-            if ( actionContext.ActionArguments.ContainsKey( "value" ) )
+            if ( actionContext.ActionArguments.Count > 0 )
             {
-                valueArg = actionContext.ActionArguments["value"] as IEntity;
+                // look a parameter with the name 'value', if not found, get the first parameter that is an IEntity
+                if ( actionContext.ActionArguments.ContainsKey( "value" ) )
+                {
+                    valueArg = actionContext.ActionArguments["value"] as IEntity;
+                }
+                else
+                {
+                    valueArg = actionContext.ActionArguments.Select( a => a.Value ).Where( a => a is IEntity ).FirstOrDefault() as IEntity;
+                }
             }
 
+            // if we found the entityParam, clear the model errors on ignored properties
             if ( valueArg != null )
             {
-                Type entityType = actionContext.ActionArguments["value"].GetType();
+                Type entityType = valueArg.GetType();
                 IgnoreModelErrorsAttribute ignoreModelErrorsAttribute = entityType.GetCustomAttributes( typeof( IgnoreModelErrorsAttribute ), true ).FirstOrDefault() as IgnoreModelErrorsAttribute;
 
                 if ( ignoreModelErrorsAttribute != null )
@@ -66,6 +77,7 @@ namespace Rock.Rest.Filters
                 }
             }
 
+            // now that the IgnoreModelErrorsAttribute properties have been cleared, deal with the remaining model state validations
             if ( !actionContext.ModelState.IsValid )
             {
                 HttpError httpError = new HttpError();

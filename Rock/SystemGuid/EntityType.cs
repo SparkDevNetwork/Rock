@@ -72,6 +72,11 @@ namespace Rock.SystemGuid
         public const string MERGE_TEMPLATE = "CD1DB988-6891-4B0F-8D1B-B0A311A3BC3E";
 
         /// <summary>
+        /// The guid for the Rock.Model.Note entity
+        /// </summary>
+        public const string NOTE = "53DC1E78-14A5-44DE-903F-6A2CB02164E7";
+
+        /// <summary>
         /// The guid for the Rock.Model.Person entity
         /// </summary>
         public const string PERSON = "72657ED8-D16E-492E-AC12-144C5E7567E7";

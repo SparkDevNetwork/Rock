@@ -14,15 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -31,7 +29,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "EventCalendarItem" )]
     [DataContract]
-    public partial class EventCalendarItem : Model<EventCalendarItem>
+    public partial class EventCalendarItem : Model<EventCalendarItem>, ISecured
     {
 
         /// <summary>
@@ -78,6 +76,23 @@ namespace Rock.Model
 
         #endregion
 
+        #region Methods
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                return this.EventCalendar != null ? this.EventCalendar : base.ParentAuthority;
+            }
+        }
+        #endregion
+
     }
 
     #region Entity Configuration
@@ -92,8 +107,8 @@ namespace Rock.Model
         /// </summary>
         public EventCalendarItemConfiguration()
         {
-            this.HasRequired( p => p.EventCalendar ).WithMany( p => p.EventCalendarItems ).HasForeignKey( p => p.EventCalendarId ).WillCascadeOnDelete( false );
-            this.HasRequired( p => p.EventItem ).WithMany( p => p.EventCalendarItems ).HasForeignKey( p => p.EventItemId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.EventCalendar ).WithMany( p => p.EventCalendarItems ).HasForeignKey( p => p.EventCalendarId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.EventItem ).WithMany( p => p.EventCalendarItems ).HasForeignKey( p => p.EventItemId ).WillCascadeOnDelete( true );
         }
     }
 

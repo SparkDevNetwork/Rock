@@ -41,10 +41,13 @@ namespace RockWeb.Blocks.WorkFlow
 
     [LinkedPage( "Entry Page", "Page used to launch a new workflow of the selected type." )]
     [LinkedPage( "Detail Page", "Page used to display details about a workflow." )]
+    [WorkflowTypeField("Default WorkflowType", "The default workflow type to use. If provided the query string will be ignored.")]
     public partial class WorkflowList : RockBlock
     {
         #region Fields
 
+        private bool _canView = false;
+        private bool _canEdit = false;
         private WorkflowType _workflowType = null;
 
         #endregion
@@ -84,8 +87,11 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnInit( e );
 
-            if ( _workflowType != null && _workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            if ( _workflowType != null )
             {
+                _canEdit = UserCanEdit || _workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                _canView = _canEdit || _workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson );
+
                 gfWorkflows.ApplyFilterClick += gfWorkflows_ApplyFilterClick;
                 gfWorkflows.DisplayFilterValue += gfWorkflows_DisplayFilterValue;
 
@@ -94,11 +100,11 @@ namespace RockWeb.Blocks.WorkFlow
                 this.AddConfigurationUpdateTrigger( upnlSettings );
 
                 gWorkflows.DataKeyNames = new string[] { "Id" };
-                gWorkflows.Actions.ShowAdd = true;
+                gWorkflows.Actions.ShowAdd = _canEdit;
                 gWorkflows.Actions.AddClick += gWorkflows_Add;
                 gWorkflows.GridRebind += gWorkflows_GridRebind;
                 gWorkflows.Actions.ShowAdd = true;
-                gWorkflows.IsDeleteEnabled = true;
+                gWorkflows.IsDeleteEnabled = _canEdit;
 
                 if ( !string.IsNullOrWhiteSpace( _workflowType.WorkTerm ) )
                 {
@@ -128,7 +134,7 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack )
+            if ( !Page.IsPostBack && _canView )
             {
                 SetFilter();
                 BindGrid();
@@ -148,8 +154,16 @@ namespace RockWeb.Blocks.WorkFlow
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            var workflowTypeId = PageParameter( "WorkflowTypeId" ).AsInteger();
-            _workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeId );
+            if (!string.IsNullOrWhiteSpace(GetAttributeValue("DefaultWorkflowType"))) {
+                Guid workflowTypeGuid = Guid.Empty;
+                Guid.TryParse( GetAttributeValue( "DefaultWorkflowType" ), out workflowTypeGuid );
+                _workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeGuid );
+            } else {
+                int workflowTypeId = 0;
+                workflowTypeId = PageParameter( "WorkflowTypeId" ).AsInteger();
+                _workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeId );
+            }
+            
             if ( _workflowType != null )
             {
                 breadCrumbs.Add( new BreadCrumb( _workflowType.Name, pageReference ) );
@@ -242,14 +256,14 @@ namespace RockWeb.Blocks.WorkFlow
 
         protected void gfWorkflows_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Activated" ), drpActivated.DelimitedValues );
-            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Completed" ), drpCompleted.DelimitedValues );
-            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Name" ), tbName.Text );
-            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Status" ), tbStatus.Text );
-            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "State" ), GetState() );
+            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Activated" ), "Activated", drpActivated.DelimitedValues );
+            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Completed" ), "Completed", drpCompleted.DelimitedValues );
+            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Name" ), "Name",  tbName.Text );
+            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Status" ), "Status", tbStatus.Text );
+            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "State" ), "State", GetState() );
 
             int? personId = ppInitiator.SelectedValue;
-            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Initiator" ), personId.HasValue ? personId.Value.ToString() : "" );
+            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Initiator" ), "Initiator",  personId.HasValue ? personId.Value.ToString() : "" );
 
             if ( AvailableAttributes != null )
             {
@@ -541,14 +555,17 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             };
 
-            var manageField = new EditField();
-            gWorkflows.Columns.Add( manageField );
-            manageField.IconCssClass = "fa fa-edit";
-            manageField.Click += gWorkflows_Manage;
+            if ( _canEdit )
+            {
+                var manageField = new EditField();
+                gWorkflows.Columns.Add( manageField );
+                manageField.IconCssClass = "fa fa-edit";
+                manageField.Click += gWorkflows_Manage;
 
-            var deleteField = new DeleteField();
-            gWorkflows.Columns.Add( deleteField );
-            deleteField.Click += gWorkflows_Delete;
+                var deleteField = new DeleteField();
+                gWorkflows.Columns.Add( deleteField );
+                deleteField.Click += gWorkflows_Delete;
+            }
         }
 
         /// <summary>
@@ -560,152 +577,155 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 pnlWorkflowList.Visible = true;
 
-                var rockContext = new RockContext();
-                var workflowService = new WorkflowService( rockContext );
-
-                var qry = workflowService
-                    .Queryable( "Activities.ActivityType,InitiatorPersonAlias.Person" ).AsNoTracking()
-                    .Where( w => w.WorkflowTypeId.Equals( _workflowType.Id ) );
-
-                // Activated Date Range Filter
-                if ( drpActivated.LowerValue.HasValue )
+                if ( _workflowType != null )
                 {
-                    qry = qry.Where( w => w.ActivatedDateTime >= drpActivated.LowerValue.Value );
-                }
-                if ( drpActivated.UpperValue.HasValue )
-                {
-                    DateTime upperDate = drpActivated.UpperValue.Value.Date.AddDays( 1 );
-                    qry = qry.Where( w => w.ActivatedDateTime.Value < upperDate );
-                }
+                    var rockContext = new RockContext();
+                    var workflowService = new WorkflowService( rockContext );
 
-                // State Filter
-                List<string> states = cblState.SelectedValues;
-                if ( states.Count == 1 )    // Don't filter if none or both options are selected
-                {
-                    if ( states[0] == "Active" )
+                    var qry = workflowService
+                        .Queryable( "Activities.ActivityType,InitiatorPersonAlias.Person" ).AsNoTracking()
+                        .Where( w => w.WorkflowTypeId.Equals( _workflowType.Id ) );
+
+                    // Activated Date Range Filter
+                    if ( drpActivated.LowerValue.HasValue )
                     {
-                        qry = qry.Where( w => !w.CompletedDateTime.HasValue );
+                        qry = qry.Where( w => w.ActivatedDateTime >= drpActivated.LowerValue.Value );
                     }
-                    else
+                    if ( drpActivated.UpperValue.HasValue )
                     {
-                        qry = qry.Where( w => w.CompletedDateTime.HasValue );
+                        DateTime upperDate = drpActivated.UpperValue.Value.Date.AddDays( 1 );
+                        qry = qry.Where( w => w.ActivatedDateTime.Value < upperDate );
                     }
-                }
 
-                // Completed Date Range Filter
-                if ( drpCompleted.LowerValue.HasValue )
-                {
-                    qry = qry.Where( w => w.CompletedDateTime.HasValue && w.CompletedDateTime.Value >= drpCompleted.LowerValue.Value );
-                }
-                if ( drpCompleted.UpperValue.HasValue )
-                {
-                    DateTime upperDate = drpCompleted.UpperValue.Value.Date.AddDays( 1 );
-                    qry = qry.Where( w => w.CompletedDateTime.HasValue && w.CompletedDateTime.Value < upperDate );
-                }
-
-                string name = tbName.Text;
-                if ( !string.IsNullOrWhiteSpace( name ) )
-                {
-                    qry = qry.Where( w => w.Name.StartsWith( name ) );
-                }
-
-                int? personId = ppInitiator.SelectedValue;
-                if ( personId.HasValue )
-                {
-                    qry = qry.Where( w => w.InitiatorPersonAlias.PersonId == personId.Value );
-                }
-
-                string status = tbStatus.Text;
-                if ( !string.IsNullOrWhiteSpace( status ) )
-                {
-                    qry = qry.Where( w => w.Status.StartsWith( status ) );
-                }
-
-                // Filter query by any configured attribute filters
-                if ( AvailableAttributes != null && AvailableAttributes.Any() )
-                {
-                    var attributeValueService = new AttributeValueService( rockContext );
-                    var parameterExpression = attributeValueService.ParameterExpression;
-
-                    foreach ( var attribute in AvailableAttributes )
+                    // State Filter
+                    List<string> states = cblState.SelectedValues;
+                    if ( states.Count == 1 )    // Don't filter if none or both options are selected
                     {
-                        var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                        if ( filterControl != null )
+                        if ( states[0] == "Active" )
                         {
-                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
-                            var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                            if ( expression != null )
-                            {
-                                var attributeValues = attributeValueService
-                                    .Queryable()
-                                    .Where( v => v.Attribute.Id == attribute.Id );
-
-                                attributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                                qry = qry.Where( w => attributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                            }
-                        }
-                    }
-                }
-
-                IQueryable<Workflow> workflows = null;
-
-                var sortProperty = gWorkflows.SortProperty;
-                if ( sortProperty != null )
-                {
-                    if ( sortProperty.Property == "Initiator" )
-                    {
-                        if ( sortProperty.Direction == SortDirection.Ascending )
-                        {
-                            workflows = qry
-                                .OrderBy( w => w.InitiatorPersonAlias.Person.LastName )
-                                .ThenBy( w => w.InitiatorPersonAlias.Person.NickName );
+                            qry = qry.Where( w => !w.CompletedDateTime.HasValue );
                         }
                         else
                         {
-                            workflows = qry
-                                .OrderByDescending( w => w.InitiatorPersonAlias.Person.LastName )
-                                .ThenByDescending( w => w.InitiatorPersonAlias.Person.NickName );
+                            qry = qry.Where( w => w.CompletedDateTime.HasValue );
+                        }
+                    }
+
+                    // Completed Date Range Filter
+                    if ( drpCompleted.LowerValue.HasValue )
+                    {
+                        qry = qry.Where( w => w.CompletedDateTime.HasValue && w.CompletedDateTime.Value >= drpCompleted.LowerValue.Value );
+                    }
+                    if ( drpCompleted.UpperValue.HasValue )
+                    {
+                        DateTime upperDate = drpCompleted.UpperValue.Value.Date.AddDays( 1 );
+                        qry = qry.Where( w => w.CompletedDateTime.HasValue && w.CompletedDateTime.Value < upperDate );
+                    }
+
+                    string name = tbName.Text;
+                    if ( !string.IsNullOrWhiteSpace( name ) )
+                    {
+                        qry = qry.Where( w => w.Name.StartsWith( name ) );
+                    }
+
+                    int? personId = ppInitiator.SelectedValue;
+                    if ( personId.HasValue )
+                    {
+                        qry = qry.Where( w => w.InitiatorPersonAlias.PersonId == personId.Value );
+                    }
+
+                    string status = tbStatus.Text;
+                    if ( !string.IsNullOrWhiteSpace( status ) )
+                    {
+                        qry = qry.Where( w => w.Status.StartsWith( status ) );
+                    }
+
+                    // Filter query by any configured attribute filters
+                    if ( AvailableAttributes != null && AvailableAttributes.Any() )
+                    {
+                        var attributeValueService = new AttributeValueService( rockContext );
+                        var parameterExpression = attributeValueService.ParameterExpression;
+
+                        foreach ( var attribute in AvailableAttributes )
+                        {
+                            var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                            if ( filterControl != null )
+                            {
+                                var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
+                                var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
+                                if ( expression != null )
+                                {
+                                    var attributeValues = attributeValueService
+                                        .Queryable()
+                                        .Where( v => v.Attribute.Id == attribute.Id );
+
+                                    attributeValues = attributeValues.Where( parameterExpression, expression, null );
+
+                                    qry = qry.Where( w => attributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
+                                }
+                            }
+                        }
+                    }
+
+                    IQueryable<Workflow> workflows = null;
+
+                    var sortProperty = gWorkflows.SortProperty;
+                    if ( sortProperty != null )
+                    {
+                        if ( sortProperty.Property == "Initiator" )
+                        {
+                            if ( sortProperty.Direction == SortDirection.Ascending )
+                            {
+                                workflows = qry
+                                    .OrderBy( w => w.InitiatorPersonAlias.Person.LastName )
+                                    .ThenBy( w => w.InitiatorPersonAlias.Person.NickName );
+                            }
+                            else
+                            {
+                                workflows = qry
+                                    .OrderByDescending( w => w.InitiatorPersonAlias.Person.LastName )
+                                    .ThenByDescending( w => w.InitiatorPersonAlias.Person.NickName );
+                            }
+                        }
+                        else
+                        {
+                            workflows = qry.Sort( sortProperty );
                         }
                     }
                     else
                     {
-                        workflows = qry.Sort( sortProperty );
+                        workflows = qry.OrderByDescending( s => s.CreatedDateTime );
                     }
+
+                    // Since we're not binding to actual workflow list, but are using AttributeField columns,
+                    // we need to save the workflows into the grid's object list
+                    var workflowObjectQry = workflows;
+                    if ( gWorkflows.AllowPaging )
+                    {
+                        workflowObjectQry = workflowObjectQry.Skip( gWorkflows.PageIndex * gWorkflows.PageSize ).Take( gWorkflows.PageSize );
+                    }
+
+                    gWorkflows.ObjectList = workflowObjectQry.ToList().ToDictionary( k => k.Id.ToString(), v => v as object );
+
+                    gWorkflows.EntityTypeId = EntityTypeCache.Read<Workflow>().Id;
+                    var qryGrid = workflows.Select( w => new
+                    {
+                        w.Id,
+                        w.Name,
+                        Initiator = w.InitiatorPersonAlias.Person,
+                        Activities = w.Activities.Where( a => a.ActivatedDateTime.HasValue && !a.CompletedDateTime.HasValue ).OrderBy( a => a.ActivityType.Order ).Select( a => a.ActivityType.Name ),
+                        w.CreatedDateTime,
+                        Status = w.Status,
+                        IsCompleted = w.CompletedDateTime.HasValue
+                    } );
+
+                    gWorkflows.SetLinqDataSource( qryGrid );
+                    gWorkflows.DataBind();
                 }
                 else
                 {
-                    workflows = qry.OrderByDescending( s => s.CreatedDateTime );
+                    pnlWorkflowList.Visible = false;
                 }
-
-                // Since we're not binding to actual workflow list, but are using AttributeField columns,
-                // we need to save the workflows into the grid's object list
-                var workflowObjectQry = workflows;
-                if ( gWorkflows.AllowPaging )
-                {
-                    workflowObjectQry = workflowObjectQry.Skip( gWorkflows.PageIndex * gWorkflows.PageSize ).Take( gWorkflows.PageSize );
-                }
-
-                gWorkflows.ObjectList = workflowObjectQry.ToList().ToDictionary( k => k.Id.ToString(), v => v as object );
-
-                gWorkflows.EntityTypeId = EntityTypeCache.Read<Workflow>().Id;
-                var qryGrid = workflows.Select( w => new
-                {
-                    w.Id,
-                    w.Name,
-                    Initiator = w.InitiatorPersonAlias.Person,
-                    Activities = w.Activities.Where( a => a.ActivatedDateTime.HasValue && !a.CompletedDateTime.HasValue ).OrderBy( a => a.ActivityType.Order ).Select( a => a.ActivityType.Name ),
-                    w.CreatedDateTime,
-                    Status = w.Status,
-                    IsCompleted = w.CompletedDateTime.HasValue
-                } );
-
-                gWorkflows.SetLinqDataSource( qryGrid );
-                gWorkflows.DataBind();
-            }
-            else
-            {
-                pnlWorkflowList.Visible = false;
             }
         }
 

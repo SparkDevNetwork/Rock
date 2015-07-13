@@ -154,6 +154,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the CSS class name of a font based icon.
         /// </value>
         [DataMember]
+        [MaxLength( 100 )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -266,6 +267,15 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.GROUPTYPE_PURPOSE )]
         public int? GroupTypePurposeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable alternate placements].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [enable alternate placements]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableAlternatePlacements { get; set; }
 
         #endregion
 

@@ -240,18 +240,6 @@ namespace RockWeb.Blocks.Finance
 
                 rockContext.SaveChanges();
 
-                // Every business should have an alias record with same id.  If it's missing, create it
-                if ( !business.Aliases.Any( a => a.AliasPersonId == business.Id ) )
-                {
-                    // refetch the business to make sure we have an Id
-                    business = personService.Get( business.Id );
-                    if ( business != null )
-                    {
-                        business.Aliases.Add( new PersonAlias { AliasPersonId = business.Id, AliasPersonGuid = business.Guid } );
-                        rockContext.SaveChanges();
-                    }
-                }
-
                 // Location
                 int workLocationTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK ).Id;
 

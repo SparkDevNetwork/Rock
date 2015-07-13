@@ -62,7 +62,7 @@ namespace Rock.Client
         public int? SenderPersonAliasId { get; set; }
 
         /// <summary />
-        public int /* CommunicationStatus*/ Status { get; set; }
+        public Rock.Client.Enums.CommunicationStatus Status { get; set; }
 
         /// <summary />
         public string Subject { get; set; }
@@ -73,6 +73,28 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source Communication object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Communication source )
+        {
+            this.Id = source.Id;
+            this.AdditionalMergeFieldsJson = source.AdditionalMergeFieldsJson;
+            this.FutureSendDateTime = source.FutureSendDateTime;
+            this.IsBulkCommunication = source.IsBulkCommunication;
+            this.MediumDataJson = source.MediumDataJson;
+            this.MediumEntityTypeId = source.MediumEntityTypeId;
+            this.ReviewedDateTime = source.ReviewedDateTime;
+            this.ReviewerNote = source.ReviewerNote;
+            this.ReviewerPersonAliasId = source.ReviewerPersonAliasId;
+            this.SenderPersonAliasId = source.SenderPersonAliasId;
+            this.Status = source.Status;
+            this.Subject = source.Subject;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

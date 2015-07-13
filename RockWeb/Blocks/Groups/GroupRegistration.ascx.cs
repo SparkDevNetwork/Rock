@@ -51,6 +51,8 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage("Result Page", "An optional page to redirect user to after they have been registered for the group.", false, "", "", 7)]
     [CodeEditorField( "Result Lava Template", "The lava template to use to format result message after user has been registered. Will only display if user is not redirected to a Result Page ( previous setting ).", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"
 ", "", 8 )]
+    [CustomRadioListField( "Auto Fill Form", "If set to FALSE then the form will not load the context of the logged in user (default: 'True'.)", "true^True,false^False", true, "true", "", 9 )]
+    [TextField( "Register Button Alt Text", "Alternate text to use for the Register button (default is 'Register').", false, "", "", 10 )]
     public partial class GroupRegistration : RockBlock
     {
         #region Fields
@@ -65,6 +67,7 @@ namespace RockWeb.Blocks.Groups
         DefinedValueCache _homeAddressType = null;
         GroupTypeCache _familyType = null;
         GroupTypeRoleCache _adultRole = null;
+        bool _autoFill = true;
 
         #endregion
 
@@ -189,12 +192,15 @@ namespace RockWeb.Blocks.Groups
                 var spouseChanges = new List<string>();
                 var familyChanges = new List<string>();
 
-                // Only use current person if the name entered matches the current person's name
-                if ( CurrentPerson != null &&
-                    tbFirstName.Text.Trim().Equals( CurrentPerson.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) &&
-                    tbLastName.Text.Trim().Equals( CurrentPerson.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
+                // Only use current person if the name entered matches the current person's name and autofill mode is true
+                if ( _autoFill )
                 {
-                    person = personService.Get( CurrentPerson.Id );
+                    if ( CurrentPerson != null &&
+                        tbFirstName.Text.Trim().Equals( CurrentPerson.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) &&
+                        tbLastName.Text.Trim().Equals( CurrentPerson.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        person = personService.Get( CurrentPerson.Id );
+                    }
                 }
 
                 // Try to find person by name/email 
@@ -330,7 +336,7 @@ namespace RockWeb.Blocks.Groups
                         }
 
                         History.EvaluateChange( changes, "Email", person.Email, tbEmail.Text );
-                        spouse.Email = tbEmail.Text;
+                        spouse.Email = tbSpouseEmail.Text;
 
                         SetPhoneNumber( rockContext, spouse, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), spouseChanges );
                         SetPhoneNumber( rockContext, spouse, pnSpouseCell, cbSpouseSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), spouseChanges );
@@ -432,7 +438,7 @@ namespace RockWeb.Blocks.Groups
                 pnlCellPhone.Visible = !IsSimple;
                 acAddress.Visible = !IsSimple;
 
-                if ( CurrentPersonId.HasValue )
+                if ( CurrentPersonId.HasValue && _autoFill )
                 {
                     var personService = new PersonService( _rockContext );
                     Person person = personService
@@ -564,6 +570,17 @@ namespace RockWeb.Blocks.Groups
             _rockContext = _rockContext ?? new RockContext();
 
             _mode = GetAttributeValue( "Mode" );
+
+            _autoFill = GetAttributeValue( "AutoFillForm" ).AsBoolean();
+
+            tbEmail.Required = _autoFill;
+
+            string registerButtonText = GetAttributeValue( "RegisterButtonAltText" );
+            if ( string.IsNullOrWhiteSpace( registerButtonText ) )
+            {
+                registerButtonText = "Register";
+            }
+            btnRegister.Text = registerButtonText;
 
             int groupId = PageParameter( "GroupId" ).AsInteger();
             _group = new GroupService( _rockContext )

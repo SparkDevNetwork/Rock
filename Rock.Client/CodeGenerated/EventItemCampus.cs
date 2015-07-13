@@ -44,7 +44,7 @@ namespace Rock.Client
         public string ContactEmail { get; set; }
 
         /// <summary />
-        public int ContactPersonAliasId { get; set; }
+        public int? ContactPersonAliasId { get; set; }
 
         /// <summary />
         public string ContactPhone { get; set; }
@@ -56,14 +56,29 @@ namespace Rock.Client
         public string Location { get; set; }
 
         /// <summary />
-        public string RegistrationUrl { get; set; }
-
-        /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source EventItemCampus object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( EventItemCampus source )
+        {
+            this.Id = source.Id;
+            this.CampusId = source.CampusId;
+            this.CampusNote = source.CampusNote;
+            this.ContactEmail = source.ContactEmail;
+            this.ContactPersonAliasId = source.ContactPersonAliasId;
+            this.ContactPhone = source.ContactPhone;
+            this.EventItemId = source.EventItemId;
+            this.Location = source.Location;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>
@@ -82,6 +97,9 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<EventItemSchedule> EventItemSchedules { get; set; }
+
+        /// <summary />
+        public ICollection<EventItemCampusGroupMap> Linkages { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

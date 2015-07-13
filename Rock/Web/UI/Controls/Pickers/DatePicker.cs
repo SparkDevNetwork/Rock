@@ -106,7 +106,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            this.AddCssClass( "input-width-md" );
+            this.AddCssClass( "input-width-md js-date-picker" );
             this.AppendText = "<i class='fa fa-calendar'></i>";
 
             if ( string.IsNullOrWhiteSpace( this.SourceTypeName ) )

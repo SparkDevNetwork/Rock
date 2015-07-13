@@ -109,7 +109,6 @@ namespace Rock.Model
         [DataMember]
         public DateTime? ApprovedDateTime { get; set; }
 
-
         /// <summary>
         /// Gets or sets the start date time.
         /// </summary>
@@ -179,7 +178,7 @@ namespace Rock.Model
         {
             get
             {
-                return ContentChannel;
+                return ContentChannel != null ? ContentChannel : base.ParentAuthority;
             }
         }
 

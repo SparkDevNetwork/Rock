@@ -127,10 +127,40 @@
   <data name="_201506112030400_PersonDaysUntilBirthday" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201506112030400_PersonDaysUntilBirthday.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
-  <data name="_201506121300596_FinacialAnalyticsProcs_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201506121300596_finacialanalyticsprocs_1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  <data name="_201506121300596_FinancialAnalyticsProcs_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506121300596_financialanalyticsprocs_1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
-  <data name="_201506121300596_FinacialAnalyticsProcs_2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201506121300596_finacialanalyticsprocs_2.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  <data name="_201506121300596_FinancialAnalyticsProcs_2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506121300596_financialanalyticsprocs_2.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201506130028565_AttributeValueAsDateTimeIndex_CreateColumns" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506130028565_attributevalueasdatetimeindex_createcolumns.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201506130028565_AttributeValueAsDateTimeIndex_CreateTrigger" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506130028565_attributevalueasdatetimeindex_createtrigger.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201506130028565_AttributeValueAsDateTimeIndex_UpdateValues" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506130028565_attributevalueasdatetimeindex_updatevalues.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201506162223455_EnsurePersonAlias_UpdateCheckinLabels" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506162223455_ensurepersonalias_updatecheckinlabels.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201506170003272_UpdateCalendarBlocks" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506170003272_updatecalendarblocks.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201506242325188_GeoSpatialIndexes_AddSystemEmail" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506242325188_geospatialindexes_addsystememail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201506281615197_GivingAnalyticsEmail_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506281615197_givinganalyticsemail_1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201506281615197_GivingAnalyticsEmail_2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506281615197_givinganalyticsemail_2.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201507062330051_GroupRequirementsNotificationEmail" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201507062330051_GroupRequirementsNotificationEmail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201507121943445_RegistrationEmails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201507121943445_registrationemails.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
 </root>

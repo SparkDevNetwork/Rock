@@ -497,9 +497,12 @@ a.link-block,
 
 #content-wrapper {
   background-color: @body-bg;
-  min-height: 1000px;
   z-index: 30;
   min-width: 320px;
+
+  @media screen {
+      min-height: 1100px;
+  }
 
   header {
     .navbar-default {

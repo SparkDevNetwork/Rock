@@ -92,9 +92,9 @@ function() {
     var endDate = $('.date-range-picker', $content).find('input:last').val();
     
     var accountPicker = $('.js-account-picker', $content);
-    var accountNames = accountPicker.find('.selected-names').text()
+    var accountNames = accountPicker.find('.selected-names').text() 
 
-    return 'Giving amount total ' + comparisonText.toLowerCase() + ' $' + totalAmount + ' to accounts:' + accountNames  + ' between ' + startDate + ' and ' + endDate;
+   return 'First contribution date to accounts ' + accountNames  + ' between ' + startDate + ' and ' + endDate;
 }
 ";
         }
@@ -115,7 +115,7 @@ function() {
                 DateTime startDate = selectionValues[0].AsDateTime() ?? DateTime.MinValue;
                 DateTime endDate = selectionValues[1].AsDateTime() ?? DateTime.MaxValue;
                 string accountNames = string.Empty;
-                var accountGuids = selectionValues[1].Split( ',' ).Select( a => a.AsGuid() ).ToList();
+                var accountGuids = selectionValues[2].Split( ',' ).Select( a => a.AsGuid() ).ToList();
                 accountNames = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids ).Select( a => a.Name ).ToList().AsDelimited( "," );
 
                 result = string.Format(

@@ -65,7 +65,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the CSS class.
+        /// Gets or sets the CSS class of the button
         /// </summary>
         /// <value>
         /// The CSS class.
@@ -84,7 +84,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the text.
+        /// Gets or sets the tooltip of the button
+        /// </summary>
+        /// <value>
+        /// The tooltip.
+        /// </value>
+        public string ToolTip
+        {
+            get
+            {
+                return ( ViewState["ToolTip"] as string ) ?? string.Empty;
+
+            }
+            set
+            {
+                ViewState["ToolTip"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the text of the button
         /// </summary>
         /// <value>
         /// The text.
@@ -109,6 +128,22 @@ namespace Rock.Web.UI.Controls
         /// The parent grid.
         /// </value>
         public Grid ParentGrid { get; internal set; }
+
+        /// <summary>
+        /// When exporting a grid with an Export source of ColumnOutput, this property controls whether a column is included
+        /// in the export or not
+        /// </summary>
+        public override ExcelExportBehavior ExcelExportBehavior
+        {
+            get
+            {
+                return ExcelExportBehavior.NeverInclude;
+            }
+            set
+            {
+                base.ExcelExportBehavior = value;
+            }
+        }
 
         /// <summary>
         /// Occurs when [click].
@@ -148,6 +183,7 @@ namespace Rock.Web.UI.Controls
                 linkButton.CausesValidation = false;
                 linkButton.CssClass = linkButtonField.CssClass;
                 linkButton.Text = linkButtonField.Text;
+                linkButton.ToolTip = linkButtonField.ToolTip;
 
                 linkButton.Click += linkButton_Click;
 

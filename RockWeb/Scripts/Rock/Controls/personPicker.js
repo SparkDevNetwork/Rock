@@ -7,22 +7,22 @@
         var PersonPicker = function (options) {
             this.controlId = options.controlId;
             this.restUrl = options.restUrl;
+            this.restDetailUrl = options.restDetailUrl;
             this.defaultText = options.defaultText || '';
         };
 
         PersonPicker.prototype.initializeEventHandlers = function () {
             var controlId = this.controlId,
                 restUrl = this.restUrl,
+                restDetailUrl = this.restDetailUrl || (Rock.settings.get('baseUrl') + 'api/People/GetSearchDetails'),
                 defaultText = this.defaultText;
 
             var includeBusinesses = $('#' + controlId).find('.js-include-businesses').val() == '1' ? 'true' : 'false';
 
-            // TODO: Can we use TypeHead here (already integrated into BootStrap) instead of jQueryUI?
-            // Might be a good opportunity to break the dependency on jQueryUI.
             $('#' + controlId + '_personPicker').autocomplete({
                 source: function (request, response) {
                     var promise = $.ajax({
-                        url: restUrl + request.term + "/true/" + includeBusinesses,
+                        url: restUrl + "?name=" + encodeURIComponent(request.term) + "&includeHtml=false&includeDetails=false&includeBusinesses=" + includeBusinesses + "&includeDeceased=true",
                         dataType: 'json'
                     });
 
@@ -83,9 +83,30 @@
                     }
                 });
 
-                $selectedItem.find('.picker-select-item-details:hidden').slideDown(function () {
-                    exports.personPickers[controlId].updateScrollbar();
-                });
+                var $itemDetails = $selectedItem.find('.picker-select-item-details');
+
+                if ($itemDetails.attr('data-has-details') == 'false') {
+                    // add a spinner in case we have to wait on the server for a little bit
+                    var $spinner = $selectedItem.find('.loading-notification');
+                    $spinner.fadeIn(800);
+
+                    // fetch the search details from the server
+                    $.get(restDetailUrl + '?Id=' + selectedPersonId, function (responseText, textStatus, jqXHR) {
+                        $itemDetails.attr('data-has-details', true);
+
+                        // hide then set the html so that we can get the slideDown effect
+                        $itemDetails.stop().hide().html(responseText);
+                        $itemDetails.slideDown(function () {
+                            exports.personPickers[controlId].updateScrollbar();
+                        });
+
+                        $spinner.stop().fadeOut(200);
+                    });
+                } else {
+                    $selectedItem.find('.picker-select-item-details:hidden').slideDown(function () {
+                        exports.personPickers[controlId].updateScrollbar();
+                    });
+                }
             });
 
             $('#' + controlId).hover(
@@ -156,7 +177,7 @@
                         var $div = $('<div/>').attr('class', 'radio'),
 
                             $label = $('<label/>')
-                                .text(item.Name)
+                                .html(item.Name + ' <i class="fa fa-refresh fa-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
                                 .prependTo($div),
 
                             $radio = $('<input type="radio" name="person-id" />')
@@ -171,7 +192,17 @@
 
                             $resultSection = $(this.options.appendTo);
 
-                        $(item.PickerItemDetailsHtml).appendTo($li);
+                        if (item.PickerItemDetailsHtml) {
+                            $(item.PickerItemDetailsHtml).appendTo($li);
+                        }
+                        else {
+                            var $itemDetailsDiv = $('<div/>')
+                                .addClass('picker-select-item-details clearfix')
+                                .attr('data-has-details', false)
+                                .hide();
+
+                            $itemDetailsDiv.appendTo($li);
+                        }
 
                         if (!item.IsActive) {
                             $li.addClass('inactive');

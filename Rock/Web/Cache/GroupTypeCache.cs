@@ -238,6 +238,15 @@ namespace Rock.Web.Cache
         public bool? EnableLocationSchedules { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable alternate placements].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [enable alternate placements]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableAlternatePlacements { get; set; }
+
+        /// <summary>
         /// Gets or sets the group type purpose value identifier.
         /// </summary>
         /// <value>
@@ -424,6 +433,7 @@ namespace Rock.Web.Cache
                 this.InheritedGroupTypeId = groupType.InheritedGroupTypeId;
                 this.LocationSelectionMode = groupType.LocationSelectionMode;
                 this.EnableLocationSchedules = groupType.EnableLocationSchedules;
+                this.EnableAlternatePlacements = groupType.EnableAlternatePlacements;
                 this.GroupTypePurposeValueId = groupType.GroupTypePurposeValueId;
                 this.locationTypeValueIDs = groupType.LocationTypes.Select( l => l.LocationTypeValueId ).ToList();
 
@@ -490,7 +500,7 @@ namespace Rock.Web.Cache
         private static GroupTypeCache LoadById2( int id, RockContext rockContext )
         {
             var groupTypeService = new GroupTypeService( rockContext );
-            var groupTypeModel = groupTypeService.Get( id );
+            var groupTypeModel = groupTypeService.Queryable().Include(a => a.Roles).FirstOrDefault(a => a.Id == id );
             if ( groupTypeModel != null )
             {
                 groupTypeModel.LoadAttributes( rockContext );
@@ -689,6 +699,17 @@ namespace Rock.Web.Cache
             IsLeader = role.IsLeader;
             CanView = role.CanView;
             CanEdit = role.CanEdit;
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
         }
     }
 }

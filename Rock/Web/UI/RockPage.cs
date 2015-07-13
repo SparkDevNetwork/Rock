@@ -600,7 +600,7 @@ namespace Rock.Web.UI
                 PageTitle = _pageCache.PageTitle;
                 PageIcon = _pageCache.IconCssClass;
 
-                // If there's a master page, update it's reference to Current Page
+                // If there's a master page, update its reference to Current Page
                 if ( this.Master is RockMasterPage )
                 {
                     ( (RockMasterPage)this.Master ).SetPage( _pageCache );
@@ -836,7 +836,7 @@ namespace Rock.Web.UI
 
                             if ( control != null )
                             {
-                                // If the current control is a block, set it's properties
+                                // If the current control is a block, set its properties
                                 var blockControl = control as RockBlock;
                                 if ( blockControl != null )
                                 {
@@ -2159,11 +2159,18 @@ namespace Rock.Web.UI
         /// <summary>
         /// Saves the user preferences.
         /// </summary>
-        public void SaveUserPreferences()
+        /// <param name="keyPrefix">The key prefix.</param>
+        public void SaveUserPreferences( string keyPrefix )
         {
             if ( CurrentPerson != null )
             {
-                PersonService.SaveUserPreferences( CurrentPerson, SessionUserPreferences() );
+                var values = new Dictionary<string, string>();
+                SessionUserPreferences()
+                    .Where( p => p.Key.StartsWith( keyPrefix ) )
+                    .ToList()
+                    .ForEach( kv => values.Add( kv.Key, kv.Value ) );
+
+                PersonService.SaveUserPreferences( CurrentPerson, values );
             }
         }
 
@@ -2192,7 +2199,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <returns>A <see cref="System.Collections.Generic.Dictionary{String, List}"/> containing the user preferences 
         /// for the current user. If the current user is anonymous or unknown an empty dictionary will be returned.</returns>
-        private Dictionary<string, string> SessionUserPreferences()
+        public Dictionary<string, string> SessionUserPreferences()
         {
             string sessionKey = string.Format( "{0}_{1}",
                 Person.USER_VALUE_ENTITY, CurrentPerson != null ? CurrentPerson.Id : 0 );

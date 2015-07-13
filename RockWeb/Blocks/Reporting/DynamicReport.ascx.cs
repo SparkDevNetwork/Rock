@@ -35,7 +35,10 @@ namespace RockWeb.Blocks.Reporting
     [DisplayName( "Report Data" )]
     [Category( "Reporting" )]
     [Description( "Block to display a report with options to edit the filter" )]
+    [BooleanField( "Show 'Merge Template' action on grid", "", defaultValue: true, key: "ShowGridMergeTemplateAction" )]
+    [BooleanField( "Show 'Communications' action on grid", "", defaultValue: true, key: "ShowGridCommunicationsAction" )]
 
+    // CustomSetting Dialog
     [TextField( "ResultsIconCssClass", "Title for the results list.", false, "fa fa-list", "CustomSetting" )]
     [TextField( "ResultsTitle", "Title for the results list.", false, "Results", "CustomSetting" )]
     [TextField( "FilterTitle", "Title for the results list.", false, "Filters", "CustomSetting" )]
@@ -69,6 +72,8 @@ namespace RockWeb.Blocks.Reporting
             base.OnInit( e );
 
             gReport.GridRebind += gReport_GridRebind;
+            gReport.Actions.ShowMergeTemplate = this.GetAttributeValue( "ShowGridMergeTemplateAction" ).AsBooleanOrNull() ?? true;
+            gReport.Actions.ShowCommunicate = this.GetAttributeValue( "ShowGridCommunicationsAction" ).AsBooleanOrNull() ?? true;
 
             var setFilterValues = !this.IsPostBack;
             ShowFilters( setFilterValues );
@@ -362,30 +367,34 @@ namespace RockWeb.Blocks.Reporting
                         propertyFilter.HideEntityFieldPicker();
                         if ( setSelection )
                         {
-                            filterControl.Selection = filter.Selection;
+                            var selection = filter.Selection;
 
                             if ( !string.IsNullOrWhiteSpace( selectionUserPreference ) )
                             {
-                                filterControl.Selection = propertyFilter.UpdateSelectionFromUserPreferenceSelection( filterControl.Selection, selectionUserPreference );
+                                selection = propertyFilter.UpdateSelectionFromUserPreferenceSelection( selection, selectionUserPreference );
                             }
 
-                            filterControl.Selection = propertyFilter.UpdateSelectionFromPageParameters( filterControl.Selection, this );
+                            selection = propertyFilter.UpdateSelectionFromPageParameters( selection, this );
+
+                            filterControl.SetSelection(selection);
                         }
                     }
                     else
                     {
                         if ( setSelection )
                         {
-                            filterControl.Selection = filter.Selection;
+                            var selection = filter.Selection;
                             if ( !string.IsNullOrWhiteSpace( selectionUserPreference ) )
                             {
-                                filterControl.Selection = selectionUserPreference;
+                                selection = selectionUserPreference;
                             }
 
                             if ( component is Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters )
                             {
-                                filterControl.Selection = ( component as Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters ).UpdateSelectionFromPageParameters( filterControl.Selection, this );
+                                selection = ( component as Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters ).UpdateSelectionFromPageParameters( selection, this );
                             }
+
+                            filterControl.SetSelection( selection );
                         }
 
                         // a configurable data filter
@@ -432,9 +441,10 @@ namespace RockWeb.Blocks.Reporting
                     {
                         // only save the preference if it is different from the original
                         var origFilter = dataViewFilterService.Get( filterControl.DataViewFilterGuid );
-                        if ( origFilter != null && origFilter.Selection != filterControl.Selection )
+                        var selection = filterControl.GetSelection();
+                        if ( origFilter != null && origFilter.Selection != selection )
                         {
-                            this.SetUserPreference( selectionKey, filterControl.Selection );
+                            this.SetUserPreference( selectionKey, selection );
                         }
                         else
                         {
@@ -556,29 +566,36 @@ namespace RockWeb.Blocks.Reporting
 
                 var filters = new List<FilterInfo>();
                 GetFilterListRecursive( filters, report.DataView.DataViewFilter, report.EntityType );
-                if ( filters.Count( a => a.IsGroupFilter ) > 1 )
-                {
-                    nbMultipleFilterGroupsWarning.Visible = true;
-                    grdDataFilters.Visible = false;
-                    mdConfigure.ServerSaveLink.Disabled = true;
-                }
-                else
-                {
-                    nbMultipleFilterGroupsWarning.Visible = false;
-                    grdDataFilters.Visible = true;
-                    mdConfigure.ServerSaveLink.Disabled = false;
-                    grdDataFilters.DataSource = filters.Where( a => a.IsGroupFilter == false ).Select( a => new
-                    {
-                        a.Guid,
-                        a.Title,
-                        a.Summary,
-                        ShowAsFilter = selectAll || selectedDataFieldGuids.Contains( a.Guid ),
-                        IsConfigurable = selectAll || configurableDataFieldGuids.Contains( a.Guid ),
-                        IsTogglable = selectAll || togglableDataFieldGuids.Contains( a.Guid )
-                    } );
 
-                    grdDataFilters.DataBind();
+                // remove the top level group filter
+                filters = filters.Where( a => a.ParentFilter != null ).ToList();
+
+                // set the Title and Summary of Grouped Filters based on the GroupFilter's child filter titles
+                foreach ( var groupedFilter in filters.Where( a => a.FilterExpressionType != FilterExpressionType.Filter ) )
+                {
+                    groupedFilter.Title = string.Format( "[{0}]", groupedFilter.FilterExpressionType.ConvertToString() );
+                    groupedFilter.Summary = filters.Where( a => a.ParentFilter == groupedFilter ).Select( a => a.Summary ?? string.Empty ).ToList().AsDelimited( ", ", groupedFilter.FilterExpressionType == FilterExpressionType.GroupAny ? " or " : " and " );
                 }
+
+                // remove any filter that are part of a child group filter
+                filters = filters.Where( a => a.ParentFilter != null && a.ParentFilter.ParentFilter == null ).ToList();
+
+                grdDataFilters.Visible = true;
+                mdConfigure.ServerSaveLink.Disabled = false;
+                grdDataFilters.DataSource = filters.Select( a => new
+                {
+                    a.Guid,
+                    a.Title,
+                    a.TitlePath,
+                    a.Summary,
+                    a.FilterExpressionType,
+                    a.ParentFilter,
+                    ShowAsFilter = selectAll || selectedDataFieldGuids.Contains( a.Guid ),
+                    IsConfigurable = selectAll || configurableDataFieldGuids.Contains( a.Guid ),
+                    IsTogglable = selectAll || togglableDataFieldGuids.Contains( a.Guid )
+                } );
+
+                grdDataFilters.DataBind();
             }
             else
             {
@@ -608,6 +625,34 @@ namespace RockWeb.Blocks.Reporting
             public string Title { get; set; }
 
             /// <summary>
+            /// Gets the title including the parent filter titles
+            /// </summary>
+            /// <value>
+            /// The title path.
+            /// </value>
+            public string TitlePath
+            {
+                get
+                {
+                    string parentPath = this.Title;
+                    var parentFilter = this.ParentFilter;
+                    while ( parentFilter != null )
+                    {
+                        if ( parentFilter.ParentFilter == null )
+                        {
+                            // don't include the root group filter
+                            break;
+                        }
+
+                        parentPath = parentFilter.Title + " > " + parentPath;
+                        parentFilter = parentFilter.ParentFilter;
+                    }
+
+                    return parentPath;
+                }
+            }
+
+            /// <summary>
             /// Gets or sets the summary.
             /// </summary>
             /// <value>
@@ -616,12 +661,31 @@ namespace RockWeb.Blocks.Reporting
             public string Summary { get; set; }
 
             /// <summary>
-            /// Gets or sets a value indicating whether this instance is group filter.
+            /// Gets or sets the type of the filter expression.
             /// </summary>
             /// <value>
-            /// <c>true</c> if this instance is group filter; otherwise, <c>false</c>.
+            /// The type of the filter expression.
             /// </value>
-            public bool IsGroupFilter { get; set; }
+            public FilterExpressionType FilterExpressionType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the parent filter.
+            /// </summary>
+            /// <value>
+            /// The parent filter.
+            /// </value>
+            public FilterInfo ParentFilter { get; set; }
+
+            /// <summary>
+            /// Returns a <see cref="System.String" /> that represents this instance.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="System.String" /> that represents this instance.
+            /// </returns>
+            public override string ToString()
+            {
+                return TitlePath;
+            }
         }
 
         /// <summary>
@@ -638,50 +702,73 @@ namespace RockWeb.Blocks.Reporting
             var reportEntityTypeCache = EntityTypeCache.Read( reportEntityType );
             var reportEntityTypeModel = reportEntityTypeCache.GetEntityType();
 
-            if ( filter.ExpressionType == FilterExpressionType.Filter )
+            var filterInfo = new FilterInfo();
+            filterInfo.Guid = filter.Guid;
+            filterInfo.FilterExpressionType = filter.ExpressionType;
+            filterInfo.ParentFilter = filter.ParentId.HasValue ? filterList.FirstOrDefault( a => a.Guid == filter.Parent.Guid ) : null;
+            if ( entityType != null )
             {
-                if ( entityType != null )
+                var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
+                if ( component != null )
                 {
-                    var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
-                    if ( component != null )
+                    if ( component is Rock.Reporting.DataFilter.EntityFieldFilter )
                     {
-                        var filterInfo = new FilterInfo { Guid = filter.Guid, IsGroupFilter = false };
-                        if ( component is Rock.Reporting.DataFilter.EntityFieldFilter )
+                        var entityFieldFilter = component as Rock.Reporting.DataFilter.EntityFieldFilter;
+                        var fieldName = entityFieldFilter.GetSelectedFieldName( filter.Selection );
+                        if ( !string.IsNullOrWhiteSpace( fieldName ) )
                         {
-                            var entityFieldFilter = component as Rock.Reporting.DataFilter.EntityFieldFilter;
-                            var fieldName = entityFieldFilter.GetSelectedFieldName( filter.Selection );
-                            if ( !string.IsNullOrWhiteSpace( fieldName ) )
+                            var entityFields = EntityHelper.GetEntityFields( reportEntityTypeModel );
+                            var entityField = entityFields.Where( a => a.Name == fieldName ).FirstOrDefault();
+                            if ( entityField != null )
                             {
-                                var entityFields = EntityHelper.GetEntityFields( reportEntityTypeModel );
-                                var entityField = entityFields.Where( a => a.Name == fieldName ).FirstOrDefault();
-                                if ( entityField != null )
-                                {
-                                    filterInfo.Title = entityField.Title;
-                                }
-                                else
-                                {
-                                    filterInfo.Title = fieldName;
-                                }
+                                filterInfo.Title = entityField.Title;
+                            }
+                            else
+                            {
+                                filterInfo.Title = fieldName;
                             }
                         }
-                        else
-                        {
-                            filterInfo.Title = component.GetTitle( reportEntityType.GetType() );
-                        }
-
-                        filterInfo.Summary = component.FormatSelection( reportEntityTypeModel, filter.Selection );
-                        filterList.Add( filterInfo );
                     }
+                    else
+                    {
+                        filterInfo.Title = component.GetTitle( reportEntityType.GetType() );
+                    }
+
+                    filterInfo.Summary = component.FormatSelection( reportEntityTypeModel, filter.Selection );
+
                 }
             }
-            else
-            {
-                filterList.Add( new FilterInfo { Guid = filter.Guid, IsGroupFilter = true } );
-            }
+
+            filterList.Add( filterInfo );
 
             foreach ( var childFilter in filter.ChildFilters )
             {
                 GetFilterListRecursive( filterList, childFilter, reportEntityType );
+            }
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the grdDataFilters control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void grdDataFilters_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            var dataItem = e.Row.DataItem;
+            if ( dataItem != null )
+            {
+                if ( (FilterExpressionType)dataItem.GetPropertyValue( "FilterExpressionType" ) != FilterExpressionType.Filter )
+                {
+                    foreach ( var selectField in grdDataFilters.Columns.OfType<SelectField>() )
+                    {
+                        var cb = e.Row.Cells[selectField.ColumnIndex].ControlsOfTypeRecursive<CheckBox>().FirstOrDefault();
+                        if ( cb != null )
+                        {
+                            // hide the checkbox/selectfields if this is a GroupAny/GroupAll filter
+                            cb.Visible = false;
+                        }
+                    }
+                }
             }
         }
     }

@@ -213,6 +213,35 @@ namespace Rock.Rest.Controllers
             return familyResults.DistinctBy(f => f.Id).AsQueryable(); 
         }
 
+
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/Groups/GetFamily/{familyId}" )]
+        public FamilySearchResult GetFamily( int familyId )
+        {
+            RockContext rockContext = new RockContext();
+            Guid homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
+
+            return new GroupService( rockContext ).Queryable().AsNoTracking()
+                                                    .Where( g=> g.Id == familyId)
+                                                    .Select( f => new FamilySearchResult
+                                                        {
+                                                            Id = f.Id,
+                                                            Name = f.Name,
+                                                            FamilyMembers = f.Members.ToList(),
+                                                            HomeLocation = f.GroupLocations
+                                                                            .Where( l => l.GroupLocationTypeValue.Guid == homeAddressGuid )
+                                                                            .OrderByDescending( l => l.IsMailingLocation )
+                                                                            .Select( l => l.Location )
+                                                                            .FirstOrDefault(),
+                                                            MainPhone = f.Members
+                                                                            .OrderBy( m => m.GroupRole.Order )
+                                                                            .ThenBy( m => m.Person.Gender )
+                                                                            .FirstOrDefault()
+                                                                            .Person.PhoneNumbers.OrderBy( p => p.NumberTypeValue.Order ).FirstOrDefault()
+                                                        } ).FirstOrDefault();
+        }
+
         /// <summary>
         /// Gets the guests (known relationship of can check-in) for given family.
         /// </summary>
@@ -240,17 +269,18 @@ namespace Rock.Rest.Controllers
                                                     && g.GroupRole.Guid == knownRelationshipOwner 
                                                     && familyMembers.Contains(g.PersonId))
                                     .Select(m => m.GroupId);
-
+            rockContext.Database.Log = s => System.Diagnostics.Debug.WriteLine( s );
             var guests = groupMemberService.Queryable()
                                     .Where(g => g.GroupRole.Guid == knownRelationshipCanCheckin 
                                                     && familyMembersKnownRelationshipGroups.Contains(g.GroupId))
                                     .Select(g => g.PersonId)
-                                    .Distinct();
-
+                                    .Distinct().ToList();
+            
             var guestFamilies = new List<GuestFamily>();
+            rockContext.Database.Log = null;
             foreach ( var guestPersonId in guests )
             {
-                var families = personService.GetFamilies(guestPersonId).Include("Members.Person");
+                var families = personService.GetFamilies(guestPersonId);
 
                 foreach ( var family in families )
                 {
@@ -267,7 +297,7 @@ namespace Rock.Rest.Controllers
                             GuestFamilyMember guestFamilyMember = new GuestFamilyMember();
                             guestFamilyMember.Id = familyMember.PersonId;
                             guestFamilyMember.Guid = familyMember.Person.Guid;
-                            guestFamilyMember.FirstName = familyMember.Person.FirstName;
+                            guestFamilyMember.FirstName = familyMember.Person.NickName;
                             guestFamilyMember.LastName = familyMember.Person.LastName;
                             guestFamilyMember.PhotoUrl = familyMember.Person.PhotoUrl;
                             guestFamilyMember.CanCheckin = guests.Contains(familyMember.PersonId);

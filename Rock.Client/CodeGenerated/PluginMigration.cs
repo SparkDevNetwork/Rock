@@ -49,6 +49,20 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source PluginMigration object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( PluginMigration source )
+        {
+            this.Id = source.Id;
+            this.MigrationName = source.MigrationName;
+            this.MigrationNumber = source.MigrationNumber;
+            this.PluginAssemblyName = source.PluginAssemblyName;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

@@ -30,7 +30,7 @@ namespace Rock.Model
     {
 
         /// <summary>
-        /// Gets a <see cref="Rock.Model.BlockType"/> by it's Guid.
+        /// Gets a <see cref="Rock.Model.BlockType"/> by its Guid.
         /// </summary>
         /// <param name="guid"><see cref="System.Guid"/> identifier  filter to search by.</param>
         /// <returns>The <see cref="Rock.Model.BlockType"/> that has a Guid that matches the provided value, if none are found returns null. </returns>

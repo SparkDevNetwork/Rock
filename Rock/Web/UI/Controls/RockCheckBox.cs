@@ -91,6 +91,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        Description( "The CSS class to add to the form-group div." )
+        ]
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
+        }
+
+
+        /// <summary>
         /// Gets or sets the required error message.  If blank, the LabelName name will be used
         /// </summary>
         /// <value>
@@ -184,6 +202,61 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the CSS class for the checkbox "div" (see Rock.Web.UI.Adapters.CheckboxAdaptor)
+        /// </summary>
+        /// <value>
+        /// The container CSS class.
+        /// </value>
+        public string ContainerCssClass
+        {
+            get
+            {
+                return this.ViewState["ContainerCssClass"] as string ?? string.Empty;
+            }
+
+            set
+            {
+                this.ViewState["ContainerCssClass"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the CSS class for the checkbox &lt;input&gt;
+        /// </summary>
+        /// <value>
+        /// The checkbox &lt;input&gt; CSS class.
+        /// </value>
+        public override string CssClass
+        {
+            get
+            {
+                return base.CssClass;
+            }
+            set
+            {
+                base.CssClass = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the selected icon CSS class. If specified along with UnSelectedIcon, the default checkbox is hidden, and an icon is displayed instead
+        /// </summary>
+        public string SelectedIconCssClass
+        {
+            get { return ViewState["SelectedIconCssClass"] as string ?? string.Empty; }
+            set { ViewState["SelectedIconCssClass"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the un-selected icon CSS class. If specified along with SelectedIcon, the default checkbox is hidden, and an icon is displayed instead
+        /// </summary>
+        public string UnSelectedIconCssClass
+        {
+            get { return ViewState["UnSelectedIconCssClass"] as string ?? string.Empty; }
+            set { ViewState["UnSelectedIconCssClass"] = value; }
+        }
+
         // Needed for rendering help block with no label value
         private string TemporaryHelpValue = string.Empty;
 
@@ -247,7 +320,24 @@ namespace Rock.Web.UI.Controls
             if (Enabled)
             {
                 Help = TemporaryHelpValue;
-                base.RenderControl(writer);
+
+                if ( !string.IsNullOrWhiteSpace( SelectedIconCssClass ) && !string.IsNullOrWhiteSpace( UnSelectedIconCssClass ) )
+                {
+                    base.Style.Add( HtmlTextWriterStyle.Display, "none" );
+                    writer.WriteLine( string.Format(
+                        "<div class='rock-checkbox-icon'><i onclick=\"$('#{0}').prop('checked', !$('#{0}').prop('checked')); $(this).toggleClass('{1}').toggleClass('{2}'); \" class=\"{3}\"></i> {4}</div>", 
+                            this.ClientID,
+                            SelectedIconCssClass,
+                            UnSelectedIconCssClass,
+                            this.Checked ? SelectedIconCssClass : UnSelectedIconCssClass,
+                            this.Text ) );
+                }
+                else
+                {
+                    base.Style.Remove( HtmlTextWriterStyle.Display );
+                }
+
+                base.RenderControl( writer );
             }
             else
             {

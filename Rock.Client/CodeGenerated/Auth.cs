@@ -56,7 +56,7 @@ namespace Rock.Client
         public int? PersonAliasId { get; set; }
 
         /// <summary />
-        public int /* SpecialRole*/ SpecialRole { get; set; }
+        public Rock.Client.Enums.SpecialRole SpecialRole { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -64,6 +64,25 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source Auth object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Auth source )
+        {
+            this.Id = source.Id;
+            this.Action = source.Action;
+            this.AllowOrDeny = source.AllowOrDeny;
+            this.EntityId = source.EntityId;
+            this.EntityTypeId = source.EntityTypeId;
+            this.GroupId = source.GroupId;
+            this.Order = source.Order;
+            this.PersonAliasId = source.PersonAliasId;
+            this.SpecialRole = source.SpecialRole;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

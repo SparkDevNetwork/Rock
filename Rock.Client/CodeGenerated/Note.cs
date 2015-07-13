@@ -58,6 +58,23 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source Note object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Note source )
+        {
+            this.Id = source.Id;
+            this.Caption = source.Caption;
+            this.EntityId = source.EntityId;
+            this.IsAlert = source.IsAlert;
+            this.IsSystem = source.IsSystem;
+            this.NoteTypeId = source.NoteTypeId;
+            this.Text = source.Text;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

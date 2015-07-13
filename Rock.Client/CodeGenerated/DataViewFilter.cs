@@ -38,7 +38,7 @@ namespace Rock.Client
         public int? EntityTypeId { get; set; }
 
         /// <summary />
-        public int /* FilterExpressionType*/ ExpressionType { get; set; }
+        public Rock.Client.Enums.FilterExpressionType ExpressionType { get; set; }
 
         /// <summary />
         public int? ParentId { get; set; }
@@ -52,6 +52,21 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source DataViewFilter object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( DataViewFilter source )
+        {
+            this.Id = source.Id;
+            this.EntityTypeId = source.EntityTypeId;
+            this.ExpressionType = source.ExpressionType;
+            this.ParentId = source.ParentId;
+            this.Selection = source.Selection;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.Finance
 
                 if ( gList.SortProperty != null )
                 {
-                    dv.Sort = gList.SortProperty.ToString();
+                    dv.Sort = string.Format( "[{0}] {1}", gList.SortProperty.Property, gList.SortProperty.DirectionString );
                 }
 
                 gList.DataSource = dv;
