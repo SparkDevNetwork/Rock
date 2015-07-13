@@ -31,7 +31,8 @@ namespace Rock.Model
         /// Gets the entity query
         /// For example: If the EntityTypeId is GroupMember, this will return a GroupMember query of group members that the person is following
         /// </summary>
-        /// <param name="entitySetId">The entity set identifier.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
         public IQueryable<IEntity> GetFollowedItems( int entityTypeId, int personId )
         {
