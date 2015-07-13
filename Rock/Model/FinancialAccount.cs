@@ -109,6 +109,15 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the user defined public description of the FinancialAccount.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the user defined public description of the FinancialAccount.
+        /// </value>
+        [DataMember]
+        public string PublicDescription { get; set; }
+
+        /// <summary>
         /// Gets or sets a flag indicating if transactions posted to this FinancialAccount are tax-deductible.
         /// </summary>
         /// <value>
@@ -149,6 +158,20 @@ namespace Rock.Model
             set { _isActive = value; }
         }
         private bool _isActive = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating if this FinancialAccount is public.
+        /// </summary>
+        /// <value>
+        ///  A <see cref="System.Boolean"/> that is <c>true</c> if this FinancialAccount is public, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool? IsPublic
+        {
+            get { return _isPublic; }
+            set { _isPublic = value; }
+        }
+        private bool? _isPublic = true;
 
         /// <summary>
         /// Gets or sets the opening date for this FinancialAccount. This is the first date that transactions can be posted to this account. 
