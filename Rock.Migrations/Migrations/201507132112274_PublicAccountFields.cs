@@ -18,7 +18,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
@@ -29,16 +29,16 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn( "dbo.FinancialAccount", "IsPublic", c => c.Boolean() );
             AddColumn( "dbo.FinancialAccount", "PublicDescription", c => c.String() );
+            AddColumn( "dbo.FinancialAccount", "IsPublic", c => c.Boolean() );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            DropColumn( "dbo.FinancialAccount", "IsPublic");
+            DropColumn( "dbo.FinancialAccount", "IsPublic" );
             DropColumn( "dbo.FinancialAccount", "PublicDescription" );
         }
     }
