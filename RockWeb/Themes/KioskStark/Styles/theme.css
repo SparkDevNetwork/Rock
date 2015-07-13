@@ -1202,6 +1202,7 @@ tr.row-highlight td {
     1. HTML Content - block to edit HTML on a page
     2. My Account - Used on external sites for setting person details
     3. Lava Debug - Used to style the lava debug panel
+    4. Social Tools - Used for showing social media links
 */
 .htmlcontent-edit-header {
   padding: 7.5px 15px 0 15px;
@@ -1251,6 +1252,31 @@ tr.row-highlight td {
 }
 .lava-debug .panel.panel-lavadebug .panel-body {
   background-color: #e6f3fa;
+}
+.socialsharing {
+  margin-top: 12px;
+  padding: 0;
+}
+.socialsharing li {
+  display: inline-block;
+}
+.socialsharing li .socialicon {
+  color: #fff;
+  padding: 8px 6px;
+  border-radius: 20px;
+  font-family: FontAwesome;
+}
+.socialsharing li .socialicon:hover {
+  text-decoration: none;
+}
+.socialsharing li .socialicon-facebook {
+  background-color: #4C66A4;
+}
+.socialsharing li .socialicon-twitter {
+  background-color: #2C77BA;
+}
+.socialsharing li .socialicon-email {
+  background-color: #209904;
 }
 /*
     Used to manage styles for specific blocks.
@@ -2755,6 +2781,9 @@ iframe.email-body {
   margin-top: 24px;
 }
 .fee-totals .fee-totals-options {
+  text-align: right;
+}
+.amount-to-pay input {
   text-align: right;
 }
 /*
