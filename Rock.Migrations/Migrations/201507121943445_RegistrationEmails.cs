@@ -32,7 +32,7 @@ namespace Rock.Migrations
             AddColumn("dbo.RegistrationTemplate", "Notify", c => c.Int(nullable: false));
             DropColumn("dbo.RegistrationTemplate", "NotifyGroupLeaders");
 
-            RockMigrationHelper.UpdateCategoryByName( "B21FD119-893E-46C0-B42D-E4CDD5C8C49D", "Event Registration", "fa fa-folder", "", "4A7D0D1F-E160-445E-9D29-AEBD140DA242", 5 );
+            RockMigrationHelper.UpdateCategoryByName( "B21FD119-893E-46C0-B42D-E4CDD5C8C49D", "Event Registration", "fa fa-clipboard", "", "4A7D0D1F-E160-445E-9D29-AEBD140DA242", 5 );
             Sql( MigrationSQL._201507121943445_RegistrationEmails );
         }
         
