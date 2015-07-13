@@ -29,13 +29,37 @@
             <!-- Feedback for Checks-->
             <StackPanel Name="pnlChecks" Visibility="Visible">
                 <Label Name="lblScanCheckWarningBadMicr"
-               Style="{StaticResource labelStyleAlert}"
-               Content="WARNING: Check account Information not found. Try scanning again with the check facing the other direction.">
+                        Style="{StaticResource labelStyleAlert}"
+                        Content="WARNING: Check account Information not found. Try scanning again with the check facing the other direction.">
                 </Label>
                 <Label Name="lblScanCheckWarningDuplicate"
-                    Style="{StaticResource labelStyleAlert}"
-                    Content="WARNING: A check with the same account information and check number has already been scanned.">
+                        Style="{StaticResource labelStyleAlert}"
+                        Content="WARNING: A check with the same account information and check number has already been scanned.">
                 </Label>
+                <Label Name="lblScanCheckUploadSuccess"
+                        Style="{StaticResource labelStyleAlertSuccess}"
+                        Content="Uploaded Successfully">
+                </Label>
+                <StackPanel Name="pnlPromptForUpload">
+                    
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button 
+                            Margin="8"
+                            x:Name="btnIgnoreAndUpload"
+                            Style="{StaticResource buttonStyleAction}"
+                            Content="Ignore and Upload"
+                            HorizontalAlignment="Left"
+                            Click="btnIgnoreAndUpload_Click" />
+                        <Button 
+                            Margin="8"
+                            x:Name="btnStopAndRetry"
+                            Style="{StaticResource buttonStyleAction}"
+                            Content="Stop and Retry"
+                            HorizontalAlignment="Left"
+                            Click="btnStopAndRetry_Click"/>
+                    </StackPanel>
+                </StackPanel>
                 <Grid >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1*"  />
@@ -149,30 +173,34 @@
                    Grid.ColumnSpan="2"
                    Visibility="Collapsed">
             </Label>
-            <Button Grid.Row="3"
-                    Grid.Column="0"
-                    Margin="8"
-                    x:Name="btnStartStop"
+            <StackPanel 
+                Orientation="Horizontal" 
+                Margin="0,0,0,8"
+                Grid.Row="3"
+                Grid.Column="0"
+                >
+                <Button 
+                    x:Name="btnStart"
                     Style="{StaticResource buttonStyleAction}"
-                    Content="Start/Stop"
-                    HorizontalAlignment="Left"
-                    Click="btnStartStop_Click" />
+                    Margin="8,0,0,0"
+                    Content="Start"
+                    Click="btnStart_Click" />
+                <Button Grid.Row="3"
+                    Margin="8,0,0,0"
+                    x:Name="btnStopScanning"
+                    Style="{StaticResource buttonStyleAction}"
+                    Content="Stop"
+                    Click="btnStopScanning_Click" />
+            </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" FlowDirection="RightToLeft">
                 <Button Style="{StaticResource buttonStyle}"
-                                    x:Name="btnCancel"
+                                    x:Name="btnClose"
                                     Margin="4,4,0,0"
-                                    Content="Cancel"
+                                    Content="Close"
                                     HorizontalAlignment="Left"
-                                    Click="btnCancel_Click" />
-                <Button Style="{StaticResource buttonStylePrimary}"
-                                    x:Name="btnSave"
-                                    Margin="4,4,0,0"
-                                    Content="Save"
-                                    HorizontalAlignment="Left"
-                                    Click="btnSave_Click" />
-                
+                                    Click="btnClose_Click" />
             </StackPanel>
-            
+
         </Grid>
     </Grid>
 </Page>

@@ -223,6 +223,28 @@
         </Setter>
     </Style>
 
+    <!-- Label style: Success-->
+    <Style x:Key="labelStyleAlertSuccess"
+           TargetType="{x:Type Label}">
+        <Setter Property="Label.Foreground"
+                Value="#468847"></Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Label}">
+                    <Border CornerRadius="4,4,4,4"
+                            BorderThickness="1"
+                            BorderBrush="#bce8f1"
+                            Padding="14,8,35,8"
+                            Background="#dff0d8"
+                            Margin="10">
+                        <TextBlock Text="{TemplateBinding Content}"
+                                   TextWrapping="Wrap" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Label style: Information-->
     <Style x:Key="labelStyleAlertInfo"
            TargetType="{x:Type Label}">
