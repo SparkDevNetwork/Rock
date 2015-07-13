@@ -1453,6 +1453,76 @@ namespace Rock.Lava
             return null;
         }
 
+
+        /// <summary>
+        /// Pages the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="parm">The parm.</param>
+        /// <returns></returns>
+        public static string Page( string input, string parm )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            if ( page != null )
+            {
+                switch ( parm )
+                {
+                    case "Title": 
+                        {
+                            return page.BrowserTitle;
+                        }
+                    case "Url": 
+                        {
+                            return HttpContext.Current.Request.Url.AbsoluteUri;
+                        }
+                    case "Id":
+                        {
+                            return page.PageId.ToString();
+                        }
+                    case "Host":
+                        {
+                            return HttpContext.Current.Request.Url.Host;
+                        }
+                    case "Path":
+                        {
+                            return HttpContext.Current.Request.Url.AbsolutePath;
+                        }
+                    case "SiteName":
+                        {
+                            return page.Site.Name;
+                        }
+                    case "SiteId":
+                        {
+                            return page.Site.Id.ToString();
+                        }
+                    case "Theme":
+                        {
+                            if ( page.Theme != null )
+                            {
+                                return page.Theme;
+                            }
+                            else
+                            {
+                                return page.Site.Theme;
+                            }
+                            
+                        }
+                    case "Layout":
+                        {
+                            return page.Layout.Name;
+                        }
+                    case "Scheme":
+                        {
+                            return HttpContext.Current.Request.Url.Scheme;
+                        }
+                }
+            }
+
+            return null;
+        }
+
+
         /// <summary>
         /// Converts a lava property to a key value pair
         /// </summary>
