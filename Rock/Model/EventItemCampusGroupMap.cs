@@ -90,7 +90,6 @@ namespace Rock.Model
         /// <value>
         /// The event item campus.
         /// </value>
-        [DataMember]
         public virtual EventItemCampus EventItemCampus { get; set; }
 
         /// <summary>
