@@ -1,6 +1,10 @@
 {% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
   <ul class="masthead-navitems">
 
+    <li class="masthead-navitem">
+      <a href="/newhere">New Here?</a>
+    </li>
+
 	{% for childPage in Page.Pages %}
 
     {% if childPage.Title == "Menu" %}
