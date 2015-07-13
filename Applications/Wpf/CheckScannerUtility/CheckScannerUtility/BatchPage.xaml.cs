@@ -15,25 +15,20 @@
 // </copyright>
 //
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
 
 using Rock.Constants;
 using Rock.Model;
 using Rock.Net;
-using Rock.Wpf;
 
 namespace Rock.Apps.CheckScannerUtility
 {
@@ -347,6 +342,7 @@ namespace Rock.Apps.CheckScannerUtility
                     if ( lastOnUsPosition > 0 )
                     {
                         int accountNumberDigitPosition = lastOnUsPosition - 1;
+
                         // read all digits to the left of the last 'c' until you run into a non-numeric (except for '!' whichs means invalid)
                         while ( accountNumberDigitPosition >= 0 )
                         {
@@ -506,7 +502,6 @@ namespace Rock.Apps.CheckScannerUtility
                 ScanningPage.ShowScannedDocStatusAndUpload( scannedDoc );
 
                 File.Delete( docImageFileName );
-
             }
             catch ( Exception ex )
             {
@@ -559,8 +554,6 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         #endregion
-
-        
 
         #region internal methods
 
@@ -811,11 +804,11 @@ namespace Rock.Apps.CheckScannerUtility
         private void btnScan_Click( object sender, RoutedEventArgs e )
         {
             var rockConfig = RockConfig.Load();
+
             // make sure we can connect (
             // NOTE: If ranger is powered down after the app starts, it might report that is is connected.  We'll catch that later when they actually start scanning
             if ( ConnectToScanner() )
             {
-                
                 this.NavigationService.Navigate( this.ScanningPromptPage );
             }
             else
@@ -1063,7 +1056,7 @@ namespace Rock.Apps.CheckScannerUtility
             if ( list != null )
             {
                 int listCount = list.Count();
-                lblCount.Content = string.Format( "{0} item{1}", listCount, listCount != 1 ? "s" : "" );
+                lblCount.Content = string.Format( "{0} item{1}", listCount, listCount != 1 ? "s" : string.Empty );
             }
             else
             {

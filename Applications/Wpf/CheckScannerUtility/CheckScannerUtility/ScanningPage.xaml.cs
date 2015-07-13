@@ -14,16 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.ComponentModel;
 using System.IO;
-using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media.Imaging;
-using System;
-using Rock.Net;
+
 using Rock.Model;
-using System.ComponentModel;
+using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
 {
@@ -162,7 +161,6 @@ namespace Rock.Apps.CheckScannerUtility
 
             if ( IsDuplicateScan( scannedDocInfo ) )
             {
-                
                 lblScanCheckWarningDuplicate.Visibility = Visibility.Visible;
                 scannedDocInfo.Duplicate = true;
                 scannedDocInfo.Upload = false;
@@ -196,7 +194,7 @@ namespace Rock.Apps.CheckScannerUtility
             lblScanCheckWarningDuplicate.Visibility = System.Windows.Visibility.Collapsed;
             lblScanCheckWarningBadMicr.Visibility = System.Windows.Visibility.Collapsed;
             pnlPromptForUpload.Visibility = System.Windows.Visibility.Collapsed;
-            
+
             this.ConfirmUploadBadScannedDoc.Upload = true;
             this.UploadScannedItem( this.ConfirmUploadBadScannedDoc );
             lblScanCheckUploadSuccess.Visibility = System.Windows.Visibility.Visible;
@@ -504,13 +502,11 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             scannedDocInfo.TransactionId = uploadedTransactionId;
-            financialTransaction.Id = uploadedTransactionId ?? 0; ;
+            financialTransaction.Id = uploadedTransactionId ?? 0;
             financialTransaction.CreatedDateTime = financialTransaction.CreatedDateTime ?? DateTime.Now;
 
             var transactionList = batchPage.grdBatchItems.DataContext as BindingList<FinancialTransaction>;
             transactionList.Insert( 0, financialTransaction );
-
-            
         }
 
         /// <summary>
