@@ -45,7 +45,7 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteSystemEmail( "7B0F4F06-69BD-4CB4-BD04-8DA3779D5259" );
 
             Sql( @"INSERT INTO [ServiceJob] ( [IsSystem], [IsActive], [Name], [Description], [Assembly], [Class], [CronExpression], [Guid], [NotificationStatus] )
-                 VALUES (0,1,'Registration Reminder','Send any registration reminders that are due to be sent.','','Rock.Jobs.SendRegistrationReminders','0 0 0/1 1/1 * ? *','56B1390A-0E12-40F0-BE5F-0445FF4AA0E0',3)" );           
+                 VALUES (0,1,'Registration Reminder','Send any registration reminders that are due to be sent.','','Rock.Jobs.SendRegistrationReminders','0 0 0/1 1/1 * ? *','56B1390A-0E12-40F0-BE5F-0445FF4AA0E0',3)" );
         }
         
         /// <summary>
@@ -56,7 +56,7 @@ namespace Rock.Migrations
 
             Sql( "DELETE [ServiceJob] WHERE [Guid] = '56B1390A-0E12-40F0-BE5F-0445FF4AA0E0'" );
 
-            AddColumn("dbo.RegistrationTemplate", "UseDefaultConfirmationEmail", c => c.Boolean(nullable: false));
+            AddColumn( "dbo.RegistrationTemplate", "UseDefaultConfirmationEmail", c => c.Boolean( nullable: false ) );
             AddColumn("dbo.RegistrationInstance", "ConfirmationSentDateTime", c => c.DateTime());
             AddColumn("dbo.RegistrationInstance", "ReminderSentDateTime", c => c.DateTime());
             DropColumn("dbo.RegistrationTemplate", "ReminderSubject");
