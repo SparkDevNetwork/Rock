@@ -356,8 +356,10 @@ namespace Rock.Migrations.Migrations {
         ///
         ///        INSERT INTO [SystemEmail] ([IsSystem], [Title], [Subject], [Body], [Guid], [CategoryId])
         ///        VALUES
-        ///	        (0, &apos;Registration Confirmation&apos;, &apos;{{ RegistrationInstance.Name }} Confirmation&apos;, &apos;{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;EmailHeader&apos;&apos; }}
-        ///{% capture currencySymbol %}{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;CurrencySymbol&apos;&apos; }}{% endcapture [rest of string was truncated]&quot;;.
+        ///	        (0, &apos;Registration Notification&apos;, &apos;{{ RegistrationInstance.Name }} Registration&apos;, &apos;{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;EmailHeader&apos;&apos; }}
+        ///{% assign registrantCount = Registration.Registrants | Size %}
+        ///&lt;p&gt;
+        ///    The following { [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201507121943445_RegistrationEmails {
             get {

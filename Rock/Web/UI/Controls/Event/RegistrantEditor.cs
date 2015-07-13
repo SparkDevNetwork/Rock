@@ -70,11 +70,11 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The forms.
         /// </value>
-        public List<RegistrantEditorForm> Forms
+        private List<RegistrantEditorForm> Forms
         {
             get 
-            { 
-                return ViewState["Forms"] as List<RegistrantEditorForm>; 
+            {
+                return ViewState["Forms"] as List<RegistrantEditorForm>;
             }
             set 
             { 
@@ -250,14 +250,6 @@ namespace Rock.Web.UI.Controls
         #region Control Methods
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RegistrantEditor"/> class.
-        /// </summary>
-        public RegistrantEditor()
-        {
-            Forms = new List<RegistrantEditorForm>();
-        }
-
-        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -297,6 +289,7 @@ $('.js-stop-immediate-propagation').click(function (event) {
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
+            Controls.Clear();
 
             _hfExpanded = new HiddenField();
             _hfExpanded.ID = "_hfExpanded";
@@ -367,34 +360,43 @@ $('.js-stop-immediate-propagation').click(function (event) {
             _lbCancelRegistrant.Click += lbCancelRegistrant_Click;
             Controls.Add( _lbCancelRegistrant );
 
-            foreach ( var form in Forms )
+            if ( Forms != null )
             {
-                foreach ( var field in form.Fields )
+                foreach ( var form in Forms )
                 {
-                    if ( field.FieldSource == RegistrationFieldSource.PersonField )
-                    {
-                        switch( field.PersonFieldType )
-                        {
-                            case RegistrationPersonFieldType.Gender:
-                                {
-                                    var ddlGender = new RockDropDownList();
-                                    ddlGender.ID = this.ID + "_ddlGender";
-                                    ddlGender.Label = "Gender";
-                                    ddlGender.BindToEnum<Gender>( true );
-                                    Controls.Add( ddlGender );
+                    form.Controls.Clear();
 
-                                    break;
-                                }
-                        }
-                    }
-                    else
+                    foreach ( var field in form.Fields )
                     {
-                        if ( field.AttributeId.HasValue )
+                        if ( field.FieldSource == RegistrationFieldSource.PersonField )
                         {
-                            var attribute = AttributeCache.Read( field.AttributeId.Value );
-                            if ( attribute != null )
+                            var rlField = new RockLiteral();
+                            rlField.ID = this.ID + "_rl" + field.PersonFieldType.ConvertToString( false );
+                            rlField.Label = field.PersonFieldType.ConvertToString( true );
+                            Controls.Add( rlField );
+                            form.Controls.Add( rlField );
+                        }
+                        else
+                        {
+                            if ( field.AttributeId.HasValue )
                             {
-                                attribute.AddControl( Controls, string.Empty, this.ValidationGroup, false, true );
+                                var attribute = AttributeCache.Read( field.AttributeId.Value );
+                                if ( attribute != null )
+                                {
+                                    if ( field.FieldSource == RegistrationFieldSource.RegistrationAttribute )
+                                    {
+                                        var control = attribute.AddControl( Controls, string.Empty, this.ValidationGroup, false, true, field.IsRequired );
+                                        form.Controls.Add( control );
+                                    }
+                                    else
+                                    {
+                                        var rlField = new RockLiteral();
+                                        rlField.ID = this.ID + "_rl" + attribute.Id.ToString();
+                                        rlField.Label = attribute.Name;
+                                        Controls.Add( rlField );
+                                        form.Controls.Add( rlField );
+                                    }
+                                }
                             }
                         }
                     }
@@ -476,6 +478,10 @@ $('.js-stop-immediate-propagation').click(function (event) {
             }
         }
 
+        /// <summary>
+        /// Renders the registrant.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
         private void RenderRegistrant ( HtmlTextWriter writer )
         {
             _hfRegistrantGuid.RenderControl( writer );
@@ -491,9 +497,12 @@ $('.js-stop-immediate-propagation').click(function (event) {
                 _lCost.RenderControl( writer );
             }
 
-            foreach( var form in Forms )
+            if ( Forms != null )
             {
-                RenderForms( form, writer );
+                foreach ( var form in Forms )
+                {
+                    RenderForms( form, writer );
+                }
             }
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
@@ -514,22 +523,6 @@ $('.js-stop-immediate-propagation').click(function (event) {
             writer.RenderEndTag();
         }
 
-        /// <summary>
-        /// Sets the forms.
-        /// </summary>
-        /// <param name="template">The template.</param>
-        public void SetForms( RegistrationTemplate template )
-        {
-            Forms = new List<RegistrantEditorForm>();
-            if ( template != null && template.Forms != null && template.Forms.Any() )
-            {
-                foreach ( var form in template.Forms )
-                {
-                    Forms.Add( new RegistrantEditorForm( form ) );
-                }
-            }
-        }
-
         private void RenderForms( RegistrantEditorForm form,  HtmlTextWriter writer )
         {
             // panel
@@ -548,19 +541,14 @@ $('.js-stop-immediate-propagation').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
             writer.RenderBeginTag( HtmlTextWriterTag.H1 );
 
-            foreach( var field in form.Fields )
+            foreach( var control in form.Controls)
             {
-                RenderField( field, writer );
+                control.RenderControl( writer );
             }
 
             writer.RenderEndTag();  // Div.panel-body
 
             writer.RenderEndTag();  // Div.panel-block
-        }
-
-        private void RenderField( RegistrantEditorFormField field, HtmlTextWriter writer )
-        {
-
         }
 
         #endregion
@@ -576,75 +564,30 @@ $('.js-stop-immediate-propagation').click(function (event) {
             EnsureChildControls();
 
             if ( registrant != null )
-            { 
+            {
                 registrant.Cost = _curCost.Text.AsDecimal();
 
-                if ( registrant.Attributes == null )
+                if ( Forms != null && registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
                 {
-                    registrant.LoadAttributes();
-                }
-
-
-                // Get registrant attribute field values
-                foreach ( var form in Forms
-                    .SelectMany( f => f.Fields
-                        .Where( a => a.FieldSource == RegistrationFieldSource.RegistrationAttribute ) ) )
-                {
-                }
-
-                if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
-                {
-                    if ( registrant.PersonAlias.Person.Attributes == null )
+                    // Get registrant attribute field values
+                    if ( registrant.Attributes == null )
                     {
-                        registrant.PersonAlias.Person.LoadAttributes();
+                        registrant.LoadAttributes();
                     }
 
-                    // Get person field values
                     foreach ( var field in Forms
                         .SelectMany( f => f.Fields
-                            .Where( a => a.FieldSource == RegistrationFieldSource.PersonField ) ) )
+                            .Where( a => a.FieldSource == RegistrationFieldSource.RegistrationAttribute ) ) )
                     {
-                        switch( field.PersonFieldType )
+                        var attribute = AttributeCache.Read( field.AttributeId.Value );
+                        var control = FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
+                        if ( attribute != null && control != null )
                         {
-                            case RegistrationPersonFieldType.Gender:
-                                {
-                                    var ddlGender = FindControl( this.ID + "_ddlGender" ) as RockDropDownList;
-                                    if ( ddlGender != null )
-                                    {
-                                        var gender = ddlGender.SelectedValueAsEnumOrNull<Gender>();
-                                        if ( gender.HasValue )
-                                        {
-                                            registrant.PersonAlias.Person.Gender = gender.Value;
-                                        }
-                                    }
-                                    break;
-                                }
+                            registrant.SetAttributeValue( attribute.Key, attribute.FieldType.Field.GetEditValue( control, attribute.QualifierValues ) );
                         }
                     }
-
-                    // Get person attribute field values
-                    foreach ( var form in Forms
-                        .SelectMany( f => f.Fields
-                            .Where( a => a.FieldSource == RegistrationFieldSource.PersonField ) ) )
-                    {
-
-                    }
                 }
 
-                // Get group member attribute field values
-                if ( registrant.GroupMember != null )
-                {
-                    if ( registrant.GroupMember.Attributes == null )
-                    {
-                        registrant.GroupMember.LoadAttributes();
-                    }
-
-                    foreach ( var form in Forms
-                        .SelectMany( f => f.Fields
-                            .Where( a => a.FieldSource == RegistrationFieldSource.PersonField ) ) )
-                    {
-                    }
-                }
             }
 
         }
@@ -653,7 +596,7 @@ $('.js-stop-immediate-propagation').click(function (event) {
         /// Sets the type of the workflow action.
         /// </summary>
         /// <param name="value">The value.</param>
-        public void SetControlFromRegistrant( RegistrationRegistrant value )
+        public void SetControlFromRegistrant( RegistrationRegistrant value, RockContext rockContext )
         {
             EnsureChildControls();
 
@@ -675,8 +618,183 @@ $('.js-stop-immediate-propagation').click(function (event) {
                 }
 
                 _curCost.Text = value.Cost.ToString();
-              
+
+                Person person = null;
+                if ( value.PersonAlias != null )
+                {
+                    person = value.PersonAlias.Person;
+                }
+
+                if ( Forms != null && person != null )
+                {
+                    // Set the values of the person field controls
+                    foreach ( var field in Forms
+                        .SelectMany( f => f.Fields
+                            .Where( a => a.FieldSource == RegistrationFieldSource.PersonField ) ) )
+                    {
+                        var literalControl = FindControl( this.ID + "_rl" + field.PersonFieldType.ConvertToString( false ) ) as RockLiteral;
+
+                        if ( literalControl != null )
+                        {
+                            literalControl.Text = string.Empty;
+
+                            DefinedValueCache dvPhone = null;
+
+                            switch ( field.PersonFieldType )
+                            {
+                                case RegistrationPersonFieldType.FirstName: literalControl.Text = person.NickName; break;
+                                case RegistrationPersonFieldType.LastName: literalControl.Text = person.LastName; break;
+                                case RegistrationPersonFieldType.Campus:
+                                    {
+                                        if ( person != null )
+                                        {
+                                            var family = person.GetFamilies( rockContext ).FirstOrDefault();
+                                            if ( family != null && family.Campus != null )
+                                            {
+                                                literalControl.Text = family.Campus.Name;
+                                            }
+                                        }
+                                        break;
+                                    }
+                                case RegistrationPersonFieldType.Address:
+                                    {
+                                        var location = person.GetHomeLocation( rockContext );
+                                        if ( location != null )
+                                        {
+                                            literalControl.Text = location.ToStringSafe();
+                                        }
+                                        break;
+                                    }
+                                case RegistrationPersonFieldType.Email: literalControl.Text = person.Email; break;
+                                case RegistrationPersonFieldType.Birthdate: literalControl.Text = person.BirthDate.HasValue ? person.BirthDate.Value.ToShortDateString() : string.Empty; break;
+                                case RegistrationPersonFieldType.Gender: literalControl.Text = person.Gender.ConvertToString(); break;
+                                case RegistrationPersonFieldType.MaritalStatus: literalControl.Text = person.MaritalStatusValue != null ? person.MaritalStatusValue.Value : string.Empty; break;
+                                case RegistrationPersonFieldType.MobilePhone:
+                                    {
+                                        dvPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                                        break;
+                                    }
+                                case RegistrationPersonFieldType.HomePhone:
+                                    {
+                                        dvPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+                                        break;
+                                    }
+                                case RegistrationPersonFieldType.WorkPhone:
+                                    {
+                                        dvPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK );
+                                        break;
+                                    }
+                            }
+
+                            if ( dvPhone != null )
+                            {
+                                var phoneNumber = new PersonService( rockContext ).GetPhoneNumber( person, dvPhone );
+                                if ( phoneNumber != null )
+                                {
+                                    literalControl.Text = phoneNumber.NumberFormatted;
+                                }
+                            }
+                        }
+                    }
+
+                    // Set the values of the person attribute controls
+                    var personAttributeFields = Forms
+                        .SelectMany( f => f.Fields
+                        .Where( a =>
+                            a.FieldSource == RegistrationFieldSource.PersonAttribute &&
+                            a.AttributeId.HasValue ) );
+                    {
+                        if ( personAttributeFields.Any() )
+                        {
+                            if ( person.Attributes == null )
+                            {
+                                person.LoadAttributes( rockContext );
+                            }
+
+                            foreach ( var field in personAttributeFields )
+                            {
+                                var attribute = AttributeCache.Read( field.AttributeId.Value );
+                                var literalControl = FindControl( this.ID + "_rl" + field.AttributeId.Value.ToString() ) as RockLiteral;
+                                if ( attribute != null && literalControl != null )
+                                {
+                                    literalControl.Text = attribute.FieldType.Field.FormatValueAsHtml( null, person.GetAttributeValue( attribute.Key ), attribute.QualifierValues );
+                                }
+                            }
+                        }
+                    }
+
+                    // Set the values of the person attribute controls
+                    var groupMemberAttributeFields = Forms
+                        .SelectMany( f => f.Fields
+                        .Where( a =>
+                            a.FieldSource == RegistrationFieldSource.GroupMemberAttribute &&
+                            a.AttributeId.HasValue ) );
+                    {
+                        if ( groupMemberAttributeFields.Any() && value.GroupMember != null )
+                        {
+                            if ( value.GroupMember.Attributes == null )
+                            {
+                                value.GroupMember.LoadAttributes( rockContext );
+                            }
+
+                            foreach ( var field in groupMemberAttributeFields )
+                            {
+                                var attribute = AttributeCache.Read( field.AttributeId.Value );
+                                var literalControl = FindControl( this.ID + "_rl" + field.AttributeId.Value.ToString() ) as RockLiteral;
+                                if ( attribute != null && literalControl != null )
+                                {
+                                    literalControl.Text = attribute.FieldType.Field.FormatValueAsHtml( null, value.GroupMember.GetAttributeValue( attribute.Key ), attribute.QualifierValues );
+                                }
+                            }
+                        }
+                    }
+
+                    // Set the values of the person attribute controls
+                    var registrantAttributeFields = Forms
+                        .SelectMany( f => f.Fields
+                        .Where( a =>
+                            a.FieldSource == RegistrationFieldSource.RegistrationAttribute &&
+                            a.AttributeId.HasValue ) );
+                    {
+                        if ( registrantAttributeFields.Any() )
+                        {
+                            if ( value.Attributes == null )
+                            {
+                                value.LoadAttributes();
+                            }
+
+                            foreach ( var field in registrantAttributeFields )
+                            {
+                                var attribute = AttributeCache.Read( field.AttributeId.Value );
+                                var control = FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
+                                if ( attribute != null && control != null )
+                                {
+                                    attribute.FieldType.Field.SetEditValue( control, attribute.QualifierValues, value.GroupMember.GetAttributeValue( attribute.Key ) );
+                                }
+                            }
+                        }
+                    }
+                }
             }
+        }
+
+        /// <summary>
+        /// Sets the forms.
+        /// </summary>
+        /// <param name="template">The template.</param>
+        public void SetForms( RegistrationTemplate template )
+        {
+            var forms = new List<RegistrantEditorForm>();
+            
+            if ( template != null && template.Forms != null && template.Forms.Any() )
+            {
+                foreach ( var form in template.Forms )
+                {
+                    forms.Add( new RegistrantEditorForm( form ) );
+                }
+            }
+
+            this.Forms = forms;
         }
 
         /// <summary>
@@ -825,12 +943,15 @@ $('.js-stop-immediate-propagation').click(function (event) {
         /// </value>
         public List<RegistrantEditorFormField> Fields { get; set; }
 
+        public List<Control> Controls { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RegistrantEditorForm"/> class.
         /// </summary>
         public RegistrantEditorForm()
         {
             Fields = new List<RegistrantEditorFormField>();
+            Controls = new List<Control>();
         }
 
         /// <summary>
@@ -885,6 +1006,14 @@ $('.js-stop-immediate-propagation').click(function (event) {
         public int Order { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is required.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is required; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsRequired { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RegistrantEditorFormField"/> class.
         /// </summary>
         public RegistrantEditorFormField()
@@ -902,6 +1031,7 @@ $('.js-stop-immediate-propagation').click(function (event) {
             PersonFieldType = field.PersonFieldType;
             AttributeId = field.AttributeId;
             Order = field.Order;
+            IsRequired = field.IsRequired;
         }
     }
 

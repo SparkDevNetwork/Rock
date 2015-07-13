@@ -1012,6 +1012,7 @@ namespace RockWeb.Blocks.Event
                                 {
                                     var newGender = fieldValue.ToString().ConvertToEnumOrNull<Gender>() ?? Gender.Unknown;
                                     History.EvaluateChange( changes, "Gender", person.Gender, newGender );
+                                    person.Gender = newGender;
                                     break;
                                 }
 
@@ -1954,6 +1955,7 @@ namespace RockWeb.Blocks.Event
                         acAddress.UseStateAbbreviation = true;
                         acAddress.UseCountryAbbreviation = false;
                         acAddress.Required = field.IsRequired;
+                        acAddress.ValidationGroup = BlockValidationGroup;
 
                         phRegistrantControls.Controls.Add( acAddress );
 
@@ -1989,6 +1991,7 @@ namespace RockWeb.Blocks.Event
                         bpBirthday.ID = "bpBirthday";
                         bpBirthday.Label = "Birthday";
                         bpBirthday.Required = field.IsRequired;
+                        bpBirthday.ValidationGroup = BlockValidationGroup;
                         phRegistrantControls.Controls.Add( bpBirthday );
 
                         if ( setValue && fieldValue != null )

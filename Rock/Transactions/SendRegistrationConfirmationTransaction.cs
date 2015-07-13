@@ -72,45 +72,24 @@ namespace Rock.Transactions
                     .Queryable( "RegistrationInstance.RegistrationTemplate" ).AsNoTracking()
                     .FirstOrDefault( r => r.Id == RegistrationId );
 
-                if ( registration != null && !string.IsNullOrEmpty( registration.ConfirmationEmail ) &&
-                    registration.RegistrationInstance != null && registration.RegistrationInstance.RegistrationTemplate != null )
+                if ( registration != null && 
+                    registration.RegistrationInstance != null && 
+                    !string.IsNullOrEmpty( registration.ConfirmationEmail ) )
                 {
                     var template = registration.RegistrationInstance.RegistrationTemplate;
-
-                    var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
-                    mergeFields.Add( "Registration", registration );
-
-                    if ( template.UseDefaultConfirmationEmail )
+                    if ( template != null && !string.IsNullOrWhiteSpace( template.ConfirmationEmailTemplate ) )
                     {
-                        var recipients = new List<RecipientData>();
-                        recipients.Add( new RecipientData( registration.ConfirmationEmail, mergeFields ) );
-                        Email.Send( Rock.SystemGuid.SystemEmail.REGISTRATION_CONFIRMATION.AsGuid(), recipients, AppRoot, ThemeRoot );
-                    }
-                    else
-                    {
-                        if ( !string.IsNullOrWhiteSpace( template.ConfirmationEmailTemplate ) )
-                        {
-                            string from = string.Empty;
-                            string fromName = string.Empty;
-                            string subject = string.Empty;
-                            var systemEmail = new SystemEmailService( rockContext ).Get( Rock.SystemGuid.SystemEmail.REGISTRATION_CONFIRMATION.AsGuid() );
-                            if ( systemEmail != null )
-                            {
-                                from = systemEmail.From.ResolveMergeFields( mergeFields );
-                                fromName = systemEmail.FromName.ResolveMergeFields( mergeFields );
-                                subject = systemEmail.Subject.ResolveMergeFields( mergeFields );
-                            }
-                            else
-                            {
-                                subject = registration.RegistrationInstance.Name + " Confirmation";
-                            }
+                        var mergeFields = new Dictionary<string, object>();
+                        mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
+                        mergeFields.Add( "Registration", registration );
 
-                            var recipients = new List<string> { registration.ConfirmationEmail };
-                            string message = template.ConfirmationEmailTemplate.ResolveMergeFields( mergeFields );
+                        string from = template.ConfirmationFromName.ResolveMergeFields( mergeFields );
+                        string fromName = template.ConfirmationFromEmail.ResolveMergeFields( mergeFields );
+                        string subject = template.ConfirmationSubject.ResolveMergeFields( mergeFields );
+                        string message = template.ConfirmationEmailTemplate.ResolveMergeFields( mergeFields );
 
-                            Email.Send( from, fromName, subject, recipients, message, AppRoot, ThemeRoot );
-                        }
+                        var recipients = new List<string> { registration.ConfirmationEmail };
+                        Email.Send( from, fromName, subject, recipients, message, AppRoot, ThemeRoot );
                     }
                 }
             }
