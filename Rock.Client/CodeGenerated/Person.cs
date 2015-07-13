@@ -56,16 +56,21 @@ namespace Rock.Client
         public string EmailNote { get; set; }
 
         /// <summary />
-        public int /* EmailPreference*/ EmailPreference { get; set; }
+        public Rock.Client.Enums.EmailPreference EmailPreference { get; set; }
 
         /// <summary />
         public string FirstName { get; set; }
 
         /// <summary />
-        public int /* Gender*/ Gender { get; set; }
+        public Rock.Client.Enums.Gender Gender { get; set; }
 
         /// <summary />
         public int? GivingGroupId { get; set; }
+
+        /// <summary>
+        /// The Grade Offset of the person, which is the number of years until their graduation date
+        /// </summary>
+        public int? GradeOffset { get; set; }
 
         /// <summary />
         public int? GraduationYear { get; set; }
@@ -74,7 +79,7 @@ namespace Rock.Client
         public string InactiveReasonNote { get; set; }
 
         /// <summary />
-        public bool? IsDeceased { get; set; }
+        public bool IsDeceased { get; set; }
 
         /// <summary />
         public bool? IsEmailActive { get; set; }
@@ -130,6 +135,48 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source Person object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Person source )
+        {
+            this.Id = source.Id;
+            this.AnniversaryDate = source.AnniversaryDate;
+            this.BirthDay = source.BirthDay;
+            this.BirthMonth = source.BirthMonth;
+            this.BirthYear = source.BirthYear;
+            this.ConnectionStatusValueId = source.ConnectionStatusValueId;
+            this.Email = source.Email;
+            this.EmailNote = source.EmailNote;
+            this.EmailPreference = source.EmailPreference;
+            this.FirstName = source.FirstName;
+            this.Gender = source.Gender;
+            this.GivingGroupId = source.GivingGroupId;
+            this.GradeOffset = source.GradeOffset;
+            this.GraduationYear = source.GraduationYear;
+            this.InactiveReasonNote = source.InactiveReasonNote;
+            this.IsDeceased = source.IsDeceased;
+            this.IsEmailActive = source.IsEmailActive;
+            this.IsSystem = source.IsSystem;
+            this.LastName = source.LastName;
+            this.MaritalStatusValueId = source.MaritalStatusValueId;
+            this.MiddleName = source.MiddleName;
+            this.NickName = source.NickName;
+            this.PhotoId = source.PhotoId;
+            this.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
+            this.RecordStatusValueId = source.RecordStatusValueId;
+            this.RecordTypeValueId = source.RecordTypeValueId;
+            this.ReviewReasonNote = source.ReviewReasonNote;
+            this.ReviewReasonValueId = source.ReviewReasonValueId;
+            this.SuffixValueId = source.SuffixValueId;
+            this.SystemNote = source.SystemNote;
+            this.TitleValueId = source.TitleValueId;
+            this.ViewedCount = source.ViewedCount;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>
@@ -144,7 +191,13 @@ namespace Rock.Client
         public DefinedValue ConnectionStatusValue { get; set; }
 
         /// <summary />
+        public int? DaysUntilBirthday { get; set; }
+
+        /// <summary />
         public string GivingId { get; set; }
+
+        /// <summary />
+        public int GivingLeaderId { get; set; }
 
         /// <summary />
         public DefinedValue MaritalStatusValue { get; set; }

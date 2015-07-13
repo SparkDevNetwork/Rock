@@ -46,6 +46,19 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source FinancialTransactionRefund object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( FinancialTransactionRefund source )
+        {
+            this.Id = source.Id;
+            this.RefundReasonSummary = source.RefundReasonSummary;
+            this.RefundReasonValueId = source.RefundReasonValueId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

@@ -14,9 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -36,12 +38,50 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override string FormatDataValue( object dataValue, bool encode )
         {
-            if ( dataValue is int )
+            DefinedValueCache definedValueCache = GetDefinedValue( dataValue );
+
+            if ( definedValueCache != null )
             {
-                dataValue = Rock.Web.Cache.DefinedValueCache.Read( (int)dataValue ).Value;
+                dataValue = definedValueCache.Value;
             }
 
             return base.FormatDataValue( dataValue, encode );
+        }
+
+        /// <summary>
+        /// Gets the defined value from data value.
+        /// </summary>
+        /// <param name="dataValue">The data value.</param>
+        /// <returns></returns>
+        public DefinedValueCache GetDefinedValue( object dataValue )
+        {
+            int? dataValueAsInt = null;
+            Guid? dataValueAsGuid = null;
+            if ( dataValue is int )
+            {
+                dataValueAsInt = (int)dataValue;
+            }
+            else if ( dataValue is Guid )
+            {
+                dataValueAsGuid = (Guid)dataValue;
+            }
+            else if ( dataValue is string )
+            {
+                dataValueAsInt = ( dataValue as string ).AsIntegerOrNull();
+                dataValueAsGuid = ( dataValue as string ).AsGuidOrNull();
+            }
+
+            DefinedValueCache definedValueCache = null;
+            if ( dataValueAsInt.HasValue )
+            {
+                definedValueCache = Rock.Web.Cache.DefinedValueCache.Read( dataValueAsInt.Value );
+            }
+            else if ( dataValueAsGuid.HasValue )
+            {
+                definedValueCache = Rock.Web.Cache.DefinedValueCache.Read( dataValueAsGuid.Value );
+            }
+
+            return definedValueCache;
         }
 
         /// <summary>

@@ -126,69 +126,74 @@ namespace RockWeb.Blocks.Administration
                 {
                     // If the entity is a block, get any actions that were updated or added by the block type using
                     // one or more SecurityActionAttributes.
-                    foreach ( var action in BlockCache.Read( block.Id ).BlockType.SecurityActions )
+                    var blockCache = BlockCache.Read( block.Id );
+                    if ( blockCache != null && blockCache.BlockType != null )
                     {
-                        if ( block.SupportedActions.ContainsKey( action.Key ) )
+                        foreach ( var action in BlockCache.Read( block.Id ).BlockType.SecurityActions )
                         {
-                            block.SupportedActions[action.Key] = action.Value;
-                        }
-                        else
-                        {
-                            block.SupportedActions.Add( action.Key, action.Value );
+                            if ( block.SupportedActions.ContainsKey( action.Key ) )
+                            {
+                                block.SupportedActions[action.Key] = action.Value;
+                            }
+                            else
+                            {
+                                block.SupportedActions.Add( action.Key, action.Value );
+                            }
                         }
                     }
 
                     iSecured = block;
                 }
 
-                if ( iSecured != null && iSecured.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+                if ( iSecured != null )
                 {
-                    if ( iSecured.SupportedActions.Any() )
+                    if ( iSecured.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                     {
-                        lActionDescription.Text = iSecured.SupportedActions.FirstOrDefault().Value;
-                    }
+                        if ( iSecured.SupportedActions.Any() )
+                        {
+                            lActionDescription.Text = iSecured.SupportedActions.FirstOrDefault().Value;
+                        }
 
-                    rptActions.DataSource = iSecured.SupportedActions;
-                    rptActions.DataBind();
+                        rptActions.DataSource = iSecured.SupportedActions;
+                        rptActions.DataBind();
 
-                    rGrid.DataKeyNames = new string[] { "Id" };
-                    rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
-                    rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
-                    rGrid.RowDataBound += new GridViewRowEventHandler( rGrid_RowDataBound );
-                    rGrid.ShowHeaderWhenEmpty = false;
-                    rGrid.EmptyDataText = string.Empty;
-                    rGrid.ShowActionRow = false;
+                        rGrid.DataKeyNames = new string[] { "Id" };
+                        rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
+                        rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
+                        rGrid.RowDataBound += new GridViewRowEventHandler( rGrid_RowDataBound );
+                        rGrid.ShowHeaderWhenEmpty = false;
+                        rGrid.EmptyDataText = string.Empty;
+                        rGrid.ShowActionRow = false;
 
-                    rGridParentRules.DataKeyNames = new string[] { "Id" };
-                    rGridParentRules.ShowHeaderWhenEmpty = false;
-                    rGridParentRules.EmptyDataText = string.Empty;
-                    rGridParentRules.ShowActionRow = false;
+                        rGridParentRules.DataKeyNames = new string[] { "Id" };
+                        rGridParentRules.ShowHeaderWhenEmpty = false;
+                        rGridParentRules.EmptyDataText = string.Empty;
+                        rGridParentRules.ShowActionRow = false;
 
-                    BindRoles();
+                        BindRoles();
 
-                    string scriptFormat = @"
+                        string scriptFormat = @"
                     Sys.Application.add_load(function () {{
                         $('#modal-popup div.modal-header h3 small', window.parent.document).html('{0}');
                     }});
                 ";
-                    string script = string.Format( scriptFormat, HttpUtility.JavaScriptStringEncode( iSecured.ToString() ) );
+                        string script = string.Format( scriptFormat, HttpUtility.JavaScriptStringEncode( iSecured.ToString() ) );
 
-                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "set-html-{0}", this.ClientID ), script, true );
+                        this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "set-html-{0}", this.ClientID ), script, true );
+                    }
+                    else
+                    {
+                        nbMessage.Text = "Unfortunately, you are not able to edit security because you do not belong to a role that has been configured to allow administration of this item.";
+                    }
                 }
                 else
                 {
-                    rGrid.Visible = false;
-                    rGridParentRules.Visible = false;
-                    nbMessage.Text = "Unfortunately, you are not able to edit security because you do not belong to a role that has been configured to allow administration of this item.";
-                    nbMessage.Visible = true;
+                    nbMessage.Text = "The item you are trying to secure does not exist or does not implement ISecured.";
                 }
             }
             else
             {
-                rGrid.Visible = false;
-                rGridParentRules.Visible = false;
                 nbMessage.Text = string.Format( "The requested entity type ('{0}') could not be loaded to determine security attributes.", entityTypeName );
-                nbMessage.Visible = true;
             }
 
             base.OnInit( e );
@@ -200,9 +205,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            nbMessage.Visible = false;
-
-            if ( iSecured.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+            if ( iSecured != null && iSecured.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                 {
@@ -211,9 +214,8 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                rGrid.Visible = false;
-                rGridParentRules.Visible = false;
-                nbMessage.Text = "You are not authorized to edit security for this entity";
+                divActions.Visible = false;
+                divContent.Visible = false;
                 nbMessage.Visible = true;
             }
 

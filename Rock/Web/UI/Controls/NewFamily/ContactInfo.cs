@@ -91,7 +91,13 @@ namespace Rock.Web.UI.Controls
                 writer.Write( cellPhone != null ? cellPhone.Value.EndsWith( "Phone" ) ? cellPhone.Value : cellPhone.Value + " Phone" : "Cell Phone" );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Style, "width:40%" );
+                writer.AddAttribute(HtmlTextWriterAttribute.Style, "width:5%");
+                writer.RenderBeginTag(HtmlTextWriterTag.Th);
+                writer.Write("SMS");
+                writer.RenderEndTag();
+
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Style, "width:35%" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
                 writer.Write( "Email" );
                 writer.RenderEndTag();

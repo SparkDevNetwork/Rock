@@ -62,7 +62,7 @@ namespace Rock.Client
         public DateTime StartDateTime { get; set; }
 
         /// <summary />
-        public int /* ContentChannelItemStatus*/ Status { get; set; }
+        public Rock.Client.Enums.ContentChannelItemStatus Status { get; set; }
 
         /// <summary />
         public string Title { get; set; }
@@ -73,6 +73,28 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source ContentChannelItem object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( ContentChannelItem source )
+        {
+            this.Id = source.Id;
+            this.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
+            this.ApprovedDateTime = source.ApprovedDateTime;
+            this.Content = source.Content;
+            this.ContentChannelId = source.ContentChannelId;
+            this.ContentChannelTypeId = source.ContentChannelTypeId;
+            this.ExpireDateTime = source.ExpireDateTime;
+            this.Permalink = source.Permalink;
+            this.Priority = source.Priority;
+            this.StartDateTime = source.StartDateTime;
+            this.Status = source.Status;
+            this.Title = source.Title;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

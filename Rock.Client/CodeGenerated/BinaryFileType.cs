@@ -56,16 +56,16 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public int /* ColorDepth*/ PreferredColorDepth { get; set; }
+        public Rock.Client.Enums.ColorDepth PreferredColorDepth { get; set; }
 
         /// <summary />
-        public int /* Format*/ PreferredFormat { get; set; }
+        public Rock.Client.Enums.Format PreferredFormat { get; set; }
 
         /// <summary />
         public bool PreferredRequired { get; set; }
 
         /// <summary />
-        public int /* Resolution*/ PreferredResolution { get; set; }
+        public Rock.Client.Enums.Resolution PreferredResolution { get; set; }
 
         /// <summary />
         public bool RequiresViewSecurity { get; set; }
@@ -79,6 +79,30 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source BinaryFileType object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( BinaryFileType source )
+        {
+            this.Id = source.Id;
+            this.AllowCaching = source.AllowCaching;
+            this.Description = source.Description;
+            this.IconCssClass = source.IconCssClass;
+            this.IsSystem = source.IsSystem;
+            this.MaxHeight = source.MaxHeight;
+            this.MaxWidth = source.MaxWidth;
+            this.Name = source.Name;
+            this.PreferredColorDepth = source.PreferredColorDepth;
+            this.PreferredFormat = source.PreferredFormat;
+            this.PreferredRequired = source.PreferredRequired;
+            this.PreferredResolution = source.PreferredResolution;
+            this.RequiresViewSecurity = source.RequiresViewSecurity;
+            this.StorageEntityTypeId = source.StorageEntityTypeId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

@@ -71,7 +71,7 @@ namespace Rock.Client
         public int? QualifierValueId { get; set; }
 
         /// <summary />
-        public int /* RSVP*/ RSVP { get; set; }
+        public Rock.Client.Enums.RSVP RSVP { get; set; }
 
         /// <summary />
         public int? ScheduleId { get; set; }
@@ -88,6 +88,33 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source Attendance object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Attendance source )
+        {
+            this.Id = source.Id;
+            this.AttendanceCodeId = source.AttendanceCodeId;
+            this.CampusId = source.CampusId;
+            this.DeviceId = source.DeviceId;
+            this.DidAttend = source.DidAttend;
+            this.DidNotOccur = source.DidNotOccur;
+            this.EndDateTime = source.EndDateTime;
+            this.GroupId = source.GroupId;
+            this.LocationId = source.LocationId;
+            this.Note = source.Note;
+            this.PersonAliasId = source.PersonAliasId;
+            this.Processed = source.Processed;
+            this.QualifierValueId = source.QualifierValueId;
+            this.RSVP = source.RSVP;
+            this.ScheduleId = source.ScheduleId;
+            this.SearchTypeValueId = source.SearchTypeValueId;
+            this.StartDateTime = source.StartDateTime;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

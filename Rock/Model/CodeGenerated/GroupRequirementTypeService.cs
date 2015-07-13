@@ -98,6 +98,9 @@ namespace Rock.Model
             target.PositiveLabel = source.PositiveLabel;
             target.RequirementCheckType = source.RequirementCheckType;
             target.SqlExpression = source.SqlExpression;
+            target.WarningDataViewId = source.WarningDataViewId;
+            target.WarningLabel = source.WarningLabel;
+            target.WarningSqlExpression = source.WarningSqlExpression;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

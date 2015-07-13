@@ -82,6 +82,28 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// pluralizes string based on the value for quantity
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="quantity">The quantity.</param>
+        /// <returns></returns>
+        public static string PluralizeForQuantity( string input, int quantity )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            if ( quantity > 1 )
+            {
+                return input.Pluralize();
+            }
+            else {
+                return input;
+            }
+        }
+
+        /// <summary>
         /// convert a integer to a string
         /// </summary>
         /// <param name="input"></param>
@@ -271,7 +293,7 @@ namespace Rock.Lava
         /// <param name="string"></param>
         /// <param name="replacement"></param>
         /// <returns></returns>
-        public static string Replace( object input, string @string, string replacement = "" )
+        public static string Replace( object input, object @string, object replacement = null )
         {
             if ( input == null )
             {
@@ -280,19 +302,22 @@ namespace Rock.Lava
             
             string inputAsString = input.ToString();
 
-            // escape common regex meta characters
+            string replacementString = replacement.ToString();
+            string pattern = Regex.Escape( @string.ToString() );
+
+            /*// escape common regex meta characters
             var listOfRegExChars = new List<string> { ".", "$", "{", "}", "^", "[", "]", "*", @"\", "+", "|", "?", "<", ">" };
             if ( listOfRegExChars.Contains( @string ) )
             {
                 @string = @"\" + @string;
-            }
+            }*/
 
-            if ( string.IsNullOrEmpty( inputAsString ) || string.IsNullOrEmpty( @string ) )
+            if ( string.IsNullOrEmpty( inputAsString ) || string.IsNullOrEmpty( pattern ) )
                 return inputAsString;
 
             return string.IsNullOrEmpty( inputAsString )
                 ? inputAsString
-                : Regex.Replace( inputAsString, @string, replacement );
+                : Regex.Replace( inputAsString, pattern, replacementString );
         }
 
         /// <summary>
@@ -352,8 +377,15 @@ namespace Rock.Lava
                 return inputAsString;
 
             int place = inputAsString.LastIndexOf( search );
-            string result = inputAsString.Remove( place, search.Length ).Insert( place, replacement );
-            return result;
+            if ( place > 0 )
+            {
+                return inputAsString.Remove( place, search.Length ).Insert( place, replacement );
+            }
+            else
+            {
+                return input.ToString();
+            }
+            
         }
 
         /// <summary>
@@ -788,6 +820,37 @@ namespace Rock.Lava
             return string.Format( "{0:" + format + "}", input );
         }
 
+
+        /// <summary>
+        /// Divideds the by.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="operand">The operand.</param>
+        /// <param name="precision">The precision.</param>
+        /// <returns></returns>
+        public static object DividedBy( object input, object operand, int precision = 2 )
+        {
+            if ( input == null || operand == null )
+                return null;
+
+            try
+            {
+                decimal dInput = 0;
+                decimal dOperand = 0;
+
+                if ( decimal.TryParse( input.ToString(), out dInput ) && decimal.TryParse( operand.ToString(), out dOperand ) )
+                {
+                    decimal result = ( dInput / dOperand );
+                    return decimal.Round( result, precision );
+                }
+
+                return "Could not convert input to number";
+                
+            } catch (Exception ex){
+                return ex.Message;
+            }
+        }
+
         #endregion
 
         #region Attribute Filters
@@ -802,6 +865,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Attribute( DotLiquid.Context context, object input, string attributeKey, string qualifier = "" )
         {
+            IHasAttributes item = null;
+            
             if ( input == null || attributeKey == null )
             {
                 return string.Empty;
@@ -835,10 +900,10 @@ namespace Rock.Lava
                 }
             }
 
-            // If input is an object that has attributes, find it's attribute value
+            // If input is an object that has attributes, find its attribute value
             else
             { 
-                IHasAttributes item = null;
+                
                 if ( input is IHasAttributes)
                 {
                     item = (IHasAttributes)input;
@@ -902,6 +967,14 @@ namespace Rock.Lava
                     if ( qualifier.Equals( "Url", StringComparison.OrdinalIgnoreCase ) && field is Rock.Field.ILinkableFieldType )
                     {
                         return ( (Rock.Field.ILinkableFieldType)field ).UrlLink( rawValue, attribute.QualifierValues );
+                    }
+
+                    // check if attribute is a key value list and return a collection of key/value pairs
+                    if ( field is Rock.Field.Types.KeyValueListFieldType )
+                    {
+                        var keyValueField = (Rock.Field.Types.KeyValueListFieldType)field;
+
+                        return keyValueField.GetValuesFromString( null, rawValue, attribute.QualifierValues, false );
                     }
 
                     // If qualifier was specified, and the attribute field type is an IEntityFieldType, try to find a property on the entity
@@ -1436,6 +1509,76 @@ namespace Rock.Lava
             }
 
             return inputList;
+        }
+
+        /// <summary>
+        /// Wheres the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="filterKey">The filter key.</param>
+        /// <param name="filterValue">The filter value.</param>
+        /// <returns></returns>
+        public static object Where( object input, string filterKey, object filterValue )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            if ( input is IEnumerable )
+            {
+                var result = new List<object>();
+                
+                foreach ( var value in ( (IEnumerable)input ) )
+                {
+                    if ( value is ILiquidizable )
+                    {
+                        var liquidObject = value as ILiquidizable;
+                        if (liquidObject.ContainsKey(filterKey) && liquidObject[filterKey].Equals(filterValue)) {
+                            result.Add(liquidObject);
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            return input;
+        }
+
+        /// <summary>
+        /// Selects the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="selectKey">The select key.</param>
+        /// <returns></returns>
+        public static object Select( object input, string selectKey )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            if ( input is IEnumerable )
+            {
+                var result = new List<object>();
+
+                foreach ( var value in ( (IEnumerable)input ) )
+                {
+                    if ( value is ILiquidizable )
+                    {
+                        var liquidObject = value as ILiquidizable;
+                        if ( liquidObject.ContainsKey( selectKey ) )
+                        {
+                            result.Add( liquidObject );
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            return input;
         }
 
         #endregion

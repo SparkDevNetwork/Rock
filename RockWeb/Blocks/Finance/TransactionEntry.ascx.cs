@@ -40,11 +40,10 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Transaction Entry" )]
     [Category( "Finance" )]
     [Description( "Creates a new financial transaction or scheduled transaction." )]
-
     [FinancialGatewayField( "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
     [FinancialGatewayField( "ACH Card Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 2 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, 
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false,
         Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE, "", 3 )]
     [BooleanField( "Impersonation", "Allow (only use on an internal page used by staff)", "Don't Allow",
         "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 4 )]
@@ -63,48 +62,42 @@ namespace RockWeb.Blocks.Finance
     // Text Options
 
     [TextField( "Panel Title", "The text to display in panel heading", false, "Gifts", "Text Options", 13 )]
-
     [TextField( "Contribution Info Title", "The text to display as heading of section for selecting account and amount.", false, "Contribution Information", "Text Options", 14 )]
     [TextField( "Add Account Text", "The button text to display for adding an additional account", false, "Add Another Account", "Text Options", 15 )]
-
     [TextField( "Personal Info Title", "The text to display as heading of section for entering personal information.", false, "Personal Information", "Text Options", 16 )]
-
     [TextField( "Payment Info Title", "The text to display as heading of section for entering credit card or bank account information.", false, "Payment Information", "Text Options", 17 )]
-
     [TextField( "Confirmation Title", "The text to display as heading of section for confirming information entered.", false, "Confirm Information", "Text Options", 18 )]
-    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", 
+    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <p>
-    Please confirm the information below. Once you have confirmed that the information is 
+    Please confirm the information below. Once you have confirmed that the information is
     accurate click the 'Finish' button to complete your transaction.
 </p>
 ", "Text Options", 19 )]
-    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", 
+    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <div class='alert alert-info'>
-    By clicking the 'finish' button below I agree to allow {{ OrganizationName }} 
+    By clicking the 'finish' button below I agree to allow {{ OrganizationName }}
     to transfer the amount above from my account. I acknowledge that I may
-    update the transaction information at any time by returning to this website. Please 
+    update the transaction information at any time by returning to this website. Please
     call the Finance Office if you have any additional questions.
 </div>
 ", "Text Options", 20 )]
-
     [TextField( "Success Title", "The text to display as heading of section for displaying details of gift.", false, "Gift Information", "Text Options", 21 )]
-    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section. <span class='tip tip-lava'></Fspan> <span class='tip tip-html'></span>", 
+    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section. <span class='tip tip-lava'></Fspan> <span class='tip tip-html'></span>",
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <p>
     Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively
     achieve our mission.  We are so grateful for your commitment.
 </p>
 ", "Text Options", 22 )]
-    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", 
+    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 ", "Text Options", 23 )]
-
     [TextField( "Save Account Title", "The text to display as heading of section for saving payment information.", false, "Make Giving Even Easier", "Text Options", 24 )]
-
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 25 )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 26 )]
+
     #endregion
 
     public partial class TransactionEntry : Rock.Web.UI.RockBlock
@@ -138,7 +131,7 @@ namespace RockWeb.Blocks.Finance
         /// <value>
         /// The group location identifier.
         /// </value>
-        protected int? GroupLocationId 
+        protected int? GroupLocationId
         {
             get { return ViewState["GroupLocationId"] as int?; }
             set { ViewState["GroupLocationId"] = value; }
@@ -350,8 +343,8 @@ namespace RockWeb.Blocks.Finance
 
                 if ( supportedFrequencies.Any() )
                 {
-                    bool allowScheduled = false;
-                    if ( bool.TryParse( GetAttributeValue( "AllowScheduled" ), out allowScheduled ) && allowScheduled )
+                    bool allowScheduled = GetAttributeValue( "AllowScheduled" ).AsBoolean();
+                    if ( allowScheduled )
                     {
                         _showRepeatingOptions = true;
                         var oneTimeFrequency = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME );
@@ -525,12 +518,12 @@ namespace RockWeb.Blocks.Finance
 
                         var personService = new PersonService( rockContext );
 
-                        bool displayPhone = false;
-                        if ( bool.TryParse( GetAttributeValue( "DisplayPhone" ), out displayPhone ) && displayPhone )
+                        bool displayPhone = GetAttributeValue( "DisplayPhone" ).AsBoolean();
+                        if ( displayPhone )
                         {
                             var phoneNumber = personService.GetPhoneNumber( person, DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ) );
 
-                            // If person did not have a home phone number, read the cell phone number (which would then 
+                            // If person did not have a home phone number, read the cell phone number (which would then
                             // get saved as a home number also if they don't change it, which is ok ).
                             if ( phoneNumber == null || string.IsNullOrWhiteSpace( phoneNumber.Number ) )
                             {
@@ -892,11 +885,7 @@ namespace RockWeb.Blocks.Finance
             var selectedGuids = GetAttributeValues( "Accounts" ).Select( Guid.Parse ).ToList();
             bool showAll = !selectedGuids.Any();
 
-            bool additionalAccounts = true;
-            if ( !bool.TryParse( GetAttributeValue( "AdditionalAccounts" ), out additionalAccounts ) )
-            {
-                additionalAccounts = true;
-            }
+            bool additionalAccounts = GetAttributeValue( "AdditionalAccounts" ).AsBoolean( true );
 
             SelectedAccounts = new List<AccountItem>();
             AvailableAccounts = new List<AccountItem>();
@@ -1037,8 +1026,8 @@ namespace RockWeb.Blocks.Finance
                     }
                     phone.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
                     phone.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
-                } 
-                
+                }
+
                 if ( familyGroup == null )
                 {
                     var groupLocationService = new GroupLocationService( rockContext );
@@ -1086,7 +1075,7 @@ namespace RockWeb.Blocks.Finance
 
                 if ( _ccGateway != null )
                 {
-                    var ccGatewayComponent = _ccGateway.GetGatewayComponent(); 
+                    var ccGatewayComponent = _ccGateway.GetGatewayComponent();
                     var ccCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
                     if ( ccGatewayComponent != null && ccGatewayComponent.SupportsSavedAccount( ccCurrencyType ) )
                     {
@@ -1191,7 +1180,7 @@ namespace RockWeb.Blocks.Finance
 
             var location = new Location();
             acAddress.GetValues( location );
-            if ( string.IsNullOrWhiteSpace( location.Street1 )  )
+            if ( string.IsNullOrWhiteSpace( location.Street1 ) )
             {
                 errorMessages.Add( "Make sure to enter a valid address.  An address is required for us to process this transaction" );
             }
@@ -1476,7 +1465,7 @@ namespace RockWeb.Blocks.Finance
                     return false;
                 }
 
-                if ( !person.PrimaryAliasId.HasValue)
+                if ( !person.PrimaryAliasId.HasValue )
                 {
                     errorMessage = "There was a problem creating the person's primary alias";
                     return false;
@@ -1505,7 +1494,7 @@ namespace RockWeb.Blocks.Finance
                     schedule.PersonId = person.Id;
 
                     var scheduledTransaction = gateway.AddScheduledPayment( financialGateway, schedule, paymentInfo, out errorMessage );
-                    if ( scheduledTransaction != null  )
+                    if ( scheduledTransaction != null )
                     {
                         scheduledTransaction.TransactionFrequencyValueId = schedule.TransactionFrequencyValue.Id;
                         scheduledTransaction.AuthorizedPersonAliasId = person.PrimaryAliasId.Value;
@@ -1517,7 +1506,7 @@ namespace RockWeb.Blocks.Finance
                         changeSummary.AppendFormat( "{0} starting {1}", schedule.TransactionFrequencyValue.Value, schedule.StartDate.ToShortDateString() );
                         changeSummary.AppendLine();
                         changeSummary.Append( paymentInfo.CurrencyTypeValue.Value );
-                        if (paymentInfo.CreditCardTypeValue != null)
+                        if ( paymentInfo.CreditCardTypeValue != null )
                         {
                             changeSummary.AppendFormat( " - {0}", paymentInfo.CreditCardTypeValue.Value );
                         }
@@ -1565,17 +1554,43 @@ namespace RockWeb.Blocks.Finance
                     var transaction = gateway.Charge( financialGateway, paymentInfo, out errorMessage );
                     if ( transaction != null )
                     {
-                        transaction.TransactionDateTime = RockDateTime.Now;
+                        var txnChanges = new List<string>();
+                        txnChanges.Add( "Created Transaction" );
+
+                        History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
+
                         transaction.AuthorizedPersonAliasId = person.PrimaryAliasId;
+                        History.EvaluateChange( txnChanges, "Person", string.Empty, person.FullName );
+
+                        transaction.TransactionDateTime = RockDateTime.Now;
+                        History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );
+
                         transaction.FinancialGatewayId = financialGateway.Id;
-                        transaction.TransactionTypeValueId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) ).Id;
+                        History.EvaluateChange( txnChanges, "Gateway", string.Empty, financialGateway.Name );
+
+                        var txnType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
+                        transaction.TransactionTypeValueId = txnType.Id;
+                        History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
+
                         transaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
+                        History.EvaluateChange( txnChanges, "Currency Type", string.Empty, paymentInfo.CurrencyTypeValue.Value );
+
                         transaction.CreditCardTypeValueId = CreditCardTypeValueId;
+                        if ( CreditCardTypeValueId.HasValue )
+                        {
+                            var ccType = DefinedValueCache.Read( CreditCardTypeValueId.Value );
+                            History.EvaluateChange( txnChanges, "Credit Card Type", string.Empty, ccType.Value );
+                        }
 
                         Guid sourceGuid = Guid.Empty;
                         if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
                         {
-                            transaction.SourceTypeValueId = DefinedValueCache.Read( sourceGuid ).Id;
+                            var source = DefinedValueCache.Read( sourceGuid );
+                            if ( source != null )
+                            {
+                                transaction.SourceTypeValueId = source.Id;
+                                History.EvaluateChange( txnChanges, "Source", string.Empty, source.Value );
+                            }
                         }
 
                         foreach ( var account in SelectedAccounts.Where( a => a.Amount > 0 ) )
@@ -1584,11 +1599,12 @@ namespace RockWeb.Blocks.Finance
                             transactionDetail.Amount = account.Amount;
                             transactionDetail.AccountId = account.Id;
                             transaction.TransactionDetails.Add( transactionDetail );
+                            History.EvaluateChange( txnChanges, account.Name, 0.0M.ToString( "C2" ), transactionDetail.Amount.ToString( "C2" ) );
                         }
 
                         var batchService = new FinancialBatchService( rockContext );
 
-                        // Get the batch 
+                        // Get the batch
                         var batch = batchService.Get(
                             GetAttributeValue( "BatchNamePrefix" ),
                             paymentInfo.CurrencyTypeValue,
@@ -1596,11 +1612,47 @@ namespace RockWeb.Blocks.Finance
                             transaction.TransactionDateTime.Value,
                             financialGateway.GetBatchTimeOffset() );
 
-                        batch.ControlAmount += transaction.TotalAmount;
+                        var batchChanges = new List<string>();
+
+                        if ( batch.Id == 0 )
+                        {
+                            batchChanges.Add( "Generated the batch" );
+                            History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
+                            History.EvaluateChange( batchChanges, "Status", null, batch.Status );
+                            History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
+                            History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+                        }
+
+                        decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
+                        History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.ToString( "C2" ), newControlAmount.ToString( "C2" ) );
+                        batch.ControlAmount = newControlAmount;
 
                         transaction.BatchId = batch.Id;
                         batch.Transactions.Add( transaction );
-                        rockContext.SaveChanges();
+
+                        rockContext.WrapTransaction( () =>
+                        {
+                            rockContext.SaveChanges();
+
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( FinancialBatch ),
+                                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                                batch.Id,
+                                batchChanges
+                            );
+
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( FinancialBatch ),
+                                Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                                batch.Id,
+                                txnChanges,
+                                person.FullName,
+                                typeof( FinancialTransaction ),
+                                transaction.Id
+                            );
+                        } );
 
                         TransactionCode = transaction.TransactionCode;
                     }
@@ -1629,7 +1681,6 @@ namespace RockWeb.Blocks.Finance
                 tdPaymentMethodReceipt.Description = paymentInfo.CurrencyTypeValue.Description;
                 tdAccountNumberReceipt.Description = paymentInfo.MaskedNumber;
                 tdWhenReceipt.Description = schedule != null ? schedule.ToString() : "Today";
-
 
                 // If there was a transaction code returned and this was not already created from a previous saved account,
                 // show the option to save the account.

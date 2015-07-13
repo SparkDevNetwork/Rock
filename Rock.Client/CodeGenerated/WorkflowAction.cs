@@ -55,6 +55,22 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source WorkflowAction object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( WorkflowAction source )
+        {
+            this.Id = source.Id;
+            this.ActionTypeId = source.ActionTypeId;
+            this.ActivityId = source.ActivityId;
+            this.CompletedDateTime = source.CompletedDateTime;
+            this.FormAction = source.FormAction;
+            this.LastProcessedDateTime = source.LastProcessedDateTime;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

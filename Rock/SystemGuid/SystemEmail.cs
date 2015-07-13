@@ -42,6 +42,16 @@ namespace Rock.SystemGuid
         public const string GROUP_ATTENDANCE_REMINDER = "ED567FDE-A3B4-4827-899D-C2740DF3E5DA";
 
         /// <summary>
+        /// Gets the template guid for event registration confirmation
+        /// </summary>
+        public const string REGISTRATION_CONFIRMATION = "7B0F4F06-69BD-4CB4-BD04-8DA3779D5259";
+
+        /// <summary>
+        /// Gets the template guid for event registration notification
+        /// </summary>
+        public const string REGISTRATION_NOTIFICATION = "158607D1-0772-4947-ADD6-EA31AB6ABC2F";
+
+        /// <summary>
         /// Gets the template guid for the Account Created email
         /// </summary>
         public const string SECURITY_ACCOUNT_CREATED = "84e373e9-3aaf-4a31-b3fb-a8e3f0666710";

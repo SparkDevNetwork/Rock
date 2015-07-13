@@ -560,7 +560,7 @@ namespace RockWeb.Blocks.CheckIn
             foreach ( var childGroup in group.Groups
                 .Where( a => 
                     !ProcessedGroupIds.Contains( a.Guid ) &&
-                    a.GroupTypeId == group.GroupTypeId
+                    a.GroupType.Guid == group.GroupType.Guid
                     )
                 .OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
@@ -699,6 +699,8 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             groupTypeEditor.CheckinLabels.Add( checkinLabelAttributeInfo );
+
+            mdAddCheckinLabel.Hide();
 
             pnlDetails.Visible = true;
         }

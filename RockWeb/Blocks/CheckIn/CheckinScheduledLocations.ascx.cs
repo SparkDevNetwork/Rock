@@ -159,8 +159,10 @@ namespace RockWeb.Blocks.CheckIn
 
             groupLocationQry = groupLocationQry.OrderBy( a => a.Group.Name ).ThenBy( a => a.Location.Name );
 
+            List<int> currentDeviceLocationIdList = this.GetGroupTypesLocations( rockContext ).Select( a => a.Id ).Distinct().ToList();
+
             var qryList = groupLocationQry
-                .Where( a => a.Location != null )
+                .Where( a => currentDeviceLocationIdList.Contains( a.LocationId ) )
                 .Select( a =>
                 new
                 {

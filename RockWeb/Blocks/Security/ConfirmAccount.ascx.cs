@@ -23,6 +23,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Security
 {
@@ -38,7 +39,8 @@ namespace RockWeb.Blocks.Security
     [CodeEditorField( "Password Reset Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "{0}, The password for your '{1}' account has been changed", "Captions", 2 )]
     [CodeEditorField( "Delete Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "Are you sure you want to delete the '{0}' account?", "Captions", 3 )]
     [CodeEditorField( "Deleted Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "The account has been deleted.", "Captions", 4 )]
-    [CodeEditorField( "Invalid Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "The confirmation code you've entered is not valid.  Please enter a valid confirmation code or <a href='{0}'>create a new account</a>.", "Captions", 5 )]    
+    [CodeEditorField( "Invalid Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "The confirmation code you've entered is not valid.  Please enter a valid confirmation code or <a href='{0}'>create a new account</a>.", "Captions", 5 )]
+    [CodeEditorField( "Password Reset Unavailable Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "This type of account does not allow passwords to be changed.  Please contact your system administrator for assistance changing your password.", "Captions", 6 )]
     [LinkedPage( "New Account Page", "Page to navigate to when user selects 'Create New Account' option (if blank will use 'NewAccount' page route)" )]
     public partial class ConfirmAccount : Rock.Web.UI.RockBlock
     {
@@ -83,6 +85,7 @@ namespace RockWeb.Blocks.Security
             pnlDelete.Visible = false;
             pnlDeleted.Visible = false;
             pnlInvalid.Visible = false;
+            pnlResetUnavailable.Visible = false;
 
             if (!Page.IsPostBack)
             {
@@ -231,19 +234,28 @@ namespace RockWeb.Blocks.Security
 
             if ( user != null )
             {
-                string caption = GetAttributeValue( "ResetPasswordCaption" );
-                if ( caption.Contains( "{1}" ) )
+                var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
+                if ( component.SupportsChangePassword )
                 {
-                    caption = string.Format( caption, user.Person.FirstName, user.UserName );
+                    string caption = GetAttributeValue( "ResetPasswordCaption" );
+                    if ( caption.Contains( "{1}" ) )
+                    {
+                        caption = string.Format( caption, user.Person.FirstName, user.UserName );
+                    }
+                    else if ( caption.Contains( "{0}" ) )
+                    {
+                        caption = string.Format( caption, user.Person.FirstName );
+                    }
+
+                    lResetPassword.Text = caption;
+
+                    pnlResetPassword.Visible = true;
                 }
-                else if ( caption.Contains( "{0}" ) )
+                else
                 {
-                    caption = string.Format( caption, user.Person.FirstName );
+                    pnlResetUnavailable.Visible = true;
+                    lResetUnavailable.Text = GetAttributeValue( "PasswordResetUnavailableCaption" );
                 }
-
-                lResetPassword.Text = caption;
-
-                pnlResetPassword.Visible = true;
             }
             else
             {

@@ -77,7 +77,7 @@ namespace Rock.Client
         public string NotificationEmails { get; set; }
 
         /// <summary />
-        public int /* JobNotificationStatus*/ NotificationStatus { get; set; }
+        public Rock.Client.Enums.JobNotificationStatus NotificationStatus { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -85,6 +85,32 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source ServiceJob object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( ServiceJob source )
+        {
+            this.Id = source.Id;
+            this.Assembly = source.Assembly;
+            this.Class = source.Class;
+            this.CronExpression = source.CronExpression;
+            this.Description = source.Description;
+            this.IsActive = source.IsActive;
+            this.IsSystem = source.IsSystem;
+            this.LastRunDateTime = source.LastRunDateTime;
+            this.LastRunDurationSeconds = source.LastRunDurationSeconds;
+            this.LastRunSchedulerName = source.LastRunSchedulerName;
+            this.LastStatus = source.LastStatus;
+            this.LastStatusMessage = source.LastStatusMessage;
+            this.LastSuccessfulRunDateTime = source.LastSuccessfulRunDateTime;
+            this.Name = source.Name;
+            this.NotificationEmails = source.NotificationEmails;
+            this.NotificationStatus = source.NotificationStatus;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

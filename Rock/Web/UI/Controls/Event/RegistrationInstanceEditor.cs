@@ -1,0 +1,569 @@
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.UI;
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
+using Rock;
+using Rock.Data;
+using Rock.Model;
+using Rock.Web.Cache;
+using Rock.Workflow;
+
+namespace Rock.Web.UI.Controls
+{
+    /// <summary>
+    /// Control used to edit registration instance details
+    /// </summary>
+    [ToolboxData( "<{0}:RegistrationInstanceEditor runat=server></{0}:RegistrationInstanceEditor>" )]
+    public class RegistrationInstanceEditor : CompositeControl, IHasValidationGroup
+    {
+        private bool _controlsLoaded = false;
+
+        RockTextBox _tbName;
+        RockCheckBox _cbIsActive;
+        RockTextBox _tbUrlSlug;
+        CodeEditor _ceDetails;
+        DateTimePicker _dtpStart;
+        DateTimePicker _dtpEnd;
+        NumberBox _nbMaxAttendees;
+        AccountPicker _apAccount;
+        RockTextBox _tbContactName;
+        EmailBox _ebContactEmail;
+        CodeEditor _ceAdditionalReminderDetails;
+        CodeEditor _ceAdditionalConfirmationDetails;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether active checkbox should be displayed
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show active]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowActive
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbIsActive.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbIsActive.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show URL slug].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show URL slug]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowUrlSlug
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbUrlSlug.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _tbUrlSlug.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbName.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _tbName.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="RegistrationInstanceEditor"/> is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if active; otherwise, <c>false</c>.
+        /// </value>
+        public bool Active 
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbIsActive.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbIsActive.Checked = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the URL slug.
+        /// </summary>
+        /// <value>
+        /// The URL slug.
+        /// </value>
+        public string UrlSlug
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbUrlSlug.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _tbUrlSlug.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the details.
+        /// </summary>
+        /// <value>
+        /// The details.
+        /// </value>
+        public string Details
+        {
+            get
+            {
+                EnsureChildControls();
+                return _ceDetails.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _ceDetails.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the start.
+        /// </summary>
+        /// <value>
+        /// The start.
+        /// </value>
+        public DateTime? Start
+        {
+            get
+            {
+                EnsureChildControls();
+                return _dtpStart.SelectedDateTime;
+            }
+            set
+            {
+                EnsureChildControls();
+                _dtpStart.SelectedDateTime = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the end.
+        /// </summary>
+        /// <value>
+        /// The end.
+        /// </value>
+        public DateTime? End
+        {
+            get
+            {
+                EnsureChildControls();
+                return _dtpEnd.SelectedDateTime;
+            }
+            set
+            {
+                EnsureChildControls();
+                _dtpEnd.SelectedDateTime = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum attendees.
+        /// </summary>
+        /// <value>
+        /// The maximum attendees.
+        /// </value>
+        public int MaxAttendees
+        {
+            get
+            {
+                EnsureChildControls();
+                return _nbMaxAttendees.Text.AsInteger();
+            }
+            set
+            {
+                EnsureChildControls();
+                _nbMaxAttendees.Text = value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the account identifier.
+        /// </summary>
+        /// <value>
+        /// The account identifier.
+        /// </value>
+        public int AccountId
+        {
+            get
+            {
+                EnsureChildControls();
+                return _apAccount.SelectedValue.AsInteger();
+            }
+            set
+            {
+                EnsureChildControls();
+                _apAccount.SetValue( value );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the contact.
+        /// </summary>
+        /// <value>
+        /// The name of the contact.
+        /// </value>
+        public string ContactName
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbContactName.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _tbContactName.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the contact email.
+        /// </summary>
+        /// <value>
+        /// The contact email.
+        /// </value>
+        public string ContactEmail
+        {
+            get
+            {
+                EnsureChildControls();
+                return _ebContactEmail.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _ebContactEmail.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the additional reminder details.
+        /// </summary>
+        /// <value>
+        /// The additional reminder details.
+        /// </value>
+        public string AdditionalReminderDetails
+        {
+            get
+            {
+                EnsureChildControls();
+                return _ceAdditionalReminderDetails.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _ceAdditionalReminderDetails.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the additional confirmation details.
+        /// </summary>
+        /// <value>
+        /// The additional confirmation details.
+        /// </value>
+        public string AdditionalConfirmationDetails
+        {
+            get
+            {
+                EnsureChildControls();
+                return _ceAdditionalConfirmationDetails.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _ceAdditionalConfirmationDetails.Text = value;
+            }
+        }
+
+        
+        /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbName.ValidationGroup;
+            }
+            set
+            {
+                EnsureChildControls();
+                _tbName.ValidationGroup = value;
+                _cbIsActive.ValidationGroup = value;
+                _tbUrlSlug.ValidationGroup = value;
+                _ceDetails.ValidationGroup = value;
+                _dtpStart.ValidationGroup = value;
+                _dtpEnd.ValidationGroup = value;
+                _nbMaxAttendees.ValidationGroup = value;
+                _tbContactName.ValidationGroup = value;
+                _ebContactEmail.ValidationGroup = value;
+                _apAccount.ValidationGroup = value;
+                _ceAdditionalReminderDetails.ValidationGroup = value;
+                _ceAdditionalConfirmationDetails.ValidationGroup = value;
+            }
+        }
+
+        /// <summary>
+        /// Reads the instance.
+        /// </summary>
+        /// <param name="instance">The instance.</param>
+        public void SetValue( RegistrationInstance instance )
+        {
+            EnsureChildControls();
+
+            if ( instance != null )
+            {
+                _tbName.Text = instance.Name;
+                if ( ShowActive )
+                {
+                    _cbIsActive.Checked = instance.IsActive;
+                }
+                _ceDetails.Text = instance.Details;
+                _dtpStart.SelectedDateTime = instance.StartDateTime;
+                _dtpEnd.SelectedDateTime = instance.EndDateTime;
+                _nbMaxAttendees.Text = instance.MaxAttendees.ToString();
+                _tbContactName.Text = instance.ContactName;
+                _ebContactEmail.Text = instance.ContactEmail;
+                _apAccount.SetValue( instance.AccountId );
+                _ceAdditionalReminderDetails.Text = instance.AdditionalReminderDetails;
+                _ceAdditionalConfirmationDetails.Text = instance.AdditionalConfirmationDetails;
+            }
+            else
+            {
+                _tbName.Text = string.Empty;
+                _cbIsActive.Checked = true;
+                _ceDetails.Text = string.Empty;
+                _dtpStart.SelectedDateTime = null;
+                _dtpEnd.SelectedDateTime = null;
+                _nbMaxAttendees.Text = string.Empty;
+                _tbContactName.Text = string.Empty;
+                _ebContactEmail.Text = string.Empty;
+                _apAccount.SetValue( null );
+                _ceAdditionalReminderDetails.Text = string.Empty;
+                _ceAdditionalConfirmationDetails.Text = string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Updates the instance.
+        /// </summary>
+        /// <param name="instance">The instance.</param>
+        public void GetValue( RegistrationInstance instance )
+        {
+            EnsureChildControls();
+
+            if ( instance != null )
+            {
+                instance.Name = _tbName.Text;
+                if ( ShowActive )
+                {
+                    instance.IsActive = _cbIsActive.Checked;
+                }
+                instance.Details = _ceDetails.Text;
+                instance.StartDateTime = _dtpStart.SelectedDateTime;
+                instance.EndDateTime = _dtpEnd.SelectedDateTime;
+                instance.MaxAttendees = _nbMaxAttendees.Text.AsInteger();
+                instance.ContactName = _tbContactName.Text;
+                instance.ContactEmail = _ebContactEmail.Text;
+                instance.AccountId = _apAccount.SelectedValue.AsInteger();
+                instance.AdditionalReminderDetails = _ceAdditionalReminderDetails.Text;
+                instance.AdditionalConfirmationDetails = _ceAdditionalConfirmationDetails.Text;
+            }
+        }
+
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
+        protected override void CreateChildControls()
+        {
+            if ( !_controlsLoaded )
+            {
+                Controls.Clear();
+
+                _tbName = new RockTextBox();
+                _tbName.ID = this.ID + "_tbName";
+                _tbName.Label = "Name";
+                _tbName.Required = true;
+                Controls.Add( _tbName );
+
+                _cbIsActive = new RockCheckBox();
+                _cbIsActive.ID = this.ID + "_cbIsActive";
+                _cbIsActive.Label = "Active";
+                _cbIsActive.Text = "Yes";
+                Controls.Add( _cbIsActive );
+
+                _tbUrlSlug = new RockTextBox();
+                _tbUrlSlug.ID = this.ID + "_tbUrlSlug";
+                _tbUrlSlug.Label = "URL Slug";
+                _tbUrlSlug.Visible = false;
+                Controls.Add( _tbUrlSlug );
+
+                _ceDetails = new CodeEditor();
+                _ceDetails.ID = this.ID + "_ceDetails";
+                _ceDetails.Label = "Details";
+                _ceDetails.EditorMode = CodeEditorMode.Html;
+                _ceDetails.EditorTheme = CodeEditorTheme.Rock;
+                _ceDetails.EditorHeight = "100";
+                Controls.Add( _ceDetails );
+
+                _dtpStart = new DateTimePicker();
+                _dtpStart.ID = this.ID + "_dtpStart";
+                _dtpStart.Label = "Registration Starts";
+                Controls.Add( _dtpStart );
+
+                _dtpEnd = new DateTimePicker();
+                _dtpEnd.ID = this.ID + "_dtpEnd";
+                _dtpEnd.Label = "Registration Ends";
+                Controls.Add( _dtpEnd );
+
+                _nbMaxAttendees = new NumberBox();
+                _nbMaxAttendees.ID = this.ID + "_nbMaxAttendees";
+                _nbMaxAttendees.Label = "Maximum Attendees";
+                _nbMaxAttendees.NumberType = ValidationDataType.Integer;
+                Controls.Add( _nbMaxAttendees );
+
+                _apAccount = new AccountPicker();
+                _apAccount.ID = this.ID + "_apAccount";
+                _apAccount.Label = "Account";
+                _apAccount.Required = true;
+                Controls.Add( _apAccount );
+
+                _tbContactName = new RockTextBox();
+                _tbContactName.ID = this.ID + "_tbContactName";
+                _tbContactName.Label = "Contact Name";
+                Controls.Add( _tbContactName );
+
+                _ebContactEmail = new EmailBox();
+                _ebContactEmail.ID = this.ID + "_ebContactEmail";
+                _ebContactEmail.Label = "Contact Email";
+                Controls.Add( _ebContactEmail );
+
+                _ceAdditionalReminderDetails = new CodeEditor();
+                _ceAdditionalReminderDetails.ID = this.ID + "_ceAdditionalReminderDetails";
+                _ceAdditionalReminderDetails.Label = "Additional Reminder Details";
+                _ceAdditionalReminderDetails.EditorMode = CodeEditorMode.Html;
+                _ceAdditionalReminderDetails.EditorTheme = CodeEditorTheme.Rock;
+                _ceAdditionalReminderDetails.EditorHeight = "100";
+                Controls.Add( _ceAdditionalReminderDetails );
+
+                _ceAdditionalConfirmationDetails = new CodeEditor();
+                _ceAdditionalConfirmationDetails.ID = this.ID + "_ceAdditionalConfirmationDetails";
+                _ceAdditionalConfirmationDetails.Label = "Additional Confirmation Details";
+                _ceAdditionalConfirmationDetails.EditorMode = CodeEditorMode.Html;
+                _ceAdditionalConfirmationDetails.EditorTheme = CodeEditorTheme.Rock;
+                _ceAdditionalConfirmationDetails.EditorHeight = "100";
+                Controls.Add( _ceAdditionalConfirmationDetails );
+
+                _controlsLoaded = true;
+            }
+        }
+
+        /// <summary>
+        /// Writes the <see cref="T:System.Web.UI.WebControls.CompositeControl" /> content to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object, for display on the client.
+        /// </summary>
+        /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
+        protected override void Render( HtmlTextWriter writer )
+        {
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _tbName.RenderControl( writer );
+            writer.RenderEndTag();  // col-md-6
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _cbIsActive.RenderControl( writer );
+            _tbUrlSlug.RenderControl( writer );
+            writer.RenderEndTag();  // col-md-6
+
+            writer.RenderEndTag();  // row
+
+            _ceDetails.RenderControl( writer );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _dtpStart.RenderControl( writer );
+            _dtpEnd.RenderControl( writer );
+            _nbMaxAttendees.RenderControl( writer );
+            writer.RenderEndTag();  // col-md-6
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _apAccount.RenderControl( writer );
+            _tbContactName.RenderControl( writer );
+            _ebContactEmail.RenderControl( writer );
+            writer.RenderEndTag();  // col-md-6
+
+            writer.RenderEndTag();  // row
+
+            _ceAdditionalReminderDetails.RenderControl( writer );
+
+            _ceAdditionalConfirmationDetails.RenderControl( writer );
+
+        }
+
+    }
+}

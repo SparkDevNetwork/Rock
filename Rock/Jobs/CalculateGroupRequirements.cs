@@ -54,45 +54,79 @@ namespace Rock.Jobs
             var groupMemberService = new GroupMemberService( rockContext );
 
             // we only need to consider group requirements that are based on a DataView or SQL
-            // and we only need to look at the ones that can expire
             var groupRequirementQry = groupRequirementService.Queryable()
                 .Where( a => a.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual )
-                .Where( a => a.GroupRequirementType.CanExpire == true && a.GroupRequirementType.ExpireInDays.HasValue )
                 .AsNoTracking();
 
             var calculationExceptions = new List<Exception>();
 
-            foreach ( var groupRequirement in groupRequirementQry.ToList() )
+            foreach ( var groupRequirement in groupRequirementQry.Include( i => i.GroupRequirementType ).AsNoTracking().ToList() )
             {
                 try
                 {
                     var groupMemberQry = groupMemberService.Queryable().Where( a => a.GroupId == groupRequirement.GroupId ).AsNoTracking();
                     var personQry = groupMemberQry.Select( a => a.Person );
-
-                    // narrow it down to persons that a group member requirement that has expired
                     var currentDateTime = RockDateTime.Now;
                     var expireDaysCount = groupRequirement.GroupRequirementType.ExpireInDays.Value;
-                    var groupMemberRequirementQry = groupMemberRequirementService.Queryable().Where( a => SqlFunctions.DateDiff( "day", a.LastRequirementCheckDateTime, currentDateTime ) > expireDaysCount );
-                    personQry = personQry.Where( a => groupMemberRequirementQry.Any( r => r.GroupMember.PersonId == a.Id ) );
+                    var qryGroupMemberRequirementsAlreadyOK = groupMemberRequirementService.Queryable().Where( a => a.GroupRequirementId == groupRequirement.Id );
+
+                    if ( groupRequirement.GroupRequirementType.CanExpire && groupRequirement.GroupRequirementType.ExpireInDays.HasValue )
+                    {
+                        // Expirable: don't recalculate members that already met the requirement within the expiredays
+                        qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => a.RequirementMetDateTime.HasValue && SqlFunctions.DateDiff( "day", a.RequirementMetDateTime, currentDateTime ) < expireDaysCount );
+                    }
+                    else
+                    {
+                        // No Expiration: don't recalculate members that already met the requirement
+                        qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => a.RequirementMetDateTime.HasValue );
+                    }
+
+                    personQry = personQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMember.PersonId == a.Id ) );
 
                     var results = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, personQry, groupRequirement.GroupRoleId );
                     foreach ( var result in results )
                     {
                         var groupMemberRequirement = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.PersonId == result.PersonId && a.GroupRequirementId == result.GroupRequirement.Id ).FirstOrDefault();
-                        if ( groupMemberRequirement != null )
+                        if ( groupMemberRequirement == null )
                         {
-                            groupMemberRequirement.LastRequirementCheckDateTime = currentDateTime;
-                            if ( result.MeetsGroupRequirement == MeetsGroupRequirement.Meets )
+                            var groupMemberId = groupMemberQry.Where( a => a.PersonId == result.PersonId ).Select( a => a.Id ).FirstOrDefault();
+                            if ( groupMemberId > 0 )
                             {
-                                // they meet the requirement so update the Requirement Met Date/Time
-                                groupMemberRequirement.RequirementMetDateTime = currentDateTime;
-                            }
-                            else
-                            {
-                                // they don't meet the requirement so set the Requirement Met Date/Time to null
-                                groupMemberRequirement.RequirementMetDateTime = null;
+                                groupMemberRequirement = new GroupMemberRequirement();
+                                groupMemberRequirement.GroupMemberId = groupMemberId;
+                                groupMemberRequirement.GroupRequirementId = groupRequirement.Id;
+                                groupMemberRequirementService.Add( groupMemberRequirement );
                             }
                         }
+
+                        groupMemberRequirement.LastRequirementCheckDateTime = currentDateTime;
+
+                        if ( result.MeetsGroupRequirement == MeetsGroupRequirement.Meets )
+                        {
+                            // they meet the requirement so update the Requirement Met Date/Time
+                            groupMemberRequirement.RequirementMetDateTime = currentDateTime;
+                        }
+                        else
+                        {
+                            // they don't meet the requirement so set the Requirement Met Date/Time to null
+                            groupMemberRequirement.RequirementMetDateTime = null;
+                        }
+
+                        if ( result.WarningIncluded )
+                        {
+                            if ( !groupMemberRequirement.RequirementWarningDateTime.HasValue )
+                            {
+                                // they have a warning for the requirement, and didn't have a warning already
+                                groupMemberRequirement.RequirementWarningDateTime = currentDateTime;
+                            }
+                        }
+                        else
+                        {
+                            // no warning, so set to null
+                            groupMemberRequirement.RequirementWarningDateTime = null;
+                        }
+
+                        rockContext.SaveChanges();
                     }
                 }
                 catch ( Exception ex )

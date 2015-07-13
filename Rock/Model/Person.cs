@@ -116,7 +116,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Person is deceased; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool? IsDeceased
+        public bool IsDeceased
         {
             get
             {
@@ -124,14 +124,7 @@ namespace Rock.Model
             }
             set
             {
-                if ( value.HasValue )
-                {
-                    _isDeceased = value.Value;
-                }
-                else
-                {
-                    _isDeceased = false;
-                }
+                _isDeceased = value;
             }
         }
 
@@ -483,23 +476,9 @@ namespace Rock.Model
         {
             get
             {
-                var fullName = new StringBuilder();
-
-                fullName.AppendFormat( "{0} {1}", NickName, LastName );
-
                 // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so 
                 // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
-                if ( SuffixValueId.HasValue )
-                {
-                    var suffix = DefinedValueCache.Read( SuffixValueId.Value );
-                    if ( suffix != null )
-                    {
-                        fullName.AppendFormat( " {0}", suffix.Value );
-                    }
-                }
-
-                return fullName.ToString();
-
+                return FormatFullName( NickName, LastName, SuffixValueId );
             }
 
             private set { }
@@ -511,14 +490,10 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is business; otherwise, <c>false</c>.
         /// </value>
-        [NotMapped]
-        private bool IsBusiness
+        private static bool IsBusiness( int? recordTypeValueId)
         {
-            get
-            {
-                int recordTypeValueIdBusiness = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
-                return this.RecordTypeValueId.HasValue && this.RecordTypeValueId == recordTypeValueIdBusiness;
-            }
+            int recordTypeValueIdBusiness = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+            return recordTypeValueId.HasValue && recordTypeValueId == recordTypeValueIdBusiness;
         }
 
         /// <summary>
@@ -532,29 +507,42 @@ namespace Rock.Model
         {
             get
             {
-                if ( this.IsBusiness )
-                {
-                    return LastName;
-                }
-
-                var fullName = new StringBuilder();
-
-                fullName.Append( LastName );
-
-                // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so 
-                // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
-                if ( SuffixValueId.HasValue )
-                {
-                    var suffix = DefinedValueCache.Read( SuffixValueId.Value );
-                    if ( suffix != null )
-                    {
-                        fullName.AppendFormat( " {0}", suffix.Value );
-                    }
-                }
-
-                fullName.AppendFormat( ", {0}", NickName );
-                return fullName.ToString();
+                return FormatFullNameReversed( this.LastName, this.NickName, this.SuffixValueId, this.RecordTypeValueId );
             }
+        }
+
+        /// <summary>
+        /// Gets the full name reversed.
+        /// </summary>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="nickName">Name of the nick.</param>
+        /// <param name="suffixValueId">The suffix value identifier.</param>
+        /// <param name="recordTypeValueId">The record type value identifier.</param>
+        /// <returns></returns>
+        public static string FormatFullNameReversed( string lastName, string nickName, int? suffixValueId, int? recordTypeValueId )
+        {
+            if ( IsBusiness(recordTypeValueId) )
+            {
+                return lastName;
+            }
+
+            var fullName = new StringBuilder();
+
+            fullName.Append( lastName );
+
+            // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so 
+            // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
+            if ( suffixValueId.HasValue )
+            {
+                var suffix = DefinedValueCache.Read( suffixValueId.Value );
+                if ( suffix != null )
+                {
+                    fullName.AppendFormat( " {0}", suffix.Value );
+                }
+            }
+
+            fullName.AppendFormat( ", {0}", nickName );
+            return fullName.ToString();
         }
 
         /// <summary>
@@ -568,7 +556,7 @@ namespace Rock.Model
         {
             get
             {
-                if ( this.IsBusiness )
+                if ( IsBusiness(this.RecordTypeValueId) )
                 {
                     return LastName;
                 }
@@ -595,7 +583,7 @@ namespace Rock.Model
         {
             get
             {
-                if ( this.IsBusiness )
+                if ( IsBusiness( this.RecordTypeValueId ) )
                 {
                     return LastName;
                 }
@@ -923,20 +911,28 @@ namespace Rock.Model
         {
             get
             {
-                if ( BirthYear.HasValue )
-                {
-                    DateTime? bd = BirthDate;
-                    if ( bd.HasValue )
-                    {
-                        DateTime today = RockDateTime.Today;
-                        int age = today.Year - bd.Value.Year;
-                        if ( bd.Value > today.AddYears( -age ) ) age--;
-                        return age;
-                    }
-                }
-                return null;
+                return Person.GetAge( this.BirthDate );
+                
             }
             private set { }
+        }
+
+        /// <summary>
+        /// Gets the age.
+        /// </summary>
+        /// <param name="birthDate">The birth date.</param>
+        /// <returns></returns>
+        public static int? GetAge( DateTime? birthDate)
+        {
+            if ( birthDate.HasValue )
+            {
+                DateTime today = RockDateTime.Today;
+                int age = today.Year - birthDate.Value.Year;
+                if ( birthDate.Value > today.AddYears( -age ) ) age--;
+                return age;
+            }
+            
+            return null;
         }
 
         /// <summary>
@@ -1023,6 +1019,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [DataMember]
+        [RockClientInclude( "The Grade Offset of the person, which is the number of years until their graduation date" )]
         public virtual int? GradeOffset
         {
             get
@@ -1266,6 +1263,13 @@ namespace Rock.Model
                 {
                     binaryFile.IsTemporary = false;
                 }
+            }
+
+            // ensure person has a PersonAlias/PrimaryAlias
+            if ( !this.Aliases.Any() || !this.Aliases.Any( a => a.AliasPersonId == this.Id ) )
+            {
+                
+                this.Aliases.Add( new PersonAlias { AliasPerson = this, AliasPersonGuid = this.Guid, Guid = Guid.NewGuid() } );
             }
 
             var transaction = new Rock.Transactions.SaveMetaphoneTransaction( this );
@@ -1588,72 +1592,87 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Creates the checkin relationship.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="relatedPersonId">The related person identifier.</param>
+        /// <param name="currentPersonAlias">The current person alias.</param>
+        /// <param name="rockContext">The rock context.</param>
+        [Obsolete( "Use the other CreateCheckinRelationship" )]
+        public static void CreateCheckinRelationship( int personId, int relatedPersonId, PersonAlias currentPersonAlias, RockContext rockContext = null )
+        {
+            CreateCheckinRelationship( personId, relatedPersonId, rockContext );
+        }
+
+        /// <summary>
         /// Adds the related person to the selected person's known relationships with a role of 'Can check in' which
         /// is typically configured to allow check-in.  If an inverse relationship is configured for 'Can check in'
         /// (i.e. 'Allow check in by'), that relationship will also be created.
         /// </summary>
         /// <param name="personId">A <see cref="System.Int32" /> representing the Id of the Person.</param>
         /// <param name="relatedPersonId">A <see cref="System.Int32" /> representing the Id of the related Person.</param>
-        /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias" /> representing the Person who is logged in.</param>
         /// <param name="rockContext">The rock context.</param>
-        public static void CreateCheckinRelationship( int personId, int relatedPersonId, PersonAlias currentPersonAlias, RockContext rockContext = null )
+        public static void CreateCheckinRelationship( int personId, int relatedPersonId, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
-
             var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
-            var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) );
             var canCheckInRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) );
-
-            if ( ownerRole != null && canCheckInRole != null )
+            if ( canCheckInRole != null )
             {
+                rockContext = rockContext ?? new RockContext();
                 var groupMemberService = new GroupMemberService( rockContext );
-                var knownRelationshipGroup = groupMemberService.Queryable()
-                    .Where( m =>
-                        m.PersonId == personId &&
-                        m.GroupRole.Guid.Equals( ownerRole.Guid ) )
-                    .Select( m => m.Group )
-                    .FirstOrDefault();
+                groupMemberService.CreateKnownRelationship( personId, relatedPersonId, canCheckInRole.Id );
+            }
+        }
 
-                // Create known relationship group if doesn't exist
-                if ( knownRelationshipGroup == null )
+
+
+        /// <summary>
+        /// Formats the full name.
+        /// </summary>
+        /// <param name="nickName">The nick name.</param>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="suffix">The suffix.</param>
+        /// <returns></returns>
+        public static string FormatFullName( string nickName, string lastName, string suffix )
+        {
+            var fullName = new StringBuilder();
+
+            fullName.AppendFormat( "{0} {1}", nickName, lastName );
+
+            
+            if ( !string.IsNullOrWhiteSpace(suffix))
+            {
+                fullName.AppendFormat( " {0}", suffix );
+            }
+
+            return fullName.ToString();
+        }
+
+        /// <summary>
+        /// Formats the full name.
+        /// </summary>
+        /// <param name="nickName">The nick name.</param>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="suffixValueId">The suffix value identifier.</param>
+        /// <param name="recordTypeValueId">The record type value identifier.</param>
+        /// <returns></returns>
+        public static string FormatFullName( string nickName, string lastName, int? suffixValueId, int? recordTypeValueId = null ) {
+
+            if ( IsBusiness( recordTypeValueId ) )
+            {
+                return lastName;
+            }
+           
+            if ( suffixValueId.HasValue )
+            {
+                var suffix = DefinedValueCache.Read( suffixValueId.Value );
+                if ( suffix != null )
                 {
-                    var groupMember = new GroupMember();
-                    groupMember.PersonId = personId;
-                    groupMember.GroupRoleId = ownerRole.Id;
-
-                    knownRelationshipGroup = new Group();
-                    knownRelationshipGroup.Name = knownRelationshipGroupType.Name;
-                    knownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
-                    knownRelationshipGroup.Members.Add( groupMember );
-
-                    new GroupService( rockContext ).Add( knownRelationshipGroup );
-                    rockContext.SaveChanges();
-                }
-
-                // Add relationships
-                var canCheckInMember = groupMemberService.Queryable()
-                    .FirstOrDefault( m =>
-                        m.GroupId == knownRelationshipGroup.Id &&
-                        m.PersonId == relatedPersonId &&
-                        m.GroupRoleId == canCheckInRole.Id );
-
-                if ( canCheckInMember == null )
-                {
-                    canCheckInMember = new GroupMember();
-                    canCheckInMember.GroupId = knownRelationshipGroup.Id;
-                    canCheckInMember.PersonId = relatedPersonId;
-                    canCheckInMember.GroupRoleId = canCheckInRole.Id;
-                    groupMemberService.Add( canCheckInMember );
-                    rockContext.SaveChanges();
-                }
-
-                var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true, currentPersonAlias );
-                if ( inverseGroupMember != null )
-                {
-                    groupMemberService.Add( inverseGroupMember );
-                    rockContext.SaveChanges();
+                    return FormatFullName( nickName, lastName, suffix.Value );
                 }
             }
+
+            return FormatFullName( nickName, lastName, string.Empty );
         }
 
         #endregion

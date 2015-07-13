@@ -35,7 +35,7 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public int /* AuditType*/ AuditType { get; set; }
+        public Rock.Client.Enums.AuditType AuditType { get; set; }
 
         /// <summary />
         public DateTime? DateTime { get; set; }
@@ -58,6 +58,23 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source Audit object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Audit source )
+        {
+            this.Id = source.Id;
+            this.AuditType = source.AuditType;
+            this.DateTime = source.DateTime;
+            this.EntityId = source.EntityId;
+            this.EntityTypeId = source.EntityTypeId;
+            this.PersonAliasId = source.PersonAliasId;
+            this.Title = source.Title;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>

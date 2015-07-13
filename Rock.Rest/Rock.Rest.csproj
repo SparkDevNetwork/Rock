@@ -33,11 +33,11 @@
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="ImageResizer, Version=3.4.3.103, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -115,11 +115,28 @@
     <Compile Include="Controllers\CodeGenerated\CampusesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationRecipientActivitiesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplatesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionActivityTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionOpportunitiesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionOpportunityCampusController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionOpportunityGroupsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionRequestActivitiesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionRequestsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionRequestWorkflowsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionStatusController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionWorkflowsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\EntitySetItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\EntitySetsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\EventCalendarItemsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\EventCalendarsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\EventItemAudiencesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\EventItemCampusController.cs" />
+    <Compile Include="Controllers\CodeGenerated\EventItemCampusGroupMapsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\EventItemSchedulesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\EventItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialGatewaysController.cs" />
     <Compile Include="Controllers\CodeGenerated\FollowingsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupMemberRequirementsController.cs" />
@@ -133,6 +150,15 @@
     <Compile Include="Controllers\CodeGenerated\PersonDuplicatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonPreviousNamesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PluginMigrationsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RegistrationInstancesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RegistrationRegistrantFeesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RegistrationRegistrantsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RegistrationsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RegistrationTemplateDiscountsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RegistrationTemplateFeesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RegistrationTemplateFormFieldsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RegistrationTemplateFormsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RegistrationTemplatesController.cs" />
     <Compile Include="Controllers\ExceptionLogsController.Partial.cs" />
     <Compile Include="Controllers\FinancialTransactionDetailsController.Partial.cs" />
     <Compile Include="Controllers\FollowingsController.Partial.cs" />

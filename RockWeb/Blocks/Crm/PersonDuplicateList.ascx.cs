@@ -151,18 +151,30 @@ namespace RockWeb.Blocks.Crm
                 personDuplicateQry = personDuplicateQry.Where( a => a.ConfidenceScore > confidenceScoreLow );
             }
 
-            var groupByQry = personDuplicateQry.GroupBy( a => a.PersonAlias.Person );
+            var groupByQry = personDuplicateQry.GroupBy( a => a.PersonAlias.PersonId );
+
+            var qryPerson = new PersonService( rockContext ).Queryable();
 
             var qry = groupByQry.Select( a => new
             {
-                PersonId = a.Key.Id,
-                LastName = a.Key.LastName,
-                FirstName = a.Key.FirstName,
+                PersonId = a.Key,
                 MatchCount = a.Count(),
                 MaxConfidenceScore = a.Max( s => s.ConfidenceScore ),
-                PersonModifiedDateTime = a.Key.ModifiedDateTime,
-                CreatedByPerson = a.Key.CreatedByPersonAlias.Person.FirstName + " " + a.Key.CreatedByPersonAlias.Person.LastName
-            } );
+            } ).Join(
+            qryPerson,
+            k1 => k1.PersonId,
+            k2 => k2.Id,
+            ( personDuplicate, person ) => 
+                new 
+                { 
+                    PersonId = person.Id,
+                    person.LastName,
+                    person.FirstName,
+                    PersonModifiedDateTime = person.ModifiedDateTime,
+                    CreatedByPerson = person.CreatedByPersonAlias.Person.FirstName + " " + person.CreatedByPersonAlias.Person.LastName,
+                    personDuplicate.MatchCount,
+                    personDuplicate.MaxConfidenceScore
+                } );
 
             SortProperty sortProperty = gList.SortProperty;
             if ( sortProperty != null )
@@ -174,7 +186,7 @@ namespace RockWeb.Blocks.Crm
                 qry = qry.OrderByDescending( a => a.MaxConfidenceScore ).ThenBy( a => a.LastName ).ThenBy( a => a.FirstName );
             }
 
-            gList.DataSource = qry.ToList();
+            gList.SetLinqDataSource( qry );
             gList.DataBind();
         }
 

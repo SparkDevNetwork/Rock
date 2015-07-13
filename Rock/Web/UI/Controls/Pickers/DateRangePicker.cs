@@ -48,6 +48,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        Description( "The CSS class to add to the form-group div." )
+        ]
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the help text.
         /// </summary>
         /// <value>
@@ -448,6 +465,25 @@ $('#{1}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Calculates the date range from delimited values.
+        /// </summary>
+        /// <param name="delimitedValues">The delimited values.</param>
+        /// <returns></returns>
+        public static DateRange CalculateDateRangeFromDelimitedValues( string delimitedValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( delimitedValues ) && delimitedValues.Contains( "," ) )
+            {
+                var dates = delimitedValues.Split( ',' );
+                if ( dates.Length == 2 )
+                {
+                    return new DateRange( dates[0].AsDateTime(), dates[1].AsDateTime() );
+                }
+            }
+            
+            return new DateRange(null, null);
         }
     }
 }

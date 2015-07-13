@@ -36,7 +36,7 @@
                             <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gGroupMembers_Edit" >
                                 <Columns>
                                     <Rock:SelectField></Rock:SelectField>
-                                    <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Person.LastName,Person.NickName" />
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Person.LastName,Person.NickName" HtmlEncode="false" />
                                     <Rock:RockBoundField DataField="GroupRole" HeaderText="Role" SortExpression="GroupRole.Name" />
                                     <Rock:RockBoundField DataField="GroupMemberStatus" HeaderText="Status" SortExpression="GroupMemberStatus" />
                                 </Columns>
@@ -45,6 +45,19 @@
                     </div>
                 </div>
             </div>
+
+            <Rock:ModalDialog ID="mdAlternatePlacement" runat="server" Visible="false" ValidationGroup="vgAlternatePlacement" 
+                Title="<i class='fa fa-share'></i> Alternate Placement" OnSaveClick="mdAlternatePlacement_SaveClick"
+                SaveButtonText="Place">
+                <Content>
+                    <Rock:NotificationBox ID="nbAlternatePlacementWarning" runat="server" NotificationBoxType="Warning" />
+                    <asp:HiddenField ID="hfAlternatePlacementGroupMemberId" runat="server" />
+                    <asp:HiddenField ID="hfAlternatePlacementTargetGroupId" runat="server" />
+                    <Rock:RockLiteral ID="lAlternatePlacementGroupMemberName" runat="server" Label="Group Member" />
+                    <Rock:RockLiteral ID="lAlternatePlacementTargetGroupName" runat="server" Label="Place in group" />
+                    <Rock:RockTextBox ID="tbAlternatePlacementNote" runat="server" Label="Note" Rows="4" TextMode="MultiLine" />
+                </Content>
+            </Rock:ModalDialog>
 
         </asp:Panel>
     </ContentTemplate>

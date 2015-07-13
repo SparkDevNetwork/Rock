@@ -48,6 +48,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        Description( "The CSS class to add to the form-group div." )
+        ]
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the help text.
         /// </summary>
         /// <value>
@@ -123,8 +140,18 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ValidationGroup
         {
-            get { return ViewState["ValidationGroup"] as string; }
-            set { ViewState["ValidationGroup"] = value; }
+            get 
+            {
+                EnsureChildControls();
+                return _monthDropDownList.ValidationGroup;
+            }
+
+            set 
+            {
+                EnsureChildControls();
+                _monthDropDownList.ValidationGroup = value;
+                _yearDropDownList.ValidationGroup = value;
+            }
         }
 
         /// <summary>
@@ -159,173 +186,14 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        #region Controls
+
         private DropDownList _monthDropDownList;
         private DropDownList _yearDropDownList;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MonthYearPicker"/> class.
-        /// </summary>
-        public MonthYearPicker()
-            : base()
-        {
-            HelpBlock = new HelpBlock();
-        }
+        #endregion
 
-        /// <summary>
-        /// Gets or sets the minimum year.
-        /// </summary>
-        /// <value>
-        /// The minimum year.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "The Minimum Year." )
-        ]
-        public int MinimumYear
-        {
-            get
-            {
-                int? year = ViewState["MinimumYear"] as int?;
-                return year ?? 1970;
-            }
-
-            set
-            {
-                ViewState["MinimumYear"] = value;
-                PopulateDropDowns();
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the maximum year.
-        /// </summary>
-        /// <value>
-        /// The maximum year.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "The Maximum Year." )
-        ]
-        public int MaximumYear
-        {
-            get
-            {
-                int? year = ViewState["MaximumYear"] as int?;
-                return year ?? RockDateTime.Now.Year + 20;
-            }
-
-            set
-            {
-                ViewState["MaximumYear"] = value;
-                PopulateDropDowns();
-            }
-        }
-
-        /// <summary>
-        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
-        /// </summary>
-        protected override void CreateChildControls()
-        {
-            base.CreateChildControls();
-            Controls.Clear();
-            RockControlHelper.CreateChildControls( this, Controls );
-
-            _monthDropDownList = new DropDownList();
-            _monthDropDownList.CssClass = "form-control input-width-sm";
-            _monthDropDownList.ID = "monthDropDownList_" + this.ID;
-            _monthDropDownList.SelectedIndexChanged += monthYearDropDownList_SelectedIndexChanged;
-            _yearDropDownList = new DropDownList();
-            _yearDropDownList.CssClass = "form-control input-width-sm";
-            _yearDropDownList.ID = "yearDropDownList_" + this.ID;
-
-            Controls.Add( _monthDropDownList );
-            Controls.Add( _yearDropDownList );
-
-            PopulateDropDowns();
-        }
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the monthYearDropDownList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void monthYearDropDownList_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            if ( SelectedMonthYearChanged != null )
-            {
-                SelectedMonthYearChanged( this, e );
-            }
-        }
-
-        /// <summary>
-        /// Occurs when [selected month year changed].
-        /// </summary>
-        public event EventHandler SelectedMonthYearChanged;
-
-        /// <summary>
-        /// Populates the drop downs.
-        /// </summary>
-        private void PopulateDropDowns()
-        {
-            EnsureChildControls();
-            _monthDropDownList.Items.Clear();
-            _monthDropDownList.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            DateTime date = new DateTime( 2000, 1, 1 );
-            for ( int i = 0; i <= 11; i++ )
-            {
-                _monthDropDownList.Items.Add( new ListItem( date.AddMonths( i ).ToString( "MMM" ), ( i + 1 ).ToString() ) );
-            }
-
-
-            _yearDropDownList.Items.Clear();
-            _yearDropDownList.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            for ( int year = this.MinimumYear; year <= this.MaximumYear; year++ )
-            {
-                _yearDropDownList.Items.Add( new ListItem( year.ToString(), year.ToString() ) );
-            }
-
-            if ( this.SelectedDate.HasValue )
-            {
-                _monthDropDownList.SelectedValue = this.SelectedDate.Value.Month.ToString();
-                _yearDropDownList.SelectedValue = this.SelectedDate.Value.Year.ToString();
-            }
-        }
-
-        /// <summary>
-        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
-        /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
-        public override void RenderControl( HtmlTextWriter writer )
-        {
-            if ( this.Visible )
-            {
-                RockControlHelper.RenderControl( this, writer );
-            }
-        }
-
-        /// <summary>
-        /// Renders the base control.
-        /// </summary>
-        /// <param name="writer">The writer.</param>
-        public void RenderBaseControl( HtmlTextWriter writer )
-        {
-            bool needsAutoPostBack = SelectedMonthYearChanged != null;
-            _monthDropDownList.AutoPostBack = needsAutoPostBack;
-            _yearDropDownList.AutoPostBack = needsAutoPostBack;
-
-            writer.AddAttribute("class", "form-control-group");
-            writer.RenderBeginTag(HtmlTextWriterTag.Div);
-
-            _monthDropDownList.RenderControl( writer );
-            writer.Write(" <span class='separator'>/</span> ");
-            _yearDropDownList.RenderControl( writer );
-
-            writer.RenderEndTag();
-        }
+        #region Properties
 
         /// <summary>
         /// Gets the selected date.
@@ -364,5 +232,212 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
+
+        /// <summary>
+        /// Gets or sets the minimum year.
+        /// </summary>
+        /// <value>
+        /// The minimum year.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The Minimum Year." )
+        ]
+        public int MinimumYear
+        {
+            get
+            {
+                int? year = ViewState["MinimumYear"] as int?;
+                return year ?? 1970;
+            }
+
+            set
+            {
+                if ( ( ViewState["MinimumYear"] as int? ?? 1970 ) != value )
+                {
+                    ViewState["MinimumYear"] = value;
+                    EnsureChildControls();
+                    BindYears();
+                }
+
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum year.
+        /// </summary>
+        /// <value>
+        /// The maximum year.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The Maximum Year." )
+        ]
+        public int MaximumYear
+        {
+            get
+            {
+                int? year = ViewState["MaximumYear"] as int?;
+                return year ?? RockDateTime.Now.Year + 20;
+            }
+
+            set
+            {
+                if (( ViewState["MaximumYear"] as int? ?? RockDateTime.Now.Year + 20 ) != value)
+                {
+                    ViewState["MaximumYear"] = value;
+                    EnsureChildControls();
+                    BindYears();
+                }
+
+            }
+        }
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MonthYearPicker"/> class.
+        /// </summary>
+        public MonthYearPicker()
+            : base()
+        {
+            RockControlHelper.Init( this );
+        }
+
+        #endregion
+
+        #region Base Control Methods
+
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
+        protected override void CreateChildControls()
+        {
+            base.CreateChildControls();
+            Controls.Clear();
+            RockControlHelper.CreateChildControls( this, Controls );
+
+            _monthDropDownList = new DropDownList();
+            Controls.Add( _monthDropDownList );
+            _monthDropDownList.ID = "monthDropDownList";
+            _monthDropDownList.SelectedIndexChanged += monthYearDropDownList_SelectedIndexChanged;
+            _monthDropDownList.CssClass = "form-control input-width-sm";
+
+            BindMonths();
+
+            _yearDropDownList = new DropDownList();
+            Controls.Add( _yearDropDownList );
+            _yearDropDownList.ID = "yearDropDownList_";
+            _yearDropDownList.CssClass = "form-control input-width-sm";
+
+            this.RequiredFieldValidator.ControlToValidate = _yearDropDownList.ID;
+
+            BindYears();
+        }
+
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
+        {
+            if ( this.Visible )
+            {
+                RockControlHelper.RenderControl( this, writer );
+            }
+        }
+
+        /// <summary>
+        /// Renders the base control.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public void RenderBaseControl( HtmlTextWriter writer )
+        {
+            bool needsAutoPostBack = SelectedMonthYearChanged != null;
+            _monthDropDownList.AutoPostBack = needsAutoPostBack;
+            _yearDropDownList.AutoPostBack = needsAutoPostBack;
+
+            writer.AddAttribute("class", "form-control-group");
+            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
+            _monthDropDownList.RenderControl( writer );
+            writer.Write(" <span class='separator'>/</span> ");
+            _yearDropDownList.RenderControl( writer );
+
+            writer.RenderEndTag();
+        }
+
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the monthYearDropDownList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void monthYearDropDownList_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            if ( SelectedMonthYearChanged != null )
+            {
+                SelectedMonthYearChanged( this, e );
+            }
+        }
+
+        /// <summary>
+        /// Occurs when [selected month year changed].
+        /// </summary>
+        public event EventHandler SelectedMonthYearChanged;
+
+        #endregion
+
+        #region Methods
+
+        private void BindMonths()
+        {
+            string currentValue = _monthDropDownList.SelectedValue;
+
+            _monthDropDownList.Items.Clear();
+            _monthDropDownList.SelectedIndex = -1;
+            _monthDropDownList.SelectedValue = null;
+            _monthDropDownList.ClearSelection();
+
+            _monthDropDownList.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            DateTime date = new DateTime( 2000, 1, 1 );
+            for ( int i = 0; i <= 11; i++ )
+            {
+                _monthDropDownList.Items.Add( new ListItem( date.AddMonths( i ).ToString( "MMM" ), ( i + 1 ).ToString() ) );
+            }
+
+            _monthDropDownList.SetValue( currentValue );
+        }
+
+        private void BindYears()
+        {
+            string currentValue = _yearDropDownList.SelectedValue;
+
+            _yearDropDownList.Items.Clear();
+            _yearDropDownList.SelectedIndex = -1;
+            _yearDropDownList.SelectedValue = null;
+            _yearDropDownList.ClearSelection(); 
+            
+            _yearDropDownList.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            for ( int year = this.MinimumYear; year <= this.MaximumYear; year++ )
+            {
+                _yearDropDownList.Items.Add( new ListItem( year.ToString(), year.ToString() ) );
+            }
+
+            _yearDropDownList.SetValue( currentValue );
+        }
+
+
+        #endregion
+
     }
 }

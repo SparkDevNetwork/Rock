@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
@@ -532,6 +533,15 @@ namespace RockWeb.Blocks.Communication
                     }
 
                     rockContext.SaveChanges();
+
+                    // send approval email if needed (now that we have a communication id)
+                    if ( communication.Status == CommunicationStatus.PendingApproval )
+                    {
+                        var approvalTransaction = new Rock.Transactions.SendCommunicationApprovalEmail();
+                        approvalTransaction.CommunicationId = communication.Id;
+                        approvalTransaction.ApprovalPageUrl = HttpContext.Current.Request.Url.AbsoluteUri;
+                        Rock.Transactions.RockQueue.TransactionQueue.Enqueue( approvalTransaction );
+                    }
 
                     if ( communication.Status == CommunicationStatus.Approved &&
                         (!communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value <= RockDateTime.Now))
@@ -1197,7 +1207,7 @@ namespace RockWeb.Blocks.Communication
             {
                 PersonId = person.Id;
                 PersonName = person.FullName;
-                IsDeceased = person.IsDeceased ?? false;
+                IsDeceased = person.IsDeceased;
                 HasSmsNumber = person.PhoneNumbers.Any( p => p.IsMessagingEnabled );
                 Email = person.Email;
                 IsEmailActive = person.IsEmailActive ?? true;

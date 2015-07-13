@@ -4,6 +4,140 @@
         <name>EntityFramework.SqlServer</name>
     </assembly>
     <members>
+        <member name="T:System.Data.Entity.SqlServer.Utilities.TaskExtensions">
+            <summary>
+            Contains extension methods for the <see cref="T:System.Threading.Tasks.Task"/> class.
+            </summary>
+        </member>
+        <member name="M:System.Data.Entity.SqlServer.Utilities.TaskExtensions.WithCurrentCulture``1(System.Threading.Tasks.Task{``0})">
+            <summary>
+            Configures an awaiter used to await this <see cref="T:System.Threading.Tasks.Task`1"/> to avoid
+            marshalling the continuation
+            back to the original context, but preserve the current culture and UI culture.
+            </summary>
+            <typeparam name="T">
+            The type of the result produced by the associated <see cref="T:System.Threading.Tasks.Task`1"/>.
+            </typeparam>
+            <param name="task">The task to be awaited on.</param>
+            <returns>An object used to await this task.</returns>
+        </member>
+        <member name="M:System.Data.Entity.SqlServer.Utilities.TaskExtensions.WithCurrentCulture(System.Threading.Tasks.Task)">
+            <summary>
+            Configures an awaiter used to await this <see cref="T:System.Threading.Tasks.Task"/> to avoid
+            marshalling the continuation
+            back to the original context, but preserve the current culture and UI culture.
+            </summary>
+            <param name="task">The task to be awaited on.</param>
+            <returns>An object used to await this task.</returns>
+        </member>
+        <member name="T:System.Data.Entity.SqlServer.Utilities.TaskExtensions.CultureAwaiter`1">
+            <summary>
+            Provides an awaitable object that allows for awaits on <see cref="T:System.Threading.Tasks.Task`1"/> that
+            preserve the culture.
+            </summary>
+            <typeparam name="T">
+            The type of the result produced by the associated <see cref="T:System.Threading.Tasks.Task`1"/>.
+            </typeparam>
+            <remarks>This type is intended for compiler use only.</remarks>
+        </member>
+        <member name="M:System.Data.Entity.SqlServer.Utilities.TaskExtensions.CultureAwaiter`1.#ctor(System.Threading.Tasks.Task{`0})">
+            <summary>
+            Constructs a new instance of the <see cref="T:System.Data.Entity.SqlServer.Utilities.TaskExtensions.CultureAwaiter`1"/> class.
+            </summary>
+            <param name="task">The task to be awaited on.</param>
+        </member>
+        <member name="M:System.Data.Entity.SqlServer.Utilities.TaskExtensions.CultureAwaiter`1.GetAwaiter">
+            <summary>Gets an awaiter used to await this <see cref="T:System.Threading.Tasks.Task`1"/>.</summary>
+            <returns>An awaiter instance.</returns>
+            <remarks>This method is intended for compiler user rather than use directly in code.</remarks>
+        </member>
+        <member name="M:System.Data.Entity.SqlServer.Utilities.TaskExtensions.CultureAwaiter`1.GetResult">
+            <summary>Ends the await on the completed <see cref="T:System.Threading.Tasks.Task`1"/>.</summary>
+            <returns>The result of the completed <see cref="T:System.Threading.Tasks.Task`1"/>.</returns>
+            <exception cref="T:System.NullReferenceException">The awaiter was not properly initialized.</exception>
+            <exception cref="T:System.Threading.Tasks.TaskCanceledException">The task was canceled.</exception>
+            <exception cref="T:System.Exception">The task completed in a Faulted state.</exception>
+        </member>
+        <member name="M:System.Data.Entity.SqlServer.Utilities.TaskExtensions.CultureAwaiter`1.OnCompleted(System.Action)">
+            <summary>This method is not implemented and should not be called.</summary>
+            <param name="continuation">The action to invoke when the await operation completes.</param>
+        </member>
+        <member name="M:System.Data.Entity.SqlServer.Utilities.TaskExtensions.CultureAwaiter`1.UnsafeOnCompleted(System.Action)">
+            <summary>
+            Schedules the continuation onto the <see cref="T:System.Threading.Tasks.Task`1"/> associated with this
+            <see cref="T:System.Runtime.CompilerServices.TaskAwaiter`1"/>.
+            </summary>
+            <param name="continuation">The action to invoke when the await operation completes.</param>
+            <exception cref="T:System.ArgumentNullException">
+            The <paramref name="continuation"/> argument is null
+            (Nothing in Visual Basic).
+            </exception>
+            <exception cref="T:System.InvalidOperationException">The awaiter was not properly initialized.</exception>
+            <remarks>This method is intended for compiler user rather than use directly in code.</remarks>
+        </member>
+        <member name="P:System.Data.Entity.SqlServer.Utilities.TaskExtensions.CultureAwaiter`1.IsCompleted">
+            <summary>
+            Gets whether this <see cref="T:System.Threading.Tasks.Task">Task</see> has completed.
+            </summary>
+            <remarks>
+            <see cref="P:System.Data.Entity.SqlServer.Utilities.TaskExtensions.CultureAwaiter`1.IsCompleted"/> will return true when the Task is in one of the three
+            final states: <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion">RanToCompletion</see>,
+            <see cref="F:System.Threading.Tasks.TaskStatus.Faulted">Faulted</see>, or
+            <see cref="F:System.Threading.Tasks.TaskStatus.Canceled">Canceled</see>.
+            </remarks>
+        </member>
+        <member name="T:System.Data.Entity.SqlServer.Utilities.TaskExtensions.CultureAwaiter">
+            <summary>
+            Provides an awaitable object that allows for awaits on <see cref="T:System.Threading.Tasks.Task"/> that
+            preserve the culture.
+            </summary>
+            <remarks>This type is intended for compiler use only.</remarks>
+        </member>
+        <member name="M:System.Data.Entity.SqlServer.Utilities.TaskExtensions.CultureAwaiter.#ctor(System.Threading.Tasks.Task)">
+            <summary>
+            Constructs a new instance of the <see cref="T:System.Data.Entity.SqlServer.Utilities.TaskExtensions.CultureAwaiter"/> class.
+            </summary>
+            <param name="task">The task to be awaited on.</param>
+        </member>
+        <member name="M:System.Data.Entity.SqlServer.Utilities.TaskExtensions.CultureAwaiter.GetAwaiter">
+            <summary>Gets an awaiter used to await this <see cref="T:System.Threading.Tasks.Task"/>.</summary>
+            <returns>An awaiter instance.</returns>
+            <remarks>This method is intended for compiler user rather than use directly in code.</remarks>
+        </member>
+        <member name="M:System.Data.Entity.SqlServer.Utilities.TaskExtensions.CultureAwaiter.GetResult">
+            <summary>Ends the await on the completed <see cref="T:System.Threading.Tasks.Task"/>.</summary>
+            <exception cref="T:System.NullReferenceException">The awaiter was not properly initialized.</exception>
+            <exception cref="T:System.Threading.Tasks.TaskCanceledException">The task was canceled.</exception>
+            <exception cref="T:System.Exception">The task completed in a Faulted state.</exception>
+        </member>
+        <member name="M:System.Data.Entity.SqlServer.Utilities.TaskExtensions.CultureAwaiter.OnCompleted(System.Action)">
+            <summary>This method is not implemented and should not be called.</summary>
+            <param name="continuation">The action to invoke when the await operation completes.</param>
+        </member>
+        <member name="M:System.Data.Entity.SqlServer.Utilities.TaskExtensions.CultureAwaiter.UnsafeOnCompleted(System.Action)">
+            <summary>
+            Schedules the continuation onto the <see cref="T:System.Threading.Tasks.Task"/> associated with this
+            <see cref="T:System.Runtime.CompilerServices.TaskAwaiter"/>.
+            </summary>
+            <param name="continuation">The action to invoke when the await operation completes.</param>
+            <exception cref="T:System.ArgumentNullException">
+            The <paramref name="continuation"/> argument is null
+            (Nothing in Visual Basic).
+            </exception>
+            <exception cref="T:System.InvalidOperationException">The awaiter was not properly initialized.</exception>
+            <remarks>This method is intended for compiler user rather than use directly in code.</remarks>
+        </member>
+        <member name="P:System.Data.Entity.SqlServer.Utilities.TaskExtensions.CultureAwaiter.IsCompleted">
+            <summary>
+            Gets whether this <see cref="T:System.Threading.Tasks.Task">Task</see> has completed.
+            </summary>
+            <remarks>
+            <see cref="P:System.Data.Entity.SqlServer.Utilities.TaskExtensions.CultureAwaiter.IsCompleted"/> will return true when the Task is in one of the three
+            final states: <see cref="F:System.Threading.Tasks.TaskStatus.RanToCompletion">RanToCompletion</see>,
+            <see cref="F:System.Threading.Tasks.TaskStatus.Faulted">Faulted</see>, or
+            <see cref="F:System.Threading.Tasks.TaskStatus.Canceled">Canceled</see>.
+            </remarks>
+        </member>
         <member name="T:System.Data.Entity.SqlServer.SqlAzureExecutionStrategy">
             <summary>
             An <see cref="T:System.Data.Entity.Infrastructure.IDbExecutionStrategy"/> that retries actions that throw exceptions caused by SQL Azure transient failures.
@@ -900,10 +1034,26 @@
         </member>
         <member name="M:System.Data.Entity.SqlServer.SqlServerMigrationSqlGenerator.Generate(System.Data.Entity.Migrations.Model.CreateTableOperation)">
             <summary>
+            Generates SQL for a <see cref="T:System.Data.Entity.Migrations.Model.CreateTableOperation"/>. This method differs from
+            <see cref="M:System.Data.Entity.SqlServer.SqlServerMigrationSqlGenerator.WriteCreateTable(System.Data.Entity.Migrations.Model.CreateTableOperation)"/> in that it will
+            create the target database schema if it does not already exist.
+            Generated SQL should be added using the Statement method.
+            </summary>
+            <param name="createTableOperation"> The operation to produce SQL for. </param>
+        </member>
+        <member name="M:System.Data.Entity.SqlServer.SqlServerMigrationSqlGenerator.WriteCreateTable(System.Data.Entity.Migrations.Model.CreateTableOperation)">
+            <summary>
             Generates SQL for a <see cref="T:System.Data.Entity.Migrations.Model.CreateTableOperation"/>.
             Generated SQL should be added using the Statement method.
             </summary>
             <param name="createTableOperation"> The operation to produce SQL for. </param>
+        </member>
+        <member name="M:System.Data.Entity.SqlServer.SqlServerMigrationSqlGenerator.WriteCreateTable(System.Data.Entity.Migrations.Model.CreateTableOperation,System.Data.Entity.Migrations.Utilities.IndentedTextWriter)">
+            <summary>
+            Writes CREATE TABLE SQL to the target writer.
+            </summary>
+            <param name="createTableOperation"> The operation to produce SQL for. </param>
+            <param name="writer"> The target writer. </param>
         </member>
         <member name="M:System.Data.Entity.SqlServer.SqlServerMigrationSqlGenerator.Generate(System.Data.Entity.Migrations.Model.AlterTableOperation)">
             <summary>
@@ -1010,7 +1160,7 @@
         <member name="M:System.Data.Entity.SqlServer.SqlServerMigrationSqlGenerator.Generate(System.Data.Entity.Migrations.Model.SqlOperation)">
             <summary>
             Generates SQL for a <see cref="T:System.Data.Entity.Migrations.Model.SqlOperation"/>.
-            Generated SQL should be added using the Statement method.
+            Generated SQL should be added using the Statement or StatementBatch methods.
             </summary>
             <param name="sqlOperation"> The operation to produce SQL for. </param>
         </member>
@@ -1195,6 +1345,13 @@
             <param name="writer"> The writer containing the SQL to be executed. </param>
             <param name="batchTerminator">The batch terminator for the database provider.</param>
         </member>
+        <member name="M:System.Data.Entity.SqlServer.SqlServerMigrationSqlGenerator.StatementBatch(System.String,System.Boolean)">
+            <summary>
+            Breaks sql string into one or more statements, handling T-SQL utility statements as necessary.
+            </summary>
+            <param name="sqlBatch"> The SQL to split into one ore more statements to be executed. </param>
+            <param name="suppressTransaction"> Gets or sets a value indicating whether this statement should be performed outside of the transaction scope that is used to make the migration process transactional. If set to true, this operation will not be rolled back if the migration process fails. </param>
+        </member>
         <member name="P:System.Data.Entity.SqlServer.SqlServerMigrationSqlGenerator.GuidColumnDefault">
             <summary>
             Returns the column default value to use for store-generated GUID columns when
@@ -1359,6 +1516,15 @@
             <param name="commandTree"> command tree for the statement </param>
             <returns> an executable command definition object </returns>
         </member>
+        <member name="M:System.Data.Entity.SqlServer.SqlProviderServices.CloneDbCommand(System.Data.Common.DbCommand)">
+            <summary>
+            See issue 2390 - cloning the DesignTimeVisible property on the
+            <see cref="T:System.Data.SqlClient.SqlCommand" /> can cause deadlocks.
+            So here overriding to provide a method that does not clone DesignTimeVisible.
+            </summary>
+            <param name="fromDbCommand"> the <see cref="T:System.Data.Common.DbCommand" /> object to clone </param>
+            <returns >a clone of the <see cref="T:System.Data.Common.DbCommand" /> </returns>
+        </member>
         <member name="M:System.Data.Entity.SqlServer.SqlProviderServices.SetDbParameterValue(System.Data.Common.DbParameter,System.Data.Entity.Core.Metadata.Edm.TypeUsage,System.Object)">
             <summary>
             Sets the parameter value and appropriate facets for the given <see cref="T:System.Data.Entity.Core.Metadata.Edm.TypeUsage"/>.
@@ -1443,6 +1609,25 @@
             <param name="storeItemCollection">The collection of all store items from the model. This parameter is no longer used for determining database existence.</param>
             <returns>True if the provider can deduce the database only based on the connection.</returns>
         </member>
+        <member name="M:System.Data.Entity.SqlServer.SqlProviderServices.DbDatabaseExists(System.Data.Common.DbConnection,System.Nullable{System.Int32},System.Lazy{System.Data.Entity.Core.Metadata.Edm.StoreItemCollection})">
+            <summary>
+            Determines whether the database for the given connection exists.
+            There are three cases:
+            1.  Initial Catalog = X, AttachDBFilename = null:   (SELECT Count(*) FROM sys.databases WHERE [name]= X) > 0
+            2.  Initial Catalog = X, AttachDBFilename = F:      if (SELECT Count(*) FROM sys.databases WHERE [name]= X) >  true,
+            if not, try to open the connection and then return (SELECT Count(*) FROM sys.databases WHERE [name]= X) > 0
+            3.  Initial Catalog = null, AttachDBFilename = F:   Try to open the connection. If that succeeds the result is true, otherwise
+            if the there are no databases corresponding to the given file return false, otherwise throw.
+            Note: We open the connection to cover the scenario when the mdf exists, but is not attached.
+            Given that opening the connection would auto-attach it, it would not be appropriate to return false in this case.
+            Also note that checking for the existence of the file does not work for a remote server.  (Dev11 #290487)
+            For further details on the behavior when AttachDBFilename is specified see Dev10# 188936
+            </summary>
+            <param name="connection">Connection to a database whose existence is checked by this method.</param>
+            <param name="commandTimeout">Execution timeout for any commands needed to determine the existence of the database.</param>
+            <param name="storeItemCollection">The collection of all store items from the model. This parameter is no longer used for determining database existence.</param>
+            <returns>True if the provider can deduce the database only based on the connection.</returns>
+        </member>
         <member name="M:System.Data.Entity.SqlServer.SqlProviderServices.DbDeleteDatabase(System.Data.Common.DbConnection,System.Nullable{System.Int32},System.Data.Entity.Core.Metadata.Edm.StoreItemCollection)">
             <summary>
             Delete the database for the given connection.
@@ -1461,6 +1646,11 @@
         <member name="P:System.Data.Entity.SqlServer.SqlProviderServices.Instance">
             <summary>
             The Singleton instance of the SqlProviderServices type.
+            </summary>
+        </member>
+        <member name="P:System.Data.Entity.SqlServer.SqlProviderServices.SqlServerTypesAssemblyName">
+            <summary>
+            Set to the full name of the Microsoft.SqlServer.Types assembly to override the default selection
             </summary>
         </member>
         <member name="P:System.Data.Entity.SqlServer.SqlProviderServices.TruncateDecimalsToScale">

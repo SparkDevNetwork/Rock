@@ -115,6 +115,7 @@ namespace Rock.CheckIn
         /// returns the locations for this Kiosk for the configured group types
         /// </summary>
         /// <param name="configuredGroupTypes">The configured group types.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public IEnumerable<Location> Locations( List<int> configuredGroupTypes, RockContext rockContext )
         {
@@ -306,7 +307,7 @@ namespace Rock.CheckIn
                 var kioskLocation = new KioskLocation( groupLocation.Location );
                 kioskLocation.CampusId = campusId;
 
-                // Populate each kioskLocation with it's schedules (kioskSchedules)
+                // Populate each kioskLocation with its schedules (kioskSchedules)
                 foreach ( var schedule in groupLocation.Schedules.Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
                 {
                     var nextScheduleActiveTime = schedule.GetNextCheckInStartTime( RockDateTime.Now );

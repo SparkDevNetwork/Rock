@@ -61,10 +61,10 @@ namespace RockWeb.Blocks.Groups
             gGroupType.IsDeleteEnabled = canEditBlock;
 
             // Only display reordering column if user can edit the block
-            gGroupType.Columns[0].Visible = canEditBlock;
+            gGroupType.ColumnsOfType<ReorderField>().First().Visible = canEditBlock;
 
-            SecurityField securityField = gGroupType.Columns[5] as SecurityField;
-            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.GroupType ) ).Id;
+            SecurityField securityField = gGroupType.ColumnsOfType<SecurityField>().First();
+            securityField.EntityTypeId = EntityTypeCache.GetId<Rock.Model.GroupType>().Value;
 
             BindFilter();
         }
@@ -239,10 +239,11 @@ namespace RockWeb.Blocks.Groups
                     a.Description,
                     Purpose = a.GroupTypePurposeValue.Value,
                     GroupsCount = a.Groups.Count(),
+                    a.ShowInNavigation,
                     a.IsSystem
                 } );
 
-            gGroupType.EntityTypeId = EntityTypeCache.Read<GroupType>().Id;
+            gGroupType.EntityTypeId = EntityTypeCache.GetId<GroupType>();
             gGroupType.DataSource = selectQry.ToList();
             gGroupType.DataBind();
         }

@@ -53,20 +53,29 @@ namespace Rock.Reporting.DataFilter
         {
             string selectedEntityField = ddlEntityField.SelectedValue;
 
-            writer.AddAttribute( "class", "row js-filter-row filter-row" );
+            writer.AddAttribute( "class", "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             bool entityFieldPickerIsHidden = ddlEntityField.Style[HtmlTextWriterStyle.Display] == "none";
-
-            writer.AddAttribute( "class", "col-md-3" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             
             if ( !entityFieldPickerIsHidden )
             {
+                writer.AddAttribute( "class", "col-md-3" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 ddlEntityField.AddCssClass( "entity-property-selection" );
                 ddlEntityField.RenderControl( writer );
+                writer.RenderEndTag();
             }
-            else if ( ddlEntityField.SelectedItem != null )
+            else
+            {
+                // render it as hidden (we'll need the postback value)
+                ddlEntityField.RenderControl( writer );
+            }
+
+            writer.AddAttribute( "class", entityFieldPickerIsHidden ? "col-md-12" : "col-md-9" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            if ( entityFieldPickerIsHidden && ddlEntityField.SelectedItem != null )
             {
                 if ( filterControl.ShowCheckbox )
                 {
@@ -76,21 +85,17 @@ namespace Rock.Reporting.DataFilter
                 }
                 else
                 {
-                    writer.AddAttribute( "class", "data-view-filter-field-label" );
+                    writer.AddAttribute( "class", "filterfield-label" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Span );
                     writer.Write( ddlEntityField.SelectedItem.Text );
                     writer.RenderEndTag();
                 }
             }
-            writer.RenderEndTag();
-
-            writer.AddAttribute( "class", "col-md-9" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // generate result for "none"
             StringBuilder sb = new StringBuilder();
             string lineFormat = @"
-            case {0}: {1}; break;";
+            case '{0}': {1}; break;";
 
             int fieldIndex = 0;
             sb.AppendFormat( lineFormat, fieldIndex, "result = ''" );
@@ -99,7 +104,7 @@ namespace Rock.Reporting.DataFilter
             // render empty row for "none"
             writer.AddAttribute( "class", "row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.RenderEndTag();  // row
+            writer.RenderEndTag();  // "row field-criteria"
 
             foreach ( var entityField in entityFields )
             {
@@ -125,30 +130,35 @@ namespace Rock.Reporting.DataFilter
                             ( (WebControl)control ).Style["display"] = "none";
                         }
                     }
-                    control.RenderControl( writer );
 
-                    string clientFormatSelection = entityField.FieldType.Field.GetFilterFormatScript( entityField.FieldConfig, entityField.Title );
-
-                    if ( clientFormatSelection != string.Empty )
+                    if ( control is IAttributeAccessor )
                     {
-                        sb.AppendFormat( lineFormat, fieldIndex, clientFormatSelection );
+                        ( control as IAttributeAccessor ).SetAttribute("data-entity-field-name", entityField.Name);
                     }
 
-                    fieldIndex++;
+                    control.RenderControl( writer );
                 }
+
+                string clientFormatSelection = entityField.FieldType.Field.GetFilterFormatScript( entityField.FieldConfig, entityField.Title );
+
+                if ( clientFormatSelection != string.Empty )
+                {
+                    sb.AppendFormat( lineFormat, entityField.Name, clientFormatSelection );
+                }
+
+                fieldIndex++;
             }
 
-            writer.RenderEndTag();  // col-md-9
+            writer.RenderEndTag();  // col-md-9 or col-md-12
 
-            writer.RenderEndTag();  // row
+            writer.RenderEndTag();  // "row"
 
             string scriptFormat = @"
     function {0}PropertySelection($content){{
-
-        var sIndex = $('select.entity-property-selection', $content).find(':selected').index();
-        var $selectedContent = $('div.field-criteria', $content).eq(sIndex);
+        var selectedFieldName = $('select.entity-property-selection', $content).find(':selected').val();
+        var $selectedContent = $('[data-entity-field-name=' + selectedFieldName + ']', $content)
         var result = '';
-        switch(sIndex) {{
+        switch(selectedFieldName) {{
             {1}
         }}
         return result;
@@ -168,7 +178,8 @@ namespace Rock.Reporting.DataFilter
         /// <param name="ddlProperty">The DDL property.</param>
         /// <param name="values">The values.</param>
         /// <param name="controls">The controls.</param>
-        public void SetEntityFieldSelection( List<EntityField> entityFields, DropDownList ddlProperty, List<string> values, List<Control> controls )
+        /// <param name="setFilterValues">if set to <c>true</c> [set filter values].</param>
+        public void SetEntityFieldSelection( List<EntityField> entityFields, DropDownList ddlProperty, List<string> values, List<Control> controls, bool setFilterValues = true )
         {
             if ( values.Count > 0 && ddlProperty != null )
             {
@@ -182,7 +193,7 @@ namespace Rock.Reporting.DataFilter
                     var control = controls.ToList().FirstOrDefault( c => c.ID.EndsWith( entityField.Name ) );
                     if ( control != null )
                     {
-                        if ( values.Count > 1 )
+                        if ( values.Count > 1 && setFilterValues )
                         {
                             entityField.FieldType.Field.SetFilterValues( control, entityField.FieldConfig, FixDelimination( values.Skip( 1 ).ToList() ) );
                         }
@@ -388,6 +399,7 @@ namespace Rock.Reporting.DataFilter
         /// </summary>
         /// <param name="values">The values.</param>
         /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough()] 
         protected internal List<string> FixDelimination( List<string> values )
         {
             if ( values.Count() == 1 && values[0].Contains( "[" ) )

@@ -8,35 +8,6 @@
     </Triggers>
 
     <ContentTemplate>
-        <style>
-            .btn-checkin-configuration {
-                position: absolute;
-                bottom: 0;
-                left: 0;
-            }
-
-            .checkin-manager-locations {
-                max-width: 75%;
-            }
-
-            .checkin-manager-location-label {
-                font-weight: 600;
-                font-size: 36px;
-                padding-left: 8px;
-            }
-
-            .checkin-manager-location-count {
-                font-weight: 600;
-                font-size: 24px;
-            }
-
-            .checkin-manager-actions {
-                position: absolute;
-                bottom: 0px;
-                left: 75%;
-            }
-        </style>
-
         <script>
 
             Sys.Application.add_load(function () {
@@ -74,7 +45,6 @@
         <asp:PlaceHolder ID="phScript" runat="server"></asp:PlaceHolder>
 
         <Rock:HiddenFieldWithClass ID="hfRefreshTimerSeconds" runat="server" CssClass="js-refresh-timer-seconds" />
-
 
         <Rock:ModalAlert ID="maWarning" runat="server" />
 
@@ -123,11 +93,11 @@
 
         <%-- Panel for location closed --%>
         <asp:Panel ID="pnlClosed" runat="server">
-            <div class="checkin-header">
-                <h1>Location Closed</h1>
+            <div class="checkin-header checkin-closed-header">
+                <h1>Closed</h1>
             </div>
 
-            <div class="checkin-body">
+            <div class="checkin-body checkin-closed-body">
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
                         <p>This location is currently closed.</p>
@@ -138,8 +108,6 @@
 
         <%-- Panel for active checkin --%>
         <asp:Panel ID="pnlActive" runat="server">
-
-            
 
             <div class="checkin-body">
                 <div class="checkin-scroll-panel">
@@ -153,31 +121,31 @@
 
         </asp:Panel>
 
-        <asp:LinkButton runat="server" ID="btnManager" CssClass="btn-checkin-configuration" OnClick="btnManager_Click"><i class="fa fa-cog fa-4x"></i></asp:LinkButton>
+        <asp:LinkButton runat="server" ID="btnManager" CssClass="kioskmanager-activate" OnClick="btnManager_Click"><i class="fa fa-cog fa-4x"></i></asp:LinkButton>
 
         <%-- Panel for checkin manager --%>
         <asp:Panel ID="pnlManager" runat="server" Visible="false">
             <div class="checkin-header">
                 <h1>Locations</h1>
             </div>
-            <div class="checkin-body checkin-manager-locations">
+            <div class="checkin-body kioskmanager-locations">
 
                 <div class="checkin-scroll-panel">
                     <div class="scrollers">
                         <asp:Repeater ID="rLocations" runat="server" OnItemCommand="rLocations_ItemCommand" OnItemDataBound="rLocations_ItemDataBound">
                             <ItemTemplate>
-                                <div class="controls">
-                                    <div class="btn-group">
+                                <div class="controls kioskmanager-location">
+                                    <div class="btn-group kioskmanager-location-toggle">
                                         <asp:LinkButton runat="server" ID="lbOpen" CssClass="btn btn-default btn-lg btn-success" Text="Open" CommandName="Open" CommandArgument='<%# DataBinder.Eval(Container.DataItem, "LocationId") %>'/>
                                         <asp:LinkButton runat="server" ID="lbClose" CssClass="btn btn-default btn-lg" Text="Close" CommandName="Close" CommandArgument='<%# DataBinder.Eval(Container.DataItem, "LocationId") %>'/>
-                                        
+
                                     </div>
-                                    <label class="checkin-manager-location-label">
+                                    <div class="kioskmanager-location-label">
                                         <asp:Literal ID="lLocationName" runat="server" />
-                                    </label>
-                                    <label class="badge bg-info checkin-manager-location-count">
+                                    </div>
+                                    <div class="badge badge-info kioskmanager-location-count">
                                         <asp:Literal ID="lLocationCount" runat="server" />
-                                    </label>
+                                    </div>
                                 </div>
 
                                 <br />
@@ -189,7 +157,7 @@
 
             </div>
 
-            <div class="controls checkin-manager-actions checkin-actions">
+            <div class="controls kioskmanager-actions checkin-actions">
                 <asp:LinkButton ID="btnOverride" runat="server" CssClass="btn btn-default btn-large btn-block btn-checkin-select" Text="Override" OnClick="btnOverride_Click" />
                 <asp:LinkButton ID="btnScheduleLocations" runat="server" CssClass="btn btn-default btn-large btn-block btn-checkin-select" Text="Schedule Locations" OnClick="btnScheduleLocations_Click" />
                 <asp:LinkButton ID="btnBack" runat="server" CssClass="btn btn-default btn-large btn-block btn-checkin-select" Text="Back" OnClick="btnBack_Click" />
@@ -208,41 +176,60 @@
 
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
-                        <div class="checkin-search-body">
-                            <Rock:RockTextBox ID="tbPIN" CssClass="checkin-phone-entry" runat="server" Label="PIN" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                 <div class="checkin-search-body">
+                                    <Rock:RockTextBox ID="tbPIN" CssClass="checkin-phone-entry" TextMode="Password" runat="server" Label="PIN" />
 
-                            <div class="tenkey checkin-phone-keypad">
-                                <div>
-                                    <a href="#" class="btn btn-default btn-lg digit">1</a>
-                                    <a href="#" class="btn btn-default btn-lg digit">2</a>
-                                    <a href="#" class="btn btn-default btn-lg digit">3</a>
-                                </div>
-                                <div>
-                                    <a href="#" class="btn btn-default btn-lg digit">4</a>
-                                    <a href="#" class="btn btn-default btn-lg digit">5</a>
-                                    <a href="#" class="btn btn-default btn-lg digit">6</a>
-                                </div>
-                                <div>
-                                    <a href="#" class="btn btn-default btn-lg digit">7</a>
-                                    <a href="#" class="btn btn-default btn-lg digit">8</a>
-                                    <a href="#" class="btn btn-default btn-lg digit">9</a>
-                                </div>
-                                <div>
-                                    <a href="#" class="btn btn-default btn-lg command back">Back</a>
-                                    <a href="#" class="btn btn-default btn-lg digit">0</a>
-                                    <a href="#" class="btn btn-default btn-lg command clear">Clear</a>
+                                    <div class="tenkey checkin-phone-keypad">
+                                        <div>
+                                            <a href="#" class="btn btn-default btn-lg digit">1</a>
+                                            <a href="#" class="btn btn-default btn-lg digit">2</a>
+                                            <a href="#" class="btn btn-default btn-lg digit">3</a>
+                                        </div>
+                                        <div>
+                                            <a href="#" class="btn btn-default btn-lg digit">4</a>
+                                            <a href="#" class="btn btn-default btn-lg digit">5</a>
+                                            <a href="#" class="btn btn-default btn-lg digit">6</a>
+                                        </div>
+                                        <div>
+                                            <a href="#" class="btn btn-default btn-lg digit">7</a>
+                                            <a href="#" class="btn btn-default btn-lg digit">8</a>
+                                            <a href="#" class="btn btn-default btn-lg digit">9</a>
+                                        </div>
+                                        <div>
+                                            <a href="#" class="btn btn-default btn-lg command back">Back</a>
+                                            <a href="#" class="btn btn-default btn-lg digit">0</a>
+                                            <a href="#" class="btn btn-default btn-lg command clear">Clear</a>
+                                        </div>
+                                    </div>
+
+                                    <div class="checkin-actions">
+                                        <asp:LinkButton ID="lbLogin" runat="server" OnClick="lbLogin_Click" CssClass="btn btn-primary">Login</asp:LinkButton>
+                                    </div>
                                 </div>
                             </div>
-
-                            <div class="checkin-actions">
-                                <asp:LinkButton ID="lbLogin" runat="server" OnClick="lbLogin_Click" CssClass="btn btn-primary">Login</asp:LinkButton>
+                            <div class="col-md-6">
+                                <div class="kioskmanager-counts">
+                                    <h3>Current Counts</h3>
+                                    <asp:PlaceHolder ID="phCounts" runat="server"></asp:PlaceHolder>
+                                </div>
                             </div>
-
-                            <asp:LinkButton ID="lbCancel" runat="server" CausesValidation="false" OnClick="lbCancel_Click" CssClass="btn btn-default">Cancel</asp:LinkButton>
                         </div>
                     </div>
+                    
+                       
+
                 </div>
             </div>
+
+            <div class="checkin-footer">
+
+                <div class="checkin-actions">
+                    <asp:LinkButton ID="lbCancel" runat="server" CausesValidation="false" OnClick="lbCancel_Click" CssClass="btn btn-default">Cancel</asp:LinkButton>
+                </div>
+            </div>
+
         </asp:Panel>
 
     </ContentTemplate>

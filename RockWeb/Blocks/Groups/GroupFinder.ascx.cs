@@ -106,6 +106,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show Proximity", "", false, "CustomSetting" )]
     [BooleanField( "Show Count", "", false, "CustomSetting" )]
     [BooleanField( "Show Age", "", false, "CustomSetting" )]
+    [BooleanField( "Show Description", "", true, "CustomSetting" )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Attribute Columns", "", false, true, "", "CustomSetting" )]
 
     public partial class GroupFinder : RockBlockCustomSettings
@@ -297,6 +298,7 @@ namespace RockWeb.Blocks.Groups
 
             SetAttributeValue( "ShowGrid", cbShowGrid.Checked.ToString() );
             SetAttributeValue( "ShowSchedule", cbShowSchedule.Checked.ToString() );
+            SetAttributeValue( "ShowDescription", cbShowDescription.Checked.ToString() );
             SetAttributeValue( "ShowProximity", cbProximity.Checked.ToString() );
             SetAttributeValue( "ShowCount", cbShowCount.Checked.ToString() );
             SetAttributeValue( "ShowAge", cbShowAge.Checked.ToString() );
@@ -434,6 +436,7 @@ namespace RockWeb.Blocks.Groups
 
             cbShowGrid.Checked = GetAttributeValue( "ShowMap" ).AsBoolean();
             cbShowSchedule.Checked = GetAttributeValue( "ShowSchedule" ).AsBoolean();
+            cbShowDescription.Checked = GetAttributeValue( "ShowDescription" ).AsBoolean();
             cbProximity.Checked = GetAttributeValue( "ShowProximity" ).AsBoolean();
             cbShowCount.Checked = GetAttributeValue( "ShowCount" ).AsBoolean();
             cbShowAge.Checked = GetAttributeValue( "ShowAge" ).AsBoolean();
@@ -494,7 +497,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( targetPerson != null )
             {
-                lTitle.Text = String.Format( "<h1 class='margin-t-none'>Groups for {0}</h1>", targetPerson.FullName );
+                lTitle.Text = String.Format( "<h4 class='margin-t-none'>Groups for {0}</h4>", targetPerson.FullName );
                 acAddress.SetValues( targetPersonLocation );
                 acAddress.Visible = false;
                 btnSearch.Visible = false;
@@ -714,6 +717,7 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
+            gGroups.Columns[1].Visible = GetAttributeValue( "ShowDescription" ).AsBoolean();
             gGroups.Columns[2].Visible = GetAttributeValue( "ShowSchedule" ).AsBoolean();
             gGroups.Columns[3].Visible = GetAttributeValue( "ShowCount" ).AsBoolean();
             gGroups.Columns[4].Visible = GetAttributeValue( "ShowAge" ).AsBoolean();
@@ -1175,7 +1179,7 @@ namespace RockWeb.Blocks.Groups
 
         var mapStyle = {3};
 
-        var pinShadow = new google.maps.MarkerImage('//chart.apis.google.com/chart?chst=d_map_pin_shadow',
+        var pinShadow = new google.maps.MarkerImage('//chart.googleapis.com/chart?chst=d_map_pin_shadow',
             new google.maps.Size(40, 37),
             new google.maps.Point(0, 0),
             new google.maps.Point(12, 35));
@@ -1250,7 +1254,7 @@ namespace RockWeb.Blocks.Groups
                     color = 'FE7569'
                 }}
 
-                var pinImage = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + color,
+                var pinImage = new google.maps.MarkerImage('//chart.googleapis.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + color,
                     new google.maps.Size(21, 34),
                     new google.maps.Point(0,0),
                     new google.maps.Point(10, 34));

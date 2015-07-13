@@ -61,7 +61,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a collection of <see cref="Rock.Model.Group">Groups</see> by the Id of it's parent <see cref="Rock.Model.Group"/>. 
+        /// Returns a collection of <see cref="Rock.Model.Group">Groups</see> by the Id of its parent <see cref="Rock.Model.Group"/>. 
         /// </summary>
         /// <param name="parentGroupId">A <see cref="System.Int32" /> representing the Id of the parent <see cref="Rock.Model.Group"/> to search by. This value
         /// is nullable and a null value will search for <see cref="Rock.Model.Group">Groups</see> that do not inherit from other groups.</param>
@@ -406,6 +406,68 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Groups the members not meeting requirements.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="includeWarnings">if set to <c>true</c> [include warnings].</param>
+        /// <returns></returns>
+        public Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> GroupMembersNotMeetingRequirements( int groupId, bool includeWarnings )
+        {
+            Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> results = new Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>>();
+
+            var qry = new GroupMemberRequirementService( (RockContext)Context ).Queryable().AsNoTracking()
+                                        .Where( r => r.GroupMember.GroupId == groupId);
+            if (includeWarnings) {
+                qry = qry.Where(r => r.RequirementWarningDateTime != null || r.RequirementFailDateTime != null);
+            }
+            else
+            {
+                qry = qry.Where( r => r.RequirementFailDateTime != null );
+            }
+
+            var groupmembersWithIssues = qry.Select( r => new { 
+                                                r.GroupMember, 
+                                                r.GroupRequirement, 
+                                                r.RequirementFailDateTime,
+                                                r.RequirementWarningDateTime})
+                                            .ToList();
+
+            foreach ( var groupMember in groupmembersWithIssues.GroupBy( g => g.GroupMember ) )
+            {
+                var issues = groupmembersWithIssues
+                        .Where(g => g.GroupMember.Id == groupMember.Key.Id)
+                        .Select( r => new {r.GroupRequirement, r.RequirementFailDateTime, r.RequirementWarningDateTime});
+
+                Dictionary<PersonGroupRequirementStatus, DateTime> statuses = new Dictionary<PersonGroupRequirementStatus,DateTime>();
+                foreach ( var issue in issues )
+                {
+                    PersonGroupRequirementStatus status = new PersonGroupRequirementStatus();
+                    status.GroupRequirement = issue.GroupRequirement;
+                    status.PersonId = groupMember.Key.PersonId;
+
+                    DateTime occuranceDate = new DateTime();
+
+                    if ( issue.RequirementFailDateTime != null )
+                    {
+                        status.MeetsGroupRequirement = MeetsGroupRequirement.NotMet;
+                        occuranceDate = issue.RequirementFailDateTime.Value;
+                    }
+                    else
+                    {
+                        status.MeetsGroupRequirement = MeetsGroupRequirement.MeetsWithWarning;
+                        occuranceDate = issue.RequirementWarningDateTime.Value;
+                    }
+
+                    statuses.Add( status, occuranceDate );
+                }
+
+                results.Add( groupMember.Key, statuses );
+            }
+
+            return results;
+        }
+
+        /// <summary>
         /// Saves the new family.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -459,7 +521,7 @@ namespace Rock.Model
                         History.EvaluateChange( demographicChanges, "Record Status", string.Empty, person.RecordStatusValueId.HasValue ? DefinedValueCache.GetName( person.RecordStatusValueId.Value ) : string.Empty );
                         History.EvaluateChange( demographicChanges, "Record Status Reason", string.Empty, person.RecordStatusReasonValueId.HasValue ? DefinedValueCache.GetName( person.RecordStatusReasonValueId.Value ) : string.Empty );
                         History.EvaluateChange( demographicChanges, "Connection Status", string.Empty, person.ConnectionStatusValueId.HasValue ? DefinedValueCache.GetName( person.ConnectionStatusValueId ) : string.Empty );
-                        History.EvaluateChange( demographicChanges, "Deceased", false.ToString(), ( person.IsDeceased ?? false ).ToString() );
+                        History.EvaluateChange( demographicChanges, "Deceased", false.ToString(), ( person.IsDeceased ).ToString() );
                         History.EvaluateChange( demographicChanges, "Title", string.Empty, person.TitleValueId.HasValue ? DefinedValueCache.GetName( person.TitleValueId ) : string.Empty );
                         History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName );
                         History.EvaluateChange( demographicChanges, "Nick Name", string.Empty, person.NickName );
@@ -531,11 +593,6 @@ namespace Rock.Model
                     if ( person != null )
                     {
                         bool updateRequired = false;
-                        if ( !person.Aliases.Any( a => a.AliasPersonId == person.Id ) )
-                        {
-                            person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
-                            updateRequired = true;
-                        }
                         var changes = familyDemographicChanges[person.Guid];
                         if ( groupMember.GroupRoleId != childRoleId )
                         {

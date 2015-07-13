@@ -70,8 +70,6 @@ namespace RockWeb.Blocks.WorkFlow
             StatusFilter = ViewState["StatusFilter"] as bool?;
             RoleFilter = ViewState["RoleFilter"] as bool?;
             SelectedWorkflowTypeId = ViewState["SelectedWorkflowTypeId"] as int?;
-
-            GetData();
         }
 
         protected override void OnInit( EventArgs e )
@@ -84,7 +82,12 @@ namespace RockWeb.Blocks.WorkFlow
             gWorkflows.Actions.ShowAdd = false;
             gWorkflows.IsDeleteEnabled = false;
             gWorkflows.GridRebind += gWorkflows_GridRebind;
-             
+            
+            if ( SelectedWorkflowTypeId.HasValue )
+            {
+                WorkflowType workflowType = new WorkflowTypeService( new RockContext() ).Get( SelectedWorkflowTypeId.Value );
+                AddAttributeColumns( workflowType );
+            }
         }
 
         /// <summary>
@@ -300,22 +303,19 @@ namespace RockWeb.Blocks.WorkFlow
             if ( SelectedWorkflowTypeId.HasValue )
             {
                 selectedWorkflowType = allWorkflowTypes
-                    .Where( w => 
-                        w.Id == SelectedWorkflowTypeId.Value &&
-                        workflowTypeCounts.Keys.Contains( SelectedWorkflowTypeId.Value ) )
+                    .Where( w =>  w.Id == SelectedWorkflowTypeId.Value )
                     .FirstOrDefault();
+
+                AddAttributeColumns( selectedWorkflowType );
             }
 
-            if ( selectedWorkflowType != null )
+            if ( selectedWorkflowType != null && workflowTypeCounts.Keys.Contains( selectedWorkflowType.Id ) )
             {
-                AddAttributeColumns( selectedWorkflowType );
-
                 gWorkflows.DataSource = workflows.Where( w => w.WorkflowTypeId == selectedWorkflowType.Id ).ToList();
                 gWorkflows.DataBind();
                 gWorkflows.Visible = true;
 
                 lWorkflow.Text = workflows.Where( w => w.WorkflowTypeId == selectedWorkflowType.Id ).Select( w => w.WorkflowType.Name ).FirstOrDefault() + " Workflows";
-
             }
             else
             {

@@ -47,6 +47,7 @@ namespace Rock.Transactions
         /// <value>
         /// The rock user id in session.
         /// </value>
+        [Obsolete( "No longer used" )]
         public int? SessionUserId { get; set; }
 
         /// <summary>
@@ -79,14 +80,6 @@ namespace Rock.Transactions
                 {
                     user.LastActivityDateTime = LastActivityDate;
                     user.IsOnLine = IsOnLine;
-
-                    // check if this session had a previous account on-line
-                    if ( IsOnLine && SessionUserId.HasValue && SessionUserId != user.Id )
-                    {
-                        // mark old session offline
-                        var oldUser = userLoginService.Get( SessionUserId.Value );
-                        oldUser.IsOnLine = false;
-                    }
 
                     rockContext.SaveChanges();
                 }

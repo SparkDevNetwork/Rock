@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( GroupMember item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<RegistrationRegistrant>( Context ).Queryable().Any( a => a.GroupMemberId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupMember.FriendlyTypeName, RegistrationRegistrant.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -93,6 +99,7 @@ namespace Rock.Model
             target.GroupMemberStatus = source.GroupMemberStatus;
             target.GroupRoleId = source.GroupRoleId;
             target.GuestCount = source.GuestCount;
+            target.IsNotified = source.IsNotified;
             target.IsSystem = source.IsSystem;
             target.PersonId = source.PersonId;
             target.CreatedDateTime = source.CreatedDateTime;

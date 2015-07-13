@@ -47,9 +47,8 @@
                             </div>
                         </Rock:RockControlWrapper>
 
-                        <Rock:NotificationBox ID="nbCampusesWarning" runat="server" NotificationBoxType="Warning" Text="Please select at least one campus." Visible="false"/>
-                        <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campuses" />
-
+                        <Rock:CampusesPicker ID="cpCampuses" runat="server" CssClass="campuses-picker-vertical" Label="Campuses" 
+                            Help="The campus to display attendance for. Leave unselected to view attendance not associated to any campus." />
                         
                         <Rock:NotificationBox ID="nbGroupsWarning" runat="server" NotificationBoxType="Warning" Text="Please select at least one group." Visible="false"/>
                         <h4>Group</h4>
@@ -61,6 +60,8 @@
                             </asp:Repeater>
 
                         </ul>
+
+                        <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by DataView" />
 
                     </div>
                     <div class="col-md-9">
@@ -146,6 +147,9 @@
                                                 <asp:HyperLink ID="btnViewParentsOfAttendees" runat="server" CssClass="btn btn-default btn-sm" data-val="1">
                                                     Parents of Attendees
                                                 </asp:HyperLink>
+                                                <asp:HyperLink ID="btnViewChildrenOfAttendees" runat="server" CssClass="btn btn-default btn-sm" data-val="2">
+                                                    Children of Attendees
+                                                </asp:HyperLink>
                                             </div>
                                         </div>
                                     </div>
@@ -163,6 +167,7 @@
                                                     <asp:ListItem Text="3rd" Value="3" />
                                                     <asp:ListItem Text="4th" Value="4" />
                                                     <asp:ListItem Text="5th" Value="5" />
+                                                    <asp:ListItem Text="No" Value="0" />
                                                 </Rock:RockDropDownList>
                                                 <span>visit</span>
                                             </asp:Panel>
@@ -191,17 +196,21 @@
                             </div>
 
                             <Rock:NotificationBox ID="nbAttendeesError" runat="server" NotificationBoxType="Danger" Dismissable="true" Visible="false" />
-                            <Rock:Grid ID="gAttendeesAttendance" runat="server" AllowSorting="true" RowItemText="Attendee" OnRowDataBound="gAttendeesAttendance_RowDataBound" ExportGridAsWYSIWYG="true">
+                            <Rock:Grid ID="gAttendeesAttendance" runat="server" AllowSorting="true" RowItemText="Attendee" OnRowDataBound="gAttendeesAttendance_RowDataBound" ExportSource="ColumnOutput" ExportFilename="AttendanceAnalytics">
                                 <Columns>
                                     <Rock:SelectField />
                                     <Rock:PersonField DataField="Parent" HeaderText="Parent" SortExpression="Parent.LastName, Parent.NickName"/>
+                                    <Rock:RockBoundField DataField="Parent.Email" HeaderText="Parent Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                    <Rock:PersonField DataField="Child" HeaderText="Child" SortExpression="Child.LastName, Child.NickName"/>
+                                    <Rock:RockBoundField DataField="Child.Email" HeaderText="Child Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                     <Rock:PersonField DataField="Person" HeaderText="Name" SortExpression="Person.LastName, Person.NickName" />
+                                    <Rock:RockBoundField DataField="Person.Email" HeaderText="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                     <Rock:RockLiteralField HeaderText="First Visit" ID="lFirstVisitDate" SortExpression="FirstVisit.StartDateTime"/>
                                     <Rock:RockLiteralField HeaderText="Second Visit" ID="lSecondVisitDate" />
                                     <Rock:DateField DataField="LastVisit.StartDateTime" HeaderText="Last Visit" SortExpression="LastVisit.StartDateTime" />
                                     <Rock:CampusField DataField="LastVisit.CampusId" HeaderText="Campus" SortExpression="LastVisit.Campus.Name" />
                                     <Rock:RockLiteralField HeaderText="Service Time" ID="lServiceTime" />
-                                    <Rock:RockBoundField DataField="LastVisit.Group.Name" HeaderText="Check-in Area" SortExpression="LastVisit.Group.Name" />
+                                    <Rock:RockBoundField DataField="LastVisit.GroupName" HeaderText="Check-in Area" SortExpression="LastVisit.GroupName" />
                                     <Rock:RockLiteralField HeaderText="Home Address" ID="lHomeAddress" ItemStyle-Wrap="false" />
                                     <Rock:PhoneNumbersField HeaderText="Phone Numbers" DataField="PhoneNumbers" ItemStyle-Wrap="false" DisplayCountryCode="false" />
                                     <Rock:RockLiteralField HeaderText="Count" ID="lAttendanceCount" SortExpression="AttendanceSummary.Count" />

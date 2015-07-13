@@ -195,7 +195,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.ActivityType;
+                return this.ActivityType != null ? this.ActivityType : base.ParentAuthority;
             }
         }
 

@@ -88,6 +88,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<RegistrationTemplate>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, RegistrationTemplate.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Report>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, Report.FriendlyTypeName );

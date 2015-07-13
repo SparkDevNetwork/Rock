@@ -97,6 +97,36 @@ namespace Rock.Client
         /// <summary />
         public string ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source PrayerRequest object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( PrayerRequest source )
+        {
+            this.Id = source.Id;
+            this.AllowComments = source.AllowComments;
+            this.Answer = source.Answer;
+            this.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
+            this.ApprovedOnDateTime = source.ApprovedOnDateTime;
+            this.CategoryId = source.CategoryId;
+            this.Email = source.Email;
+            this.EnteredDateTime = source.EnteredDateTime;
+            this.ExpirationDate = source.ExpirationDate;
+            this.FirstName = source.FirstName;
+            this.FlagCount = source.FlagCount;
+            this.GroupId = source.GroupId;
+            this.IsActive = source.IsActive;
+            this.IsApproved = source.IsApproved;
+            this.IsPublic = source.IsPublic;
+            this.IsUrgent = source.IsUrgent;
+            this.LastName = source.LastName;
+            this.PrayerCount = source.PrayerCount;
+            this.RequestedByPersonAliasId = source.RequestedByPersonAliasId;
+            this.Text = source.Text;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
     }
 
     /// <summary>
