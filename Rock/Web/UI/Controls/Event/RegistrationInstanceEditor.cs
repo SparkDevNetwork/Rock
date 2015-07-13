@@ -629,12 +629,12 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-6" );
+                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-8" );
                         writer.RenderBeginTag( HtmlTextWriterTag.Div );
                         _dtpSendReminder.RenderControl( writer );
                         writer.RenderEndTag();  // col-xs-6
 
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-6" );
+                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-4" );
                         writer.RenderBeginTag( HtmlTextWriterTag.Div );
                         _cbReminderSent.RenderControl( writer );
                         writer.RenderEndTag();  // col-xs-6

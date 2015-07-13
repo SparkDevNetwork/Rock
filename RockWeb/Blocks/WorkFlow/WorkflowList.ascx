@@ -27,6 +27,7 @@
 	                </Rock:GridFilter>
 	                <Rock:Grid ID="gWorkflows" runat="server" AllowSorting="true" DisplayType="Full" OnRowSelected="gWorkflows_Edit">
 	                    <Columns>
+                            <Rock:SelectField />
 	                        <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
 	                        <Rock:PersonField DataField="Initiator" HeaderText="Initiated By" SortExpression="Initiator" />
                             <Rock:ListDelimitedField DataField="Activities" HeaderText="Activities" HtmlEncode="false" Delimiter="," />
