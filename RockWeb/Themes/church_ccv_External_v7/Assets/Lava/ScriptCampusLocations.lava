@@ -7,24 +7,23 @@ CCV.findCampusById = function (campusId) {
 
 CCV.locations = [
 {% for campus in Campuses %}
-  {% assign renderedTimes = "" %}
-  {% assign hasSaturday = false %}
-  {% assign hasSunday = false %}
+  {% assign renderedTimes = "" %}{% assign hasSaturday = false %}{% assign hasSunday = false %}
   {
     id: '{{ campus.Id }}',
     name: '{{ campus.Name }}',
-    {% if campus.Location.Latitude and campus.Location.Longitude %}
-    geo: {
+    {% if campus.Location.Latitude and campus.Location.Longitude %}geo: {
       lat: {{ campus.Location.Latitude }},
       lng: {{ campus.Location.Longitude }},
-    },
-    {% endif %}
+    },{% endif %}
     phone: '{{ campus.PhoneNumber }}',
     street: '{{ campus.Location.Street1 }}',
     city: '{{ campus.Location.City }}',
     state: '{{ campus.Location.State }}',
     zip: '{{ campus.Location.PostalCode }}',
     photo: '{{ campus.Location.ImageUrl }}',
+    url: '{{ campus.Url }}',
+    vimeoid: '{{ campus.CampusTourVimeoID }}',
+    facebook: '{{ campus.FacebookURL }}',
     serviceTimes: {
       {% capture renderedTimes %}
       {% assign times = campus.RawServiceTimes | Split: '|' %}
@@ -57,10 +56,9 @@ CCV.locations = [
             '{{ split[1] }}',
           {% endif %}
         {% endfor %}
-        ],
+        ]
       {% endif %}
-      {% endcapture %}
-      {{ renderedTimes | StripNewlines | Remove: '  ' }}
+      {% endcapture %}{{ renderedTimes | StripNewlines | Remove: '  ' }}
     },
   }{% unless forloop.last %},{% endunless %}
 {% endfor %}

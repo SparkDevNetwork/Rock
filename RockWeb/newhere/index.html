@@ -5,11 +5,11 @@ with many locations. Currently in Peoria, Surprise, Scottsdale, East Valley &amp
               <div class="header-wrap">
                 <div class="dropdown">
                   <a data-toggle="dropdown">
-                    <h2>{{Name}} Campus <span class="caret"></span></h2>
+                    <h2>{{name}} Campus <span class="caret"></span></h2>
                   </a>
                   <ul class="dropdown-menu js-select-campus-list">
                     {{#each otherCampuses}}
-                      <li><a data-campusId="{{Id}}">{{Name}} Campus</a></li>
+                      <li><a data-campusId="{{id}}">{{name}} Campus</a></li>
                     {{/each}}
                   </ul>
                 </div>
@@ -19,24 +19,24 @@ with many locations. Currently in Peoria, Surprise, Scottsdale, East Valley &amp
                   {{#if customMessage}}
                   <p><em>{{customMessage}}</em></p>
                   {{/if}}
-                  {{#if ServiceTimes}}
+                  {{#if serviceTimes}}
                   <h3>Service Times</h3>
                   {{/if}}
-                  {{#if ServiceTimes.saturday}}
+                  {{#if serviceTimes.saturday}}
                   <div>
                     <strong>Saturday</strong>
                     <ul>
-                      {{#each ServiceTimes.saturday}}
+                      {{#each serviceTimes.saturday}}
                         <li>{{this}}</li>
                       {{/each}}
                     </ul>
                   </div>
                   {{/if}}
-                  {{#if ServiceTimes.sunday}}
+                  {{#if serviceTimes.sunday}}
                   <div>
                     <strong>Sunday</strong>
                     <ul>
-                      {{#each ServiceTimes.sunday}}
+                      {{#each serviceTimes.sunday}}
                         <li>{{this}}</li>
                       {{/each}}
                     </ul>
@@ -45,26 +45,26 @@ with many locations. Currently in Peoria, Surprise, Scottsdale, East Valley &amp
                 </div>
               </div>
               <div class="map">
-                <a href="http://maps.apple.com/maps?q={{Location.Street1}} {{Location.City}},{{Location.State}}">
+                <a href="http://maps.apple.com/maps?q={{street}} {{city}},{{state}}">
                   {{map}}
                 </a>
               </div>
-              <a class="action block" href="/{{toLowerCase Name}}" class="learn-more">Learn More</a>
+              <a class="action block" href="{{url}}" class="learn-more">Learn More</a>
             </div></script> <script id=no-campus-template type=text/x-handlebars-template><div class="no-campus">
               <div class="header-wrap">
                 <h2>Select A Campus</h2>
               </div>
               <ul class="button-list js-select-campus-list">
               {{#each this}}
-                <li><a data-campusId="{{Id}}">{{Name}}</a></li>
+                <li><a data-campusId="{{id}}">{{name}}</a></li>
               {{/each}}
               </ul>
-            </div></script> </div> </div> </section> <nav class=js-slide role=main> <ul> <li><a href=/home>Home</a></li> <li><a href=/nextsteps>Next Steps</a></li> <li><a href=/give>Give</a></li> <li><a href=/watch>Watch</a></li> <li><a href=/events>Events</a></li> </ul> </nav> <script src=scripts/cfafb2b9.vendor.js></script> <script src=//www.ccvonline.com/Arena/Include/v6/min/ccv-nav.src.min.js></script> <!-- Google Analytics: TODO change UA-XXXXX-X to be your site's ID. --> <script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+            </div></script> </div> </div> </section> <nav class=js-slide role=main> <ul> <li><a href=/home>Home</a></li> <li><a href=/nextsteps>Next Steps</a></li> <li><a href=/give>Give</a></li> <li><a href=/watch>Watch</a></li> <li><a href=/events>Events</a></li> </ul> </nav> <script src=scripts/cfafb2b9.vendor.js></script> <script src=http://rock.ccv.church/Assets/Misc/ccv-locations.js></script> <!-- Google Analytics: TODO change UA-XXXXX-X to be your site's ID. --> <script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
       function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
       e=o.createElement(i);r=o.getElementsByTagName(i)[0];
       e.src='//www.google-analytics.com/analytics.js';
       r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
-      ga('create','UA-273941-1');ga('send','pageview');</script> <script src=scripts/85817baf.main.js></script> <script>var imager = new Imager({
+      ga('create','UA-273941-1');ga('send','pageview');</script> <script src=scripts/1ee7d042.main.js></script> <script>var imager = new Imager({
             availableWidths: [320, 640, 1024, 2048],
             availablePixelRatios: [1, 2]
           });</script>  
