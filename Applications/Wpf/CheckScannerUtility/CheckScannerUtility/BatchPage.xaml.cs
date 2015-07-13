@@ -1113,6 +1113,9 @@ namespace Rock.Apps.CheckScannerUtility
             ShowTransactionGridItemDetail();
         }
 
+        /// <summary>
+        /// Shows the transaction grid item detail.
+        /// </summary>
         private void ShowTransactionGridItemDetail()
         {
             try
@@ -1136,11 +1139,46 @@ namespace Rock.Apps.CheckScannerUtility
             }
         }
 
-        #endregion
-
+        /// <summary>
+        /// Handles the Click event of the TransactionGridItemDetail control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void TransactionGridItemDetail_Click( object sender, RoutedEventArgs e )
         {
             ShowTransactionGridItemDetail();
         }
+
+        /// <summary>
+        /// Handles the Click event of the btnDeleteTransaction control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnDeleteTransaction_Click( object sender, RoutedEventArgs e )
+        {
+            int transactionId = (int)( sender as Button ).CommandParameter;
+            if ( MessageBox.Show( "Are you sure you want to delete this transaction?", "Confirm", MessageBoxButton.OKCancel ) == MessageBoxResult.OK )
+            {
+                try
+                {
+                    FinancialTransaction financialTransaction = grdBatchItems.SelectedValue as FinancialTransaction;
+
+                    if ( financialTransaction != null )
+                    {
+                        RockConfig config = RockConfig.Load();
+                        RockRestClient client = new RockRestClient( config.RockBaseUrl );
+                        client.Login( config.Username, config.Password );
+                        client.Delete(string.Format("api/FinancialTransactions/{0}", transactionId));
+                        btnRefreshBatchList_Click( sender, e );
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+                }
+            }
+        }
+
+        #endregion
     }
 }

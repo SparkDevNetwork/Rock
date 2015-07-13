@@ -535,8 +535,12 @@
                         Value="White" />
             </Trigger>
         </Style.Triggers>
+        <Setter Property="MinHeight" Value="30" />
+        <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Cursor"
                 Value="Hand" />
+        <Setter Property="VerticalContentAlignment"
+                        Value="Center"/>
     </Style>
     <Style x:Key="gridCellStyleNumber"
            TargetType="{x:Type DataGridCell}"
@@ -664,6 +668,37 @@
            TargetType="{x:Type Button}">
         
     </Style>
+
+    <!-- Button Style: Mini Icon-->
+    <Style x:Key="buttonStyleMiniIcon"
+           BasedOn="{StaticResource buttonStyle}"
+           TargetType="{x:Type Button}"
+           >
+        <Setter Property="FontFamily"
+                Value="./resources/#FontAwesome" />
+        <Setter Property="Label.FontWeight"
+                Value="Normal" />
+        <Setter Property="Height"
+                Value="24" />
+        <Setter Property="Width"
+                Value="36" />
+        <Setter Property="FontSize"
+                Value="12" />
+    </Style>
+
+    <!-- Button Style: Mini Icon Danger -->
+    <Style x:Key="buttonStyleMiniIconDanger"
+           BasedOn="{StaticResource buttonStyleMiniIcon}"
+           TargetType="{x:Type Button}"
+           >
+        <Setter Property="Foreground" 
+                Value="#fff" />
+        <Setter Property="Background"
+                Value="#ac3434" />
+        <Setter Property="BorderBrush" 
+                Value="#902c2c"/>
+    </Style>
+
 
     <!-- Button Style: Primary Mini -->
     <Style x:Key="buttonStylePrimaryMini"

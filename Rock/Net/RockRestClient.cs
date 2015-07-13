@@ -332,6 +332,22 @@ namespace Rock.Net
         }
 
         /// <summary>
+        /// Deletes the specified delete path.
+        /// </summary>
+        /// <param name="deletePath">The delete path.</param>
+        public void Delete( string deletePath )
+        {
+            RestSharp.RestClient restClient = new RestSharp.RestClient( this.rockBaseUri );
+            restClient.CookieContainer = this.CookieContainer;
+            RestSharp.RestRequest request = new RestSharp.RestRequest( deletePath, RestSharp.Method.DELETE );
+            var response = restClient.Execute( request );
+            if ( response.ErrorException != null )
+            {
+                throw response.ErrorException;
+            }
+        }
+
+        /// <summary>
         /// Posts or Puts the data depending on httpMethod returning result as a string (if there is a result)
         /// </summary>
         /// <typeparam name="T"></typeparam>
