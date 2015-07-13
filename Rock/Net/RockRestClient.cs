@@ -547,7 +547,21 @@ namespace Rock.Net
                     }
                     else
                     {
-                        throw new HttpErrorException( new HttpError( postTask.Result.ReasonPhrase ) );
+
+                        HttpError httpError = null;
+                        postTask.Result.Content.ReadAsStringAsync().ContinueWith( s =>
+                        {
+                            httpError = GetHttpError( requestUri, httpError, postTask, s );
+                        } ).Wait();
+
+                        if ( httpError != null )
+                        {
+                            throw new HttpErrorException( httpError );
+                        }
+                        else
+                        {
+                            throw new HttpErrorException( new HttpError( postTask.Result.ReasonPhrase ) );
+                        }
                     }
                 } ).Wait();
             }
