@@ -348,5 +348,21 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201507062330051_GroupRequirementsNotificationEmail", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to     DECLARE @CategoryId int = ( SELECT TOP 1 [Id] FROM [Category] WHERE [Guid] = &apos;4A7D0D1F-E160-445E-9D29-AEBD140DA242&apos; )
+        ///    IF @CategoryId IS NOT NULL
+        ///    BEGIN     
+        ///
+        ///        INSERT INTO [SystemEmail] ([IsSystem], [Title], [Subject], [Body], [Guid], [CategoryId])
+        ///        VALUES
+        ///	        (0, &apos;Registration Confirmation&apos;, &apos;{{ RegistrationInstance.Name }} Confirmation&apos;, &apos;{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;EmailHeader&apos;&apos; }}
+        ///{% capture currencySymbol %}{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;CurrencySymbol&apos;&apos; }}{% endcapture [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201507121943445_RegistrationEmails {
+            get {
+                return ResourceManager.GetString("_201507121943445_RegistrationEmails", resourceCulture);
+            }
+        }
     }
 }

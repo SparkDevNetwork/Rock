@@ -112,6 +112,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialTransaction"/> that this detail item belongs to.
         /// </value>
+        [LavaInclude]
         public virtual FinancialTransaction Transaction { get; set; }
 
         /// <summary>
@@ -120,6 +121,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialAccount"/> that is affected by this detail line item.
         /// </value>
+        [LavaInclude]
         public virtual FinancialAccount Account { get; set; }
 
         /// <summary>

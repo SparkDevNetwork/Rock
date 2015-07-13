@@ -465,6 +465,8 @@
     <Compile Include="Transactions\GroupAttendedTransaction.cs" />
     <Compile Include="Transactions\ConnectionRequestChangeTransaction.cs" />
     <Compile Include="Transactions\GroupMemberChangeTransaction.cs" />
+    <Compile Include="Transactions\SendRegistrationNotificationTransaction.cs" />
+    <Compile Include="Transactions\SendRegistrationConfirmationTransaction.cs" />
     <Compile Include="Transactions\SendCommunicationApprovalEmail.cs" />
     <Compile Include="Transactions\RunJobNowTransaction.cs" />
     <Compile Include="Transactions\DeleteAttributeBinaryFile.cs" />

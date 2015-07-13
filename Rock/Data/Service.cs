@@ -438,6 +438,63 @@ namespace Rock.Data
 
         #endregion
 
+        #region Following
+
+        /// <summary>
+        /// Gets a quety of the followers of a particular item
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Rock.Model.Person> GetFollowers( int id )
+        {
+            var rockContext = this.Context as RockContext;
+
+            var entityType = Rock.Web.Cache.EntityTypeCache.Read( typeof( T ), false, rockContext );
+            if ( entityType != null )
+            {
+                var followerPersonIds = new Rock.Model.FollowingService( rockContext )
+                    .Queryable()
+                    .Where( f =>
+                        f.EntityTypeId == entityType.Id &&
+                        f.EntityId == id )
+                    .Select( f => f.PersonAlias.PersonId );
+
+                return new Rock.Model.PersonService( rockContext )
+                    .Queryable()
+                    .Where( p => followerPersonIds.Contains( p.Id ) );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a query of the items that are followed by a specific person id 
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public IQueryable<T> GetFollowed( int personId )
+        {
+            var rockContext = this.Context as RockContext;
+
+            var entityType = Rock.Web.Cache.EntityTypeCache.Read( typeof( T ), false, rockContext );
+            if ( entityType != null )
+            {
+                var ids = new Rock.Model.FollowingService( rockContext )
+                    .Queryable()
+                    .Where( f =>
+                        f.EntityTypeId == entityType.Id &&
+                        f.PersonAlias != null &&
+                        f.PersonAlias.PersonId == personId )
+                    .Select( f => f.PersonAlias.PersonId );
+
+                return Queryable().Where( t => ids.Contains( t.Id ) );
+            }
+
+            return null;
+        }
+
+        #endregion
+
         #region Other
 
         /// <summary>

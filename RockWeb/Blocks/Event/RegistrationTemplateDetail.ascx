@@ -46,8 +46,12 @@
                                     Help="The group member role that new registrants should be added to group with." />
                                 <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Group Member Status" 
                                     Help="The group member status that new registrants should be added to group with."/>
-                                <Rock:RockCheckBox ID="cbNotifyLeaders" runat="server" Label="Notify Group Leader(s)" Text="Yes" 
-                                    Help="Should leaders in the target group be notified when new people register for the group?" />
+                                <Rock:RockCheckBoxList ID="cblNotify" runat="server" Label="Notify" RepeatDirection="Vertical"
+                                    Help="Who should be notified when new people are registered?">
+                                    <asp:ListItem Value="1" Text="Registration Contact" />
+                                    <asp:ListItem Value="2" Text="Group Followers" />
+                                    <asp:ListItem Value="4" Text="Group Leaders" />
+                                </Rock:RockCheckBoxList>
                                 <Rock:RockCheckBox ID="cbLoginRequired" runat="server" Label="Login Required" Text="Yes"
                                     Help="Is user required to be logged in when registering?" />
                             </div>
@@ -145,9 +149,9 @@
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:RockTextBox ID="tbSuccessTitle" runat="server" Label="Success Title" 
+                                <Rock:RockTextBox ID="tbSuccessTitle" runat="server" Label="Success Title" Placeholder="Congratulations"
                                     Help="The heading to display to user after succesfully completing a registration of this type." />
-                                <Rock:RockTextBox ID="tbSuccessText" runat="server" Label="Success Text" TextMode="MultiLine" Rows="4" 
+                                <Rock:CodeEditor ID="ceSuccessText" runat="server" Label="Success Text" EditorMode="Liquid" EditorTheme="Rock" EditorHeight="300" 
                                     Help="The text to display to user after succesfully completing a registration of this type. If there are costs or fees for this registration, a summary of those will be displayed after this text." />
                             </div>
                         </div>
