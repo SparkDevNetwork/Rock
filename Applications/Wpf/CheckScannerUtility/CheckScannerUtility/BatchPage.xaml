@@ -375,6 +375,24 @@
                                             Width="*"
                                             CanUserResize="False"
                                             CanUserSort="False" />
+                        <DataGridTemplateColumn Header="ACTIONS" HeaderStyle="{StaticResource gridHeaderStyle}"
+                                            CellStyle="{StaticResource gridCellStyle}"
+                                            Width="*"
+                                            CanUserResize="False"
+                                               
+                                            CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button 
+                                        Name="btnDeleteTransaction" 
+                                        Content="&#xf00d;" 
+                                        HorizontalAlignment="Center"
+                                        Style="{StaticResource buttonStyleMiniIconDanger}"
+                                        CommandParameter="{Binding Id}"
+                                        Click="btnDeleteTransaction_Click"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
 
