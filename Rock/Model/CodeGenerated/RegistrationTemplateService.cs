@@ -103,7 +103,7 @@ namespace Rock.Model
             target.MaxRegistrants = source.MaxRegistrants;
             target.MinimumInitialPayment = source.MinimumInitialPayment;
             target.Name = source.Name;
-            target.NotifyGroupLeaders = source.NotifyGroupLeaders;
+            target.Notify = source.Notify;
             target.RegistrantsSameFamily = source.RegistrantsSameFamily;
             target.RegistrantTerm = source.RegistrantTerm;
             target.RegistrationTerm = source.RegistrationTerm;

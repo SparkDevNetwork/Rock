@@ -556,10 +556,10 @@ namespace RockWeb.Blocks.Event
         {
             if ( CurrentPanel == 2 )
             {
-                var registration = SaveChanges();
-                if ( registration != null )
+                var registrationId = SaveChanges();
+                if ( registrationId.HasValue )
                 {
-                    ShowSuccess( registration );
+                    ShowSuccess( registrationId.Value );
                     this.AddHistory( "event", "2,0,0" );
                 }
                 else
@@ -587,10 +587,10 @@ namespace RockWeb.Blocks.Event
             {
                 TransactionCode = string.Empty;
 
-                var registration = SaveChanges();
-                if ( registration != null )
+                var registrationId = SaveChanges();
+                if ( registrationId.HasValue )
                 {
-                    ShowSuccess( registration );
+                    ShowSuccess( registrationId.Value );
                 }
                 else
                 {
@@ -624,7 +624,7 @@ namespace RockWeb.Blocks.Event
 
         #region Methods
 
-        #region Model/State Methods
+        #region State Methods
 
         /// <summary>
         /// Sets the registration state
@@ -751,7 +751,15 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        private Registration SaveChanges()
+        #endregion
+
+        #region Save Methods
+
+        /// <summary>
+        /// Saves the changes.
+        /// </summary>
+        /// <returns></returns>
+        private int? SaveChanges()
         {
             Registration registration = null;
 
@@ -760,30 +768,52 @@ namespace RockWeb.Blocks.Event
 
                 if ( RegistrationState != null && RegistrationState.Registrants.Any() && RegistrationTemplate != null )
                 {
-                    using ( var rockContext = new RockContext() )
+                    var rockContext = new RockContext();
+                    rockContext.WrapTransaction( () =>
                     {
-                        rockContext.WrapTransaction( () =>
+                        bool hasPayment = RegistrationState.PaymentAmount > 0.0m;
+                        
+                        if ( RegistrationState.RegistrationId.HasValue )
                         {
-                            if ( !RegistrationState.RegistrationId.HasValue )
-                            {
-                                bool hasPayment = RegistrationState.PaymentAmount > 0.0m;
+                            registration = new RegistrationService( rockContext ).Get( RegistrationState.RegistrationId.Value );
+                        }
+                        else
+                        {
+                            registration = SaveRegistration( rockContext, hasPayment );
+                        }
 
-                                registration = SaveRegistration( rockContext, hasPayment );
-                                if ( registration != null )
+                        if ( registration != null )
+                        {
+                            if ( hasPayment )
+                            {
+                                string errorMessage = string.Empty;
+                                if ( !ProcessPayment( rockContext, registration, out errorMessage ) )
                                 {
-                                    if ( hasPayment )
-                                    {
-                                        string errorMessage = string.Empty;
-                                        if ( !ProcessPayment( rockContext, registration, out errorMessage ) )
-                                        {
-                                            registration = null;
-                                            ShowError( "An Error Occurred Processing Your " + RegistrationTerm, errorMessage );
-                                        }
-                                    }
+                                    registration = null;
+                                    ShowError( "An Error Occurred Processing Your " + RegistrationTerm, errorMessage );
                                 }
                             }
-                        } );
-                    }
+
+                            if ( registration != null )
+                            {
+                                string appRoot = ResolveRockUrl( "~/" );
+                                string themeRoot = ResolveRockUrl( "~~/" );
+
+                                var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
+                                confirmation.RegistrationId = registration.Id;
+                                confirmation.AppRoot = appRoot;
+                                confirmation.ThemeRoot = themeRoot;
+                                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
+
+                                var notification = new Rock.Transactions.SendRegistrationNotificationTransaction();
+                                notification.RegistrationId = registration.Id;
+                                notification.AppRoot = appRoot;
+                                notification.ThemeRoot = themeRoot;
+                                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( notification );
+                            }
+                        }
+                    } );
+
                 }
             }
             catch ( Exception ex )
@@ -792,9 +822,8 @@ namespace RockWeb.Blocks.Event
                 ShowError( "An Error Occurred Processing Your " + RegistrationTerm, ex.Message );
             }
 
-            return registration;
+            return registration != null ? registration.Id : (int?)null;
         }
-
 
         /// <summary>
         /// Saves the registration.
@@ -1176,6 +1205,19 @@ namespace RockWeb.Blocks.Event
 
         }
 
+        /// <summary>
+        /// Saves the person.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="familyGuid">The family unique identifier.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="location">The location.</param>
+        /// <param name="adultRoleId">The adult role identifier.</param>
+        /// <param name="childRoleId">The child role identifier.</param>
+        /// <param name="multipleFamilyGroupIds">The multiple family group ids.</param>
+        /// <param name="singleFamilyId">The single family identifier.</param>
+        /// <returns></returns>
         private int? SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId,
             Dictionary<Guid, int> multipleFamilyGroupIds, int? singleFamilyId )
         {
@@ -1248,6 +1290,13 @@ namespace RockWeb.Blocks.Event
             return newPerson != null ? newPerson.PrimaryAliasId : (int?)null;
         }
 
+        /// <summary>
+        /// Saves the phone.
+        /// </summary>
+        /// <param name="fieldValue">The field value.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="phoneTypeGuid">The phone type unique identifier.</param>
+        /// <param name="changes">The changes.</param>
         private void SavePhone( object fieldValue, Person person, Guid phoneTypeGuid, List<string> changes )
         {
             var phoneNumber = fieldValue.ToString().FromJsonOrNull<PhoneNumber>();
@@ -1280,8 +1329,13 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        #endregion
-
+        /// <summary>
+        /// Processes the payment.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registration">The registration.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
         private bool ProcessPayment( RockContext rockContext, Registration registration, out string errorMessage )
         {
             if ( string.IsNullOrWhiteSpace( TransactionCode ) )
@@ -1437,6 +1491,8 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        #endregion
+
         #region Display Methods
 
         /// <summary>
@@ -1516,35 +1572,59 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Shows the success panel
         /// </summary>
-        private void ShowSuccess( Registration registration )
+        private void ShowSuccess( int registrationId )
         {
-            var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
-            mergeFields.Add( "RegistrationTemplate", RegistrationTemplate );
-            mergeFields.Add( "Registration", registration );
+            try
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var registration = new RegistrationService( rockContext )
+                        .Queryable( "RegistrationInstance.RegistrationTemplate" )
+                        .FirstOrDefault( r => r.Id == registrationId );
 
-            if ( RegistrationTemplate != null && !string.IsNullOrWhiteSpace( RegistrationTemplate.SuccessTitle ))
-            {
-                lSuccessTitle.Text = RegistrationTemplate.SuccessTitle.ResolveMergeFields( mergeFields );
+                    if ( registration != null && !string.IsNullOrEmpty( registration.ConfirmationEmail ) &&
+                        registration.RegistrationInstance != null && registration.RegistrationInstance.RegistrationTemplate != null )
+                    {
+                        var template = registration.RegistrationInstance.RegistrationTemplate;
+
+                        var mergeFields = new Dictionary<string, object>();
+                        mergeFields.Add( "CurrentPerson", CurrentPerson );
+                        mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
+                        mergeFields.Add( "Registration", registration );
+
+                        if ( template != null && !string.IsNullOrWhiteSpace( template.SuccessTitle ) )
+                        {
+                            lSuccessTitle.Text = template.SuccessTitle.ResolveMergeFields( mergeFields );
+                        }
+                        else
+                        {
+                            lSuccessTitle.Text = "Congratulations";
+                        }
+
+                        if ( template != null && !string.IsNullOrWhiteSpace( template.SuccessText ) )
+                        {
+                            lSuccess.Text = template.SuccessText.ResolveMergeFields( mergeFields );
+                        }
+                        else
+                        {
+                            lSuccess.Text = "You have succesfully completed this " + RegistrationTerm.ToLower();
+                        }
+
+                        // show debug info
+                        if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && UserCanEdit )
+                        {
+                            lSuccessDebug.Visible = true;
+                            lSuccessDebug.Text = mergeFields.lavaDebugInfo();
+                        }
+
+                    }
+                }
             }
-            else
+            catch ( Exception ex )
             {
+                ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
                 lSuccessTitle.Text = "Congratulations";
-            }
-
-            if ( RegistrationTemplate != null && !string.IsNullOrWhiteSpace( RegistrationTemplate.SuccessText ) )
-            {
-                lSuccess.Text = RegistrationTemplate.SuccessText.ResolveMergeFields( mergeFields );
-            }
-            else
-            {
-                lSuccess.Text = "You have succesfully completed this " + RegistrationTerm.ToLower();
-            }
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && UserCanEdit )
-            {
-                lSuccessDebug.Visible = true;
-                lSuccessDebug.Text = mergeFields.lavaDebugInfo();
+                lSuccess.Text = "You have succesfully completed this registration.";
             }
 
             SetPanel( 3 );
@@ -2882,6 +2962,7 @@ namespace RockWeb.Blocks.Event
                     {
                         YourFirstName = registration.PersonAlias.Person.NickName;
                         YourLastName = registration.PersonAlias.Person.LastName;
+                        ConfirmationEmail = registration.ConfirmationEmail;
                     }
 
                     DiscountCode = registration.DiscountCode.Trim();

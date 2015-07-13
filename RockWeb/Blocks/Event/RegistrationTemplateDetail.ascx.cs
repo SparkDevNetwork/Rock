@@ -40,6 +40,58 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of the given registration template." )]
 
+    [CodeEditorField( "Default Success Text", "The success text default to use for a new template", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"
+{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
+{% assign registrantCount = Registration.Registrants | Size %}
+<p>
+    You have succesfully registered the following 
+    {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+    for {{ RegistrationInstance.Name }}:
+</p>
+
+<ul class='list-unstyled'>
+{% for registrant in Registration.Registrants %}
+    <li>
+    
+        {{ registrant.PersonAlias.Person.FullName }}
+        
+        {% if registrant.Cost > 0 %}
+            - {{ currencySymbol }}{{ registrant.Cost | Format'#,##0.00' }}
+        {% endif %}
+        
+        {% assign feeCount = registrant.Fees | Size %}
+        {% if feeCount > 0 %}
+            <br/>{{ RegistrationInstance.RegistrationTemplate.FeeTerm | PluralizeForQuantity:registrantCount }}:
+            <ul class='list-unstyled'>
+            {% for fee in registrant.Fees %}
+                <li>
+                    {{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
+                    {% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ currencySymbol }}{{ fee.Cost | Format'#,##0.00' }}){% endif %}: {{ currencySymbol }}{{ fee.TotalCost | Format'#,##0.00' }}
+                </li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+        
+    </li>
+{% endfor %}
+</ul>
+
+{% if Registration.TotalCost > 0 %}
+<p>
+    Total Due: {{ currencySymbol }}{{ Registration.TotalCost | Format''#,##0.00'' }}<br/>
+    {% for payment in Registration.Payments %}
+        Paid {{ currencySymbol }}{{ payment.Amount | Format''#,##0.00'' }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }} (Txn: {{ payment.Transaction.TransactionCode }})<br/>
+    {% endfor %}
+    Total Paid: {{ currencySymbol }}{{ Registration.TotalPaid | Format''#,##0.00'' }}<br/>
+    Balance Due: {{ currencySymbol }}{{ Registration.BalanceDue | Format''#,##0.00'' }}
+</p>
+{% endif %}
+
+<p>
+    A confirmation email has been sent to {{ Registration.ConfirmationEmail }}. If you have any questions 
+    please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+</p>
+", "", 0 )]
     public partial class RegistrationTemplateDetail : RockBlock
     {
 
@@ -394,6 +446,17 @@ namespace RockWeb.Blocks.Event
             if ( RegistrationTemplate == null )
             {
                 RegistrationTemplate = new RegistrationTemplate();
+                RegistrationTemplate.SuccessTitle = "Congratulations {{ Registration.FirstName }}";
+                RegistrationTemplate.SuccessText = GetAttributeValue( "DefaultSuccessText" );
+            }
+
+            RegistrationNotify notify = RegistrationNotify.None;
+            foreach( ListItem li in cblNotify.Items )
+            {
+                if ( li.Selected )
+                {
+                    notify = notify | (RegistrationNotify)li.Value.AsInteger();
+                }
             }
 
             RegistrationTemplate.IsActive = cbIsActive.Checked;
@@ -402,7 +465,7 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.GroupTypeId = gtpGroupType.SelectedGroupTypeId;
             RegistrationTemplate.GroupMemberRoleId = rpGroupTypeRole.GroupRoleId;
             RegistrationTemplate.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
-            RegistrationTemplate.NotifyGroupLeaders = cbNotifyLeaders.Checked;
+            RegistrationTemplate.Notify = notify;
             RegistrationTemplate.LoginRequired = cbLoginRequired.Checked;
             RegistrationTemplate.AllowMultipleRegistrants = cbMultipleRegistrants.Checked;
             RegistrationTemplate.MaxRegistrants = nbMaxRegistrants.Text.AsInteger();
@@ -415,12 +478,12 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.UseDefaultConfirmationEmail = cbUserDefaultConfirmation.Checked;
             RegistrationTemplate.ConfirmationEmailTemplate = ceConfirmationEmailTemplate.Text;
 
-            RegistrationTemplate.RegistrationTerm = tbRegistrationTerm.Text;
-            RegistrationTemplate.RegistrantTerm = tbRegistrantTerm.Text;
-            RegistrationTemplate.FeeTerm = tbFeeTerm.Text;
-            RegistrationTemplate.DiscountCodeTerm = tbDiscountCodeTerm.Text;
+            RegistrationTemplate.RegistrationTerm = string.IsNullOrWhiteSpace( tbRegistrationTerm.Text ) ? "Registration" : tbRegistrationTerm.Text;
+            RegistrationTemplate.RegistrantTerm = string.IsNullOrWhiteSpace( tbRegistrantTerm.Text ) ? "Person" : tbRegistrantTerm.Text;
+            RegistrationTemplate.FeeTerm = string.IsNullOrWhiteSpace( tbFeeTerm.Text ) ? "Additional Options" : tbFeeTerm.Text;
+            RegistrationTemplate.DiscountCodeTerm = string.IsNullOrWhiteSpace( tbDiscountCodeTerm.Text ) ? "Discount Code" : tbDiscountCodeTerm.Text;
             RegistrationTemplate.SuccessTitle = tbSuccessTitle.Text;
-            RegistrationTemplate.SuccessText = tbSuccessText.Text;
+            RegistrationTemplate.SuccessText = ceSuccessText.Text;
 
             if ( !Page.IsValid || !RegistrationTemplate.IsValid )
             {
@@ -1454,6 +1517,7 @@ namespace RockWeb.Blocks.Event
                 registrationTemplate.IsActive = true;
                 registrationTemplate.CategoryId = parentCategoryId;
                 registrationTemplate.UseDefaultConfirmationEmail = true;
+                registrationTemplate.Notify = RegistrationNotify.None;
             }
 
             pnlDetails.Visible = true;
@@ -1598,7 +1662,13 @@ namespace RockWeb.Blocks.Event
             rpGroupTypeRole.GroupTypeId = RegistrationTemplate.GroupTypeId ?? 0;
             rpGroupTypeRole.GroupRoleId = RegistrationTemplate.GroupMemberRoleId;
             ddlGroupMemberStatus.SetValue( RegistrationTemplate.GroupMemberStatus.ConvertToInt() );
-            cbNotifyLeaders.Checked = RegistrationTemplate.NotifyGroupLeaders;
+
+            foreach( ListItem li in cblNotify.Items )
+            {
+                RegistrationNotify notify = (RegistrationNotify)li.Value.AsInteger();
+                li.Selected = ( RegistrationTemplate.Notify & notify ) == notify;
+            }
+
             cbLoginRequired.Checked = RegistrationTemplate.LoginRequired;
             cbMultipleRegistrants.Checked = RegistrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Visible = RegistrationTemplate.AllowMultipleRegistrants;
@@ -1619,7 +1689,7 @@ namespace RockWeb.Blocks.Event
             tbDiscountCodeTerm.Text = RegistrationTemplate.DiscountCodeTerm;
 
             tbSuccessTitle.Text = RegistrationTemplate.SuccessTitle;
-            tbSuccessText.Text = RegistrationTemplate.SuccessText;
+            ceSuccessText.Text = RegistrationTemplate.SuccessText;
 
             BuildControls( true );
         }
