@@ -81,7 +81,12 @@ namespace Rock.Apps.CheckScannerUtility
             }
         }
 
-        void rangerScanner_TransportReadyToFeedState( object sender, AxRANGERLib._DRangerEvents_TransportReadyToFeedStateEvent e )
+        /// <summary>
+        /// Rangers the state of the scanner_ transport ready to feed.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void rangerScanner_TransportReadyToFeedState( object sender, AxRANGERLib._DRangerEvents_TransportReadyToFeedStateEvent e )
         {
             if ( ScanningPage.IsVisible )
             {
@@ -209,8 +214,7 @@ namespace Rock.Apps.CheckScannerUtility
         private void rangerScanner_TransportNewState( object sender, AxRANGERLib._DRangerEvents_TransportNewStateEvent e )
         {
             mnuConnect.IsEnabled = false;
-            ScanningPage.btnSave.Visibility = Visibility.Visible;
-            ScanningPage.btnCancel.Visibility = Visibility.Visible;
+            ScanningPage.btnClose.Visibility = Visibility.Visible;
 
             string status = rangerScanner.GetTransportStateString().Replace( "Transport", string.Empty ).SplitCase();
             Color statusColor = Colors.Transparent;
@@ -377,30 +381,10 @@ namespace Rock.Apps.CheckScannerUtility
                     {
                         scannedDoc.BadMicr = true;
                         scannedDoc.Upload = false;
-                        if (ScanningPage.PromptToUploadBadScan(scannedDoc))
-                        {
-                            scannedDoc.Upload = true;
-                        }
                     }
                 }
 
-                if ( IsDuplicateScan( scannedDoc ) )
-                {
-                    scannedDoc.Duplicate = true;
-                    scannedDoc.Upload = false;
-                    if ( ScanningPage.PromptToUploadBadScan( scannedDoc ) )
-                    {
-                        scannedDoc.Upload = true;
-                    }
-                }
-
-                if ( scannedDoc.Upload )
-                {
-                    this.UploadScannedItem( scannedDoc );
-                    ScanningPage.ContinueFeeding = true;
-                }
-
-                ScanningPage.ShowScannedDocStatus( scannedDoc );
+                ScanningPage.ShowScannedDocStatusAndUpload( scannedDoc );
             }
             catch ( Exception ex )
             {
@@ -519,7 +503,7 @@ namespace Rock.Apps.CheckScannerUtility
 
                 // TODO Upload Check
 
-                ScanningPage.ShowScannedDocStatus( scannedDoc );
+                ScanningPage.ShowScannedDocStatusAndUpload( scannedDoc );
 
                 File.Delete( docImageFileName );
 
@@ -574,152 +558,9 @@ namespace Rock.Apps.CheckScannerUtility
             }
         }
 
-        /// <summary>
-        /// Gets or sets the client that stays connected 
-        /// </summary>
-        /// <value>
-        /// The persisted client.
-        /// </value>
-        private RockRestClient uploadScannedItemClient { get; set; }
-
-        /// <summary>
-        /// Gets or sets the binary file type contribution for uploading transactions
-        /// </summary>
-        /// <value>
-        /// The binary file type contribution.
-        /// </value>
-        private BinaryFileType binaryFileTypeContribution { get; set; }
-
-        /// <summary>
-        /// Gets or sets the transaction type value contribution for uploading transactions
-        /// </summary>
-        /// <value>
-        /// The transaction type value contribution.
-        /// </value>
-        private DefinedValue transactionTypeValueContribution { get; set; }
-
-        /// <summary>
-        /// Determines whether [is duplicate scan] [the specified scanned document].
-        /// </summary>
-        /// <param name="scannedDoc">The scanned document.</param>
-        /// <returns></returns>
-        private bool IsDuplicateScan( ScannedDocInfo scannedDoc )
-        {
-            if ( !scannedDoc.IsCheck )
-            {
-                return false;
-            }
-
-            if ( uploadScannedItemClient == null )
-            {
-                var rockConfig = RockConfig.Load();
-                uploadScannedItemClient = new RockRestClient( rockConfig.RockBaseUrl );
-                uploadScannedItemClient.Login( rockConfig.Username, rockConfig.Password );
-            }
-
-            var alreadyScanned = uploadScannedItemClient.PostDataWithResult<string, bool>( "api/FinancialTransactions/AlreadyScanned", scannedDoc.ScannedCheckMicr );
-            return alreadyScanned;
-        }
-
-        /// <summary>
-        /// Uploads the scanned item.
-        /// </summary>
-        /// <param name="scannedDocInfo">The scanned document information.</param>
-        private void UploadScannedItem( ScannedDocInfo scannedDocInfo )
-        {
-            if ( uploadScannedItemClient == null )
-            {
-                RockConfig rockConfig = RockConfig.Load();
-                uploadScannedItemClient = new RockRestClient( rockConfig.RockBaseUrl );
-                uploadScannedItemClient.Login( rockConfig.Username, rockConfig.Password );
-
-                binaryFileTypeContribution = uploadScannedItemClient.GetDataByGuid<BinaryFileType>( "api/BinaryFileTypes", new Guid( Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE ) );
-                transactionTypeValueContribution = uploadScannedItemClient.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
-            }
-
-            RockRestClient client = uploadScannedItemClient;
-
-            AssemblyName assemblyName = Assembly.GetExecutingAssembly().GetName();
-            string appInfo = string.Format( "{0}, version: {1}", assemblyName.Name, assemblyName.Version );
-
-            // upload image of front of doc
-            string frontImageFileName = string.Format( "image1_{0}.png", RockDateTime.Now.ToString( "o" ).RemoveSpecialCharacters() );
-            int frontImageBinaryFileId = client.UploadBinaryFile( frontImageFileName, Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid(), scannedDocInfo.FrontImagePngBytes, false );
-
-            // upload image of back of doc (if it exists)
-            int? backImageBinaryFileId = null;
-            if ( scannedDocInfo.BackImageData != null )
-            {
-                // upload image of back of doc
-                string backImageFileName = string.Format( "image2_{0}.png", RockDateTime.Now.ToString( "o" ).RemoveSpecialCharacters() );
-                backImageBinaryFileId = client.UploadBinaryFile( backImageFileName, Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid(), scannedDocInfo.BackImagePngBytes, false );
-            }
-
-            FinancialTransaction financialTransaction = new FinancialTransaction();
-
-            Guid transactionGuid = Guid.NewGuid();
-
-            financialTransaction.BatchId = SelectedFinancialBatch.Id;
-            financialTransaction.TransactionCode = string.Empty;
-            financialTransaction.Summary = string.Empty;
-
-            financialTransaction.Guid = transactionGuid;
-            financialTransaction.TransactionDateTime = SelectedFinancialBatch.BatchStartDateTime;
-
-            financialTransaction.CurrencyTypeValueId = scannedDocInfo.CurrencyTypeValue.Id;
-            financialTransaction.SourceTypeValueId = scannedDocInfo.SourceTypeValue.Id;
-
-            financialTransaction.TransactionTypeValueId = transactionTypeValueContribution.Id;
-
-            int? uploadedTransactionId;
-
-            if ( scannedDocInfo.IsCheck )
-            {
-                financialTransaction.TransactionCode = scannedDocInfo.CheckNumber;
-
-                FinancialTransactionScannedCheck financialTransactionScannedCheck = new FinancialTransactionScannedCheck();
-
-                // Rock server will encrypt CheckMicrPlainText to this since we can't have the DataEncryptionKey in a RestClient
-                financialTransactionScannedCheck.FinancialTransaction = financialTransaction;
-                financialTransactionScannedCheck.ScannedCheckMicr = scannedDocInfo.ScannedCheckMicr;
-
-                uploadedTransactionId = client.PostData<FinancialTransactionScannedCheck>( "api/FinancialTransactions/PostScanned", financialTransactionScannedCheck ).AsIntegerOrNull();
-            }
-            else
-            {
-                uploadedTransactionId = client.PostData<FinancialTransaction>( "api/FinancialTransactions", financialTransaction as FinancialTransaction ).AsIntegerOrNull();
-            }
-
-            if ( !uploadedTransactionId.HasValue )
-            {
-                // just in case we didn't get the Id from the POST...
-                uploadedTransactionId = client.GetIdFromGuid( "api/FinancialTransactions/", transactionGuid );
-            }
-
-            // upload FinancialTransactionImage records for front/back
-            FinancialTransactionImage financialTransactionImageFront = new FinancialTransactionImage();
-            financialTransactionImageFront.BinaryFileId = frontImageBinaryFileId;
-            financialTransactionImageFront.TransactionId = uploadedTransactionId.Value;
-            financialTransactionImageFront.Order = 0;
-            client.PostData<FinancialTransactionImage>( "api/FinancialTransactionImages", financialTransactionImageFront );
-
-            if ( backImageBinaryFileId.HasValue )
-            {
-                FinancialTransactionImage financialTransactionImageBack = new FinancialTransactionImage();
-                financialTransactionImageBack.BinaryFileId = backImageBinaryFileId.Value;
-                financialTransactionImageBack.TransactionId = uploadedTransactionId.Value;
-                financialTransactionImageBack.Order = 1;
-                client.PostData<FinancialTransactionImage>( "api/FinancialTransactionImages", financialTransactionImageBack );
-            }
-            scannedDocInfo.TransactionId = uploadedTransactionId;
-
-            financialTransaction.CreatedDateTime = financialTransaction.CreatedDateTime ?? DateTime.Now;
-
-            var transactionList = grdBatchItems.DataContext as BindingList<FinancialTransaction>;
-            transactionList.Insert( 0, financialTransaction );
-        }
-
         #endregion
+
+        
 
         #region internal methods
 
@@ -882,8 +723,6 @@ namespace Rock.Apps.CheckScannerUtility
                         micrImage.FormatChange( "6200" );
                         micrImage.MicrTimeOut = 5;
 
-                        ScanningPage.btnStartStop.Content = ScanButtonText.ScanCheck;
-
                         // get Version to test if we have a good connection to the device
                         string version = "-1";
                         try
@@ -976,8 +815,7 @@ namespace Rock.Apps.CheckScannerUtility
             // NOTE: If ranger is powered down after the app starts, it might report that is is connected.  We'll catch that later when they actually start scanning
             if ( ConnectToScanner() )
             {
-                // set the uploadScannedItemClient to null to ensure we have a fresh connection (just in case they changed the url, or if the connection died for some other reason)
-                uploadScannedItemClient = null;
+                
                 this.NavigationService.Navigate( this.ScanningPromptPage );
             }
             else
