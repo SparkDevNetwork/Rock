@@ -804,14 +804,31 @@ namespace RockWeb.Blocks.Event
                             LinkageState.RegistrationInstance.RegistrationTemplateId == template.Id;
                     }
                 }
+
+                gpNewLinkageGroup.SetValue( LinkageState.Group );
+
+                rieNewLinkage.SetValue( LinkageState.RegistrationInstance );
+                rieNewLinkage.UrlSlug = LinkageState.UrlSlug;
+
+                if ( LinkageState.RegistrationInstance == null )
+                {
+                    var contactPersonId = ppContact.PersonId;
+                    if ( contactPersonId.HasValue )
+                    {
+                        var person = new PersonService( rockContext ).Get( contactPersonId.Value );
+                        if ( person != null )
+                        {
+                            rieNewLinkage.ContactName = person.FullName;
+                        }
+                    }
+                    if ( !string.IsNullOrWhiteSpace( tbEmail.Text ) )
+                    {
+                        rieNewLinkage.ContactEmail = tbEmail.Text;
+                    }
+                }
+
+                tbExistingLinkageUrlSlug.Text = LinkageState.UrlSlug;
             }
-
-            gpNewLinkageGroup.SetValue( LinkageState.Group );
-
-            rieNewLinkage.SetValue( LinkageState.RegistrationInstance );
-            rieNewLinkage.UrlSlug = LinkageState.UrlSlug;
-
-            tbExistingLinkageUrlSlug.Text = LinkageState.UrlSlug;
 
             ShowDialog( "EventItemNewLinkage", true );
         }
