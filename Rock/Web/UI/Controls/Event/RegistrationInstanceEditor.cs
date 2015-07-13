@@ -46,6 +46,8 @@ namespace Rock.Web.UI.Controls
         AccountPicker _apAccount;
         RockTextBox _tbContactName;
         EmailBox _ebContactEmail;
+        DateTimePicker _dtpSendReminder;
+        RockCheckBox _cbReminderSent;
         CodeEditor _ceAdditionalReminderDetails;
         CodeEditor _ceAdditionalConfirmationDetails;
 
@@ -290,6 +292,46 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the send reminder.
+        /// </summary>
+        /// <value>
+        /// The send reminder.
+        /// </value>
+        public DateTime? SendReminder
+        {
+            get
+            {
+                EnsureChildControls();
+                return _dtpSendReminder.SelectedDateTime;
+            }
+            set
+            {
+                EnsureChildControls();
+                _dtpSendReminder.SelectedDateTime = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [reminder sent].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [reminder sent]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ReminderSent
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbReminderSent.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbReminderSent.Checked = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the additional reminder details.
         /// </summary>
         /// <value>
@@ -356,6 +398,8 @@ namespace Rock.Web.UI.Controls
                 _tbContactName.ValidationGroup = value;
                 _ebContactEmail.ValidationGroup = value;
                 _apAccount.ValidationGroup = value;
+                _dtpSendReminder.ValidationGroup = value;
+                _cbReminderSent.ValidationGroup = value;
                 _ceAdditionalReminderDetails.ValidationGroup = value;
                 _ceAdditionalConfirmationDetails.ValidationGroup = value;
             }
@@ -383,6 +427,8 @@ namespace Rock.Web.UI.Controls
                 _tbContactName.Text = instance.ContactName;
                 _ebContactEmail.Text = instance.ContactEmail;
                 _apAccount.SetValue( instance.AccountId );
+                _dtpSendReminder.SelectedDateTime = instance.SendReminderDateTime;
+                _cbReminderSent.Checked = instance.ReminderSent;
                 _ceAdditionalReminderDetails.Text = instance.AdditionalReminderDetails;
                 _ceAdditionalConfirmationDetails.Text = instance.AdditionalConfirmationDetails;
             }
@@ -397,6 +443,8 @@ namespace Rock.Web.UI.Controls
                 _tbContactName.Text = string.Empty;
                 _ebContactEmail.Text = string.Empty;
                 _apAccount.SetValue( null );
+                _dtpSendReminder.SelectedDateTime = null;
+                _cbReminderSent.Checked = false;
                 _ceAdditionalReminderDetails.Text = string.Empty;
                 _ceAdditionalConfirmationDetails.Text = string.Empty;
             }
@@ -424,6 +472,8 @@ namespace Rock.Web.UI.Controls
                 instance.ContactName = _tbContactName.Text;
                 instance.ContactEmail = _ebContactEmail.Text;
                 instance.AccountId = _apAccount.SelectedValue.AsInteger();
+                instance.SendReminderDateTime = _dtpSendReminder.SelectedDateTime;
+                instance.ReminderSent = _cbReminderSent.Checked;
                 instance.AdditionalReminderDetails = _ceAdditionalReminderDetails.Text;
                 instance.AdditionalConfirmationDetails = _ceAdditionalConfirmationDetails.Text;
             }
@@ -496,6 +546,17 @@ namespace Rock.Web.UI.Controls
                 _ebContactEmail.Label = "Contact Email";
                 Controls.Add( _ebContactEmail );
 
+                _dtpSendReminder = new DateTimePicker();
+                _dtpSendReminder.ID = this.ID + "_dtpSendReminder";
+                _dtpSendReminder.Label = "Send Reminder Date";
+                Controls.Add( _dtpSendReminder );
+
+                _cbReminderSent = new RockCheckBox();
+                _cbReminderSent.ID = this.ID + "_cbReminderSent";
+                _cbReminderSent.Label = "Reminder Sent";
+                _cbReminderSent.Text = "Yes";
+                Controls.Add( _cbReminderSent );
+
                 _ceAdditionalReminderDetails = new CodeEditor();
                 _ceAdditionalReminderDetails.ID = this.ID + "_ceAdditionalReminderDetails";
                 _ceAdditionalReminderDetails.Label = "Additional Reminder Details";
@@ -556,6 +617,35 @@ namespace Rock.Web.UI.Controls
             _tbContactName.RenderControl( writer );
             _ebContactEmail.RenderControl( writer );
             writer.RenderEndTag();  // col-md-6
+
+            writer.RenderEndTag();  // row
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-6" );
+                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                        _dtpSendReminder.RenderControl( writer );
+                        writer.RenderEndTag();  // col-xs-6
+
+                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-6" );
+                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                        _cbReminderSent.RenderControl( writer );
+                        writer.RenderEndTag();  // col-xs-6
+
+                    writer.RenderEndTag();  // row
+
+                writer.RenderEndTag();  // col-md-6
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.RenderEndTag();  // col-md-6
 
             writer.RenderEndTag();  // row
 
