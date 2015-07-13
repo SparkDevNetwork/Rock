@@ -492,8 +492,15 @@ namespace Rock.Model
         /// </value>
         private static bool IsBusiness( int? recordTypeValueId)
         {
-            int recordTypeValueIdBusiness = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
-            return recordTypeValueId.HasValue && recordTypeValueId == recordTypeValueIdBusiness;
+            if ( recordTypeValueId.HasValue )
+            {
+                int recordTypeValueIdBusiness = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                return recordTypeValueId.Value == recordTypeValueIdBusiness;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
