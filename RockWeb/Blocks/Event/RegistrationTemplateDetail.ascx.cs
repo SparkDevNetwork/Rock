@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Event
 
 <p>
     The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
-    {% if registrantCount > 1 %}have{% else %}has{% endif %} been registered for {{ RegistrationInstance.Name }} on {{ RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}:
+    {% if registrantCount > 1 %}have{% else %}has{% endif %} been registered for {{ RegistrationInstance.Name }}:
 </p>
 
 <ul>
