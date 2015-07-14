@@ -13,7 +13,7 @@
     <Grid>
         <StackPanel>
 
-            <StackPanel Grid.Row="0">
+            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right">
                 <Ellipse Name="shapeStatus"
                  Grid.Column="2"
                  Grid.Row="0"
@@ -24,7 +24,21 @@
                  Width="14"
                  Fill="Red">
                 </Ellipse>
+
             </StackPanel>
+
+            <Label 
+                Content="Uploaded 12, Skipped 4"
+                       Name="lblScanItemCountInfo"
+                       Style="{StaticResource labelStyleHighlightInfo}"
+                Margin="0,0,12,0"
+                       HorizontalAlignment="Right"
+                        />
+            <Label Name="lblScanItemUploadSuccess"
+                        Style="{StaticResource labelStyleAlertSuccess}"
+                        Content="Uploaded Successfully">
+            </Label>
+            
 
             <!-- Feedback for Checks-->
             <StackPanel Name="pnlChecks" Visibility="Visible">
@@ -36,28 +50,36 @@
                         Style="{StaticResource labelStyleAlert}"
                         Content="WARNING: A check with the same account information and check number has already been scanned.">
                 </Label>
-                <Label Name="lblScanCheckUploadSuccess"
-                        Style="{StaticResource labelStyleAlertSuccess}"
-                        Content="Uploaded Successfully">
-                </Label>
+                
                 <StackPanel Name="pnlPromptForUpload">
-                    
+
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Button 
                             Margin="8"
                             x:Name="btnIgnoreAndUpload"
                             Style="{StaticResource buttonStyleAction}"
-                            Content="Ignore and Upload"
+                            ToolTip="Upload and continue scanning"
+                            Content="Upload"
                             HorizontalAlignment="Left"
                             Click="btnIgnoreAndUpload_Click" />
                         <Button 
                             Margin="8"
+                            x:Name="btnSkipAndContinue"
+                            Style="{StaticResource buttonStyleAction}"
+                            Content="Skip"
+                            ToolTip="Don't upload this check, but continue scanning"
+                            HorizontalAlignment="Left"
+                            Click="btnSkipAndContinue_Click" />
+                        <Button 
+                            Margin="8"
                             x:Name="btnStopAndRetry"
                             Style="{StaticResource buttonStyleAction}"
-                            Content="Stop and Retry"
+                            Content="Stop"
+                            ToolTip="Stop scanning"
                             HorizontalAlignment="Left"
                             Click="btnStopAndRetry_Click"/>
+
                     </StackPanel>
                 </StackPanel>
                 <Grid >
@@ -113,6 +135,14 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
+                <Label Name="lblStartupInfo"
+                       Grid.Row="0"
+                       Grid.Column="0"
+                       Grid.ColumnSpan="2"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Bottom"
+                       Margin="8"
+                       Style="{StaticResource labelStyleBannerTitle}">Click Start to begin</Label>
                 <Label Name="lblFront"
                        Grid.Row="0"
                        Grid.Column="0"
@@ -159,11 +189,13 @@
             </Grid.RowDefinitions>
             <Label Name="lblScanInstructions"
                    Style="{StaticResource labelStyleAlertInfo}"
-                   Content="INFO:  ---"
+                   Content=""
                    Grid.Row="1"
                    Grid.Column="0"
                    Grid.ColumnSpan="2">
             </Label>
+            
+
             <Label Name="lblExceptions"
                    Style="{StaticResource labelStyleAlertError}"
                    Content="ERROR: --"
@@ -173,7 +205,9 @@
                    Grid.ColumnSpan="2"
                    Visibility="Collapsed">
             </Label>
-            <StackPanel 
+
+            <StackPanel
+                Name="pnlStartStopClose"
                 Orientation="Horizontal" 
                 Margin="0,0,0,8"
                 Grid.Row="3"
@@ -190,7 +224,7 @@
                     x:Name="btnStopScanning"
                     Style="{StaticResource buttonStyleAction}"
                     Content="Stop"
-                    Click="btnStopScanning_Click" />
+                    Click="btnStopScanning_Click" Height="Auto" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" FlowDirection="RightToLeft">
                 <Button Style="{StaticResource buttonStyle}"

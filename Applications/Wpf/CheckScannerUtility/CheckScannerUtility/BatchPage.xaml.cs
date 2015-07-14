@@ -65,27 +65,20 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 var rangerScannerHostPage = new RangerScannerHostPage();
                 this.rangerScanner = rangerScannerHostPage.rangerScanner;
-                this.rangerScanner.TransportNewState += rangerScanner_TransportNewState;
                 this.rangerScanner.TransportChangeOptionsState += rangerScanner_TransportChangeOptionsState;
+                this.rangerScanner.TransportFeedingStopped += ScanningPage.rangerScanner_TransportFeedingStopped;
+                this.rangerScanner.TransportItemInPocket += ScanningPage.rangerScanner_TransportItemInPocket;
+                this.rangerScanner.TransportItemSuspended += ScanningPage.rangerScanner_TransportItemSuspended;
+
+                this.rangerScanner.TransportNewState += rangerScanner_TransportNewState;
+
+                this.rangerScanner.TransportPassthroughEvent += ScanningPage.rangerScanner_TransportPassthroughEvent;
+
                 this.rangerScanner.TransportSetItemOutput += rangerScanner_TransportSetItemOutput;
-                this.rangerScanner.TransportReadyToFeedState += rangerScanner_TransportReadyToFeedState;
             }
             catch
             {
                 // intentionally nothing.  means they don't have the Ranger driver
-            }
-        }
-
-        /// <summary>
-        /// Rangers the state of the scanner_ transport ready to feed.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        protected void rangerScanner_TransportReadyToFeedState( object sender, AxRANGERLib._DRangerEvents_TransportReadyToFeedStateEvent e )
-        {
-            if ( ScanningPage.IsVisible )
-            {
-                ScanningPage.StartScanningRanger();
             }
         }
 
@@ -214,7 +207,9 @@ namespace Rock.Apps.CheckScannerUtility
             string status = rangerScanner.GetTransportStateString().Replace( "Transport", string.Empty ).SplitCase();
             Color statusColor = Colors.Transparent;
 
-            switch ( (XportStates)e.currentState )
+            XportStates xportState = (XportStates)e.currentState;
+
+            switch ( xportState )
             {
                 case XportStates.TransportReadyToFeed:
                     statusColor = Colors.LimeGreen;
@@ -239,7 +234,9 @@ namespace Rock.Apps.CheckScannerUtility
             this.shapeStatus.Fill = new SolidColorBrush( statusColor );
             this.shapeStatus.ToolTip = status;
 
-            ScanningPage.ShowScannerStatus( (XportStates)e.currentState, statusColor, status );
+            System.Diagnostics.Debug.WriteLine( "{1} : rangerScanner_TransportNewState:{0}", xportState, DateTime.Now.ToString( "o" ) );
+
+            ScanningPage.ShowScannerStatus( xportState, statusColor, status );
         }
 
         /// <summary>
@@ -299,6 +296,8 @@ namespace Rock.Apps.CheckScannerUtility
         {
             try
             {
+                ScanningPage.lblStartupInfo.Visibility = Visibility.Collapsed;
+
                 RockConfig rockConfig = RockConfig.Load();
 
                 ScannedDocInfo scannedDoc = new ScannedDocInfo();
@@ -314,9 +313,6 @@ namespace Rock.Apps.CheckScannerUtility
                 {
                     scannedDoc.BackImageData = GetImageBytesFromRanger( Sides.TransportRear );
                 }
-
-                // don't continue feeding until we've uploaded the scanned item
-                ScanningPage.ContinueFeeding = false;
 
                 if ( scannedDoc.IsCheck )
                 {
@@ -1169,7 +1165,7 @@ namespace Rock.Apps.CheckScannerUtility
                         RockConfig config = RockConfig.Load();
                         RockRestClient client = new RockRestClient( config.RockBaseUrl );
                         client.Login( config.Username, config.Password );
-                        client.Delete(string.Format("api/FinancialTransactions/{0}", transactionId));
+                        client.Delete( string.Format( "api/FinancialTransactions/{0}", transactionId ) );
                         btnRefreshBatchList_Click( sender, e );
                     }
                 }
@@ -1178,6 +1174,16 @@ namespace Rock.Apps.CheckScannerUtility
                     MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
                 }
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnViewTransaction control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnViewTransaction_Click( object sender, RoutedEventArgs e )
+        {
+            ShowTransactionGridItemDetail();
         }
 
         #endregion

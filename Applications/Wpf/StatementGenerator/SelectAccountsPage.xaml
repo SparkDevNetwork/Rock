@@ -55,12 +55,12 @@
                         HorizontalAlignment="Center">
                     <Button Content="Select all"
                         Name="btnSelectAll"
-                        Style="{StaticResource buttonStyleMini}"
+                        Style="{StaticResource buttonStyle}"
                         Margin="4"
                         Click="btnSelectAll_Click" />
                     <Button Content="Select none"
                         Name="btnSelectNone"
-                        Style="{StaticResource buttonStyleMini}"
+                        Style="{StaticResource buttonStyle}"
                         Margin="4"
                         Click="btnSelectNone_Click"/>
                 </StackPanel>
