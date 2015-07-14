@@ -26,7 +26,7 @@
 			
 			{{ campus.ContactEmail }} <br />
 			{{ campus.ContactPhone }} <br />
-		
+			{{ campus.EventItemSchedules | Select:'Schedule' | Select:'iCalendarContent' | DatesFromICal }}
 			{% if linkage.RegistrationInstanceId > 0 ) %}
 			
 				<a href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}" class="btn btn-primary btn-block margin-t-md">Register</a>
