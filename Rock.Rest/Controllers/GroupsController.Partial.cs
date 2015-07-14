@@ -296,6 +296,7 @@ namespace Rock.Rest.Controllers
                         {
                             GuestFamilyMember guestFamilyMember = new GuestFamilyMember();
                             guestFamilyMember.Id = familyMember.PersonId;
+                            guestFamilyMember.PersonAliasId = familyMember.Person.PrimaryAliasId;
                             guestFamilyMember.Guid = familyMember.Person.Guid;
                             guestFamilyMember.FirstName = familyMember.Person.NickName;
                             guestFamilyMember.LastName = familyMember.Person.LastName;
