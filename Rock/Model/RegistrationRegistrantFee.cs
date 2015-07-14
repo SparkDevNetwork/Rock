@@ -102,6 +102,7 @@ namespace Rock.Model
         /// <value>
         /// The registration template fee.
         /// </value>
+        [LavaInclude]
         public virtual RegistrationTemplateFee RegistrationTemplateFee { get; set; }
 
         /// <summary>
@@ -111,6 +112,7 @@ namespace Rock.Model
         /// The total cost.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual decimal TotalCost
         {
             get { return Quantity * Cost; }

@@ -160,4 +160,10 @@
   <data name="_201507062330051_GroupRequirementsNotificationEmail" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201507062330051_GroupRequirementsNotificationEmail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201507081827047_SampleCalendarEvents" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201507081827047_samplecalendarevents.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201507121943445_RegistrationEmails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201507121943445_registrationemails.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

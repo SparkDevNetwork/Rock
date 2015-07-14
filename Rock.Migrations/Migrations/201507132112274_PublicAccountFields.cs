@@ -18,25 +18,28 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
-    public partial class SampleCalendarEvents : Rock.Migrations.RockMigration
+    public partial class PublicAccountFields : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            Sql( MigrationSQL._201507081827047_SampleCalendarEvents );
+            AddColumn( "dbo.FinancialAccount", "PublicDescription", c => c.String() );
+            AddColumn( "dbo.FinancialAccount", "IsPublic", c => c.Boolean() );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
+            DropColumn( "dbo.FinancialAccount", "IsPublic" );
+            DropColumn( "dbo.FinancialAccount", "PublicDescription" );
         }
     }
 }

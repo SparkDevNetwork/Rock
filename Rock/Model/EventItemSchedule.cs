@@ -72,7 +72,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.EventItem"/> that this EventItemSchedule is a member of.
         /// </value>
-        [DataMember]
         public virtual EventItemCampus EventItemCampus { get; set; }
 
         /// <summary>

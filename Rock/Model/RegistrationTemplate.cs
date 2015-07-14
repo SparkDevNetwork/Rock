@@ -1,4 +1,5 @@
-﻿// <copyright>
+﻿using System;
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,9 +21,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Newtonsoft.Json;
-
 using Rock.Data;
 using Rock.Security;
 
@@ -86,13 +85,13 @@ namespace Rock.Model
         public GroupMemberStatus GroupMemberStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to notify group leaders when registrants are added to group through a registration.
+        /// Gets or sets the notify.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [notify group leaders]; otherwise, <c>false</c>.
+        /// The notify.
         /// </value>
         [DataMember]
-        public bool NotifyGroupLeaders { get; set; }
+        public RegistrationNotify Notify { get; set; }
 
         /// <summary>
         /// Gets or sets the term to use for fee
@@ -135,13 +134,34 @@ namespace Rock.Model
         public string DiscountCodeTerm { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to use default confirmation email.
+        /// Gets or sets the name of the confirmation from.
         /// </summary>
         /// <value>
-        /// <c>true</c> if [use default confirmation email]; otherwise, <c>false</c>.
+        /// The name of the confirmation from.
         /// </value>
         [DataMember]
-        public bool UseDefaultConfirmationEmail { get; set; }
+        [MaxLength( 200 )]
+        public string ConfirmationFromName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the confirmation from email.
+        /// </summary>
+        /// <value>
+        /// The confirmation from email.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string ConfirmationFromEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the confirmation subject.
+        /// </summary>
+        /// <value>
+        /// The confirmation subject.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string ConfirmationSubject { get; set; }
 
         /// <summary>
         /// Gets or sets the confirmation email text to send.
@@ -151,6 +171,36 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string ConfirmationEmailTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the reminder from.
+        /// </summary>
+        /// <value>
+        /// The name of the reminder from.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string ReminderFromName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the reminder from email.
+        /// </summary>
+        /// <value>
+        /// The reminder from email.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string ReminderFromEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the reminder subject.
+        /// </summary>
+        /// <value>
+        /// The reminder subject.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string ReminderSubject { get; set; }
 
         /// <summary>
         /// Gets or sets the reminder email template.
@@ -404,6 +454,38 @@ namespace Rock.Model
         /// The ask
         /// </summary>
         Ask = 2,
+    }
+
+    /// <summary>
+    /// Flag indicating who should be notified on a new registration
+    /// </summary>
+    [Flags]
+    public enum RegistrationNotify
+    {
+        /// <summary>
+        /// The none
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// The registration contact
+        /// </summary>
+        RegistrationContact = 1,
+
+        /// <summary>
+        /// The group followers
+        /// </summary>
+        GroupFollowers = 2,
+
+        /// <summary>
+        /// The group leaders
+        /// </summary>
+        GroupLeaders = 4,
+
+        /// <summary>
+        /// All
+        /// </summary>
+        All = RegistrationContact | GroupFollowers | GroupLeaders
     }
 
     #endregion
