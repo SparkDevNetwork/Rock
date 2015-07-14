@@ -82,12 +82,12 @@
 @grid-pager-bg: darken(@body-bg, 2%);
 
 @grid-filter-bg: darken(@body-bg, 2%);
-@grid-footer-bg: @accent-color;
+@grid-footer-bg: @grid-filter-bg;
 @grid-footer-text-color: @accent-text-color;
 @grid-footer-font-size: 10px;
 @grid-footer-font-weight: 300;
-@grid-footer-button-bg: @header-bg;
-@grid-footer-button-text-color: @header-text-color;
+@grid-footer-button-bg: darken(@grid-footer-bg, 5%);
+@grid-footer-button-text-color: @text-color;
 @grid-footer-button-border: darken(@header-bg, 10%);
 
 // tip: see pagination variables below in the bootstrap section
@@ -198,7 +198,7 @@
 // Links
 // -------------------------
 
-@link-color:            #817b72;//#a0886e; //#478bae;
+@link-color:            @brand-primary; // #817b72;//#a0886e; //#478bae;
 @link-hover-color:      darken(@link-color, 15%);
 
 // Typography
@@ -282,8 +282,8 @@
 @btn-font-weight:                normal;
 
 @btn-default-color:              @accent-text-color;
-@btn-default-bg:                 #efefef;
-@btn-default-border:             @accent-color;
+@btn-default-bg:                 @body-bg;
+@btn-default-border:             darken(@body-bg, 20%);
 
 @btn-primary-color:              #fff;
 @btn-primary-bg:                 @brand-primary;
@@ -508,7 +508,7 @@
 // Pagination
 // -------------------------
 
-@pagination-color:                     @link-color;
+@pagination-color:                     @text-color;
 @pagination-bg:                        @gray-lighter;
 @pagination-border:                    darken(@gray-lighter, 10%);
 

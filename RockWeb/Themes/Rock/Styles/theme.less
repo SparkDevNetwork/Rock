@@ -152,6 +152,10 @@ hr {
     color: #fff;
 }
 
+.nav > li > a {
+    color: @text-color;
+}
+
 h1 small,
 h2 small,
 h3 small,
@@ -603,7 +607,15 @@ a.link-block,
     .breadcrumb {
       background: none;
       padding: 0;
-      margin: 0;
+      margin: 4px 0 0;
+
+      a {
+          color: lighten(@accent-text-color, 30%);
+
+          &:hover {
+              color: lighten(@accent-text-color, 40%);
+          }
+      }
 
       > .active {
         color: lighten(@accent-text-color, 30%);
@@ -626,6 +638,14 @@ a.link-block,
 
   footer {
     padding: 0 15px;
+
+    a {
+        color: @text-color;
+
+        &:hover {
+            color: lighten(@text-color, 20%);
+        }
+    }
   }
 }
 

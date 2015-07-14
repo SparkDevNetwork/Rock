@@ -789,11 +789,8 @@ a.aspNetDisabled {
   color: #eca9a7;
   vertical-align: super;
 }
-dl:not(.dl-horizontal) {
-  margin-bottom: 0;
-}
 dl:not(.dl-horizontal) dt {
-  font-weight: 900;
+  font-weight: 700;
   margin-top: 16px;
   margin-bottom: 2px;
 }
@@ -1066,11 +1063,11 @@ td.grid-col-actions {
 }
 .grid-actions {
   text-align: right;
-  background-color: #dbd5cb;
+  background-color: #e9e5e0;
 }
 .grid-actions .btn {
   margin-left: 8px;
-  background-color: #c2b8a7;
+  background-color: #ded9d1;
   color: #6a6a6a;
   border-color: #ada089;
 }
@@ -1136,6 +1133,10 @@ td.grid-col-actions {
   padding-top: 12px;
   min-width: 48px;
   width: 48px;
+}
+.table > tbody > tr > th.grid-columnreorder a,
+.table > tbody > tr > td.grid-columnreorder a {
+  color: #9d9d9d;
 }
 .table .color-field {
   padding: 0;
@@ -4361,9 +4362,9 @@ ul.list-group-panel .list-group-item:first-child,
   text-align: center;
   padding-top: 8px;
   opacity: .4;
-  color: #817b72;
+  color: #6a6a6a;
   transition: 1s;
-  border-left: 1px solid #b2aea7;
+  border-left: 1px solid #c2b8a7;
 }
 .panel-follow-status:before {
   font-family: FontAwesome;
@@ -4899,13 +4900,13 @@ a.cke_dialog_ui_button span {
 }
 a.cke_dialog_ui_button.cke_dialog_ui_button_cancel {
   background-color: transparent !important;
-  color: #817b72 !important;
+  color: #ee7624 !important;
   font-weight: normal !important;
   border: none !important;
 }
 a.cke_dialog_ui_button.cke_dialog_ui_button_cancel:hover,
 a.cke_dialog_ui_button.cke_dialog_ui_button_cancel:focus {
-  color: #58544e;
+  color: #b7530e;
   text-decoration: underline;
   background-color: transparent;
 }
@@ -5321,8 +5322,8 @@ fieldset[disabled] .btn-action.active {
 }
 .btn-security {
   color: #413c35;
-  background-color: #efefef;
-  border-color: #dbd5cb;
+  background-color: #edeae6;
+  border-color: #c2b8ab;
 }
 .btn-security:hover,
 .btn-security:focus,
@@ -5330,8 +5331,8 @@ fieldset[disabled] .btn-action.active {
 .btn-security.active,
 .open > .dropdown-toggle.btn-security {
   color: #413c35;
-  background-color: #d6d6d6;
-  border-color: #c2b8a7;
+  background-color: #d8d1c8;
+  border-color: #a99a87;
 }
 .btn-security:active,
 .btn-security.active,
@@ -5353,11 +5354,11 @@ fieldset[disabled] .btn-security:active,
 .btn-security.disabled.active,
 .btn-security[disabled].active,
 fieldset[disabled] .btn-security.active {
-  background-color: #efefef;
-  border-color: #dbd5cb;
+  background-color: #edeae6;
+  border-color: #c2b8ab;
 }
 .btn-security .badge {
-  color: #efefef;
+  color: #edeae6;
   background-color: #413c35;
 }
 .btn-authenication {
@@ -5813,6 +5814,9 @@ hr {
 .nav > li > a:focus {
   color: #fff;
 }
+.nav > li > a {
+  color: #6a6a6a;
+}
 h1 small,
 h2 small,
 h3 small,
@@ -6158,7 +6162,13 @@ a.link-block,
 #content-wrapper #page-title .breadcrumb {
   background: none;
   padding: 0;
-  margin: 0;
+  margin: 4px 0 0;
+}
+#content-wrapper #page-title .breadcrumb a {
+  color: #948a7b;
+}
+#content-wrapper #page-title .breadcrumb a:hover {
+  color: #aba397;
 }
 #content-wrapper #page-title .breadcrumb > .active {
   color: #948a7b;
@@ -6175,6 +6185,12 @@ a.link-block,
 }
 #content-wrapper footer {
   padding: 0 15px;
+}
+#content-wrapper footer a {
+  color: #6a6a6a;
+}
+#content-wrapper footer a:hover {
+  color: #9d9d9d;
 }
 #content-wrapper,
 .navbar-static-side {
