@@ -558,13 +558,14 @@ namespace Rock.Lava
                 : input.ToString().Trim();
         }
 
+
         /// <summary>
-        /// Returns a list of next occurrences from an iCal string or a List of iCal strings.
+        /// Dateses from i cal.
         /// </summary>
         /// <param name="input">The input.</param>
         /// <param name="returnCount">The return count.</param>
         /// <returns></returns>
-        public static List<DateTime> NextOccurrencesFromICal( object input, int returnCount = 1 )
+        public static List<DateTime> DatesFromICal( object input, int returnCount = 1 )
         {
             List<DateTime> nextOccurrences = new List<DateTime>();
             
@@ -576,7 +577,10 @@ namespace Rock.Lava
             {
                 foreach ( var item in input as IList )
                 {
-                    nextOccurrences.AddRange( GetOccurrenceDates( (string)item, returnCount ) );
+                    if ( item is string )
+                    {
+                        nextOccurrences.AddRange( GetOccurrenceDates( (string)item, returnCount ) );
+                    }
                 }
             }
 
@@ -598,7 +602,8 @@ namespace Rock.Lava
 
             if ( calendarEvent.DTStart != null )
             {
-                return calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).Select( d => d.Period.StartTime.Value ).ToList();
+                List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
+                return dates.Select( d => d.Period.StartTime.Value ).ToList();
             }
             else
             {
@@ -1690,7 +1695,7 @@ namespace Rock.Lava
                         var liquidObject = value as ILiquidizable;
                         if ( liquidObject.ContainsKey( selectKey ) )
                         {
-                            result.Add( liquidObject );
+                            result.Add( liquidObject[selectKey] );
                         }
                     }
                 }
