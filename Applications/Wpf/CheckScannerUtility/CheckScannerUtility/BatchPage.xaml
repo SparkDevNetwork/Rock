@@ -144,14 +144,21 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
+                
+                <!-- Batch ReadOnly UI -->
                 <StackPanel Grid.Row="0"
                             Grid.Column="0"
-                            Visibility="Hidden"
+                            Visibility="Visible"
                             Name="spBatchDetailReadOnly">
+                    <Grid >
                     <Label x:Name="lblBatchNameReadOnly"
                            Style="{StaticResource labelStyleLegend}"
                            Content="Sample Batch Name" />
-
+                    <Label x:Name="lblBatchIdReadOnly"
+                           Style="{StaticResource labelStyleHighlightInfo}"
+                           HorizontalAlignment="Right"
+                           Content="Batch Id: 12345" />
+                    </Grid>
                     <Border Style="{StaticResource borderStyleWell}"
                             Grid.Row="0"
                             Grid.Column="0">
@@ -229,7 +236,7 @@
                 </StackPanel>
 
                 <!-- Batch Edit UI  -->
-                <StackPanel Name="spBatchDetailEdit">
+                <StackPanel Name="spBatchDetailEdit" Visibility="Collapsed">
                     <Border Style="{StaticResource borderStylePanelTitle}">
                         <StackPanel Orientation="Horizontal">
                             <Label Style="{StaticResource labelStyleIcon}" Margin="8,0,0,0" Padding="0" Content="&#xf187;" />
