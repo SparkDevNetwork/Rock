@@ -83,8 +83,8 @@ namespace Rock.Transactions
                         mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
                         mergeFields.Add( "Registration", registration );
 
-                        string from = template.ConfirmationFromName.ResolveMergeFields( mergeFields );
-                        string fromName = template.ConfirmationFromEmail.ResolveMergeFields( mergeFields );
+                        string from = template.ConfirmationFromEmail.ResolveMergeFields( mergeFields );
+                        string fromName = template.ConfirmationFromName.ResolveMergeFields( mergeFields );
                         string subject = template.ConfirmationSubject.ResolveMergeFields( mergeFields );
                         string message = template.ConfirmationEmailTemplate.ResolveMergeFields( mergeFields );
 
