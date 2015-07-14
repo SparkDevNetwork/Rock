@@ -18,11 +18,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.HtmlControls;
+using DDay.iCal;
 using DotLiquid;
 using DotLiquid.Util;
 using Humanizer;
@@ -554,6 +556,54 @@ namespace Rock.Lava
             return DateTime.TryParse( input.ToString(), out date )
                 ? Liquid.UseRubyDateFormat ? date.ToStrFTime( format ).Trim() : date.ToString( format ).Trim()
                 : input.ToString().Trim();
+        }
+
+        /// <summary>
+        /// Returns a list of next occurrences from an iCal string or a List of iCal strings.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="returnCount">The return count.</param>
+        /// <returns></returns>
+        public static List<DateTime> NextOccurrencesFromICal( object input, int returnCount = 1 )
+        {
+            List<DateTime> nextOccurrences = new List<DateTime>();
+            
+            if ( input is string )
+            {
+                nextOccurrences = GetOccurrenceDates( (string)input, returnCount );
+            }
+            else if ( input is IList )
+            {
+                foreach ( var item in input as IList )
+                {
+                    nextOccurrences.AddRange( GetOccurrenceDates( (string)item, returnCount ) );
+                }
+            }
+
+            nextOccurrences.Sort((a,b) => a.CompareTo(b));
+
+            return nextOccurrences.Take( returnCount ).ToList();
+        }
+
+        /// <summary>
+        /// Gets the occurrence dates.
+        /// </summary>
+        /// <param name="iCalString">The i cal string.</param>
+        /// <param name="returnCount">The return count.</param>
+        /// <returns></returns>
+        private static List<DateTime> GetOccurrenceDates( string iCalString, int returnCount )
+        {
+            iCalendar calendar = iCalendar.LoadFromStream( new StringReader( iCalString ) ).First() as iCalendar;
+            DDay.iCal.Event calendarEvent = calendar.Events[0] as Event;
+
+            if ( calendarEvent.DTStart != null )
+            {
+                return calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).Select( d => d.Period.StartTime.Value ).ToList();
+            }
+            else
+            {
+                return new List<DateTime>();
+            }
         }
 
         /// <summary>
