@@ -108,7 +108,7 @@
             <Button Grid.Row="1"
                     Grid.Column="0"
                     Margin="4,4,4,4"
-                    Style="{StaticResource buttonStyleMini}"
+                    Style="{StaticResource buttonStyle}"
                     HorizontalAlignment="Left"
                     x:Name="btnAddBatch"
                     Click="btnAddBatch_Click">
@@ -121,7 +121,7 @@
             </Button>
             <Button Grid.Row="1"
                     Grid.Column="0"
-                    Style="{StaticResource buttonStyleMini}"
+                    Style="{StaticResource buttonStyle}"
                     HorizontalAlignment="Right"
                     x:Name="btnRefreshBatchList"
                     Click="btnRefreshBatchList_Click">
@@ -144,17 +144,17 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                
+
                 <!-- Batch ReadOnly UI -->
                 <StackPanel Grid.Row="0"
                             Grid.Column="0"
                             Visibility="Visible"
                             Name="spBatchDetailReadOnly">
                     <Grid >
-                    <Label x:Name="lblBatchNameReadOnly"
+                        <Label x:Name="lblBatchNameReadOnly"
                            Style="{StaticResource labelStyleLegend}"
                            Content="Sample Batch Name" />
-                    <Label x:Name="lblBatchIdReadOnly"
+                        <Label x:Name="lblBatchIdReadOnly"
                            Style="{StaticResource labelStyleHighlightInfo}"
                            HorizontalAlignment="Right"
                            Content="Batch Id: 12345" />
@@ -382,7 +382,7 @@
                                             Width="*"
                                             CanUserResize="False"
                                             CanUserSort="False" />
-                        <DataGridTemplateColumn Header="ACTIONS" HeaderStyle="{StaticResource gridHeaderStyle}"
+                        <DataGridTemplateColumn Header="" HeaderStyle="{StaticResource gridHeaderStyleActions}"
                                             CellStyle="{StaticResource gridCellStyle}"
                                             Width="*"
                                             CanUserResize="False"
@@ -390,13 +390,25 @@
                                             CanUserSort="False">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button 
-                                        Name="btnDeleteTransaction" 
-                                        Content="&#xf00d;" 
-                                        HorizontalAlignment="Center"
-                                        Style="{StaticResource buttonStyleMiniIconDanger}"
-                                        CommandParameter="{Binding Id}"
-                                        Click="btnDeleteTransaction_Click"/>
+                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                        <Button 
+                                            Name="btnViewTransaction" 
+                                            Content="View" 
+                                            HorizontalAlignment="Center"
+                                            Style="{StaticResource buttonStyleMini}"
+                                            Margin="4,0,4,0"
+                                            CommandParameter="{Binding Id}"
+                                            Click="btnViewTransaction_Click"/>
+                                        <Button 
+                                            Name="btnDeleteTransaction" 
+                                            Content="&#xf00d;" 
+                                            HorizontalAlignment="Center"
+                                            ToolTip="Delete"
+                                            Style="{StaticResource buttonStyleMiniIconDanger}"
+                                            Margin="4,0,4,0"
+                                            CommandParameter="{Binding Id}"
+                                            Click="btnDeleteTransaction_Click"/>
+                                    </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>

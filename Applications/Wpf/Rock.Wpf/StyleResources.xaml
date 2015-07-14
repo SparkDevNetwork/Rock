@@ -523,6 +523,15 @@
                 Value="Right" />
     </Style>
 
+    <Style x:Key="gridHeaderStyleActions"
+           TargetType="{x:Type DataGridColumnHeader}"
+           BasedOn="{StaticResource gridHeaderStyle}">
+        <Setter Property="Width"
+                Value="Auto" />
+        <Setter Property="HorizontalContentAlignment"
+                Value="Center" />
+    </Style>
+
     <!-- Grid Cell Style -->
     <Style x:Key="gridCellStyle"
            TargetType="{x:Type DataGridCell}">
@@ -666,18 +675,31 @@
     <Style x:Key="buttonStyleMini"
            BasedOn="{StaticResource buttonStyle}"
            TargetType="{x:Type Button}">
-        
+        <Setter Property="Height"
+                Value="24" />
+        <Setter Property="FontSize"
+                Value="12" />
     </Style>
+
+
+    <!-- Button Style: Mini Action -->
+    <Style x:Key="buttonStyleMiniAction"
+           BasedOn="{StaticResource buttonStyleAction}"
+           TargetType="{x:Type Button}">
+        <Setter Property="Height"
+                Value="24" />
+        <Setter Property="FontSize"
+                Value="12" />
+    </Style>
+
 
     <!-- Button Style: Mini Icon-->
     <Style x:Key="buttonStyleMiniIcon"
-           BasedOn="{StaticResource buttonStyle}"
+           BasedOn="{StaticResource buttonStyleMini}"
            TargetType="{x:Type Button}"
            >
         <Setter Property="FontFamily"
                 Value="./resources/#FontAwesome" />
-        <Setter Property="Label.FontWeight"
-                Value="Normal" />
         <Setter Property="Height"
                 Value="24" />
         <Setter Property="Width"
