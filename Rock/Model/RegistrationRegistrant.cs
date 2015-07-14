@@ -103,6 +103,7 @@ namespace Rock.Model
         /// <value>
         /// The group member.
         /// </value>
+        [LavaInclude]
         public virtual GroupMember GroupMember { get; set; }
 
         /// <summary>
@@ -126,6 +127,7 @@ namespace Rock.Model
         /// The cost with fees.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual decimal CostWithFees
         {
             get

@@ -28,6 +28,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -150,7 +151,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         lImage.Text = imgTag;
                     }
 
-                    SetFollowing();
+                    FollowingsHelper.SetFollowing( Person, pnlFollow, this.CurrentPerson );
 
                     var socialCategoryGuid = Rock.SystemGuid.Category.PERSON_ATTRIBUTES_SOCIAL.AsGuid();
                     if ( !socialCategoryGuid.IsEmpty() )
@@ -327,74 +328,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             }
 
             return formattedNumber;
-        }
-
-        /// <summary>
-        /// Sets the following.
-        /// </summary>
-        private void SetFollowing()
-        {
-            var personAliasEntityType = EntityTypeCache.Read( "Rock.Model.PersonAlias" );
-            if ( Person != null && CurrentPersonId.HasValue && CurrentPersonAlias != null && personAliasEntityType != null )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var personAliasService = new PersonAliasService( rockContext );
-                    var followingService = new FollowingService( rockContext );
-
-                    var paQry = personAliasService.Queryable()
-                        .Where( p => p.PersonId == Person.Id )
-                        .Select( p => p.Id );
-
-                    if ( followingService.Queryable()
-                        .Where( f =>
-                            f.EntityTypeId == personAliasEntityType.Id &&
-                            paQry.Contains( f.EntityId ) &&
-                            f.PersonAlias.PersonId == CurrentPersonId )
-                        .Any() )
-                    {
-                        pnlFollow.AddCssClass( "following" );
-                    }
-                    else
-                    {
-                        pnlFollow.RemoveCssClass( "following" );
-                    }
-                }
-
-                string script = string.Format(
-@"
-        $('.following-status').click(function () {{
-            var $followingDiv = $(this);
-            if ($followingDiv.hasClass('following')) {{
-                $.ajax({{
-                    type: 'DELETE',
-                    url: Rock.settings.get('baseUrl') + 'api/followings/{0}/{1}/{2}',
-                    success: function(data, status, xhr){{ 
-                        $followingDiv.removeClass('following');
-                    }},
-                }});
-            }} else {{
-                var following = {{ EntityTypeId:{0}, EntityId:{1}, PersonAliasId:{3} }};
-                $.ajax({{
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(following),
-                    url: Rock.settings.get('baseUrl') + 'api/followings',
-                    statusCode: {{
-                        201: function () {{
-                            $followingDiv.addClass('following');
-                        }}
-                    }}
-                }});
-            }}
-        }});",
-                personAliasEntityType.Id,
-                Person.PrimaryAliasId,
-                CurrentPersonId.Value,
-                CurrentPersonAlias.Id );
-
-                ScriptManager.RegisterStartupScript( lImage, lImage.GetType(), "following", script, true );
-            }
         }
 
         #endregion

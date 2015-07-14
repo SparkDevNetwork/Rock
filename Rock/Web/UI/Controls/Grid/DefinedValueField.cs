@@ -38,6 +38,23 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override string FormatDataValue( object dataValue, bool encode )
         {
+            DefinedValueCache definedValueCache = GetDefinedValue( dataValue );
+
+            if ( definedValueCache != null )
+            {
+                dataValue = definedValueCache.Value;
+            }
+
+            return base.FormatDataValue( dataValue, encode );
+        }
+
+        /// <summary>
+        /// Gets the defined value from data value.
+        /// </summary>
+        /// <param name="dataValue">The data value.</param>
+        /// <returns></returns>
+        public DefinedValueCache GetDefinedValue( object dataValue )
+        {
             int? dataValueAsInt = null;
             Guid? dataValueAsGuid = null;
             if ( dataValue is int )
@@ -64,12 +81,7 @@ namespace Rock.Web.UI.Controls
                 definedValueCache = Rock.Web.Cache.DefinedValueCache.Read( dataValueAsGuid.Value );
             }
 
-            if ( definedValueCache != null )
-            {
-                dataValue = definedValueCache.Value;
-            }
-
-            return base.FormatDataValue( dataValue, encode );
+            return definedValueCache;
         }
 
         /// <summary>

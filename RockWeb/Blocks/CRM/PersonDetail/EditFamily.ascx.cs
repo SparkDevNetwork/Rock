@@ -761,6 +761,22 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            // if a Location is getting edited, validate and save it
+            if ( gLocations.EditIndex >= 0 )
+            {
+                var row = gLocations.Rows[gLocations.EditIndex];
+                AddressControl acAddress = row.FindControl( "acAddress" ) as AddressControl;
+                if ( acAddress.IsValid )
+                {
+                    gLocations_RowUpdating( sender, new GridViewUpdateEventArgs( gLocations.EditIndex ) );
+                }
+                else
+                {
+                    // acAddress will render an error message
+                    return;
+                }
+            }
+
             if ( !IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
             {
                 return;

@@ -39,6 +39,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the person.
+        /// </summary>
+        /// <param name="groupMemberId">The group member identifier.</param>
+        /// <returns></returns>
+        public Person GetPerson( int groupMemberId )
+        {
+            return this.Queryable( true ).Where( m => m.Id == groupMemberId ).Select( a => a.Person ).FirstOrDefault();
+        }
+
+        /// <summary>
         /// Gets the specified unique identifier.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
@@ -172,6 +182,19 @@ namespace Rock.Model
         public IQueryable<GroupMember> GetByPersonId( int personId )
         {
             return Queryable( "Person", true ).Where(  t => t.PersonId == personId );
+        }
+
+        /// <summary>
+        /// Gets the active leaders of the group
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns></returns>
+        public IQueryable<GroupMember> GetLeaders( int groupId )
+        {
+            return GetByGroupId( groupId, false )
+                .Where( t => 
+                    t.GroupMemberStatus == GroupMemberStatus.Active &&
+                    t.GroupRole.IsLeader );
         }
 
         /// <summary>

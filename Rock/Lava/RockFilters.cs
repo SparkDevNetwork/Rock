@@ -18,11 +18,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.HtmlControls;
+using DDay.iCal;
 using DotLiquid;
 using DotLiquid.Util;
 using Humanizer;
@@ -293,7 +295,7 @@ namespace Rock.Lava
         /// <param name="string"></param>
         /// <param name="replacement"></param>
         /// <returns></returns>
-        public static string Replace( object input, string @string, string replacement = "" )
+        public static string Replace( object input, object @string, object replacement = null )
         {
             if ( input == null )
             {
@@ -302,19 +304,22 @@ namespace Rock.Lava
             
             string inputAsString = input.ToString();
 
-            // escape common regex meta characters
+            string replacementString = replacement.ToString();
+            string pattern = Regex.Escape( @string.ToString() );
+
+            /*// escape common regex meta characters
             var listOfRegExChars = new List<string> { ".", "$", "{", "}", "^", "[", "]", "*", @"\", "+", "|", "?", "<", ">" };
             if ( listOfRegExChars.Contains( @string ) )
             {
                 @string = @"\" + @string;
-            }
+            }*/
 
-            if ( string.IsNullOrEmpty( inputAsString ) || string.IsNullOrEmpty( @string ) )
+            if ( string.IsNullOrEmpty( inputAsString ) || string.IsNullOrEmpty( pattern ) )
                 return inputAsString;
 
             return string.IsNullOrEmpty( inputAsString )
                 ? inputAsString
-                : Regex.Replace( inputAsString, @string, replacement );
+                : Regex.Replace( inputAsString, pattern, replacementString );
         }
 
         /// <summary>
@@ -551,6 +556,59 @@ namespace Rock.Lava
             return DateTime.TryParse( input.ToString(), out date )
                 ? Liquid.UseRubyDateFormat ? date.ToStrFTime( format ).Trim() : date.ToString( format ).Trim()
                 : input.ToString().Trim();
+        }
+
+
+        /// <summary>
+        /// Dateses from i cal.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="returnCount">The return count.</param>
+        /// <returns></returns>
+        public static List<DateTime> DatesFromICal( object input, int returnCount = 1 )
+        {
+            List<DateTime> nextOccurrences = new List<DateTime>();
+            
+            if ( input is string )
+            {
+                nextOccurrences = GetOccurrenceDates( (string)input, returnCount );
+            }
+            else if ( input is IList )
+            {
+                foreach ( var item in input as IList )
+                {
+                    if ( item is string )
+                    {
+                        nextOccurrences.AddRange( GetOccurrenceDates( (string)item, returnCount ) );
+                    }
+                }
+            }
+
+            nextOccurrences.Sort((a,b) => a.CompareTo(b));
+
+            return nextOccurrences.Take( returnCount ).ToList();
+        }
+
+        /// <summary>
+        /// Gets the occurrence dates.
+        /// </summary>
+        /// <param name="iCalString">The i cal string.</param>
+        /// <param name="returnCount">The return count.</param>
+        /// <returns></returns>
+        private static List<DateTime> GetOccurrenceDates( string iCalString, int returnCount )
+        {
+            iCalendar calendar = iCalendar.LoadFromStream( new StringReader( iCalString ) ).First() as iCalendar;
+            DDay.iCal.Event calendarEvent = calendar.Events[0] as Event;
+
+            if ( calendarEvent.DTStart != null )
+            {
+                List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
+                return dates.Select( d => d.Period.StartTime.Value ).ToList();
+            }
+            else
+            {
+                return new List<DateTime>();
+            }
         }
 
         /// <summary>
@@ -1450,6 +1508,76 @@ namespace Rock.Lava
             return null;
         }
 
+
+        /// <summary>
+        /// Pages the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="parm">The parm.</param>
+        /// <returns></returns>
+        public static string Page( string input, string parm )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            if ( page != null )
+            {
+                switch ( parm )
+                {
+                    case "Title": 
+                        {
+                            return page.BrowserTitle;
+                        }
+                    case "Url": 
+                        {
+                            return HttpContext.Current.Request.Url.AbsoluteUri;
+                        }
+                    case "Id":
+                        {
+                            return page.PageId.ToString();
+                        }
+                    case "Host":
+                        {
+                            return HttpContext.Current.Request.Url.Host;
+                        }
+                    case "Path":
+                        {
+                            return HttpContext.Current.Request.Url.AbsolutePath;
+                        }
+                    case "SiteName":
+                        {
+                            return page.Site.Name;
+                        }
+                    case "SiteId":
+                        {
+                            return page.Site.Id.ToString();
+                        }
+                    case "Theme":
+                        {
+                            if ( page.Theme != null )
+                            {
+                                return page.Theme;
+                            }
+                            else
+                            {
+                                return page.Site.Theme;
+                            }
+                            
+                        }
+                    case "Layout":
+                        {
+                            return page.Layout.Name;
+                        }
+                    case "Scheme":
+                        {
+                            return HttpContext.Current.Request.Url.Scheme;
+                        }
+                }
+            }
+
+            return null;
+        }
+
+
         /// <summary>
         /// Converts a lava property to a key value pair
         /// </summary>
@@ -1567,7 +1695,7 @@ namespace Rock.Lava
                         var liquidObject = value as ILiquidizable;
                         if ( liquidObject.ContainsKey( selectKey ) )
                         {
-                            result.Add( liquidObject );
+                            result.Add( liquidObject[selectKey] );
                         }
                     }
                 }

@@ -78,6 +78,15 @@ namespace Rock.Model
         public int GroupRoleId { get; set; }
 
         /// <summary>
+        /// Gets or sets the note.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the note.
+        /// </value>
+        [DataMember]
+        public string Note { get; set; }
+
+        /// <summary>
         /// Gets or sets the GroupMember's status in the Group. This value is required.
         /// </summary>
         /// <value>

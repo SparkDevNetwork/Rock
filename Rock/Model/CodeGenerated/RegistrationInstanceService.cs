@@ -97,7 +97,6 @@ namespace Rock.Model
             target.AccountId = source.AccountId;
             target.AdditionalConfirmationDetails = source.AdditionalConfirmationDetails;
             target.AdditionalReminderDetails = source.AdditionalReminderDetails;
-            target.ConfirmationSentDateTime = source.ConfirmationSentDateTime;
             target.ContactEmail = source.ContactEmail;
             target.ContactName = source.ContactName;
             target.Details = source.Details;
@@ -106,7 +105,6 @@ namespace Rock.Model
             target.MaxAttendees = source.MaxAttendees;
             target.Name = source.Name;
             target.RegistrationTemplateId = source.RegistrationTemplateId;
-            target.ReminderSentDateTime = source.ReminderSentDateTime;
             target.StartDateTime = source.StartDateTime;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

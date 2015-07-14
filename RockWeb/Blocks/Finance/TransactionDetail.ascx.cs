@@ -807,8 +807,7 @@ namespace RockWeb.Blocks.Finance
 
                 // Hide processor fields when adding a new transaction
                 gpPaymentGateway.Visible = false;
-                tbTransactionCode.Visible = false;
-
+                
                 // Set values based on previously saved txn values
                 int prevBatchId = Session["NewTxnDefault_BatchId"] as int? ?? 0;
                 if ( prevBatchId == batchId )
@@ -830,7 +829,6 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 gpPaymentGateway.Visible = true;
-                tbTransactionCode.Visible = true;
             }
 
             hfTransactionId.Value = txn.Id.ToString();

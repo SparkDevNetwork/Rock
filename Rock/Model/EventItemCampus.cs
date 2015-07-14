@@ -113,7 +113,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.EventItem"/> that this EventItemCampus is a member of.
         /// </value>
-        [DataMember]
         public virtual EventItem EventItem { get; set; }
 
         /// <summary>

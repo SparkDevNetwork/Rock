@@ -2,7 +2,7 @@
     Used to manage styles for specific blocks.
 
     1. Calendar - Styles for the calendar blocks
-    2. 
+    2. Event Entry - The event registration entry screen
 
 */
 
@@ -81,6 +81,102 @@
         opacity: .2;
     }
 }
+
+
+// 2. Event Entry
+// -------------------------
+
+.registrationentry-intro {
+    
+    text-align: center;
+    
+    h1 {
+        margin-top: 24px;
+        margin-bottom: 48px;
+    }
+
+    .input-group {
+        margin: 0 auto 48px auto;
+    }
+}
+
+.registration-entry {
+    .feetype-allowmultiples {
+        
+        > .control-label {
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .form-group {
+            margin-left: 19px;
+        }
+    } 
+}
+
+.registrationentry-summary {
+    .fee-table {
+        margin: 0 24px;
+
+        > .row {
+            padding: 6px 0;
+
+            div[class^='col-']{
+                padding-right: 0;
+                padding-left: 0;
+            }
+        }
+    }
+    
+    .row.fee-header {
+        border-bottom: 2px solid lighten(@text-color, 60%);
+        padding-bottom: 2px;
+        margin-bottom: 6px;
+        font-size: 16px;
+    }
+
+    .fee-row-cost,
+    .fee-row-total {
+        font-weight: @font-weight-semibold;
+    }
+
+    .fee-row-total {
+        margin-top: 6px;
+        border-top: 1px solid lighten(@text-color, 60%);
+    }
+
+    .row.fee-row-fee {
+        font-weight: @font-weight-light;
+
+        @media @sm {
+            > div.fee-caption {
+                padding-left: 20px;
+            }
+        }
+    }
+
+    @media @sm {
+        div.fee-value {
+            text-align: right;
+            float: right;
+        }
+    }
+}
+
+.fee-totals {
+    margin-top: 24px;
+
+    .fee-totals-options {
+        text-align: right;
+    }
+}
+
+.amount-to-pay {
+    input {
+        text-align: right;
+    }
+}
+
 /*
     
 

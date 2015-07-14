@@ -2550,6 +2550,35 @@ namespace Rock.Web.UI.Controls
             return bf;
         }
 
+        /// <summary>
+        /// Returns a list of Columns of the specified type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public IEnumerable<T> ColumnsOfType<T>() where T : DataControlField
+        {
+            var result = new List<T>();
+            foreach (var col in Columns)
+            {
+                if (col is T)
+                {
+                    result.Add( col as T );
+                }
+                
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a list of Columns matching the specified DataField name
+        /// </summary>
+        /// <param name="dataField">The data field.</param>
+        /// <returns></returns>
+        public IEnumerable<BoundField> ColumnsWithDataField( string dataField )
+        {
+            return ColumnsOfType<BoundField>().Where( a => a.DataField == dataField );
+        }
+
         #endregion
 
     }

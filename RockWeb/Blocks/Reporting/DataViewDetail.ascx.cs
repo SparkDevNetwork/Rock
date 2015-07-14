@@ -821,7 +821,7 @@ $(document).ready(function() {
                 filterControl.Expanded = filter.Expanded;
                 if ( setSelection )
                 {
-                    filterControl.Selection = filter.Selection;
+                    filterControl.SetSelection(filter.Selection);
                 }
 
                 filterControl.DeleteClick += filterControl_DeleteClick;

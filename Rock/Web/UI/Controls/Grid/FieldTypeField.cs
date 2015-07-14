@@ -64,10 +64,7 @@ namespace Rock.Web.UI.Controls
                     fieldTypeCache = FieldTypeCache.Read( dataValueAsGuid.Value );
                 }
 
-                if ( fieldTypeCache != null )
-                {
-                    dataValue = fieldTypeCache.Name;
-                }
+                dataValue = fieldTypeCache != null ? fieldTypeCache.Name : null;
 
                 return base.FormatDataValue( dataValue, encode );
             }

@@ -101,11 +101,11 @@ namespace Rock.Model
             var qry = base.Queryable( includes );
             if ( !includeBusinesses )
             {
-                var definedValuePersonType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() );
-                if ( definedValuePersonType != null )
+                var definedValueBusinessType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
+                if ( definedValueBusinessType != null )
                 {
-                    int recordTypePerson = definedValuePersonType.Id;
-                    qry = qry.Where( p => p.RecordTypeValueId == recordTypePerson );
+                    int recordTypeBusiness = definedValueBusinessType.Id;
+                    qry = qry.Where( p => p.RecordTypeValueId != recordTypeBusiness );
                 }
             }
 
@@ -1283,6 +1283,8 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         public static void AddPersonToFamily( Person person, bool newPerson, int familyId, int groupRoleId, RockContext rockContext )
         {
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+
             var demographicChanges = new List<string>();
             var memberChanges = new List<string>();
             var groupService = new GroupService( rockContext );
@@ -1292,7 +1294,7 @@ namespace Rock.Model
             {
                 throw new Exception( "Unable to find family (group) with Id " + familyId.ToString() );
             }
-            else if ( family.GroupType.Guid != Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() )
+            else if ( family.GroupTypeId != familyGroupType.Id )
             {
                 throw new Exception( string.Format( "Specified familyId ({0}) is not a family group type ", familyId ) );
             }

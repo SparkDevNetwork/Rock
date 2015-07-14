@@ -68,7 +68,7 @@
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgAddCalendarItemPage3" runat="server" Title="New Calendar Item" SaveButtonText="Ok" OnSaveClick="dlgAddCalendarItemPage3_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="DlgPage3">
+        <Rock:ModalDialog ID="dlgAddCalendarItemPage3" runat="server" Title="New Calendar Item" SaveButtonText="OK" OnSaveClick="dlgAddCalendarItemPage3_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="DlgPage3">
             <Content>
                 <Rock:NotificationBox ID="nbNoLinkage" runat="server" NotificationBoxType="Warning" Visible="false" Text="There are not any calendar items available for the selected calendar and date range."/>
                 <div id="divNewCalendarItemPage3" runat="server" class="row">

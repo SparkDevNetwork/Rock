@@ -246,7 +246,7 @@ namespace Rock.Model
                 }
                 else
                 {
-                    return this.Layout != null ? this.Page : base.ParentAuthority;
+                    return this.Layout != null ? this.Layout : base.ParentAuthority;
                 }
             }
         }

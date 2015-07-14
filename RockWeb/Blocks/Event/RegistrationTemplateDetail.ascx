@@ -46,8 +46,12 @@
                                     Help="The group member role that new registrants should be added to group with." />
                                 <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Group Member Status" 
                                     Help="The group member status that new registrants should be added to group with."/>
-                                <Rock:RockCheckBox ID="cbNotifyLeaders" runat="server" Label="Notify Group Leader(s)" Text="Yes" 
-                                    Help="Should leaders in the target group be notified when new people register for the group?" />
+                                <Rock:RockCheckBoxList ID="cblNotify" runat="server" Label="Notify" RepeatDirection="Vertical"
+                                    Help="Who should be notified when new people are registered?">
+                                    <asp:ListItem Value="1" Text="Registration Contact" />
+                                    <asp:ListItem Value="2" Text="Group Followers" />
+                                    <asp:ListItem Value="4" Text="Group Leaders" />
+                                </Rock:RockCheckBoxList>
                                 <Rock:RockCheckBox ID="cbLoginRequired" runat="server" Label="Login Required" Text="Yes"
                                     Help="Is user required to be logged in when registering?" />
                             </div>
@@ -126,27 +130,57 @@
                         </Rock:Grid>
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="wpCommunications" runat="server" Title="Communications">
-                        <Rock:CodeEditor ID="ceReminderEmailTemplate" runat="server" Label="Reminder Email Template" EditorMode="Liquid" EditorTheme="Rock" EditorHeight="300" />
-                        <Rock:RockCheckBox ID="cbUserDefaultConfirmation" runat="server" Label="Use Default Confirmation Email" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbUserDefaultConfirmation_CheckedChanged" />
-                        <Rock:CodeEditor ID="ceConfirmationEmailTemplate" runat="server" Label="Confirmation Email Template" EditorMode="Liquid" EditorTheme="Rock" EditorHeight="300" Visible="false" />
+                    <Rock:PanelWidget ID="wpConfirmation" runat="server" Title="Confirmation Email">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbConfirmationFromName" runat="server" Label="From Name" />
+                                <Rock:RockTextBox ID="tbConfirmationFromEmail" runat="server" Label="From Email" />
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:RockTextBox ID="tbConfirmationSubject" runat="server" Label="Subject" />
+                                <Rock:CodeEditor ID="ceConfirmationEmailTemplate" runat="server" Label="Confirmation Email Template" EditorMode="Liquid" EditorTheme="Rock" EditorHeight="300" />
+                            </div>
+                        </div>
+                    </Rock:PanelWidget>
+
+                    <Rock:PanelWidget ID="wpReminder" runat="server" Title="Reminder Email">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbReminderFromName" runat="server" Label="From Name" />
+                                <Rock:RockTextBox ID="tbReminderFromEmail" runat="server" Label="From Email" />
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:RockTextBox ID="tbReminderSubject" runat="server" Label="Subject" />
+                                <Rock:CodeEditor ID="ceReminderEmailTemplate" runat="server" Label="Reminder Email Template" EditorMode="Liquid" EditorTheme="Rock" EditorHeight="300" />
+                            </div>
+                        </div>
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="wpTerms" runat="server" Title="Terms/Text">
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbRegistrationTerm" runat="server" Label="Registration Term" Placeholder="Registration" />
-                                <Rock:RockTextBox ID="tbRegistrantTerm" runat="server" Label="Registrant Term" Placeholder="Registrant" />
+                                <Rock:RockTextBox ID="tbRegistrantTerm" runat="server" Label="Registrant Term" Placeholder="Person" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbFeeTerm" runat="server" Label="Fee Term" Placeholder="Fee" />
-                                <Rock:RockTextBox ID="tbDiscountCodeTerm" runat="server" Label="Discount Code Term" Placeholder="Discount" />
+                                <Rock:RockTextBox ID="tbFeeTerm" runat="server" Label="Fee Term" Placeholder="Additional Options" />
+                                <Rock:RockTextBox ID="tbDiscountCodeTerm" runat="server" Label="Discount Code Term" Placeholder="Discount Code" />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:RockTextBox ID="tbSuccessTitle" runat="server" Label="Success Title" />
-                                <Rock:RockTextBox ID="tbSuccessText" runat="server" Label="Success Text" TextMode="MultiLine" Rows="4" />
+                                <Rock:RockTextBox ID="tbSuccessTitle" runat="server" Label="Success Title" Placeholder="Congratulations"
+                                    Help="The heading to display to user after succesfully completing a registration of this type." />
+                                <Rock:CodeEditor ID="ceSuccessText" runat="server" Label="Success Text" EditorMode="Liquid" EditorTheme="Rock" EditorHeight="300" 
+                                    Help="The text to display to user after succesfully completing a registration of this type. If there are costs or fees for this registration, a summary of those will be displayed after this text." />
                             </div>
                         </div>
                     </Rock:PanelWidget>
@@ -255,8 +289,8 @@
                     <asp:ListItem Text="Percentage" Value="Percentage" />
                     <asp:ListItem Text="Amount" Value="Amount" />
                 </Rock:RockRadioButtonList>
-                <Rock:NumberBox ID="nbDiscountPercentage" runat="server" Label="Discount Percentage" NumberType="Integer" ValidationGroup="Discount"  />
-                <Rock:CurrencyBox ID="cbDiscountAmount" runat="server" Label="Discount Amount" ValidationGroup="Discount" />
+                <Rock:NumberBox ID="nbDiscountPercentage" runat="server" AppendText="%" CssClass="input-width-md" Label="Discount Percentage" NumberType="Integer" ValidationGroup="Discount"  />
+                <Rock:CurrencyBox ID="cbDiscountAmount" runat="server" CssClass="input-width-md" Label="Discount Amount" ValidationGroup="Discount" />
             </Content>
         </Rock:ModalDialog>
 

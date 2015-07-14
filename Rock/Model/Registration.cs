@@ -152,6 +152,7 @@ namespace Rock.Model
         /// <value>
         /// The group.
         /// </value>
+        [LavaInclude]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -175,6 +176,7 @@ namespace Rock.Model
         /// The total cost.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual decimal TotalCost
         {
             get
@@ -195,12 +197,12 @@ namespace Rock.Model
         /// The total paid.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual decimal TotalPaid
         {
             get
             {
-                // TODO: Calculate payments
-                return 0.0M;
+                return this.GetTotalPaid();
             }
         }
 
@@ -211,11 +213,28 @@ namespace Rock.Model
         /// The balance due.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual decimal BalanceDue
         {
             get
             {
                 return TotalCost - TotalPaid;
+            }
+        }
+
+        /// <summary>
+        /// Gets the payments.
+        /// </summary>
+        /// <value>
+        /// The payments.
+        /// </value>
+        [NotMapped]
+        [LavaInclude]
+        public virtual IQueryable<FinancialTransactionDetail> Payments
+        {
+            get
+            {
+                return this.GetPayments();
             }
         }
 
@@ -265,4 +284,37 @@ namespace Rock.Model
 
     #endregion
 
+    #region Extension Methods
+
+    /// <summary>
+    /// Extension method class for Registration
+    /// </summary>
+    public static partial class RegistrationExtensionMethods
+    {
+        /// <summary>
+        /// Gets the payments.
+        /// </summary>
+        /// <param name="registration">The registration.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IQueryable<FinancialTransactionDetail> GetPayments( this Registration registration, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+            return new RegistrationService( rockContext ).GetPayments( registration != null ? registration.Id : 0 );
+        }
+
+        /// <summary>
+        /// Gets the total paid.
+        /// </summary>
+        /// <param name="registration">The registration.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static decimal GetTotalPaid( this Registration registration, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+            return new RegistrationService( rockContext ).GetTotalPayments( registration != null ? registration.Id : 0 );
+        }
+    }
+
+    #endregion
 }
