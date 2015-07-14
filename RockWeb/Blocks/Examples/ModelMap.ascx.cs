@@ -23,10 +23,10 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Caching;
 using System.Xml.Linq;
-
 
 using Rock;
 using Rock.Attribute;
@@ -45,7 +45,6 @@ namespace RockWeb.Blocks.Examples
     [IntegerField("Minutes To Cache", "Numer of whole minutes to cache the class data (since reflecting on the assembly can be time consuming).", false, 60 )]
     public partial class ModelMap : RockBlock
     {
-        //Cache _classes = new Cache();
         XDocument _docuDoc = new XDocument();
         ObjectCache cache = MemoryCache.Default;
 
@@ -113,7 +112,7 @@ namespace RockWeb.Blocks.Examples
                         sb.AppendFormat( "<li data-id='p{0}'><strong><tt>{1}</tt></strong>{3}{4}{2}</li>{5}",
                             property.Id,
                             HttpUtility.HtmlEncode( property.Name ),
-                            ( property.Comment != null && !string.IsNullOrWhiteSpace( property.Comment.Summary ) ) ? " - " + HttpUtility.HtmlEncode( property.Comment.Summary ) : "",
+                            ( property.Comment != null && !string.IsNullOrWhiteSpace( property.Comment.Summary ) ) ? " - " +  property.Comment.Summary : "",
                             property.IsLavaInclude ? " <small><span class='tip tip-lava'></span></small> " : string.Empty,
                             property.NotMapped ? " <span class='fa-stack small'><i class='fa fa-database fa-stack-1x'></i><i class='fa fa-ban fa-stack-2x text-danger'></i></span> " : string.Empty,
                             Environment.NewLine );
@@ -130,7 +129,7 @@ namespace RockWeb.Blocks.Examples
                         sb.AppendFormat( "<li data-id='m{0}'><strong><tt>{1}</tt></strong> {2}</li>{3}",
                             method.Id,
                             HttpUtility.HtmlEncode( method.Signature ),
-                            ( method.Comment != null && !string.IsNullOrWhiteSpace( method.Comment.Summary ) ) ? " - " + HttpUtility.HtmlEncode( method.Comment.Summary ) : "",
+                            ( method.Comment != null && !string.IsNullOrWhiteSpace( method.Comment.Summary ) ) ? " - " +  method.Comment.Summary : "",
                             Environment.NewLine );
                     }
                     sb.AppendLine( "</ul>" );
@@ -305,7 +304,14 @@ namespace RockWeb.Blocks.Examples
             var name = _docuDoc.Descendants( "member" ).FirstOrDefault( x => x.Attribute( "name" ).Value == path );
             if ( name != null )
             {
-                xmlComment.Summary = System.Text.RegularExpressions.Regex.Replace( name.Element( "summary" ).ValueSafe(), @"\s+", " " );
+                //xmlComment.Summary = System.Text.RegularExpressions.Regex.Replace( name.Element( "summary" ).ToString(), @"\s+", " " );
+                //xmlComment.Summary = System.Text.RegularExpressions.Regex.Replace( name.Element( "summary" ).Nodes().Aggregate( "", ( b, node ) => b += node.ToString()), @"\s+", " " );
+
+                // Read the InnerXml contents of the summary Element.
+                var reader = name.Element( "summary" ).CreateReader();
+                reader.MoveToContent();
+                xmlComment.Summary = MakeSummaryHtml( reader.ReadInnerXml() );
+
                 xmlComment.Value = name.Element( "value" ).ValueSafe();
                 xmlComment.Remarks = name.Element( "remarks" ).ValueSafe();
                 xmlComment.Returns = name.Element( "returns" ).ValueSafe();
@@ -313,6 +319,19 @@ namespace RockWeb.Blocks.Examples
             }
 
             return xmlComment;
+        }
+
+        /// <summary>
+        /// Makes the summary HTML; converting any type/class cref (ex. <see cref="T:Rock.Model.Campus" />) 
+        /// references to HTML links (ex <a href="#Campus">Campus</a>)
+        /// </summary>
+        /// <param name="innerXml">The inner XML.</param>
+        /// <returns></returns>
+        private string MakeSummaryHtml( string innerXml )
+        {
+            innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"\s+", " " );
+            innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"<see cref=""T:(.*)\.([^.]*)"" />", "<a href=\"#$2\">$2</a>" );
+            return innerXml;
         }
     }
 
@@ -374,6 +393,7 @@ namespace RockWeb.Blocks.Examples
             return defaultValue;
         }
 
+        // from @fir3rpho3nixx at http://stackoverflow.com/questions/457676/check-if-a-class-is-derived-from-a-generic-class
         public static bool InheritsOrImplements( this Type child, Type parent )
         {
             parent = ResolveGenericTypeDefinition( parent );
