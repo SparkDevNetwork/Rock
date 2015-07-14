@@ -350,6 +350,20 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to INSERT [dbo].[EventCalendar] ( [Name], [Description], [IconCssClass], [IsActive],  [Guid], [ForeignId]) 
+        ///    VALUES ( N&apos;Internal&apos;, N&apos;A calendar for church staff and staff-like users.&apos;, N&apos;fa fa-lock&apos;, 1, N&apos;8c7f7f4e-1c51-41d3-9ac3-02b3f4054798&apos;, NULL)
+        ///DECLARE @InternalCalendarId int = SCOPE_IDENTITY()
+        ///
+        ///DECLARE @PublicCalendarId int = (SELECT TOP 1 [Id] FROM [EventCalendar] WHERE [Guid] = &apos;8A444668-19AF-4417-9C74-09F842572974&apos;)
+        ///DECLARE @CarPhotoId int = (SELECT TOP 1 [Id] FROM [BinaryFile] WHERE [Guid] =  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201507081827047_SampleCalendarEvents {
+            get {
+                return ResourceManager.GetString("_201507081827047_SampleCalendarEvents", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to     DECLARE @CategoryId int = ( SELECT TOP 1 [Id] FROM [Category] WHERE [Guid] = &apos;4A7D0D1F-E160-445E-9D29-AEBD140DA242&apos; )
         ///    IF @CategoryId IS NOT NULL
         ///    BEGIN     

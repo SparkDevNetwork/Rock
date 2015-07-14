@@ -3056,6 +3056,7 @@
     <Content Include="Migrations\201506162223455_EnsurePersonAlias_UpdateCheckinLabels.sql" />
     <Content Include="Migrations\201506170003272_UpdateCalendarBlocks.sql" />
     <Content Include="Migrations\201506242325188_GeoSpatialIndexes_AddSystemEmail.sql" />
+    <Content Include="Migrations\201507081827047_SampleCalendarEvents.sql" />
     <Content Include="Migrations\201507062330051_GroupRequirementsNotificationEmail.sql" />
     <Content Include="Migrations\201507121943445_RegistrationEmails.sql" />
   </ItemGroup>
