@@ -34,28 +34,28 @@ namespace Rock.Migrations
                 VALUES ( N'Internal', N'A calendar for church staff and staff-like users.', N'fa fa-lock', 1, N'8c7f7f4e-1c51-41d3-9ac3-02b3f4054798', NULL)
 			DECLARE @InternalCalendarId int = SCOPE_IDENTITY()
 
-
 			DECLARE @PublicCalendarId int = (SELECT TOP 1 [Id] FROM [EventCalendar] WHERE [Guid] = '8A444668-19AF-4417-9C74-09F842572974')
 			DECLARE @CarPhotoId int = (SELECT TOP 1 [Id] FROM [BinaryFile] WHERE [Guid] = '8EE5A840-0A10-44E2-9DBE-214AF27C234B')
 			DECLARE @FinancePhotoId int = (SELECT TOP 1 [Id] FROM [BinaryFile] WHERE [Guid] = '5047381D-0CA9-49F7-9894-699C296BAAB6')
 			DECLARE @YouthPhotoId int = (SELECT TOP 1 [Id] FROM [BinaryFile] WHERE [Guid] = 'D00FCEAA-2D16-40BF-9BA4-352D42605E28')
 
+            DECLARE @PersonAliasId int = ( SELECT TOP 1 [Id] FROM [PersonAlias] ORDER BY [Id] )
+
             INSERT [dbo].[EventItem] ( [Name], [Summary], [Description], [PhotoId], [DetailsUrl], [IsActive], [Guid], [ForeignId], [IsApproved], [ApprovedByPersonAliasId], [ApprovedOnDateTime]) 
-                VALUES ( N'Staff Meeting', NULL, N'A sample staff meeting calendar item.', NULL, N'', 1, N'93104654-dafa-489b-a175-5f2ab3a846f1', NULL, 1, 10, CAST(N'2015-06-26 09:19:05.597' AS DateTime))
+                VALUES ( N'Staff Meeting', NULL, N'A sample staff meeting calendar item.', NULL, N'', 1, N'93104654-dafa-489b-a175-5f2ab3a846f1', NULL, 1, @PersonAliasId, CAST(N'2015-06-26 09:19:05.597' AS DateTime))
 			DECLARE @StaffMeetingId int = SCOPE_IDENTITY()
 
             INSERT [dbo].[EventItem] ( [Name], [Summary], [Description], [PhotoId], [DetailsUrl], [IsActive], [Guid], [ForeignId], [IsApproved], [ApprovedByPersonAliasId], [ApprovedOnDateTime]) 
-                VALUES ( N'Customs & Classics Car Show', NULL, N'Curabitur a neque in nibh pretium rutrum nec pharetra ligula. Nulla molestie imperdiet rhoncus. Nulla non semper sapien. Phasellus vel nisi vel ante imperdiet lacinia eu quis odio. In et felis eu sem luctus lacinia. Donec et purus eu dui luctus vehicula. Proin malesuada arcu at ipsum volutpat ullamcorper. Donec facilisis eros a turpis volutpat, at faucibus turpis bibendum. Praesent faucibus mauris sit amet erat lobortis faucibus at rutrum nunc. Phasellus dapibus sed quam eu sodales. Nulla ornare venenatis venenatis.', @CarPhotoId, N'', 1, N'6bb29d45-d5a0-4381-a0d9-e5490a58e20b', NULL, 1, 10, CAST(N'2015-06-26 09:33:42.050' AS DateTime))
+                VALUES ( N'Customs & Classics Car Show', NULL, N'Curabitur a neque in nibh pretium rutrum nec pharetra ligula. Nulla molestie imperdiet rhoncus. Nulla non semper sapien. Phasellus vel nisi vel ante imperdiet lacinia eu quis odio. In et felis eu sem luctus lacinia. Donec et purus eu dui luctus vehicula. Proin malesuada arcu at ipsum volutpat ullamcorper. Donec facilisis eros a turpis volutpat, at faucibus turpis bibendum. Praesent faucibus mauris sit amet erat lobortis faucibus at rutrum nunc. Phasellus dapibus sed quam eu sodales. Nulla ornare venenatis venenatis.', @CarPhotoId, N'', 1, N'6bb29d45-d5a0-4381-a0d9-e5490a58e20b', NULL, 1, @PersonAliasId, CAST(N'2015-06-26 09:33:42.050' AS DateTime))
 			DECLARE @CarShowId int = SCOPE_IDENTITY()
 
             INSERT [dbo].[EventItem] ( [Name], [Summary], [Description], [PhotoId], [DetailsUrl], [IsActive], [Guid], [ForeignId], [IsApproved], [ApprovedByPersonAliasId], [ApprovedOnDateTime]) 
-                VALUES ( N'Rock Solid Finances Class', NULL, N'Duis vel massa egestas, cursus odio vestibulum, pulvinar felis. Quisque mattis enim nec libero euismod venenatis id nec arcu. Donec quis lectus leo. Nullam nec enim a massa placerat fermentum. Pellentesque dolor turpis, imperdiet nec nisl sed, ultricies condimentum sapien. Proin facilisis quam diam, quis varius risus aliquam eu. Suspendisse sed neque interdum nulla egestas molestie eget sed est. Mauris sed eros in neque scelerisque consequat. Ut commodo semper pharetra.', @FinancePhotoId, N'', 1, N'6efc00b0-f5d3-4352-bc3b-f09852fb5788', NULL, 1, 10, CAST(N'2015-06-26 09:36:21.923' AS DateTime))
+                VALUES ( N'Rock Solid Finances Class', NULL, N'Duis vel massa egestas, cursus odio vestibulum, pulvinar felis. Quisque mattis enim nec libero euismod venenatis id nec arcu. Donec quis lectus leo. Nullam nec enim a massa placerat fermentum. Pellentesque dolor turpis, imperdiet nec nisl sed, ultricies condimentum sapien. Proin facilisis quam diam, quis varius risus aliquam eu. Suspendisse sed neque interdum nulla egestas molestie eget sed est. Mauris sed eros in neque scelerisque consequat. Ut commodo semper pharetra.', @FinancePhotoId, N'', 1, N'6efc00b0-f5d3-4352-bc3b-f09852fb5788', NULL, 1, @PersonAliasId, CAST(N'2015-06-26 09:36:21.923' AS DateTime))
 			DECLARE @FinanceId int = SCOPE_IDENTITY()
 
             INSERT [dbo].[EventItem] ( [Name], [Summary], [Description], [PhotoId], [DetailsUrl], [IsActive], [Guid], [ForeignId], [IsApproved], [ApprovedByPersonAliasId], [ApprovedOnDateTime]) 
-                VALUES ( N'Warrior Youth Event', NULL, N'Maecenas eget elit dui. Nullam eu elementum ante. Morbi placerat in nisi eget hendrerit. Cras facilisis massa sit amet luctus dictum. Quisque pretium sapien vitae tincidunt molestie. Etiam eu lacinia odio. Nullam sit amet interdum lectus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam tempor et tortor et tristique. Ut sagittis neque non metus molestie, et dignissim massa porta.', @YouthPhotoId, N'', 1, N'64966c21-648e-4b31-8d97-de1b62fa0820', NULL, 1, 10, CAST(N'2015-06-26 09:42:08.810' AS DateTime))
+                VALUES ( N'Warrior Youth Event', NULL, N'Maecenas eget elit dui. Nullam eu elementum ante. Morbi placerat in nisi eget hendrerit. Cras facilisis massa sit amet luctus dictum. Quisque pretium sapien vitae tincidunt molestie. Etiam eu lacinia odio. Nullam sit amet interdum lectus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam tempor et tortor et tristique. Ut sagittis neque non metus molestie, et dignissim massa porta.', @YouthPhotoId, N'', 1, N'64966c21-648e-4b31-8d97-de1b62fa0820', NULL, 1, @PersonAliasId, CAST(N'2015-06-26 09:42:08.810' AS DateTime))
 			DECLARE @YouthEventId int = SCOPE_IDENTITY()
-
 
             INSERT [dbo].[EventCalendarItem] ( [EventCalendarId], [EventItemId], [Guid], [ForeignId]) 
                 VALUES ( @InternalCalendarId, @StaffMeetingId, N'4732588d-3dfc-40cc-81c4-d3563287d7e7', NULL)
@@ -78,7 +78,6 @@ namespace Rock.Migrations
             INSERT [dbo].[EventCalendarItem] (  [EventCalendarId], [EventItemId], [Guid], [ForeignId]) 
                 VALUES ( @PublicCalendarId, @YouthEventId, N'cf164673-25ea-489a-ab06-f6dde5185e22', NULL)
  
-
 			DECLARE @AllChurchId int =  (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = '6107EA37-5DD3-4E4F-A2D0-1D4010811D4D')
 			DECLARE @MenId int =  (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = 'A4BEBC2F-09F0-488A-B2F3-C416F4D02E35')
 			DECLARE @WomenId int =  (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = '4CE2E860-2F03-40F9-8B60-68EBDB21E026')
@@ -132,19 +131,19 @@ namespace Rock.Migrations
 
 
             INSERT [dbo].[EventItemCampus] (  [EventItemId], [CampusId], [Location], [ContactPersonAliasId], [ContactPhone], [ContactEmail], [CampusNote], [Guid], [ForeignId]) 
-                VALUES ( @StaffMeetingId, NULL, N'', 10, N'', N'admin@organization.com', N'', N'f959d1a9-ee5c-4571-932b-10419971b76f', NULL)
+                VALUES ( @StaffMeetingId, NULL, N'', @PersonAliasId, N'', N'admin@organization.com', N'', N'f959d1a9-ee5c-4571-932b-10419971b76f', NULL)
  			DECLARE @StaffMeetingCampusId int = SCOPE_IDENTITY()
 
             INSERT [dbo].[EventItemCampus] (  [EventItemId], [CampusId], [Location], [ContactPersonAliasId], [ContactPhone], [ContactEmail], [CampusNote], [Guid], [ForeignId]) 
-                VALUES ( @CarShowId, NULL, N'', 10, N'', N'admin@organization.com', N'', N'22579acd-e636-4d52-b682-5883edff331d', NULL)
+                VALUES ( @CarShowId, NULL, N'', @PersonAliasId, N'', N'admin@organization.com', N'', N'22579acd-e636-4d52-b682-5883edff331d', NULL)
 			DECLARE @CarShowCampusId int = SCOPE_IDENTITY()
  
             INSERT [dbo].[EventItemCampus] (  [EventItemId], [CampusId], [Location], [ContactPersonAliasId], [ContactPhone], [ContactEmail], [CampusNote], [Guid], [ForeignId]) 
-                VALUES ( @FinanceId, NULL, N'', 10, N'', N'admin@organization.com', N'', N'8d435c91-f2d7-4192-b0f1-27c1d48d5135', NULL)
+                VALUES ( @FinanceId, NULL, N'', @PersonAliasId, N'', N'admin@organization.com', N'', N'8d435c91-f2d7-4192-b0f1-27c1d48d5135', NULL)
  			DECLARE @FinanceCampusId int = SCOPE_IDENTITY()
 
             INSERT [dbo].[EventItemCampus] (  [EventItemId], [CampusId], [Location], [ContactPersonAliasId], [ContactPhone], [ContactEmail], [CampusNote], [Guid], [ForeignId]) 
-                VALUES ( @YouthEventId, NULL, N'', 10, N'', N'admin@organization.com', N'', N'7b095d3d-ac48-4406-a1e9-22c0979f4aea', NULL)
+                VALUES ( @YouthEventId, NULL, N'', @PersonAliasId, N'', N'admin@organization.com', N'', N'7b095d3d-ac48-4406-a1e9-22c0979f4aea', NULL)
 			DECLARE @YouthEventCampusId int = SCOPE_IDENTITY()
 
 			DECLARE @EntityTypeId int =  (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '0B2C38A7-D79C-4F85-9757-F1B045D32C8A')
