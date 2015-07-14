@@ -1002,6 +1002,7 @@ namespace Rock.Apps.CheckScannerUtility
             client.Login( rockConfig.Username, rockConfig.Password );
             SelectedFinancialBatch = selectedBatch;
             lblBatchNameReadOnly.Content = selectedBatch.Name;
+            lblBatchIdReadOnly.Content = string.Format( "Batch Id: {0}", selectedBatch.Id );
 
             lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ) ).Name : None.Text;
             lblBatchDateReadOnly.Content = selectedBatch.BatchStartDateTime.Value.ToString( "d" );
