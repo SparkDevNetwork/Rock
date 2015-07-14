@@ -79,6 +79,24 @@ namespace Rock.Model
         public DateTime? EndDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the send reminder date time.
+        /// </summary>
+        /// <value>
+        /// The send reminder date time.
+        /// </value>
+        [DataMember]
+        public DateTime? SendReminderDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [reminder sent].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [reminder sent]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ReminderSent { get; set; }
+
+        /// <summary>
         /// Gets or sets the details.
         /// </summary>
         /// <value>
@@ -153,24 +171,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string AdditionalConfirmationDetails { get; set; }
-
-        /// <summary>
-        /// Gets or sets the reminder sent date time.
-        /// </summary>
-        /// <value>
-        /// The reminder sent date time.
-        /// </value>
-        [DataMember]
-        public DateTime? ReminderSentDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the confirmation sent date time.
-        /// </summary>
-        /// <value>
-        /// The confirmation sent date time.
-        /// </value>
-        [DataMember]
-        public DateTime? ConfirmationSentDateTime { get; set; }
 
         #endregion
 

@@ -22,14 +22,18 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class SampleCalendarEvents : Rock.Migrations.RockMigration
+    public partial class RegistrationEmails : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            Sql( MigrationSQL._201507081827047_SampleCalendarEvents );
+            AddColumn("dbo.RegistrationTemplate", "Notify", c => c.Int(nullable: false));
+            DropColumn("dbo.RegistrationTemplate", "NotifyGroupLeaders");
+
+            RockMigrationHelper.UpdateCategoryByName( "B21FD119-893E-46C0-B42D-E4CDD5C8C49D", "Event Registration", "fa fa-clipboard", "", "4A7D0D1F-E160-445E-9D29-AEBD140DA242", 5 );
+            Sql( MigrationSQL._201507121943445_RegistrationEmails );
         }
         
         /// <summary>
@@ -37,6 +41,11 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            RockMigrationHelper.DeleteSystemEmail( "7B0F4F06-69BD-4CB4-BD04-8DA3779D5259" );
+            RockMigrationHelper.DeleteSystemEmail( "158607D1-0772-4947-ADD6-EA31AB6ABC2F" );
+
+            AddColumn( "dbo.RegistrationTemplate", "NotifyGroupLeaders", c => c.Boolean( nullable: false ) );
+            DropColumn("dbo.RegistrationTemplate", "Notify");
         }
     }
 }

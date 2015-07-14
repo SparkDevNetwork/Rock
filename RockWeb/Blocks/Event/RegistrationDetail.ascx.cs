@@ -494,7 +494,7 @@ namespace RockWeb.Blocks.Event
                     
                     rockContext.SaveChanges();
 
-                    editor.SetControlFromRegistrant( registrant );
+                    editor.SetControlFromRegistrant( registrant, rockContext );
 
                     var registration = new RegistrationService( rockContext ).Get( hfRegistrationId.ValueAsInt() );
                     SetCostLabels( registration );
@@ -786,8 +786,8 @@ namespace RockWeb.Blocks.Event
         private RegistrantEditor AddRegistrantControl( Guid guid, RegistrationRegistrant registrant = null )
         {
             var registrantEditor = new RegistrantEditor();
-            registrantEditor.SetForms( RegistrationTemplate );
             phRegistrants.Controls.Add( registrantEditor );
+            registrantEditor.SetForms( RegistrationTemplate );
             registrantEditor.ID = "re" + guid;
             registrantEditor.SelectPersonClick += registrantEditor_SelectPersonClick;
             registrantEditor.EditRegistrantClick += registrantEditor_EditRegistrantClick;
@@ -797,11 +797,14 @@ namespace RockWeb.Blocks.Event
 
             if ( registrant != null )
             {
-                registrantEditor.SetControlFromRegistrant( registrant );
-                if ( !Page.IsPostBack && RegistrantId.HasValue && RegistrantId.Value == registrant.Id )
+                using ( var rockContext = new RockContext() )
                 {
-                    pwRegistrationDetails.Expanded = false;
-                    registrantEditor.Expanded = true;
+                    registrantEditor.SetControlFromRegistrant( registrant, rockContext );
+                    if ( !Page.IsPostBack && RegistrantId.HasValue && RegistrantId.Value == registrant.Id )
+                    {
+                        pwRegistrationDetails.Expanded = false;
+                        registrantEditor.Expanded = true;
+                    }
                 }
             }
 

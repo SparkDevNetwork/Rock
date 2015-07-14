@@ -185,6 +185,19 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the active leaders of the group
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns></returns>
+        public IQueryable<GroupMember> GetLeaders( int groupId )
+        {
+            return GetByGroupId( groupId, false )
+                .Where( t => 
+                    t.GroupMemberStatus == GroupMemberStatus.Active &&
+                    t.GroupRole.IsLeader );
+        }
+
+        /// <summary>
         /// Returns an enumerable collection of <see cref="System.String"/> objects representing the first names of each person in a <see cref="Rock.Model.Group"/> ordered by group role, age, and gender
         /// </summary>
         /// <param name="groupId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/>.</param>
