@@ -1,7 +1,7 @@
 // Custom Theme Variables
-@accent-blue: #567d8c; //5e99a9
+@accent-blue: @accent-semibold-color;// #567d8c; //5e99a9
 @accent-blue-light: #eaf7fc;
-
+//#6a6a6a
 //
 // Rock 1.0 Variables
 // --------------------------------------------------
@@ -16,13 +16,15 @@
 
 // Standard Colors
 @accent-color: #dbd5cb;
-@accent-text-color: #524c43;
+@accent-text-color: #413c35;
 @accent-light-color: #e3ded7;
 @accent-light-text-color: #817b72;
-@accent-semibold-color: #c2b8a7;
-@accent-semibold-text-color: #616161;
+@accent-semibold-color: #6a6a6a; // #c2b8a7;
+@accent-semibold-text-color: #fff;// #616161;
 @accent-bold-color: #282526;
 @accent-bold-text-color: #d3cec5;
+
+@panel-top-border-color: @header-bg;
 
 @text-light-color: lighten(@text-color, 20%);
 @text-selection-color: #afd074;
@@ -50,7 +52,7 @@
 @pagetitle-bg: #c7cacd;
 
 @header-bg:     #c2b8a7;
-@header-text-color: @accent-semibold-text-color;
+@header-text-color: @accent-semibold-color;
 
 @footer-bg: @header-bg;
 @footer-text-color: @header-text-color;
@@ -59,8 +61,8 @@
 @modal-header-text-color: @accent-bold-text-color;
 @modal-body-bg: @body-bg;
 @modal-body-text-color: @text-color;
-@modal-footer-bg: #e5e5e5;
-@modal-footer-text-color: @gray;
+@modal-footer-bg: @accent-color;
+@modal-footer-text-color: @accent-text-color;
 @modal-dropshadow-color: rgba(0,0,0,0.6);
 // see bootstrap variables for additional modal styles
 
@@ -70,27 +72,29 @@
 // Grid
 @grid-filter-bg: @accent-color;
 
-@grid-column-header-bg: #efefef;
+@grid-column-header-bg: darken(@body-bg, 2%);
 @grid-column-header-text-color: @accent-text-color;
 @grid-column-header-font-size: 14px;
 @grid-column-header-font-weight: @font-weight-semibold;
 
-@grid-hover-bg: @accent-light-color;
+@grid-hover-bg: #D5E6ED;
 
-@grid-filter-bg: @gray-lighter;
-@grid-footer-bg: #fff;
+@grid-pager-bg: darken(@body-bg, 2%);
+
+@grid-filter-bg: darken(@body-bg, 2%);
+@grid-footer-bg: @accent-color;
 @grid-footer-text-color: @accent-text-color;
 @grid-footer-font-size: 10px;
 @grid-footer-font-weight: 300;
-@grid-footer-button-bg: #fff;
-@grid-footer-button-text-color: #999999;
-@grid-footer-button-border: #d4d4d4;
+@grid-footer-button-bg: @header-bg;
+@grid-footer-button-text-color: @header-text-color;
+@grid-footer-button-border: darken(@header-bg, 10%);
 
 // tip: see pagination variables below in the bootstrap section
 
 // Admin Bar
-@adminbar-bg: @accent-semibold-color;
-@adminbar-text-color: @accent-semibold-text-color;
+@adminbar-bg: @accent-bold-color;
+@adminbar-text-color: @accent-bold-text-color;
 
 // Tooltip
 @tooltip-header-bg: @accent-color;
@@ -104,7 +108,7 @@
 @widget-header-text-color-dark: @accent-bold-text-color;
 
 // Page List
-@pagelist-bg: @body-bg;
+@pagelist-bg: lighten(@accent-color, 5%);
 @pagelist-text-color: @text-color;
 
 // Tags
@@ -140,12 +144,12 @@
 
 // Custom Labels
 @label-campus-bg: #83758f;
-@label-type-bg: #567D8C;
+@label-type-bg: @accent-semibold-color;
 
 // Custom Buttons
 @btn-action-color:              #fff;
-@btn-action-bg:                 @accent-blue;
-@btn-action-border:             darken(@accent-blue, 5%);
+@btn-action-bg:                 #6a6a6a;
+@btn-action-border:             darken(@btn-action-bg, 5%);
 
 @btn-security-color:            @btn-default-color;
 @btn-security-bg:               @btn-default-bg;
@@ -180,15 +184,15 @@
 // -------------------------
 
 @brand-primary:         #ee7624;
-@brand-success:         #43be81;
-@brand-warning:         #f3d066;
-@brand-danger:          #c84b4b;
-@brand-info:            #3bc2df;
+@brand-success:         #5C9E7D; // #43be81;
+@brand-warning:         #ECC759; //#f3d066;
+@brand-danger:          #BB5454; // #c84b4b;
+@brand-info:            #4099AD; // #3bc2df;
 
 // Scaffolding
 // -------------------------
 
-@body-bg:               @gray-light;
+@body-bg:               #edeae6;
 @text-color:            #6a6a6a;
 
 // Links
@@ -265,7 +269,7 @@
 @table-condensed-cell-padding:       5px;
 
 @table-bg:                           transparent; // overall background-color
-@table-bg-accent:                    #f9f9f9; // for striping
+@table-bg-accent:                    #F5F2EE; // for striping
 @table-bg-hover:                     #f5f5f5;
 @table-bg-active:                    @table-bg-hover;
 
@@ -667,7 +671,7 @@
 
 // Panels
 // -------------------------
-@panel-bg:                    #fff;
+@panel-bg:                    #fcfaf8;
 @panel-body-padding:          15px;
 @panel-heading-padding:       10px 15px;
 @panel-footer-padding:        @panel-heading-padding;
