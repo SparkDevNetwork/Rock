@@ -791,11 +791,8 @@ a.aspNetDisabled {
   color: #eca9a7;
   vertical-align: super;
 }
-dl:not(.dl-horizontal) {
-  margin-bottom: 0;
-}
 dl:not(.dl-horizontal) dt {
-  font-weight: 700;
+  font-weight: 600;
   margin-top: 16px;
   margin-bottom: 2px;
 }
@@ -1138,6 +1135,10 @@ td.grid-col-actions {
   padding-top: 12px;
   min-width: 48px;
   width: 48px;
+}
+.table > tbody > tr > th.grid-columnreorder a,
+.table > tbody > tr > td.grid-columnreorder a {
+  color: #507192;
 }
 .table .color-field {
   padding: 0;
@@ -1918,7 +1919,7 @@ table.attribute-grid tr th:nth-child(3) {
   width: 40px;
   height: 40px;
   z-index: 500;
-  border-top: 70px solid #18bc9c;
+  border-top: 70px solid #817b72;
   border-right: 70px solid transparent;
   transition: 1s;
   opacity: .4;
@@ -4363,9 +4364,9 @@ ul.list-group-panel .list-group-item:first-child,
   text-align: center;
   padding-top: 8px;
   opacity: .4;
-  color: #18bc9c;
+  color: #2c3e50;
   transition: 1s;
-  border-left: 1px solid #51e9cb;
+  border-left: 1px solid #3a3a3a;
 }
 .panel-follow-status:before {
   font-family: FontAwesome;
