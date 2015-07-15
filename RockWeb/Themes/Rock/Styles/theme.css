@@ -972,7 +972,7 @@ td.wrap-contents {
   display: none;
 }
 .grid-filter {
-  background-color: #e9e5e0;
+  background-color: #edeae6;
   border-radius: 4px;
   padding: 6px 12px;
   border-bottom: 1px solid #dddddd;
@@ -1006,9 +1006,9 @@ td.wrap-contents {
   margin-bottom: 12px;
 }
 .grid-filter .picker .picker-label {
-  background-color: #e9e5e0;
+  background-color: #edeae6;
   color: #6a6a6a;
-  border-color: #d3ccc2;
+  border-color: #d8d1c8;
 }
 /*.grid-filter +  div .grid-table {
     margin-top: -12px;   
@@ -1020,7 +1020,7 @@ td.wrap-contents {
   margin-bottom: 12px;
 }
 .table thead th {
-  background-color: #e9e5e0;
+  background-color: #edeae6;
   font-size: 14px;
   color: #413c35;
   font-weight: 700;
@@ -1040,7 +1040,7 @@ td.wrap-contents {
   font-family: FontAwesome;
 }
 .grid-paging {
-  background-color: #e9e5e0;
+  background-color: #edeae6;
 }
 .grid-paging .pagination {
   margin-top: 0;
@@ -1063,11 +1063,11 @@ td.grid-col-actions {
 }
 .grid-actions {
   text-align: right;
-  background-color: #e9e5e0;
+  background-color: #edeae6;
 }
 .grid-actions .btn {
   margin-left: 8px;
-  background-color: #ded9d1;
+  background-color: #e2ded7;
   color: #6a6a6a;
   border-color: #ada089;
 }
@@ -1363,22 +1363,22 @@ tr.row-highlight td {
 
 */
 .panel-note {
-  border-color: #c2b8a7;
+  border-color: #cdc5ba;
 }
 .panel-note > .panel-heading {
-  color: #413c35;
-  background-color: #dbd5cb;
-  border-color: #d1c9bc;
+  color: #6a6a6a;
+  background-color: #edeae6;
+  border-color: #e2ded7;
 }
 .panel-note > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #c2b8a7;
+  border-top-color: #cdc5ba;
 }
 .panel-note > .panel-heading .badge {
-  color: #dbd5cb;
-  background-color: #413c35;
+  color: #edeae6;
+  background-color: #6a6a6a;
 }
 .panel-note > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #c2b8a7;
+  border-bottom-color: #cdc5ba;
 }
 .panel-note .panel-body {
   background-color: #fffs;
@@ -1393,10 +1393,10 @@ tr.row-highlight td {
 }
 .panel-note article {
   border-radius: 4px;
-  border: 1px solid #d6d6d6;
+  border: 1px solid #d8d1c8;
   padding: 15px;
   margin-bottom: 15px;
-  background-color: #efefef;
+  background-color: #edeae6;
   position: relative;
 }
 .panel-note article .date {
@@ -1517,22 +1517,22 @@ tr.row-highlight td {
   opacity: 0.7;
 }
 .panel-noteentry {
-  border-color: #dbd5cb;
+  border-color: #cdc5ba;
 }
 .panel-noteentry > .panel-heading {
-  color: #413c35;
-  background-color: #413c35;
-  border-color: #413c35;
+  color: #6a6a6a;
+  background-color: #edeae6;
+  border-color: #e2ded7;
 }
 .panel-noteentry > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #dbd5cb;
+  border-top-color: #cdc5ba;
 }
 .panel-noteentry > .panel-heading .badge {
-  color: #413c35;
-  background-color: #413c35;
+  color: #edeae6;
+  background-color: #6a6a6a;
 }
 .panel-noteentry > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #dbd5cb;
+  border-bottom-color: #cdc5ba;
 }
 .panel-noteentry .createDate {
   margin-top: 10px;
@@ -1559,7 +1559,7 @@ tr.row-highlight td {
   margin: 0 15px 0 5px;
 }
 .panel-noteentry .panel-footer {
-  background-color: #dbd5cb;
+  background-color: #edeae6;
 }
 .recurrence-pattern-type {
   margin-top: 12px;
@@ -1628,6 +1628,9 @@ tr.row-highlight td {
   color: inherit;
   text-decoration: none;
 }
+.panel.workflow-activity.activated-with-workflow {
+  border-color: #468847;
+}
 .panel.workflow-activity.activated-with-workflow > .panel-heading {
   background-color: #dff0d8;
   color: #468847;
@@ -1662,30 +1665,29 @@ tr.row-highlight td {
   margin-bottom: 12px;
 }
 .panel-group .panel-workflowitem {
-  border-color: #e2e2e2;
+  border-color: #cdc5ba;
   margin-bottom: 30px;
 }
 .panel-group .panel-workflowitem > .panel-heading {
   color: #6a6a6a;
-  background-color: #efefef;
-  border-color: #e2e2e2;
+  background-color: #edeae6;
+  border-color: #e2ded7;
 }
 .panel-group .panel-workflowitem > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #e2e2e2;
+  border-top-color: #cdc5ba;
 }
 .panel-group .panel-workflowitem > .panel-heading .badge {
-  color: #efefef;
+  color: #edeae6;
   background-color: #6a6a6a;
 }
 .panel-group .panel-workflowitem > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #e2e2e2;
+  border-bottom-color: #cdc5ba;
 }
 .panel-group .panel-workflowitem:hover {
   background-color: #fff;
 }
 .panel-group .panel-workflowitem .panel-heading {
   padding: 30px;
-  background-color: #efefef;
 }
 .panel-group .panel-workflowitem .panel-heading a {
   display: block;
@@ -2678,7 +2680,7 @@ iframe.email-body {
 .calendar {
   padding: 0 10px 10px 10px;
   display: inline-block;
-  border: 1px solid #dbd5cb;
+  border: 1px solid #cdc5ba;
   border-radius: 4px;
   width: 100%;
 }
@@ -4900,13 +4902,13 @@ a.cke_dialog_ui_button span {
 }
 a.cke_dialog_ui_button.cke_dialog_ui_button_cancel {
   background-color: transparent !important;
-  color: #ee7624 !important;
+  color: #4f89bd !important;
   font-weight: normal !important;
   border: none !important;
 }
 a.cke_dialog_ui_button.cke_dialog_ui_button_cancel:hover,
 a.cke_dialog_ui_button.cke_dialog_ui_button_cancel:focus {
-  color: #b7530e;
+  color: #34628b;
   text-decoration: underline;
   background-color: transparent;
 }
@@ -5110,22 +5112,25 @@ a.help {
   border-radius: 0 0 4px 4px;
 }
 .panel-widget {
-  border-color: #dbd5cb;
+  border-color: #cdc5ba;
 }
 .panel-widget > .panel-heading {
-  color: #413c35;
-  background-color: #dbd5cb;
-  border-color: #dbd5cb;
+  color: #6a6a6a;
+  background-color: #edeae6;
+  border-color: #e2ded7;
 }
 .panel-widget > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #dbd5cb;
+  border-top-color: #cdc5ba;
 }
 .panel-widget > .panel-heading .badge {
-  color: #dbd5cb;
-  background-color: #413c35;
+  color: #edeae6;
+  background-color: #6a6a6a;
 }
 .panel-widget > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #dbd5cb;
+  border-bottom-color: #cdc5ba;
+}
+.panel-widget .panel-heading {
+  border: 0;
 }
 .panel-widget .panel-heading .checkbox {
   display: inline;
@@ -5146,22 +5151,22 @@ a.help {
   background-color: #edeae6;
 }
 .panel-persondetails {
-  border-color: #c2b8a7;
+  border-color: #cdc5ba;
 }
 .panel-persondetails > .panel-heading {
-  color: #413c35;
-  background-color: #dbd5cb;
-  border-color: #d1c9bc;
+  color: #6a6a6a;
+  background-color: #edeae6;
+  border-color: #e2ded7;
 }
 .panel-persondetails > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #c2b8a7;
+  border-top-color: #cdc5ba;
 }
 .panel-persondetails > .panel-heading .badge {
-  color: #dbd5cb;
-  background-color: #413c35;
+  color: #edeae6;
+  background-color: #6a6a6a;
 }
 .panel-persondetails > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #c2b8a7;
+  border-bottom-color: #cdc5ba;
 }
 .panel-persondetails .panel-heading .actions a {
   margin-left: 4px;
@@ -5197,26 +5202,23 @@ a.help {
   cursor: pointer;
 }
 .panel-block {
-  border-color: #c2b8a7;
+  border-color: #cdc5ba;
   border-top-color: #c2b8a7;
 }
 .panel-block > .panel-heading {
-  color: #413c35;
-  background-color: #dbd5cb;
-  border-color: #d1c9bc;
+  color: #6a6a6a;
+  background-color: #edeae6;
+  border-color: #e9e5e0;
 }
 .panel-block > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #c2b8a7;
+  border-top-color: #cdc5ba;
 }
 .panel-block > .panel-heading .badge {
-  color: #dbd5cb;
-  background-color: #413c35;
+  color: #edeae6;
+  background-color: #6a6a6a;
 }
 .panel-block > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #c2b8a7;
-}
-.panel-block > .panel-heading {
-  background-color: #dbd5cb;
+  border-bottom-color: #cdc5ba;
 }
 .panel-block > .panel-heading:before,
 .panel-block > .panel-heading:after {
@@ -5854,7 +5856,7 @@ h4,
 }
 .panel .panel-heading {
   padding: 6px 10px;
-  border-color: #c2b8a7;
+  border-color: #e2ded7;
   border-radius: 0;
 }
 .panel .panel-heading .panel-title {
@@ -5868,9 +5870,6 @@ h4,
 }
 .panel.panel-primary .panel-heading {
   background-color: #ee7624;
-}
-.panel.panel-widget .panel-heading {
-  background-color: #dbd5cb;
 }
 .tag-letterlist a {
   color: #ee7624;

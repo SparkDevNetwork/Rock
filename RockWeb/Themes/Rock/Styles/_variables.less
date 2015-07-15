@@ -72,16 +72,16 @@
 // Grid
 @grid-filter-bg: @accent-color;
 
-@grid-column-header-bg: darken(@body-bg, 2%);
+@grid-column-header-bg: @body-bg;
 @grid-column-header-text-color: @accent-text-color;
 @grid-column-header-font-size: 14px;
 @grid-column-header-font-weight: @font-weight-semibold;
 
 @grid-hover-bg: #D5E6ED;
 
-@grid-pager-bg: darken(@body-bg, 2%);
+@grid-pager-bg: @body-bg;
 
-@grid-filter-bg: darken(@body-bg, 2%);
+@grid-filter-bg: @body-bg;
 @grid-footer-bg: @grid-filter-bg;
 @grid-footer-text-color: @accent-text-color;
 @grid-footer-font-size: 10px;
@@ -198,7 +198,7 @@
 // Links
 // -------------------------
 
-@link-color:            @brand-primary; // #817b72;//#a0886e; //#478bae;
+@link-color:            #4f89bd; // #817b72;//#a0886e; //#478bae;
 @link-hover-color:      darken(@link-color, 15%);
 
 // Typography
@@ -682,8 +682,8 @@
 @panel-footer-bg:             #f5f5f5;
 
 @panel-default-text:          @accent-light-text-color;
-@panel-default-border:        @accent-color;
-@panel-default-heading-bg:    @accent-light-color;
+@panel-default-border:        darken(@body-bg, 15%);
+@panel-default-heading-bg:    @body-bg;
 
 @panel-primary-text:          #fff;
 @panel-primary-border:        @brand-primary;

@@ -222,7 +222,7 @@ a.help {
 }
 
 
-// panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
+// .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
 .panel {
     legend {
         border-color: @accent-color;
@@ -258,9 +258,12 @@ a.help {
 }
 
 .panel-widget {
-    .panel-variant(@accent-color ; @accent-text-color; @accent-color; @accent-color;);
+    // .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
+    .panel-variant(@panel-default-border; @text-color; @panel-default-heading-bg; darken(@panel-default-heading-bg, 5%););
 
     .panel-heading {
+        border: 0;
+
         .checkbox {
             display: inline;
             margin-top: 0;
@@ -292,7 +295,8 @@ a.help {
 }
 
 .panel-persondetails {
-    .panel-variant(@header-bg; @accent-text-color; @accent-color; darken(@accent-color, 5%););
+    // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
+    .panel-variant(@panel-default-border; @text-color; @panel-default-heading-bg; darken(@panel-default-heading-bg, 5%););
 
     .panel-heading {
         .actions {
@@ -333,12 +337,11 @@ a.help {
 
 .panel-block {
     //.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;)
-    .panel-variant(@header-bg; @accent-text-color; @accent-color; darken(@accent-color, 5%););
+    .panel-variant(@panel-default-border; @text-color; @panel-default-heading-bg; darken(@panel-default-heading-bg, 2%););
 
     border-top-color: @panel-top-border-color;
 
     > .panel-heading {
-        background-color: @accent-color;
         .clearfix();
 
         .panel-title {
