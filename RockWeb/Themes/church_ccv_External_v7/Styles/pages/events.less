@@ -1,0 +1,95 @@
+
+
+//
+// EVENTS PAGE
+// --------------------------------------------------
+
+
+// Imports
+// -------------------------
+@import "../../../../Styles/Bootstrap/variables.less";
+@import "../../../../Styles/Bootstrap/mixins.less";
+@import "../../../../Styles/_rock-variables.less";
+
+@import "../_variables";
+@import "../_mixins";
+
+@xs: ~"(min-width: @{screen-xs-min})";
+@sm: ~"(min-width: @{screen-sm-min})";
+@md: ~"(min-width: @{screen-md-min})";
+@lg: ~"(min-width: @{screen-lg-min})";
+
+
+// Custom
+// -------------------------
+
+.card {
+  border-radius: 5px;
+  overflow: hidden;
+  // display: inline-block;
+  box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
+  margin-bottom: @grid-gutter-width;
+}
+  .card-title {
+    // handle links
+    color: inherit;
+    &:hover {
+      text-decoration: none;
+      color: inherit;
+    }
+    // /handle links
+    position: relative;
+    overflow: hidden;
+    display: block;
+    height: @grid-gutter-width*11;
+  }
+  .card-half .card-title {
+    height: @grid-gutter-width*4;
+  }
+  .card-title-withimg {
+    background-position: center center;
+    background-size: cover;
+    background-repeat: none;
+  }
+    .card-titletext {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      color: #fff;
+      margin: 0;
+      width: 100%;
+      padding: @grid-gutter-width/2 @grid-gutter-width/2;
+      line-height: @grid-gutter-width;
+      .transition(background .3s);
+      // text-overflow: ellipsis;
+      // white-space: nowrap;
+      overflow: hidden;
+      max-height: 100%;
+    }
+    .card-title:hover .card-titletext {
+      background: rgba(0,0,0,.25);
+    }
+    .card-dark .card-titletext {
+      color: @text-color;
+    }
+    .card-dark .card-title:hover .card-titletext {
+      background: rgba(255,255,255,.5);
+    }
+  .card-footer {
+    height: @grid-gutter-width*2;
+    // padding: 10px;
+    background: #fff;
+    // border: 2px solid #ddd;
+    border-top: none;
+    .border-bottom-radius(5px);
+    line-height: @grid-gutter-width*2;
+    padding-left: @grid-gutter-width/2;
+    padding-right: 11px;
+  }
+  .card-btn {
+    margin-top: 11px;
+    float: right;
+    .button-variant(@text-color; #fff; #fff);
+    // .button-size(@padding-small-vertical; @padding-small-horizontal; @font-size-small; @line-height-small; @border-radius-small);
+  }
