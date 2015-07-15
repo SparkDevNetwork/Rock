@@ -556,6 +556,25 @@ namespace Rock.Rest.Controllers
             personSearchResult.PickerItemDetailsHtml = string.Format( itemDetailFormat, imageHtml, personInfoHtml );
         }
 
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetSearchDetails/{personId}" )]
+        public string GetImpersonationParameter( int personId )
+        {
+            string result = string.Empty;
+            
+            var rockContext = this.Service.Context as Rock.Data.RockContext;
+
+            var person = new PersonService( rockContext ).Get( personId );
+
+            if ( person != null )
+            {
+                result = person.ImpersonationParameter;
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Gets the popup html for the selected person
         /// </summary>
