@@ -6111,7 +6111,7 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
   padding: 6px 12px;
   line-height: 1.42857143;
   text-decoration: none;
-  color: #428bca;
+  color: red;
   background-color: #ffffff;
   border: 1px solid #dddddd;
   margin-left: -1px;

@@ -15,7 +15,7 @@
         <Rock:NumberUpDown ID="numHowMany" NumberDisplayCssClass="input-lg form-control input-width-xs" ButtonCssClass="btn btn-lg btn-default margin-l-sm" runat="server" CssClass="text-center" />
 
         <div class="actions">
-            <asp:LinkButton ID="lbHowManyNext" runat="server" AccessKey="n" Text="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbHowManyNext_Click" />
+            <Rock:BootstrapButton ID="lbHowManyNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbHowManyNext_Click" />
         </div>
 
     </asp:Panel>
@@ -37,7 +37,7 @@
 
         <div class="actions">
             <asp:LinkButton ID="lbRegistrantPrev" runat="server" AccessKey="p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbRegistrantPrev_Click"  />
-            <asp:LinkButton ID="lbRegistrantNext" runat="server" AccessKey="n" Text="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbRegistrantNext_Click" />
+            <Rock:BootstrapButton ID="lbRegistrantNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbRegistrantNext_Click" />
         </div>
 
     </asp:Panel>
@@ -174,17 +174,8 @@
 
         <div class="actions">
             <asp:LinkButton ID="lbSummaryPrev" runat="server" AccessKey="p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbSummaryPrev_Click" />
-            <asp:LinkButton ID="lbSummaryNext" runat="server" AccessKey="n" Text="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbSummaryNext_Click" />
+            <Rock:BootstrapButton ID="lbSummaryNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbSummaryNext_Click" />
         </div>
-
-        <asp:Panel ID="pnlDupWarning" runat="server" CssClass="alert alert-block" Visible="true">
-            <h4>Warning!</h4>
-            <p>
-                You have already submitted a similar transaction that has been processed.  Are you sure you want
-            to submit another possible duplicate transaction?
-            </p>
-            <asp:LinkButton ID="btnConfirm" runat="server" Text="Yes, submit another transaction" CssClass="btn btn-danger margin-t-sm" OnClick="lbConfirm_Click"/>
-        </asp:Panel>
 
     </asp:Panel>
 

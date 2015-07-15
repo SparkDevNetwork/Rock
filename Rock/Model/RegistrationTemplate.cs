@@ -134,13 +134,34 @@ namespace Rock.Model
         public string DiscountCodeTerm { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to use default confirmation email.
+        /// Gets or sets the name of the confirmation from.
         /// </summary>
         /// <value>
-        /// <c>true</c> if [use default confirmation email]; otherwise, <c>false</c>.
+        /// The name of the confirmation from.
         /// </value>
         [DataMember]
-        public bool UseDefaultConfirmationEmail { get; set; }
+        [MaxLength( 200 )]
+        public string ConfirmationFromName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the confirmation from email.
+        /// </summary>
+        /// <value>
+        /// The confirmation from email.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string ConfirmationFromEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the confirmation subject.
+        /// </summary>
+        /// <value>
+        /// The confirmation subject.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string ConfirmationSubject { get; set; }
 
         /// <summary>
         /// Gets or sets the confirmation email text to send.
@@ -150,6 +171,36 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string ConfirmationEmailTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the reminder from.
+        /// </summary>
+        /// <value>
+        /// The name of the reminder from.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string ReminderFromName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the reminder from email.
+        /// </summary>
+        /// <value>
+        /// The reminder from email.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string ReminderFromEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the reminder subject.
+        /// </summary>
+        /// <value>
+        /// The reminder subject.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string ReminderSubject { get; set; }
 
         /// <summary>
         /// Gets or sets the reminder email template.

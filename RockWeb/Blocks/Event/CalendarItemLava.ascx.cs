@@ -29,6 +29,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Event
 {
@@ -147,9 +148,18 @@ namespace RockWeb.Blocks.Event
                 var eventItem = qry.FirstOrDefault();
 
                 var mergeFields = new Dictionary<string, object>();
+                mergeFields.Add( "RegistrationPage", LinkedPageUrl( "RegistrationPage", null ) );
+
+                var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+                var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+
+                if ( contextCampus != null )
+                {
+                    mergeFields.Add( "CampusContext", contextCampus );
+                }
+
                 mergeFields.Add( "Event", eventItem );
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
-                mergeFields.Add( "RegistrationPage", LinkedPageUrl( "RegistrationPage", null ) );
 
                 lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 

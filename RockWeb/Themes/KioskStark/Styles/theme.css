@@ -291,7 +291,7 @@ img.jcrop-preview {
 #cms-admin-footer {
   bottom: 0;
   width: 100%;
-  height: 26px;
+  height: 36px;
   z-index: 1049;
   position: fixed;
   right: 0;
@@ -301,13 +301,18 @@ img.jcrop-preview {
   border-width: 1px 1px 0 1px;
   border-style: solid;
   color: #ecf0f3;
-  padding: 5px 12px 0 12px;
-  font-size: 80%;
+  padding: 8px 12px 0 12px;
+  transition: .5s;
 }
 #cms-admin-footer > span {
   display: none;
   text-align: center;
   margin-bottom: 4px;
+  font-size: 12px;
+  margin-top: 3px;
+}
+#cms-admin-footer a {
+  font-size: 16px;
 }
 #cms-admin-footer .button-bar {
   margin-top: -8px;
@@ -326,9 +331,10 @@ img.jcrop-preview {
 }
 @media (min-width: 768px) {
   #cms-admin-footer {
-    height: 28px;
-    margin-right: 25px;
-    width: auto;
+    opacity: 0;
+  }
+  #cms-admin-footer:hover {
+    opacity: 1;
   }
   #cms-admin-footer > span {
     display: block;
@@ -783,9 +789,6 @@ a.aspNetDisabled {
   color: #eca9a7;
   vertical-align: super;
 }
-dl:not(.dl-horizontal) {
-  margin-bottom: 0;
-}
 dl:not(.dl-horizontal) dt {
   font-weight: 700;
   margin-top: 16px;
@@ -1037,7 +1040,7 @@ td.wrap-contents {
   font-family: FontAwesome;
 }
 .grid-paging {
-  background-color: #eeeeee;
+  background-color: #d5d5d5;
 }
 .grid-paging .pagination {
   margin-top: 0;
@@ -1064,6 +1067,9 @@ td.grid-col-actions {
 }
 .grid-actions .btn {
   margin-left: 8px;
+  background-color: #f6f6f6;
+  color: #333333;
+  border-color: #333333;
 }
 .table-light thead th {
   background-color: inherit;
@@ -1127,6 +1133,10 @@ td.grid-col-actions {
   padding-top: 12px;
   min-width: 48px;
   width: 48px;
+}
+.table > tbody > tr > th.grid-columnreorder a,
+.table > tbody > tr > td.grid-columnreorder a {
+  color: #666666;
 }
 .table .color-field {
   padding: 0;
@@ -1202,6 +1212,7 @@ tr.row-highlight td {
     1. HTML Content - block to edit HTML on a page
     2. My Account - Used on external sites for setting person details
     3. Lava Debug - Used to style the lava debug panel
+    4. Social Tools - Used for showing social media links
 */
 .htmlcontent-edit-header {
   padding: 7.5px 15px 0 15px;
@@ -1251,6 +1262,31 @@ tr.row-highlight td {
 }
 .lava-debug .panel.panel-lavadebug .panel-body {
   background-color: #e6f3fa;
+}
+.socialsharing {
+  margin-top: 12px;
+  padding: 0;
+}
+.socialsharing li {
+  display: inline-block;
+}
+.socialsharing li .socialicon {
+  color: #fff;
+  padding: 8px 6px;
+  border-radius: 20px;
+  font-family: FontAwesome;
+}
+.socialsharing li .socialicon:hover {
+  text-decoration: none;
+}
+.socialsharing li .socialicon-facebook {
+  background-color: #4C66A4;
+}
+.socialsharing li .socialicon-twitter {
+  background-color: #2C77BA;
+}
+.socialsharing li .socialicon-email {
+  background-color: #209904;
 }
 /*
     Used to manage styles for specific blocks.
@@ -1327,22 +1363,22 @@ tr.row-highlight td {
 
 */
 .panel-note {
-  border-color: #e2e2e2;
+  border-color: #3a3a3a;
 }
 .panel-note > .panel-heading {
   color: #333333;
-  background-color: #eeeeee;
-  border-color: #e2e2e2;
+  background-color: #d5d5d5;
+  border-color: #c8c8c8;
 }
 .panel-note > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #e2e2e2;
+  border-top-color: #3a3a3a;
 }
 .panel-note > .panel-heading .badge {
-  color: #eeeeee;
+  color: #d5d5d5;
   background-color: #333333;
 }
 .panel-note > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #e2e2e2;
+  border-bottom-color: #3a3a3a;
 }
 .panel-note .panel-body {
   background-color: #fffs;
@@ -1866,7 +1902,7 @@ table.attribute-grid tr th:nth-child(3) {
 }
 .personprofilebar-bio .photo {
   padding: 5px 5px 5px 5px;
-  background-color: #f6f6f6;
+  background-color: #3a3a3a;
   border: 1px solid #bdbdbd;
   display: table;
   max-width: 200px;
@@ -1881,7 +1917,7 @@ table.attribute-grid tr th:nth-child(3) {
   width: 40px;
   height: 40px;
   z-index: 500;
-  border-top: 70px solid #428bca;
+  border-top: 70px solid #817b72;
   border-right: 70px solid transparent;
   transition: 1s;
   opacity: .4;
@@ -2250,8 +2286,8 @@ table.attribute-grid tr th:nth-child(3) {
 }
 .personprofilebar-family .actions a.btn-action {
   color: #333333;
-  background-color: #d5d5d5;
-  border-color: #c8c8c8;
+  background-color: #f6f6f6;
+  border-color: #e9e9e9;
 }
 .personprofilebar-family header {
   font-size: 16px;
@@ -2755,6 +2791,9 @@ iframe.email-body {
   margin-top: 24px;
 }
 .fee-totals .fee-totals-options {
+  text-align: right;
+}
+.amount-to-pay input {
   text-align: right;
 }
 /*
@@ -3411,6 +3450,7 @@ div.tagsinput .tags_clear {
   border-radius: 4px;
   padding: 2px 6px;
   position: relative;
+  color: #f6f6f6;
 }
 .smartsearch:focus {
   border-color: #595959;
@@ -4322,9 +4362,9 @@ ul.list-group-panel .list-group-item:first-child,
   text-align: center;
   padding-top: 8px;
   opacity: .4;
-  color: #428bca;
+  color: #333333;
   transition: 1s;
-  border-left: 1px solid #92bce0;
+  border-left: 1px solid #3a3a3a;
 }
 .panel-follow-status:before {
   font-family: FontAwesome;
@@ -4332,7 +4372,7 @@ ul.list-group-panel .list-group-item:first-child,
 }
 .panel-follow-status.following {
   opacity: 1;
-  background-color: #428bca;
+  background-color: #f6f6f6;
   color: #fff;
 }
 .panel-follow-status.following:before {
@@ -5106,22 +5146,22 @@ a.help {
   background-color: #ffffff;
 }
 .panel-persondetails {
-  border-color: #e2e2e2;
+  border-color: #3a3a3a;
 }
 .panel-persondetails > .panel-heading {
   color: #333333;
-  background-color: #eeeeee;
-  border-color: #e2e2e2;
+  background-color: #d5d5d5;
+  border-color: #c8c8c8;
 }
 .panel-persondetails > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #e2e2e2;
+  border-top-color: #3a3a3a;
 }
 .panel-persondetails > .panel-heading .badge {
-  color: #eeeeee;
+  color: #d5d5d5;
   background-color: #333333;
 }
 .panel-persondetails > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #e2e2e2;
+  border-bottom-color: #3a3a3a;
 }
 .panel-persondetails .panel-heading .actions a {
   margin-left: 4px;
@@ -5157,26 +5197,26 @@ a.help {
   cursor: pointer;
 }
 .panel-block {
-  border-color: #e2e2e2;
+  border-color: #3a3a3a;
   border-top-color: #d5d5d5;
 }
 .panel-block > .panel-heading {
   color: #333333;
-  background-color: #eeeeee;
-  border-color: #e2e2e2;
+  background-color: #d5d5d5;
+  border-color: #c8c8c8;
 }
 .panel-block > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #e2e2e2;
+  border-top-color: #3a3a3a;
 }
 .panel-block > .panel-heading .badge {
-  color: #eeeeee;
+  color: #d5d5d5;
   background-color: #333333;
 }
 .panel-block > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #e2e2e2;
+  border-bottom-color: #3a3a3a;
 }
 .panel-block > .panel-heading {
-  background-color: #eeeeee;
+  background-color: #d5d5d5;
 }
 .panel-block > .panel-heading:before,
 .panel-block > .panel-heading:after {

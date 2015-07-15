@@ -111,7 +111,6 @@ namespace Rock.Model
             target.RequestEntryName = source.RequestEntryName;
             target.SuccessText = source.SuccessText;
             target.SuccessTitle = source.SuccessTitle;
-            target.UseDefaultConfirmationEmail = source.UseDefaultConfirmationEmail;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -153,10 +153,6 @@ a.help {
     }
 }
 
-.nav-pills {
-    //margin: 10px 0; -- commented out JME 2/10/2014 to see impact
-}
-
 .control-label {
     font-weight: @font-weight-semibold;
 }
@@ -296,7 +292,7 @@ a.help {
 }
 
 .panel-persondetails {
-    .panel-variant(darken(@gray-lighter, 5%); @text-color; @gray-lighter; darken(@gray-lighter, 5%););
+    .panel-variant(@header-bg; @accent-text-color; @accent-color; darken(@accent-color, 5%););
 
     .panel-heading {
         .actions {
@@ -337,12 +333,12 @@ a.help {
 
 .panel-block {
     //.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;)
-    .panel-variant(darken(@gray-lighter, 5%); @text-color; @gray-lighter; darken(@gray-lighter, 5%););
+    .panel-variant(@header-bg; @accent-text-color; @accent-color; darken(@accent-color, 5%););
 
     border-top-color: @panel-top-border-color;
 
     > .panel-heading {
-        background-color: @gray-lighter;
+        background-color: @accent-color;
         .clearfix();
 
         .panel-title {
@@ -410,8 +406,6 @@ a.help {
         margin-bottom: 15px;
     }
 }
-
-// .panel-note {}  see _block-specific.less
 
 // extensions for buttons    ->   .button-variant(@color; @background; @border) {}
 

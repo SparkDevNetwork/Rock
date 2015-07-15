@@ -136,12 +136,25 @@ pre {
   color: @accent-light-text-color;
 }
 
+hr {
+    border-color: lighten(@text-color, 40%);
+}
+
 /*#endregion */
 
 
 /*#region
 // 3. Bootstrap Overrides    */
 // -------------------------
+
+// nav-pill hover text color
+.nav > li > a:hover, .nav > li > a:focus {
+    color: #fff;
+}
+
+.nav > li > a {
+    color: @text-color;
+}
 
 h1 small,
 h2 small,
@@ -183,7 +196,7 @@ h4, .h4 {
 
   .panel-heading {
     padding: 6px 10px;
-    border-color: darken(@gray-lighter, 5%);
+    border-color: @header-bg;
     border-radius: 0;
 
     .panel-title {
@@ -198,6 +211,7 @@ h4, .h4 {
     }
   }
 
+
   &.panel-primary {
     .panel-heading {
       background-color: @brand-primary;
@@ -206,7 +220,7 @@ h4, .h4 {
 
   &.panel-widget {
     .panel-heading {
-      background-color: @gray-lighter;
+      background-color: @accent-color;
     }
   }
 }
@@ -216,25 +230,25 @@ h4, .h4 {
 }
 
 .nav.nav-pagelist {
-  background-color: @accent-blue-light;
-  border: 1px solid darken(@accent-blue-light, 10%);
+  background-color: lighten(@accent-semibold-color, 50%);
+  border: 1px solid lighten(@accent-semibold-color, 30%);
 
   .pill-help {
     a {
-      color: @accent-blue;
+      color: @accent-semibold-color;
     }
   }
 
   .nav.nav-pills {
 
     li a:hover {
-      background-color: lighten(@accent-blue, 30%);
+      background-color: lighten(@accent-semibold-color, 30%);
     }
 
     li.active a {
-      background-color: @accent-blue;
+      background-color: @accent-semibold-color;
       color: #fff;
-      border-color: darken(@accent-blue, 5%);
+      border-color: darken(@accent-semibold-color, 5%);
     }
   }
 }
@@ -258,13 +272,31 @@ h4, .h4 {
   border-radius: 4px;
 }
 
+.photo img[src*=no-photo],
+.person-image[style*=no-photo], 
+.profile-photo[style*=no-photo] {
+    opacity: .5;
+}
+
+#cms-admin-footer {
+    border: 0;
+}
+
+.groupmembers .member .person-image {
+    border-color: @header-bg;
+}
+
+.panel-follow-status.following {
+    background-color: @header-bg;
+}
+
 // type ahead styles
 .tt-suggestion {
 
   p {
 
     &:hover {
-      background-color: @accent-blue-light;
+      background-color: @accent-semibold-color;
     }
   }
 }
@@ -320,9 +352,9 @@ h4, .h4 {
 }
 
 .personprofilebar-bio .actions a.btn-action {
-  background-color: @accent-blue;
-  color: #fff;
-  border: 1px solid darken(@accent-blue, 5%);
+  background-color: @accent-semibold-color;
+  color: @accent-semibold-text-color;
+  border: 1px solid darken(@accent-semibold-color, 5%);
 }
 
 .updateprogress-status {
@@ -375,8 +407,8 @@ h4, .h4 {
         transition: background-color 200ms linear;
 
         &:hover {
-          background-color: lighten(@accent-blue, 2%);
-          border-color: darken(@accent-blue, 5%);
+          background-color: lighten(@accent-semibold-color, 5%);
+          border-color: darken(@accent-semibold-color, 5%);
           color: #fff;
         }
 
@@ -384,8 +416,8 @@ h4, .h4 {
 
       &.active {
         a {
-          background-color: @accent-blue;
-          border-color: darken(@accent-blue, 5%);
+          background-color: @accent-semibold-color;
+          border-color: darken(@accent-semibold-color, 5%);
           color: #fff;
         }
       }
@@ -395,22 +427,22 @@ h4, .h4 {
 
 .table-hover tbody tr:hover td,
 .table-hover tbody tr:hover th {
-  background-color: #ecf2e2;
+  background-color: @grid-hover-bg;
 }
 
 // personal notes styling
 .panel-note {
   article.personal {
-    background-color: @accent-blue;
-    border-color: darken(@accent-blue, 5%);
-    color: #fff;
+    background-color: @state-info-bg;
+    border-color: @state-info-border;
+    color: @state-info-text;
   }
 }
 
 // duplicate person
 .grid-table tbody tr.duplicate-source td,
 .grid-table tbody tr.duplicate-source:hover td {
-   background-color: @accent-blue;
+   background-color: @accent-semibold-color;
    color: #fff;
 }
 
@@ -575,7 +607,15 @@ a.link-block,
     .breadcrumb {
       background: none;
       padding: 0;
-      margin: 0;
+      margin: 4px 0 0;
+
+      a {
+          color: lighten(@accent-text-color, 30%);
+
+          &:hover {
+              color: lighten(@accent-text-color, 40%);
+          }
+      }
 
       > .active {
         color: lighten(@accent-text-color, 30%);
@@ -598,6 +638,14 @@ a.link-block,
 
   footer {
     padding: 0 15px;
+
+    a {
+        color: @text-color;
+
+        &:hover {
+            color: lighten(@text-color, 20%);
+        }
+    }
   }
 }
 
@@ -735,11 +783,11 @@ body#splash {
         & .navbar-nav > .open > a,
         & .navbar-nav > .open > a:hover,
         & .navbar-nav > .open > a:focus {
-          background-color: darken(@accent-semibold-color, 5%);
+          background-color: darken(@header-bg, 5%);
         }
 
         & .navbar-nav > li > a {
-          color: @accent-semibold-text-color;
+          color: @accent-semibold-color;
         }
 
         .dropdown-menu {

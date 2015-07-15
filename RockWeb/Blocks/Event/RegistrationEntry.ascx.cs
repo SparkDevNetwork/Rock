@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Event
             {
                 if ( RegistrationTemplate != null && !string.IsNullOrWhiteSpace( RegistrationTemplate.RegistrationTerm ) )
                 {
-                    return RegistrationTemplate.RegistrantTerm;
+                    return RegistrationTemplate.RegistrationTerm;
                 }
                 return "Registration";
             }
@@ -301,7 +301,6 @@ namespace RockWeb.Blocks.Event
 
             // Reset warning/error messages
             nbMain.Visible = false;
-            pnlDupWarning.Visible = false;
 
             // register navigation event to enable support for the back button
             var sm = ScriptManager.GetCurrent( Page );
@@ -336,7 +335,7 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
-                    ShowWarning( "Sorry", string.Format( "The selected {0} could not be found or is no longer active.", RegistrationTerm ) );
+                    ShowWarning( "Sorry", string.Format( "The selected {0} could not be found or is no longer active.", RegistrationTerm.ToLower() ) );
                 }
             }
             else
@@ -767,63 +766,87 @@ namespace RockWeb.Blocks.Event
         {
             Registration registration = null;
 
-            try
+            if ( !string.IsNullOrWhiteSpace( TransactionCode ) )
             {
-
-                if ( RegistrationState != null && RegistrationState.Registrants.Any() && RegistrationTemplate != null )
+                ShowError( string.Empty, "You have already completed this " + RegistrationTerm.ToLower() );
+            }
+            else
+            {
+                try
                 {
-                    var rockContext = new RockContext();
-                    rockContext.WrapTransaction( () =>
+                    if ( RegistrationState != null && RegistrationState.Registrants.Any() && RegistrationTemplate != null )
                     {
-                        bool hasPayment = RegistrationState.PaymentAmount > 0.0m;
-                        
-                        if ( RegistrationState.RegistrationId.HasValue )
-                        {
-                            registration = new RegistrationService( rockContext ).Get( RegistrationState.RegistrationId.Value );
-                        }
-                        else
-                        {
-                            registration = SaveRegistration( rockContext, hasPayment );
-                        }
+                        var rockContext = new RockContext();
 
-                        if ( registration != null )
+                        rockContext.WrapTransaction( () =>
                         {
-                            if ( hasPayment )
+                            bool hasPayment = RegistrationState.PaymentAmount > 0.0m;
+
+                            if ( RegistrationState.RegistrationId.HasValue )
                             {
-                                string errorMessage = string.Empty;
-                                if ( !ProcessPayment( rockContext, registration, out errorMessage ) )
-                                {
-                                    registration = null;
-                                    ShowError( "An Error Occurred Processing Your " + RegistrationTerm, errorMessage );
-                                }
+                                registration = new RegistrationService( rockContext ).Get( RegistrationState.RegistrationId.Value );
+                            }
+                            else
+                            {
+                                registration = SaveRegistration( rockContext, hasPayment );
                             }
 
                             if ( registration != null )
                             {
-                                string appRoot = ResolveRockUrl( "~/" );
-                                string themeRoot = ResolveRockUrl( "~~/" );
+                                if ( hasPayment )
+                                {
+                                    string errorMessage = string.Empty;
+                                    if ( !ProcessPayment( rockContext, registration, out errorMessage ) )
+                                    {
+                                        registration = null;
+                                        throw new Exception( errorMessage );
+                                    }
+                                }
 
-                                var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
-                                confirmation.RegistrationId = registration.Id;
-                                confirmation.AppRoot = appRoot;
-                                confirmation.ThemeRoot = themeRoot;
-                                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
+                                if ( registration != null )
+                                {
+                                    string appRoot = ResolveRockUrl( "~/" );
+                                    string themeRoot = ResolveRockUrl( "~~/" );
 
-                                var notification = new Rock.Transactions.SendRegistrationNotificationTransaction();
-                                notification.RegistrationId = registration.Id;
-                                notification.AppRoot = appRoot;
-                                notification.ThemeRoot = themeRoot;
-                                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( notification );
+                                    var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
+                                    confirmation.RegistrationId = registration.Id;
+                                    confirmation.AppRoot = appRoot;
+                                    confirmation.ThemeRoot = themeRoot;
+                                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
+
+                                    var notification = new Rock.Transactions.SendRegistrationNotificationTransaction();
+                                    notification.RegistrationId = registration.Id;
+                                    notification.AppRoot = appRoot;
+                                    notification.ThemeRoot = themeRoot;
+                                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( notification );
+                                }
+                            }
+                        } );
+
+                        // Re-create State
+                        if ( registration != null )
+                        {
+                            var registrationService = new RegistrationService( rockContext );
+                            var newRegistration = registrationService
+                                .Queryable( "Registrants.PersonAlias.Person,Registrants.GroupMember,RegistrationInstance.Account,RegistrationInstance.RegistrationTemplate.Fees,RegistrationInstance.RegistrationTemplate.Discounts,RegistrationInstance.RegistrationTemplate.Forms.Fields.Attribute,RegistrationInstance.RegistrationTemplate.FinancialGateway" )
+                                .AsNoTracking()
+                                .Where( r => r.Id == registration.Id )
+                                .FirstOrDefault();
+                            if ( newRegistration != null )
+                            {
+                                RegistrationInstanceState = newRegistration.RegistrationInstance;
+                                RegistrationState = new RegistrationInfo( newRegistration, rockContext );
+                                RegistrationState.PreviousPaymentTotal = registrationService.GetTotalPayments( registration.Id );
                             }
                         }
-                    } );
 
+                    }
                 }
-            }
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
-                ShowError( "An Error Occurred Processing Your " + RegistrationTerm, ex.Message );
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
+                    ShowError( "An Error Occurred Processing Your " + RegistrationTerm, ex.Message );
+                }
             }
 
             return registration != null ? registration.Id : (int?)null;
@@ -1012,6 +1035,7 @@ namespace RockWeb.Blocks.Event
                                 {
                                     var newGender = fieldValue.ToString().ConvertToEnumOrNull<Gender>() ?? Gender.Unknown;
                                     History.EvaluateChange( changes, "Gender", person.Gender, newGender );
+                                    person.Gender = newGender;
                                     break;
                                 }
 
@@ -1342,157 +1366,149 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private bool ProcessPayment( RockContext rockContext, Registration registration, out string errorMessage )
         {
-            if ( string.IsNullOrWhiteSpace( TransactionCode ) )
+            GatewayComponent gateway = null;
+            if ( RegistrationTemplate != null && RegistrationTemplate.FinancialGateway != null )
             {
-                GatewayComponent gateway = null;
-                if ( RegistrationTemplate != null && RegistrationTemplate.FinancialGateway != null )
+                gateway = RegistrationTemplate.FinancialGateway.GetGatewayComponent();
+            }
+
+            if ( gateway == null )
+            {
+                errorMessage = "There was a problem creating the payment gateway information";
+                return false;
+            }
+
+            if ( RegistrationInstanceState.Account == null )
+            {
+                errorMessage = "There was a problem with the account configuration for this " + RegistrationTerm.ToLower();
+                return false;
+            }
+
+            var paymentInfo = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate.Value );
+            paymentInfo.NameOnCard = gateway != null && gateway.SplitNameOnCard ? txtCardFirstName.Text : txtCardName.Text;
+            paymentInfo.LastNameOnCard = txtCardLastName.Text;
+
+            paymentInfo.BillingStreet1 = acBillingAddress.Street1;
+            paymentInfo.BillingStreet2 = acBillingAddress.Street2;
+            paymentInfo.BillingCity = acBillingAddress.City;
+            paymentInfo.BillingState = acBillingAddress.State;
+            paymentInfo.BillingPostalCode = acBillingAddress.PostalCode;
+            paymentInfo.BillingCountry = acBillingAddress.Country;
+
+            paymentInfo.Amount = RegistrationState.PaymentAmount;
+            paymentInfo.Email = RegistrationState.ConfirmationEmail;
+
+            paymentInfo.FirstName = RegistrationState.YourFirstName;
+            paymentInfo.LastName = RegistrationState.YourLastName;
+
+            var transaction = gateway.Charge( RegistrationTemplate.FinancialGateway, paymentInfo, out errorMessage );
+            if ( transaction != null )
+            {
+                var txnChanges = new List<string>();
+                txnChanges.Add( "Created Transaction" );
+
+                History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
+
+                transaction.AuthorizedPersonAliasId = registration.PersonAliasId;
+
+                transaction.TransactionDateTime = RockDateTime.Now;
+                History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );
+
+                transaction.FinancialGatewayId = RegistrationTemplate.FinancialGatewayId;
+                History.EvaluateChange( txnChanges, "Gateway", string.Empty, RegistrationTemplate.FinancialGateway.Name );
+
+                var txnType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
+                transaction.TransactionTypeValueId = txnType.Id;
+                History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
+
+                transaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
+                History.EvaluateChange( txnChanges, "Currency Type", string.Empty, paymentInfo.CurrencyTypeValue.Value );
+
+                transaction.CreditCardTypeValueId = paymentInfo.CreditCardTypeValue != null ? paymentInfo.CreditCardTypeValue.Id : (int?)null;
+                if ( transaction.CreditCardTypeValueId.HasValue )
                 {
-                    gateway = RegistrationTemplate.FinancialGateway.GetGatewayComponent();
+                    var ccType = DefinedValueCache.Read( transaction.CreditCardTypeValueId.Value );
+                    History.EvaluateChange( txnChanges, "Credit Card Type", string.Empty, ccType.Value );
                 }
 
-                if ( gateway == null )
+                Guid sourceGuid = Guid.Empty;
+                if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
                 {
-                    errorMessage = "There was a problem creating the payment gateway information";
-                    return false;
-                }
-
-                if ( RegistrationInstanceState.Account == null )
-                {
-                    errorMessage = "There was a problem with the account configuration for this " + RegistrationTerm.ToLower();
-                    return false;
-                }
-
-                var paymentInfo = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate.Value );
-                paymentInfo.NameOnCard = gateway != null && gateway.SplitNameOnCard ? txtCardFirstName.Text : txtCardName.Text;
-                paymentInfo.LastNameOnCard = txtCardLastName.Text;
-
-                paymentInfo.BillingStreet1 = acBillingAddress.Street1;
-                paymentInfo.BillingStreet2 = acBillingAddress.Street2;
-                paymentInfo.BillingCity = acBillingAddress.City;
-                paymentInfo.BillingState = acBillingAddress.State;
-                paymentInfo.BillingPostalCode = acBillingAddress.PostalCode;
-                paymentInfo.BillingCountry = acBillingAddress.Country;
-
-                paymentInfo.Amount = RegistrationState.PaymentAmount;
-                paymentInfo.Email = RegistrationState.ConfirmationEmail;
-
-                paymentInfo.FirstName = RegistrationState.YourFirstName;
-                paymentInfo.LastName = RegistrationState.YourLastName;
-
-                var transaction = gateway.Charge( RegistrationTemplate.FinancialGateway, paymentInfo, out errorMessage );
-                if ( transaction != null )
-                {
-                    var txnChanges = new List<string>();
-                    txnChanges.Add( "Created Transaction" );
-
-                    History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
-
-                    transaction.AuthorizedPersonAliasId = registration.PersonAliasId;
-
-                    transaction.TransactionDateTime = RockDateTime.Now;
-                    History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );
-
-                    transaction.FinancialGatewayId = RegistrationTemplate.FinancialGatewayId;
-                    History.EvaluateChange( txnChanges, "Gateway", string.Empty, RegistrationTemplate.FinancialGateway.Name );
-
-                    var txnType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
-                    transaction.TransactionTypeValueId = txnType.Id;
-                    History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
-
-                    transaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
-                    History.EvaluateChange( txnChanges, "Currency Type", string.Empty, paymentInfo.CurrencyTypeValue.Value );
-
-                    transaction.CreditCardTypeValueId = paymentInfo.CreditCardTypeValue != null ? paymentInfo.CreditCardTypeValue.Id : (int?)null;
-                    if ( transaction.CreditCardTypeValueId.HasValue )
+                    var source = DefinedValueCache.Read( sourceGuid );
+                    if ( source != null )
                     {
-                        var ccType = DefinedValueCache.Read( transaction.CreditCardTypeValueId.Value );
-                        History.EvaluateChange( txnChanges, "Credit Card Type", string.Empty, ccType.Value );
+                        transaction.SourceTypeValueId = source.Id;
+                        History.EvaluateChange( txnChanges, "Source", string.Empty, source.Value );
                     }
-
-                    Guid sourceGuid = Guid.Empty;
-                    if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
-                    {
-                        var source = DefinedValueCache.Read( sourceGuid );
-                        if ( source != null )
-                        {
-                            transaction.SourceTypeValueId = source.Id;
-                            History.EvaluateChange( txnChanges, "Source", string.Empty, source.Value );
-                        }
-                    }
-
-                    var transactionDetail = new FinancialTransactionDetail();
-                    transactionDetail.Amount = RegistrationState.PaymentAmount;
-                    transactionDetail.AccountId = RegistrationInstanceState.AccountId;
-                    transactionDetail.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Registration ) ).Id;
-                    transactionDetail.EntityId = registration.Id;
-                    transaction.TransactionDetails.Add( transactionDetail );
-
-                    History.EvaluateChange( txnChanges, RegistrationInstanceState.Account.Name, 0.0M.ToString( "C2" ), transactionDetail.Amount.ToString( "C2" ) );
-
-                    var batchService = new FinancialBatchService( rockContext );
-
-                    // Get the batch
-                    var batch = batchService.Get(
-                        GetAttributeValue( "BatchNamePrefix" ),
-                        paymentInfo.CurrencyTypeValue,
-                        paymentInfo.CreditCardTypeValue,
-                        transaction.TransactionDateTime.Value,
-                        RegistrationTemplate.FinancialGateway.GetBatchTimeOffset() );
-
-                    var batchChanges = new List<string>();
-
-                    if ( batch.Id == 0 )
-                    {
-                        batchChanges.Add( "Generated the batch" );
-                        History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
-                        History.EvaluateChange( batchChanges, "Status", null, batch.Status );
-                        History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
-                        History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
-                    }
-
-                    decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-                    History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.ToString( "C2" ), newControlAmount.ToString( "C2" ) );
-                    batch.ControlAmount = newControlAmount;
-
-                    transaction.BatchId = batch.Id;
-                    batch.Transactions.Add( transaction );
-
-                    rockContext.SaveChanges();
-
-                    HistoryService.SaveChanges(
-                        rockContext,
-                        typeof( FinancialBatch ),
-                        Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
-                        batch.Id,
-                        batchChanges
-                    );
-
-                    HistoryService.SaveChanges(
-                        rockContext,
-                        typeof( FinancialBatch ),
-                        Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
-                        batch.Id,
-                        txnChanges,
-                        CurrentPerson != null ? CurrentPerson.FullName : string.Empty,
-                        typeof( FinancialTransaction ),
-                        transaction.Id
-                    );
-
-                    TransactionCode = transaction.TransactionCode;
-
-                    return true;
                 }
-                else
+
+                var transactionDetail = new FinancialTransactionDetail();
+                transactionDetail.Amount = RegistrationState.PaymentAmount;
+                transactionDetail.AccountId = RegistrationInstanceState.AccountId;
+                transactionDetail.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Registration ) ).Id;
+                transactionDetail.EntityId = registration.Id;
+                transaction.TransactionDetails.Add( transactionDetail );
+
+                History.EvaluateChange( txnChanges, RegistrationInstanceState.Account.Name, 0.0M.ToString( "C2" ), transactionDetail.Amount.ToString( "C2" ) );
+
+                var batchService = new FinancialBatchService( rockContext );
+
+                // Get the batch
+                var batch = batchService.Get(
+                    GetAttributeValue( "BatchNamePrefix" ),
+                    paymentInfo.CurrencyTypeValue,
+                    paymentInfo.CreditCardTypeValue,
+                    transaction.TransactionDateTime.Value,
+                    RegistrationTemplate.FinancialGateway.GetBatchTimeOffset() );
+
+                var batchChanges = new List<string>();
+
+                if ( batch.Id == 0 )
                 {
-                    return false;
+                    batchChanges.Add( "Generated the batch" );
+                    History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
+                    History.EvaluateChange( batchChanges, "Status", null, batch.Status );
+                    History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
+                    History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
                 }
+
+                decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
+                History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.ToString( "C2" ), newControlAmount.ToString( "C2" ) );
+                batch.ControlAmount = newControlAmount;
+
+                transaction.BatchId = batch.Id;
+                batch.Transactions.Add( transaction );
+
+                rockContext.SaveChanges();
+
+                HistoryService.SaveChanges(
+                    rockContext,
+                    typeof( FinancialBatch ),
+                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                    batch.Id,
+                    batchChanges
+                );
+
+                HistoryService.SaveChanges(
+                    rockContext,
+                    typeof( FinancialBatch ),
+                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                    batch.Id,
+                    txnChanges,
+                    CurrentPerson != null ? CurrentPerson.FullName : string.Empty,
+                    typeof( FinancialTransaction ),
+                    transaction.Id
+                );
+
+                TransactionCode = transaction.TransactionCode;
+
+                return true;
             }
             else
             {
-                pnlDupWarning.Visible = true;
-                errorMessage = string.Empty;
                 return false;
             }
+
         }
 
         #endregion
@@ -1954,6 +1970,7 @@ namespace RockWeb.Blocks.Event
                         acAddress.UseStateAbbreviation = true;
                         acAddress.UseCountryAbbreviation = false;
                         acAddress.Required = field.IsRequired;
+                        acAddress.ValidationGroup = BlockValidationGroup;
 
                         phRegistrantControls.Controls.Add( acAddress );
 
@@ -1989,6 +2006,7 @@ namespace RockWeb.Blocks.Event
                         bpBirthday.ID = "bpBirthday";
                         bpBirthday.Label = "Birthday";
                         bpBirthday.Required = field.IsRequired;
+                        bpBirthday.ValidationGroup = BlockValidationGroup;
                         phRegistrantControls.Controls.Add( bpBirthday );
 
                         if ( setValue && fieldValue != null )

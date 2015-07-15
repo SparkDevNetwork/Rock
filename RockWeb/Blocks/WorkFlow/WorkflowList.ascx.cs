@@ -258,12 +258,12 @@ namespace RockWeb.Blocks.WorkFlow
         {
             gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Activated" ), "Activated", drpActivated.DelimitedValues );
             gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Completed" ), "Completed", drpCompleted.DelimitedValues );
-            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Name" ), "Name",  tbName.Text );
+            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Name" ), "Name", tbName.Text );
             gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Status" ), "Status", tbStatus.Text );
             gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "State" ), "State", GetState() );
 
             int? personId = ppInitiator.SelectedValue;
-            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Initiator" ), "Initiator",  personId.HasValue ? personId.Value.ToString() : "" );
+            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Initiator" ), "Initiator", personId.HasValue ? personId.Value.ToString() : "" );
 
             if ( AvailableAttributes != null )
             {
