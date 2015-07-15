@@ -40,6 +40,74 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of the given registration template." )]
 
+    [CodeEditorField( "Default Confirmation Email", "The default Confirmation Email Template value to use for a new template", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"
+{{ 'Global' | Attribute:'EmailHeader' }}
+{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
+{% assign registrantCount = Registration.Registrants | Size %}
+
+<h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Confirmation: {{ RegistrationInstance.Name }}</h1>
+
+<p>
+    The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+    {% if registrantCount > 1 %}have{% else %}has{% endif %} been registered for {{ RegistrationInstance.Name }}:
+</p>
+
+<ul>
+{% for registrant in Registration.Registrants %}
+    <li>
+    
+        {{ registrant.PersonAlias.Person.FullName }}
+        
+        {% if registrant.Cost > 0 %}
+            - {{ currencySymbol }}{{ registrant.Cost | Format'#,##0.00' }}
+        {% endif %}
+        
+        {% assign feeCount = registrant.Fees | Size %}
+        {% if feeCount > 0 %}
+            <br/>{{ RegistrationInstance.RegistrationTemplate.FeeTerm | PluralizeForQuantity:registrantCount }}:
+            <ul>
+            {% for fee in registrant.Fees %}
+                <li>
+                    {{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
+                    {% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ currencySymbol }}{{ fee.Cost | Format'#,##0.00' }}){% endif %}: {{ currencySymbol }}{{ fee.TotalCost | Format'#,##0.00' }}
+                </li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+
+    </li>
+{% endfor %}
+</ul>
+
+{% if Registration.TotalCost > 0 %}
+<p>
+    Total Due: {{ currencySymbol }}{{ Registration.TotalCost | Format'#,##0.00' }}<br/>
+    {% for payment in Registration.Payments %}
+        Paid {{ currencySymbol }}{{ payment.Amount | Format'#,##0.00' }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }} <small>(Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
+    {% endfor %}
+    
+    {% assign paymentCount = Registration.Payments | Size %}
+    
+    {% if paymentCount > 1 %}
+        Total Paid: {{ currencySymbol }}{{ Registration.TotalPaid | Format'#,##0.00' }}<br/>
+    {% endif %}
+    
+    Balance Due: {{ currencySymbol }}{{ Registration.BalanceDue | Format'#,##0.00' }}
+</p>
+{% endif %}
+
+{{ RegistrationInstance.AdditionalConfirmationDetails }}
+
+<p>
+    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+</p>
+
+{{ 'Global' | Attribute:'EmailFooter' }}
+", "", 0 )]
+
+    [CodeEditorField( "Default Reminder Email", "The default Reminder Email Template value to use for a new template", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"
+", "", 1 )]
+
     [CodeEditorField( "Default Success Text", "The success text default to use for a new template", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% assign registrantCount = Registration.Registrants | Size %}
@@ -49,11 +117,11 @@ namespace RockWeb.Blocks.Event
     for {{ RegistrationInstance.Name }}:
 </p>
 
-<ul class='list-unstyled'>
+<ul>
 {% for registrant in Registration.Registrants %}
     <li>
     
-        {{ registrant.PersonAlias.Person.FullName }}
+        <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
         
         {% if registrant.Cost > 0 %}
             - {{ currencySymbol }}{{ registrant.Cost | Format'#,##0.00' }}
@@ -80,9 +148,13 @@ namespace RockWeb.Blocks.Event
 <p>
     Total Due: {{ currencySymbol }}{{ Registration.TotalCost | Format''#,##0.00'' }}<br/>
     {% for payment in Registration.Payments %}
-        Paid {{ currencySymbol }}{{ payment.Amount | Format''#,##0.00'' }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }} (Txn: {{ payment.Transaction.TransactionCode }})<br/>
+        Paid {{ currencySymbol }}{{ payment.Amount | Format''#,##0.00'' }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }} 
+        <small>(Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
     {% endfor %}
-    Total Paid: {{ currencySymbol }}{{ Registration.TotalPaid | Format''#,##0.00'' }}<br/>
+    {% assign paymentCount = Registration.Payments | Size %}
+    {% if paymentCount > 1 %}
+        Total Paid: {{ currencySymbol }}{{ Registration.TotalPaid | Format''#,##0.00'' }}<br/>
+    {% endif %}
     Balance Due: {{ currencySymbol }}{{ Registration.BalanceDue | Format''#,##0.00'' }}
 </p>
 {% endif %}
@@ -91,7 +163,7 @@ namespace RockWeb.Blocks.Event
     A confirmation email has been sent to {{ Registration.ConfirmationEmail }}. If you have any questions 
     please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
-", "", 0 )]
+", "", 2 )]
     public partial class RegistrationTemplateDetail : RockBlock
     {
 
@@ -472,9 +544,15 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimal();
             RegistrationTemplate.FinancialGatewayId = fgpFinancialGateway.SelectedValueAsInt();
 
-            RegistrationTemplate.ReminderEmailTemplate = ceReminderEmailTemplate.Text;
-            RegistrationTemplate.UseDefaultConfirmationEmail = cbUserDefaultConfirmation.Checked;
+            RegistrationTemplate.ConfirmationFromName = tbConfirmationFromName.Text;
+            RegistrationTemplate.ConfirmationFromEmail = tbConfirmationFromEmail.Text;
+            RegistrationTemplate.ConfirmationSubject = tbConfirmationSubject.Text;
             RegistrationTemplate.ConfirmationEmailTemplate = ceConfirmationEmailTemplate.Text;
+
+            RegistrationTemplate.ReminderFromName = tbReminderFromName.Text;
+            RegistrationTemplate.ReminderFromEmail = tbReminderFromEmail.Text;
+            RegistrationTemplate.ReminderSubject = tbReminderSubject.Text;
+            RegistrationTemplate.ReminderEmailTemplate = ceReminderEmailTemplate.Text;
 
             RegistrationTemplate.RegistrationTerm = string.IsNullOrWhiteSpace( tbRegistrationTerm.Text ) ? "Registration" : tbRegistrationTerm.Text;
             RegistrationTemplate.RegistrantTerm = string.IsNullOrWhiteSpace( tbRegistrantTerm.Text ) ? "Person" : tbRegistrantTerm.Text;
@@ -1439,24 +1517,6 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
-        #region Communications Events
-
-        /// <summary>
-        /// Handles the CheckedChanged event of the cbUserDefaultConfirmation control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void cbUserDefaultConfirmation_CheckedChanged( object sender, EventArgs e )
-        {
-            ParseControls();
-
-            ceConfirmationEmailTemplate.Visible = !cbUserDefaultConfirmation.Checked;
-
-            BuildControls();
-        }
-
-        #endregion        
-        
         #endregion
 
         #region Methods
@@ -1514,7 +1574,14 @@ namespace RockWeb.Blocks.Event
                 registrationTemplate.Id = 0;
                 registrationTemplate.IsActive = true;
                 registrationTemplate.CategoryId = parentCategoryId;
-                registrationTemplate.UseDefaultConfirmationEmail = true;
+                registrationTemplate.ConfirmationFromName = "{{ RegistrationInstance.ContactName }}";
+                registrationTemplate.ConfirmationFromEmail = "{{ RegistrationInstance.ContactEmail }}";
+                registrationTemplate.ConfirmationSubject = "{{ RegistrationInstance.Name }} Confirmation";
+                registrationTemplate.ConfirmationEmailTemplate = GetAttributeValue( "DefaultConfirmationEmail" );
+                registrationTemplate.ReminderFromName = "{{ RegistrationInstance.ContactName }}";
+                registrationTemplate.ReminderFromEmail = "{{ RegistrationInstance.ContactEmail }}";
+                registrationTemplate.ReminderSubject = "{{ RegistrationInstance.Name }} Reminder";
+                registrationTemplate.ReminderEmailTemplate = GetAttributeValue( "DefaultReminderEmail" );
                 registrationTemplate.Notify = RegistrationNotify.None;
                 registrationTemplate.SuccessTitle = "Congratulations {{ Registration.FirstName }}";
                 registrationTemplate.SuccessText = GetAttributeValue( "DefaultSuccessText" );
@@ -1678,10 +1745,15 @@ namespace RockWeb.Blocks.Event
             cbMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.ToString();
             fgpFinancialGateway.SetValue( RegistrationTemplate.FinancialGatewayId );
 
-            ceReminderEmailTemplate.Text = RegistrationTemplate.ReminderEmailTemplate;
-            cbUserDefaultConfirmation.Checked = RegistrationTemplate.UseDefaultConfirmationEmail;
-            ceConfirmationEmailTemplate.Visible = !cbUserDefaultConfirmation.Checked;
+            tbConfirmationFromName.Text = RegistrationTemplate.ConfirmationFromName;
+            tbConfirmationFromEmail.Text = RegistrationTemplate.ConfirmationFromEmail;
+            tbConfirmationSubject.Text = RegistrationTemplate.ConfirmationSubject;
             ceConfirmationEmailTemplate.Text = RegistrationTemplate.ConfirmationEmailTemplate;
+
+            tbReminderFromName.Text = RegistrationTemplate.ReminderFromName;
+            tbReminderFromEmail.Text = RegistrationTemplate.ReminderFromEmail;
+            tbReminderSubject.Text = RegistrationTemplate.ReminderSubject;
+            ceReminderEmailTemplate.Text = RegistrationTemplate.ReminderEmailTemplate;
 
             tbRegistrationTerm.Text = RegistrationTemplate.RegistrationTerm;
             tbRegistrantTerm.Text = RegistrationTemplate.RegistrantTerm;

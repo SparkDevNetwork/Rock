@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of a given calendar item at a campus." )]
 
+    [AccountField( "Default Account", "The default account to use for new registration instances", false, "2A6F9E5F-6859-44F1-AB0E-CE9CF6B08EE5", "", 0 )]
     public partial class CalendarItemCampusDetail : RockBlock, IDetailBlock
     {
         #region Properties
@@ -439,6 +440,7 @@ namespace RockWeb.Blocks.Event
                 if ( LinkageState.RegistrationInstance == null )
                 {
                     LinkageState.RegistrationInstance = new RegistrationInstance();
+                    LinkageState.RegistrationInstance.IsActive = true;
                 }
 
                 LinkageState.RegistrationInstance.RegistrationTemplateId = registrationTemplateId.Value;
@@ -825,6 +827,14 @@ namespace RockWeb.Blocks.Event
                     {
                         rieNewLinkage.ContactEmail = tbEmail.Text;
                     }
+
+                    Guid? accountGuid = GetAttributeValue( "DefaultAccount" ).AsGuidOrNull();
+                    if ( accountGuid.HasValue )
+                    {
+                        var account = new FinancialAccountService( rockContext ).Get( accountGuid.Value );
+                        rieNewLinkage.AccountId = account != null ? account.Id : 0;
+                    }
+
                 }
 
                 tbExistingLinkageUrlSlug.Text = LinkageState.UrlSlug;

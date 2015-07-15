@@ -130,10 +130,38 @@
                         </Rock:Grid>
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="wpCommunications" runat="server" Title="Communications">
-                        <Rock:CodeEditor ID="ceReminderEmailTemplate" runat="server" Label="Reminder Email Template" EditorMode="Liquid" EditorTheme="Rock" EditorHeight="300" />
-                        <Rock:RockCheckBox ID="cbUserDefaultConfirmation" runat="server" Label="Use Default Confirmation Email" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbUserDefaultConfirmation_CheckedChanged" />
-                        <Rock:CodeEditor ID="ceConfirmationEmailTemplate" runat="server" Label="Confirmation Email Template" EditorMode="Liquid" EditorTheme="Rock" EditorHeight="300" Visible="false" />
+                    <Rock:PanelWidget ID="wpConfirmation" runat="server" Title="Confirmation Email">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbConfirmationFromName" runat="server" Label="From Name" />
+                                <Rock:RockTextBox ID="tbConfirmationFromEmail" runat="server" Label="From Email" />
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:RockTextBox ID="tbConfirmationSubject" runat="server" Label="Subject" />
+                                <Rock:CodeEditor ID="ceConfirmationEmailTemplate" runat="server" Label="Confirmation Email Template" EditorMode="Liquid" EditorTheme="Rock" EditorHeight="300" />
+                            </div>
+                        </div>
+                    </Rock:PanelWidget>
+
+                    <Rock:PanelWidget ID="wpReminder" runat="server" Title="Reminder Email">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbReminderFromName" runat="server" Label="From Name" />
+                                <Rock:RockTextBox ID="tbReminderFromEmail" runat="server" Label="From Email" />
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:RockTextBox ID="tbReminderSubject" runat="server" Label="Subject" />
+                                <Rock:CodeEditor ID="ceReminderEmailTemplate" runat="server" Label="Reminder Email Template" EditorMode="Liquid" EditorTheme="Rock" EditorHeight="300" />
+                            </div>
+                        </div>
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="wpTerms" runat="server" Title="Terms/Text">

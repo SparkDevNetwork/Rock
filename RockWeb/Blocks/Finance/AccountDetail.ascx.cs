@@ -79,7 +79,9 @@ namespace RockWeb.Blocks.Finance
 
             account.Name = tbName.Text;
             account.IsActive = cbIsActive.Checked;
+            account.IsPublic = cbIsPublic.Checked;
             account.Description = tbDescription.Text;
+            account.PublicDescription = cePublicDescription.Text;
 
             account.ParentAccountId = apParentAccount.SelectedValueAsInt();
             account.AccountTypeValueId = ddlAccountType.SelectedValueAsInt();
@@ -175,7 +177,9 @@ namespace RockWeb.Blocks.Finance
 
             tbName.Text = account.Name;
             cbIsActive.Checked = account.IsActive;
+            cbIsPublic.Checked = account.IsPublic.HasValue ? account.IsPublic.Value : false;
             tbDescription.Text = account.Description;
+            cePublicDescription.Text = account.PublicDescription;
 
             apParentAccount.SetValue( account.ParentAccount );
             ddlAccountType.SetValue( account.AccountTypeValueId );
