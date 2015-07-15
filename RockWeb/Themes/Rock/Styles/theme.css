@@ -790,7 +790,7 @@ a.aspNetDisabled {
   vertical-align: super;
 }
 dl:not(.dl-horizontal) dt {
-  font-weight: 700;
+  font-weight: 900;
   margin-top: 16px;
   margin-bottom: 2px;
 }
@@ -5030,7 +5030,7 @@ a.help {
   text-decoration: underline;
 }
 .control-label {
-  font-weight: 700;
+  font-weight: 900;
 }
 .badge-danger {
   background-color: #bb5454;
@@ -5860,7 +5860,7 @@ h4,
   border-radius: 0;
 }
 .panel .panel-heading .panel-title {
-  font-weight: 300;
+  font-weight: 700;
   letter-spacing: -0.5px;
   font-size: 18px;
   margin: 0 12px 4px 0;
