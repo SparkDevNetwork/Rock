@@ -171,19 +171,30 @@ namespace RockWeb
                         ServiceJobService jobService = new ServiceJobService( rockContext );
                         foreach ( ServiceJob job in jobService.GetActiveJobs().ToList() )
                         {
-                            try
+                            const string errorLoadingStatus = "Error Loading Job";
+                            try  
                             {
                                 IJobDetail jobDetail = jobService.BuildQuartzJob( job );
                                 ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
 
                                 sched.ScheduleJob( jobDetail, jobTrigger );
+
+                                if ( job.LastStatus == errorLoadingStatus )
+                                {
+                                    job.LastStatusMessage = string.Empty;
+                                    job.LastStatus = string.Empty;
+                                    rockContext.SaveChanges();
+                                }
                             }
                             catch ( Exception ex )
                             {
+                                // log the error
+                                LogError( ex, null );
+
                                 // create a friendly error message
                                 string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assembly, ex.Message );
                                 job.LastStatusMessage = message;
-                                job.LastStatus = "Error Loading Job";
+                                job.LastStatus = errorLoadingStatus;
                                 rockContext.SaveChanges();
                             }
                         }
