@@ -58,7 +58,7 @@ namespace Rock.Model
             // build the type object, will depend if the class is in an assembly or the App_Code folder
             Type type = null;
             
-            if ( !string.IsNullOrWhiteSpace(job.Assembly) )
+            if ( string.IsNullOrWhiteSpace(job.Assembly) )
             {
                 // first, if no assembly is known, look in all the dlls for it
                 type = Rock.Reflection.FindType( typeof( Quartz.IJob ), job.Class );
