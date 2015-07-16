@@ -795,6 +795,15 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="ListChangedEventArgs"/> instance containing the event data.</param>
         protected void bindingList_ListChanged( object sender, ListChangedEventArgs e )
         {
+            var transactions = grdBatchItems.DataContext as BindingList<FinancialTransaction>;
+            if ( transactions != null )
+            {
+                foreach ( var transaction in transactions.Where( a => a.CurrencyTypeValue == null ) )
+                {
+                    transaction.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.CurrencyTypeValueId );
+                }
+            }
+
             DisplayTransactionCount();
         }
 
@@ -812,23 +821,6 @@ namespace Rock.Apps.CheckScannerUtility
             else
             {
                 lblCount.Content = "count";
-            }
-        }
-
-        /// <summary>
-        /// Handles the LoadingRow event of the grdBatchItems control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="DataGridRowEventArgs"/> instance containing the event data.</param>
-        private void grdBatchItems_LoadingRow( object sender, DataGridRowEventArgs e )
-        {
-            FinancialTransaction financialTransaction = e.Row.Item as FinancialTransaction;
-            if ( financialTransaction != null )
-            {
-                if ( financialTransaction.CurrencyTypeValue == null )
-                {
-                    financialTransaction.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == financialTransaction.CurrencyTypeValueId );
-                }
             }
         }
 

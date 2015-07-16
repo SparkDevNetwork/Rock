@@ -83,14 +83,10 @@ namespace Rock.Apps.CheckScannerUtility
 
             if ( scannedDocInfo.BadMicr )
             {
-                if ( string.IsNullOrWhiteSpace( scannedDocInfo.AccountNumber ) )
-                {
-                    lblScanCheckWarningBadMicr.Content = "WARNING: Check account information not found. Try scanning again with the check facing the other direction.";
-                }
-                else
-                {
-                    lblScanCheckWarningBadMicr.Content = "WARNING: Check account information is invalid. Try scanning again.";
-                }
+                lblScanCheckWarningBadMicr.Content = @"Unable to read check information
+    Click 'Upload' to upload the check as-is.
+    Click 'Skip' to reject this and continue scanning.
+    Click 'Stop' to reject this and stop scanning.";
             }
 
             if ( scannedDocInfo.Upload && IsDuplicateScan( scannedDocInfo ) )
@@ -275,16 +271,19 @@ namespace Rock.Apps.CheckScannerUtility
 
             bool scanningChecks = RockConfig.Load().TenderTypeValueGuid.AsGuid() == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
             lblScanBackInstructions.Content = string.Format( "Insert the {0} again facing the other direction to get an image of the back.", scanningChecks ? "check" : "item" );
+            lblScanBackInstructions.Visibility = Visibility.Collapsed;
             if ( RockConfig.Load().ScannerInterfaceType == RockConfig.InterfaceType.MICRImageRS232 )
             {
                 lblStartupInfo.Content = string.Format( "Ready to scan next {0}.", scanningChecks ? "check" : "item" );
                 btnStart.Visibility = Visibility.Hidden;
+                btnStopAndRetry.Visibility = Visibility.Collapsed;
                 btnStopScanning.Visibility = Visibility.Hidden;
             }
             else
             {
                 btnStart.Visibility = Visibility.Visible;
                 btnStopScanning.Visibility = Visibility.Visible;
+                btnStopAndRetry.Visibility = Visibility.Visible;
                 lblStartupInfo.Content = "Click Start to begin";
             }
         }
@@ -363,6 +362,15 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The e.</param>
         public void rangerScanner_TransportSetItemOutput( object sender, AxRANGERLib._DRangerEvents_TransportSetItemOutputEvent e )
         {
+            var currentPage = Application.Current.MainWindow.Content;
+
+            if ( currentPage != this )
+            {
+                // only accept scans when the scanning page is showing
+                batchPage.micrImage.ClearBuffer();
+                return;
+            }
+            
             try
             {
                 lblStartupInfo.Visibility = Visibility.Collapsed;
