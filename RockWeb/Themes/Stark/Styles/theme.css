@@ -5234,6 +5234,9 @@ a.help {
 .panel-block > .panel-heading .panel-title i {
   color: #6a6a6a;
 }
+.panel-block .list-group-item {
+  background-color: transparent;
+}
 .panel-block .panel-body .grid.grid-panel {
   margin: -15px;
 }
