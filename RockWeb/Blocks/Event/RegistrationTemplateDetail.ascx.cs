@@ -2229,7 +2229,7 @@ namespace RockWeb.Blocks.Event
 
             hfDiscountGuid.Value = discount.Guid.ToString();
             tbDiscountCode.Text = discount.Code;
-            nbDiscountPercentage.Text = ( discount.DiscountPercentage * 100.0m ).ToString();
+            nbDiscountPercentage.Text = ( discount.DiscountPercentage * 100.0m ).ToString( "N0" );
             cbDiscountAmount.Text = discount.DiscountAmount.ToString();
 
             if ( discount.DiscountAmount > 0 )

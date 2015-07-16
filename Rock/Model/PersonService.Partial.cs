@@ -1026,9 +1026,13 @@ namespace Rock.Model
         /// <returns></returns>
         public PhoneNumber GetPhoneNumber( Person person, Rock.Web.Cache.DefinedValueCache phoneType )
         {
-            return new PhoneNumberService( (RockContext)this.Context ).Queryable()
-                .Where( n => n.PersonId == person.Id && n.NumberTypeValueId == phoneType.Id )
-                .FirstOrDefault();
+            if ( person != null )
+            {
+                return new PhoneNumberService( (RockContext)this.Context ).Queryable()
+                    .Where( n => n.PersonId == person.Id && n.NumberTypeValueId == phoneType.Id )
+                    .FirstOrDefault();
+            }
+            return null;
         }
 
         #endregion
