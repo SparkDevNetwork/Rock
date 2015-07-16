@@ -1,6 +1,6 @@
 ﻿var Ooyala = function () {
     var loadStyles = function () {
-        var relPath = '../plugins/cc_newspring/Video/Styles/styles.css';
+        var relPath = '../plugins/cc_newspring/Blocks/Video/Styles/styles.css';
         var styleLink = $('<link>').attr('rel', 'stylesheet').attr('href', relPath);
         $('head').append(styleLink);
     };
