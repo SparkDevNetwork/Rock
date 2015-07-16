@@ -13,14 +13,14 @@
       <h2 class="panel-title pull-left">
         {{ event.Event.Name }}
       </h2>
-      <div class="panel-heading pull-right">
+      <div class="pull-right">
         {% if event.DetailPage != null %}
         <a href="{{ event.DetailPage }}">
           <i> View page -> </i>
         </a>
 		{% else %}
 		<a href="{{ DetailsPage }}?EventId={{ event.Event.Id }}">
-          <i> View page -> </i>
+            Event Details <i class="fa fa-chevron-right"></i>
         </a>
         {% endif %}
       </div>
@@ -52,10 +52,10 @@
       </div>
       <div class="col-md-4">
         <div class="row">
-          <b>Description</b>
+          <b>Summary</b>
         </div>
         <div class="row">
-          {{event.Description}}
+          {{event.Summary}}
         </div>
       </div>
     </div>
