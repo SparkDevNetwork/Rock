@@ -113,8 +113,12 @@ namespace RockWeb.Blocks.Connection
                     gConnectionOpportunities.Actions.AddClick += gConnectionOpportunities_AddClick;
                     gConnectionOpportunities.GridRebind += gConnectionOpportunities_GridRebind;
                     gConnectionOpportunities.ExportFilename = _connectionType.Name;
-                    gConnectionOpportunities.Actions.ShowAdd = _canEdit;
-                    gConnectionOpportunities.IsDeleteEnabled = _canEdit;
+                    if ( _canEdit )
+                    {
+                        gConnectionOpportunities.Actions.ShowAdd = _canEdit;
+                        gConnectionOpportunities.IsDeleteEnabled = _canEdit;
+                    }
+
                 }
             }
         }
@@ -247,7 +251,6 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
             }
-
             BindConnectionOpportunitiesGrid();
         }
 
@@ -351,20 +354,6 @@ namespace RockWeb.Blocks.Connection
                 gConnectionOpportunities.Columns.Remove( column );
             }
 
-            // Remove Active column
-            foreach ( var column in gConnectionOpportunities.Columns.OfType<BoundField>()
-                .Where( c => c.DataField == "Active" )
-                .ToList() )
-            {
-                gConnectionOpportunities.Columns.Remove( column );
-            }
-
-            // Remove Delete column
-            foreach ( var column in gConnectionOpportunities.Columns.OfType<DeleteField>().ToList() )
-            {
-                gConnectionOpportunities.Columns.Remove( column );
-            }
-
             if ( AvailableAttributes != null )
             {
                 foreach ( var attribute in AvailableAttributes )
@@ -418,22 +407,6 @@ namespace RockWeb.Blocks.Connection
                         gConnectionOpportunities.Columns.Add( boundField );
                     }
                 }
-            }
-
-            // Add IsActive column
-            var activeField = new BoundField();
-            activeField.DataField = "Active";
-            activeField.SortExpression = "Active";
-            activeField.HeaderText = "Active";
-            activeField.HtmlEncode = false;
-            gConnectionOpportunities.Columns.Add( activeField );
-
-            // Add delete column
-            if ( _canEdit )
-            {
-                var deleteField = new DeleteField();
-                gConnectionOpportunities.Columns.Add( deleteField );
-                deleteField.Click += DeleteConnectionOpportunity_Click;
             }
         }
 
@@ -496,7 +469,7 @@ namespace RockWeb.Blocks.Connection
                 }
                 else
                 {
-                    connectionOpportunities = qry.ToList().OrderByDescending( a => a.Name).ToList();
+                    connectionOpportunities = qry.ToList().OrderByDescending( a => a.Name ).ToList();
                 }
 
                 gConnectionOpportunities.ObjectList = new Dictionary<string, object>();
