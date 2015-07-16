@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Rock.Model;
@@ -38,14 +39,6 @@ namespace Rock.Apps.CheckScannerUtility
         /// The batch page.
         /// </value>
         public BatchPage batchPage { get; private set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [expecting mag tek back scan].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [expecting mag tek back scan]; otherwise, <c>false</c>.
-        /// </value>
-        public bool ExpectingMagTekBackScan { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScanningPage"/> class.
@@ -86,30 +79,7 @@ namespace Rock.Apps.CheckScannerUtility
 
             DisplayScannedDocInfo( scannedDocInfo );
 
-            ExpectingMagTekBackScan = false;
-
             var rockConfig = RockConfig.Load();
-
-            // If we have the front image and valid routing number, but not the back (and it's a MagTek).  Inform them to scan the back;
-            if ( rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.MICRImageRS232 )
-            {
-                if ( ( imgFront.Source != null ) && ( imgBack.Source == null ) )
-                {
-                    if ( rockConfig.PromptToScanRearImage )
-                    {
-                        if ( scannedDocInfo.IsCheck && ( scannedDocInfo.RoutingNumber.Length != 9 || string.IsNullOrWhiteSpace( scannedDocInfo.AccountNumber ) ) )
-                        {
-                            ExpectingMagTekBackScan = false;
-                            lblScanInstructions.Content = "Ready to re-scan check";
-                        }
-                        else
-                        {
-                            ExpectingMagTekBackScan = true;
-                            lblScanInstructions.Content = string.Format( "Insert the {0} again facing the other direction to get an image of the back.", scannedDocInfo.IsCheck ? "check" : "item" );
-                        }
-                    }
-                }
-            }
 
             if ( scannedDocInfo.BadMicr )
             {
@@ -123,7 +93,7 @@ namespace Rock.Apps.CheckScannerUtility
                 }
             }
 
-            if ( IsDuplicateScan( scannedDocInfo ) )
+            if ( scannedDocInfo.Upload && IsDuplicateScan( scannedDocInfo ) )
             {
                 scannedDocInfo.Duplicate = true;
                 scannedDocInfo.Upload = false;
@@ -186,6 +156,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         private void ShowUploadWarnings( ScannedDocInfo scannedDocInfo )
         {
+            var rockConfig = RockConfig.Load();
             ConfirmUploadBadScannedDoc = scannedDocInfo;
             lblScanCheckWarningDuplicate.Visibility = scannedDocInfo.Duplicate ? Visibility.Visible : Visibility.Collapsed;
             lblScanCheckWarningBadMicr.Visibility = scannedDocInfo.BadMicr ? Visibility.Visible : Visibility.Collapsed;
@@ -297,20 +268,24 @@ namespace Rock.Apps.CheckScannerUtility
             HideUploadWarningPrompts();
             lblExceptions.Visibility = Visibility.Collapsed;
             lblStartupInfo.Visibility = Visibility.Visible;
-            ExpectingMagTekBackScan = false;
 
             ScannedDocInfo sampleDocInfo = new ScannedDocInfo();
             sampleDocInfo.CurrencyTypeValue = batchPage.CurrencyValueList.FirstOrDefault( a => a.Guid == RockConfig.Load().SourceTypeValueGuid.AsGuid() );
             DisplayScannedDocInfo( sampleDocInfo );
 
             bool scanningChecks = RockConfig.Load().TenderTypeValueGuid.AsGuid() == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            lblScanBackInstructions.Content = string.Format( "Insert the {0} again facing the other direction to get an image of the back.", scanningChecks ? "check" : "item" );
             if ( RockConfig.Load().ScannerInterfaceType == RockConfig.InterfaceType.MICRImageRS232 )
             {
-                lblScanInstructions.Content = string.Format( "Ready to scan next {0}.", scanningChecks ? "check" : "item" );
+                lblStartupInfo.Content = string.Format( "Ready to scan next {0}.", scanningChecks ? "check" : "item" );
+                btnStart.Visibility = Visibility.Hidden;
+                btnStopScanning.Visibility = Visibility.Hidden;
             }
             else
             {
-                lblScanInstructions.Content = string.Format( "Insert {0} into the scanner, then click Start to continue.", scanningChecks ? "a check" : "an item" );
+                btnStart.Visibility = Visibility.Visible;
+                btnStopScanning.Visibility = Visibility.Visible;
+                lblStartupInfo.Content = "Click Start to begin";
             }
         }
 
@@ -331,9 +306,6 @@ namespace Rock.Apps.CheckScannerUtility
                 case XportStates.TransportFeeding:
                     btnStart.IsEnabled = false;
                     btnStopScanning.IsEnabled = true;
-
-                    lblScanInstructions.Visibility = Visibility.Hidden;
-
                     btnClose.Visibility = Visibility.Hidden;
                     break;
             }
@@ -341,6 +313,8 @@ namespace Rock.Apps.CheckScannerUtility
             this.shapeStatus.ToolTip = statusText;
             this.shapeStatus.Fill = new System.Windows.Media.SolidColorBrush( statusColor );
         }
+
+        #region Ranger (Canon CR50/80) Scanner Events
 
         /// <summary>
         /// Rangers the scanner_ transport item suspended.
@@ -381,6 +355,283 @@ namespace Rock.Apps.CheckScannerUtility
         {
             System.Diagnostics.Debug.WriteLine( "rangerScanner_TransportFeedingStopped" );
         }
+
+        /// <summary>
+        /// Rangers the scanner_ transport item in pocket.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        public void rangerScanner_TransportSetItemOutput( object sender, AxRANGERLib._DRangerEvents_TransportSetItemOutputEvent e )
+        {
+            try
+            {
+                lblStartupInfo.Visibility = Visibility.Collapsed;
+
+                RockConfig rockConfig = RockConfig.Load();
+
+                ScannedDocInfo scannedDoc = new ScannedDocInfo();
+
+                // mark it as Upload, but we'll set it to false if anything bad happens before we actually upload
+                scannedDoc.Upload = true;
+                scannedDoc.CurrencyTypeValue = batchPage.SelectedCurrencyValue;
+                scannedDoc.SourceTypeValue = batchPage.SelectedSourceTypeValue;
+
+                scannedDoc.FrontImageData = GetImageBytesFromRanger( Sides.TransportFront );
+
+                if ( rockConfig.EnableRearImage )
+                {
+                    scannedDoc.BackImageData = GetImageBytesFromRanger( Sides.TransportRear );
+                }
+
+                if ( scannedDoc.IsCheck )
+                {
+                    string checkMicr = batchPage.rangerScanner.GetMicrText( 1 ).Trim();
+                    string remainingMicr = checkMicr;
+                    string accountNumber = string.Empty;
+                    string routingNumber = string.Empty;
+                    string checkNumber = string.Empty;
+
+                    // there should always be two transit symbols ('d').  The transit number is between them
+                    int transitSymbol1 = remainingMicr.IndexOf( 'd' );
+                    int transitSymbol2 = remainingMicr.LastIndexOf( 'd' );
+                    int transitStart = transitSymbol1 + 1;
+                    int transitLength = transitSymbol2 - transitSymbol1 - 1;
+                    if ( transitLength > 0 )
+                    {
+                        routingNumber = remainingMicr.Substring( transitStart, transitLength );
+                        remainingMicr = remainingMicr.Remove( transitStart - 1, transitLength + 2 );
+                    }
+
+                    // the last 'On-Us' symbol ('c') signifys the end of the account number
+                    int lastOnUsPosition = remainingMicr.LastIndexOf( 'c' );
+                    if ( lastOnUsPosition > 0 )
+                    {
+                        int accountNumberDigitPosition = lastOnUsPosition - 1;
+
+                        // read all digits to the left of the last 'c' until you run into a non-numeric (except for '!' whichs means invalid)
+                        while ( accountNumberDigitPosition >= 0 )
+                        {
+                            char accountNumberDigit = remainingMicr[accountNumberDigitPosition];
+                            if ( char.IsNumber( accountNumberDigit ) || accountNumberDigit.Equals( '!' ) || accountNumberDigit.Equals( ' ' ) )
+                            {
+                                accountNumber = accountNumberDigit + accountNumber.Trim();
+                            }
+                            else
+                            {
+                                break;
+                            }
+
+                            accountNumberDigitPosition--;
+                        }
+
+                        remainingMicr = remainingMicr.Remove( accountNumberDigitPosition + 1, lastOnUsPosition - accountNumberDigitPosition );
+                    }
+
+                    // any remaining digits that aren't the account number and transit number are probably the check number
+                    string[] remainingMicrParts = remainingMicr.Split( new char[] { 'c', ' ' }, StringSplitOptions.RemoveEmptyEntries );
+                    if ( remainingMicrParts.Length == 1 )
+                    {
+                        checkNumber = remainingMicrParts[0];
+                    }
+
+                    scannedDoc.RoutingNumber = routingNumber;
+                    scannedDoc.AccountNumber = accountNumber;
+                    scannedDoc.CheckNumber = checkNumber;
+
+                    if ( routingNumber.Length != 9 || string.IsNullOrEmpty( accountNumber ) || checkMicr.Contains( '!' ) || string.IsNullOrEmpty( checkNumber ) )
+                    {
+                        scannedDoc.BadMicr = true;
+                        scannedDoc.Upload = false;
+                    }
+                }
+
+                ShowScannedDocStatusAndUpload( scannedDoc );
+            }
+            catch ( Exception ex )
+            {
+                if ( ex is AggregateException )
+                {
+                    ShowException( ( ex as AggregateException ).Flatten() );
+                }
+                else
+                {
+                    ShowException( ex );
+                }
+            }
+        }
+
+        #endregion
+
+        #region Scanner (MagTek MICRImage RS232) Events
+
+        private ScannedDocInfo _currentMagtekScannedDoc { get; set; }
+
+        /// <summary>
+        /// Handles the MicrDataReceived event of the micrImage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        public void micrImage_MicrDataReceived( object sender, System.EventArgs e )
+        {
+            var currentPage = Application.Current.MainWindow.Content;
+
+            if ( currentPage != this )
+            {
+                // only accept scans when the scanning page is showing
+                batchPage.micrImage.ClearBuffer();
+                return;
+            }
+
+            lblStartupInfo.Visibility = Visibility.Collapsed;
+
+            // from MagTek Sample Code
+            object dummy = null;
+            string routingNumber = batchPage.micrImage.FindElement( 0, "T", 0, "TT", ref dummy );
+            string accountNumber = batchPage.micrImage.FindElement( 0, "TT", 0, "A", ref dummy );
+            string checkNumber = batchPage.micrImage.FindElement( 0, "A", 0, "12", ref dummy );
+
+            ScannedDocInfo scannedDoc = null;
+            var rockConfig = RockConfig.Load();
+            bool scanningMagTekBackImage = false;
+
+            if ( _currentMagtekScannedDoc != null && _currentMagtekScannedDoc.BackImageData == null && rockConfig.PromptToScanRearImage )
+            {
+                //// if we didn't get a routingnumber, and we are expecting a back scan, use the scan as the back image
+                //// However, if we got a routing number, assuming we are scanning a new check regardless
+                if ( string.IsNullOrWhiteSpace( routingNumber ) )
+                {
+                    scanningMagTekBackImage = true;
+                }
+                else
+                {
+                    scanningMagTekBackImage = false;
+                }
+            }
+
+            if ( scanningMagTekBackImage )
+            {
+                scannedDoc = _currentMagtekScannedDoc;
+            }
+            else
+            {
+                scannedDoc = new ScannedDocInfo();
+                scannedDoc.CurrencyTypeValue = batchPage.SelectedCurrencyValue;
+                scannedDoc.SourceTypeValue = batchPage.SelectedSourceTypeValue;
+
+                if ( scannedDoc.IsCheck )
+                {
+                    scannedDoc.RoutingNumber = routingNumber;
+                    scannedDoc.AccountNumber = accountNumber;
+                    scannedDoc.CheckNumber = checkNumber;
+                }
+
+                // set the _currentMagtekScannedDoc in case we are going to scan the back of the image
+                _currentMagtekScannedDoc = scannedDoc;
+            }
+
+            string imagePath = Path.GetTempPath();
+            string docImageFileName = Path.Combine( imagePath, string.Format( "scanned_item_{0}.tif", Guid.NewGuid() ) );
+            if ( File.Exists( docImageFileName ) )
+            {
+                File.Delete( docImageFileName );
+            }
+
+            try
+            {
+                string statusMsg = string.Empty;
+                batchPage.micrImage.TransmitCurrentImage( docImageFileName, ref statusMsg );
+                if ( !File.Exists( docImageFileName ) )
+                {
+                    throw new Exception( "Unable to retrieve image" );
+                }
+
+                if ( scanningMagTekBackImage )
+                {
+                    scannedDoc.BackImageData = File.ReadAllBytes( docImageFileName );
+                }
+                else
+                {
+                    scannedDoc.FrontImageData = File.ReadAllBytes( docImageFileName );
+
+                    // MagTek puts the symbol '?' for parts of the MICR that it can't read
+                    bool gotValidMicr = !string.IsNullOrWhiteSpace( scannedDoc.AccountNumber ) && !scannedDoc.AccountNumber.Contains( '?' )
+                        && !string.IsNullOrWhiteSpace( scannedDoc.RoutingNumber ) && !scannedDoc.RoutingNumber.Contains( '?' )
+                        && !string.IsNullOrWhiteSpace( scannedDoc.CheckNumber ) && !scannedDoc.CheckNumber.Contains( '?' );
+
+                    if ( scannedDoc.IsCheck && !gotValidMicr )
+                    {
+                        scannedDoc.BadMicr = true;
+                    }
+                }
+
+                if ( scannedDoc.BackImageData == null && rockConfig.PromptToScanRearImage )
+                {
+                    // scanning the front image, but still need to scan the back
+                    lblScanBackInstructions.Visibility = Visibility.Visible;
+                    HideUploadWarningPrompts( true );
+                    DisplayScannedDocInfo( scannedDoc );
+                }
+                else
+                {
+                    // scanned both sides (or just the front if they don't want to scan both sides )
+                    lblScanBackInstructions.Visibility = Visibility.Collapsed;
+                    scannedDoc.Upload = !scannedDoc.IsCheck || !( scannedDoc.BadMicr || scannedDoc.Duplicate );
+                    this.ShowScannedDocStatusAndUpload( scannedDoc );
+                }
+
+                File.Delete( docImageFileName );
+            }
+            catch ( Exception ex )
+            {
+                if ( ex is AggregateException )
+                {
+                    ShowException( ( ex as AggregateException ).Flatten() );
+                }
+                else
+                {
+                    ShowException( ex );
+                }
+            }
+            finally
+            {
+                batchPage.micrImage.ClearBuffer();
+            }
+        }
+
+        #endregion
+
+        #region Image Upload related
+
+        /// <summary>
+        /// Gets the doc image.
+        /// </summary>
+        /// <param name="side">The side.</param>
+        /// <returns></returns>
+        private byte[] GetImageBytesFromRanger( Sides side )
+        {
+            ImageColorType colorType = RockConfig.Load().ImageColorType;
+
+            int imageByteCount;
+            imageByteCount = batchPage.rangerScanner.GetImageByteCount( (int)side, (int)colorType );
+            if ( imageByteCount > 0 )
+            {
+                byte[] imageBytes = new byte[imageByteCount];
+
+                // create the pointer and assign the Ranger image address to it
+                IntPtr imgAddress = new IntPtr( batchPage.rangerScanner.GetImageAddress( (int)side, (int)colorType ) );
+
+                // Copy the bytes from unmanaged memory to managed memory
+                Marshal.Copy( imgAddress, imageBytes, 0, imageByteCount );
+
+                return imageBytes;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Handles the Click event of the btnClose control.

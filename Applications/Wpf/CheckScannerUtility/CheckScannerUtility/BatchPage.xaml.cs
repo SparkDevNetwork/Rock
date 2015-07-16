@@ -17,9 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -54,7 +52,7 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 var micrImageHostPage = new MicrImageHostPage();
                 this.micrImage = micrImageHostPage.micrImage;
-                this.micrImage.MicrDataReceived += micrImage_MicrDataReceived;
+                this.micrImage.MicrDataReceived += ScanningPage.micrImage_MicrDataReceived;
             }
             catch
             {
@@ -74,7 +72,7 @@ namespace Rock.Apps.CheckScannerUtility
 
                 this.rangerScanner.TransportPassthroughEvent += ScanningPage.rangerScanner_TransportPassthroughEvent;
 
-                this.rangerScanner.TransportSetItemOutput += rangerScanner_TransportSetItemOutput;
+                this.rangerScanner.TransportSetItemOutput += ScanningPage.rangerScanner_TransportSetItemOutput;
             }
             catch
             {
@@ -284,268 +282,6 @@ namespace Rock.Apps.CheckScannerUtility
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedDoubleDocDetection", rockConfig.EnableDoubleDocDetection.ToTrueFalse() );
 
                 rangerScanner.EnableOptions();
-            }
-        }
-
-        /// <summary>
-        /// Rangers the scanner_ transport item in pocket.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        private void rangerScanner_TransportSetItemOutput( object sender, AxRANGERLib._DRangerEvents_TransportSetItemOutputEvent e )
-        {
-            try
-            {
-                ScanningPage.lblStartupInfo.Visibility = Visibility.Collapsed;
-
-                RockConfig rockConfig = RockConfig.Load();
-
-                ScannedDocInfo scannedDoc = new ScannedDocInfo();
-
-                // mark it as Upload, but we'll set it to false if anything bad happens before we actually upload
-                scannedDoc.Upload = true;
-                scannedDoc.CurrencyTypeValue = this.SelectedCurrencyValue;
-                scannedDoc.SourceTypeValue = this.SelectedSourceTypeValue;
-
-                scannedDoc.FrontImageData = GetImageBytesFromRanger( Sides.TransportFront );
-
-                if ( rockConfig.EnableRearImage )
-                {
-                    scannedDoc.BackImageData = GetImageBytesFromRanger( Sides.TransportRear );
-                }
-
-                if ( scannedDoc.IsCheck )
-                {
-                    string checkMicr = rangerScanner.GetMicrText( 1 ).Trim();
-                    string remainingMicr = checkMicr;
-                    string accountNumber = string.Empty;
-                    string routingNumber = string.Empty;
-                    string checkNumber = string.Empty;
-
-                    // there should always be two transit symbols ('d').  The transit number is between them
-                    int transitSymbol1 = remainingMicr.IndexOf( 'd' );
-                    int transitSymbol2 = remainingMicr.LastIndexOf( 'd' );
-                    int transitStart = transitSymbol1 + 1;
-                    int transitLength = transitSymbol2 - transitSymbol1 - 1;
-                    if ( transitLength > 0 )
-                    {
-                        routingNumber = remainingMicr.Substring( transitStart, transitLength );
-                        remainingMicr = remainingMicr.Remove( transitStart - 1, transitLength + 2 );
-                    }
-
-                    // the last 'On-Us' symbol ('c') signifys the end of the account number
-                    int lastOnUsPosition = remainingMicr.LastIndexOf( 'c' );
-                    if ( lastOnUsPosition > 0 )
-                    {
-                        int accountNumberDigitPosition = lastOnUsPosition - 1;
-
-                        // read all digits to the left of the last 'c' until you run into a non-numeric (except for '!' whichs means invalid)
-                        while ( accountNumberDigitPosition >= 0 )
-                        {
-                            char accountNumberDigit = remainingMicr[accountNumberDigitPosition];
-                            if ( char.IsNumber( accountNumberDigit ) || accountNumberDigit.Equals( '!' ) || accountNumberDigit.Equals( ' ' ) )
-                            {
-                                accountNumber = accountNumberDigit + accountNumber.Trim();
-                            }
-                            else
-                            {
-                                break;
-                            }
-
-                            accountNumberDigitPosition--;
-                        }
-
-                        remainingMicr = remainingMicr.Remove( accountNumberDigitPosition + 1, lastOnUsPosition - accountNumberDigitPosition );
-                    }
-
-                    // any remaining digits that aren't the account number and transit number are probably the check number
-                    string[] remainingMicrParts = remainingMicr.Split( new char[] { 'c', ' ' }, StringSplitOptions.RemoveEmptyEntries );
-                    if ( remainingMicrParts.Length == 1 )
-                    {
-                        checkNumber = remainingMicrParts[0];
-                    }
-
-                    scannedDoc.RoutingNumber = routingNumber;
-                    scannedDoc.AccountNumber = accountNumber;
-                    scannedDoc.CheckNumber = checkNumber;
-
-                    if ( routingNumber.Length != 9 || string.IsNullOrEmpty( accountNumber ) || checkMicr.Contains( '!' ) || string.IsNullOrEmpty( checkNumber ) )
-                    {
-                        scannedDoc.BadMicr = true;
-                        scannedDoc.Upload = false;
-                    }
-                }
-
-                ScanningPage.ShowScannedDocStatusAndUpload( scannedDoc );
-            }
-            catch ( Exception ex )
-            {
-                if ( ex is AggregateException )
-                {
-                    ScanningPage.ShowException( ( ex as AggregateException ).Flatten() );
-                }
-                else
-                {
-                    ScanningPage.ShowException( ex );
-                }
-            }
-        }
-
-        #endregion
-
-        #region Scanner (MagTek MICRImage RS232) Events
-
-        private ScannedDocInfo _currentMagtekScannedDoc { get; set; }
-
-        /// <summary>
-        /// Handles the MicrDataReceived event of the micrImage control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        private void micrImage_MicrDataReceived( object sender, System.EventArgs e )
-        {
-            var currentPage = Application.Current.MainWindow.Content;
-
-            if ( currentPage != this.ScanningPage )
-            {
-                // only accept scans when the scanning page is showing
-                micrImage.ClearBuffer();
-                return;
-            }
-
-            // from MagTek Sample Code
-            object dummy = null;
-            string routingNumber = micrImage.FindElement( 0, "T", 0, "TT", ref dummy );
-            string accountNumber = micrImage.FindElement( 0, "TT", 0, "A", ref dummy );
-            string checkNumber = micrImage.FindElement( 0, "A", 0, "12", ref dummy );
-
-            ScannedDocInfo scannedDoc = null;
-            var rockConfig = RockConfig.Load();
-            bool scanningMagTekBackImage = false;
-
-            if ( ScanningPage.ExpectingMagTekBackScan )
-            {
-                //// if we didn't get a routingnumber, and we are expecting a back scan, use the scan as the back image
-                //// However, if we got a routing number, assuming we are scanning a new check regardless
-                if ( string.IsNullOrWhiteSpace( routingNumber ) )
-                {
-                    scanningMagTekBackImage = true;
-                }
-                else
-                {
-                    scanningMagTekBackImage = false;
-                }
-            }
-
-            if ( scanningMagTekBackImage )
-            {
-                scannedDoc = _currentMagtekScannedDoc;
-            }
-            else
-            {
-                scannedDoc = new ScannedDocInfo();
-                scannedDoc.CurrencyTypeValue = this.SelectedCurrencyValue;
-                scannedDoc.SourceTypeValue = this.SelectedSourceTypeValue;
-
-                if ( scannedDoc.IsCheck )
-                {
-                    scannedDoc.RoutingNumber = routingNumber;
-                    scannedDoc.AccountNumber = accountNumber;
-                    scannedDoc.CheckNumber = checkNumber;
-                }
-
-                // set the _currentMagtekScannedDoc in case we are going to scan the back of the image
-                _currentMagtekScannedDoc = scannedDoc;
-            }
-
-            string imagePath = Path.GetTempPath();
-            string docImageFileName = Path.Combine( imagePath, string.Format( "scanned_item_{0}.tif", Guid.NewGuid() ) );
-            if ( File.Exists( docImageFileName ) )
-            {
-                File.Delete( docImageFileName );
-            }
-
-            try
-            {
-                string statusMsg = string.Empty;
-                micrImage.TransmitCurrentImage( docImageFileName, ref statusMsg );
-                if ( !File.Exists( docImageFileName ) )
-                {
-                    throw new Exception( "Unable to retrieve image" );
-                }
-
-                if ( scanningMagTekBackImage )
-                {
-                    scannedDoc.BackImageData = File.ReadAllBytes( docImageFileName );
-                }
-                else
-                {
-                    scannedDoc.FrontImageData = File.ReadAllBytes( docImageFileName );
-
-                    // MagTek puts the symbol '?' for parts of the MICR that it can't read
-                    bool gotValidMicr = !string.IsNullOrWhiteSpace( scannedDoc.AccountNumber ) && !scannedDoc.AccountNumber.Contains( '?' )
-                        && !string.IsNullOrWhiteSpace( scannedDoc.RoutingNumber ) && !scannedDoc.RoutingNumber.Contains( '?' )
-                        && !string.IsNullOrWhiteSpace( scannedDoc.CheckNumber ) && !scannedDoc.CheckNumber.Contains( '?' );
-
-                    if ( scannedDoc.IsCheck && !gotValidMicr )
-                    {
-                        scannedDoc.BadMicr = true;
-                    }
-                }
-
-                // TODO Upload Check
-
-                ScanningPage.ShowScannedDocStatusAndUpload( scannedDoc );
-
-                File.Delete( docImageFileName );
-            }
-            catch ( Exception ex )
-            {
-                if ( ex is AggregateException )
-                {
-                    ScanningPage.ShowException( ( ex as AggregateException ).Flatten() );
-                }
-                else
-                {
-                    ScanningPage.ShowException( ex );
-                }
-            }
-            finally
-            {
-                micrImage.ClearBuffer();
-            }
-        }
-
-        #endregion
-
-        #region Image Upload related
-
-        /// <summary>
-        /// Gets the doc image.
-        /// </summary>
-        /// <param name="side">The side.</param>
-        /// <returns></returns>
-        private byte[] GetImageBytesFromRanger( Sides side )
-        {
-            ImageColorType colorType = RockConfig.Load().ImageColorType;
-
-            int imageByteCount;
-            imageByteCount = rangerScanner.GetImageByteCount( (int)side, (int)colorType );
-            if ( imageByteCount > 0 )
-            {
-                byte[] imageBytes = new byte[imageByteCount];
-
-                // create the pointer and assign the Ranger image address to it
-                IntPtr imgAddress = new IntPtr( rangerScanner.GetImageAddress( (int)side, (int)colorType ) );
-
-                // Copy the bytes from unmanaged memory to managed memory
-                Marshal.Copy( imgAddress, imageBytes, 0, imageByteCount );
-
-                return imageBytes;
-            }
-            else
-            {
-                return null;
             }
         }
 
@@ -1019,19 +755,37 @@ namespace Rock.Apps.CheckScannerUtility
             lblCreatedBy.Content = lblBatchCreatedByReadOnly.Content as string;
             txtControlAmount.Text = selectedBatch.ControlAmount.ToString( "F" );
 
-            List<FinancialTransaction> transactions = client.GetData<List<FinancialTransaction>>( "api/FinancialTransactions/", string.Format( "BatchId eq {0}", selectedBatch.Id ) );
-            foreach ( var transaction in transactions )
+            // start a background thread to download transactions since this could take a little while and we want a Wait cursor
+            BackgroundWorker bw = new BackgroundWorker();
+            lblCount.Content = "Loading...";
+            List<FinancialTransaction> transactions = null;
+            grdBatchItems.DataContext = null;
+            bw.DoWork += delegate( object s, DoWorkEventArgs ee )
             {
-                transaction.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.CurrencyTypeValueId );
-            }
+                ee.Result = null;
 
-            // sort starting with most recent first
-            var bindingList = new BindingList<FinancialTransaction>( transactions.OrderByDescending( a => a.CreatedDateTime ).ToList() );
-            bindingList.RaiseListChangedEvents = true;
-            bindingList.ListChanged += bindingList_ListChanged;
+                transactions = client.GetData<List<FinancialTransaction>>( "api/FinancialTransactions/", string.Format( "BatchId eq {0}", selectedBatch.Id ) );
+            };
 
-            grdBatchItems.DataContext = bindingList;
-            DisplayTransactionCount();
+            bw.RunWorkerCompleted += delegate( object s, RunWorkerCompletedEventArgs ee )
+            {
+                this.Cursor = null;
+                foreach ( var transaction in transactions )
+                {
+                    transaction.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.CurrencyTypeValueId );
+                }
+
+                // sort starting with most recent first
+                var bindingList = new BindingList<FinancialTransaction>( transactions.OrderByDescending( a => a.CreatedDateTime ).ToList() );
+                bindingList.RaiseListChangedEvents = true;
+                bindingList.ListChanged += bindingList_ListChanged;
+
+                grdBatchItems.DataContext = bindingList;
+                DisplayTransactionCount();
+            };
+
+            this.Cursor = Cursors.Wait;
+            bw.RunWorkerAsync();
         }
 
         /// <summary>
