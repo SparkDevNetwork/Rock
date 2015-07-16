@@ -20,13 +20,12 @@
 @lg: ~"(min-width: @{screen-lg-min})";
 
 
-// Custom
+// Base
 // -------------------------
 
 .card {
   border-radius: 5px;
   overflow: hidden;
-  // display: inline-block;
   box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
   margin-bottom: @grid-gutter-width;
 }
@@ -41,15 +40,8 @@
     position: relative;
     overflow: hidden;
     display: block;
-    height: @grid-gutter-width*11;
-  }
-  .card-half .card-title {
-    height: @grid-gutter-width*4;
-  }
-  .card-title-withimg {
-    background-position: center center;
-    background-size: cover;
-    background-repeat: none;
+    height: @grid-gutter-width*9;
+    background: @gray-light;
   }
     .card-titletext {
       position: absolute;
@@ -62,34 +54,64 @@
       padding: @grid-gutter-width/2 @grid-gutter-width/2;
       line-height: @grid-gutter-width;
       .transition(background .3s);
-      // text-overflow: ellipsis;
-      // white-space: nowrap;
       overflow: hidden;
       max-height: 100%;
     }
-    .card-title:hover .card-titletext {
-      background: rgba(0,0,0,.25);
-    }
-    .card-dark .card-titletext {
-      color: @text-color;
-    }
-    .card-dark .card-title:hover .card-titletext {
-      background: rgba(255,255,255,.5);
-    }
   .card-footer {
     height: @grid-gutter-width*2;
-    // padding: 10px;
     background: #fff;
-    // border: 2px solid #ddd;
-    border-top: none;
     .border-bottom-radius(5px);
     line-height: @grid-gutter-width*2;
-    padding-left: @grid-gutter-width/2;
-    padding-right: 11px;
+    padding: 0 @grid-gutter-width/2;
   }
-  .card-btn {
-    margin-top: 11px;
-    float: right;
-    .button-variant(@text-color; #fff; #fff);
-    // .button-size(@padding-small-vertical; @padding-small-horizontal; @font-size-small; @line-height-small; @border-radius-small);
+    .card-btn {
+      float: right;
+      i {
+        .transition(margin .3s);
+      }
+      &:hover {
+        text-decoration: none;
+        i {
+          margin-right: -2px;
+          margin-left: 2px;
+        }
+      }
+    }
+
+
+// Modifiers
+// -------------------------
+
+// Size
+
+.card-half .card-title {
+  height: @grid-gutter-width*3;
+}
+
+// Color
+
+.card-primary .card-title {
+  background: @brand-primary;
+}
+.card-black .card-title {
+  background: @gray-darker;
+}
+
+// Card Image variations
+
+.card-title-withimg {
+  background-position: center center;
+  background-size: cover;
+  background-repeat: none;
+}
+  .card-title-withimg:hover .card-titletext {
+    background: rgba(0,0,0,.25);
   }
+
+.card-title-dark .card-titletext {
+  color: @text-color;
+}
+.card-title-dark:hover .card-titletext {
+  background: rgba(255,255,255,.5);
+}
+

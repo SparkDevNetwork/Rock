@@ -9,19 +9,12 @@
   position: relative;
   overflow: hidden;
   display: block;
-  height: 330px;
+  height: 270px;
+  background: #777777;
 }
 .card-title:hover {
   text-decoration: none;
   color: inherit;
-}
-.card-half .card-title {
-  height: 120px;
-}
-.card-title-withimg {
-  background-position: center center;
-  background-size: cover;
-  background-repeat: none;
 }
 .card-titletext {
   position: absolute;
@@ -39,65 +32,49 @@
   overflow: hidden;
   max-height: 100%;
 }
-.card-title:hover .card-titletext {
-  background: rgba(0, 0, 0, 0.25);
-}
-.card-dark .card-titletext {
-  color: #333333;
-}
-.card-dark .card-title:hover .card-titletext {
-  background: rgba(255, 255, 255, 0.5);
-}
 .card-footer {
   height: 60px;
   background: #fff;
-  border-top: none;
   border-bottom-right-radius: 5px;
   border-bottom-left-radius: 5px;
   line-height: 60px;
-  padding-left: 15px;
-  padding-right: 11px;
+  padding: 0 15px;
 }
 .card-btn {
-  margin-top: 11px;
   float: right;
+}
+.card-btn i {
+  -webkit-transition: margin 0.3s;
+  -o-transition: margin 0.3s;
+  transition: margin 0.3s;
+}
+.card-btn:hover {
+  text-decoration: none;
+}
+.card-btn:hover i {
+  margin-right: -2px;
+  margin-left: 2px;
+}
+.card-half .card-title {
+  height: 90px;
+}
+.card-primary .card-title {
+  background: #7a1315;
+}
+.card-black .card-title {
+  background: #222222;
+}
+.card-title-withimg {
+  background-position: center center;
+  background-size: cover;
+  background-repeat: none;
+}
+.card-title-withimg:hover .card-titletext {
+  background: rgba(0, 0, 0, 0.25);
+}
+.card-title-dark .card-titletext {
   color: #333333;
-  background-color: #ffffff;
-  border-color: #ffffff;
 }
-.card-btn:hover,
-.card-btn:focus,
-.card-btn:active,
-.card-btn.active,
-.open > .dropdown-toggle.card-btn {
-  color: #333333;
-  background-color: #e6e6e6;
-  border-color: #e0e0e0;
-}
-.card-btn:active,
-.card-btn.active,
-.open > .dropdown-toggle.card-btn {
-  background-image: none;
-}
-.card-btn.disabled,
-.card-btn[disabled],
-fieldset[disabled] .card-btn,
-.card-btn.disabled:hover,
-.card-btn[disabled]:hover,
-fieldset[disabled] .card-btn:hover,
-.card-btn.disabled:focus,
-.card-btn[disabled]:focus,
-fieldset[disabled] .card-btn:focus,
-.card-btn.disabled:active,
-.card-btn[disabled]:active,
-fieldset[disabled] .card-btn:active,
-.card-btn.disabled.active,
-.card-btn[disabled].active,
-fieldset[disabled] .card-btn.active {
-  background-color: #ffffff;
-  border-color: #ffffff;
-}
-.card-btn .badge {
-  color: #ffffff;
-  background-color: #333333;
+.card-title-dark:hover .card-titletext {
+  background: rgba(255, 255, 255, 0.5);
 }
