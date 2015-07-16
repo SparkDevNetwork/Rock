@@ -1085,7 +1085,18 @@ namespace RockWeb.Blocks.CheckIn
                         // delete all the groups that are no longer in the UI for this groupType
                         foreach ( var childGroupDB in childGroupTypeDB.Groups )
                         {
-                            if ( childGroupTypeUI.Groups.FirstOrDefault( a => a.Guid == childGroupDB.Guid ) == null )
+                            bool groupExistsInUI = false;
+
+                            foreach( var group in childGroupTypeUI.Groups )
+                            {
+                                if ( GroupFound( group, childGroupDB.Guid ) )
+                                {
+                                    groupExistsInUI = true;
+                                    break;
+                                }
+                            }
+
+                            if ( !groupExistsInUI )
                             {
                                 groupsToDelete.Add( childGroupDB );
                             }
@@ -1093,6 +1104,29 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
             }
+        }
+
+        private static bool GroupFound( Group group, Guid groupGuid )
+        {
+            // Does this group match
+            if ( group.Guid.Equals( groupGuid ) )
+            {
+                return true;
+            }
+
+            // Do any of the child groups match
+            if ( group.Groups != null )
+            {
+                foreach ( var childGroup in group.Groups )
+                {
+                    if ( GroupFound( childGroup, groupGuid ) )
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

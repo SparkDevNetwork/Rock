@@ -58,16 +58,15 @@ namespace Rock.Model
             // build the type object, will depend if the class is in an assembly or the App_Code folder
             Type type = null;
             
-            if ( string.IsNullOrWhiteSpace(job.Assembly) )
+            if ( !string.IsNullOrWhiteSpace(job.Assembly) )
             {
-                // first try to load the job type from the App_Code folder
-                type = BuildManager.GetType( job.Class, false );
+                // first, if no assembly is known, look in all the dlls for it
+                type = Rock.Reflection.FindType( typeof( Quartz.IJob ), job.Class );
 
                 if (type == null)
                 {
-                    // if it couldn't be loaded from the app_code folder, look in Rock.dll
-                    string thetype = string.Format( "{0}, {1}", job.Class, this.GetType().Assembly.FullName );
-                    type = Type.GetType( thetype );
+                    // if it can't be found in dlls, look in App_Code using BuildManager
+                    type = BuildManager.GetType( job.Class, false );
                 }
             }
             else

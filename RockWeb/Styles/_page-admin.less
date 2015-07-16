@@ -141,7 +141,7 @@
 #cms-admin-footer {
     bottom: 0;
     width: 100%;
-    height: 26px;
+    height: 36px;
     z-index: 1049;
     position: fixed;
     right: 0;
@@ -151,13 +151,20 @@
     border-width: 1px 1px 0 1px;
     border-style: solid;
     color: @adminbar-text-color;
-    padding: 5px 12px 0 12px;
-    font-size: 80%;
+    padding: 8px 12px 0 12px;
+    
+    transition: .5s;
 
     > span {
         display: none;
         text-align: center;
         margin-bottom: 4px;
+        font-size: 12px;
+        margin-top: 3px;
+    }
+
+    a {
+        font-size: 16px;
     }
 
     .button-bar {
@@ -191,9 +198,11 @@
 @media (min-width: @screen-sm-min) {
 
     #cms-admin-footer {
-        height: 28px;
-        margin-right: 25px;
-        width: auto;
+        opacity: 0;
+
+        &:hover {
+            opacity: 1;
+        }
 
         > span {
             display: block;

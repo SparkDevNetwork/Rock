@@ -74,8 +74,8 @@
                                 <asp:Literal ID="lImage" runat="server" />
                             </div>
 
-                            <p class="description">
-                                <asp:Literal ID="lDescription" runat="server"></asp:Literal>
+                            <p>
+                                <asp:Literal ID="lSummary" runat="server"></asp:Literal>
                             </p>
 
                             <div class="row">
@@ -117,7 +117,9 @@
                         </div>
                     </div>
 
-                    <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.EventItem, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                    <Rock:DataTextBox ID="tbSummary" runat="server" SourceTypeName="Rock.Model.EventItem, Rock" PropertyName="Summary" TextMode="MultiLine" Rows="4" />
+
+                    <Rock:HtmlEditor ID="htmlDescription" runat="server" Label="Description" Toolbar="Light" />
 
                     <div class="row">
                         <div class="col-md-6">
