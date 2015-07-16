@@ -50,6 +50,10 @@
                         Style="{StaticResource labelStyleAlert}"
                         Content="WARNING: A check with the same account information and check number has already been scanned.">
                 </Label>
+                <Label Name="lblScanBackInstructions"
+                        Style="{StaticResource labelStyleAlertInfo}"
+                        Content="Insert the {0} again facing the other direction to get an image of the back.">
+                </Label>
                 
                 <StackPanel Name="pnlPromptForUpload">
 
@@ -187,14 +191,6 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Label Name="lblScanInstructions"
-                   Style="{StaticResource labelStyleAlertInfo}"
-                   Content=""
-                   Grid.Row="1"
-                   Grid.Column="0"
-                   Grid.ColumnSpan="2">
-            </Label>
-            
 
             <Label Name="lblExceptions"
                    Style="{StaticResource labelStyleAlertError}"
