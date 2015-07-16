@@ -146,7 +146,7 @@ namespace church.ccv.Utility
                                                 .ThenBy( m => m.Person.Gender )
                                                 .SelectMany( m => m.Person.PhoneNumbers )
                                                 .Where( p => p.NumberTypeValue.Guid == mobilePhoneGuid )
-                                                .Select( p => p.NumberFormatted )
+                                                .Select( p => p.NumberFormatted + " (" + p.Person.NickName + ")" )
                                                 .FirstOrDefault();
 
                         if ( addressCount > 0 || !string.IsNullOrWhiteSpace( homePhone ) || !string.IsNullOrWhiteSpace( mobilePhone ) )
