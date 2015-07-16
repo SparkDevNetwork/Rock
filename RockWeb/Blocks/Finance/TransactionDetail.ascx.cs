@@ -728,9 +728,11 @@ namespace RockWeb.Blocks.Finance
         {
             if ( batchId == null || ! batchId.HasValue || batchId == 0 )
             {
+                lbNext.Visible = false;
                 return;
             }
 
+            lbNext.Visible = true;
             var rockContext = new RockContext();
             var financialTransactionService = new FinancialTransactionService( rockContext );
             var qryTransactionsToMatch = financialTransactionService.Queryable()
@@ -783,7 +785,7 @@ namespace RockWeb.Blocks.Finance
         public void ShowDetail( int transactionId, int? batchId )
         {
             // show or hide the add new transaction button depending if there is a batch id in the querystring
-            lbAddTransaction.Visible = !string.IsNullOrWhiteSpace( PageParameter( "batchId" ) );
+            bool haveBatch = !string.IsNullOrWhiteSpace( PageParameter( "batchId" ) );
             
             FinancialTransaction txn = null;
 
@@ -838,17 +840,14 @@ namespace RockWeb.Blocks.Finance
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
+
+            lbEdit.Visible = editAllowed;
+            lbAddTransaction.Visible = editAllowed && haveBatch;
+
             if ( !editAllowed )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialTransaction.FriendlyTypeName );
-                lbEdit.Visible = false;
-                lbAddTransaction.Visible = false;
-            }
-            else
-            {
-                lbEdit.Visible = true;
-                lbAddTransaction.Visible = true;
             }
 
             if ( readOnly )

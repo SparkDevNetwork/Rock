@@ -49,6 +49,7 @@ namespace RockWeb.Blocks.Finance
         private FinancialBatch _batch = null;
         private Person _person = null;
         private FinancialScheduledTransaction _scheduledTxn = null;
+        private Registration _registration = null;
 
         private RockDropDownList _ddlMove = new RockDropDownList();
 
@@ -165,6 +166,11 @@ namespace RockWeb.Blocks.Finance
                     _scheduledTxn = contextEntity as FinancialScheduledTransaction;
                     gfTransactions.Visible = false;
                 }
+                else if ( contextEntity is Registration )
+                {
+                    _registration = contextEntity as Registration;
+                    gfTransactions.Visible = false;
+                }
             }
 
             if ( !Page.IsPostBack )
@@ -230,7 +236,7 @@ namespace RockWeb.Blocks.Finance
                     gTransactions.IsDeleteEnabled = false;
                 }
             }
-            else if ( _scheduledTxn != null )
+            else 
             {
                 nbClosedWarning.Visible = false;
                 gTransactions.Columns[0].Visible = false;
@@ -238,12 +244,6 @@ namespace RockWeb.Blocks.Finance
 
                 gTransactions.Actions.ShowAdd = false;
                 gTransactions.IsDeleteEnabled = false;
-            }
-            else    // Person
-            {
-                nbClosedWarning.Visible = false;
-                gTransactions.Columns[0].Visible = false;
-                _ddlMove.Visible = false;
             }
             
             base.OnPreRender( e );
@@ -686,6 +686,13 @@ namespace RockWeb.Blocks.Finance
             _currencyTypes = new Dictionary<int,string>();
             _creditCardTypes = new Dictionary<int,string>();
 
+            // If configured for a registration and registration is null, return
+            int registrationEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Registration ) ).Id;
+            if ( ContextTypesRequired.Any( e => e.Id == registrationEntityTypeId ) && _registration == null )
+            {
+                return;
+            }
+
             // If configured for a person and person is null, return
             int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
             if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && _person == null )
@@ -731,6 +738,18 @@ namespace RockWeb.Blocks.Finance
             {
                 // If transactions are for a batch, the filter is hidden so only check the batch id
                 qry = qry.Where( t => t.ScheduledTransactionId.HasValue && t.ScheduledTransactionId.Value == _scheduledTxn.Id );
+
+                gTransactions.IsDeleteEnabled = false;
+            }
+            else if ( _registration != null )
+            {
+                qry = qry
+                    .Where( t => t.TransactionDetails
+                        .Any( d =>
+                            d.EntityTypeId.HasValue &&
+                            d.EntityTypeId.Value == registrationEntityTypeId &&
+                            d.EntityId.HasValue &&
+                            d.EntityId.Value == _registration.Id ) );
 
                 gTransactions.IsDeleteEnabled = false;
             }
@@ -847,6 +866,16 @@ namespace RockWeb.Blocks.Finance
 
             gTransactions.SetLinqDataSource( qry.AsNoTracking() );
             gTransactions.DataBind();
+
+            // If this is for a registration, and there are no payments, hide this block
+            if ( _registration != null && ( qry.Count() <= 0 ) )
+            {
+                this.Visible = false;
+            }
+            else
+            {
+                this.Visible = true;
+            }
         }
 
         /// <summary>

@@ -21,14 +21,14 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Newtonsoft.Json;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -43,20 +43,32 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of a given registration." )]
 
-    [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 0 )]
-    [LinkedPage( "Group Member Page", "The page for viewing details about a group member", true, "", "", 1 )]
+    [LinkedPage( "Registrant Page", "The page for viewing details about a registrant", true, "", "", 0 )]
+    [LinkedPage( "Transaction Page", "The page for viewing transaction details", true, "", "", 1 )]
+    [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 2 )]
+    [LinkedPage( "Group Member Page", "The page for viewing details about a group member", true, "", "", 3 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION, "", 4 )]
+    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Event Registration", "", 5 )]
     public partial class RegistrationDetail : RockBlock, IDetailBlock
     {
 
+        #region Fields
+
+        private Registration Registration = null;
+
+        #endregion
+
         #region Properties
 
-        private RegistrationTemplate RegistrationTemplate { get; set; }
-        private int? RegistrationTemplateId { get; set; }
+        private string Title = null;
         private int? RegistrationInstanceId { get; set; }
         private int? RegistrationId { get; set; }
         private int? RegistrantId { get; set; }
-        private Dictionary<Guid, bool> RegistrantGuids { get; set; }
+        private bool EditAllowed { get; set; }
+        protected bool PercentageDiscountExists { get; set; }
 
+        private RegistrationTemplate RegistrationTemplateState { get; set; }
+        private List<RegistrantInfo> RegistrantsState { get; set; }
         #endregion
 
         #region Control Methods
@@ -69,11 +81,30 @@ namespace RockWeb.Blocks.Event
         {
             base.LoadViewState( savedState );
 
+            Title = ViewState["Title"] as string ?? string.Empty;
             RegistrationInstanceId = ViewState["RegistrationInstanceId"] as int?;
             RegistrationId = ViewState["RegistrationId"] as int?;
-            RegistrantGuids = ViewState["RegistrantGuids"] as Dictionary<Guid, bool>;
+            EditAllowed = ViewState["EditAllowed"] as bool? ?? false;
+            PercentageDiscountExists = ViewState["PercentageDiscountExists"] as bool? ?? false;
 
-            BuildRegistrantControls();
+            string json = ViewState["RegistrationTemplate"] as string;
+            if ( !string.IsNullOrWhiteSpace( json ) )
+            {
+                RegistrationTemplateState = JsonConvert.DeserializeObject<RegistrationTemplate>( json );
+            }
+
+            json = ViewState["Registrants"] as string;
+            if ( !string.IsNullOrWhiteSpace( json ) )
+            {
+                RegistrantsState = JsonConvert.DeserializeObject<List<RegistrantInfo>>( json );
+            }
+
+            if ( RegistrationTemplateState != null && RegistrantsState != null )
+            {
+                BuildRegistrationControls( false );
+            }
+
+            Registration = GetRegistration( RegistrationId );
         }
 
         /// <summary>
@@ -84,63 +115,13 @@ namespace RockWeb.Blocks.Event
         {
             base.OnInit( e );
 
+            RegisterClientScript();
+
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Registration.FriendlyTypeName );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlRegistrationDetail );
-
-            RegistrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
-            RegistrationId = PageParameter( "RegistrationId" ).AsIntegerOrNull();
-            RegistrantId = PageParameter( "RegistrantId" ).AsIntegerOrNull();
-
-            // This block may be used with a RegistrantId, RegistrationId, or RegistrationInstanceId passed in. 
-            // Based on this, query for the remaining items.
-
-            using ( var rockContext = new RockContext() )
-            {
-                if ( RegistrantId.HasValue )
-                {
-                    var registrant = new RegistrationRegistrantService( rockContext )
-                        .Queryable( "Registration.RegistrationInstance.RegistrationTemplate.Forms.Fields" ).AsNoTracking()
-                        .Where( r => r.Id == RegistrantId.Value )
-                        .FirstOrDefault();
-                    if ( registrant != null )
-                    {
-                        RegistrationId = registrant.RegistrationId;
-                        RegistrationInstanceId = registrant.Registration.RegistrationInstanceId;
-                        RegistrationTemplateId = registrant.Registration.RegistrationInstance.RegistrationTemplateId;
-                        RegistrationTemplate = registrant.Registration.RegistrationInstance.RegistrationTemplate;
-                    }
-                }
-
-                if ( RegistrationId.HasValue && !RegistrationInstanceId.HasValue )
-                {
-                    var registration = new RegistrationService( rockContext )
-                        .Queryable( "RegistrationInstance.RegistrationTemplate.Forms.Fields" ).AsNoTracking()
-                        .Where( r => r.Id == RegistrationId.Value )
-                        .FirstOrDefault();
-                    if ( registration != null )
-                    {
-                        RegistrationInstanceId = registration.RegistrationInstanceId;
-                        RegistrationTemplateId = registration.RegistrationInstance.RegistrationTemplateId;
-                        RegistrationTemplate = registration.RegistrationInstance.RegistrationTemplate;
-                    }
-                }
-
-                if ( RegistrationInstanceId.HasValue && !RegistrationTemplateId.HasValue )
-                {
-                    var registrationInstance = new RegistrationInstanceService( rockContext )
-                        .Queryable( "RegistrationTemplate.Forms.Fields" ).AsNoTracking()
-                        .Where( r => r.Id == RegistrationInstanceId.Value )
-                        .FirstOrDefault();
-                    if ( registrationInstance != null )
-                    {
-                        RegistrationTemplateId = registrationInstance.RegistrationTemplateId;
-                        RegistrationTemplate = registrationInstance.RegistrationTemplate;
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -151,8 +132,12 @@ namespace RockWeb.Blocks.Event
         {
             base.OnLoad( e );
 
+            nbConfirmationQueued.Visible = false;
+            nbPaymentError.Visible = false;
+
             if ( !Page.IsPostBack )
             {
+                LoadState();
                 if ( RegistrationInstanceId.HasValue )
                 {
                     ShowDetail( RegistrationId.Value, RegistrationInstanceId );
@@ -165,34 +150,6 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Returns breadcrumbs specific to the block that should be added to navigation
-        /// based on the current page reference.  This function is called during the page's
-        /// oninit to load any initial breadcrumbs.
-        /// </summary>
-        /// <param name="pageReference">The <see cref="Rock.Web.PageReference" />.</param>
-        /// <returns>
-        /// A <see cref="System.Collections.Generic.List{BreadCrumb}" /> of block related <see cref="Rock.Web.UI.BreadCrumb">BreadCrumbs</see>.
-        /// </returns>
-        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
-        {
-            var breadCrumbs = new List<BreadCrumb>();
-
-            int? registrationId = PageParameter( pageReference, "RegistrationId" ).AsIntegerOrNull();
-            if ( registrationId.HasValue )
-            {
-                Registration registration = GetRegistration( registrationId.Value );
-                if ( registration != null )
-                {
-                    breadCrumbs.Add( new BreadCrumb( registration.ToString(), pageReference ) );
-                    return breadCrumbs;
-                }
-            }
-
-            breadCrumbs.Add( new BreadCrumb( "New Registration", pageReference ) );
-            return breadCrumbs;
-        }
-
-        /// <summary>
         /// Saves any user control view-state changes that have occurred since the last page postback.
         /// </summary>
         /// <returns>
@@ -200,9 +157,20 @@ namespace RockWeb.Blocks.Event
         /// </returns>
         protected override object SaveViewState()
         {
+            ViewState["Title"] = Title;
             ViewState["RegistrationId"] = RegistrationId;
             ViewState["RegistrationInstanceId"] = RegistrationInstanceId;
-            ViewState["RegistrantGuids"] = RegistrantGuids;
+            ViewState["EditAllowed"] = EditAllowed;
+            ViewState["PercentageDiscountExists"] = PercentageDiscountExists;
+
+            var jsonSetting = new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+            };
+
+            ViewState["RegistrationTemplate"] = JsonConvert.SerializeObject( RegistrationTemplateState, Formatting.None, jsonSetting );
+            ViewState["Registrants"] = JsonConvert.SerializeObject( RegistrantsState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -218,7 +186,10 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            ShowEditDetails( GetRegistration( hfRegistrationId.Value.AsInteger() ) );
+            if ( RegistrationId.HasValue )
+            {
+                ShowEditDetails( GetRegistration( RegistrationId.Value ) );
+            }
         }
 
         /// <summary>
@@ -230,30 +201,39 @@ namespace RockWeb.Blocks.Event
         {
             RockContext rockContext = new RockContext();
 
-            var registrationService = new RegistrationService( rockContext );
-            Registration registration = registrationService.Get( int.Parse( hfRegistrationId.Value ) );
-
-            if ( registration != null )
+            if ( RegistrationId.HasValue )
             {
-                if ( !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                var registrationService = new RegistrationService( rockContext );
+                Registration registration = registrationService.Get( RegistrationId.Value );
+
+                if ( registration != null )
                 {
-                    mdDeleteWarning.Show( "You are not authorized to delete this registration.", ModalAlertType.Information );
-                    return;
+                    if ( !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                    {
+                        mdDeleteWarning.Show( "You are not authorized to delete this registration.", ModalAlertType.Information );
+                        return;
+                    }
+
+                    if ( registration.Payments.Any() )
+                    {
+                        mdDeleteWarning.Show( "This registration has existing payments and cannot be deleted.", ModalAlertType.Information );
+                        return;
+                    }
+
+                    string errorMessage;
+                    if ( !registrationService.CanDelete( registration, out errorMessage ) )
+                    {
+                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                    registrationService.Delete( registration );
+
+                    rockContext.SaveChanges();
                 }
 
-                string errorMessage;
-                if ( !registrationService.CanDelete( registration, out errorMessage ) )
-                {
-                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
-                    return;
-                }
-
-                registrationService.Delete( registration );
-
-                rockContext.SaveChanges();
+                NavigateToParentPage();
             }
-
-            NavigateToParentPage();
         }
 
         /// <summary>
@@ -263,50 +243,54 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Registration registration = null;
-            RockContext rockContext = new RockContext();
-
-            var registrationService = new RegistrationService( rockContext );
-
-            int registrationId = int.Parse( hfRegistrationId.Value );
-
-            if ( registrationId != 0 )
+            if ( RegistrationId.HasValue )
             {
-                registration = registrationService.Queryable().Where( g => g.Id == registrationId ).FirstOrDefault();
-            }
+                Registration registration = null;
+                RockContext rockContext = new RockContext();
 
-            if ( registration == null )
-            {
-                registration = new Registration { RegistrationInstanceId = RegistrationInstanceId ?? 0 };
-                registrationService.Add( registration );
-            }
+                var registrationService = new RegistrationService( rockContext );
 
-            if ( registration != null && RegistrationInstanceId > 0 )
-            {
-                registration.PersonAliasId = ppPerson.PersonAliasId.Value;
-                registration.FirstName = tbFirstName.Text;
-                registration.LastName = tbLastName.Text;
-                registration.ConfirmationEmail = ebConfirmationEmail.Text;
-
-                if ( !Page.IsValid )
+                if ( RegistrationId.Value != 0 )
                 {
-                    return;
+                    registration = registrationService.Queryable().Where( g => g.Id == RegistrationId.Value ).FirstOrDefault();
                 }
 
-                if ( !registration.IsValid )
+                if ( registration == null )
                 {
-                    // Controls will render the error messages                    
-                    return;
+                    registration = new Registration { RegistrationInstanceId = RegistrationInstanceId ?? 0 };
+                    registrationService.Add( registration );
                 }
 
-                // use WrapTransaction since SaveAttributeValues does it's own RockContext.SaveChanges()
-                rockContext.WrapTransaction( () =>
+                if ( registration != null && RegistrationInstanceId > 0 )
                 {
-                    rockContext.SaveChanges();
-                } );
+                    registration.PersonAliasId = ppPerson.PersonAliasId.Value;
+                    registration.FirstName = tbFirstName.Text;
+                    registration.LastName = tbLastName.Text;
+                    registration.ConfirmationEmail = ebConfirmationEmail.Text;
+                    registration.DiscountCode = tbDiscountCode.Text;
+                    registration.DiscountPercentage = nbDiscountPercentage.Text.AsDecimal() * 0.01m;
+                    registration.DiscountAmount = cbDiscountAmount.Text.AsDecimal();
 
-                // Reload registration
-                ShowReadonlyDetails( GetRegistration( registration.Id ) );
+                    if ( !Page.IsValid )
+                    {
+                        return;
+                    }
+
+                    if ( !registration.IsValid )
+                    {
+                        // Controls will render the error messages                    
+                        return;
+                    }
+
+                    // use WrapTransaction since SaveAttributeValues does it's own RockContext.SaveChanges()
+                    rockContext.WrapTransaction( () =>
+                    {
+                        rockContext.SaveChanges();
+                    } );
+
+                    // Reload registration
+                    ShowReadonlyDetails( GetRegistration( registration.Id ) );
+                }
             }
         }
 
@@ -317,7 +301,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            if ( hfRegistrationId.Value.Equals( "0" ) )
+            if ( !RegistrationId.HasValue || RegistrationId.Value == 0 )
             {
                 var pageParams = new Dictionary<string, string>();
                 pageParams.Add( "RegistrationInstanceId", RegistrationInstanceId.ToString() );
@@ -326,7 +310,7 @@ namespace RockWeb.Blocks.Event
             else
             {
                 // Cancelling on Edit.  Return to Details
-                ShowReadonlyDetails( GetRegistration( hfRegistrationId.Value.AsInteger() ) );
+                ShowReadonlyDetails( GetRegistration( RegistrationId.Value ) );
             }
         }
 
@@ -337,10 +321,9 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            var currentRegistration = GetRegistration( hfRegistrationId.Value.AsInteger() );
-            if ( currentRegistration != null )
+            if ( Registration != null )
             {
-                ShowReadonlyDetails( currentRegistration );
+                ShowReadonlyDetails( Registration );
             }
             else
             {
@@ -396,147 +379,233 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        protected void lbResendConfirmation_Click( object sender, EventArgs e )
+        {
+            if ( RegistrationId.HasValue )
+            {
+                string appRoot = ResolveRockUrl( "~/" );
+                string themeRoot = ResolveRockUrl( "~~/" );
+
+                var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
+                confirmation.RegistrationId = RegistrationId.Value;
+                confirmation.AppRoot = appRoot;
+                confirmation.ThemeRoot = themeRoot;
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
+
+                nbConfirmationQueued.Visible = true;
+            }
+        }
+
+        protected void lbAddPayment_Click( object sender, EventArgs e )
+        {
+            if ( Registration != null && Registration.PersonAliasId.HasValue && RegistrationTemplateState != null && RegistrationTemplateState.FinancialGateway != null )
+            {
+                var component = RegistrationTemplateState.FinancialGateway.GetGatewayComponent();
+                if ( component != null )
+                {
+                    txtCardFirstName.Visible = component.SplitNameOnCard;
+                    txtCardLastName.Visible = component.SplitNameOnCard;
+                    txtCardName.Visible = !component.SplitNameOnCard;
+                    mypExpiration.MinimumYear = RockDateTime.Now.Year;
+
+                    cbPaymentAmount.Text = string.Empty;
+                    cbPaymentAmount.Placeholder = Registration.BalanceDue.ToString( "N2" );
+
+                    if ( Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
+                    {
+                        var person = Registration.PersonAlias.Person;
+                        txtCardFirstName.Text = person.FirstName;
+                        txtCardLastName.Text = person.LastName;
+                        txtCardName.Text = person.FullName;
+
+                        var location = person.GetHomeLocation();
+                        acBillingAddress.SetValues( location );
+                    }
+
+                    pnlCosts.Visible = false;
+                    pnlPaymentInfo.Visible = true;
+                }
+            }
+        }
+
+        protected void lbCancelPayment_Click( object sender, EventArgs e )
+        {
+            pnlPaymentInfo.Visible = false;
+            pnlCosts.Visible = true;
+        }
+
+        protected void lbSubmitPayment_Click( object sender, EventArgs e )
+        {
+            decimal pmtAmount = cbPaymentAmount.Text.AsDecimal();
+            if ( Registration != null && Registration.BalanceDue >= pmtAmount && pmtAmount > 0 )
+            {
+                try
+                {
+                    var rockContext = new RockContext();
+                    rockContext.WrapTransaction( () =>
+                    {
+                        string errorMessage = string.Empty;
+                        if ( !ProcessPayment( rockContext, Registration, pmtAmount, out errorMessage ) )
+                        {
+                            throw new Exception( errorMessage );
+                        }
+                    } );
+
+                    // reload registration
+                    Registration = GetRegistration( Registration.Id, rockContext );
+                    ShowReadonlyDetails( Registration );
+                    RockPage.UpdateBlocks( "~/Blocks/Finance/TransactionList.ascx" );
+
+                    pnlPaymentInfo.Visible = false;
+                    pnlCosts.Visible = true;
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
+
+                    nbPaymentError.Heading = "Error Processing Payment";
+                    nbPaymentError.Text = ex.Message;
+                    nbPaymentError.Visible = true;
+
+                }
+            }
+            else
+            {
+                nbPaymentError.Heading = "Invalid Payment Amount";
+                nbPaymentError.Text = "Payment amount must be greater than zero and less than or equal to the balance due.";
+                nbPaymentError.Visible = true;
+            }
+
+        }
+
         #endregion
 
         #region Registrant Events
 
-        void registrantEditor_SelectPersonClick( object sender, EventArgs e )
+        void lbEditRegistrant_Click( object sender, EventArgs e )
         {
-            var editor = sender as RegistrantEditor;
-            if ( editor != null )
+            var lb = sender as LinkButton;
+            if ( lb != null )
             {
-                if ( editor.PersonId.HasValue )
+                int? registrantId = lb.ID.Substring( 17 ).AsIntegerOrNull();
+                if ( registrantId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        var person = new PersonService( rockContext ).Get( editor.PersonId.Value );
-                        if ( person != null )
-                        {
-                            editor.Title = person.ToString();
-                        }
-                        else
-                        {
-                            editor.Title = "New Registrant";
-                        }
-                    }
-                }
-                else
-                {
-                    editor.Title = "New Registrant";
+                    NavigateToLinkedPage( "RegistrantPage", "RegistrantId", registrantId.Value );
                 }
             }
         }
 
-        void registrantEditor_EditRegistrantClick( object sender, EventArgs e )
+        void lbDeleteRegistrant_Click( object sender, EventArgs e )
         {
-            var editor = sender as RegistrantEditor;
-            if ( editor != null )
+            var lb = sender as LinkButton;
+            if ( lb != null )
             {
-                editor.ShowEditMode();
-            }
-        }
-
-        void registrantEditor_DeleteRegistrantClick( object sender, EventArgs e )
-        {
-            var editor = sender as RegistrantEditor;
-            if ( editor != null )
-            {
-                using ( var rockContext = new RockContext() )
+                int? registrantId = lb.ID.Substring( 19 ).AsIntegerOrNull();
+                if ( registrantId.HasValue )
                 {
-                    var service = new RegistrationRegistrantService( rockContext );
-                    var registrant = service.Get( editor.RegistrantGuid );
+                    var rockContext = new RockContext();
+
+                    var registrantService = new RegistrationRegistrantService( rockContext );
+                    RegistrationRegistrant registrant = registrantService.Get( registrantId.Value );
+
                     if ( registrant != null )
                     {
-                        service.Delete( registrant );
+                        if ( !registrant.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                        {
+                            mdDeleteWarning.Show( "You are not authorized to delete this registrant.", ModalAlertType.Information );
+                            return;
+                        }
+
+                        string errorMessage;
+                        if ( !registrantService.CanDelete( registrant, out errorMessage ) )
+                        {
+                            mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                            return;
+                        }
+
+                        registrantService.Delete( registrant );
+
                         rockContext.SaveChanges();
                     }
-                }
 
-                if ( RegistrantGuids.ContainsKey( editor.RegistrantGuid ) )
-                {
-                    phRegistrants.Controls.Remove( editor );
-                }
-                RegistrantGuids.Remove( editor.RegistrantGuid );
-            }
-        }
-
-        void registrantEditor_SaveRegistrantClick( object sender, EventArgs e )
-        {
-            var editor = sender as RegistrantEditor;
-            if ( editor != null && RegistrantGuids.ContainsKey( editor.RegistrantGuid ) )
-            {
-                var uiRegistrant = new RegistrationRegistrant();
-                editor.SetRegistrantFromControl( uiRegistrant );
-
-                using ( var rockContext = new RockContext() )
-                {
-                    var service = new RegistrationRegistrantService( rockContext );
-                    RegistrationRegistrant registrant = null;
-
-                    if ( !RegistrantGuids[editor.RegistrantGuid] )
-                    {
-                        registrant = service.Get( editor.RegistrantGuid );
-                    }
-
-                    if ( registrant == null )
-                    {
-                        registrant = new RegistrationRegistrant();
-                        service.Add( registrant );
-                    }
-                    else
-                    {
-                        uiRegistrant.Id = registrant.Id;
-                        uiRegistrant.Guid = registrant.Guid;
-                    }
-
-                    registrant.CopyPropertiesFrom( uiRegistrant );
-                    registrant.RegistrationId = hfRegistrationId.ValueAsInt();
-                    
-                    rockContext.SaveChanges();
-
-                    editor.SetControlFromRegistrant( registrant, rockContext );
-
-                    var registration = new RegistrationService( rockContext ).Get( hfRegistrationId.ValueAsInt() );
-                    SetCostLabels( registration );
-
-                    RegistrantGuids[editor.RegistrantGuid] = false;
-                }
-
-                editor.ShowViewMode();
-            }
-        }
-
-        void registrantEditor_CancelRegistrantClick( object sender, EventArgs e )
-        {
-            var editor = sender as RegistrantEditor;
-            if ( editor != null )
-            {
-                if ( RegistrantGuids.ContainsKey( editor.RegistrantGuid ) && RegistrantGuids[editor.RegistrantGuid] )
-                {
-                    phRegistrants.Controls.Remove( editor );
-                    RegistrantGuids.Remove( editor.RegistrantGuid );
-                }
-                else
-                {
-                    editor.ShowViewMode();
+                    // Reload registration
+                    ShowReadonlyDetails( GetRegistration( RegistrationId ) );
                 }
             }
         }
 
         protected void lbAddRegistrant_Click( object sender, EventArgs e )
         {
-            Guid guid = Guid.NewGuid();
-            var registrant = new RegistrationRegistrant { Guid = guid, RegistrationId = hfRegistrationId.ValueAsInt() };
-            RegistrantGuids.Add( guid, true );
-
-            var editor = AddRegistrantControl( guid, registrant );
-            editor.Expanded = true;
-            editor.ShowEditMode();
+            NavigateToLinkedPage( "RegistrantPage", "RegistrantId", 0, "RegistrationId", RegistrationId );
         }
 
         #endregion
 
         #region Methods
+
+        #region Load/Save Methods
+
+        private void LoadState()
+        {
+            if ( !RegistrationInstanceId.HasValue )
+            {
+                Title = "New Registration";
+                RegistrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
+                RegistrationId = PageParameter( "RegistrationId" ).AsIntegerOrNull();
+
+                var rockContext = new RockContext();
+
+                if ( RegistrationId.HasValue )
+                {
+                    Registration = GetRegistration( RegistrationId.Value, rockContext );
+                    if ( Registration != null )
+                    {
+                        Title = Registration.ToString();
+                        RegistrationInstanceId = Registration.RegistrationInstanceId;
+                        RegistrationTemplateState = Registration.RegistrationInstance.RegistrationTemplate;
+                    }
+                }
+
+                EditAllowed = IsUserAuthorized( Authorization.EDIT ) || ( Registration != null && Registration.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
+
+                if ( RegistrationTemplateState == null && RegistrationInstanceId.HasValue )
+                {
+                    var registrationInstance = new RegistrationInstanceService( rockContext )
+                        .Queryable( "RegistrationTemplate" ).AsNoTracking()
+                        .Where( i => i.Id == RegistrationInstanceId.Value )
+                        .FirstOrDefault();
+                    if ( registrationInstance != null )
+                    {
+                        RegistrationTemplateState = registrationInstance.RegistrationTemplate;
+                        EditAllowed = EditAllowed || registrationInstance.RegistrationTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the group.
+        /// </summary>
+        /// <param name="registrationId">The group identifier.</param>
+        /// <returns></returns>
+        private Registration GetRegistration( int? registrationId, RockContext rockContext = null )
+        {
+            if ( registrationId.HasValue && registrationId.Value != 0 )
+            {
+                rockContext = rockContext ?? new RockContext();
+
+                var registration = new RegistrationService( rockContext )
+                    .Queryable( "RegistrationInstance.RegistrationTemplate.Forms.Fields,PersonAlias.Person,Group,Registrants.Fees" ).AsNoTracking()
+                    .Where( r => r.Id == RegistrationId.Value )
+                    .FirstOrDefault();
+
+                return registration;
+            }
+
+            return null;
+        }
+
+        #endregion
 
         #region Display Methods
 
@@ -556,40 +625,27 @@ namespace RockWeb.Blocks.Event
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
         public void ShowDetail( int registrationId, int? registrationInstanceId )
         {
-            Registration registration = null;
-
-            bool viewAllowed = false;
-            bool editAllowed = IsUserAuthorized( Authorization.EDIT );
             RockContext rockContext = new RockContext();
 
-            if ( !registrationId.Equals( 0 ) )
+            if ( Registration == null && !registrationId.Equals( 0 ) )
             {
-                registration = GetRegistration( registrationId, rockContext );
+                Registration = GetRegistration( registrationId, rockContext );
             }
 
-            if ( registration == null && registrationInstanceId.HasValue )
+            if ( Registration == null && registrationInstanceId.HasValue )
             {
-                registration = new Registration { Id = 0, RegistrationInstanceId = registrationInstanceId ?? 0 };
+                Registration = new Registration { Id = 0, RegistrationInstanceId = registrationInstanceId ?? 0 };
             }
 
-            if ( registration != null )
+            if ( Registration != null )
             {
-                lReadOnlyTitle.Text = "Registration".FormatAsHtmlTitle();
-
-                RegistrationInstanceId = registration.RegistrationInstanceId;
-
-                viewAllowed = editAllowed || registration.IsAuthorized( Authorization.VIEW, CurrentPerson );
-                editAllowed = IsUserAuthorized( Authorization.EDIT ) || registration.IsAuthorized( Authorization.EDIT, CurrentPerson );
-
-                pnlDetails.Visible = viewAllowed;
-
-                hfRegistrationId.Value = registration.Id.ToString();
+                RegistrationInstanceId = Registration.RegistrationInstanceId;
 
                 // render UI based on Authorized and IsSystem
                 bool readOnly = false;
 
                 nbEditModeMessage.Text = string.Empty;
-                if ( !editAllowed )
+                if ( !EditAllowed )
                 {
                     readOnly = true;
                     nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
@@ -599,23 +655,21 @@ namespace RockWeb.Blocks.Event
                 {
                     btnEdit.Visible = false;
                     btnDelete.Visible = false;
-                    ShowReadonlyDetails( registration );
+                    ShowReadonlyDetails( Registration );
                 }
                 else
                 {
                     btnEdit.Visible = true;
                     btnDelete.Visible = true;
-                    if ( registration.Id > 0 )
+                    if ( Registration.Id > 0 )
                     {
-                        ShowReadonlyDetails( registration );
+                        ShowReadonlyDetails( Registration );
                     }
                     else
                     {
-                        ShowEditDetails( registration );
+                        ShowEditDetails( Registration );
                     }
                 }
-
-                BuildRegistrantControls( registration.Registrants );
             }
         }
 
@@ -626,7 +680,6 @@ namespace RockWeb.Blocks.Event
         private void ShowEditDetails( Registration registration )
         {
             SetCostLabels( registration );
-
             SetEditMode( true );
 
             if ( registration.PersonAlias != null )
@@ -641,6 +694,14 @@ namespace RockWeb.Blocks.Event
             tbFirstName.Text = registration.FirstName;
             tbLastName.Text = registration.LastName;
             ebConfirmationEmail.Text = registration.ConfirmationEmail;
+            tbDiscountCode.Text = registration.DiscountCode;
+            nbDiscountPercentage.Text = nbDiscountPercentage.Text = ( registration.DiscountPercentage * 100.0m ).ToString( "N0" );
+            cbDiscountAmount.Text = registration.DiscountAmount.ToString();
+
+            RegistrantsState = null;
+            BuildRegistrationControls( true );
+
+            lbAddRegistrant.Visible = false;
         }
 
         /// <summary>
@@ -649,13 +710,10 @@ namespace RockWeb.Blocks.Event
         /// <param name="registration">The group.</param>
         private void ShowReadonlyDetails( Registration registration )
         {
+            SetCostLabels( registration );
             SetEditMode( false );
 
             var rockContext = new RockContext();
-
-            hfRegistrationId.SetValue( registration.Id );
-
-            SetCostLabels( registration );
 
             if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
             {
@@ -668,6 +726,7 @@ namespace RockWeb.Blocks.Event
 
             lConfirmationEmail.Text = registration.ConfirmationEmail;
             lConfirmationEmail.Visible = !string.IsNullOrWhiteSpace( registration.ConfirmationEmail );
+            lbResendConfirmation.Visible = lConfirmationEmail.Visible;
 
             if ( registration.Group != null )
             {
@@ -682,6 +741,24 @@ namespace RockWeb.Blocks.Event
             {
                 lGroup.Visible = false;
             }
+
+            lDiscountCode.Visible = !string.IsNullOrWhiteSpace( registration.DiscountCode );
+            lDiscountCode.Text = registration.DiscountCode;
+
+            lDiscountPercent.Visible = registration.DiscountPercentage > 0.0m;
+            lDiscountPercent.Text = registration.DiscountPercentage.ToString("P0");
+
+            lDiscountAmount.Visible = registration.DiscountAmount > 0.0m;
+            lDiscountAmount.Text = registration.DiscountAmount.ToString( "C2" );
+
+            RegistrantsState = new List<RegistrantInfo>();
+            registration.Registrants.ToList().ForEach( r => RegistrantsState.Add( new RegistrantInfo( r, rockContext ) ) );
+
+            PercentageDiscountExists = registration.DiscountPercentage > 0.0m;
+            BuildFeeTable( registration );
+            BuildRegistrationControls( true );
+
+            lbAddRegistrant.Visible = EditAllowed;
         }
 
         /// <summary>
@@ -693,17 +770,13 @@ namespace RockWeb.Blocks.Event
             if ( registration != null && registration.TotalCost > 0.0M )
             {
                 hlCost.Visible = true;
-                hlCost.Text = registration.TotalCost.ToString( "C2" );
+                hlCost.Text = registration.DiscountedCost.ToString( "C2" );
 
+                decimal balanceDue = registration.BalanceDue;
                 hlBalance.Visible = true;
-
-                using ( var rockContext = new RockContext() )
-                {
-                    decimal totalPaid = new RegistrationService( rockContext ).GetTotalPayments( registration.Id );
-                    decimal balanceDue = registration.TotalCost - totalPaid;
-                    hlBalance.Text = balanceDue.ToString( "C2" );
-                    hlBalance.LabelType = balanceDue > 0 ? LabelType.Danger : LabelType.Success;
-                }
+                hlBalance.Text = balanceDue.ToString( "C2" );
+                hlBalance.LabelType = balanceDue > 0 ? LabelType.Danger : 
+                    balanceDue < 0 ? LabelType.Warning : LabelType.Success;
             }
             else
             {
@@ -725,138 +798,542 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Gets the group.
+        /// Registers the client script.
         /// </summary>
-        /// <param name="registrationId">The group identifier.</param>
-        /// <returns></returns>
-        private Registration GetRegistration( int registrationId, RockContext rockContext = null )
+        private void RegisterClientScript()
         {
-            string key = string.Format( "Registration:{0}", registrationId );
-            Registration registration = RockPage.GetSharedItem( key ) as Registration;
-            if ( registration == null )
-            {
-                rockContext = rockContext ?? new RockContext();
-                registration = new RegistrationService( rockContext ).Queryable( "PersonAlias.Person,Group,Registrants.Fees" )
-                    .Where( g => g.Id == registrationId )
-                    .FirstOrDefault();
-                RockPage.SaveSharedItem( key, registration );
-            }
+            RockPage.AddScriptLink( ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
 
-            return registration;
+            string script = @"
+    // Detect credit card type
+    $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
+";
+            ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registration-detail-card-info", script, true );
         }
 
         #endregion
 
-        #region Registrant Control Methods
+        #region Payment
 
         /// <summary>
-        /// Adds the registrant controls.
+        /// Processes the payment.
         /// </summary>
-        /// <param name="registrants">The registrants.</param>
-        private void BuildRegistrantControls( IEnumerable<RegistrationRegistrant> registrants )
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registration">The registration.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private bool ProcessPayment( RockContext rockContext, Registration registration, decimal amount, out string errorMessage )
         {
-            phRegistrants.Controls.Clear();
-            RegistrantGuids = new Dictionary<Guid, bool>();
-
-            foreach( var registrant in registrants )
+            GatewayComponent gateway = null;
+            if ( RegistrationTemplateState != null && RegistrationTemplateState.FinancialGateway != null )
             {
-                RegistrantGuids.Add( registrant.Guid, false );
-                AddRegistrantControl( registrant.Guid, registrant );
+                gateway = RegistrationTemplateState.FinancialGateway.GetGatewayComponent();
             }
-        }
 
-        /// <summary>
-        /// Adds the registrant controls.
-        /// </summary>
-        private void BuildRegistrantControls()
-        {
-            phRegistrants.Controls.Clear();
-            if ( RegistrantGuids != null )
+            if ( gateway == null )
             {
-                RegistrantGuids.Keys.ToList().ForEach( r =>
-                    AddRegistrantControl( r, null ) );
+                errorMessage = "There was a problem creating the payment gateway information";
+                return false;
             }
-        }
 
-        /// <summary>
-        /// Adds the registrant control.
-        /// </summary>
-        /// <param name="guid">The unique identifier.</param>
-        /// <param name="registrant">The registrant.</param>
-        private RegistrantEditor AddRegistrantControl( Guid guid, RegistrationRegistrant registrant = null )
-        {
-            var registrantEditor = new RegistrantEditor();
-            phRegistrants.Controls.Add( registrantEditor );
-            registrantEditor.SetForms( RegistrationTemplate );
-            registrantEditor.ID = "re" + guid;
-            registrantEditor.SelectPersonClick += registrantEditor_SelectPersonClick;
-            registrantEditor.EditRegistrantClick += registrantEditor_EditRegistrantClick;
-            registrantEditor.DeleteRegistrantClick += registrantEditor_DeleteRegistrantClick;
-            registrantEditor.SaveRegistrantClick += registrantEditor_SaveRegistrantClick;
-            registrantEditor.CancelRegistrantClick += registrantEditor_CancelRegistrantClick;
-
-            if ( registrant != null )
+            if ( registration == null || registration.RegistrationInstance == null || registration.RegistrationInstance.Account == null )
             {
-                using ( var rockContext = new RockContext() )
+                errorMessage = "There was a problem with the account configuration for this registration.";
+                return false;
+            }
+
+            var paymentInfo = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate.Value );
+            paymentInfo.NameOnCard = gateway != null && gateway.SplitNameOnCard ? txtCardFirstName.Text : txtCardName.Text;
+            paymentInfo.LastNameOnCard = txtCardLastName.Text;
+
+            paymentInfo.BillingStreet1 = acBillingAddress.Street1;
+            paymentInfo.BillingStreet2 = acBillingAddress.Street2;
+            paymentInfo.BillingCity = acBillingAddress.City;
+            paymentInfo.BillingState = acBillingAddress.State;
+            paymentInfo.BillingPostalCode = acBillingAddress.PostalCode;
+            paymentInfo.BillingCountry = acBillingAddress.Country;
+
+            paymentInfo.Amount = amount;
+            paymentInfo.Email = registration.ConfirmationEmail;
+
+            paymentInfo.FirstName = registration.FirstName;
+            paymentInfo.LastName = registration.LastName;
+
+            var transaction = gateway.Charge( RegistrationTemplateState.FinancialGateway, paymentInfo, out errorMessage );
+            if ( transaction != null )
+            {
+                var txnChanges = new List<string>();
+                txnChanges.Add( "Created Transaction" );
+
+                History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
+
+                transaction.AuthorizedPersonAliasId = registration.PersonAliasId;
+
+                transaction.TransactionDateTime = RockDateTime.Now;
+                History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );
+
+                transaction.FinancialGatewayId = RegistrationTemplateState.FinancialGatewayId;
+                History.EvaluateChange( txnChanges, "Gateway", string.Empty, RegistrationTemplateState.FinancialGateway.Name );
+
+                var txnType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
+                transaction.TransactionTypeValueId = txnType.Id;
+                History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
+
+                transaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
+                History.EvaluateChange( txnChanges, "Currency Type", string.Empty, paymentInfo.CurrencyTypeValue.Value );
+
+                transaction.CreditCardTypeValueId = paymentInfo.CreditCardTypeValue != null ? paymentInfo.CreditCardTypeValue.Id : (int?)null;
+                if ( transaction.CreditCardTypeValueId.HasValue )
                 {
-                    registrantEditor.SetControlFromRegistrant( registrant, rockContext );
-                    if ( !Page.IsPostBack && RegistrantId.HasValue && RegistrantId.Value == registrant.Id )
+                    var ccType = DefinedValueCache.Read( transaction.CreditCardTypeValueId.Value );
+                    History.EvaluateChange( txnChanges, "Credit Card Type", string.Empty, ccType.Value );
+                }
+
+                Guid sourceGuid = Guid.Empty;
+                if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
+                {
+                    var source = DefinedValueCache.Read( sourceGuid );
+                    if ( source != null )
                     {
-                        pwRegistrationDetails.Expanded = false;
-                        registrantEditor.Expanded = true;
+                        transaction.SourceTypeValueId = source.Id;
+                        History.EvaluateChange( txnChanges, "Source", string.Empty, source.Value );
+                    }
+                }
+
+                var transactionDetail = new FinancialTransactionDetail();
+                transactionDetail.Amount = amount;
+                transactionDetail.AccountId = registration.RegistrationInstance.AccountId;
+                transactionDetail.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Registration ) ).Id;
+                transactionDetail.EntityId = registration.Id;
+                transaction.TransactionDetails.Add( transactionDetail );
+
+                History.EvaluateChange( txnChanges, registration.RegistrationInstance.Account.Name, 0.0M.ToString( "C2" ), transactionDetail.Amount.ToString( "C2" ) );
+
+                var batchService = new FinancialBatchService( rockContext );
+
+                // Get the batch
+                var batch = batchService.Get(
+                    GetAttributeValue( "BatchNamePrefix" ),
+                    paymentInfo.CurrencyTypeValue,
+                    paymentInfo.CreditCardTypeValue,
+                    transaction.TransactionDateTime.Value,
+                    RegistrationTemplateState.FinancialGateway.GetBatchTimeOffset() );
+
+                var batchChanges = new List<string>();
+
+                if ( batch.Id == 0 )
+                {
+                    batchChanges.Add( "Generated the batch" );
+                    History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
+                    History.EvaluateChange( batchChanges, "Status", null, batch.Status );
+                    History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
+                    History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+                }
+
+                decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
+                History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.ToString( "C2" ), newControlAmount.ToString( "C2" ) );
+                batch.ControlAmount = newControlAmount;
+
+                transaction.BatchId = batch.Id;
+                batch.Transactions.Add( transaction );
+
+                rockContext.SaveChanges();
+
+                HistoryService.SaveChanges(
+                    rockContext,
+                    typeof( FinancialBatch ),
+                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                    batch.Id,
+                    batchChanges
+                );
+
+                HistoryService.SaveChanges(
+                    rockContext,
+                    typeof( FinancialBatch ),
+                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                    batch.Id,
+                    txnChanges,
+                    CurrentPerson != null ? CurrentPerson.FullName : string.Empty,
+                    typeof( FinancialTransaction ),
+                    transaction.Id
+                );
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+        #endregion
+
+        #region Dynamic Controls
+
+        private void BuildFeeTable( Registration registration )
+        {
+            // Get the cost/fee summary
+            var costs = new List<RegistrationCostSummaryInfo>();
+            foreach ( var registrant in RegistrantsState )
+            {
+                if ( registrant.Cost > 0 )
+                {
+                    var costSummary = new RegistrationCostSummaryInfo();
+                    costSummary.Type = RegistrationCostSummaryType.Cost;
+                    costSummary.Description = registrant.PersonName;
+                    costSummary.Cost = registrant.Cost;
+                    if ( registration.DiscountPercentage > 0.0m )
+                    {
+                        costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * registration.DiscountPercentage );
+                    }
+                    else
+                    {
+                        costSummary.DiscountedCost = costSummary.Cost;
+                    }
+
+                    costs.Add( costSummary );
+                }
+
+                foreach ( var fee in registrant.FeeValues )
+                {
+                    var templateFee = RegistrationTemplateState.Fees.Where( f => f.Id == fee.Key ).FirstOrDefault();
+                    if ( fee.Value != null )
+                    {
+                        foreach ( var feeInfo in fee.Value )
+                        {
+                            decimal cost = feeInfo.PreviousCost > 0.0m ? feeInfo.PreviousCost : feeInfo.Cost;
+                            string desc = string.Format( "{0}{1} ({2:N0} @ {3:C2})",
+                                templateFee != null ? templateFee.Name : "(Previous Cost)",
+                                string.IsNullOrWhiteSpace( feeInfo.Option ) ? "" : "-" + feeInfo.Option,
+                                feeInfo.Quantity,
+                                cost );
+
+                            var costSummary = new RegistrationCostSummaryInfo();
+                            costSummary.Type = RegistrationCostSummaryType.Fee;
+                            costSummary.Description = desc;
+                            costSummary.Cost = feeInfo.Quantity * cost;
+
+                            if ( registration.DiscountPercentage > 0.0m && templateFee != null && templateFee.DiscountApplies )
+                            {
+                                costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * registration.DiscountPercentage );
+                            }
+                            else
+                            {
+                                costSummary.DiscountedCost = costSummary.Cost;
+                            }
+
+                            costs.Add( costSummary );
+                        }
                     }
                 }
             }
 
-            return registrantEditor;
-        }
-
-        #endregion
-
-        #region Dialog Methods
-
-        /// <summary>
-        /// Shows the dialog.
-        /// </summary>
-        /// <param name="dialog">The dialog.</param>
-        /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void ShowDialog( string dialog, bool setValues = false )
-        {
-            hfActiveDialog.Value = dialog.ToUpper().Trim();
-            ShowDialog( setValues );
-        }
-
-        /// <summary>
-        /// Shows the dialog.
-        /// </summary>
-        /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void ShowDialog( bool setValues = false )
-        {
-            switch ( hfActiveDialog.Value )
+            // If there were any costs
+            if ( costs.Any() )
             {
-                default:
-                    break;
+                pnlCosts.Visible = true;
+
+                // Get the total min payment for all costs and fees
+                decimal minPayment = costs.Sum( c => c.MinPayment );
+
+                // Add row for amount discount
+                if ( registration.DiscountAmount > 0.0m )
+                {
+                    decimal totalDiscount = 0.0m - ( RegistrantsState.Count * registration.DiscountAmount );
+                    costs.Add( new RegistrationCostSummaryInfo
+                    {
+                        Type = RegistrationCostSummaryType.Discount,
+                        Description = "Discount",
+                        Cost = totalDiscount,
+                        DiscountedCost = totalDiscount
+                    } );
+                }
+
+                // Get the totals
+
+                // Add row for totals
+                costs.Add( new RegistrationCostSummaryInfo
+                {
+                    Type = RegistrationCostSummaryType.Total,
+                    Description = "Total",
+                    Cost = costs.Sum( c => c.Cost ),
+                    DiscountedCost = registration.DiscountedCost,
+                } );
+
+                rptFeeSummary.DataSource = costs;
+                rptFeeSummary.DataBind();
+
+                // Set the totals
+                decimal balanceDue = registration.BalanceDue;
+                lTotalCost.Text = registration.DiscountedCost.ToString( "C2" );
+                lPreviouslyPaid.Text = registration.TotalPaid.ToString( "C2" );
+                lRemainingDue.Text = balanceDue.ToString( "C2" );
+                lbAddPayment.Visible = balanceDue > 0.0m;
+            }
+            else
+            {
+                pnlCosts.Visible = false;
             }
         }
 
-        /// <summary>
-        /// Hides the dialog.
-        /// </summary>
-        private void HideDialog()
+        private void BuildRegistrationControls( bool setValues )
         {
-            switch ( hfActiveDialog.Value )
+            phDynamicControls.Controls.Clear();
+            if ( RegistrantsState != null )
             {
-                default:
-                    break;
+                foreach ( var registrant in RegistrantsState )
+                {
+                    BuildRegistrantControls( registrant, setValues );
+                }
+            }
+        }
+
+        private void BuildRegistrantControls( RegistrantInfo registrant, bool setValues )
+        {
+            var anchor = new HtmlAnchor();
+            anchor.Name = registrant.Id.ToString();
+            phDynamicControls.Controls.Add( anchor );
+
+            var divPanel = new HtmlGenericControl( "div" );
+            divPanel.AddCssClass( "panel" );
+            divPanel.AddCssClass( "panel-block" );
+            phDynamicControls.Controls.Add( divPanel );
+
+            var divHeading = new HtmlGenericControl( "div" );
+            divHeading.AddCssClass( "panel-heading" );
+            divHeading.AddCssClass( "clearfix" );
+            divPanel.Controls.Add( divHeading );
+
+            var h1Heading = new HtmlGenericControl( "h1" );
+            h1Heading.AddCssClass( "panel-title" );
+            h1Heading.AddCssClass( "pull-left" );
+            h1Heading.InnerText = registrant.PersonName;
+            divHeading.Controls.Add( h1Heading );
+
+            var divLabels = new HtmlGenericControl( "div" );
+            divLabels.AddCssClass( "panel-labels" );
+            divHeading.Controls.Add( divLabels );
+
+            decimal registrantCost = registrant.TotalCost;
+            if ( registrantCost != 0.0m )
+            {
+                var hlCost = new HighlightLabel();
+                hlCost.ID = string.Format( "hlCost_{0}", registrant.Id );
+                hlCost.LabelType = LabelType.Info;
+                hlCost.ToolTip = "Cost";
+                hlCost.Text = registrantCost.ToString( "C2" );
+                divLabels.Controls.Add( hlCost );
             }
 
-            hfActiveDialog.Value = string.Empty;
+            var divBody = new HtmlGenericControl( "div" );
+            divBody.AddCssClass( "panel-body" );
+            divPanel.Controls.Add( divBody );
+
+            var divRow = new HtmlGenericControl( "div" );
+            divRow.AddCssClass( "row" );
+            divBody.Controls.Add( divRow );
+
+            var divFields = new HtmlGenericControl( "div" );
+            divFields.AddCssClass( "col-md-6");
+            divRow.Controls.Add( divFields );
+
+            var divFees = new HtmlGenericControl( "div" );
+            divFees.AddCssClass( "col-md-6");
+            divRow.Controls.Add( divFees );
+
+            foreach( var form in RegistrationTemplateState.Forms )
+            {
+                foreach( var field in form.Fields )
+                {
+                    var fieldControl = BuildRegistrantFieldControl( field, registrant, setValues );
+                    if ( fieldControl != null )
+                    {
+                        divFields.Controls.Add( fieldControl );
+                    }
+                }
+            }
+
+            if ( registrant.Cost > 0.0m)
+            {
+                var rlCost = new RockLiteral();
+                rlCost.ID = string.Format( "rlCost_{0}", registrant.Id );
+                rlCost.Label = "Cost";
+                rlCost.Text = registrant.Cost.ToString( "C2" );
+                divFees.Controls.Add( rlCost );
+            }
+
+            foreach ( var fee in registrant.FeeValues )
+            {
+                var templateFee = RegistrationTemplateState.Fees.Where( f => f.Id == fee.Key ).FirstOrDefault();
+                if ( templateFee != null && fee.Value != null )
+                {
+                    foreach ( var feeInfo in fee.Value )
+                    {
+                        var feeControl = BuildRegistrantFeeControl( templateFee, feeInfo, registrant, setValues );
+                        if ( feeControl != null )
+                        {
+                            divFees.Controls.Add( feeControl );
+                        }
+                    }
+                }
+            }
+
+
+            var divActions = new HtmlGenericControl( "Div" );
+            divActions.AddCssClass( "actions" );
+            divBody.Controls.Add( divActions );
+
+            var lbEditRegistrant = new LinkButton();
+            lbEditRegistrant.Visible = EditAllowed;
+            lbEditRegistrant.CausesValidation = false;
+            lbEditRegistrant.ID = string.Format( "lbEditRegistrant_{0}", registrant.Id );
+            lbEditRegistrant.Text = "Edit";
+            lbEditRegistrant.CssClass = "btn btn-primary";
+            lbEditRegistrant.Click += lbEditRegistrant_Click;
+            divActions.Controls.Add( lbEditRegistrant );
+
+            var lbDeleteRegistrant = new LinkButton();
+            lbDeleteRegistrant.Visible = EditAllowed;
+            lbDeleteRegistrant.CausesValidation = false;
+            lbDeleteRegistrant.ID = string.Format( "lbDeleteRegistrant_{0}", registrant.Id );
+            lbDeleteRegistrant.Text = "Delete";
+            lbDeleteRegistrant.CssClass = "btn btn-link";
+            lbDeleteRegistrant.Attributes["onclick"] = "javascript: return Rock.dialogs.confirmDelete(event, 'Registrant');";
+            lbDeleteRegistrant.Click += lbDeleteRegistrant_Click;
+            divActions.Controls.Add( lbDeleteRegistrant );
+        }
+
+        private Control BuildRegistrantFeeControl( RegistrationTemplateFee fee, FeeInfo feeInfo, RegistrantInfo registrant, bool setValues )
+        {
+            if ( feeInfo.Quantity > 0 )
+            {
+                var rlField = new RockLiteral();
+                rlField.ID = string.Format( "rlFee_{0}_{1}", registrant.Id, fee.Id );
+                rlField.Label = fee.Name;
+
+                if ( !string.IsNullOrWhiteSpace( feeInfo.Option ) )
+                {
+                    rlField.Label += " - " + feeInfo.Option;
+                }
+
+                if ( feeInfo.Quantity > 1 )
+                {
+                    rlField.Text = string.Format( "({0:N0} @ {1:C2}) {2:C2}",
+                    feeInfo.Quantity, feeInfo.Cost, feeInfo.TotalCost );
+                }
+                else
+                {
+                    rlField.Text = feeInfo.TotalCost.ToString( "C2" );
+                }
+
+                return rlField;
+            }
+
+            return null;
+        }
+
+
+        private Control BuildRegistrantFieldControl( RegistrationTemplateFormField field, RegistrantInfo registrant, bool setValues )
+        {
+            // Ignore the first/last name fields since they are displayed in the panel's heading
+            if ( field.FieldSource == RegistrationFieldSource.PersonField &&
+                ( field.PersonFieldType == RegistrationPersonFieldType.FirstName || field.PersonFieldType == RegistrationPersonFieldType.LastName ) )
+            {
+                return null;
+            }
+
+            object fieldValue = null;
+            if ( registrant != null && registrant.FieldValues != null && registrant.FieldValues.ContainsKey( field.Id ) )
+            {
+                fieldValue = registrant.FieldValues[field.Id];
+            }
+
+            var rlField = new RockLiteral();
+            rlField.ID = string.Format( "rlField_{0}_{1}", registrant.Id, field.Id );
+
+            if ( fieldValue != null )
+            {
+                if ( field.FieldSource == RegistrationFieldSource.PersonField )
+                {
+                    rlField.Label = field.PersonFieldType.ConvertToString( true );
+
+                    switch ( field.PersonFieldType )
+                    {
+                        case RegistrationPersonFieldType.Campus:
+                            {
+                                var campus = CampusCache.Read( fieldValue.ToString().AsInteger() );
+                                rlField.Text = campus != null ? campus.Name : string.Empty;
+                                break;
+                            }
+
+                        case RegistrationPersonFieldType.Address:
+                            {
+                                var location = fieldValue.ToString().FromJsonOrNull<Location>();
+                                rlField.Text = location != null ? location.ToString() : string.Empty;
+                                break;
+                            }
+
+                        case RegistrationPersonFieldType.Email:
+                            {
+                                rlField.Text = fieldValue.ToString();
+                                break;
+                            }
+
+                        case RegistrationPersonFieldType.Birthdate:
+                            {
+                                var birthDate = fieldValue as DateTime?;
+                                rlField.Text = birthDate != null ? birthDate.Value.ToShortDateString() : string.Empty;
+                                break;
+                            }
+
+                        case RegistrationPersonFieldType.Gender:
+                            {
+                                var gender = fieldValue.ToString().ConvertToEnumOrNull<Gender>() ?? Gender.Unknown;
+                                rlField.Text = gender.ConvertToString();
+                                break;
+                            }
+
+                        case RegistrationPersonFieldType.MaritalStatus:
+                            {
+                                var maritalStatusDv = DefinedValueCache.Read( fieldValue.ToString().AsInteger() );
+                                rlField.Text = maritalStatusDv != null ? maritalStatusDv.Value : string.Empty;
+                                break;
+                            }
+
+                        case RegistrationPersonFieldType.MobilePhone:
+                        case RegistrationPersonFieldType.HomePhone:
+                        case RegistrationPersonFieldType.WorkPhone:
+                            {
+                                var pn = fieldValue as PhoneNumber;
+                                rlField.Text = pn != null ? pn.NumberFormatted : string.Empty;
+                                break;
+                            }
+                    }
+
+                }
+                else
+                {
+                    if ( field.AttributeId.HasValue )
+                    {
+                        var attribute = AttributeCache.Read( field.AttributeId.Value );
+                        if ( attribute == null )
+                        {
+                            return null;
+                        }
+
+                        rlField.Label = attribute.Name;
+                        rlField.Text = attribute.FieldType.Field.FormatValueAsHtml( null, fieldValue.ToString(), attribute.QualifierValues );
+                    }
+                }
+            }
+
+            return rlField;
         }
 
         #endregion
 
         #endregion
 
-
-    }
+}
 }
