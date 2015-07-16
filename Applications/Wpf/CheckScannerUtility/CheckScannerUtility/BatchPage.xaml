@@ -351,7 +351,7 @@
                           Style="{StaticResource gridStyle}"
                           ScrollViewer.VerticalScrollBarVisibility="Visible"
                           ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                          LoadingRow="grdBatchItems_LoadingRow" >
+                        >
                     <DataGrid.ItemContainerStyle>
                         <Style TargetType="{x:Type DataGridRow}">
                             <EventSetter Event="Control.MouseDoubleClick"
