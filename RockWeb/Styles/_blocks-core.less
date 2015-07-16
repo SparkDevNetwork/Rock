@@ -10,8 +10,8 @@
 // 1. Notes 
 // -------------------------
 .panel-note {
-
-    .panel-variant(@header-bg; @accent-text-color; @accent-color; darken(@accent-color, 5%););
+    // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
+    .panel-variant(@panel-default-border; @text-color; @panel-default-heading-bg; darken(@panel-default-heading-bg, 5%););
 
     .panel-body {
         background-color: #fffs;
@@ -31,10 +31,10 @@
 
     article {
         border-radius: @border-radius-base;
-        border: 1px solid darken(@gray-lighter, @const-border-darken-amt);
+        border: 1px solid darken(@panel-default-heading-bg, @const-border-darken-amt);
         padding: @spacing-md-px;
         margin-bottom: @spacing-md-px;
-        background-color: @gray-lighter;
+        background-color: @panel-default-heading-bg;
         position: relative;
 
         .date {
@@ -193,7 +193,7 @@
 
 .panel-noteentry
 {
-    .panel-variant(@accent-color; @accent-text-color; @accent-text-color; @accent-text-color);
+    .panel-variant(@panel-default-border; @text-color; @panel-default-heading-bg; darken(@panel-default-heading-bg, 5%););
 
     .createDate {
           margin-top:10px;
@@ -232,7 +232,7 @@
     } 
 
     .panel-footer {
-        background-color: @accent-color;
+        background-color: @panel-default-heading-bg;
     }
 }
 
@@ -333,7 +333,8 @@
 .panel.workflow-activity { 
     
     &.activated-with-workflow {
-        
+       border-color:  @state-success-text;
+
        & > .panel-heading {
             background-color: @state-success-bg;
             color: @state-success-text;
@@ -381,7 +382,8 @@
 // panel for workflow entry/navigation
 .panel-group {
     .panel-workflowitem {
-        .panel-variant(darken(@gray-lighter, 5%); @text-color; @gray-lighter; darken(@gray-lighter, 5%););
+        // .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
+        .panel-variant(@panel-default-border; @text-color; @panel-default-heading-bg; darken(@panel-default-heading-bg, 5%););
 
         margin-bottom: 30px;
 
@@ -391,7 +393,6 @@
 
         .panel-heading {
             padding: 30px;
-            background-color: @gray-lighter;
 
             a {
                 display: block;

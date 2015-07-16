@@ -123,6 +123,23 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
+        /// Discounteds the cost.
+        /// </summary>
+        /// <param name="discountPercent">The discount percent.</param>
+        /// <returns></returns>
+        public decimal DiscountedCost ( decimal discountPercent )
+        {
+            var discountedCost = TotalCost;
+            
+            if ( RegistrationTemplateFee != null && RegistrationTemplateFee.DiscountApplies )
+            {
+                discountedCost = discountedCost - ( discountedCost * discountPercent );
+            }
+
+            return discountedCost;
+        }
+
+        /// <summary>
         /// Returns a <see cref="string"/> that represents this instance.
         /// </summary>
         /// <returns>

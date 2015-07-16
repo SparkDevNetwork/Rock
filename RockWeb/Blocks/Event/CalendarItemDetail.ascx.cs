@@ -338,7 +338,8 @@ namespace RockWeb.Blocks.Event
                     eventItem.ApprovedByPersonAlias = null;
                     eventItem.ApprovedOnDateTime = null;
                 }
-                eventItem.Description = tbDescription.Text;
+                eventItem.Description = htmlDescription.Text;
+                eventItem.Summary = tbSummary.Text;
                 eventItem.DetailsUrl = tbDetailUrl.Text;
 
                 int? orphanedImageId = null;
@@ -660,7 +661,8 @@ namespace RockWeb.Blocks.Event
                     eventItem.ApprovedByPersonAlias.Person.FullName );
             }
 
-            tbDescription.Text = eventItem.Description;
+            htmlDescription.Text = eventItem.Description;
+            tbSummary.Text = eventItem.Summary;
             imgupPhoto.BinaryFileId = eventItem.PhotoId;
             tbDetailUrl.Text = eventItem.DetailsUrl;
 
@@ -703,7 +705,7 @@ namespace RockWeb.Blocks.Event
                 divImage.Visible = false;
             }
 
-            lDescription.Text = eventItem.Description;
+            lSummary.Text = eventItem.Summary;
             lCalendar.Text = eventItem.EventCalendarItems
                 .Select( c => c.EventCalendar.Name ).ToList().AsDelimited( ", " );
             lAudiences.Text = eventItem.EventItemAudiences

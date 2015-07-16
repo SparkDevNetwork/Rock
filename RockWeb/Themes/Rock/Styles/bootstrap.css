@@ -2697,12 +2697,12 @@ textarea {
   line-height: inherit;
 }
 a {
-  color: #ee7624;
+  color: #4f89bd;
   text-decoration: none;
 }
 a:hover,
 a:focus {
-  color: #b7530e;
+  color: #34628b;
   text-decoration: underline;
 }
 a:focus {
@@ -4800,7 +4800,7 @@ fieldset[disabled] .btn-danger.active {
   background-color: #ffffff;
 }
 .btn-link {
-  color: #ee7624;
+  color: #4f89bd;
   font-weight: normal;
   cursor: pointer;
   border-radius: 0;
@@ -4821,7 +4821,7 @@ fieldset[disabled] .btn-link {
 }
 .btn-link:hover,
 .btn-link:focus {
-  color: #b7530e;
+  color: #34628b;
   text-decoration: underline;
   background-color: transparent;
 }
@@ -5391,7 +5391,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 .nav .open > a:hover,
 .nav .open > a:focus {
   background-color: #c7e3a0;
-  border-color: #ee7624;
+  border-color: #4f89bd;
 }
 .nav .nav-divider {
   height: 1px;
@@ -6125,7 +6125,7 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
 .pagination > li > span:hover,
 .pagination > li > a:focus,
 .pagination > li > span:focus {
-  color: #b7530e;
+  color: #34628b;
   background-color: #e2e2e2;
   border-color: #d5d5d5;
 }
@@ -6320,7 +6320,7 @@ a.badge:focus {
 }
 a.list-group-item.active > .badge,
 .nav-pills > .active > a > .badge {
-  color: #ee7624;
+  color: #4f89bd;
   background-color: #ffffff;
 }
 .nav-pills > li > a > .badge {
@@ -6384,7 +6384,7 @@ a.list-group-item.active > .badge,
 a.thumbnail:hover,
 a.thumbnail:focus,
 a.thumbnail.active {
-  border-color: #ee7624;
+  border-color: #4f89bd;
 }
 .thumbnail .caption {
   padding: 9px;
@@ -6965,22 +6965,22 @@ a.list-group-item-danger.active:focus {
   border-bottom: 1px solid #dddddd;
 }
 .panel-default {
-  border-color: #dbd5cb;
+  border-color: #cdc5ba;
 }
 .panel-default > .panel-heading {
   color: #817b72;
-  background-color: #e3ded7;
-  border-color: #dbd5cb;
+  background-color: #edeae6;
+  border-color: #cdc5ba;
 }
 .panel-default > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #dbd5cb;
+  border-top-color: #cdc5ba;
 }
 .panel-default > .panel-heading .badge {
-  color: #e3ded7;
+  color: #edeae6;
   background-color: #817b72;
 }
 .panel-default > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #dbd5cb;
+  border-bottom-color: #cdc5ba;
 }
 .panel-primary {
   border-color: #ee7624;
