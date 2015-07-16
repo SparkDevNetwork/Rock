@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Connection
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the connection type name.", false )]
     [BooleanField( "Display Name Filter", "Display the name filter", true )]
+    [BooleanField( "Display Campus Filter", "Display the campus filter", true )]
     [BooleanField( "Display Attribute Filters", "Display the attribute filters", true )]
     [LinkedPage( "Detail Page", "The page used to view a connection opportunity." )]
     [IntegerField( "Connection Type Id", "The Id of the connection type whose opportunities are displayed.", true, 1 )]
@@ -120,8 +121,6 @@ namespace RockWeb.Blocks.Connection
 
         #region Events
 
-        // handlers called by the controls on your block
-
         /// <summary>
         /// Handles the BlockUpdated event of the control.
         /// </summary>
@@ -132,6 +131,11 @@ namespace RockWeb.Blocks.Connection
             UpdateList();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSearch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSearch_Click( object sender, EventArgs e )
         {
             UpdateList();
@@ -142,158 +146,190 @@ namespace RockWeb.Blocks.Connection
 
         #region Internal Methods
 
+        /// <summary>
+        /// Updates the list.
+        /// </summary>
         private void UpdateList()
         {
-            var rockContext = new RockContext();
-            var connectionType = new ConnectionTypeService( rockContext ).Get( GetAttributeValue( "ConnectionTypeId" ).AsInteger() );
-            var qrySearch = connectionType.ConnectionOpportunities.ToList();
-
-            if ( GetAttributeValue( "DisplayNameFilter" ).AsBoolean() )
+            using ( var rockContext = new RockContext() )
             {
-                if ( !string.IsNullOrWhiteSpace( tbSearchName.Text ) )
-                {
-                    var searchTerms = tbSearchName.Text.ToLower().SplitDelimitedValues( true );
-                    qrySearch = qrySearch.Where( o => searchTerms.Any( t => t.Contains( o.Name.ToLower() ) || o.Name.ToLower().Contains( t ) ) ).ToList();
-                }
-            }
+                var connectionType = new ConnectionTypeService( rockContext ).Get( GetAttributeValue( "ConnectionTypeId" ).AsInteger() );
+                var qrySearch = connectionType.ConnectionOpportunities.ToList();
 
-            if ( GetAttributeValue( "DisplayAttributeFilters" ).AsBoolean() )
-            {
-                // Filter query by any configured attribute filters
-                if ( AvailableAttributes != null && AvailableAttributes.Any() )
+                if ( GetAttributeValue( "DisplayNameFilter" ).AsBoolean() )
                 {
-                    var attributeValueService = new AttributeValueService( rockContext );
-                    var parameterExpression = attributeValueService.ParameterExpression;
-
-                    foreach ( var attribute in AvailableAttributes )
+                    if ( !string.IsNullOrWhiteSpace( tbSearchName.Text ) )
                     {
-                        var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                        if ( filterControl != null )
+                        var searchTerms = tbSearchName.Text.ToLower().SplitDelimitedValues( true );
+                        qrySearch = qrySearch.Where( o => searchTerms.Any( t => t.Contains( o.Name.ToLower() ) || o.Name.ToLower().Contains( t ) ) ).ToList();
+                    }
+                }
+
+                if ( GetAttributeValue( "DisplayCampusFilter" ).AsBoolean() )
+                {
+                    var searchCampuses = cblCampus.SelectedValuesAsInt;
+                    if ( searchCampuses.Count > 0 )
+                    {
+                        qrySearch = qrySearch.Where( o => o.ConnectionOpportunityCampuses.Any( c => searchCampuses.Contains( c.CampusId ) ) ).ToList();
+                    }
+                }
+
+                if ( GetAttributeValue( "DisplayAttributeFilters" ).AsBoolean() )
+                {
+                    // Filter query by any configured attribute filters
+                    if ( AvailableAttributes != null && AvailableAttributes.Any() )
+                    {
+                        var attributeValueService = new AttributeValueService( rockContext );
+                        var parameterExpression = attributeValueService.ParameterExpression;
+
+                        foreach ( var attribute in AvailableAttributes )
                         {
-                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
-                            var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                            if ( expression != null )
+                            var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                            if ( filterControl != null )
                             {
-                                var attributeValues = attributeValueService
-                                    .Queryable()
-                                    .Where( v => v.Attribute.Id == attribute.Id );
+                                var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
+                                var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
+                                if ( expression != null )
+                                {
+                                    var attributeValues = attributeValueService
+                                        .Queryable()
+                                        .Where( v => v.Attribute.Id == attribute.Id );
 
-                                attributeValues = attributeValues.Where( parameterExpression, expression, null );
+                                    attributeValues = attributeValues.Where( parameterExpression, expression, null );
 
-                                qrySearch = qrySearch.Where( o => attributeValues.Select( v => v.EntityId ).Contains( o.Id ) ).ToList();
+                                    qrySearch = qrySearch.Where( o => attributeValues.Select( v => v.EntityId ).Contains( o.Id ) ).ToList();
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            var opportunitySummaries = new List<OpportunitySummary>();
-            foreach ( var opportunity in qrySearch )
-            {
-                opportunitySummaries.Add( new OpportunitySummary
+                var opportunitySummaries = new List<OpportunitySummary>();
+                foreach ( var opportunity in qrySearch )
                 {
-                    IconCssClass = opportunity.IconCssClass,
-                    Name = opportunity.PublicName,
-                    PhotoUrl = opportunity.PhotoUrl,
-                    Description = opportunity.Description,
-                    Id = opportunity.Id
-                } );
-            }
+                    opportunitySummaries.Add( new OpportunitySummary
+                    {
+                        IconCssClass = opportunity.IconCssClass,
+                        Name = opportunity.PublicName,
+                        PhotoUrl = opportunity.PhotoUrl,
+                        Description = opportunity.Description.ScrubHtmlAndConvertCrLfToBr(),
+                        Id = opportunity.Id
+                    } );
+                }
 
-            var opportunities = opportunitySummaries
-                .OrderBy( e => e.Name )
-                .ToList();
+                var opportunities = opportunitySummaries
+                    .OrderBy( e => e.Name )
+                    .ToList();
 
-            var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "Opportunities", opportunities );
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
+                var mergeFields = new Dictionary<string, object>();
+                mergeFields.Add( "Opportunities", opportunities );
+                mergeFields.Add( "CurrentPerson", CurrentPerson );
 
-            var pageReference = new PageReference( GetAttributeValue( "DetailPage" ), null );
-            mergeFields.Add( "DetailPage", pageReference.BuildUrl() );
+                var pageReference = new PageReference( GetAttributeValue( "DetailPage" ), null );
+                mergeFields.Add( "DetailPage", pageReference.BuildUrl() );
 
-            lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
+                lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
-            if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() )
-            {
-                string pageTitle = "Connection";
-                RockPage.PageTitle = pageTitle;
-                RockPage.BrowserTitle = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
-                RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
-            }
+                if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() )
+                {
+                    string pageTitle = "Connection";
+                    RockPage.PageTitle = pageTitle;
+                    RockPage.BrowserTitle = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
+                    RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
+                }
 
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
+                // show debug info
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+                {
+                    lDebug.Visible = true;
+                    lDebug.Text = mergeFields.lavaDebugInfo();
+                }
             }
         }
 
+        /// <summary>
+        /// Sets the filters.
+        /// </summary>
         private void SetFilters()
         {
-            var rockContext = new RockContext();
-            var connectionType = new ConnectionTypeService( rockContext ).Get( GetAttributeValue( "ConnectionTypeId" ).AsInteger() );
-
-            if ( !GetAttributeValue( "DisplayNameFilter" ).AsBoolean() )
+            using ( var rockContext = new RockContext() )
             {
-                tbSearchName.Visible = false;
-            }
+                var connectionType = new ConnectionTypeService( rockContext ).Get( GetAttributeValue( "ConnectionTypeId" ).AsInteger() );
 
-            if ( GetAttributeValue( "DisplayAttributeFilters" ).AsBoolean() )
-            {
-                // Parse the attribute filters 
-                AvailableAttributes = new List<AttributeCache>();
-                if ( connectionType != null )
+                if ( !GetAttributeValue( "DisplayNameFilter" ).AsBoolean() )
                 {
-                    int entityTypeId = new ConnectionOpportunity().TypeId;
-                    foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
-                        .Where( a =>
-                            a.EntityTypeId == entityTypeId &&
-                            a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                            a.EntityTypeQualifierValue.Equals( connectionType.Id.ToString() ) )
-                        .OrderBy( a => a.Order )
-                        .ThenBy( a => a.Name ) )
-                    {
-                        AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
-                    }
+                    tbSearchName.Visible = false;
                 }
 
-                // Clear the filter controls
-                phAttributeFilters.Controls.Clear();
-
-                if ( AvailableAttributes != null )
+                if ( GetAttributeValue( "DisplayCampusFilter" ).AsBoolean() )
                 {
-                    foreach ( var attribute in AvailableAttributes )
+                    cblCampus.Visible = true;
+                    cblCampus.DataSource = CampusCache.All();
+                    cblCampus.DataBind();
+                }
+                else
+                {
+                    cblCampus.Visible = false;
+                }
+
+                if ( GetAttributeValue( "DisplayAttributeFilters" ).AsBoolean() )
+                {
+                    // Parse the attribute filters 
+                    AvailableAttributes = new List<AttributeCache>();
+                    if ( connectionType != null )
                     {
-                        var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false );
-                        if ( control != null )
+                        int entityTypeId = new ConnectionOpportunity().TypeId;
+                        foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
+                            .Where( a =>
+                                a.EntityTypeId == entityTypeId &&
+                                a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                                a.EntityTypeQualifierValue.Equals( connectionType.Id.ToString() ) )
+                            .OrderBy( a => a.Order )
+                            .ThenBy( a => a.Name ) )
                         {
-                            if ( control is IRockControl )
+                            AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+                        }
+                    }
+
+                    // Clear the filter controls
+                    phAttributeFilters.Controls.Clear();
+
+                    if ( AvailableAttributes != null )
+                    {
+                        foreach ( var attribute in AvailableAttributes )
+                        {
+                            var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false );
+                            if ( control != null )
                             {
-                                var rockControl = (IRockControl)control;
-                                rockControl.Label = attribute.Name;
-                                rockControl.Help = attribute.Description;
-                                phAttributeFilters.Controls.Add( control );
-                            }
-                            else
-                            {
-                                var wrapper = new RockControlWrapper();
-                                wrapper.ID = control.ID + "_wrapper";
-                                wrapper.Label = attribute.Name;
-                                wrapper.Controls.Add( control );
-                                phAttributeFilters.Controls.Add( wrapper );
+                                if ( control is IRockControl )
+                                {
+                                    var rockControl = (IRockControl)control;
+                                    rockControl.Label = attribute.Name;
+                                    rockControl.Help = attribute.Description;
+                                    phAttributeFilters.Controls.Add( control );
+                                }
+                                else
+                                {
+                                    var wrapper = new RockControlWrapper();
+                                    wrapper.ID = control.ID + "_wrapper";
+                                    wrapper.Label = attribute.Name;
+                                    wrapper.Controls.Add( control );
+                                    phAttributeFilters.Controls.Add( wrapper );
+                                }
                             }
                         }
                     }
                 }
+                else
+                {
+                    phAttributeFilters.Visible = false;
+                }
             }
-            else
-            {
-                phAttributeFilters.Visible = false;
-            }
-
         }
 
+        /// <summary>
+        /// A class for lava to access connection opportunity data
+        /// </summary>
         [DotLiquid.LiquidType( "IconCssClass", "Name", "PhotoUrl", "Description", "Id" )]
         public class OpportunitySummary
         {

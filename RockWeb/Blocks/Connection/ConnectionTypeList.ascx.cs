@@ -95,6 +95,15 @@ namespace RockWeb.Blocks.Connection
             GetData();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbAddConnectionType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddConnectionType_Click( object sender, EventArgs e )
+        {
+            NavigateToLinkedPage( "DetailPage", "ConnectionTypeId", 0 );
+        }
         #endregion
 
         #region Methods
@@ -117,15 +126,5 @@ namespace RockWeb.Blocks.Connection
         }
 
         #endregion
-
-        /// <summary>
-        /// Handles the Click event of the lbAddConnectionType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddConnectionType_Click( object sender, EventArgs e )
-        {
-            NavigateToLinkedPage( "DetailPage", "ConnectionTypeId", 0 );
-        }
     }
 }

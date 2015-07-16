@@ -6,42 +6,49 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <asp:Literal ID="lTypeIcon" runat="server" />
-                    My Connection Opportunities</h1>
+                    <i class='fa fa-compress'></i>
+                    My Connection Requests</h1>
 
                 <div class="pull-right">
+                    <Rock:Toggle ID="tglAdmin" CssClass="margin-r-md pull-left" runat="server" OnText="My Opportunities" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" OffText="All Opportunities" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" Checked="true" />
                     <asp:LinkButton ID="lbConnectionTypes" runat="server" CssClass=" pull-right" OnClick="lbConnectionTypes_Click" CausesValidation="false"><i class="fa fa-gear"></i></asp:LinkButton>
                 </div>
 
             </div>
             <div class="panel-body">
+                <Rock:NotificationBox ID="nbNoOpportunities" runat="server" NotificationBoxType="Info" Text="There are no current connection requests." />
 
-                <div class="list-as-blocks margin-t-lg clearfix">
-                    <ul class="list-unstyled">
-                        <asp:Repeater ID="rptConnectionOpportunities" runat="server">
-                            <ItemTemplate>
-                                <li class='<%# Eval("Class") %>'>
-                                    <asp:LinkButton ID="lbConnectionOpportunity" runat="server" CommandArgument='<%# Eval("ConnectionOpportunity.Id") %>' CommandName="Display">
+                <asp:Repeater ID="rptConnnectionTypes" runat="server" OnItemDataBound="rptConnnectionTypes_ItemDataBound">
+                    <ItemTemplate>
+                        <Rock:RockLiteral ID="lConnectionTypeName" runat="server" />
+                        <div class="list-as-blocks margin-t-lg clearfix">
+                            <ul class="list-unstyled">
+                                <asp:Repeater ID="rptConnectionOpportunities" runat="server">
+                                    <ItemTemplate>
+                                        <li class='<%# Eval("Class") %>'>
+                                            <asp:LinkButton ID="lbConnectionOpportunity" runat="server" CommandArgument='<%# Eval("ConnectionOpportunity.Id") %>' CommandName="Display">
                                         <i class='<%# Eval("ConnectionOpportunity.IconCssClass") %>'></i>
                                         <h3><%# Eval("ConnectionOpportunity.Name") %> </h3>
                                         <div class="notification">
                                             <span class="label label-danger"><%# ((int)Eval("Count")).ToString("#,###,###") %></span>
                                         </div>
-                                    </asp:LinkButton>
-                                </li>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                    </ul>
-                </div>
+                                            </asp:LinkButton>
+                                        </li>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </ul>
+                        </div>
+                    </ItemTemplate>
+                </asp:Repeater>
 
-                <h4>
             </div>
         </div>
         <asp:Panel ID="pnlGrid" runat="server" CssClass="panel panel-block" Visible="false">
             <div class="panel-heading">
-                <asp:Literal ID="lOpportunityIcon" runat="server" />
+                <h4>
+                    <asp:Literal ID="lOpportunityIcon" runat="server" />
 
-                <asp:Literal ID="lConnectionRequest" runat="server"></asp:Literal></h4>
+                    <asp:Literal ID="lConnectionRequest" runat="server"></asp:Literal></h4>
             </div>
             <div class="panel-body">
 

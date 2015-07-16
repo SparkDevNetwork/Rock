@@ -47,6 +47,52 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_MEDIUM_SMS = "4BC02764-512A-4A10-ACDE-586F71D8A8BD";
 
         /// <summary>
+        /// The guid for the Rock.Model.ConnectionActivityType entity
+        /// </summary>
+        public const string CONNECTION_ACTIVITY_TYPE = "97B143F0-CB9D-4652-8FF1-FF2FA1EA4945";
+
+        /// <summary>
+        /// The guid for the Rock.Model.ConnectionOpportunity entity
+        /// </summary>
+        public const string CONNECTION_OPPORTUNITY = "79F64363-BC90-4109-9D31-A5EEB397CB2F";
+        /// <summary>
+        /// The guid for the Rock.Model.ConnectionOpportunityCampus entity
+        /// </summary>
+        public const string CONNECTION_OPPORTUNITY_CAMPUS = "E656E8B3-12AB-476E-AA63-5F9B76F64A08";
+        /// <summary>
+        /// The guid for the Rock.Model.ConnectionOpportunityGroup entity
+        /// </summary>
+        public const string CONNECTION_OPPORTUNITY_GROUP = "CD3F425C-9B36-4433-9C38-D58DE42C9F65";
+        /// <summary>
+        /// The guid for the Rock.Model.ConnectionOpportunityGroupCampus entity
+        /// </summary>
+        public const string CONNECTION_OPPORTUNITY_GROUP_CAMPUS = "4CB430B1-0F32-482F-9C95-164A09332CC1";
+        /// <summary>
+        /// The guid for the Rock.Model.ConnectionRequest entity
+        /// </summary>
+        public const string CONNECTION_REQUEST = "36B0D0C7-8125-48FA-9DA2-729AAA65F718";
+        /// <summary>
+        /// The guid for the Rock.Model.ConnectionRequestActivity entity
+        /// </summary>
+        public const string CONNECTION_REQUEST_ACTIVITY = "3248F40D-7661-42CC-AD9B-EF63322937B7";
+        /// <summary>
+        /// The guid for the Rock.Model.ConnectionRequestWorkflow entity
+        /// </summary>
+        public const string CONNECTION_REQUEST_WORKFLOW = "C69D1C9F-5521-4C83-8FE9-5044ECC2CE65";
+        /// <summary>
+        /// The guid for the Rock.Model.ConnectionStatus entity
+        /// </summary>
+        public const string CONNECTION_STATUS = "F3840C8B-63BF-4F98-AC4A-9336896E589B";
+        /// <summary>
+        /// The guid for the Rock.Model.ConnectionType entity
+        /// </summary>
+        public const string CONNECTION_TYPE = "B1E52EAD-65BD-4C4D-BCCD-73368067621D";
+        /// <summary>
+        /// The guid for the Rock.Model.ConnectionWorkflow entity
+        /// </summary>
+        public const string CONNECTION_WORKFLOW = "4EB8711F-7301-4699-A223-0505A7CEB20A";
+
+        /// <summary>
         /// The guid for the Rock.Model.DataView entity.
         /// </summary>
         public const string DATAVIEW = "57F8FA29-DCF1-4F74-8553-87E90F234139";
