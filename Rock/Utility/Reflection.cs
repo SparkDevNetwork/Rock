@@ -111,20 +111,15 @@ namespace Rock
             foreach ( KeyValuePair<string, Assembly> assemblyEntry in assemblies )
             {
                 var typeEntries = SearchAssembly( assemblyEntry.Value, baseType );
-
                 foreach ( KeyValuePair<string, Type> typeEntry in typeEntries )
                 {
-                    if ( !types.Keys.Contains( typeEntry.Key ) )
+                    if ( string.IsNullOrWhiteSpace( typeName ) || typeEntry.Key == typeName )
                     {
-                        types.Add( typeEntry.Key, typeEntry.Value );
-                        if ( !string.IsNullOrWhiteSpace( typeName ) && typeEntry.Key == typeName )
-                        {
-                            return types;
-                        }
+                        types.AddOrIgnore( typeEntry.Key, typeEntry.Value );
                     }
                 }
             }
-
+            
             return types;
         }
 
