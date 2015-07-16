@@ -128,14 +128,15 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [LavaInclude]
-        public virtual decimal CostWithFees
+        public virtual decimal TotalCost
         {
             get
             {
                 var cost = Cost;
                 if ( Fees != null )
                 {
-                    cost += Fees.Sum( f => f.TotalCost );
+                    cost += Fees
+                        .Sum( f => f.TotalCost );
                 }
                 return cost;
             }
@@ -144,6 +145,29 @@ namespace Rock.Model
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Discounteds the cost.
+        /// </summary>
+        /// <param name="discountPercent">The discount percent.</param>
+        /// <param name="discountAmount">The discount amount.</param>
+        /// <returns></returns>
+        public virtual decimal DiscountedCost( decimal discountPercent, decimal discountAmount )
+        {
+            var discountedCost = Cost - ( Cost * discountPercent );
+
+            if ( Fees != null )
+            {
+                foreach( var fee in Fees )
+                {
+                    discountedCost += fee.DiscountedCost( discountPercent );
+                }
+            }
+
+            discountedCost = discountedCost - discountAmount;
+
+            return discountedCost > 0.0m ? discountedCost : 0.0m;
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

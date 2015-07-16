@@ -459,7 +459,6 @@ namespace RockWeb.Blocks.Event
                 }
 
                 string registrantNames = string.Empty;
-                decimal totalCost = 0;
                 if ( registration.Registrants != null && registration.Registrants.Any() )
                 {
                     var registrants = registration.Registrants
@@ -474,10 +473,6 @@ namespace RockWeb.Blocks.Event
                         .Select( r => r.PersonAlias.Person.NickName + " " + r.PersonAlias.Person.LastName )
                         .ToList()
                         .AsDelimited( "<br/>" );
-
-                    totalCost =
-                        registrants.Sum( r => r.Cost ) +
-                        registrants.SelectMany( r => r.Fees ).Sum( f => f.Cost );
                 }
 
                 // Set the Registrants
@@ -488,32 +483,38 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // Set the Cost
-                if ( registration.TotalCost > 0.0M )
+                decimal discountedCost = registration.DiscountedCost;
+                if ( discountedCost > 0.0M )
                 {
                     var lCost = e.Row.FindControl( "lCost" ) as Label;
                     if ( lCost != null )
                     {
-                        lCost.Visible = registration.TotalCost > 0.0M;
-                        lCost.Text = registration.TotalCost.ToString( "C2" );
+                        lCost.Visible = discountedCost > 0.0M;
+                        lCost.Text = discountedCost.ToString( "C2" );
                     }
 
                     var lBalance = e.Row.FindControl( "lBalance" ) as Label;
                     if ( lBalance != null )
                     {
-                        lBalance.Visible = registration.TotalCost > 0.0M;
-
-                        decimal paid = RegistrationPayments.Where( p => p.EntityId == registration.Id ).Sum( p => p.Amount );
-                        decimal balanceDue = registration.TotalCost - paid;
-
+                        decimal balanceDue = registration.BalanceDue;
+                        lBalance.Visible = discountedCost > 0.0M;
                         lBalance.Text = balanceDue.ToString( "C2" );
-                        if ( balanceDue > 0 )
+                        if ( balanceDue > 0.0m )
                         {
                             lBalance.AddCssClass( "label-danger" );
+                            lBalance.RemoveCssClass( "label-warning" );
+                            lBalance.RemoveCssClass( "label-success" );
+                        }
+                        else if ( balanceDue < 0.0m )
+                        {
+                            lBalance.RemoveCssClass( "label-danger" );
+                            lBalance.AddCssClass( "label-warning" );
                             lBalance.RemoveCssClass( "label-success" );
                         }
                         else
                         {
                             lBalance.RemoveCssClass( "label-danger" );
+                            lBalance.RemoveCssClass( "label-warning" );
                             lBalance.AddCssClass( "label-success" );
                         }
                     }
@@ -897,7 +898,19 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gRegistrants_RowSelected( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "RegistrationPage", "RegistrantId", e.RowKeyId );
+            using ( var rockContext = new RockContext() )
+            {
+                var registrantService = new RegistrationRegistrantService( rockContext );
+                var registrant = registrantService.Get( e.RowKeyId );
+                if ( registrant != null )
+                {
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams.Add( "RegistrationId", registrant.RegistrationId.ToString() );
+                    string url = LinkedPageUrl( "RegistrationPage", qryParams );
+                    url += "#" + e.RowKeyValue;
+                    Response.Redirect( url, false );
+                }
+            }
         }
 
         /// <summary>

@@ -885,8 +885,8 @@ namespace RockWeb.Blocks.Event
             registrationService.Add( registration );
             registration.RegistrationInstanceId = RegistrationInstanceState.Id;
             registration.GroupId = GroupId;
-            registration.FirstName = RegistrationState.YourFirstName;
-            registration.LastName = RegistrationState.YourLastName;
+            registration.FirstName = RegistrationState.FirstName;
+            registration.LastName = RegistrationState.LastName;
             registration.ConfirmationEmail = RegistrationState.ConfirmationEmail;
             registration.DiscountCode = RegistrationState.DiscountCode;
             registration.DiscountAmount = RegistrationState.DiscountAmount;
@@ -1398,8 +1398,8 @@ namespace RockWeb.Blocks.Event
             paymentInfo.Amount = RegistrationState.PaymentAmount;
             paymentInfo.Email = RegistrationState.ConfirmationEmail;
 
-            paymentInfo.FirstName = RegistrationState.YourFirstName;
-            paymentInfo.LastName = RegistrationState.YourLastName;
+            paymentInfo.FirstName = RegistrationState.FirstName;
+            paymentInfo.LastName = RegistrationState.LastName;
 
             var transaction = gateway.Charge( RegistrationTemplate.FinancialGateway, paymentInfo, out errorMessage );
             if ( transaction != null )
@@ -2579,13 +2579,13 @@ namespace RockWeb.Blocks.Event
             {
                 // Check to see if this is an existing registration or information has already been entered
                 if ( RegistrationState.RegistrationId.HasValue ||
-                    !string.IsNullOrWhiteSpace( RegistrationState.YourFirstName) ||
-                    !string.IsNullOrWhiteSpace( RegistrationState.YourLastName ) ||
+                    !string.IsNullOrWhiteSpace( RegistrationState.FirstName) ||
+                    !string.IsNullOrWhiteSpace( RegistrationState.LastName ) ||
                     !string.IsNullOrWhiteSpace( RegistrationState.ConfirmationEmail ) )
                 {
                     // If so, use it
-                    tbYourFirstName.Text = RegistrationState.YourFirstName;
-                    tbYourLastName.Text = RegistrationState.YourLastName;
+                    tbYourFirstName.Text = RegistrationState.FirstName;
+                    tbYourLastName.Text = RegistrationState.LastName;
                     tbConfirmationEmail.Text = RegistrationState.ConfirmationEmail;
                 }
                 else
@@ -2634,13 +2634,13 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // Get the cost/fee summary
-                var costs = new List<CostSummaryInfo>();
+                var costs = new List<RegistrationCostSummaryInfo>();
                 foreach( var registrant in RegistrationState.Registrants )
                 {
                     if ( registrant.Cost > 0 )
                     {
-                        var costSummary = new CostSummaryInfo();
-                        costSummary.Type = CostSummaryType.Cost;
+                        var costSummary = new RegistrationCostSummaryInfo();
+                        costSummary.Type = RegistrationCostSummaryType.Cost;
                         costSummary.Description = string.Format( "{0} {1}",
                             registrant.GetFirstName( RegistrationTemplate ),
                             registrant.GetLastName( RegistrationTemplate ) );
@@ -2675,8 +2675,8 @@ namespace RockWeb.Blocks.Event
                                     feeInfo.Quantity,
                                     cost );
 
-                                var costSummary = new CostSummaryInfo();
-                                costSummary.Type = CostSummaryType.Fee;
+                                var costSummary = new RegistrationCostSummaryInfo();
+                                costSummary.Type = RegistrationCostSummaryType.Fee;
                                 costSummary.Description = desc;
                                 costSummary.Cost = feeInfo.Quantity * cost;
 
@@ -2709,36 +2709,38 @@ namespace RockWeb.Blocks.Event
                     // Add row for amount discount
                     if ( RegistrationState.DiscountAmount > 0.0m )
                     {
-                        costs.Add( new CostSummaryInfo
+                        decimal totalDiscount = 0.0m - ( RegistrationState.Registrants.Count * RegistrationState.DiscountAmount );
+                        costs.Add( new RegistrationCostSummaryInfo
                         {
-                            Type = CostSummaryType.Discount,
+                            Type = RegistrationCostSummaryType.Discount,
                             Description = "Discount",
-                            Cost = 0.0m - RegistrationState.DiscountAmount,
-                            DiscountedCost = 0.0m - RegistrationState.DiscountAmount
+                            Cost = totalDiscount,
+                            DiscountedCost = totalDiscount
                         } );
                     }
 
-                    // Get the total cost after discounts
-                    RegistrationState.TotalCost = costs.Sum( c => c.DiscountedCost );
+                    // Get the totals
+                    RegistrationState.TotalCost = costs.Sum( c => c.Cost );
+                    RegistrationState.DiscountedCost = costs.Sum( c => c.DiscountedCost );
 
-                    // If minimum payment is greater than total cost ( which is possible with discounts ), adjust the minimum payment
-                    minPayment = minPayment > RegistrationState.TotalCost ? RegistrationState.TotalCost : minPayment;
+                    // If minimum payment is greater than total discounted cost ( which is possible with discounts ), adjust the minimum payment
+                    minPayment = minPayment > RegistrationState.DiscountedCost ? RegistrationState.DiscountedCost : minPayment;
 
                     // Add row for totals
-                    costs.Add( new CostSummaryInfo
+                    costs.Add( new RegistrationCostSummaryInfo
                     {
-                        Type = CostSummaryType.Total,
+                        Type = RegistrationCostSummaryType.Total,
                         Description = "Total",
                         Cost = costs.Sum( c => c.Cost ),
-                        DiscountedCost = RegistrationState.TotalCost,
+                        DiscountedCost = RegistrationState.DiscountedCost,
                     } );
 
                     rptFeeSummary.DataSource = costs;
                     rptFeeSummary.DataBind();
 
                     // Set the total cost
-                    hfTotalCost.Value = RegistrationState.TotalCost.ToString( "N2" );
-                    lTotalCost.Text = RegistrationState.TotalCost.ToString( "C2" );
+                    hfTotalCost.Value = RegistrationState.DiscountedCost.ToString( "N2" );
+                    lTotalCost.Text = RegistrationState.DiscountedCost.ToString( "C2" );
 
                     // Check for previous payments
                     lPreviouslyPaid.Visible = RegistrationState.PreviousPaymentTotal != 0.0m;
@@ -2750,7 +2752,7 @@ namespace RockWeb.Blocks.Event
                     minPayment = minPayment < 0 ? 0 : minPayment;
 
                     // Calculate balance due, and if a partial payment is still allowed
-                    decimal balanceDue = RegistrationState.TotalCost - RegistrationState.PreviousPaymentTotal;
+                    decimal balanceDue = RegistrationState.DiscountedCost - RegistrationState.PreviousPaymentTotal;
                     bool allowPartialPayment = balanceDue > 0 && minPayment < balanceDue;
 
                     // If partial payment is allowed, show the minimum payment due
@@ -2770,7 +2772,7 @@ namespace RockWeb.Blocks.Event
 
                     // If a previous payment was made, or partial payment is allowed, show the amount remaining after selected payment amount
                     lRemainingDue.Visible = allowPartialPayment || RegistrationState.PreviousPaymentTotal != 0.0m;
-                    lRemainingDue.Text = ( RegistrationState.TotalCost - ( RegistrationState.PreviousPaymentTotal + RegistrationState.PaymentAmount ) ).ToString( "C2" );
+                    lRemainingDue.Text = ( RegistrationState.DiscountedCost - ( RegistrationState.PreviousPaymentTotal + RegistrationState.PaymentAmount ) ).ToString( "C2" );
 
                     divPaymentInfo.Visible = balanceDue > 0;
 
@@ -2801,6 +2803,7 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     RegistrationState.TotalCost = 0.0m;
+                    RegistrationState.DiscountedCost = 0.0m;
                     pnlMoney.Visible = false;
                 }
             }
@@ -2810,8 +2813,8 @@ namespace RockWeb.Blocks.Event
         {
             if ( RegistrationState != null )
             {
-                RegistrationState.YourFirstName = tbYourFirstName.Text;
-                RegistrationState.YourLastName = tbYourLastName.Text;
+                RegistrationState.FirstName = tbYourFirstName.Text;
+                RegistrationState.LastName = tbYourLastName.Text;
                 RegistrationState.ConfirmationEmail = tbConfirmationEmail.Text;
 
                 if ( RegistrationState.DiscountCode != tbDiscountCode.Text.Trim() )
@@ -2842,659 +2845,5 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
-        #region Helper Classes
-
-        /// <summary>
-        /// Registration Helper Class
-        /// </summary>
-        [Serializable]
-        public class RegistrationInfo
-        {
-            /// <summary>
-            /// Gets or sets the registration identifier.
-            /// </summary>
-            /// <value>
-            /// The registration identifier.
-            /// </value>
-            public int? RegistrationId { get; set; }
-
-            /// <summary>
-            /// Gets or sets your first name.
-            /// </summary>
-            /// <value>
-            /// Your first name.
-            /// </value>
-            public string YourFirstName { get; set; }
-
-            /// <summary>
-            /// Gets or sets your last name.
-            /// </summary>
-            /// <value>
-            /// Your last name.
-            /// </value>
-            public string YourLastName { get; set; }
-
-            /// <summary>
-            /// Gets or sets the confirmation email.
-            /// </summary>
-            /// <value>
-            /// The confirmation email.
-            /// </value>
-            public string ConfirmationEmail { get; set; }
-
-            /// <summary>
-            /// Gets or sets the discount code.
-            /// </summary>
-            /// <value>
-            /// The discount code.
-            /// </value>
-            public string DiscountCode { get; set; }
-
-            /// <summary>
-            /// Gets or sets the discount percentage.
-            /// </summary>
-            /// <value>
-            /// The discount percentage.
-            /// </value>
-            public decimal DiscountPercentage { get; set; }
-
-            /// <summary>
-            /// Gets or sets the discount amount.
-            /// </summary>
-            /// <value>
-            /// The discount amount.
-            /// </value>
-            public decimal DiscountAmount { get; set; }
-
-            /// <summary>
-            /// Gets or sets the total cost.
-            /// </summary>
-            /// <value>
-            /// The total cost.
-            /// </value>
-            public decimal TotalCost { get; set; }
-
-            /// <summary>
-            /// Gets or sets the previous payment total.
-            /// </summary>
-            /// <value>
-            /// The previous payment total.
-            /// </value>
-            public decimal PreviousPaymentTotal { get; set; }
-
-            /// <summary>
-            /// Gets or sets the payment amount.
-            /// </summary>
-            /// <value>
-            /// The payment amount.
-            /// </value>
-            public decimal PaymentAmount { get; set; }
-
-            /// <summary>
-            /// Gets or sets the registrants.
-            /// </summary>
-            /// <value>
-            /// The registrants.
-            /// </value>
-            public List<RegistrantInfo> Registrants { get; set; }
-
-            /// <summary>
-            /// Gets the registrant count.
-            /// </summary>
-            /// <value>
-            /// The registrant count.
-            /// </value>
-            public int RegistrantCount
-            {
-                get { return Registrants.Count; }
-            }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="RegistrationInfo"/> class.
-            /// </summary>
-            public RegistrationInfo()
-            {
-                Registrants = new List<RegistrantInfo>();
-            }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="RegistrationInfo"/> class.
-            /// </summary>
-            /// <param name="person">The person.</param>
-            public RegistrationInfo ( Person person ) : this()
-            {
-                if ( person != null )
-                {
-                    YourFirstName = person.NickName;
-                    YourLastName = person.LastName;
-                    ConfirmationEmail = person.Email;
-                }
-            }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="RegistrationInfo" /> class.
-            /// </summary>
-            /// <param name="registration">The registration.</param>
-            /// <param name="rockContext">The rock context.</param>
-            public RegistrationInfo( Registration registration, RockContext rockContext ) : this()
-            {
-                if ( registration != null )
-                {
-                    RegistrationId = registration.Id;
-                    if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
-                    {
-                        YourFirstName = registration.PersonAlias.Person.NickName;
-                        YourLastName = registration.PersonAlias.Person.LastName;
-                        ConfirmationEmail = registration.ConfirmationEmail;
-                    }
-
-                    DiscountCode = registration.DiscountCode.Trim();
-                    DiscountPercentage = registration.DiscountPercentage;
-                    DiscountCode = registration.DiscountCode;
-
-                    foreach ( var registrant in registration.Registrants )
-                    {
-                        Registrants.Add( new RegistrantInfo( registrant, rockContext ) );
-                    }
-                }
-            }
-
-            /// <summary>
-            /// Gets the options that should be available for additional registrants to specify the family they belong to
-            /// </summary>
-            /// <param name="template">The template.</param>
-            /// <param name="currentRegistrantIndex">Index of the current registrant.</param>
-            /// <returns></returns>
-            public Dictionary<Guid, string> GetFamilyOptions( RegistrationTemplate template, int currentRegistrantIndex )
-            {
-                // Return a dictionary of family group guid, and the formated name (i.e. "Ted & Cindy Decker" )
-                var result = new Dictionary<Guid, string>();
-
-                // Get all the registrants prior to the current registrant
-                var familyRegistrants = new Dictionary<Guid, List<RegistrantInfo>>();
-                for ( int i = 0; i < currentRegistrantIndex; i++ )
-                {
-                    if ( Registrants != null && Registrants.Count > i )
-                    {
-                        var registrant = Registrants[i];
-                        familyRegistrants.AddOrIgnore( registrant.FamilyGuid, new List<RegistrantInfo>() );
-                        familyRegistrants[registrant.FamilyGuid].Add(registrant);
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                // Loop through those registrants
-                foreach( var keyVal in familyRegistrants )
-                {
-                    // Find all the people and group them by same last name
-                    var lastNames = new Dictionary<string, List<string>>();
-                    foreach( var registrant in keyVal.Value )
-                    {
-                        string firstName = registrant.GetFirstName( template );
-                        string lastName = registrant.GetLastName( template );
-                        lastNames.AddOrIgnore( lastName, new List<string>() );
-                        lastNames[lastName].Add( firstName );
-                    }
-
-                    // Build a formated output for each unique last name
-                    var familyNames = new List<string>();
-                    foreach( var lastName in lastNames )
-                    {
-                        familyNames.Add( string.Format( "{0} {1}", lastName.Value.AsDelimited( " & "), lastName.Key ) );
-                    }
-
-                    // Join each of the formated values for each unique last name for the current family
-                    result.Add( keyVal.Key, familyNames.AsDelimited( " and ") );
-                }
-
-                return result;
-            }
-
-        }
-
-        /// <summary>
-        /// Registrant Helper Class
-        /// </summary>
-        [Serializable]
-        public class RegistrantInfo
-        {
-            /// <summary>
-            /// Gets or sets the unique identifier.
-            /// </summary>
-            /// <value>
-            /// The unique identifier.
-            /// </value>
-            public Guid Guid { get; set; }
-
-            /// <summary>
-            /// Gets or sets the person alias unique identifier.
-            /// </summary>
-            /// <value>
-            /// The person alias unique identifier.
-            /// </value>
-            public Guid PersonAliasGuid { get; set; }
-
-            /// <summary>
-            /// Gets or sets the family unique identifier.
-            /// </summary>
-            /// <value>
-            /// The family unique identifier.
-            /// </value>
-            public Guid FamilyGuid { get; set; }
-
-            /// <summary>
-            /// Gets or sets the cost.
-            /// </summary>
-            /// <value>
-            /// The cost.
-            /// </value>
-            public decimal Cost { get; set; }
-
-            /// <summary>
-            /// Gets or sets the field values.
-            /// </summary>
-            /// <value>
-            /// The field values.
-            /// </value>
-            public Dictionary<int, object> FieldValues { get; set; }
-
-            /// <summary>
-            /// Gets or sets the fee values.
-            /// </summary>
-            /// <value>
-            /// The fee values.
-            /// </value>
-            public Dictionary<int, List<FeeInfo>> FeeValues { get; set; }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="RegistrantInfo"/> class.
-            /// </summary>
-            public RegistrantInfo()
-            {
-                Guid = Guid.NewGuid();
-                PersonAliasGuid = Guid.Empty;
-                FamilyGuid = Guid.Empty;
-                FieldValues = new Dictionary<int, object>();
-                FeeValues = new Dictionary<int, List<FeeInfo>>();
-            }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="RegistrantInfo" /> class.
-            /// </summary>
-            /// <param name="registrant">The registrant.</param>
-            /// <param name="rockContext">The rock context.</param>
-            public RegistrantInfo( RegistrationRegistrant registrant, RockContext rockContext ) : this()
-            {
-                if ( registrant != null )
-                {
-                    Guid = registrant.Guid;
-                    Cost = registrant.Cost;
-
-                    Person person = null;
-                    Group family = null;
-
-                    if ( registrant.PersonAlias != null )
-                    {
-                        PersonAliasGuid = registrant.PersonAlias.Guid;
-                        person = registrant.PersonAlias.Person;
-
-                        if ( person != null )
-                        {
-                            family = person.GetFamilies( rockContext ).FirstOrDefault();
-                            if ( family != null )
-                            {
-                                FamilyGuid = family.Guid;
-                            }
-                        }
-                    }
-
-                    if ( registrant.Registration != null &&
-                        registrant.Registration.RegistrationInstance != null &&
-                        registrant.Registration.RegistrationInstance.RegistrationTemplate != null )
-                    {
-                        var templateFields = registrant.Registration.RegistrationInstance.RegistrationTemplate.Forms
-                            .SelectMany( f => f.Fields );
-                        foreach ( var field in templateFields )
-                        {
-                            object dbValue = GetRegistrantValue( registrant, person, family, field, rockContext );
-                            if ( dbValue != null )
-                            {
-                                FieldValues.Add( field.Id, dbValue );
-                            }
-                        }
-
-                        foreach( var fee in registrant.Fees )
-                        {
-                            FeeValues.AddOrIgnore( fee.RegistrationTemplateFeeId, new List<FeeInfo>() );
-                            FeeValues[fee.RegistrationTemplateFeeId].Add( new FeeInfo( fee ) );
-                        }
-                    }
-                }
-            }
-
-            /// <summary>
-            /// Gets the existing value for a specific field for the given registrant.
-            /// </summary>
-            /// <param name="registrant">The registrant.</param>
-            /// <param name="Field">The field.</param>
-            /// <param name="rockContext">The rock context.</param>
-            /// <returns></returns>
-            public object GetRegistrantValue( RegistrationRegistrant registrant, Person person, Group family,
-                RegistrationTemplateFormField Field, RockContext rockContext)
-            {
-                if ( Field.FieldSource == RegistrationFieldSource.PersonField )
-                {
-                    if ( person != null )
-                    {
-                        DefinedValueCache dvPhone = null;
-
-                        switch ( Field.PersonFieldType )
-                        {
-                            case RegistrationPersonFieldType.FirstName: return person.NickName;
-                            case RegistrationPersonFieldType.LastName: return person.LastName;
-                            case RegistrationPersonFieldType.Campus: 
-                                {
-                                    if ( family != null )
-                                    { 
-                                        return family.CampusId; 
-                                    }
-                                    break;
-                                }
-                            case RegistrationPersonFieldType.Address:
-                                {
-                                    var location = person.GetHomeLocation( rockContext );
-                                    if ( location != null )
-                                    {
-                                        return location.Clone();
-                                    }
-                                    break;
-                                }
-                            case RegistrationPersonFieldType.Email: return person.Email;
-                            case RegistrationPersonFieldType.Birthdate: return person.BirthDate;
-                            case RegistrationPersonFieldType.Gender: return person.Gender;
-                            case RegistrationPersonFieldType.MaritalStatus: return person.MaritalStatusValueId;
-                            case RegistrationPersonFieldType.MobilePhone: 
-                                {
-                                    dvPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
-                                    break;
-                                }
-                            case RegistrationPersonFieldType.HomePhone:
-                                {
-                                    dvPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
-                                    break;
-                                }
-                            case RegistrationPersonFieldType.WorkPhone:
-                                {
-                                    dvPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK );
-                                    break;
-                                }
-                        }
-
-                        if ( dvPhone != null )
-                        {
-                            var phoneNumber = new PersonService( rockContext ).GetPhoneNumber( person, dvPhone );
-                            if ( phoneNumber != null )
-                            {
-                                return phoneNumber.Clone();
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    var attribute = AttributeCache.Read( Field.AttributeId ?? 0 );
-                    if ( attribute != null )
-                    {
-                        switch ( Field.FieldSource )
-                        {
-                            case RegistrationFieldSource.PersonAttribute:
-                                {
-                                    if ( person != null )
-                                    {
-                                        if ( person.Attributes == null )
-                                        {
-                                            person.LoadAttributes();
-                                        }
-                                        return person.GetAttributeValue( attribute.Key );
-                                    }
-                                    break;
-                                }
-
-                            case RegistrationFieldSource.GroupMemberAttribute:
-                                {
-                                    if ( registrant.GroupMember != null )
-                                    {
-                                        if ( registrant.GroupMember.Attributes == null )
-                                        {
-                                            registrant.GroupMember.LoadAttributes();
-                                        }
-                                        return registrant.GroupMember.GetAttributeValue( attribute.Key );
-                                    }
-                                    break;
-                                }
-
-                            case RegistrationFieldSource.RegistrationAttribute:
-                                {
-                                    if ( registrant.Attributes == null )
-                                    {
-                                        registrant.LoadAttributes();
-                                    }
-                                    return registrant.GetAttributeValue( attribute.Key );
-                                }
-                        }
-                    }
-                }
-
-                return null;
-            }
-
-            /// <summary>
-            /// Gets the first name.
-            /// </summary>
-            /// <param name="template">The template.</param>
-            /// <returns></returns>
-            public string GetFirstName( RegistrationTemplate template )
-            {
-                object value = GetPersonFieldValue( template, RegistrationPersonFieldType.FirstName );
-                return value != null ? value.ToString() : string.Empty;
-            }
-
-            /// <summary>
-            /// Gets the last name.
-            /// </summary>
-            /// <param name="template">The template.</param>
-            /// <returns></returns>
-            public string GetLastName( RegistrationTemplate template )
-            {
-                object value = GetPersonFieldValue( template, RegistrationPersonFieldType.LastName );
-                return value != null ? value.ToString() : string.Empty;
-            }
-
-            /// <summary>
-            /// Gets the email.
-            /// </summary>
-            /// <param name="template">The template.</param>
-            /// <returns></returns>
-            public string GetEmail( RegistrationTemplate template )
-            {
-                object value = GetPersonFieldValue( template, RegistrationPersonFieldType.Email );
-                return value != null ? value.ToString() : string.Empty;
-            }
-
-            /// <summary>
-            /// Gets a person field value.
-            /// </summary>
-            /// <param name="template">The template.</param>
-            /// <param name="personFieldType">Type of the person field.</param>
-            /// <returns></returns>
-            public object GetPersonFieldValue( RegistrationTemplate template, RegistrationPersonFieldType personFieldType )
-            {
-                if ( template != null && template.Forms != null )
-                {
-                    var fieldId = template.Forms
-                        .SelectMany( t => t.Fields
-                            .Where( f =>
-                                f.FieldSource == RegistrationFieldSource.PersonField &&
-                                f.PersonFieldType == personFieldType )
-                            .Select( f => f.Id ) )
-                        .FirstOrDefault();
-
-                    return FieldValues.ContainsKey( fieldId ) ? FieldValues[fieldId] : null;
-                }
-
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Registrant  Fee Helper Class
-        /// </summary>
-        [Serializable]
-        public class FeeInfo
-        {
-            /// <summary>
-            /// Gets or sets the option.
-            /// </summary>
-            /// <value>
-            /// The option.
-            /// </value>
-            public string Option { get; set; }
-
-            /// <summary>
-            /// Gets or sets the quantity.
-            /// </summary>
-            /// <value>
-            /// The quantity.
-            /// </value>
-            public int Quantity { get; set; }
-
-            /// <summary>
-            /// Gets or sets the cost.
-            /// </summary>
-            /// <value>
-            /// The cost.
-            /// </value>
-            public decimal Cost { get; set; }
-
-            /// <summary>
-            /// Gets or sets the previous cost.
-            /// </summary>
-            /// <value>
-            /// The previous cost.
-            /// </value>
-            public decimal PreviousCost { get; set; }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="FeeInfo"/> class.
-            /// </summary>
-            public FeeInfo()
-            {
-            }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="FeeInfo"/> class.
-            /// </summary>
-            /// <param name="option">The option.</param>
-            /// <param name="quantity">The quantity.</param>
-            /// <param name="cost">The cost.</param>
-            public FeeInfo( string option, int quantity, decimal cost )
-                : this()
-            {
-                Option = option;
-                Quantity = quantity;
-                Cost = cost;
-            }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="FeeInfo"/> class.
-            /// </summary>
-            /// <param name="fee">The fee.</param>
-            public FeeInfo( RegistrationRegistrantFee fee )
-                : this()
-            {
-                Option = fee.Option;
-                Quantity = fee.Quantity;
-                Cost = fee.Cost;
-                PreviousCost = fee.Cost;
-            }
-        }
-
-        /// <summary>
-        /// Helper class for creating summary of cost/fee information to bind to summary grid
-        /// </summary>
-        public class CostSummaryInfo
-        {
-            /// <summary>
-            /// Gets or sets the type.
-            /// </summary>
-            /// <value>
-            /// The type.
-            /// </value>
-            public CostSummaryType Type { get; set; }
-
-            /// <summary>
-            /// Gets or sets the description.
-            /// </summary>
-            /// <value>
-            /// The description.
-            /// </value>
-            public string Description { get; set; }
-
-            /// <summary>
-            /// Gets or sets the cost.
-            /// </summary>
-            /// <value>
-            /// The cost.
-            /// </value>
-            public decimal Cost { get; set; }
-
-            /// <summary>
-            /// Gets or sets the discounted cost.
-            /// </summary>
-            /// <value>
-            /// The discounted cost.
-            /// </value>
-            public decimal DiscountedCost { get; set; }
-
-            /// <summary>
-            /// Gets or sets the minimum payment.
-            /// </summary>
-            /// <value>
-            /// The minimum payment.
-            /// </value>
-            public decimal MinPayment { get; set; }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public enum CostSummaryType
-        {
-            /// <summary>
-            /// a cost
-            /// 
-            /// </summary>
-            Cost,
-
-            /// <summary>
-            /// a fee
-            /// </summary>
-            Fee,
-
-            /// <summary>
-            /// The discount
-            /// </summary>
-            Discount,
-
-            /// <summary>
-            /// The total
-            /// </summary>
-            Total
-        }
-
-        #endregion
-}
+    }
 }

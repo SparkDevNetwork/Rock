@@ -2,7 +2,7 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        <Rock:NotificationBox ID="nbConfiguration" NotificationBoxType="Danger" runat="server" Visible="false" />
+        <Rock:NotificationBox ID="nbConfiguration" NotificationBoxType="Warning" runat="server" Visible="false" />
         <div class="row">
             <asp:Panel ID="pnlFilters" CssClass="col-md-3" runat="server">
                 <asp:Panel ID="pnlCalendar" CssClass="calendar" runat="server">
@@ -18,9 +18,11 @@
                     </asp:Calendar>
                 </asp:Panel>
 
-                <Rock:RockCheckBoxList ID="cblCampus" RepeatDirection="Vertical" runat="server" Label="Filter by Campus" DataTextField="Name" DataValueField="Id" OnSelectedIndexChanged="cblCampus_SelectedIndexChanged" />
+                <div class="margin-t-md">
+                    <Rock:RockCheckBoxList ID="cblCampus" RepeatDirection="Vertical" runat="server" Label="Filter by Campus" DataTextField="Name" DataValueField="Id" OnSelectedIndexChanged="cblCampus_SelectedIndexChanged" AutoPostBack="true" />
+                </div>
 
-                <Rock:RockCheckBoxList ID="cblCategory" RepeatDirection="Vertical" runat="server" Label="Filter by Category" DataTextField="Name" DataValueField="Id" OnSelectedIndexChanged="cblCategory_SelectedIndexChanged" />
+                <Rock:RockCheckBoxList ID="cblCategory" RepeatDirection="Vertical" runat="server" Label="Filter by Category" DataTextField="Name" DataValueField="Id" OnSelectedIndexChanged="cblCategory_SelectedIndexChanged" AutoPostBack="true" />
 
                 <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Select Range" />
             </asp:Panel>

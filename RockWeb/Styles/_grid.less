@@ -198,7 +198,7 @@ td.wrap-contents { // keep cells from scrolling off screen
 
 // pagination
 .grid-paging {
-    background-color: @gray-lighter;
+    background-color: @grid-pager-bg;
 
     .pagination {
         margin-top: 0;
@@ -233,6 +233,9 @@ td.grid-col-actions {
 
     .btn {
         margin-left: 8px;
+        background-color: @grid-footer-button-bg;
+        color: @grid-footer-button-text-color;
+        border-color: @grid-footer-button-border;
     }
 }
 
@@ -319,6 +322,10 @@ td.grid-col-actions {
          padding-top: 12px;
          min-width: 48px;
          width:48px;
+
+         a {
+             color: lighten(@text-color, 20%);
+         }
     }
 }
 
