@@ -3493,6 +3493,7 @@ div.tagsinput .tags_clear {
   min-width: 290px;
   margin-left: -6px;
   border: 0;
+  margin-top: 2px;
 }
 .smartsearch input.searchinput {
   padding: 4px 4px 4px 25px;
@@ -4146,7 +4147,7 @@ ul.rocklist .rocklist-item.selected {
   border-radius: 4px;
 }
 .tt-suggestion p:hover {
-  background-color: #dde4e6;
+  background-color: #d5e6ed;
 }
 .tt-suggestion.tt-is-under-cursor {
   color: #5e7980;
