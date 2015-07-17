@@ -90,7 +90,7 @@ $(document).ready(function() {
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 
-                writer.AddAttribute( "class", "alert alert-info" );
+                writer.AddAttribute( "class", "alert alert-info help-message" );
                 writer.AddAttribute( "style", "display:none" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.RenderBeginTag( HtmlTextWriterTag.Small );

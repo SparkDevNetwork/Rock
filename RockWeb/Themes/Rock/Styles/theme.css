@@ -2907,8 +2907,8 @@ iframe.email-body {
   padding: 6px 12px;
   font-size: 14px;
   color: #555555;
-  background-color: #efefef;
-  border: 1px solid #cccccc;
+  background-color: #edeae6;
+  border: 1px solid #d8d1c8;
   border-radius: 4px;
   display: inline-block;
   width: 225px;
@@ -3174,7 +3174,7 @@ ul.rocktree ul {
 }
 .list-as-blocks ul li {
   border-radius: 4px;
-  border: 1px solid #bbb;
+  border: 1px solid #e2e2e2;
   float: left;
   margin: 0 1.25% 15px;
   width: 47.5%;
@@ -3184,15 +3184,23 @@ ul.rocktree ul {
   text-align: center;
 }
 .list-as-blocks ul li a {
-  background-color: #e5e1da;
+  background-color: #f5f2ef;
   display: block;
   color: #6a6a6a;
   height: 80px;
   padding: 15px;
   border-radius: 4px;
 }
+.list-as-blocks ul li a i {
+  font-size: 26px;
+  color: #848484;
+  margin-top: 6px;
+}
 .list-as-blocks ul li a:hover {
   background-color: #282526;
+  color: #d3cec5;
+}
+.list-as-blocks ul li a:hover i {
   color: #d3cec5;
 }
 .list-as-blocks ul li a div.notification {
@@ -3208,10 +3216,28 @@ ul.rocktree ul {
   background-color: #282526;
   color: #d3cec5;
 }
-@media (min-width: 768px) {
+@media (min-width: 768px) and (max-width: 991px) {
   .list-as-blocks ul li {
-    margin: 0 2.5% 15px;
-    width: 20%;
+    margin: 0 1% 15px;
+    width: 32%;
+  }
+  .list-as-blocks ul li:nth-child(3n) {
+    margin-right: 0;
+  }
+  .list-as-blocks ul li:nth-child(3n+1) {
+    margin-left: 0;
+  }
+}
+@media (min-width: 992px) {
+  .list-as-blocks ul li {
+    margin: 0 1% 15px;
+    width: 18.4%;
+  }
+  .list-as-blocks ul li:nth-child(5n) {
+    margin-right: 0;
+  }
+  .list-as-blocks ul li:nth-child(5n+1) {
+    margin-left: 0;
   }
 }
 .nav.nav-pagelist {
@@ -3848,7 +3874,7 @@ fieldset .actions {
   height: 50px;
   border-radius: 3px;
   font-size: 10px;
-  background-color: #efefef;
+  background-color: #edeae6;
   color: #555555;
   display: block;
   padding-top: 2px;
@@ -3861,7 +3887,7 @@ fieldset .actions {
   content: '\f016';
   font-family: FontAwesome;
   font-size: 28px;
-  color: #c9c9c9;
+  color: #cdc5ba;
   -webkit-font-smoothing: antialiased;
   margin-left: 42px;
   position: absolute;
@@ -3872,7 +3898,7 @@ fieldset .actions {
 }
 .fileupload-group .fileupload-thumbnail .file-link.file-exists:after {
   content: '\f15c';
-  color: #c9c9c9;
+  color: #cdc5ba;
   margin-top: -10px;
 }
 .fileupload-group .fileupload-remove {
@@ -5000,6 +5026,9 @@ a.help {
   outline: 0;
   color: #86b8cc;
 }
+.help-message {
+  font-weight: normal;
+}
 .photo img {
   width: 100%;
 }
@@ -5108,6 +5137,9 @@ a.help {
 }
 .panel .panel-heading .form-group {
   margin-bottom: 0;
+}
+.panel .panel-heading i.fa {
+  color: #848484;
 }
 .panel .panel-body {
   border-radius: 0 0 4px 4px;

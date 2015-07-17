@@ -3174,7 +3174,7 @@ ul.rocktree ul {
 }
 .list-as-blocks ul li {
   border-radius: 4px;
-  border: 1px solid #bbb;
+  border: 1px solid #c8c8c8;
   float: left;
   margin: 0 1.25% 15px;
   width: 47.5%;
@@ -3191,8 +3191,16 @@ ul.rocktree ul {
   padding: 15px;
   border-radius: 4px;
 }
+.list-as-blocks ul li a i {
+  font-size: 26px;
+  color: #4d4d4d;
+  margin-top: 6px;
+}
 .list-as-blocks ul li a:hover {
   background-color: #428bca;
+  color: #ecf0f3;
+}
+.list-as-blocks ul li a:hover i {
   color: #ecf0f3;
 }
 .list-as-blocks ul li a div.notification {
@@ -3208,10 +3216,28 @@ ul.rocktree ul {
   background-color: #428bca;
   color: #ecf0f3;
 }
-@media (min-width: 768px) {
+@media (min-width: 768px) and (max-width: 991px) {
   .list-as-blocks ul li {
-    margin: 0 2.5% 15px;
-    width: 20%;
+    margin: 0 1% 15px;
+    width: 32%;
+  }
+  .list-as-blocks ul li:nth-child(3n) {
+    margin-right: 0;
+  }
+  .list-as-blocks ul li:nth-child(3n+1) {
+    margin-left: 0;
+  }
+}
+@media (min-width: 992px) {
+  .list-as-blocks ul li {
+    margin: 0 1% 15px;
+    width: 18.4%;
+  }
+  .list-as-blocks ul li:nth-child(5n) {
+    margin-right: 0;
+  }
+  .list-as-blocks ul li:nth-child(5n+1) {
+    margin-left: 0;
   }
 }
 .nav.nav-pagelist {
@@ -5000,6 +5026,9 @@ a.help {
   outline: 0;
   color: #86b8cc;
 }
+.help-message {
+  font-weight: normal;
+}
 .photo img {
   width: 100%;
 }
@@ -5108,6 +5137,9 @@ a.help {
 }
 .panel .panel-heading .form-group {
   margin-bottom: 0;
+}
+.panel .panel-heading i.fa {
+  color: #4d4d4d;
 }
 .panel .panel-body {
   border-radius: 0 0 4px 4px;
