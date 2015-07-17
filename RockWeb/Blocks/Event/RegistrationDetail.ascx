@@ -29,8 +29,8 @@
                                 <Rock:EmailBox ID="ebConfirmationEmail" runat="server" Label="Confirmation Email" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbFirstName" runat="server" Label="Registered by First Name" />
-                                <Rock:RockTextBox ID="tbLastName" runat="server" Label="Registered by Last Name" />
+                                <Rock:RockTextBox ID="tbFirstName" runat="server" Label="Registered by First Name" Required="true" />
+                                <Rock:RockTextBox ID="tbLastName" runat="server" Label="Registered by Last Name" Required="true" />
                             </div>
                         </div>
 

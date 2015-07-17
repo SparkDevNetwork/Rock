@@ -268,7 +268,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( registration != null && RegistrationInstanceId > 0 )
                 {
-                    registration.PersonAliasId = ppPerson.PersonAliasId.Value;
+                    registration.PersonAliasId = ppPerson.PersonAliasId;
                     registration.FirstName = tbFirstName.Text;
                     registration.LastName = tbLastName.Text;
                     registration.ConfirmationEmail = ebConfirmationEmail.Text;

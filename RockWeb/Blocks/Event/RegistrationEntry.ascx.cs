@@ -29,6 +29,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -55,6 +56,8 @@ namespace RockWeb.Blocks.Event
         private const string REGISTRATION_ID_PARAM_NAME = "RegistrationId";
         private const string REGISTRATION_SLUG_PARAM_NAME = "Slug";
         private const string REGISTRATION_INSTANCE_ID_PARAM_NAME = "RegistrationInstanceId";
+        private const string REGISTRATION_GROUP_ID_PARAM_NAME = "GroupId";
+        private const string REGISTRATION_CAMPUS_ID_PARAM_NAME = "CampusId";
 
         // Viewstate keys
         private const string REGISTRATION_INSTANCE_STATE_KEY = "RegistrationInstanceState";
@@ -345,6 +348,26 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+
+            if ( RegistrationInstanceState == null )
+            {
+                SetRegistrationState();
+            }
+
+            if ( RegistrationInstanceState != null )
+            {
+                RockPage.Title = RegistrationInstanceState.Name;
+                breadCrumbs.Add( new BreadCrumb( RegistrationInstanceState.Name, pageReference ) );
+                return breadCrumbs;
+            }
+
+            breadCrumbs.Add( new BreadCrumb( this.PageCache.PageTitle, pageReference ) );
+            return breadCrumbs;
+        }
+        
         /// <summary>
         /// Saves any user control view-state changes that have occurred since the last page postback.
         /// </summary>
@@ -633,6 +656,8 @@ namespace RockWeb.Blocks.Event
             string registrationSlug = PageParameter( REGISTRATION_SLUG_PARAM_NAME );
             int? registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
             int? registrationId = PageParameter( REGISTRATION_ID_PARAM_NAME ).AsIntegerOrNull();
+            int? groupId = PageParameter( REGISTRATION_GROUP_ID_PARAM_NAME ).AsIntegerOrNull();
+            int? campusId = PageParameter( REGISTRATION_CAMPUS_ID_PARAM_NAME ).AsIntegerOrNull();
 
             // Not inside a "using" due to serialization needing context to still be active
             var rockContext = new RockContext();
@@ -670,6 +695,33 @@ namespace RockWeb.Blocks.Event
                         l.RegistrationInstance.RegistrationTemplate.IsActive &&
                         (!l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
                         (!l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime )  )
+                    .FirstOrDefault();
+
+                if ( linkage != null )
+                {
+                    RegistrationInstanceState = linkage.RegistrationInstance;
+                    GroupId = linkage.GroupId;
+                    RegistrationState = new RegistrationInfo( CurrentPerson );
+                }
+            }
+
+            // A group id and campus id were specified
+            if ( RegistrationState == null && groupId.HasValue && campusId.HasValue )
+            {
+                var dateTime = RockDateTime.Now;
+                var linkage = new EventItemCampusGroupMapService( rockContext )
+                    .Queryable( "RegistrationInstance.Account,RegistrationInstance.RegistrationTemplate.Fees,RegistrationInstance.RegistrationTemplate.Discounts,RegistrationInstance.RegistrationTemplate.Forms.Fields.Attribute,RegistrationInstance.RegistrationTemplate.FinancialGateway" )
+                    .AsNoTracking()
+                    .Where( l =>
+                        l.GroupId == groupId &&
+                        l.EventItemCampus != null &&
+                        l.EventItemCampus.CampusId == campusId &&
+                        l.RegistrationInstance != null &&
+                        l.RegistrationInstance.IsActive &&
+                        l.RegistrationInstance.RegistrationTemplate != null &&
+                        l.RegistrationInstance.RegistrationTemplate.IsActive &&
+                        ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
+                        ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
                     .FirstOrDefault();
 
                 if ( linkage != null )
