@@ -1,4 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RegistrationDetail.ascx.cs" Inherits="RockWeb.Blocks.Event.RegistrationDetail" %>
+<%@ Reference Control="~/Blocks/Finance/TransactionList.ascx" %>
 
 <asp:UpdatePanel ID="upnlRegistrationDetail" runat="server">
     <ContentTemplate>
@@ -67,6 +68,7 @@
                                 <Rock:RockLiteral ID="lDiscountAmount" runat="server" Label="Discount Amount" />
 
                                 <asp:Panel ID="pnlCosts" runat="server" Visible="false" CssClass="well">
+
                                     <div class="fee-table">
                                         <h4>Cost/Fee Summary</h4>
                                         <asp:Repeater ID="rptFeeSummary" runat="server">
@@ -126,6 +128,7 @@
                                     <h4>Payment Information</h4>
 
                                     <Rock:NotificationBox ID="nbPaymentError" runat="server" NotificationBoxType="Danger" Visible="true" />
+
                                     <Rock:CurrencyBox ID="cbPaymentAmount" runat="server" Label="Payment Amount" Required="true" ValidationGroup="Payment" ></Rock:CurrencyBox>
                                     <Rock:RockTextBox ID="txtCardFirstName" runat="server" Label="First Name on Card" Visible="false" Required="true" ValidationGroup="Payment" ></Rock:RockTextBox>
                                     <Rock:RockTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false" Required="true" ValidationGroup="Payment"></Rock:RockTextBox>

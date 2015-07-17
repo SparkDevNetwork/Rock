@@ -1853,12 +1853,13 @@ namespace RockWeb.Blocks.Event
                     if ( registrant != null && registrant.FieldValues.ContainsKey( field.Id ) )
                     {
                         value = registrant.FieldValues[field.Id];
-                        if ( value == null && field.IsSharedValue && previousRegistrant != null && previousRegistrant.FieldValues.ContainsKey( field.Id ) )
-                        {
-                            value = previousRegistrant.FieldValues[field.Id];
-                        }
                     }
 
+                    if ( value == null && field.IsSharedValue && previousRegistrant != null && previousRegistrant.FieldValues.ContainsKey( field.Id ) )
+                    {
+                        value = previousRegistrant.FieldValues[field.Id];
+                    } 
+                    
                     if ( !string.IsNullOrWhiteSpace( field.PreText ) )
                     {
                         phRegistrantControls.Controls.Add( new LiteralControl( field.PreText ) );
