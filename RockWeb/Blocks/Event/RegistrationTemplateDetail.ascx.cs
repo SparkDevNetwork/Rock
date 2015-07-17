@@ -1666,6 +1666,10 @@ namespace RockWeb.Blocks.Event
                     formField.PersonFieldType = RegistrationPersonFieldType.FirstName;
                     formField.IsGridField = true;
                     formField.IsRequired = true;
+                    formField.PreText = @"<div class='row'>
+    <div class='col-md-6'>
+";
+                    formField.PostText = "    </div>";
                     formField.Order = defaultForm.Fields.Any() ? defaultForm.Fields.Max( f => f.Order ) + 1 : 0;
                     defaultForm.Fields.Add( formField );
                 }
@@ -1681,6 +1685,9 @@ namespace RockWeb.Blocks.Event
                     formField.PersonFieldType = RegistrationPersonFieldType.LastName;
                     formField.IsGridField = true;
                     formField.IsRequired = true;
+                    formField.PreText = "    <div class='col-md-6'>";
+                    formField.PostText = @"    </div>
+</div>";
                     formField.Order = defaultForm.Fields.Any() ? defaultForm.Fields.Max( f => f.Order ) + 1 : 0;
                     defaultForm.Fields.Add( formField );
                 }
