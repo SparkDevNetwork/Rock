@@ -391,17 +391,23 @@ namespace RockWeb.Blocks.Event
             var rockContext = new RockContext();
 
             var service = new RegistrationTemplateService( rockContext );
-            var RegistrationTemplate = service.Get( hfRegistrationTemplateId.Value.AsInteger() );
+            var registrationTemplate = service.Get( hfRegistrationTemplateId.Value.AsInteger() );
 
-            if ( RegistrationTemplate != null )
+            if ( registrationTemplate != null )
             {
-                if ( !RegistrationTemplate.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                if ( !registrationTemplate.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
                 {
                     mdDeleteWarning.Show( "You are not authorized to delete this registration template.", ModalAlertType.Information );
                     return;
                 }
 
-                service.Delete( RegistrationTemplate );
+                if ( registrationTemplate.Instances.Any( i => i.Registrations.Any() ) )
+                {
+                    mdDeleteWarning.Show( "This template has instances with registrations and cannot be deleted until all the registrations have been deleted.", ModalAlertType.Information );
+                    return;
+                }
+
+                service.Delete( registrationTemplate );
 
                 rockContext.SaveChanges();
             }

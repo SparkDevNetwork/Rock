@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Event
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the registration instances of this type!');", RegistrationTemplate.FriendlyTypeName );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", RegistrationInstance.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RegistrationTemplate ) ).Id;
         }
 
@@ -261,6 +261,12 @@ namespace RockWeb.Blocks.Event
                     if ( !registrationInstance.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
                     {
                         mdDeleteWarning.Show( "You are not authorized to delete this registration instance.", ModalAlertType.Information );
+                        return;
+                    }
+
+                    if ( registrationInstance.Registrations.Any() )
+                    {
+                        mdDeleteWarning.Show( "This instance has registrations and cannot be deleted until all the registrations have been deleted.", ModalAlertType.Information );
                         return;
                     }
 
@@ -546,6 +552,18 @@ namespace RockWeb.Blocks.Event
                 var registration = registrationService.Get( e.RowKeyId );
                 if ( registration != null )
                 {
+                    if ( !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                    {
+                        mdDeleteWarning.Show( "You are not authorized to delete this registration.", ModalAlertType.Information );
+                        return;
+                    }
+
+                    if ( registration.Payments.Any() )
+                    {
+                        mdDeleteWarning.Show( "This registration has payments and cannot be deleted.", ModalAlertType.Information );
+                        return;
+                    }
+
                     string errorMessage;
                     if ( !registrationService.CanDelete( registration, out errorMessage ) )
                     {

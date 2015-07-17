@@ -216,7 +216,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( registration.Payments.Any() )
                     {
-                        mdDeleteWarning.Show( "This registration has existing payments and cannot be deleted.", ModalAlertType.Information );
+                        mdDeleteWarning.Show( "This registration has payments and cannot be deleted.", ModalAlertType.Information );
                         return;
                     }
 
@@ -232,7 +232,9 @@ namespace RockWeb.Blocks.Event
                     rockContext.SaveChanges();
                 }
 
-                NavigateToParentPage();
+                var pageParams = new Dictionary<string, string>();
+                pageParams.Add( "RegistrationInstanceId", RegistrationInstanceId.ToString() );
+                NavigateToParentPage( pageParams );
             }
         }
 
