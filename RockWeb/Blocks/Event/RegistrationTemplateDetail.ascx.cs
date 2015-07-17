@@ -555,7 +555,7 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.ReminderEmailTemplate = ceReminderEmailTemplate.Text;
 
             RegistrationTemplate.RegistrationTerm = string.IsNullOrWhiteSpace( tbRegistrationTerm.Text ) ? "Registration" : tbRegistrationTerm.Text;
-            RegistrationTemplate.RegistrantTerm = string.IsNullOrWhiteSpace( tbRegistrantTerm.Text ) ? "Person" : tbRegistrantTerm.Text;
+            RegistrationTemplate.RegistrantTerm = string.IsNullOrWhiteSpace( tbRegistrantTerm.Text ) ? "Registrant" : tbRegistrantTerm.Text;
             RegistrationTemplate.FeeTerm = string.IsNullOrWhiteSpace( tbFeeTerm.Text ) ? "Additional Options" : tbFeeTerm.Text;
             RegistrationTemplate.DiscountCodeTerm = string.IsNullOrWhiteSpace( tbDiscountCodeTerm.Text ) ? "Discount Code" : tbDiscountCodeTerm.Text;
             RegistrationTemplate.SuccessTitle = tbSuccessTitle.Text;
@@ -1816,7 +1816,7 @@ namespace RockWeb.Blocks.Event
 ", formFieldName, fieldTypeName, formField.FieldSource.ConvertToString() );
                     }
 
-                    lFormsReadonly.Text = string.Format( formTextFormat, form.Name, attributeText );
+                    lFormsReadonly.Text += string.Format( formTextFormat, form.Name, attributeText );
                 }
             }
             else
@@ -2100,8 +2100,10 @@ namespace RockWeb.Blocks.Event
             ddlPersonField.Visible = !protectedField && fieldSource == RegistrationFieldSource.PersonField;
 
             ddlPersonAttributes.Visible = fieldSource == RegistrationFieldSource.PersonAttribute;
-            cbUseCurrentPersonAttributeValue.Visible = fieldSource == RegistrationFieldSource.PersonAttribute ||
-                fieldSource == RegistrationFieldSource.PersonField;
+            
+            // Curently disabled as the RegistrationEntry block does not support this functionality ( it may be supported in future block )
+            //cbUseCurrentPersonAttributeValue.Visible = fieldSource == RegistrationFieldSource.PersonAttribute ||
+            //    fieldSource == RegistrationFieldSource.PersonField;
 
             ddlGroupTypeAttributes.Visible = fieldSource == RegistrationFieldSource.GroupMemberAttribute;
 
