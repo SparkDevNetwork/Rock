@@ -5290,8 +5290,8 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   line-height: 1;
   color: #555555;
   text-align: center;
-  background-color: #efefef;
-  border: 1px solid #cccccc;
+  background-color: #edeae6;
+  border: 1px solid #d8d1c8;
   border-radius: 4px;
 }
 .input-group-addon.input-sm {
