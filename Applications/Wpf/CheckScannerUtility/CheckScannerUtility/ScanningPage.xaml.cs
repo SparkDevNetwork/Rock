@@ -81,12 +81,34 @@ namespace Rock.Apps.CheckScannerUtility
 
             var rockConfig = RockConfig.Load();
 
-            if ( scannedDocInfo.BadMicr )
+            bool scanningChecks = rockConfig.TenderTypeValueGuid.AsGuid() == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+
+            // if they don't enable smart scan, don't warn about bad micr's. For example, they might be scanning a mixture of checks and envelopes
+            if ( rockConfig.EnableSmartScan )
             {
-                lblScanCheckWarningBadMicr.Content = @"Unable to read check information
+                if ( scannedDocInfo.BadMicr )
+                {
+                    if ( rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.RangerApi )
+                    {
+                        lblScanCheckWarningBadMicr.Content = @"Unable to read check information
+    Click 'Skip' to reject this check and continue scanning.    
     Click 'Upload' to upload the check as-is.
-    Click 'Skip' to reject this and continue scanning.
-    Click 'Stop' to reject this and stop scanning.";
+    Click 'Stop' to reject this check and stop scanning.";
+                    }
+                    else
+                    {
+                        lblScanCheckWarningBadMicr.Content = @"Unable to read check information
+    Click 'Skip' to reject this check.    
+    Click 'Upload' to upload the check as-is.";
+                    }
+                }
+            }
+            else
+            {
+                if (!scannedDocInfo.Upload)
+                {
+                    scannedDocInfo.Upload = true;
+                }
             }
 
             if ( scannedDocInfo.Upload && IsDuplicateScan( scannedDocInfo ) )
@@ -138,16 +160,6 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
-        /// Handles the Click event of the btnStopAndRetry control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void btnStopAndRetry_Click( object sender, RoutedEventArgs e )
-        {
-            HideUploadWarningPrompts( false );
-        }
-
-        /// <summary>
         /// Shows the upload warnings.
         /// </summary>
         private void ShowUploadWarnings( ScannedDocInfo scannedDocInfo )
@@ -158,7 +170,8 @@ namespace Rock.Apps.CheckScannerUtility
             lblScanCheckWarningBadMicr.Visibility = scannedDocInfo.BadMicr ? Visibility.Visible : Visibility.Collapsed;
             lblScanItemUploadSuccess.Visibility = Visibility.Collapsed;
             pnlPromptForUpload.Visibility = scannedDocInfo.Duplicate || scannedDocInfo.BadMicr ? Visibility.Visible : Visibility.Collapsed;
-            pnlStartStopClose.IsEnabled = pnlPromptForUpload.Visibility == System.Windows.Visibility.Visible ? false : true;
+            btnStart.Visibility = Visibility.Hidden;
+            btnStopScanning.IsEnabled = true;
         }
 
         /// <summary>
@@ -174,7 +187,7 @@ namespace Rock.Apps.CheckScannerUtility
 
             lblScanItemUploadSuccess.Visibility = Visibility.Collapsed;
             pnlPromptForUpload.Visibility = Visibility.Collapsed;
-            pnlStartStopClose.IsEnabled = true;
+            btnStart.Visibility = Visibility.Visible;
         }
 
         /// <summary>
@@ -186,7 +199,7 @@ namespace Rock.Apps.CheckScannerUtility
             lblScanCheckWarningBadMicr.Visibility = Visibility.Collapsed;
             lblScanItemUploadSuccess.Visibility = Visibility.Visible;
             pnlPromptForUpload.Visibility = Visibility.Collapsed;
-            pnlStartStopClose.IsEnabled = true;
+            btnStart.Visibility = Visibility.Visible;
         }
 
         /// <summary>
@@ -250,6 +263,8 @@ namespace Rock.Apps.CheckScannerUtility
             ShowStartupPage();
             _itemsUploaded = 0;
             _itemsSkipped = 0;
+            _itemsScanned = 0;
+            _firstNoItemsWarning = true;
             ShowUploadStats();
             StartScanning();
             lblScanItemCountInfo.Visibility = Visibility.Collapsed;
@@ -264,26 +279,26 @@ namespace Rock.Apps.CheckScannerUtility
             HideUploadWarningPrompts();
             lblExceptions.Visibility = Visibility.Collapsed;
             lblStartupInfo.Visibility = Visibility.Visible;
+            lblNoItemsFound.Visibility = Visibility.Collapsed;
 
             ScannedDocInfo sampleDocInfo = new ScannedDocInfo();
             sampleDocInfo.CurrencyTypeValue = batchPage.CurrencyValueList.FirstOrDefault( a => a.Guid == RockConfig.Load().SourceTypeValueGuid.AsGuid() );
             DisplayScannedDocInfo( sampleDocInfo );
 
             bool scanningChecks = RockConfig.Load().TenderTypeValueGuid.AsGuid() == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            lblNoItemsFound.Content = string.Format( "No {0} detected in scanner. Make sure {0} are properly in the feed tray.", scanningChecks ? "checks" : "items" );
             lblScanBackInstructions.Content = string.Format( "Insert the {0} again facing the other direction to get an image of the back.", scanningChecks ? "check" : "item" );
             lblScanBackInstructions.Visibility = Visibility.Collapsed;
             if ( RockConfig.Load().ScannerInterfaceType == RockConfig.InterfaceType.MICRImageRS232 )
             {
                 lblStartupInfo.Content = string.Format( "Ready to scan next {0}.", scanningChecks ? "check" : "item" );
                 btnStart.Visibility = Visibility.Hidden;
-                btnStopAndRetry.Visibility = Visibility.Collapsed;
                 btnStopScanning.Visibility = Visibility.Hidden;
             }
             else
             {
                 btnStart.Visibility = Visibility.Visible;
                 btnStopScanning.Visibility = Visibility.Visible;
-                btnStopAndRetry.Visibility = Visibility.Visible;
                 lblStartupInfo.Content = "Click Start to begin";
             }
         }
@@ -297,15 +312,9 @@ namespace Rock.Apps.CheckScannerUtility
             switch ( xportStates )
             {
                 case XportStates.TransportReadyToFeed:
-                    bool scanningChecks = RockConfig.Load().TenderTypeValueGuid.AsGuid() == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
-                    btnStart.IsEnabled = true;
-                    btnStopScanning.IsEnabled = false;
                     break;
 
                 case XportStates.TransportFeeding:
-                    btnStart.IsEnabled = false;
-                    btnStopScanning.IsEnabled = true;
-                    btnClose.Visibility = Visibility.Hidden;
                     break;
             }
 
@@ -322,7 +331,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The e.</param>
         public void rangerScanner_TransportItemSuspended( object sender, AxRANGERLib._DRangerEvents_TransportItemSuspendedEvent e )
         {
-            System.Diagnostics.Debug.WriteLine( "rangerScanner_TransportItemSuspended" );
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportItemSuspended", DateTime.Now.ToString( "o" ) ) );
         }
 
         /// <summary>
@@ -332,7 +341,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The e.</param>
         public void rangerScanner_TransportPassthroughEvent( object sender, AxRANGERLib._DRangerEvents_TransportPassthroughEventEvent e )
         {
-            System.Diagnostics.Debug.WriteLine( "rangerScanner_TransportPassthroughEvent" );
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportPassthroughEvent", DateTime.Now.ToString( "o" ) ) );
         }
 
         /// <summary>
@@ -342,7 +351,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The e.</param>
         public void rangerScanner_TransportItemInPocket( object sender, AxRANGERLib._DRangerEvents_TransportItemInPocketEvent e )
         {
-            System.Diagnostics.Debug.WriteLine( "rangerScanner_TransportItemInPocket" );
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportItemInPocket", DateTime.Now.ToString( "o" ) ) );
         }
 
         /// <summary>
@@ -352,7 +361,95 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The e.</param>
         public void rangerScanner_TransportFeedingStopped( object sender, AxRANGERLib._DRangerEvents_TransportFeedingStoppedEvent e )
         {
-            System.Diagnostics.Debug.WriteLine( "rangerScanner_TransportFeedingStopped" );
+            btnStart.IsEnabled = true;
+            btnClose.IsEnabled = true;
+            if ( pnlPromptForUpload.Visibility != Visibility.Visible )
+            {
+                btnStopScanning.IsEnabled = false;
+            }
+
+            // show a "No Items" warning if they clicked Start but no items were scanned, and this is the 2nd+ time they tried
+            if ( _itemsScanned == 0 )
+            {
+                if ( !_firstNoItemsWarning )
+                {
+                    lblNoItemsFound.Visibility = Visibility.Visible;
+                }
+
+                _firstNoItemsWarning = false;
+            }
+
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportFeedingStopped", DateTime.Now.ToString( "o" ) ) );
+        }
+
+        public void rangerScanner_TransportTrackIsClear( object sender, EventArgs e )
+        {
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportTrackIsClear", DateTime.Now.ToString( "o" ) ) );
+        }
+
+        public void rangerScanner_TransportStartingUpState( object sender, EventArgs e )
+        {
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportStartingUpState", DateTime.Now.ToString( "o" ) ) );
+        }
+
+        public void rangerScanner_TransportShuttingDownState( object sender, EventArgs e )
+        {
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportShuttingDownState", DateTime.Now.ToString( "o" ) ) );
+        }
+
+        public void rangerScanner_TransportReadyToSetEndorsement( object sender, AxRANGERLib._DRangerEvents_TransportReadyToSetEndorsementEvent e )
+        {
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportReadyToSetEndorsement", DateTime.Now.ToString( "o" ) ) );
+        }
+
+        public void rangerScanner_TransportReadyToFeedState( object sender, AxRANGERLib._DRangerEvents_TransportReadyToFeedStateEvent e )
+        {
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportReadyToFeedState", DateTime.Now.ToString( "o" ) ) );
+        }
+
+        public void rangerScanner_TransportOverrideOptions( object sender, EventArgs e )
+        {
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportOverrideOptions", DateTime.Now.ToString( "o" ) ) );
+        }
+
+        public void rangerScanner_TransportNewItem( object sender, EventArgs e )
+        {
+            _itemsScanned++;
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportNewItem", DateTime.Now.ToString( "o" ) ) );
+        }
+
+        public void rangerScanner_TransportIsDead( object sender, EventArgs e )
+        {
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportIsDead", DateTime.Now.ToString( "o" ) ) );
+        }
+
+        public void rangerScanner_TransportInExceptionState( object sender, EventArgs e )
+        {
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportInExceptionState", DateTime.Now.ToString( "o" ) ) );
+        }
+
+        /// <summary>
+        /// Handles the TransportFeedingState event of the rangerScanner control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        public void rangerScanner_TransportFeedingState( object sender, EventArgs e )
+        {
+            lblNoItemsFound.Visibility = Visibility.Collapsed;
+            btnStart.IsEnabled = false;
+            btnClose.IsEnabled = false;
+            btnStopScanning.IsEnabled = true;
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportFeedingState", DateTime.Now.ToString( "o" ) ) );
+        }
+
+        public void rangerScanner_TransportExceptionComplete( object sender, EventArgs e )
+        {
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportExceptionComplete", DateTime.Now.ToString( "o" ) ) );
+        }
+
+        public void rangerScanner_TransportEnablingOptionsState( object sender, EventArgs e )
+        {
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportEnablingOptionsState", DateTime.Now.ToString( "o" ) ) );
         }
 
         /// <summary>
@@ -370,7 +467,7 @@ namespace Rock.Apps.CheckScannerUtility
                 batchPage.micrImage.ClearBuffer();
                 return;
             }
-            
+
             try
             {
                 lblStartupInfo.Visibility = Visibility.Collapsed;
@@ -834,6 +931,8 @@ namespace Rock.Apps.CheckScannerUtility
         private bool _keepScanning;
 
         private int _itemsSkipped;
+        private int _itemsScanned;
+        private bool _firstNoItemsWarning;
 
         private int _itemsUploaded;
 
@@ -852,6 +951,9 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         public void StartScanning()
         {
+            _itemsUploaded = 0;
+            _itemsSkipped = 0;
+            _itemsScanned = 0;
             _keepScanning = true;
             ResumeScanning();
         }
@@ -863,6 +965,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="System.Windows.RoutedEventArgs"/> instance containing the event data.</param>
         private void btnStopScanning_Click( object sender, RoutedEventArgs e )
         {
+            HideUploadWarningPrompts( false );
             StopScanning();
         }
 

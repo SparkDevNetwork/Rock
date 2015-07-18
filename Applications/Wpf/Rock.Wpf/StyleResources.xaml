@@ -313,7 +313,7 @@
            BasedOn="{StaticResource labelStyle}"
            TargetType="{x:Type Label}">
         <Setter Property="Label.Margin"
-                Value="10,0,0,0" />
+                Value="0,0,0,8" />
     </Style>
 
     <!-- Label style: Icon (FontAwesome Icon)-->
@@ -368,19 +368,33 @@
                 Value="0,6,0,4"></Setter>
     </Style>
 
-    <Style x:Key="labelStyleHighlightInfo"
+    <Style x:Key="labelStyleHighlight"
            BasedOn="{StaticResource labelStyleIcon}"
            TargetType="{x:Type Label}">
-        <Setter Property="Label.Background"
-                Value="#3bc2df"></Setter>
-        <Setter Property="Label.Foreground"
-                Value="#ffffff"></Setter>
         <Setter Property="Label.Padding"
                 Value="6,3,6,3" />
         <Setter Property="FontWeight"
                 Value="SemiBold"/>
         <Setter Property="FontSize"
                 Value="11" />
+    </Style>
+
+    <Style x:Key="labelStyleHighlightDefault"
+           BasedOn="{StaticResource labelStyleHighlight}"
+           TargetType="{x:Type Label}">
+        <Setter Property="Label.Background"
+                Value="#6a6a6a"></Setter>
+        <Setter Property="Label.Foreground"
+                Value="#ffffff"></Setter>
+    </Style>
+
+    <Style x:Key="labelStyleHighlightInfo"
+           BasedOn="{StaticResource labelStyleHighlight}"
+           TargetType="{x:Type Label}">
+        <Setter Property="Label.Background"
+                Value="#3bc2df"></Setter>
+        <Setter Property="Label.Foreground"
+                Value="#ffffff"></Setter>
     </Style>
 
     <!-- Label style: Button Text-->
@@ -544,12 +558,23 @@
                         Value="White" />
             </Trigger>
         </Style.Triggers>
-        <Setter Property="MinHeight" Value="30" />
-        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="MinHeight" Value="38" />
+        <Setter Property="BorderThickness"
+                Value="0" />
         <Setter Property="Cursor"
                 Value="Hand" />
-        <Setter Property="VerticalContentAlignment"
-                        Value="Center"/>
+        
+        <!-- from http://stackoverflow.com/a/3995839/1755417 -->
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type DataGridCell}">
+                    <Grid Background="{TemplateBinding Background}">
+                        <ContentPresenter VerticalAlignment="Center" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
     </Style>
     <Style x:Key="gridCellStyleNumber"
            TargetType="{x:Type DataGridCell}"

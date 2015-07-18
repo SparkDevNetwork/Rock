@@ -49,7 +49,11 @@
                 <RadioButton Name="radDoubleSided" GroupName="grpSided" Content="Double-sided" IsChecked="True" Margin="8,0,0,0"/>
                 <RadioButton Name="radSingleSided" GroupName="grpSided" Content="Single-sided" Margin="8,0,0,0"/>
 
-                <CheckBox Name="chkDoubleDocDetection" Content="Enable Double Document Detection" Margin="8" IsChecked="True"/>
+                <CheckBox Name="chkDoubleDocDetection" Content="Enable Double Document Detection" Margin="8,8,0,0" IsChecked="True"/>
+                <CheckBox Name="chkEnableSmartScan"
+                          Content="Enable Smart Scan"
+                          Margin="8,8,0,0"
+                          IsChecked="True" />
             </StackPanel>
             <StackPanel Margin="20" Name="spMagTekScanSettings">
                 <Label Style="{StaticResource labelStyleLegend}"
@@ -79,6 +83,7 @@
                     x:Name="btnBack"
                     Style="{StaticResource buttonStyle}"
                     Content="Back"
+                    IsCancel="True"
                     HorizontalAlignment="Left"
                     Click="btnBack_Click" />
             <Button 
