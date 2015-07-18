@@ -23,7 +23,7 @@
 
                 <Label Style="{StaticResource labelStyle}">Logo</Label>
                 <StackPanel Orientation="Horizontal">
-                    
+
                     <Label Name="lblImageError"
                            Width="300"
                            Height="100"
@@ -34,15 +34,14 @@
                            Margin="6"
                            Style="{StaticResource labelStyleIcon}"
                            Content="&#xf059;"
-                           ToolTip="Error"
-                           >
+                           ToolTip="Error">
                     </Label>
                     <Image Width="300"
                            Height="100"
                            Name="imgLogo"
                            HorizontalAlignment="Left"
                            Source="logo.jpg"
-                           Margin="6" >
+                           Margin="6">
                     </Image>
                     <Label Name="lblLogoHelp"
                            Width="320"
