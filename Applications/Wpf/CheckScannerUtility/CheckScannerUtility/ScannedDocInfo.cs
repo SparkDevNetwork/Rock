@@ -32,6 +32,12 @@ namespace Rock.Apps.CheckScannerUtility
         /// </value>
         public byte[] FrontImageData { get; set; }
 
+        /// <summary>
+        /// Gets the front image PNG bytes.
+        /// </summary>
+        /// <value>
+        /// The front image PNG bytes.
+        /// </value>
         public byte[] FrontImagePngBytes
         {
             get

@@ -64,7 +64,6 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="ex">The ex.</param>
         public void ShowException( Exception ex )
         {
-            System.Diagnostics.Debug.WriteLine( ex.StackTrace );
             lblExceptions.Content = "ERROR: " + ex.Message;
             lblExceptions.Visibility = Visibility.Visible;
         }
@@ -105,7 +104,7 @@ namespace Rock.Apps.CheckScannerUtility
             }
             else
             {
-                if (!scannedDocInfo.Upload)
+                if ( !scannedDocInfo.Upload )
                 {
                     scannedDocInfo.Upload = true;
                 }
@@ -325,36 +324,6 @@ namespace Rock.Apps.CheckScannerUtility
         #region Ranger (Canon CR50/80) Scanner Events
 
         /// <summary>
-        /// Rangers the scanner_ transport item suspended.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        public void rangerScanner_TransportItemSuspended( object sender, AxRANGERLib._DRangerEvents_TransportItemSuspendedEvent e )
-        {
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportItemSuspended", DateTime.Now.ToString( "o" ) ) );
-        }
-
-        /// <summary>
-        /// Rangers the scanner_ transport passthrough event.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        public void rangerScanner_TransportPassthroughEvent( object sender, AxRANGERLib._DRangerEvents_TransportPassthroughEventEvent e )
-        {
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportPassthroughEvent", DateTime.Now.ToString( "o" ) ) );
-        }
-
-        /// <summary>
-        /// Rangers the scanner_ transport item in pocket.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        public void rangerScanner_TransportItemInPocket( object sender, AxRANGERLib._DRangerEvents_TransportItemInPocketEvent e )
-        {
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportItemInPocket", DateTime.Now.ToString( "o" ) ) );
-        }
-
-        /// <summary>
         /// Rangers the scanner_ transport feeding stopped.
         /// </summary>
         /// <param name="sender">The sender.</param>
@@ -378,54 +347,16 @@ namespace Rock.Apps.CheckScannerUtility
 
                 _firstNoItemsWarning = false;
             }
-
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportFeedingStopped", DateTime.Now.ToString( "o" ) ) );
         }
 
-        public void rangerScanner_TransportTrackIsClear( object sender, EventArgs e )
-        {
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportTrackIsClear", DateTime.Now.ToString( "o" ) ) );
-        }
-
-        public void rangerScanner_TransportStartingUpState( object sender, EventArgs e )
-        {
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportStartingUpState", DateTime.Now.ToString( "o" ) ) );
-        }
-
-        public void rangerScanner_TransportShuttingDownState( object sender, EventArgs e )
-        {
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportShuttingDownState", DateTime.Now.ToString( "o" ) ) );
-        }
-
-        public void rangerScanner_TransportReadyToSetEndorsement( object sender, AxRANGERLib._DRangerEvents_TransportReadyToSetEndorsementEvent e )
-        {
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportReadyToSetEndorsement", DateTime.Now.ToString( "o" ) ) );
-        }
-
-        public void rangerScanner_TransportReadyToFeedState( object sender, AxRANGERLib._DRangerEvents_TransportReadyToFeedStateEvent e )
-        {
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportReadyToFeedState", DateTime.Now.ToString( "o" ) ) );
-        }
-
-        public void rangerScanner_TransportOverrideOptions( object sender, EventArgs e )
-        {
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportOverrideOptions", DateTime.Now.ToString( "o" ) ) );
-        }
-
+        /// <summary>
+        /// Handles the TransportNewItem event of the rangerScanner control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         public void rangerScanner_TransportNewItem( object sender, EventArgs e )
         {
             _itemsScanned++;
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportNewItem", DateTime.Now.ToString( "o" ) ) );
-        }
-
-        public void rangerScanner_TransportIsDead( object sender, EventArgs e )
-        {
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportIsDead", DateTime.Now.ToString( "o" ) ) );
-        }
-
-        public void rangerScanner_TransportInExceptionState( object sender, EventArgs e )
-        {
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportInExceptionState", DateTime.Now.ToString( "o" ) ) );
         }
 
         /// <summary>
@@ -439,17 +370,6 @@ namespace Rock.Apps.CheckScannerUtility
             btnStart.IsEnabled = false;
             btnClose.IsEnabled = false;
             btnStopScanning.IsEnabled = true;
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportFeedingState", DateTime.Now.ToString( "o" ) ) );
-        }
-
-        public void rangerScanner_TransportExceptionComplete( object sender, EventArgs e )
-        {
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportExceptionComplete", DateTime.Now.ToString( "o" ) ) );
-        }
-
-        public void rangerScanner_TransportEnablingOptionsState( object sender, EventArgs e )
-        {
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportEnablingOptionsState", DateTime.Now.ToString( "o" ) ) );
         }
 
         /// <summary>
@@ -925,15 +845,11 @@ namespace Rock.Apps.CheckScannerUtility
             lblScanItemCountInfo.Content = statsList.AsDelimited( ", " );
         }
 
-        /// <summary>
-        /// The _keep scanning
-        /// </summary>
+        //
         private bool _keepScanning;
-
         private int _itemsSkipped;
         private int _itemsScanned;
         private bool _firstNoItemsWarning;
-
         private int _itemsUploaded;
 
         /// <summary>

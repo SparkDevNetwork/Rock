@@ -64,25 +64,27 @@ namespace Rock.Apps.CheckScannerUtility
                 var rangerScannerHostPage = new RangerScannerHostPage();
                 this.rangerScanner = rangerScannerHostPage.rangerScanner;
 
-                this.rangerScanner.TransportEnablingOptionsState += ScanningPage.rangerScanner_TransportEnablingOptionsState;
-                this.rangerScanner.TransportExceptionComplete += ScanningPage.rangerScanner_TransportExceptionComplete;
                 this.rangerScanner.TransportFeedingState += ScanningPage.rangerScanner_TransportFeedingState;
                 this.rangerScanner.TransportFeedingStopped += ScanningPage.rangerScanner_TransportFeedingStopped;
-                this.rangerScanner.TransportInExceptionState += ScanningPage.rangerScanner_TransportInExceptionState;
-                this.rangerScanner.TransportIsDead += ScanningPage.rangerScanner_TransportIsDead;
-                this.rangerScanner.TransportItemInPocket += ScanningPage.rangerScanner_TransportItemInPocket;
-                this.rangerScanner.TransportItemSuspended += ScanningPage.rangerScanner_TransportItemSuspended;
                 this.rangerScanner.TransportNewItem += ScanningPage.rangerScanner_TransportNewItem;
-                this.rangerScanner.TransportNewState += rangerScanner_TransportNewState;
-                this.rangerScanner.TransportOverrideOptions += ScanningPage.rangerScanner_TransportOverrideOptions;
-                this.rangerScanner.TransportPassthroughEvent += ScanningPage.rangerScanner_TransportPassthroughEvent;
-                this.rangerScanner.TransportChangeOptionsState += rangerScanner_TransportChangeOptionsState;
-                this.rangerScanner.TransportReadyToFeedState += ScanningPage.rangerScanner_TransportReadyToFeedState;
-                this.rangerScanner.TransportReadyToSetEndorsement += ScanningPage.rangerScanner_TransportReadyToSetEndorsement;
                 this.rangerScanner.TransportSetItemOutput += ScanningPage.rangerScanner_TransportSetItemOutput;
-                this.rangerScanner.TransportShuttingDownState += ScanningPage.rangerScanner_TransportShuttingDownState;
-                this.rangerScanner.TransportStartingUpState += ScanningPage.rangerScanner_TransportStartingUpState;
-                this.rangerScanner.TransportTrackIsClear += ScanningPage.rangerScanner_TransportTrackIsClear;
+                this.rangerScanner.TransportNewState += rangerScanner_TransportNewState;
+                this.rangerScanner.TransportChangeOptionsState += rangerScanner_TransportChangeOptionsState;
+
+                // debug output only
+                this.rangerScanner.TransportEnablingOptionsState += rangerScannerHostPage.rangerScanner_TransportEnablingOptionsState;
+                this.rangerScanner.TransportExceptionComplete += rangerScannerHostPage.rangerScanner_TransportExceptionComplete;
+                this.rangerScanner.TransportInExceptionState += rangerScannerHostPage.rangerScanner_TransportInExceptionState;
+                this.rangerScanner.TransportIsDead += rangerScannerHostPage.rangerScanner_TransportIsDead;
+                this.rangerScanner.TransportItemInPocket += rangerScannerHostPage.rangerScanner_TransportItemInPocket;
+                this.rangerScanner.TransportItemSuspended += rangerScannerHostPage.rangerScanner_TransportItemSuspended;
+                this.rangerScanner.TransportOverrideOptions += rangerScannerHostPage.rangerScanner_TransportOverrideOptions;
+                this.rangerScanner.TransportPassthroughEvent += rangerScannerHostPage.rangerScanner_TransportPassthroughEvent;
+                this.rangerScanner.TransportReadyToFeedState += rangerScannerHostPage.rangerScanner_TransportReadyToFeedState;
+                this.rangerScanner.TransportReadyToSetEndorsement += rangerScannerHostPage.rangerScanner_TransportReadyToSetEndorsement;
+                this.rangerScanner.TransportShuttingDownState += rangerScannerHostPage.rangerScanner_TransportShuttingDownState;
+                this.rangerScanner.TransportStartingUpState += rangerScannerHostPage.rangerScanner_TransportStartingUpState;
+                this.rangerScanner.TransportTrackIsClear += rangerScannerHostPage.rangerScanner_TransportTrackIsClear;
             }
             catch
             {
@@ -239,8 +241,6 @@ namespace Rock.Apps.CheckScannerUtility
 
             this.shapeStatus.Fill = new SolidColorBrush( statusColor );
             this.shapeStatus.ToolTip = status;
-
-            //System.Diagnostics.Debug.WriteLine( "{1} : rangerScanner_TransportNewState:{0}", xportState, DateTime.Now.ToString( "o" ) );
 
             ScanningPage.ShowScannerStatus( xportState, statusColor, status );
         }

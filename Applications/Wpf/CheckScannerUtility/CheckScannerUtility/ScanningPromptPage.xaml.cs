@@ -71,7 +71,6 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 btnToggle.IsChecked = btnToggle == btnToggleSelected;
             }
-
             
             var scanningChecks = (Guid)btnToggleSelected.Tag == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
             chkDoubleDocDetection.IsChecked = scanningChecks;

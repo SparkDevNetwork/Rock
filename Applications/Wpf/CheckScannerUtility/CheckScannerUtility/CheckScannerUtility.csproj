@@ -117,8 +117,11 @@
     </Compile>
     <Compile Include="RangerScannerHostPage.xaml.cs">
       <DependentUpon>RangerScannerHostPage.xaml</DependentUpon>
+      <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
     </Compile>
-    <Compile Include="RangerTypes.cs" />
+    <Compile Include="RangerTypes.cs">
+      <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
+    </Compile>
     <Compile Include="RockConfig.cs" />
     <Compile Include="ScannedDocInfo.cs" />
     <Compile Include="ScanningPage.xaml.cs">
@@ -194,6 +197,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
+      <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
     </Compile>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
