@@ -3198,10 +3198,11 @@ ul.rocktree ul {
 }
 .list-as-blocks ul li a:hover {
   background-color: #428bca;
-  color: #ecf0f3;
+  color: #ffffff;
+  border-color: #357ebd;
 }
 .list-as-blocks ul li a:hover i {
-  color: #ecf0f3;
+  color: #ffffff;
 }
 .list-as-blocks ul li a div.notification {
   position: absolute;
