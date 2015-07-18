@@ -3201,6 +3201,7 @@ ul.rocktree ul {
 .list-as-blocks ul li a:hover {
   background-color: #18bc9c;
   color: #ffffff;
+  border-color: #15a589;
 }
 .list-as-blocks ul li a:hover i {
   color: #ffffff;
