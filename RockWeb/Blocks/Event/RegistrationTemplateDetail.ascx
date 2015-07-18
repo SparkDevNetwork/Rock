@@ -168,7 +168,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbRegistrationTerm" runat="server" Label="Registration Term" Placeholder="Registration" />
-                                <Rock:RockTextBox ID="tbRegistrantTerm" runat="server" Label="Registrant Term" Placeholder="Person" />
+                                <Rock:RockTextBox ID="tbRegistrantTerm" runat="server" Label="Registrant Term" Placeholder="Registrant" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbFeeTerm" runat="server" Label="Fee Term" Placeholder="Additional Options" />
@@ -284,7 +284,7 @@
             <Content>
                 <asp:HiddenField ID="hfDiscountGuid" runat="server" />
                 <asp:ValidationSummary ID="ValidationSummaryDiscount" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Discount" />
-                <Rock:RockTextBox ID="tbDiscountCode" runat="server" Label="Discount Code" ValidationGroup="Discount" Required="true" />
+                <Rock:RockTextBox ID="tbDiscountCode" runat="server" CssClass="input-width-xl" Label="Discount Code" ValidationGroup="Discount" Required="true" />
                 <Rock:RockRadioButtonList ID="rblDiscountType" runat="server" Label="Discount Type" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="rblDiscountType_SelectedIndexChanged">
                     <asp:ListItem Text="Percentage" Value="Percentage" />
                     <asp:ListItem Text="Amount" Value="Amount" />

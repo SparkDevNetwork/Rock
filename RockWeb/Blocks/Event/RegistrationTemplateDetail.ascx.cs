@@ -391,17 +391,23 @@ namespace RockWeb.Blocks.Event
             var rockContext = new RockContext();
 
             var service = new RegistrationTemplateService( rockContext );
-            var RegistrationTemplate = service.Get( hfRegistrationTemplateId.Value.AsInteger() );
+            var registrationTemplate = service.Get( hfRegistrationTemplateId.Value.AsInteger() );
 
-            if ( RegistrationTemplate != null )
+            if ( registrationTemplate != null )
             {
-                if ( !RegistrationTemplate.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                if ( !registrationTemplate.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
                 {
                     mdDeleteWarning.Show( "You are not authorized to delete this registration template.", ModalAlertType.Information );
                     return;
                 }
 
-                service.Delete( RegistrationTemplate );
+                if ( registrationTemplate.Instances.Any( i => i.Registrations.Any() ) )
+                {
+                    mdDeleteWarning.Show( "This template has instances with registrations and cannot be deleted until all the registrations have been deleted.", ModalAlertType.Information );
+                    return;
+                }
+
+                service.Delete( registrationTemplate );
 
                 rockContext.SaveChanges();
             }
@@ -555,7 +561,7 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.ReminderEmailTemplate = ceReminderEmailTemplate.Text;
 
             RegistrationTemplate.RegistrationTerm = string.IsNullOrWhiteSpace( tbRegistrationTerm.Text ) ? "Registration" : tbRegistrationTerm.Text;
-            RegistrationTemplate.RegistrantTerm = string.IsNullOrWhiteSpace( tbRegistrantTerm.Text ) ? "Person" : tbRegistrantTerm.Text;
+            RegistrationTemplate.RegistrantTerm = string.IsNullOrWhiteSpace( tbRegistrantTerm.Text ) ? "Registrant" : tbRegistrantTerm.Text;
             RegistrationTemplate.FeeTerm = string.IsNullOrWhiteSpace( tbFeeTerm.Text ) ? "Additional Options" : tbFeeTerm.Text;
             RegistrationTemplate.DiscountCodeTerm = string.IsNullOrWhiteSpace( tbDiscountCodeTerm.Text ) ? "Discount Code" : tbDiscountCodeTerm.Text;
             RegistrationTemplate.SuccessTitle = tbSuccessTitle.Text;
@@ -1660,6 +1666,10 @@ namespace RockWeb.Blocks.Event
                     formField.PersonFieldType = RegistrationPersonFieldType.FirstName;
                     formField.IsGridField = true;
                     formField.IsRequired = true;
+                    formField.PreText = @"<div class='row'>
+    <div class='col-md-6'>
+";
+                    formField.PostText = "    </div>";
                     formField.Order = defaultForm.Fields.Any() ? defaultForm.Fields.Max( f => f.Order ) + 1 : 0;
                     defaultForm.Fields.Add( formField );
                 }
@@ -1675,6 +1685,9 @@ namespace RockWeb.Blocks.Event
                     formField.PersonFieldType = RegistrationPersonFieldType.LastName;
                     formField.IsGridField = true;
                     formField.IsRequired = true;
+                    formField.PreText = "    <div class='col-md-6'>";
+                    formField.PostText = @"    </div>
+</div>";
                     formField.Order = defaultForm.Fields.Any() ? defaultForm.Fields.Max( f => f.Order ) + 1 : 0;
                     defaultForm.Fields.Add( formField );
                 }
@@ -1816,7 +1829,7 @@ namespace RockWeb.Blocks.Event
 ", formFieldName, fieldTypeName, formField.FieldSource.ConvertToString() );
                     }
 
-                    lFormsReadonly.Text = string.Format( formTextFormat, form.Name, attributeText );
+                    lFormsReadonly.Text += string.Format( formTextFormat, form.Name, attributeText );
                 }
             }
             else
@@ -2100,8 +2113,10 @@ namespace RockWeb.Blocks.Event
             ddlPersonField.Visible = !protectedField && fieldSource == RegistrationFieldSource.PersonField;
 
             ddlPersonAttributes.Visible = fieldSource == RegistrationFieldSource.PersonAttribute;
-            cbUseCurrentPersonAttributeValue.Visible = fieldSource == RegistrationFieldSource.PersonAttribute ||
-                fieldSource == RegistrationFieldSource.PersonField;
+            
+            // Curently disabled as the RegistrationEntry block does not support this functionality ( it may be supported in future block )
+            //cbUseCurrentPersonAttributeValue.Visible = fieldSource == RegistrationFieldSource.PersonAttribute ||
+            //    fieldSource == RegistrationFieldSource.PersonField;
 
             ddlGroupTypeAttributes.Visible = fieldSource == RegistrationFieldSource.GroupMemberAttribute;
 

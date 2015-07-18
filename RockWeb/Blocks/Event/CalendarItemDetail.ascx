@@ -134,9 +134,11 @@
                                 </div>
                             </Rock:RockControlWrapper>
                             <Rock:RockCheckBoxList ID="cblAdditionalCalendars" runat="server" Label="Additional Calendars" 
+                                Help="Any other calendars that this item should be added to also."
                                 OnSelectedIndexChanged="cblAdditionalCalendars_SelectedIndexChanged" AutoPostBack="true"
                                 RepeatDirection="Horizontal" />
-                            <Rock:RockTextBox ID="tbDetailUrl" runat="server" Label="Details URL" />
+                            <Rock:RockTextBox ID="tbDetailUrl" runat="server" Label="Details URL" 
+                                Help="A custom url to use for showing details of the calendar item (if the default item detail page should not be used)."/>
                         </div>
                         <div class="col-md-6">
                             <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />

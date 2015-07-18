@@ -21,7 +21,7 @@
                                 <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" />
                                 <Rock:RockTextBox ID="tbContact" runat="server" Label="Contact" />
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gCalendarItemCampusList" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Campus Detail">
+                            <Rock:Grid ID="gCalendarItemCampusList" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gCalendarItemCampusList_RowSelected" RowItemText="Campus Detail">
                                 <Columns>
                                     <Rock:RockBoundField DataField="Campus" HeaderText="Campus" />
                                     <Rock:RockBoundField DataField="Date" HeaderText="Next Start Date" SortExpression="Date" />
@@ -31,7 +31,6 @@
                                     <Rock:RockBoundField DataField="Contact" HeaderText="Contact" />
                                     <Rock:RockBoundField DataField="Phone" HeaderText="Phone" />
                                     <Rock:RockBoundField DataField="Email" HeaderText="Email" />
-                                    <Rock:EditField OnClick="gCalendarItemCampusList_Edit" />
                                     <Rock:DeleteField OnClick="gCalendarItemCampusList_Delete" />
                                 </Columns>
                             </Rock:Grid>
