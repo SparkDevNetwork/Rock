@@ -198,11 +198,16 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Label Name="lblNoItemsFound"
-                   Grid.ColumnSpan="2"
-                   Style="{StaticResource labelStyleAlert}"
-                   Content="No {0} detected in scanner. Make sure {0} are properly in the feed tray.">
-            </Label>
+            <StackPanel Grid.ColumnSpan="2">
+                <Label Name="lblNoItemsFound"
+                       Style="{StaticResource labelStyleAlert}"
+                       Content="No {0} detected in scanner. Make sure {0} are properly in the feed tray.">
+                </Label>
+                <Label Name="lblScannerNotReady"
+                       Style="{StaticResource labelStyleAlert}"
+                       Content="Scanner is not ready. Verify that the scanner is powered on and connected.">
+                </Label>
+            </StackPanel>
             <StackPanel Name="pnlStartStopClose"
                         Orientation="Horizontal"
                         Margin="0,0,0,8"

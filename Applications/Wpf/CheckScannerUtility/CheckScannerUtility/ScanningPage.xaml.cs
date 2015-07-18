@@ -279,6 +279,7 @@ namespace Rock.Apps.CheckScannerUtility
             lblExceptions.Visibility = Visibility.Collapsed;
             lblStartupInfo.Visibility = Visibility.Visible;
             lblNoItemsFound.Visibility = Visibility.Collapsed;
+            lblScannerNotReady.Visibility = Visibility.Collapsed;
 
             ScannedDocInfo sampleDocInfo = new ScannedDocInfo();
             sampleDocInfo.CurrencyTypeValue = batchPage.CurrencyValueList.FirstOrDefault( a => a.Guid == RockConfig.Load().SourceTypeValueGuid.AsGuid() );
@@ -859,7 +860,31 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="System.Windows.RoutedEventArgs"/> instance containing the event data.</param>
         private void btnStart_Click( object sender, RoutedEventArgs e )
         {
-            StartScanning();
+            lblScannerNotReady.Visibility = Visibility.Collapsed;
+
+            XportStates[] xportStatesNotConnected = new XportStates[] { XportStates.TransportShutDown, XportStates.TransportShuttingDown, XportStates.TransportExceptionInProgress };
+
+            var transportState = (XportStates)batchPage.rangerScanner.GetTransportState();
+            if ( xportStatesNotConnected.Contains( transportState ) )
+            {
+                batchPage.ConnectToScanner();
+            }
+            else
+            {
+                StartScanning();
+            }
+        }
+
+        /// <summary>
+        /// Handles the TransportIsDead event of the rangerScanner control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        public void rangerScanner_TransportIsDead( object sender, EventArgs e )
+        {
+            _keepScanning = false;
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportIsDead", DateTime.Now.ToString( "o" ) ) );
+            lblScannerNotReady.Visibility = Visibility.Visible;
         }
 
         /// <summary>

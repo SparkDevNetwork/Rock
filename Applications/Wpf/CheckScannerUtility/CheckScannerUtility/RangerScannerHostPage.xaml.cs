@@ -56,6 +56,11 @@ namespace Rock.Apps.CheckScannerUtility
             System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportStartingUpState", DateTime.Now.ToString( "o" ) ) );
         }
 
+        public void rangerScanner_TransportShutDownState( object sender, EventArgs e )
+        {
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportShutDownState", DateTime.Now.ToString( "o" ) ) );
+        }
+
         public void rangerScanner_TransportShuttingDownState( object sender, EventArgs e )
         {
             System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportShuttingDownState", DateTime.Now.ToString( "o" ) ) );
@@ -75,12 +80,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportOverrideOptions", DateTime.Now.ToString( "o" ) ) );
         }
-
-        public void rangerScanner_TransportIsDead( object sender, EventArgs e )
-        {
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportIsDead", DateTime.Now.ToString( "o" ) ) );
-        }
-
+        
         public void rangerScanner_TransportInExceptionState( object sender, EventArgs e )
         {
             System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportInExceptionState", DateTime.Now.ToString( "o" ) ) );
