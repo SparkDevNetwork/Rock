@@ -172,7 +172,7 @@ as fields on the workflow or activity)...
 </pre>
 ", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, false, @"
 {% if Actions.size > 0 %}
-    <div class='panel panel-info'> 
+    <div class='panel panel-block'> 
         <div class='panel-heading'>
             <h4 class='panel-title'>My {% if Role == '0' %}Tasks{% else %}Requests{% endif %}</h4>
         </div>
