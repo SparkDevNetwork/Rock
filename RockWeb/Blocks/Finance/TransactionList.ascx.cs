@@ -245,7 +245,7 @@ namespace RockWeb.Blocks.Finance
                 gTransactions.Actions.ShowAdd = false;
                 gTransactions.IsDeleteEnabled = false;
             }
-            
+
             base.OnPreRender( e );
         }
 
@@ -866,16 +866,6 @@ namespace RockWeb.Blocks.Finance
 
             gTransactions.SetLinqDataSource( qry.AsNoTracking() );
             gTransactions.DataBind();
-
-            // If this is for a registration, and there are no payments, hide this block
-            if ( _registration != null && ( qry.Count() <= 0 ) )
-            {
-                this.Visible = false;
-            }
-            else
-            {
-                this.Visible = true;
-            }
         }
 
         /// <summary>

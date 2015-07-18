@@ -145,6 +145,16 @@ namespace Rock.Model
         public string ContactName { get; set; }
 
         /// <summary>
+        /// Gets or sets the contact phone.
+        /// </summary>
+        /// <value>
+        /// The contact phone.
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string ContactPhone { get; set; }
+
+        /// <summary>
         /// Gets or sets the contact email.
         /// </summary>
         /// <value>
