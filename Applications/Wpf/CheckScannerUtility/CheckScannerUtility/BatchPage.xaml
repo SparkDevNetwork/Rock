@@ -32,7 +32,7 @@
             </Grid.ColumnDefinitions>
             <Menu x:Name="mainMenu"
                   Grid.Column="0"
-                  Style ="{StaticResource menuStyle}">
+                  Style="{StaticResource menuStyle}">
                 <MenuItem Header="_Tools">
                     <MenuItem x:Name="mnuOptions"
                               Header="_Options"
@@ -144,14 +144,14 @@
                             Grid.Column="0"
                             Visibility="Visible"
                             Name="spBatchDetailReadOnly">
-                    <Grid >
+                    <Grid>
                         <Label x:Name="lblBatchNameReadOnly"
-                           Style="{StaticResource labelStyleLegend}"
-                           Content="Sample Batch Name" />
+                               Style="{StaticResource labelStyleLegend}"
+                               Content="Sample Batch Name" />
                         <Label x:Name="lblBatchIdReadOnly"
-                           Style="{StaticResource labelStyleHighlightInfo}"
-                           HorizontalAlignment="Right"
-                           Content="Batch Id: 12345" />
+                               Style="{StaticResource labelStyleHighlightInfo}"
+                               HorizontalAlignment="Right"
+                               Content="Batch Id: 12345" />
                     </Grid>
                     <Border Style="{StaticResource borderStyleWell}"
                             Grid.Row="0"
@@ -214,9 +214,9 @@
                                     Grid.Column="0"
                                     HorizontalAlignment="Left"
                                     x:Name="btnEdit"
-                                        Margin="4,4,0,0"
-                                        Content="Edit"
-                                        Click="btnEdit_Click" />
+                                    Margin="4,4,0,0"
+                                    Content="Edit"
+                                    Click="btnEdit_Click" />
                             <Button x:Name="btnScan"
                                     Grid.Row="4"
                                     Grid.Column="1"
@@ -230,17 +230,21 @@
                 </StackPanel>
 
                 <!-- Batch Edit UI  -->
-                <StackPanel Name="spBatchDetailEdit" Visibility="Collapsed">
+                <StackPanel Name="spBatchDetailEdit"
+                            Visibility="Collapsed">
                     <Border Style="{StaticResource borderStylePanelTitle}">
                         <StackPanel Orientation="Horizontal">
-                            <Label Style="{StaticResource labelStyleIcon}" Margin="8,0,0,0" Padding="0" Content="&#xf187;" />
+                            <Label Style="{StaticResource labelStyleIcon}"
+                                   Margin="8,0,0,0"
+                                   Padding="0"
+                                   Content="&#xf187;" />
                             <Label Style="{StaticResource labelStylePanelTitle}">Edit Batch</Label>
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource borderStyleWell}"
-                        Visibility="Visible"
-                        Grid.Row="0"
-                        Grid.Column="0">
+                            Visibility="Visible"
+                            Grid.Row="0"
+                            Grid.Column="0">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition />
@@ -256,65 +260,65 @@
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
                             <Label Grid.Row="0"
-                               Grid.Column="0"
-                               Style="{StaticResource labelStyle}"
-                               Content="Batch Name" />
+                                   Grid.Column="0"
+                                   Style="{StaticResource labelStyle}"
+                                   Content="Batch Name" />
                             <TextBox Grid.Row="1"
-                                 Grid.Column="0"
-                                 x:Name="txtBatchName"
-                                 Style="{StaticResource textboxStyle}"
-                                 Text="Sample Batch Name" />
+                                     Grid.Column="0"
+                                     x:Name="txtBatchName"
+                                     Style="{StaticResource textboxStyle}"
+                                     Text="Sample Batch Name" />
                             <Label Grid.Row="0"
-                               Grid.Column="1"
-                               Style="{StaticResource labelStyle}"
-                               Content="Created by" />
+                                   Grid.Column="1"
+                                   Style="{StaticResource labelStyle}"
+                                   Content="Created by" />
                             <Label Grid.Row="1"
-                               Grid.Column="1"
-                               x:Name="lblCreatedBy"
-                               Style="{StaticResource labelStyleDd}"
-                               Content="Veruca Volunteer" />
+                                   Grid.Column="1"
+                                   x:Name="lblCreatedBy"
+                                   Style="{StaticResource labelStyleDd}"
+                                   Content="Veruca Volunteer" />
                             <Label Grid.Row="2"
-                               Grid.Column="1"
-                               Style="{StaticResource labelStyle}"
-                               Content="Campus" />
+                                   Grid.Column="1"
+                                   Style="{StaticResource labelStyle}"
+                                   Content="Campus" />
                             <ComboBox Grid.Row="3"
-                                  Grid.Column="1"
-                                  x:Name="cbCampus"
-                                  Style="{StaticResource comboBoxStyle}" />
+                                      Grid.Column="1"
+                                      x:Name="cbCampus"
+                                      Style="{StaticResource comboBoxStyle}" />
                             <Label Grid.Row="2"
-                               Grid.Column="0"
-                               Style="{StaticResource labelStyle}"
-                               Content="Batch Date" />
+                                   Grid.Column="0"
+                                   Style="{StaticResource labelStyle}"
+                                   Content="Batch Date" />
                             <DatePicker Grid.Row="3"
-                                    Grid.Column="0"
-                                    x:Name="dpBatchDate"
-                                    Style="{StaticResource datePickerStyle}" />
+                                        Grid.Column="0"
+                                        x:Name="dpBatchDate"
+                                        Style="{StaticResource datePickerStyle}" />
 
                             <Label Grid.Row="4"
-                               Grid.Column="0"
-                               Style="{StaticResource labelStyle}"
-                               Content="Control Amount" />
+                                   Grid.Column="0"
+                                   Style="{StaticResource labelStyle}"
+                                   Content="Control Amount" />
                             <TextBox Grid.Row="5"
-                                 Grid.Column="0"
-                                 x:Name="txtControlAmount"
-                                 Style="{StaticResource textboxStyle}"
-                                 Text="$123.45" />
+                                     Grid.Column="0"
+                                     x:Name="txtControlAmount"
+                                     Style="{StaticResource textboxStyle}"
+                                     Text="$123.45" />
 
                             <StackPanel Grid.Row="6"
-                                    Grid.Column="0"
-                                    Orientation="Horizontal">
+                                        Grid.Column="0"
+                                        Orientation="Horizontal">
                                 <Button Style="{StaticResource buttonStylePrimary}"
-                                    x:Name="btnSave"
-                                    Margin="4,4,0,0"
-                                    Content="Save"
-                                    HorizontalAlignment="Left"
-                                    Click="btnSave_Click" />
+                                        x:Name="btnSave"
+                                        Margin="4,4,0,0"
+                                        Content="Save"
+                                        HorizontalAlignment="Left"
+                                        Click="btnSave_Click" />
                                 <Button Style="{StaticResource buttonStyle}"
-                                    x:Name="btnCancel"
-                                    Margin="4,4,0,0"
-                                    Content="Cancel"
-                                    HorizontalAlignment="Left"
-                                    Click="btnCancel_Click" />
+                                        x:Name="btnCancel"
+                                        Margin="4,4,0,0"
+                                        Content="Cancel"
+                                        HorizontalAlignment="Left"
+                                        Click="btnCancel_Click" />
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -345,8 +349,7 @@
                           ColumnWidth="SizeToHeader"
                           Style="{StaticResource gridStyle}"
                           ScrollViewer.VerticalScrollBarVisibility="Visible"
-                          ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                        >
+                          ScrollViewer.HorizontalScrollBarVisibility="Hidden">
                     <DataGrid.ItemContainerStyle>
                         <Style TargetType="{x:Type DataGridRow}">
                             <EventSetter Event="Control.MouseDoubleClick"
@@ -377,32 +380,31 @@
                                             Width="*"
                                             CanUserResize="False"
                                             CanUserSort="False" />
-                        <DataGridTemplateColumn Header="" HeaderStyle="{StaticResource gridHeaderStyleActions}"
-                                            CellStyle="{StaticResource gridCellStyle}"
-                                            Width="*"
-                                            CanUserResize="False"
-                                               
-                                            CanUserSort="False">
+                        <DataGridTemplateColumn Header=""
+                                                HeaderStyle="{StaticResource gridHeaderStyleActions}"
+                                                CellStyle="{StaticResource gridCellStyle}"
+                                                Width="*"
+                                                CanUserResize="False"
+                                                CanUserSort="False">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                                        <Button 
-                                            Name="btnViewTransaction" 
-                                            Content="View" 
-                                            HorizontalAlignment="Center"
-                                            Style="{StaticResource buttonStyleMini}"
-                                            Margin="4"
-                                            CommandParameter="{Binding Id}"
-                                            Click="btnViewTransaction_Click"/>
-                                        <Button 
-                                            Name="btnDeleteTransaction" 
-                                            Content="&#xf00d;" 
-                                            HorizontalAlignment="Center"
-                                            ToolTip="Delete"
-                                            Style="{StaticResource buttonStyleMiniIconDanger}"
-                                            Margin="4"
-                                            CommandParameter="{Binding Id}"
-                                            Click="btnDeleteTransaction_Click"/>
+                                    <StackPanel HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                        <Button Name="btnViewTransaction"
+                                                Content="View"
+                                                HorizontalAlignment="Center"
+                                                Style="{StaticResource buttonStyleMini}"
+                                                Margin="4"
+                                                CommandParameter="{Binding Id}"
+                                                Click="btnViewTransaction_Click" />
+                                        <Button Name="btnDeleteTransaction"
+                                                Content="&#xf00d;"
+                                                HorizontalAlignment="Center"
+                                                ToolTip="Delete"
+                                                Style="{StaticResource buttonStyleMiniIconDanger}"
+                                                Margin="4"
+                                                CommandParameter="{Binding Id}"
+                                                Click="btnDeleteTransaction_Click" />
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

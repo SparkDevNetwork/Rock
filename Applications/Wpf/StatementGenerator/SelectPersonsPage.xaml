@@ -13,167 +13,171 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}" />
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}"/>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Style="{StaticResource gridPanelBorderRow}"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Style="{StaticResource gridPanelBorderRow}"/>
+            <RowDefinition Style="{StaticResource gridPanelBorderRow}" />
+            <RowDefinition Height="*" />
+            <RowDefinition Style="{StaticResource gridPanelBorderRow}" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Column="1" Grid.Row="1" Style="{StaticResource gridPanel}" >
+        <Grid Grid.Column="1"
+              Grid.Row="1"
+              Style="{StaticResource gridPanel}">
             <Grid.RowDefinitions>
-                <RowDefinition Style="{StaticResource rowDefinitionPanelTitle}"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Style="{StaticResource rowDefinitionActions}"/>
+                <RowDefinition Style="{StaticResource rowDefinitionPanelTitle}" />
+                <RowDefinition Height="*" />
+                <RowDefinition Style="{StaticResource rowDefinitionActions}" />
             </Grid.RowDefinitions>
-            <StackPanel Grid.Row="0" Style="{StaticResource panelBanner}" >
-                <Label Content="STEP 1:" Style="{StaticResource labelStyleBannerTitle}" />
-                <Label Content="Who Needs a Statement" Style="{StaticResource labelStyleBannerText}"/>
+            <StackPanel Grid.Row="0"
+                        Style="{StaticResource panelBanner}">
+                <Label Content="STEP 1:"
+                       Style="{StaticResource labelStyleBannerTitle}" />
+                <Label Content="Who Needs a Statement"
+                       Style="{StaticResource labelStyleBannerText}" />
             </StackPanel>
-            <StackPanel Margin="12" Width="Auto" Grid.Row="1">
+            <StackPanel Margin="12"
+                        Width="Auto"
+                        Grid.Row="1">
                 <Label Style="{StaticResource labelStyleLegend}"
-                           Content="Generate for" 
-                           HorizontalAlignment="Left" />
-                <RadioButton 
-                             Name="radAllPersons"
+                       Content="Generate for"
+                       HorizontalAlignment="Left" />
+                <RadioButton Name="radAllPersons"
                              Content="All individuals with transactions"
                              IsChecked="True"
                              Checked="radPersons_Checked"
                              GroupName="radSelect" />
-                <CheckBox Name="ckIncludeIndividualsWithNoAddress" Content="Include individuals that don't have a mailing address" Margin="16,4,8,8" IsChecked="False" />
+                <CheckBox Name="ckIncludeIndividualsWithNoAddress"
+                          Content="Include individuals that don't have a mailing address"
+                          Margin="16,4,8,8"
+                          IsChecked="False" />
                 <RadioButton Name="radSingle"
-                                 Content="Single individual"
-                                 Checked="radPersons_Checked"
-                                 GroupName="radSelect" />
+                             Content="Single individual"
+                             Checked="radPersons_Checked"
+                             GroupName="radSelect" />
                 <TextBox Style="{StaticResource textboxStyle}"
-                             Name="txtPersonSearch"
-                             TextChanged="txtPersonSearch_TextChanged" />
+                         Name="txtPersonSearch"
+                         TextChanged="txtPersonSearch_TextChanged" />
                 <Label Name="lblWarning"
-                   Style="{StaticResource labelStyleAlert}"
-                   Content="Please select a person when 'Single individual' is checked."
-                   Visibility="Collapsed">
+                       Style="{StaticResource labelStyleAlert}"
+                       Content="Please select a person when 'Single individual' is checked."
+                       Visibility="Collapsed">
                 </Label>
                 <DataGrid x:Name="grdPersons"
-                              AutoGenerateColumns="False"
-                              ItemsSource="{Binding}"
-                              GridLinesVisibility="Horizontal"
-                              HeadersVisibility="Column"
-                              BorderThickness="1"
-                              BorderBrush="#d8d8d8"
-                              CellStyle="{StaticResource gridCellStyle}"
-                              CanUserAddRows="False"
-                              CanUserDeleteRows="False"
-                              IsReadOnly="True"
-                              SelectionMode="Single"
-                              ColumnWidth="SizeToHeader"
-                              Style="{StaticResource gridStyle}"
-                              MaxHeight="250"
-                              Height="Auto"
-                              Width="Auto"
-                              Margin="0,10,0,0"
-                              ScrollViewer.VerticalScrollBarVisibility="Visible"
-                              ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                              SelectionChanged="grdPersons_SelectionChanged"
-                              FontSize="12"
-                               >
+                          AutoGenerateColumns="False"
+                          ItemsSource="{Binding}"
+                          GridLinesVisibility="Horizontal"
+                          HeadersVisibility="Column"
+                          BorderThickness="1"
+                          BorderBrush="#d8d8d8"
+                          CellStyle="{StaticResource gridCellStyle}"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          IsReadOnly="True"
+                          SelectionMode="Single"
+                          ColumnWidth="SizeToHeader"
+                          Style="{StaticResource gridStyle}"
+                          MaxHeight="250"
+                          Height="Auto"
+                          Width="Auto"
+                          Margin="0,10,0,0"
+                          ScrollViewer.VerticalScrollBarVisibility="Visible"
+                          ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                          SelectionChanged="grdPersons_SelectionChanged"
+                          FontSize="12">
                     <DataGrid.ItemContainerStyle>
                         <Style TargetType="{x:Type DataGridRow}">
                             <EventSetter Event="Control.MouseDoubleClick"
-                                             Handler="grdItems_RowDoubleClick" />
+                                         Handler="grdItems_RowDoubleClick" />
                         </Style>
                     </DataGrid.ItemContainerStyle>
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding FullName}"
-                                                HeaderStyle="{StaticResource gridHeaderStyle}"
-                                                CellStyle="{StaticResource gridCellStyle}"
-                                                Header="NAME"
-                                                Width="*"
-                                                CanUserResize="True"
-                                                CanUserSort="False"
-                                                >
+                                            HeaderStyle="{StaticResource gridHeaderStyle}"
+                                            CellStyle="{StaticResource gridCellStyle}"
+                                            Header="NAME"
+                                            Width="*"
+                                            CanUserResize="True"
+                                            CanUserSort="False">
                         </DataGridTextColumn>
                         <DataGridTextColumn Binding="{Binding Age}"
-                                                HeaderStyle="{StaticResource gridHeaderStyleNumber}"
-                                                CellStyle="{StaticResource gridCellStyleNumber}"
-                                                Header="AGE"
-                                                Width="40"
-                                                CanUserResize="False"
-                                                CanUserSort="False">
+                                            HeaderStyle="{StaticResource gridHeaderStyleNumber}"
+                                            CellStyle="{StaticResource gridCellStyleNumber}"
+                                            Header="AGE"
+                                            Width="40"
+                                            CanUserResize="False"
+                                            CanUserSort="False">
                         </DataGridTextColumn>
                         <DataGridTextColumn Binding="{Binding Gender}"
-                                                HeaderStyle="{StaticResource gridHeaderStyle}"
-                                                CellStyle="{StaticResource gridCellStyle}"
-                                                Header="GENDER"
-                                                Width="60"
-                                                CanUserResize="False"
-                                                CanUserSort="False">
+                                            HeaderStyle="{StaticResource gridHeaderStyle}"
+                                            CellStyle="{StaticResource gridCellStyle}"
+                                            Header="GENDER"
+                                            Width="60"
+                                            CanUserResize="False"
+                                            CanUserSort="False">
                         </DataGridTextColumn>
                         <DataGridTextColumn Binding="{Binding SpouseName}"
-                                                HeaderStyle="{StaticResource gridHeaderStyle}"
-                                                CellStyle="{StaticResource gridCellStyle}"
-                                                Header="SPOUSE"
-                                                Width="*"
-                                                CanUserResize="True"
-                                                CanUserSort="False">
+                                            HeaderStyle="{StaticResource gridHeaderStyle}"
+                                            CellStyle="{StaticResource gridCellStyle}"
+                                            Header="SPOUSE"
+                                            Width="*"
+                                            CanUserResize="True"
+                                            CanUserSort="False">
                         </DataGridTextColumn>
                         <DataGridTextColumn Binding="{Binding Email}"
-                                                HeaderStyle="{StaticResource gridHeaderStyle}"
-                                                CellStyle="{StaticResource gridCellStyle}"
-                                                Header="EMAIL"
-                                                Width="1.2*"
-                                                CanUserResize="True"
-                                                CanUserSort="False">
+                                            HeaderStyle="{StaticResource gridHeaderStyle}"
+                                            CellStyle="{StaticResource gridCellStyle}"
+                                            Header="EMAIL"
+                                            Width="1.2*"
+                                            CanUserResize="True"
+                                            CanUserSort="False">
                         </DataGridTextColumn>
                         <DataGridTextColumn Binding="{Binding Address}"
-                                                HeaderStyle="{StaticResource gridHeaderStyle}"
-                                                CellStyle="{StaticResource gridCellStyle}"
-                                                Header="ADDRESS"
-                                                Width="1.5*"
-                                                CanUserResize="True"
-                                                CanUserSort="False">
+                                            HeaderStyle="{StaticResource gridHeaderStyle}"
+                                            CellStyle="{StaticResource gridCellStyle}"
+                                            Header="ADDRESS"
+                                            Width="1.5*"
+                                            CanUserResize="True"
+                                            CanUserSort="False">
                         </DataGridTextColumn>
                     </DataGrid.Columns>
                 </DataGrid>
-                
+
             </StackPanel>
 
-
             <Button x:Name="btnPrev"
-                Grid.Row="2"
-                HorizontalAlignment="Left"
-                Style="{StaticResource buttonStyle}"
-                Margin="8,8,8,8"
-                Click="btnPrev_Click">
+                    Grid.Row="2"
+                    HorizontalAlignment="Left"
+                    Style="{StaticResource buttonStyle}"
+                    Margin="8,8,8,8"
+                    Click="btnPrev_Click">
                 <StackPanel Orientation="Horizontal">
                     <Label Style="{StaticResource labelStyleIconLeft}"
-                       Content="&#xf053;" />
+                           Content="&#xf053;" />
                     <Label Style="{StaticResource labelStyleButtonText}"
-                       Content="Prev" />
+                           Content="Prev" />
                 </StackPanel>
             </Button>
             <Button x:Name="btnNext"
-                Grid.Row="2"
-                HorizontalAlignment="Right"
-                Style="{StaticResource buttonStylePrimary}"
-                Margin="8,8,8,8"
-                Click="btnNext_Click">
+                    Grid.Row="2"
+                    HorizontalAlignment="Right"
+                    Style="{StaticResource buttonStylePrimary}"
+                    Margin="8,8,8,8"
+                    Click="btnNext_Click">
                 <StackPanel Orientation="Horizontal">
                     <Label Style="{StaticResource labelStyleButtonTextPrimary}"
-                       Content="Next" />
+                           Content="Next" />
                     <Label Style="{StaticResource labelStyleIconPrimaryRight}"
-                       Content="&#xf054;" />
+                           Content="&#xf054;" />
                 </StackPanel>
             </Button>
         </Grid>
 
-        <Frame
-            Grid.Row="3"
-            Grid.Column="2"
-            Source="images/statement-generator.xaml"
-            Style="{StaticResource logoStyleBottomRight}"
-            />
+        <Frame Grid.Row="3"
+               Grid.Column="2"
+               Source="images/statement-generator.xaml"
+               Style="{StaticResource logoStyleBottomRight}" />
 
     </Grid>
 </Page>

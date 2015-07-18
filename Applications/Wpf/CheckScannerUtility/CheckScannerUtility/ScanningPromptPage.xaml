@@ -1,71 +1,88 @@
 ﻿<Page x:Class="Rock.Apps.CheckScannerUtility.ScanningPromptPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      mc:Ignorable="d" 
-      d:DesignHeight="600" d:DesignWidth="960"
-	Title="ScanningPromptPage"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      mc:Ignorable="d"
+      d:DesignHeight="600"
+      d:DesignWidth="960"
+      Title="ScanningPromptPage"
       Style="{StaticResource pageBackground}"
-      Loaded="Page_Loaded"
-      >
+      Loaded="Page_Loaded">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition />
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <StackPanel Margin="8" Orientation="Horizontal" VerticalAlignment="Center">
-            <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Auto">
-                <StackPanel Orientation="Vertical" Name="spTenderButtons" Width="300" HorizontalAlignment="Left">
-                    <ToggleButton 
-                    Name="btnExample"
-                    Style="{StaticResource toggleButtonStyle}"
-                    Content="Currency 1"
-                    Margin="0,12,0,0"
-                    Padding="0,12,0,8"
-                    />
-                    <ToggleButton 
-                    Style="{StaticResource toggleButtonStyle}"
-                    Content="Currency 2"
-                    Margin="0,12,0,0"
-                    Padding="0,12,0,8"
-                    IsChecked="True"
-                    />
-                    <ToggleButton 
-                    Style="{StaticResource toggleButtonStyle}"
-                    Content="Currency 3"
-                    Margin="0,12,0,0"
-                    Padding="0,12,0,8"
-                    />
+        <StackPanel Margin="8"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center">
+            <ScrollViewer HorizontalScrollBarVisibility="Hidden"
+                          VerticalScrollBarVisibility="Auto">
+                <StackPanel Orientation="Vertical"
+                            Name="spTenderButtons"
+                            Width="300"
+                            HorizontalAlignment="Left">
+                    <ToggleButton Name="btnExample"
+                                  Style="{StaticResource toggleButtonStyle}"
+                                  Content="Currency 1"
+                                  Margin="0,12,0,0"
+                                  Padding="0,12,0,8" />
+                    <ToggleButton Style="{StaticResource toggleButtonStyle}"
+                                  Content="Currency 2"
+                                  Margin="0,12,0,0"
+                                  Padding="0,12,0,8"
+                                  IsChecked="True" />
+                    <ToggleButton Style="{StaticResource toggleButtonStyle}"
+                                  Content="Currency 3"
+                                  Margin="0,12,0,0"
+                                  Padding="0,12,0,8" />
 
                 </StackPanel>
             </ScrollViewer>
 
-            <StackPanel Margin="20" Name="spRangerScanSettings">
+            <StackPanel Margin="20"
+                        Name="spRangerScanSettings">
                 <Label Style="{StaticResource labelStyleLegend}"
-                           Content="Scan Settings" 
-                           HorizontalAlignment="Left" />
+                       Content="Scan Settings"
+                       HorizontalAlignment="Left" />
 
-                <RadioButton Name="radDoubleSided" GroupName="grpSided" Content="Double-sided" IsChecked="True" Margin="8,0,0,0"/>
-                <RadioButton Name="radSingleSided" GroupName="grpSided" Content="Single-sided" Margin="8,0,0,0"/>
+                <RadioButton Name="radDoubleSided"
+                             GroupName="grpSided"
+                             Content="Double-sided"
+                             IsChecked="True"
+                             Margin="8,0,0,0" />
+                <RadioButton Name="radSingleSided"
+                             GroupName="grpSided"
+                             Content="Single-sided"
+                             Margin="8,0,0,0" />
 
-                <CheckBox Name="chkDoubleDocDetection" Content="Enable Double Document Detection" Margin="8,8,0,0" IsChecked="True"/>
+                <CheckBox Name="chkDoubleDocDetection"
+                          Content="Enable Double Document Detection"
+                          Margin="8,8,0,0"
+                          IsChecked="True" />
                 <CheckBox Name="chkEnableSmartScan"
                           Content="Enable Smart Scan"
                           Margin="8,8,0,0"
                           IsChecked="True" />
             </StackPanel>
-            <StackPanel Margin="20" Name="spMagTekScanSettings">
+            <StackPanel Margin="20"
+                        Name="spMagTekScanSettings">
                 <Label Style="{StaticResource labelStyleLegend}"
-                           Content="Scan Settings" 
-                           HorizontalAlignment="Left" />
+                       Content="Scan Settings"
+                       HorizontalAlignment="Left" />
 
-                <CheckBox Name="chkPromptToScanRearImage" Content="Prompt to scan the back side." Margin="8" IsChecked="False" />
+                <CheckBox Name="chkPromptToScanRearImage"
+                          Content="Prompt to scan the back side."
+                          Margin="8"
+                          IsChecked="False" />
             </StackPanel>
 
         </StackPanel>
 
-        <Grid VerticalAlignment="Bottom" Grid.Row="1" Grid.ColumnSpan="2" >
+        <Grid VerticalAlignment="Bottom"
+              Grid.Row="1"
+              Grid.ColumnSpan="2">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
@@ -77,18 +94,16 @@
                    Grid.Column="0"
                    Grid.ColumnSpan="2">
             </Label>
-            <Button 
-                Grid.Row="1"    
-                Margin="8"
+            <Button Grid.Row="1"
+                    Margin="8"
                     x:Name="btnBack"
                     Style="{StaticResource buttonStyle}"
                     Content="Back"
                     IsCancel="True"
                     HorizontalAlignment="Left"
                     Click="btnBack_Click" />
-            <Button 
-                Grid.Row="1"        
-                Margin="8"
+            <Button Grid.Row="1"
+                    Margin="8"
                     x:Name="btnNext"
                     Style="{StaticResource buttonStylePrimary}"
                     Content="Scan"
