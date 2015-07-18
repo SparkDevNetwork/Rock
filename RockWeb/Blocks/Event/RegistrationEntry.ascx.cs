@@ -898,6 +898,7 @@ namespace RockWeb.Blocks.Event
                 {
                     ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
                     ShowError( "An Error Occurred Processing Your " + RegistrationTerm, ex.Message );
+                    return (int?)null;
                 }
             }
 
@@ -1493,6 +1494,8 @@ namespace RockWeb.Blocks.Event
                         History.EvaluateChange( txnChanges, "Source", string.Empty, source.Value );
                     }
                 }
+
+                transaction.Summary = registration.GetSummary( RegistrationInstanceState );
 
                 var transactionDetail = new FinancialTransactionDetail();
                 transactionDetail.Amount = RegistrationState.PaymentAmount;

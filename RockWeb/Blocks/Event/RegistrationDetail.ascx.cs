@@ -931,6 +931,8 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
+                transaction.Summary = Registration.GetSummary();
+
                 var transactionDetail = new FinancialTransactionDetail();
                 transactionDetail.Amount = amount;
                 transactionDetail.AccountId = registration.RegistrationInstance.AccountId;
@@ -1245,7 +1247,7 @@ namespace RockWeb.Blocks.Event
             if ( feeInfo.Quantity > 0 )
             {
                 var rlField = new RockLiteral();
-                rlField.ID = string.Format( "rlFee_{0}_{1}", registrant.Id, fee.Id );
+                rlField.ID = string.Format( "rlFee_{0}_{1}_{2}", registrant.Id, fee.Id, feeInfo.Option );
                 rlField.Label = fee.Name;
 
                 if ( !string.IsNullOrWhiteSpace( feeInfo.Option ) )

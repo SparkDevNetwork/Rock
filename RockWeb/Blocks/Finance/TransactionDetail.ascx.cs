@@ -928,7 +928,7 @@ namespace RockWeb.Blocks.Finance
                     detailsLeft.Add( "Currency Type", currencyType );
                 }
 
-                detailsLeft.Add( "Summary", txn.Summary );
+                detailsLeft.Add( "Summary", txn.Summary.ConvertCrLfToHtmlBr() );
 
                 var modified = new StringBuilder(); ;
                 if ( txn.CreatedByPersonAlias != null && txn.CreatedByPersonAlias.Person != null && txn.CreatedDateTime.HasValue )

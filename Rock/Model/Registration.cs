@@ -22,9 +22,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using System.Text;
 using Newtonsoft.Json;
-
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -263,6 +262,48 @@ namespace Rock.Model
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Gets a summary of the registration
+        /// </summary>
+        /// <param name="rockUrlRoot">The rock URL root.</param>
+        /// <returns></returns>
+        public string GetSummary( RegistrationInstance registrationInstance = null )
+        {
+            var result = new StringBuilder();
+            result.Append("Event registration payment");
+
+            var instance = registrationInstance ?? RegistrationInstance;
+            if ( instance != null )
+            {
+                result.AppendFormat( " for {0} [ID:{1}]", instance.Name, instance.Id );
+                if ( instance.RegistrationTemplate != null )
+                {
+                    result.AppendFormat( " (Template: {0} [ID:{1}])", instance.RegistrationTemplate.Name, instance.RegistrationTemplate.Id );
+                }
+            }
+
+            string registrationPerson = PersonAlias != null && PersonAlias.Person != null ?
+                PersonAlias.Person.FullName : 
+                string.Format( "{0} {1}", FirstName, LastName );
+            result.AppendFormat( @".
+Registration By: {0} Total Cost/Fees:{1:C2}
+", registrationPerson, DiscountedCost );
+
+            var registrantPersons = new List<string>();
+            if ( Registrants != null )
+            {
+                foreach( var registrant in Registrants.Where( r => r.PersonAlias != null && r.PersonAlias.Person != null ) )
+                {
+                    registrantPersons.Add( string.Format( "{0} Cost/Fees:{1:C2}", 
+                        registrant.PersonAlias.Person.FullName,
+                        registrant.DiscountedCost( DiscountPercentage, DiscountAmount ) ) );
+                }
+            }
+            result.AppendFormat( "Registrants: {0}", registrantPersons.AsDelimited( ", " ) );
+
+            return result.ToString();
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
