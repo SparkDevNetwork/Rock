@@ -1,58 +1,43 @@
-{% assign contextCampusId = 0 %}
-{% if CampusContext != null %}
-	{% assign contextCampusId = CampusContext.Id %}
-{% endif %}
-
 <div class="row">
 	<div class="col-md-4">
-
-		
-		{% if contextCampusId != 0 %}
-			{% assign eventItemCampuses = Event.EventItemCampuses | Where:'CampusId', contextCampusId %}
-		{% else %}
-			{% assign eventItemCampuses = Event.EventItemCampuses %}
-		{% endif %}
-		
-		{% for campus in eventItemCampuses %}
-			<div class="well">
-				{% assign linkage = campus.Linkages | First %}
+		<div class="well">
+			{% assign linkage = EventCampus.Linkages | First %}
 			
-				{% if campus.Campus != null %}
-					<h4> {{campus.Campus.Name}} Campus</h4> 
-				{% endif %}
+			{% if EventCampus.Campus != null %}
+				<h4> {{EventCampus.Campus.Name}} Campus</h4> 
+			{% endif %}
 				
-				<p>
-					<strong>Contact</strong><br />
-					{% if campus.ContactPersonAlias != null %}
-						{{ campus.ContactPersonAlias.Person.FullName }} <br />
-					{% endif %}
+			<p>
+				<strong>Contact</strong><br />
+				{% if EventCampus.ContactPersonAlias != null %}
+					{{ EventCampus.ContactPersonAlias.Person.FullName }} <br />
+				{% endif %}
 					
-					{{ campus.ContactEmail }} <br />
-					{{ campus.ContactPhone }}
-				</p>
+				{{ EventCampus.ContactEmail }} <br />
+				{{ EventCampus.ContactPhone }}
+			</p>
 				
-				{% if campus.Location != '' %}
-					<p>
-						<strong> Location</strong> <br />
-						{{ campus.Location }}
-					</p>
-				{% endif %}
-				
+			{% if EventCampus.Location != '' %}
 				<p>
-					<strong>Date / Time</strong> <br />
-					{{ campus.EventItemSchedules | Select:'Schedule' | Select:'iCalendarContent' | DatesFromICal }}
+					<strong> Location</strong> <br />
+					{{ EventCampus.Location }}
 				</p>
+			{% endif %}
 				
-				{% if campus.CampusNote != '' %}
-					<strong>Note</strong><br />
-					{{ campus.CampusNote }}
-				{% endif %}
+			<p>
+				<strong>Date / Time</strong> <br />
+				{{ EventCampus.EventItemSchedules | Select:'Schedule' | Select:'iCalendarContent' | DatesFromICal }}
+			</p>
 				
-				{% if linkage.RegistrationInstanceId > 0 ) %}
-					<a href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}" class="btn btn-primary btn-block margin-t-md">Register</a>
-				{% endif %}
-			</div>
-		{% endfor %}
+			{% if EventCampus.CampusNote != '' %}
+				<strong>Note</strong><br />
+				{{ EventCampus.CampusNote }}
+			{% endif %}
+				
+			{% if linkage.RegistrationInstanceId > 0 ) %}
+				<a href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}" class="btn btn-primary btn-block margin-t-md">Register</a>
+			{% endif %}
+		</div>
 		
 		<script>function fbs_click() { u = location.href; t = document.title; window.open('http://www.facebook.com/sharer.php?u=' + encodeURIComponent(u) + '&t=' + encodeURIComponent(t), 'sharer', 'toolbar=0,status=0,width=626,height=436'); return false; }</script>
 		<ul class="socialsharing">
