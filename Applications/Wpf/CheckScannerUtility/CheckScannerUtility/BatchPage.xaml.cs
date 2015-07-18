@@ -68,6 +68,7 @@ namespace Rock.Apps.CheckScannerUtility
                 this.rangerScanner.TransportFeedingStopped += ScanningPage.rangerScanner_TransportFeedingStopped;
                 this.rangerScanner.TransportNewItem += ScanningPage.rangerScanner_TransportNewItem;
                 this.rangerScanner.TransportSetItemOutput += ScanningPage.rangerScanner_TransportSetItemOutput;
+                this.rangerScanner.TransportIsDead += ScanningPage.rangerScanner_TransportIsDead;
                 this.rangerScanner.TransportNewState += rangerScanner_TransportNewState;
                 this.rangerScanner.TransportChangeOptionsState += rangerScanner_TransportChangeOptionsState;
 
@@ -75,7 +76,7 @@ namespace Rock.Apps.CheckScannerUtility
                 this.rangerScanner.TransportEnablingOptionsState += rangerScannerHostPage.rangerScanner_TransportEnablingOptionsState;
                 this.rangerScanner.TransportExceptionComplete += rangerScannerHostPage.rangerScanner_TransportExceptionComplete;
                 this.rangerScanner.TransportInExceptionState += rangerScannerHostPage.rangerScanner_TransportInExceptionState;
-                this.rangerScanner.TransportIsDead += rangerScannerHostPage.rangerScanner_TransportIsDead;
+                
                 this.rangerScanner.TransportItemInPocket += rangerScannerHostPage.rangerScanner_TransportItemInPocket;
                 this.rangerScanner.TransportItemSuspended += rangerScannerHostPage.rangerScanner_TransportItemSuspended;
                 this.rangerScanner.TransportOverrideOptions += rangerScannerHostPage.rangerScanner_TransportOverrideOptions;
@@ -83,6 +84,7 @@ namespace Rock.Apps.CheckScannerUtility
                 this.rangerScanner.TransportReadyToFeedState += rangerScannerHostPage.rangerScanner_TransportReadyToFeedState;
                 this.rangerScanner.TransportReadyToSetEndorsement += rangerScannerHostPage.rangerScanner_TransportReadyToSetEndorsement;
                 this.rangerScanner.TransportShuttingDownState += rangerScannerHostPage.rangerScanner_TransportShuttingDownState;
+                this.rangerScanner.TransportShutDownState += rangerScannerHostPage.rangerScanner_TransportShutDownState;
                 this.rangerScanner.TransportStartingUpState += rangerScannerHostPage.rangerScanner_TransportStartingUpState;
                 this.rangerScanner.TransportTrackIsClear += rangerScannerHostPage.rangerScanner_TransportTrackIsClear;
             }
@@ -233,6 +235,9 @@ namespace Rock.Apps.CheckScannerUtility
                     break;
                 case XportStates.TransportStartingUp:
                     statusColor = Colors.Yellow;
+                    break;
+                case XportStates.TransportExceptionInProgress:
+                    statusColor = Colors.Black;
                     break;
                 default:
                     statusColor = Colors.White;
