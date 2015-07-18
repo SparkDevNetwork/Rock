@@ -23,7 +23,7 @@
 
                 <Label Style="{StaticResource labelStyle}">Logo</Label>
                 <StackPanel Orientation="Horizontal">
-                    
+
                     <Label Name="lblImageError"
                            Width="300"
                            Height="100"
@@ -34,15 +34,14 @@
                            Margin="6"
                            Style="{StaticResource labelStyleIcon}"
                            Content="&#xf059;"
-                           ToolTip="Error"
-                           >
+                           ToolTip="Error">
                     </Label>
                     <Image Width="300"
                            Height="100"
                            Name="imgLogo"
                            HorizontalAlignment="Left"
                            Source="logo.jpg"
-                           Margin="6" >
+                           Margin="6">
                     </Image>
                     <Label Name="lblLogoHelp"
                            Width="320"
@@ -55,13 +54,13 @@
                              Style="{StaticResource textboxStyleUrl}"
                              Margin="6,0,6,0"
                              IsReadOnly="True" />
-                    <Button Style="{StaticResource buttonStyleMini}"
+                    <Button Style="{StaticResource buttonStyle}"
                             Margin="0,3,0,0"
                             Name="btnSelectLogoFile"
                             Content="Browse ..."
                             HorizontalAlignment="Left"
                             Click="btnSelectLogoFile_Click" />
-                    <Button Style="{StaticResource buttonStyleMini}"
+                    <Button Style="{StaticResource buttonStyle}"
                             Margin="4,3,0,0"
                             Name="btnSelectDefaultLogo"
                             Content="Use Default"

@@ -71,6 +71,7 @@
                             Name="btnCancel"
                             Margin="4,4,0,0"
                             Content="Cancel"
+                            IsCancel="True"
                             HorizontalAlignment="Left"
                             Click="btnCancel_Click" />
                 </StackPanel>

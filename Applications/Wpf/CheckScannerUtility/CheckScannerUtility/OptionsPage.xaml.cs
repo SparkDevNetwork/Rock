@@ -260,6 +260,8 @@ namespace Rock.Apps.CheckScannerUtility
                 BatchPage.rangerScanner.ShutDown();
             }
 
+            BatchPage.ConnectToScanner();
+
             this.NavigationService.GoBack();
         }
 

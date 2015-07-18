@@ -13,23 +13,26 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}" />
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}"/>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Style="{StaticResource gridPanelBorderRow}"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Style="{StaticResource gridPanelBorderRow}"/>
+            <RowDefinition Style="{StaticResource gridPanelBorderRow}" />
+            <RowDefinition Height="*" />
+            <RowDefinition Style="{StaticResource gridPanelBorderRow}" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Column="1" Grid.Row="1" Style="{StaticResource gridPanel}">
+        <Grid Grid.Column="1"
+              Grid.Row="1"
+              Style="{StaticResource gridPanel}">
             <Grid.RowDefinitions>
-                <RowDefinition Style="{StaticResource rowDefinitionPanelTitle}"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Style="{StaticResource rowDefinitionActions}"/>
+                <RowDefinition Style="{StaticResource rowDefinitionPanelTitle}" />
+                <RowDefinition Height="*" />
+                <RowDefinition Style="{StaticResource rowDefinitionActions}" />
             </Grid.RowDefinitions>
 
-            <Grid Height="Auto" Grid.Row="1" >
+            <Grid Height="Auto"
+                  Grid.Row="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition />
@@ -40,36 +43,37 @@
                     <RowDefinition Height="48" />
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Column="1"
-                    VerticalAlignment="Center">
+                            VerticalAlignment="Center">
 
                     <Label x:Name="lblReportProgress"
-                   Visibility="Visible"
-                   Style="{StaticResource labelStyleAlert}"
-                   Content="Progress" />
+                           Visibility="Visible"
+                           Style="{StaticResource labelStyleAlert}"
+                           Content="Progress" />
                     <ProgressBar x:Name="pgReportProgress"
-                         Maximum="100"
-                         Value="67" Height="4"/>
+                                 Maximum="100"
+                                 Value="67"
+                                 Height="4" />
 
                     <Button x:Name="btnSaveAs"
-                        HorizontalAlignment="Center"
-                        Margin="4"
-                        Style="{StaticResource buttonStylePrimary}"
-                        Content="Save As.."
-                        Click="btnSaveAs_Click"/>
+                            HorizontalAlignment="Center"
+                            Margin="4"
+                            Style="{StaticResource buttonStylePrimary}"
+                            Content="Save As.."
+                            Click="btnSaveAs_Click" />
                 </StackPanel>
-                
+
             </Grid>
             <Button x:Name="btnPrev"
-                Grid.Row="2"
-                HorizontalAlignment="Left"
-                Style="{StaticResource buttonStyle}"
-                Margin="8,8,8,8"
-                Click="btnPrev_Click">
+                    Grid.Row="2"
+                    HorizontalAlignment="Left"
+                    Style="{StaticResource buttonStyle}"
+                    Margin="8,8,8,8"
+                    Click="btnPrev_Click">
                 <StackPanel Orientation="Horizontal">
                     <Label Style="{StaticResource labelStyleIconLeft}"
-                       Content="&#xf053;" />
+                           Content="&#xf053;" />
                     <Label Style="{StaticResource labelStyleButtonText}"
-                       Content="Prev" />
+                           Content="Prev" />
                 </StackPanel>
             </Button>
         </Grid>
