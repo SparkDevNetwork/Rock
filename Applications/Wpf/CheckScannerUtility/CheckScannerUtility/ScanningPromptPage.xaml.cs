@@ -72,7 +72,10 @@ namespace Rock.Apps.CheckScannerUtility
                 btnToggle.IsChecked = btnToggle == btnToggleSelected;
             }
 
-            chkDoubleDocDetection.IsChecked = (Guid)btnToggleSelected.Tag == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            
+            var scanningChecks = (Guid)btnToggleSelected.Tag == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            chkDoubleDocDetection.IsChecked = scanningChecks;
+            chkEnableSmartScan.Visibility = scanningChecks ? Visibility.Visible : Visibility.Collapsed;
         }
 
         /// <summary>
@@ -93,6 +96,7 @@ namespace Rock.Apps.CheckScannerUtility
             rockConfig.EnableRearImage = radDoubleSided.IsChecked == true;
             rockConfig.PromptToScanRearImage = chkPromptToScanRearImage.IsChecked == true;
             rockConfig.EnableDoubleDocDetection = chkDoubleDocDetection.IsChecked == true;
+            rockConfig.EnableSmartScan = chkEnableSmartScan.IsChecked == true;
 
             rockConfig.Save();
 

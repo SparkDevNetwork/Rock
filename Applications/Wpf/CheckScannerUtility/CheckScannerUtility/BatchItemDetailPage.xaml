@@ -9,49 +9,105 @@
       Title="BatchItemDetailPage"
       Loaded="Page_Loaded"
       Style="{StaticResource pageBackground}">
-    <Grid Margin="8">
+    <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition />
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="1*" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <Label Grid.Row="0"
-               Grid.Column="1"
-               VerticalAlignment="Bottom"
-               Style="{StaticResource labelStyleCaption}">Front</Label>
-        <Image Grid.Row="1"
-               Grid.Column="1"
-               Name="imgFront"
-               Stretch="Uniform"
-               HorizontalAlignment="Left"
-               Margin="6,0,0,0"
-               VerticalAlignment="Top"
-               Source="images/check-image.png" />
-        <Label Grid.Row="2"
-               Grid.Column="1"
-               VerticalAlignment="Bottom"
-               Style="{StaticResource labelStyleCaption}">Back</Label>
-        <Image Grid.Column="1"
-               Grid.Row="3"
-               Name="imgBack"
-               Stretch="Uniform"
-               HorizontalAlignment="Left"
-               Margin="6,0,0,0"
-               VerticalAlignment="Top"
-               Source="images/check-image.png" />
-        <Button Grid.Row="5"
-                Grid.Column="1"
-                Margin="4"
-                Name="btnClose"
-                Style="{StaticResource buttonStyle}"
-                Content="Close"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Bottom"
-                Click="btnClose_Click" />
 
+        <!-- Transaction Details -->
+        <StackPanel Grid.Row="0"
+                    Margin="12">
+            <Label Content="Scanned Date/Time"
+                   Style="{StaticResource labelStyleDt}" />
+            <Label Name="lblScannedDateTime"
+                   Content="7/16/9999 12:00 AM"
+                   Style="{StaticResource labelStyleDd}" />
+
+            <Label Content="Transaction Date/Time"
+                   Style="{StaticResource labelStyleDt}" />
+            <Label Name="lblTransactionDateTime"
+                   Content="7/16/9999 12:00 AM"
+                   Style="{StaticResource labelStyleDd}" />
+
+            <Label Content="Batch"
+                   Style="{StaticResource labelStyleDt}" />
+            <Label Name="lblBatch"
+                   Content="7/16/9999 12:00 AM"
+                   Style="{StaticResource labelStyleDd}" />
+
+            <Label Content="Source"
+                   Style="{StaticResource labelStyleDt}" />
+            <Label Name="lblSource"
+                   Content="7/16/9999 12:00 AM"
+                   Style="{StaticResource labelStyleDd}" />
+
+            <Label Content="Transaction Code"
+                   Style="{StaticResource labelStyleDt}" />
+            <Label Name="lblTransactionCode"
+                   Content="7/16/9999 12:00 AM"
+                   Style="{StaticResource labelStyleDd}" />
+
+            <Label Content="Currency Type"
+                   Style="{StaticResource labelStyleDt}" />
+            <Label Name="lblCurrencyType"
+                   Content="7/16/9999 12:00 AM"
+                   Style="{StaticResource labelStyleDd}" />
+        </StackPanel>
+
+        <!-- Check Images -->
+        <Grid Grid.Row="0"
+              Grid.Column="1"
+              Margin="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Label Grid.Row="0"
+                   Content="Front"
+                   Grid.Column="1"
+                   VerticalAlignment="Bottom"
+                   Style="{StaticResource labelStyleDt}" />
+            <Image Grid.Row="1"
+                   Grid.Column="1"
+                   Name="imgFront"
+                   Stretch="Uniform"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Top"
+                   Source="images/check-image.png" />
+            <Label Grid.Row="2"
+                   Grid.Column="1"
+                   Content="Back"
+                   VerticalAlignment="Bottom"
+                   Style="{StaticResource labelStyleDt}" />
+            <Image Grid.Column="1"
+                   Grid.Row="3"
+                   Name="imgBack"
+                   Stretch="Uniform"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Top"
+                   Source="images/check-image.png" />
+        </Grid>
+
+        <StackPanel Grid.ColumnSpan="2"
+                    Grid.Row="1"
+                    Margin="8">
+            <Button Name="btnClose"
+                    Style="{StaticResource buttonStyle}"
+                    Content="Close"
+                    HorizontalAlignment="Right"
+                    IsCancel="True"
+                    VerticalAlignment="Bottom"
+                    Click="btnClose_Click" />
+        </StackPanel>
     </Grid>
 </Page>

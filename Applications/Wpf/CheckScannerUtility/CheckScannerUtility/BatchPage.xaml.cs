@@ -63,16 +63,26 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 var rangerScannerHostPage = new RangerScannerHostPage();
                 this.rangerScanner = rangerScannerHostPage.rangerScanner;
-                this.rangerScanner.TransportChangeOptionsState += rangerScanner_TransportChangeOptionsState;
+
+                this.rangerScanner.TransportEnablingOptionsState += ScanningPage.rangerScanner_TransportEnablingOptionsState;
+                this.rangerScanner.TransportExceptionComplete += ScanningPage.rangerScanner_TransportExceptionComplete;
+                this.rangerScanner.TransportFeedingState += ScanningPage.rangerScanner_TransportFeedingState;
                 this.rangerScanner.TransportFeedingStopped += ScanningPage.rangerScanner_TransportFeedingStopped;
+                this.rangerScanner.TransportInExceptionState += ScanningPage.rangerScanner_TransportInExceptionState;
+                this.rangerScanner.TransportIsDead += ScanningPage.rangerScanner_TransportIsDead;
                 this.rangerScanner.TransportItemInPocket += ScanningPage.rangerScanner_TransportItemInPocket;
                 this.rangerScanner.TransportItemSuspended += ScanningPage.rangerScanner_TransportItemSuspended;
-
+                this.rangerScanner.TransportNewItem += ScanningPage.rangerScanner_TransportNewItem;
                 this.rangerScanner.TransportNewState += rangerScanner_TransportNewState;
-
+                this.rangerScanner.TransportOverrideOptions += ScanningPage.rangerScanner_TransportOverrideOptions;
                 this.rangerScanner.TransportPassthroughEvent += ScanningPage.rangerScanner_TransportPassthroughEvent;
-
+                this.rangerScanner.TransportChangeOptionsState += rangerScanner_TransportChangeOptionsState;
+                this.rangerScanner.TransportReadyToFeedState += ScanningPage.rangerScanner_TransportReadyToFeedState;
+                this.rangerScanner.TransportReadyToSetEndorsement += ScanningPage.rangerScanner_TransportReadyToSetEndorsement;
                 this.rangerScanner.TransportSetItemOutput += ScanningPage.rangerScanner_TransportSetItemOutput;
+                this.rangerScanner.TransportShuttingDownState += ScanningPage.rangerScanner_TransportShuttingDownState;
+                this.rangerScanner.TransportStartingUpState += ScanningPage.rangerScanner_TransportStartingUpState;
+                this.rangerScanner.TransportTrackIsClear += ScanningPage.rangerScanner_TransportTrackIsClear;
             }
             catch
             {
@@ -199,7 +209,6 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The e.</param>
         private void rangerScanner_TransportNewState( object sender, AxRANGERLib._DRangerEvents_TransportNewStateEvent e )
         {
-            mnuConnect.IsEnabled = false;
             ScanningPage.btnClose.Visibility = Visibility.Visible;
 
             string status = rangerScanner.GetTransportStateString().Replace( "Transport", string.Empty ).SplitCase();
@@ -215,7 +224,6 @@ namespace Rock.Apps.CheckScannerUtility
                     break;
                 case XportStates.TransportShutDown:
                     statusColor = Colors.Red;
-                    mnuConnect.IsEnabled = true;
                     break;
                 case XportStates.TransportFeeding:
                     statusColor = Colors.Blue;
@@ -232,7 +240,7 @@ namespace Rock.Apps.CheckScannerUtility
             this.shapeStatus.Fill = new SolidColorBrush( statusColor );
             this.shapeStatus.ToolTip = status;
 
-            System.Diagnostics.Debug.WriteLine( "{1} : rangerScanner_TransportNewState:{0}", xportState, DateTime.Now.ToString( "o" ) );
+            //System.Diagnostics.Debug.WriteLine( "{1} : rangerScanner_TransportNewState:{0}", xportState, DateTime.Now.ToString( "o" ) );
 
             ScanningPage.ShowScannerStatus( xportState, statusColor, status );
         }
@@ -298,13 +306,14 @@ namespace Rock.Apps.CheckScannerUtility
         {
             spBatchDetailReadOnly.Visibility = Visibility.Visible;
             spBatchDetailEdit.Visibility = Visibility.Collapsed;
-            if ( !ConnectToScanner() )
-            {
-                NavigateToOptionsPage();
-            }
 
             if ( this.FirstPageLoad )
             {
+                if ( !ConnectToScanner() )
+                {
+                    NavigateToOptionsPage();
+                }
+
                 LoadComboBoxes();
                 LoadFinancialBatchesGrid();
                 this.FirstPageLoad = false;
@@ -374,7 +383,6 @@ namespace Rock.Apps.CheckScannerUtility
             else
             {
                 gBatchDetailList.Visibility = Visibility.Visible;
-                UpdateBatchUI( grdBatches.SelectedValue as FinancialBatch );
             }
         }
 
@@ -407,7 +415,8 @@ namespace Rock.Apps.CheckScannerUtility
         /// <summary>
         /// Connects to scanner.
         /// </summary>
-        private bool ConnectToScanner()
+        /// <returns></returns>
+        public bool ConnectToScanner()
         {
             var rockConfig = RockConfig.Load();
 
@@ -516,16 +525,6 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Handles the 1 event of the btnConnect_Click control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void btnConnect_Click( object sender, RoutedEventArgs e )
-        {
-            ConnectToScanner();
         }
 
         /// <summary>
@@ -757,7 +756,9 @@ namespace Rock.Apps.CheckScannerUtility
 
             // start a background thread to download transactions since this could take a little while and we want a Wait cursor
             BackgroundWorker bw = new BackgroundWorker();
+            Rock.Wpf.WpfHelper.FadeOut(lblCount, 0);
             lblCount.Content = "Loading...";
+            Rock.Wpf.WpfHelper.FadeIn( lblCount, 300 );
             List<FinancialTransaction> transactions = null;
             grdBatchItems.DataContext = null;
             bw.DoWork += delegate( object s, DoWorkEventArgs ee )
@@ -822,6 +823,8 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 lblCount.Content = "count";
             }
+
+            Rock.Wpf.WpfHelper.FadeIn( lblCount );
         }
 
         /// <summary>
@@ -871,8 +874,8 @@ namespace Rock.Apps.CheckScannerUtility
                     RockRestClient client = new RockRestClient( config.RockBaseUrl );
                     client.Login( config.Username, config.Password );
                     financialTransaction.Images = client.GetData<List<FinancialTransactionImage>>( "api/FinancialTransactionImages", string.Format( "TransactionId eq {0}", financialTransaction.Id ) );
-
-                    BatchItemDetailPage.FinancialTransactionImages = financialTransaction.Images;
+                    BatchItemDetailPage.batchPage = this;
+                    BatchItemDetailPage.FinancialTransaction = financialTransaction;
                     this.NavigationService.Navigate( BatchItemDetailPage );
                 }
             }

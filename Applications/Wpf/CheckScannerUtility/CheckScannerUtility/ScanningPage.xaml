@@ -4,7 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       mc:Ignorable="d"
-      d:DesignHeight="600"
+      d:DesignHeight="900"
       d:DesignWidth="960"
       Title="ScanningPage"
       Loaded="Page_Loaded"
@@ -34,6 +34,15 @@
                 Margin="0,0,12,0"
                        HorizontalAlignment="Right"
                         />
+            <Label Name="lblExceptions"
+                       Style="{StaticResource labelStyleAlertError}"
+                       Content="ERROR: --"
+                       Grid.Row="2"
+                       Panel.ZIndex="1"
+                       Grid.Column="0"
+                       Grid.ColumnSpan="2"
+                       Visibility="Visible">
+            </Label>
             <Label Name="lblScanItemUploadSuccess"
                         Style="{StaticResource labelStyleAlertSuccess}"
                         Content="Uploaded Successfully">
@@ -54,36 +63,26 @@
                         Style="{StaticResource labelStyleAlertInfo}"
                         Content="Insert the {0} again facing the other direction to get an image of the back.">
                 </Label>
-                
+
                 <StackPanel Name="pnlPromptForUpload">
 
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button Margin="8"
+                                x:Name="btnSkipAndContinue"
+                                Style="{StaticResource buttonStylePrimary}"
+                                Content="Skip"
+                                HorizontalAlignment="Left"
+                                Click="btnSkipAndContinue_Click" />
                         <Button 
                             Margin="8"
                             x:Name="btnIgnoreAndUpload"
-                            Style="{StaticResource buttonStyleAction}"
+                            Style="{StaticResource buttonStyle}"
                             ToolTip="Upload and continue scanning"
                             Content="Upload"
                             HorizontalAlignment="Left"
                             Click="btnIgnoreAndUpload_Click" />
-                        <Button 
-                            Margin="8"
-                            x:Name="btnSkipAndContinue"
-                            Style="{StaticResource buttonStyleAction}"
-                            Content="Skip"
-                            ToolTip="Don't upload this check, but continue scanning"
-                            HorizontalAlignment="Left"
-                            Click="btnSkipAndContinue_Click" />
-                        <Button 
-                            Margin="8"
-                            x:Name="btnStopAndRetry"
-                            Style="{StaticResource buttonStyleAction}"
-                            Content="Stop"
-                            ToolTip="Stop scanning"
-                            HorizontalAlignment="Left"
-                            Click="btnStopAndRetry_Click"/>
-
+                        
                     </StackPanel>
                 </StackPanel>
                 <Grid >
@@ -130,14 +129,14 @@
             </StackPanel>
 
             <!-- Front/Back Grid for either Check or Other-->
-            <Grid Name="grdFrontBack">
+            <Grid Name="grdFrontBack" VerticalAlignment="Bottom">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="1*" />
                 </Grid.RowDefinitions>
                 <Label Name="lblStartupInfo"
                        Grid.Row="0"
@@ -162,7 +161,7 @@
                 <Image Grid.Column="0"
                    Grid.Row="1"
                    Name="imgFront"
-                   Stretch="Uniform"
+                   Stretch="UniformToFill"
                    HorizontalAlignment="Left"
                    Margin="8,0"
                    VerticalAlignment="Top"
@@ -171,7 +170,7 @@
                 <Image Grid.Column="1"
                    Grid.Row="1"
                    Name="imgBack"
-                   Stretch="Uniform"
+                   Stretch="UniformToFill"
                    HorizontalAlignment="Left"
                    Margin="8,0"
                    VerticalAlignment="Top"
@@ -180,7 +179,7 @@
             </Grid>
         </StackPanel>
 
-        <Grid VerticalAlignment="Bottom">
+        <Grid VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Width="auto" Height="Auto" Margin="8"  >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />
@@ -191,46 +190,44 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-
-            <Label Name="lblExceptions"
-                   Style="{StaticResource labelStyleAlertError}"
-                   Content="ERROR: --"
-                   Grid.Row="2"
-                   Panel.ZIndex="1"
-                   Grid.Column="0"
+            <Label Name="lblNoItemsFound"
                    Grid.ColumnSpan="2"
-                   Visibility="Collapsed">
+                   Style="{StaticResource labelStyleAlert}"
+                   Content="No {0} detected in scanner. Make sure {0} are properly in the feed tray.">
             </Label>
-
             <StackPanel
-                Name="pnlStartStopClose"
-                Orientation="Horizontal" 
-                Margin="0,0,0,8"
-                Grid.Row="3"
-                Grid.Column="0"
-                >
+                    Name="pnlStartStopClose"
+                    Orientation="Horizontal" 
+                    Margin="0,0,0,8"
+                    Grid.Row="3"
+                    Grid.Column="0">
                 <Button 
-                    x:Name="btnStart"
-                    Style="{StaticResource buttonStyleAction}"
-                    Margin="8,0,0,0"
-                    Content="Start"
-                    Click="btnStart_Click" />
+                        x:Name="btnStart"
+                        Style="{StaticResource buttonStylePrimary}"
+                        Margin="8,0,0,0"
+                        Content="Start"
+                        Click="btnStart_Click" />
                 <Button Grid.Row="3"
-                    Margin="8,0,0,0"
-                    x:Name="btnStopScanning"
-                    Style="{StaticResource buttonStyleAction}"
-                    Content="Stop"
-                    Click="btnStopScanning_Click" Height="Auto" />
+                        Margin="8,0,0,0"
+                        x:Name="btnStopScanning"
+                        Style="{StaticResource buttonStyleAction}"
+                        Content="Stop"
+                        Click="btnStopScanning_Click" Height="Auto" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" FlowDirection="RightToLeft">
                 <Button Style="{StaticResource buttonStyle}"
                                     x:Name="btnClose"
                                     Margin="4,4,0,0"
                                     Content="Close"
+                                    IsCancel="True"
                                     HorizontalAlignment="Left"
                                     Click="btnClose_Click" />
             </StackPanel>
 
+
+
         </Grid>
+
+
     </Grid>
 </Page>

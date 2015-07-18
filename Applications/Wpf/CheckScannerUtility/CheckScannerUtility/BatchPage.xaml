@@ -33,12 +33,6 @@
             <Menu x:Name="mainMenu"
                   Grid.Column="0"
                   Style ="{StaticResource menuStyle}">
-                <MenuItem Header="_File">
-                    <MenuItem x:Name="mnuConnect"
-                              Header="_Connect"
-                              ToolTip="Connect to Scanner"
-                              Click="btnConnect_Click" />
-                </MenuItem>
                 <MenuItem Header="_Tools">
                     <MenuItem x:Name="mnuOptions"
                               Header="_Options"
@@ -331,8 +325,9 @@
                        Grid.Row="1" />
                 <Label Content="Count"
                        Name="lblCount"
-                       Style="{StaticResource labelStyleHighlightInfo}"
-                       HorizontalAlignment="Right" 
+                       Style="{StaticResource labelStyleHighlight}"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center"
                        Grid.Row="1" />
                 <DataGrid Grid.Row="2"
                           x:Name="grdBatchItems"
@@ -396,7 +391,7 @@
                                             Content="View" 
                                             HorizontalAlignment="Center"
                                             Style="{StaticResource buttonStyleMini}"
-                                            Margin="4,0,4,0"
+                                            Margin="4"
                                             CommandParameter="{Binding Id}"
                                             Click="btnViewTransaction_Click"/>
                                         <Button 
@@ -405,7 +400,7 @@
                                             HorizontalAlignment="Center"
                                             ToolTip="Delete"
                                             Style="{StaticResource buttonStyleMiniIconDanger}"
-                                            Margin="4,0,4,0"
+                                            Margin="4"
                                             CommandParameter="{Binding Id}"
                                             Click="btnDeleteTransaction_Click"/>
                                     </StackPanel>
