@@ -31,6 +31,9 @@ namespace Rock.Wpf
                 ex = ( ex as AggregateException ).Flatten();
             }
 
+
+            System.Diagnostics.Debug.Write( ex.StackTrace );
+            
             string message = ex.Message;
             var innerEx = ex.InnerException;
             while (innerEx != null)
