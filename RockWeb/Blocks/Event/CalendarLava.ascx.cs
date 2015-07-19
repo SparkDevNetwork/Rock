@@ -447,7 +447,10 @@ namespace RockWeb.Blocks.Event
             if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
             {
                 var contextCampus = RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus;
-                cblCampus.SetValue( contextCampus.Id );
+                if ( contextCampus != null )
+                {
+                    cblCampus.SetValue( contextCampus.Id );
+                }
             }
 
             cblCategory.Visible = !String.IsNullOrWhiteSpace( GetAttributeValue( "FilterCategories" ) );
