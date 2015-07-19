@@ -45,7 +45,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [CustomDropdownListField( "Number of Columns", "", "1,2,3,4,5,6,7,8,9,10,11,12", false, DefaultValue = "12", Order = 1 )]
     [CustomDropdownListField( "Metric Display Type", "", "Text,Line,Donut", Order = 2 )]
     [SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", Order = 3 )]
-    [CustomRadioListField( "Custom Dates", "If not using date range, please select a custom date from here", "Last Week, One Year Ago", Order = 4 )]
+    [CustomRadioListField( "Custom Dates", "If not using date range, please select a custom date from here", "One Year Ago", Order = 4 )]
     [CustomCheckboxListField( "Compare Against Last Year", "", "Yes", Order = 5 )]
     [MetricCategoriesField( "Metric Source", "Select the metric to include in this chart.", false, "", "", 6 )]
     [CustomCheckboxListField( "Respect Campus Context", "", "Yes", Order = 7 )]
@@ -200,14 +200,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                             }
                         }
                         
-                    }
-                    else if ( metricCustomDates == "Last Week" )
-                    {
-                        currentMetricValue.Value = string.Format( "{0:n0}", newMetric.MetricValues
-                            .Where( a => calendar.GetWeekOfYear( a.MetricValueDateTime.Value.Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) == calendar.GetWeekOfYear( DateTime.Now.AddDays( -7 ).Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) )
-                            .Select( a => a.YValue )
-                            .Sum()
-                            );
                     }
                     else if ( metricCustomDates == "One Year Ago" )
                     {
@@ -368,6 +360,10 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                         if ( metricItemCount % 2 != 0 )
                         {
                             metricItemColor = "#1c683e";
+                        }
+                        else if ( metricItemCount % 3 == 0 )
+                        {
+                            metricItemColor = "#2a4930";
                         }
 
                         // Create JSON array of data
