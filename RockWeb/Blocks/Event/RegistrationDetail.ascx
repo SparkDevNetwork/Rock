@@ -44,7 +44,7 @@
                             </div>
                         </div>
 
-                        <div class="actions">
+                        <div class="actions margin-t-md">
                             <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                             <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                         </div>
@@ -70,41 +70,43 @@
                                 <asp:Panel ID="pnlCosts" runat="server" Visible="false" CssClass="well">
 
                                     <div class="fee-table">
-                                        <h4>Cost/Fee Summary</h4>
-                                        <asp:Repeater ID="rptFeeSummary" runat="server">
-                                            <HeaderTemplate>
-                                                <div class="row hidden-xs fee-header">
-                                                    <div class="col-sm-6">
-                                                        <strong>Description</strong>
-                                                    </div>
+                                        <h4>Payment Summary</h4>
+                                        <div class="registrationentry-summary">
+                                            <asp:Repeater ID="rptFeeSummary" runat="server">
+                                                <HeaderTemplate>
+                                                    <div class="row hidden-xs fee-header">
+                                                        <div class="col-sm-6">
+                                                            <strong>Description</strong>
+                                                        </div>
 
-                                                    <div runat="server" class="col-sm-3 fee-value" visible='<%# PercentageDiscountExists %>'>
-                                                        <strong>Discounted Amount</strong>
-                                                    </div>
+                                                        <div runat="server" class="col-sm-3 fee-value" visible='<%# PercentageDiscountExists %>'>
+                                                            <strong>Discounted Amount</strong>
+                                                        </div>
 
-                                                    <div class="col-sm-3 fee-value">
-                                                        <strong>Amount</strong>
-                                                    </div>
+                                                        <div class="col-sm-3 fee-value">
+                                                            <strong>Amount</strong>
+                                                        </div>
 
-                                                </div>
-                                            </HeaderTemplate>
-                                            <ItemTemplate>
-                                                <div class="row fee-row-<%# Eval("Type").ToString().ToLower() %>">
-                                                    <div class="col-sm-6 fee-caption">
-                                                        <%# Eval("Description") %>
                                                     </div>
+                                                </HeaderTemplate>
+                                                <ItemTemplate>
+                                                    <div class="row fee-row-<%# Eval("Type").ToString().ToLower() %>">
+                                                        <div class="col-sm-6 fee-caption">
+                                                            <%# Eval("Description") %>
+                                                        </div>
 
-                                                    <div runat="server" class="col-sm-3 fee-value" visible='<%# PercentageDiscountExists %>'>
-                                                        <span class="visible-xs-inline">Discounted Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("DiscountedCost")) %>
+                                                        <div runat="server" class="col-sm-3 fee-value" visible='<%# PercentageDiscountExists %>'>
+                                                            <span class="visible-xs-inline">Discounted Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("DiscountedCost")) %>
+                                                        </div>
+
+                                                        <div class="col-sm-3 fee-value">
+                                                            <span class="visible-xs-inline">Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("Cost")) %>
+                                                        </div>
+
                                                     </div>
-
-                                                    <div class="col-sm-3 fee-value">
-                                                        <span class="visible-xs-inline">Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("Cost")) %>
-                                                    </div>
-
-                                                </div>
-                                            </ItemTemplate>
-                                        </asp:Repeater>
+                                                </ItemTemplate>
+                                            </asp:Repeater>
+                                        </div>
                                     </div>
 
                                     <div class="row fee-totals">
@@ -164,7 +166,7 @@
                             </div>
                         </div>
 
-                        <div class="actions">
+                        <div class="actions margin-t-md">
                             <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                             <Rock:HiddenFieldWithClass ID="hfHasPayments" runat="server" CssClass="js-has-payments" />
